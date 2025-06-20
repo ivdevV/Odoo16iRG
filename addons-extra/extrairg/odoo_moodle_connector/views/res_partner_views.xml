@@ -1,0 +1,36 @@
+<odoo>
+    <data>
+
+        <record id="res_partner_moodle_view_extend" model="ir.ui.view">
+            <field name="name">res.partner.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+
+                <field name="email" position="attributes">
+                    <attribute name="required">True</attribute>
+                </field>
+
+                <xpath expr="//page[@name='contact_addresses']" position="after">
+                    <page name="moodle" string="Moodle">
+                        <group col="4" colspan="4">
+                            <field name="username"/>
+                            <field name="gender" widget="selection"/>
+                            <field name="birth_date" widget="date"/>
+                            <field name="blood_group" widget="selection"/>
+                            <field name="institution" widget="many2one" domain="[('is_company', '=', True)]"/>
+                            <field name="department" widget="many2one"/>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="lang_id" widget="many2one"/>
+                            <field name="is_suspended" widget="boolean_toggle"/>
+                            <field name="is_confirmed" widget="boolean_toggle"/>
+                            <field name="md_id"/>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

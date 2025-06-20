@@ -1,0 +1,21 @@
+{
+    'name': "Payment Provider: flywire",
+    'version': '2.0',
+    'category': 'Accounting/Payment Providers',
+    'sequence': 1,
+    'summary': "payment provider | flywire",
+    "author": "Hans Franco Olivos Cerna",
+    'depends': ['payment'],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/payment_flywire_templates.xml',
+        'views/payment_provider_views.xml',
+        'data/payment_provider_data.xml',
+    ],
+    'images': ['static/description/icon.png'],
+    'application': False,
+    'installable': True,
+    'post_init_hook': 'post_init_hook',
+    'uninstall_hook': 'uninstall_hook',
+    'license': 'LGPL-3',
+}

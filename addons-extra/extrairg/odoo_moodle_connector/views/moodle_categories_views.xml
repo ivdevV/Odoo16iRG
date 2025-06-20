@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="moodle_categories_list">
+            <field name="name">Moodle Categories</field>
+            <field name="model">moodle.categories</field>
+            <field name="arch" type="xml">
+                <tree string="Moodle Categories" editable="bottom">
+                    <field name="create_date" string="Create Time"/>
+                    <field name="name"/>
+                    <field name="parent_id" widget="many2one"/>
+                    <field name="description"/>
+                    <field name="md_id"/>
+                    <field name="write_date" string="Update Time"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="moodle_categories_action_window">
+            <field name="name">Moodle Categories</field>
+            <field name="res_model">moodle.categories</field>
+            <field name="view_mode">tree</field>
+        </record>
+
+    </data>
+</odoo>

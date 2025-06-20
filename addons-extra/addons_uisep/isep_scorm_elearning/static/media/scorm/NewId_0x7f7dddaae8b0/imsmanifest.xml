@@ -1,0 +1,93 @@
+<?xml version="1.0" ?>
+<manifest identifier="Si6y_eX0RCo8R9atDGgQ49Kd69iTl0wiDC8oZinl" version="1"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                      http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+    <adlcp:location>metadata.xml</adlcp:location>
+  </metadata>
+  <organizations default="articulate_rise">
+      <organization identifier="articulate_rise">
+      <title>El alta de atención temprana o duelo perinatal.</title>
+      <item identifier="i1" identifierref="r1" isvisible="true">
+        <title>El alta de atención temprana o duelo perinatal.</title>
+        <adlcp:datafromlms>eyJjcHYiOiJEQzhvWmlubCIsInJsZCI6ZmFsc2V9</adlcp:datafromlms>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="r1" type="webcontent" adlcp:scormtype="sco" href="scormdriver/indexAPI.html">
+      <!-- SCORMDRIVER STUFF -->
+      <file href="scormdriver/indexAPI.html" />
+      <file href="scormdriver/preloadIntegrity.js" />
+      <file href="scormdriver/driverOptions.js" />
+      <file href="scormdriver/AICCComm.html" />
+      <file href="scormdriver/auto-scripts/AutoBookmark.js" />
+      <file href="scormdriver/auto-scripts/AutoCompleteSCO.js" />
+      <file href="scormdriver/auto-scripts/CourseExit.js" />
+      <file href="scormdriver/blank.html" />
+      <file href="scormdriver/goodbye.html" />
+      <file href="scormdriver/scormdriver.js" />
+      <file href="scormdriver/browsersniff.js" />
+
+      <!-- RUNTIME COMMON STUFF -->
+      <file href="scormcontent/index.html" />
+
+      
+        <file href="scormcontent/lib/fonts/icomoon.ttf"/>
+        <file href="scormcontent/lib/fonts/icomoon.woff"/>
+
+        <file href="scormcontent/lib/icomoon.css"/>
+        <file href="scormcontent/lib/player-0.0.11.min.js"/>
+        <file href="scormcontent/lib/lzwcompress.js"/>
+      
+
+      <!-- FRONTEND BUNDLE ASSETS -->
+      <file href="scormcontent/lib/rise/dadec642.js" />
+<file href="scormcontent/lib/rise/11732e6a.css" />
+<file href="scormcontent/lib/rise/594a359f.js" />
+<file href="scormcontent/lib/rise/841fd97d.css" />
+<file href="scormcontent/lib/rise/d72fd829.js" />
+<file href="scormcontent/lib/rise/9db509dc.js" />
+<file href="scormcontent/lib/rise/27e7283a.js" />
+<file href="scormcontent/lib/mondrian/entry.js" />
+<file href="scormcontent/lib/mondrian/976bee94.js" />
+<file href="scormcontent/lib/mondrian/0f80ec6d.js" />
+<file href="scormcontent/lib/mondrian/b176ca34.js" />
+<file href="scormcontent/lib/mondrian/c16e7dd3.js" />
+<file href="scormcontent/lib/mondrian/d7134136.js" />
+<file href="scormcontent/lib/mondrian/c1257364.js" />
+<file href="scormcontent/lib/mondrian/eab04a62.js" />
+<file href="scormcontent/lib/mondrian/714fc133.js" />
+
+
+      <!-- RUNTIME CONTENT STUFF -->
+      <file href="scormcontent/lib/fonts/Lato-Black.woff" />
+<file href="scormcontent/lib/fonts/Lato-Italic.woff" />
+<file href="scormcontent/lib/fonts/Lato-Bold.woff" />
+<file href="scormcontent/lib/fonts/Lato-Regular.woff" />
+<file href="scormcontent/lib/fonts/Lato-Light.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Black.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Italic.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Bold.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Regular.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Light.woff" />
+<file href="scormcontent/assets/zSVfV8Mn_sywOldF.jpg" />
+<file href="scormcontent/assets/Innova%20el%20Valor%20por%20el%20Dise%C3%B1o%20Diagrama%20de%20Venn.png" />
+<file href="scormcontent/assets/Lorem%20ipsum%20dolor%20sit%20amet%2C%20consectetur%20adipiscing%20elit%2C%20sed%20do%20eiusmod%20tempor%20incididunt.%20%281%29.png" />
+<file href="scormcontent/assets/signos%20de%20estr%C3%A9s%20en%20el%20RN%20%282%29.png" />
+<file href="scormcontent/assets/medic-and-patient-with-face-masks-talking-about-pr-2022-01-19-00-13-00-utc.jpg" />
+<file href="scormcontent/assets/woman-crying-hugging.jpg" />
+<file href="scormcontent/assets/Gr%C3%A1fico%20de%20L%C3%ADnea%20de%20Tiempo%20timeline%20Multicolor%20Flujo%20proceso%20Progreso%20Moderno%20%281%29.png" />
+<file href="scormcontent/assets/Half%20Hexagonal%20Process%20Timeline%20Graph%20%281%29.png" />
+<file href="scormcontent/assets/selesctive-focus-of-husband.jpg" />
+
+      <file href="scormcontent/locales/und.js" />
+
+    </resource>
+  </resources>
+</manifest>

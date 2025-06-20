@@ -1,0 +1,19 @@
+<odoo>
+    <data>
+
+        <menuitem name="Moodle" id="moodle_credentials_menu_root"/>
+
+        <menuitem name="Credentials" id="moodle_credentials_menu_1" parent="moodle_credentials_menu_root" action="moodle_credentials_action_window"/>
+        <menuitem name="Connector" id="moodle_credentials_menu_2" parent="moodle_credentials_menu_root" action="moodle_connector_action_window"/>
+
+        <menuitem name="History" id="moodle_credentials_menu_3" parent="moodle_credentials_menu_root"/>
+        <menuitem name="Import History" id="moodle_credentials_menu_3_sub_1" parent="moodle_credentials_menu_3" action="moodle_import_stats_action_window"/>
+        <menuitem name="Export History" id="moodle_credentials_menu_3_sub_2" parent="moodle_credentials_menu_3" action="moodle_export_stats_action_window"/>
+
+        <menuitem name="Settings" id="moodle_credentials_menu_4" parent="moodle_credentials_menu_root"/>
+        <menuitem name="CronJob Settings" id="moodle_credentials_menu_4_sub_1" parent="moodle_credentials_menu_4" action="moodle_cronjob_settings_action_window"/>
+
+        <menuitem name="Course Category" id="moodle_connect_menu_2" parent="website_slides.website_slides_menu_root" action="moodle_categories_action_window" sequence="0"/>
+        
+    </data>
+</odoo>

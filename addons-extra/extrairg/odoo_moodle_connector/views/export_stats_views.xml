@@ -1,0 +1,29 @@
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="moodle_export_stats_list">
+            <field name="name">Moodle Export Stats List</field>
+            <field name="model">moodle.export.stats</field>
+            <field name="arch" type="xml">
+                <tree edit="false" create="false">
+                    <field name="create_date" string="Sync Time"/>
+                    <field name="new_user"/>
+                    <field name="new_category"/>
+                    <field name="new_course"/>
+                    <field name="new_event"/>
+                    <field name="upd_user"/>
+                    <field name="upd_category"/>
+                    <field name="upd_course"/>
+                    <field name="connector" widget="many2one"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="moodle_export_stats_action_window">
+            <field name="name">Moodle Export History</field>
+            <field name="res_model">moodle.export.stats</field>
+            <field name="view_mode">tree</field>
+        </record>
+
+    </data>
+</odoo>

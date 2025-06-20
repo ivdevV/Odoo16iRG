@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <template id="address_website_sale_custom" inherit_id="website_sale.address">
+
+        <xpath expr="//form[@class='checkout_autoformat']/div[@class='row']/div[@id='div_email']" position="after">
+
+            <div t-attf-class="mb-3 col-lg-6" id="div_birth_date">
+                <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="birth_date">Fecha de Nacimiento</label>
+                <input type="date" name="birth_date" t-attf-class="form-control" t-att-value="checkout and checkout['birth_date'] or ''" />
+            </div>
+
+            <div t-attf-class="mb-3 col-lg-6" id="div_university">
+                <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="university">Universidad</label>
+                <input type="text" name="university" t-attf-class="form-control" t-att-value="checkout and checkout['university'] or ''" />
+            </div>
+
+            <div t-attf-class="mb-3 col-lg-6" id="div_profession">
+                <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="profession">Profesión</label>
+                <input type="text" name="profession" t-attf-class="form-control" t-att-value="checkout and checkout['profession'] or ''" />
+            </div>
+
+            <div t-attf-class="mb-3 col-lg-6" id="div_titulacion">
+                <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="titulacion">Titulación</label>
+                <input type="text" name="titulacion" t-attf-class="form-control" t-att-value="checkout and checkout['titulacion'] or ''" />
+            </div>
+
+            <div t-attf-class="mb-3 col-lg-6" id="div_finalizacionestudios">
+                <label t-attf-class="col-form-label #{mode[1] == 'shipping' and 'label-optional' or ''}" for="finalizacionestudios">Finalización de Estudios</label>
+                <input type="date" name="finalizacionestudios" t-attf-class="form-control" t-att-value="checkout and checkout['finalizacionestudios'] or ''" />
+            </div>
+
+        </xpath>
+
+        <xpath expr="//select[@id='country_id']/t[@t-foreach='countries']" position="replace">
+            <t t-foreach="countries" t-as="c">
+                <t t-if="c.code">
+                    <option t-att-value="c.id" t-att-selected="c.id == (country and country.id or -1)">
+                        <t t-esc="c.name" />
+                    </option>
+                </t>
+            </t>
+        </xpath>
+
+
+    </template>
+
+    <template id="address_website_sale_custom_sign" inherit_id="website_sale.address_on_payment">
+        <xpath expr="//div[@id='shipping_and_billing']" position="after">
+            <div class="alert alert-warning mt-3" role="alert">
+            ¡El documento para firmar la matrícula, será enviada a su correo después de pagar!.
+            </div>
+        </xpath>
+    </template>
+
+
+
+</odoo>

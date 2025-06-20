@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+op_elearning_subject_wizard,name_op_elearning_subject_wizard,model_op_elearning_subject_wizard,openeducat_core.group_op_faculty,1,1,1,1
+op_admission_elearning_wizard,name_op_admission_elearning_wizard,model_op_admission_elearning_wizard,openeducat_core.group_op_faculty,1,1,1,1

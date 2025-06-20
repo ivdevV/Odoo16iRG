@@ -1,0 +1,103 @@
+<?xml version="1.0" ?>
+<manifest identifier="Au8oHHUqABUKFeo0wK9RK2kbFA1UrnHp4R9R9HnX" version="1"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                      http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+    <adlcp:location>metadata.xml</adlcp:location>
+  </metadata>
+  <organizations default="articulate_rise">
+      <organization identifier="articulate_rise">
+      <title>Primeras manifestaciones del desarrollo del niño.</title>
+      <item identifier="i1" identifierref="r1" isvisible="true">
+        <title>Primeras manifestaciones del desarrollo del niño.</title>
+        <adlcp:datafromlms>eyJjcHYiOiI0UjlSOUhuWCIsInJsZCI6ZmFsc2V9</adlcp:datafromlms>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="r1" type="webcontent" adlcp:scormtype="sco" href="scormdriver/indexAPI.html">
+      <!-- SCORMDRIVER STUFF -->
+      <file href="scormdriver/indexAPI.html" />
+      <file href="scormdriver/preloadIntegrity.js" />
+      <file href="scormdriver/driverOptions.js" />
+      <file href="scormdriver/AICCComm.html" />
+      <file href="scormdriver/auto-scripts/AutoBookmark.js" />
+      <file href="scormdriver/auto-scripts/AutoCompleteSCO.js" />
+      <file href="scormdriver/auto-scripts/CourseExit.js" />
+      <file href="scormdriver/blank.html" />
+      <file href="scormdriver/goodbye.html" />
+      <file href="scormdriver/scormdriver.js" />
+      <file href="scormdriver/browsersniff.js" />
+
+      <!-- RUNTIME COMMON STUFF -->
+      <file href="scormcontent/index.html" />
+
+      
+        <file href="scormcontent/lib/fonts/icomoon.ttf"/>
+        <file href="scormcontent/lib/fonts/icomoon.woff"/>
+
+        <file href="scormcontent/lib/icomoon.css"/>
+        <file href="scormcontent/lib/player-0.0.11.min.js"/>
+        <file href="scormcontent/lib/lzwcompress.js"/>
+      
+
+      <!-- FRONTEND BUNDLE ASSETS -->
+      <file href="scormcontent/lib/rise/ec8a3bfc.js" />
+<file href="scormcontent/lib/rise/11732e6a.css" />
+<file href="scormcontent/lib/rise/9c38c404.js" />
+<file href="scormcontent/lib/rise/19bb591e.css" />
+<file href="scormcontent/lib/rise/64ab729b.js" />
+<file href="scormcontent/lib/rise/9db509dc.js" />
+<file href="scormcontent/lib/rise/27e7283a.js" />
+<file href="scormcontent/lib/mondrian/entry.js" />
+<file href="scormcontent/lib/mondrian/976bee94.js" />
+<file href="scormcontent/lib/mondrian/92aada83.js" />
+<file href="scormcontent/lib/mondrian/b176ca34.js" />
+<file href="scormcontent/lib/mondrian/c16e7dd3.js" />
+<file href="scormcontent/lib/mondrian/d7134136.js" />
+<file href="scormcontent/lib/mondrian/c1257364.js" />
+<file href="scormcontent/lib/mondrian/eab04a62.js" />
+<file href="scormcontent/lib/mondrian/714fc133.js" />
+
+
+      <!-- RUNTIME CONTENT STUFF -->
+      <file href="scormcontent/lib/fonts/Lato-Black.woff" />
+<file href="scormcontent/lib/fonts/Lato-Italic.woff" />
+<file href="scormcontent/lib/fonts/Lato-Bold.woff" />
+<file href="scormcontent/lib/fonts/Lato-Regular.woff" />
+<file href="scormcontent/lib/fonts/Lato-Light.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Black.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Italic.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Bold.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Regular.woff" />
+<file href="scormcontent/lib/fonts/Merriweather-Light.woff" />
+<file href="scormcontent/assets/ILvdf4Ad_Hlxs1-_.jpg" />
+<file href="scormcontent/assets/caucasian-blond-haired-woman-carry-baby-daughter-2022-10-19-05-09-59-utc.jpg" />
+<file href="scormcontent/assets/Gr%C3%A1fico%20circular%20ciclo%20mapa%20de%20ideas%20de%20una%20idea%20principal%20con%20elementos%20relacionados%20opciones%20multicolor%20profesional.png" />
+<file href="scormcontent/assets/manifectaci%C3%B3n.png" />
+<file href="scormcontent/assets/mother-playing-with-baby-on-swing-2022-01-31-18-52-08-utc.jpg" />
+<file href="scormcontent/assets/happy-parents-and-adorable-infant-baby-playing-wit-2022-10-07-01-37-53-utc.jpg" />
+<file href="scormcontent/assets/competencias%20del%20beb%C3%A9.png" />
+<file href="scormcontent/assets/competencias%202.png" />
+<file href="scormcontent/assets/baby-girl-playing-with-toys-in-a-playroom-of-cruis-2022-03-08-01-30-07-utc.jpg" />
+<file href="scormcontent/assets/happy-father-playing-with-daughters-2022-04-20-19-54-08-utc.jpg" />
+<file href="scormcontent/assets/portrait-of-a-cute-1-year-old-baby-2022-01-24-22-18-50-utc.jpg" />
+<file href="scormcontent/assets/african-black-baby-in-a-tent-wigwam-dark-skinne-2022-02-24-06-15-41-utc.jpg" />
+<file href="scormcontent/assets/young-family-with-two-small-children-indoors-in-ba-2022-02-02-04-52-30-utc.jpg" />
+<file href="scormcontent/assets/3-year-old-boy-2021-10-18-23-13-28-utc.jpg" />
+<file href="scormcontent/assets/little-girl-drawing-in-paper-2021-12-09-07-22-45-utc.jpg" />
+<file href="scormcontent/assets/mpmGPG/mountains.jpg" />
+<file href="scormcontent/assets/boy-draws-with-felt-pen-in-the-album-2021-09-01-10-45-13-utc.jpg" />
+<file href="scormcontent/assets/1Me0BM/boy-draws-with-felt-pen-in-the-album-2021-09-01-10-45-13-utc.jpg" />
+<file href="scormcontent/assets/el%20dibujo.png" />
+
+      <file href="scormcontent/locales/und.js" />
+
+    </resource>
+  </resources>
+</manifest>

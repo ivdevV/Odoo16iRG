@@ -1,0 +1,110 @@
+<odoo>
+    <data>
+
+
+      <record model="ir.ui.view" id="moodle_course_categories_form">
+      <field name="name">Course Categories Form</field>
+      <field name="model">moodle.categories</field>
+      <field name="arch" type="xml">
+            <form edit="true" create="true">
+                <sheet>
+                    <group>
+                        <field name="name" string="Name" style="width:50%"/>
+                        <field name="description" string="Description" style="width:50%" class="form_control load_editor"/>
+                    </group>
+                </sheet>
+            </form>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="moodle_connect_form_view">
+      <field name="name">Moodle Connect Form</field>
+      <field name="model">moodle.connect</field>
+      <field name="arch" type="xml">
+            <form edit="false" create="false">
+                <sheet>
+                      <group string="Moodle Connection">
+                            <field name="access_token" style="width:30%"/>
+                            <field name="request_url" style="width:30%" placeholder="https://example.moodlecloud.com"/>
+                      </group>
+                        <group>
+                            <div>
+                                <label for="category_checkbox" string="Category"/>
+                                <field name="category_checkbox"/>
+                                <label for="course_checkbox" string="Course"/>
+                                <field name="course_checkbox"/>
+                                <label for="user_checkbox" string="User"/>
+                                <field name="user_checkbox"/>
+                                <label for="calendar_checkbox" string="Calendar"/>
+                                <field name="calendar_checkbox"/>
+                            </div>
+                        </group>
+                    <group>
+                        <div>
+                            <label for="custom_date_checkbox" string="Custom Date"/>
+                            <field name="custom_date_checkbox" />
+                            <field name="custom_from_datetime" style="width:20%;margin-left:10px;margin-right:10px;" attrs="{'invisible':[('custom_date_checkbox','=',False)]}"/>
+                            <field name="custom_to_datetime" style="width:20%;margin-left:10px;"  attrs="{'invisible':[('custom_date_checkbox','=',False)]}"/>
+                        </div>
+                    </group>
+
+                            <button name="import_moodle" type="object" string="Import" class="oe_highlight" style="margin-right:10px;width:60px;" />
+                            <button name="export_moodle" type="object" string="Export" class="oe_highlight" style="margin-left:10px;width:60px;"/>
+                </sheet>
+            </form>
+      </field>
+    </record>
+
+     <record id="calendar_event_view_extend" model="ir.ui.view">
+        <field name="name">calendar.event.form</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                    <field name="course_list" widget="selection"/>
+            </xpath>
+        </field>
+     </record>
+
+      <record id="res_partner_moodle_view_extend" model="ir.ui.view">
+        <field name="name">res.partner.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+        <field name="email" position="attributes">
+            <attribute name="required">True</attribute>
+        </field>
+        </field>
+      </record>
+
+      <record id="slide_channel_extend_view" model="ir.ui.view">
+        <field name="name">slide.channel.form</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                    <field name="category_list" widget="selection"/>
+            </xpath>
+        </field>
+     </record>
+
+    <record model="ir.actions.act_window" id="moodle_connect_action_window">
+      <field name="name">Moodle Connect</field>
+      <field name="res_model">moodle.connect</field>
+      <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="moodle_category_action_window">
+      <field name="name">Course Categories Action</field>
+      <field name="res_model">moodle.categories</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+
+    <menuitem name="Moodle Sync" id="moodle_connect_menu_1" parent="website_slides.website_slides_menu_root" action="moodle_connect_action_window" sequence="0"/>
+    <menuitem name="Course Category" id="moodle_connect_menu_2" parent="website_slides.website_slides_menu_root" action="moodle_category_action_window" sequence="0"/>
+
+
+</data>
+</odoo>

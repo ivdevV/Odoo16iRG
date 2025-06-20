@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        
+         <record model="ir.ui.view" id="moodle_cronjob_settings_inline">
+             <field name="name">Moodle CronJob Automation</field>
+             <field name="model">moodle.cronjob.settings</field>
+             <field name="arch" type="xml">
+                 <form edit="false" create="false">
+                     <sheet>
+                         
+                         <group string="Moodle AutoSync Configuration">
+                             <group string="User" colspan="4">
+                                 <group>
+                                     <h3>Import User OPT</h3>
+                                    <div>
+                                        <label for="is_auto_import_user" string="Enable"/>
+                                        <field name="is_auto_import_user" widget="boolean_toggle"/>
+                                        <br />
+                                        <label for="import_call_num_user" string="Number of Calls"/>
+                                        <field name="import_call_num_user" widget="selection" />
+                                        <label for="import_interval_num_user" string="Next Interval"/>
+                                        <field name="import_interval_num_user"/>
+                                        <label for="import_interval_type_user" string="Interval Type"/>
+                                        <field name="import_interval_type_user" widget="selection"/>
+                                    </div>
+                                 </group>
+                                 <group>
+                                     <h3>Export User OPT</h3>
+                                     <div>
+                                         <label for="is_auto_export_user" string="Enable"/>
+                                         <field name="is_auto_export_user" widget="boolean_toggle"/>
+                                         <br />
+                                         <label for="export_call_num_user" string="Number of Calls"/>
+                                         <field name="export_call_num_user" widget="selection"/>
+                                         <label for="export_interval_num_user" string="Next Interval"/>
+                                         <field name="export_interval_num_user"/>
+                                         <label for="export_interval_type_user" string="Interval Type"/>
+                                         <field name="export_interval_type_user" widget="selection"/>
+                                     </div>
+                                 </group>
+                             </group>
+                             <br/><br/>
+
+                             <group string="Category" colspan="4">
+                                 <group>
+                                     <h3>Import Category OPT</h3>
+                                    <div>
+                                        <label for="is_auto_import_category" string="Enable"/>
+                                        <field name="is_auto_import_category" widget="boolean_toggle"/>
+                                        <br />
+                                        <label for="import_call_num_category" string="Number of Calls"/>
+                                        <field name="import_call_num_category" widget="selection" />
+                                        <label for="import_interval_num_category" string="Next Interval"/>
+                                        <field name="import_interval_num_category"/>
+                                        <label for="import_interval_type_category" string="Interval Type"/>
+                                        <field name="import_interval_type_category" widget="selection"/>
+                                    </div>
+                                 </group>
+                                 <group>
+                                     <h3>Export Category OPT</h3>
+                                     <div>
+                                         <label for="is_auto_export_category" string="Enable"/>
+                                         <field name="is_auto_export_category" widget="boolean_toggle"/>
+                                         <br />
+                                         <label for="export_call_num_category" string="Number of Calls"/>
+                                         <field name="export_call_num_category" widget="selection"/>
+                                         <label for="export_interval_num_category" string="Next Interval"/>
+                                         <field name="export_interval_num_category"/>
+                                         <label for="export_interval_type_category" string="Interval Type"/>
+                                         <field name="export_interval_type_category" widget="selection"/>
+                                     </div>
+                                 </group>
+                             </group>
+                             <br/><br/>
+
+                             <group string="Course" colspan="4">
+                                 <group>
+                                     <h3>Import Course OPT</h3>
+                                    <div>
+                                        <label for="is_auto_import_course" string="Enable"/>
+                                        <field name="is_auto_import_course" widget="boolean_toggle"/>
+                                        <br />
+                                        <label for="import_call_num_course" string="Number of Calls"/>
+                                        <field name="import_call_num_course" widget="selection" />
+                                        <label for="import_interval_num_course" string="Next Interval"/>
+                                        <field name="import_interval_num_course"/>
+                                        <label for="import_interval_type_course" string="Interval Type"/>
+                                        <field name="import_interval_type_course" widget="selection"/>
+                                    </div>
+                                 </group>
+                                 <group>
+                                     <h3>Export Course OPT</h3>
+                                     <div>
+                                         <label for="is_auto_export_course" string="Enable"/>
+                                         <field name="is_auto_export_course" widget="boolean_toggle"/>
+                                         <br />
+                                         <label for="export_call_num_course" string="Number of Calls"/>
+                                         <field name="export_call_num_course" widget="selection"/>
+                                         <label for="export_interval_num_course" string="Next Interval"/>
+                                         <field name="export_interval_num_course"/>
+                                         <label for="export_interval_type_course" string="Interval Type"/>
+                                         <field name="export_interval_type_course" widget="selection"/>
+                                     </div>
+                                 </group>
+                             </group>
+                             <br/><br/>
+
+                             <group string="Calendar Event" colspan="4">
+                                 <group>
+                                     <h3>Import Calendar Event OPT</h3>
+                                    <div>
+                                        <label for="is_auto_import_event" string="Enable"/>
+                                        <field name="is_auto_import_event" widget="boolean_toggle"/>
+                                        <br />
+                                        <label for="import_call_num_event" string="Number of Calls"/>
+                                        <field name="import_call_num_event" widget="selection" />
+                                        <label for="import_interval_num_event" string="Next Interval"/>
+                                        <field name="import_interval_num_event"/>
+                                        <label for="import_interval_type_event" string="Interval Type"/>
+                                        <field name="import_interval_type_event" widget="selection"/>
+                                    </div>
+                                 </group>
+                                 <group>
+                                     <h3>Export Calendar Event OPT</h3>
+                                     <div>
+                                         <label for="is_auto_export_event" string="Enable"/>
+                                         <field name="is_auto_export_event" widget="boolean_toggle"/>
+                                         <br />
+                                         <label for="export_call_num_event" string="Number of Calls"/>
+                                         <field name="export_call_num_event" widget="selection" />
+                                         <label for="export_interval_num_event" string="Next Interval"/>
+                                         <field name="export_interval_num_event"/>
+                                         <label for="export_interval_type_event" string="Interval Type"/>
+                                         <field name="export_interval_type_event" widget="selection"/>
+                                     </div>
+                                 </group>
+                             </group>
+                             
+                         </group>
+                         <button name="save_config_mod" type="object" string="Save" class="oe_highlight" target="_blank"/>
+                     </sheet>
+                 </form>
+             </field>
+         </record>
+
+         <record model="ir.actions.act_window" id="moodle_cronjob_settings_action_window">
+             <field name="name">Moodle CronJob Automation</field>
+             <field name="res_model">moodle.cronjob.settings</field>
+             <field name="view_mode">form</field>
+             <field name="target">inline</field>
+         </record>
+
+    </data>
+</odoo>

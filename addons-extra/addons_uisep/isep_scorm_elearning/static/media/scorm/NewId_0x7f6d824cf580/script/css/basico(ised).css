@@ -1,0 +1,125 @@
+@charset "utf-8";
+/* CSS Document */
+
+#middle-column body {
+       font-family: verdana;
+       font-size: 1.1em;
+       color: #333;
+       background-color: #F1F2F1;
+}
+
+#middle-column div{
+       font-family: verdana;
+       font-size: 1.1em;
+       color: #333;
+}
+
+p{
+color: #333;
+}
+
+
+div h1 {
+color: #003366;
+font-size: 1.5em;
+font-weight: bold;
+}
+
+div h2 {
+color: #006699;
+font-size: 1.3em;
+font-weight: bold;
+}
+
+div h3 {
+color: #003366;
+font-size: 1.2em;
+font-weight: bold;
+}
+
+
+
+#middle-column h1{
+color: #003366;
+font-size: 1.5em;
+font-weight: bold;
+}
+
+
+#middle-column h2{
+color: #006699;
+font-size: 1.3em;
+font-weight: bold;
+}
+
+#middle-column h3{
+color: #003366;
+font-size: 1.2em;
+font-weight: bold;
+}
+
+
+
+#middle-column ul a:link {
+color: #666666;
+font-weight: bold;
+text-decoration: none;
+}
+#middle-column ul a:visited {
+color: #999999;
+font-weight: bold;
+text-decoration: none;
+}
+
+
+#middle-column a:link {
+color: #666666;
+font-weight: bold;
+text-decoration: underline;
+}
+
+#middle-column a:visited {
+color: #999999;
+font-weight: bold;
+text-decoration: underline;
+}
+
+#middle-column a:active {
+color: #006699;
+font-weight: bold;
+text-decoration: underline;
+}
+
+#middle-column a:hover {
+color: #003366;
+font-weight: bold;
+text-decoration: none;
+}
+
+
+.tabla_plan_modulo {
+	 background-color: #003366;
+	 color: #FFF;
+	 font-weight: bold;
+	 text-align: center;
+}
+
+.tabla_plan_submodulo {
+	 background-color: #017F98;
+	 color: #FFF;
+	 font-weight: bold;
+	 text-align: center;
+	
+}
+
+.tabla_plan {
+	background-color: #EFEFEF;
+	color: #333;
+	width:700px;
+	margin:auto;
+}
+
+.tabla_plan td{
+	padding: 5px;
+	margin: 1px;
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="payment_provider_form" model="ir.ui.view">
+        <field name="name">flywire Provider Form</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_form"/>
+        <field name="arch" type="xml">
+            <group name="provider_credentials" position="inside">
+                <group attrs="{'invisible': [('code', '!=', 'flywire')]}" name="flywire_credentials">
+                    <field name="flywire_shared_secret" attrs="{'required':[('code', '=', 'flywire'), ('state', '!=', 'disabled')]}" />
+
+                    <field name="flywire_portal_ids" readonly="0" attrs="{'required':[('code', '=', 'flywire'), ('state', '!=', 'disabled')]}">
+                        <tree editable="bottom" >
+                            <field name="flywire_provider"/>
+                            <field name="flywire_payment_destination"/>
+                            <field name="currency_id"/>
+                            <field name="provider_id" invisible="1" />
+                        </tree>
+
+                    </field>
+
+                </group>
+            </group>
+        </field>
+    </record>
+
+</odoo>

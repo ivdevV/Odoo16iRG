@@ -1,0 +1,78 @@
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="moodle_connector_form">
+            <field name="name">Moodle Connector Form</field>
+            <field name="model">moodle.connector</field>
+            <field name="arch" type="xml">
+                <form edit="false" create="false">
+                    <sheet>
+
+                        <group string="Moodle Connector">
+                            <group>
+                                <h3>Course Category</h3>
+                                <div>
+                                    <field name="import_category"/>
+                                    <label for="import_category" string="Import"/>
+                                    <field name="export_category"/>
+                                    <label for="export_category" string="Export"/>
+                                </div>
+                            </group>
+
+
+                            <group>
+                                <h3>Course</h3>
+                                <div>
+                                    <field name="import_course"/>
+                                    <label for="import_course" string="Import"/>
+                                    <field name="export_course"/>
+                                    <label for="export_course" string="Export"/>
+                                </div>
+                            </group>
+
+                            <group>
+                                <h3>User</h3>
+                                <div>
+                                    <field name="import_user"/>
+                                    <label for="import_user" string="Import"/>
+                                    <field name="export_user"/>
+                                    <label for="export_user" string="Export"/>
+                                </div>
+                            </group>
+
+                            <group>
+                                <h3>Calendar Event</h3>
+                                <div>
+                                    <field name="import_event"/>
+                                    <label for="import_event" string="Import"/>
+                                    <field name="export_event"/>
+                                    <label for="export_event" string="Export"/>
+                                </div>
+                            </group>
+
+<!--                            <group>-->
+<!--                                <field name="custom_from_datetime" style="width:50%"/>-->
+<!--                                <field name="custom_to_datetime" style="width:50%"/>-->
+<!--                            </group>-->
+
+                        </group>
+
+                        <button name="synchronize" type="object" string="Sync" class="oe_highlight"/>
+                        <br/><br/>
+                        <button name="import_history_action" type="object" target="new" string="Import History"/>
+                        <button name="export_history_action" type="object" target="new" string="Export History"/>
+
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="moodle_connector_action_window">
+            <field name="name">Moodle Connector</field>
+            <field name="res_model">moodle.connector</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,24 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+/*Esto es para el espaciado final de los tabs dentro de la shadowbox*/
+.sb_bottomspace{
+	color:#9C9E9F;
+}
+
+/*Estos son los bloque que necesitan una disminución de la tipo*/
+#inst14296 .content, #inst12883 .content, #inst12884 .content, #inst12926 .content{
+	font-size:0.85em;
+}
+
+
+
+/*Esto es para que el bloque de RSS tenga margen y justificado a al izda*/
+#inst12880 .content  {
+	padding-left:10px;
+	padding-right:10px;
+}
+body, th, td, li, .sideblock #inst12880 .content {
+    text-align: left;
+}

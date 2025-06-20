@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View crm.lead form -->
+    <record id="view_crm_lead_summary_form" model="ir.ui.view">
+        <field name="name">view.crm.lead.form</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='lead']" position="after">
+                <page name="call_summary" string="Resumen de llamada">
+                    <field name="summary_ids">
+                        <tree>
+                            <field name="crm_lead_id" />
+                            <field name="partner_id" />
+                            <field name="summary" />
+                            <field name="create_date" string="Fecha de creación" readonly="1"/>
+                        </tree>
+                        <form string="Resúmen de llamadas lead">
+                            <group>
+                                <field name="crm_lead_id" />
+                                <field name="partner_id" />
+                                <field name="summary" />
+                                <field name="create_date" string="Fecha de creación" readonly="1"/>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

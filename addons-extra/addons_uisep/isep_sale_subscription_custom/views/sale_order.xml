@@ -1,0 +1,68 @@
+<odoo>
+    <data>
+        <record id="isep_custom_sale_subscription_2_form" model="ir.ui.view">
+            <field name="name">sale.order.tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale_subscription.sale_subscription_view_tree"/>        
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='stage_id']" position="before">
+                    <field name="amount_total_invoice" optional="hide" />
+                    <field name="amount_total_payment" optional="hide" />
+                    <field name="current_recurring_period_string" optional="hide" />
+                    <field name="amount_recurring_due" optional="show" />                    
+                </xpath>
+            </field>
+        </record>
+
+        <record id="isep_custom_sale_subscription_form" model="ir.ui.view">
+            <field name="name">sale.order.form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>        
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='currency_id']" position="after">
+                    <field name="start_date" attrs="{'readonly': [('subscription_management', '=', 'renew')],'invisible': [('recurrence_id','=', False)]}"/>
+                    <field name="recurring_rule_count" attrs="{'invisible': [('recurrence_id','=', False)]}" />
+                </xpath>
+
+                <xpath expr="//page[@name='customer_signature']" position="after">
+                    <page groups="sales_team.group_sale_manager" string="Suscripción" name="sale_subscription" attrs="{'invisible':[('recurrence_id','=', False)]}">
+                        <field name="stage_id" widget="statusbar"  options="{'clickable': '1'}"/>
+                        <group string="Recurrencia y facturación" >
+                            <group>
+                                <field name="amount_no_recurring_taxinc" />
+                                <field name="amount_recurring_taxinc" />
+                                <field name="amount_total_recurring" />
+                                <field name="amount_total_sale" />     
+                                <field name="last_payment_date" />                                
+                            </group>
+                            <group>
+                                <field name="amount_total_invoice" />
+                                <field name="amount_total_payment" />
+                                <field name="current_recurring_period" invisible="1" />
+                                <field name="current_recurring_period_string" />
+                                <field name="amount_recurring_to_date" />
+                                <field name="amount_recurring_due" />
+                            </group>
+                        </group>
+
+                        <field name="sale_note_inv">
+                            <tree editable="top" delete="0" >
+                                <field name="order_id" invisible="1" />
+                                <field name="type" />
+                                <field name="name"  required="1" />
+                                <field name="note" />
+                                <field name="currency_id"  readonly="1" options="{'no_open': True}" />
+                                <field name="amount_total_payment" />
+                                <field name="amount_total_invoice" />
+                                <button name="unlink" confirm="¿Eliminar registro?" title="Eliminar" icon="fa-times" type="object" />
+                            </tree>
+                        </field>
+
+                        
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

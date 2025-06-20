@@ -1,0 +1,14 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Default configuration parameter -->
+        <record id="default_cert_days_fpayment_value" model="ir.config_parameter">
+            <field name="key">cert_days_fpayment</field>
+            <field name="value">7</field>
+        </record>
+        <record id="default_cert_days_fdownload_value" model="ir.config_parameter">
+            <field name="key">cert_days_fdownload</field>
+            <field name="value">3</field>
+        </record>
+    </data>
+</odoo>
+

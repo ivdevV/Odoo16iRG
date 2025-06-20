@@ -1,0 +1,43 @@
+<odoo>
+    <data>
+
+        <record id="slide_channel_partner_extend_view" model="ir.ui.view">
+            <field name="name">slide.channel.partner.tree</field>
+            <field name="model">slide.channel.partner</field>
+            <field name="inherit_id" ref="website_slides.slide_channel_partner_view_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_email']" position="after">
+                    <field name="role" widget="selection"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="slide_channel_extend_view" model="ir.ui.view">
+            <field name="name">slide.channel.form</field>
+            <field name="model">slide.channel</field>
+            <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='content']" position="after">
+                    <page name="moodle" string="Moodle">
+                        <group col="4" colspan="4">
+                            <field name="short_name"/>
+                            <field name="lang_id" widget="many2one"/>
+                            <field name="category_id" widget="many2one" options="{'no_create': True, 'no_create_edit':True}"/>
+                            <field name="show_grades" widget="boolean_toggle"/>
+                            <field name="start_date" widget="date"/>
+                            <field name="end_date" widget="date"/>
+
+                            <field name="enable_completion" widget="boolean_toggle"/>
+                            <field name="completion_notify" widget="boolean_toggle"/>
+                            <field name="is_visible" widget="boolean_toggle"/>
+                            <field name="show_reports" widget="boolean_toggle"/>
+                            <field name="cs_format" widget="selection"/>
+                            <field name="md_id"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

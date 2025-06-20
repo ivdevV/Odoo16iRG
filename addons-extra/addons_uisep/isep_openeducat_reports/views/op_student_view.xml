@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_op_student_form_extended" model="ir.ui.view">
+            <field name="model">op.student</field>
+            <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+            <field name="arch" type="xml">
+                <header>
+                    <button name="%(isep_openeducat_reports.diplomas_certifies_wizard)d" string="Certifies / Diplomas"
+                            type="action" class="oe_highlight" groups="base.group_system"/>
+                </header>
+            </field>
+    </record>
+</odoo>

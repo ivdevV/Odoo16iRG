@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_moodle_credentials,moodle.credentials,model_moodle_credentials,base.group_user,1,1,1,1
+access_moodle_connector,moodle.connector,model_moodle_connector,base.group_user,1,1,1,1
+access_moodle_import_stats,moodle.import.stats,model_moodle_import_stats,base.group_user,1,1,1,1
+access_moodle_export_stats,moodle.import.stats,model_moodle_export_stats,base.group_user,1,1,1,1
+access_moodle_cronjob_settings,moodle.cronjob.settings,model_moodle_cronjob_settings,base.group_user,1,1,1,1
+access_moodle_categories,moodle.categories,model_moodle_categories,base.group_user,1,1,1,1

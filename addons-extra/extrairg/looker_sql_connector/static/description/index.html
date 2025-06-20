@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en-US" data-website-id="1" data-main-object="loempia.module(179506,)">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="generator" content="Odoo" />
+  <meta name="google-site-verification" content="pgjyH0qvN69B0m_HrTKV6h8TVnbRXp5etEHo19unPy4" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="inventory-planning-and-forecasting | Odoo Apps Store" />
+  <meta property="og:site_name" content="Odoo S.A." />
+  <meta property="og:url" content="https://apps.odoo.com/apps/modules/17.0/inventory-planning-and-forecasting/" />
+  <meta property="og:image" content="https://apps.odoo.com/web/image/loempia.module/179506/icon_image?unique=bea01eb" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="inventory-planning-and-forecasting | Odoo Apps Store" />
+  <meta name="twitter:image"
+    content="https://apps.odoo.com/web/image/loempia.module/179506/icon_image/300x300?unique=bea01eb" />
+
+  <link rel="canonical" href="https://apps.odoo.com/apps/modules/17.0/inventory-planning-and-forecasting/" />
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+
+  <title> Odoo Manual Reconciliation | Odoo Apps Store </title>
+  <link type="image/x-icon" rel="shortcut icon" href="//apps.odoocdn.com/web/image/website/1/favicon?unique=6b8d06a" />
+  <link rel="preload" href="//apps.odoocdn.com/web/static/src/libs/fontawesome/fonts/fontawesome-webfont.woff2?v=4.7.0"
+    as="font" crossorigin="" />
+  <link type="text/css" rel="stylesheet" href="/web/assets/1/1a889af/web.assets_frontend.min.css" />
+  <script id="web.layout.odooscript" type="text/javascript">
+    var odoo = {
+      csrf_token: "4aef77bb4fc4b46f1f9a5ce22e19db227e6d2847o1740809322",
+      debug: "",
+    };
+  </script>
+  <script type="text/javascript">
+    odoo.__session_info__ = { "is_admin": false, "is_system": false, "is_website_user": true, "user_id": false, "is_frontend": true, "profile_session": null, "profile_collectors": null, "profile_params": null, "show_effect": true, "currencies": { "1": { "symbol": "\u20ac", "position": "after", "digits": [69, 2] }, "152": { "symbol": "\u00a3", "position": "before", "digits": [69, 2] }, "25": { "symbol": "$", "position": "after", "digits": [69, 2] }, "21": { "symbol": "\u20b9", "position": "after", "digits": [69, 2] }, "3": { "symbol": "$", "position": "before", "digits": [69, 2] } }, "bundle_params": { "lang": "en_US", "website_id": 1 }, "translationURL": "/website/translations", "cache_hashes": { "translations": "939107ff97b009c15a5d34bd106bf6fdadaa1c33" }, "geoip_country_code": "IN", "geoip_phone_code": 91, "lang_url_code": "en_US" };
+    if (!/(^|;\s)tz=/.test(document.cookie)) {
+      const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      document.cookie = `tz=${userTZ}; path=/`;
+    }
+  </script>
+  <script src="https://www.recaptcha.net/recaptcha/api.js?render=6Lcul_cUAAAAAIm051Is0wb8-Tq-AiOaK_ePfzvo"></script>
+  <script>
+    if (window.grecaptcha) {
+      grecaptcha.ready(function () {
+        grecaptcha.execute('6Lcul_cUAAAAAIm051Is0wb8-Tq-AiOaK_ePfzvo', { action: 'apps_download' });
+      });
+    }
+  </script>
+  <script type="text/javascript" defer="defer" src="/web/assets/1/f176852/web.assets_frontend_minimal.min.js"
+    onerror="__odooAssetError=1"></script>
+  <script type="text/javascript" defer="defer" data-src="/web/assets/1/6ef5a24/web.assets_frontend_lazy.min.js"
+    onerror="__odooAssetError=1"></script>
+
+  <noscript>
+    <style>
+      /* Prevent animated elements hiding */
+      .o_animate_in_children>* {
+        opacity: 1 !important;
+        -webkit-transform: scale(1) !important;
+        -ms-transform: scale(1) !important;
+        transform: scale(1) !important;
+      }
+    </style>
+  </noscript>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div style="margin-top: 100px;">
+    <!-- pre-requisites -->
+    <div class="jumbotron w-50 mx-auto">
+      <span class="font-weight-bold h3">Pre-requisites:</span>
+      <ul class="my-2">
+        <li>Must have installed Odoo Looker Connector by Techfinna.</li>
+        <li>Using updated version of Odoo Looker Connector by Techfinna.</li>
+      </ul>
+
+    </div>
+    <!-- havent bought looker connector -->
+    <div style="width: 100%; height: 100%; background-color: #F3F7F7; padding: 30px 20px; border-radius: 20px;"
+      class="d-flex shadow flex-column">
+      <div class="text-center" style="font-family: 'Poppins', sans-serif;">
+        <div
+          style="display: inline-block; text-align: end; margin-left: auto; margin-right: auto; padding-bottom: 10px;">
+          <h1 class="text-center"
+            style="font-size: 40px; font-weight:bold; margin-bottom: 0 !important; color: #202225;">
+            Haven't bought <span style="font-size: 48px; color: #875A7B;">O</span><span
+              style="font-size: 48px; color: #888888;">doo</span> Looker Connector?
+          </h1>
+        </div>
+        <div class="d-flex align-items-center justify-content-evenly">
+          <img class="img-fluid border-4" style="width: 45%;" src="./bannerLooker.gif" alt="Reconciliation">
+          <img class="img-fluid border-4" style="width: 5%;" src="./arrow.png" alt="Reconciliation">
+          <div
+            style="display:inline-block; text-align:end; margin-left:auto; margin-right:auto; margin-top:20px; padding-bottom:15px">
+            <div
+              style="margin-bottom:-20px; display:inline-block; padding:1px; border:3px solid #17640F; background-color:#17640F; text-align:end !important; color:white; font-weight:700"
+              class="px-2">Verified by Google Looker Studio</div>
+            <h1 class="text-center" style="font-size:40px; font-weight:bold; margin-bottom:0 !important; color:#202225">
+              Odoo
+              <a href="https://apps.odoo.com/apps/modules/17.0/looker_connector/"
+                style="font-size:48px; color:#4285F4">Looker
+                Connector </a> by TechFinna
+            </h1>
+          </div>
+        </div>
+        <p style="color: #848B90; font-size: 16px; margin-top: 15px;">
+          Maximize the potential of data visualization by seamlessly integrating your Odoo data with Looker Studio
+          through our user-friendly connector. Simplify your reporting and analytics workflow, while optimizing time and
+          resource utilization.
+      </div>
+    </div>
+    <!-- live preview -->
+    <!-- <div class="d-flex flex-column align-items-center justify-content-center"
+      style="width: 100%; font-family: 'Poppins', sans-serif; margin-top: 80px;">
+      <h1 class="text-center" style="font-size: 32px; font-weight:bold ; color: #202225;">Try<span
+          style="font-size: 40px; color: #CD012A;"> Demo </span></h1>
+      <h4 class="" style="font-weight:200; color: #181A2D;">Click on <b>Live Preview</b> button on top to try the
+        module.</h4>
+      <img class="img-fluid w-100 w-sm-75" src="./demo.png" alt="Reconciliation">
+    </div> -->
+
+    <!-- contact us -->
+    <div style="width: 100%; font-family: 'Poppins', sans-serif; margin-top: 80px;">
+      <h1 class="text-center" style="font-size: 32px; font-weight:bold ; color: #202225;"><span
+          style="font-size: 40px; color: #CD012A;"> Contact Us</span></h1>
+      <div style="padding-top: 5px; padding-bottom: 5px;" class="alert mx-auto cursor-pointer alert-success w-50">
+        <img style="width: 40px; height: 40px;" src="whatsapp.png" alt="rec">
+        &nbsp;&nbsp;Whatsapp: +91 62309 27667
+      </div>
+      <a href="mailto:info@techfinna.com">
+        <div style="padding-top: 8px; padding-bottom: 8px;" class="alert mx-auto cursor-pointer alert-info w-50">
+          <img style="width: 30px; height: 30px;" src="email.png" alt="rec">
+          &nbsp;&nbsp;&nbsp;&nbsp;Email: info@techfinna.com
+        </div>
+      </a>
+    </div>
+
+    <!-- module provides -->
+    <div style="width: 100%; font-family: 'Poppins', sans-serif; margin-top: 80px;">
+      <h1 class="text-center" style="font-size: 32px; font-weight:bold ; color: #202225;">This module<span
+          style="font-size: 40px; color: #CD012A;"> provides </span> (Add On)</h1>
+      <h4 class="" style="font-weight:200; color: #181A2D;">➢ Execute <span style="font-weight: 600;"> Custom SQL query
+        </span>with your Odoo Looker Connector
+      </h4>
+      <h4 class="" style="font-weight:200; color: #181A2D;">➢ Installation Support</h4>
+      <h4 class="" style="font-weight:200; color: #181A2D;">➢ Free demo</h4>
+    </div>
+
+    <!-- Activate plugin -->
+    <div class="mt-5 w-100">
+      <p style="font-weight:bold; font-size:32px">Activate Plugin :
+      </p>
+      <p class="" style="font-weight:200; color:#848B90; font-size:24px"> - technical name : looker_sql_connector by
+        Techfinna</p>
+      <div class="d-flex justify-content-center">
+        <img class="shadow img-fluid w-90 " width="800px" src="./image1.png" alt="looker_sql">
+      </div>
+    </div>
+
+    <!-- core functionality -->
+    <div style="width:100%; font-family:'Poppins', sans-serif; margin-top:100px">
+      <h1 class=" text-center fw-bolder" style="font-size:40px; font-weight:bold ; color:#202225">Core <span
+          class="text-primary" style="font-size:40px">Functionality</span></h1>
+      <div style="margin-top:25px">
+        <div class="d-flex flex-wrap">
+          <!-- 1. -->
+          <div class="mt-5 w-100">
+            <p style="font-weight:bold; font-size:32px">1. Insert your SQL query in 'Enter SQL Query':
+            </p>
+            <p class="" style="font-weight:200; color:#848B90; font-size:24px"> - for eg: SELECT * FROM RES_USERS</p>
+            <div class="d-flex justify-content-center">
+              <img class="shadow img-fluid w-90 " width="800px" src="./image2.png" alt="looker_sql">
+            </div>
+          </div>
+
+          <!-- 2 -->
+          <div class="mt-5 w-100">
+            <div class="d-flex ">
+              <p style="font-weight:bold; font-size:32px">2. Verify columns & schema:
+              </p>
+
+            </div>
+
+            <div class="d-flex justify-content-center">
+              <img class="shadow img-fluid" width="800px" src="./image3.png" alt="profit&amp;loss">
+            </div>
+          </div>
+
+          <!-- 3 -->
+          <div class="mt-5 w-100">
+            <p style="font-weight:bold; font-size:32px">3. Analyze Data with Google Looker Studio:
+            </p>
+            <div class="d-flex justify-content-center">
+              <img class="shadow img-fluid" width="800px" src="./image4.png" alt="profit&amp;loss">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- faq commented -->
+        <!-- <div style="margin-top: 100px;">
+    <h1 class="text-center" style="font-size: 32px; font-weight:bold ; color: #202225;"><span
+        style="font-size: 40px; color: #CD012A;">FAQs</span> for SKUcast</h1>
+    <div>
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span> Can SKUcast be integrated with our
+                custom
+                Odoo modules?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> Yes, SKUcast is highly customizable and
+              can
+              be tailored to integrate with your specific Odoo modules, ensuring a seamless extension of your
+              existing system.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px; margin-top: 15px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span> Does SKUcast support real-time
+                inventory
+                tracking?
+                Odoo setup?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> SKUcast's inventory management can be
+              configured for real-time tracking, providing up-to-date insights across all your warehouse
+              operations.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px; margin-top: 15px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span>How does SKUcast handle data from
+                different sources?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> SKUcast allows for flexible data
+              uploads,
+              which we can customize to handle various data formats and sources, ensuring a unified data
+              environment.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px; margin-top: 15px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span> Can we customize the React.js
+                interface
+                to match our branding?
+                my needs?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> Absolutely, the React.js interface is
+              fully
+              customizable to reflect your brand identity and enhance user experience.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px; margin-top: 15px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span> What is the typical implementation
+                timeline for SKUcast?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> Depending on customization complexity,
+              basic
+              SKUcast setup can be ready within a few weeks, with full-scale deployment timelines discussed
+              during
+              consultation.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px; margin-top: 15px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span> What is the pricing model for
+                SKUcast?
+                refreshes?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> We offer transparent, upfront pricing
+              based
+              on your customization and implementation needs, without recurring fees.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px; margin-top: 15px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span> Is training and support provided for
+                SKUcast?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> Comprehensive training for your team and
+              ongoing support are part of our commitment to ensuring you fully leverage SKUcast in your
+              operations.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px; margin-top: 15px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span> What technical setup is required for
+                SKUcast?
+                to access?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> The technical prerequisites for SKUcast
+              will
+              be provided during our initial consultation, tailored to the scale of your customization.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px; margin-top: 15px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span> How is data security managed in
+                SKUcast?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> SKUcast uses industry-standard security
+              practices to ensure your data is protected and your privacy maintained.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default overflow-hidden" style="border-radius:10px; margin-top: 15px;">
+        <div class="panel-heading mt0" style="border:1px solid transparent !important">
+          <h4 class="panel-title " style="margin:0">
+            <a style="color:#000; font-size:20px; font-weight:500; font-family:Roboto; padding:15px 15px 15px 40px; line-height:158%"
+              data-toggle="collapse" href="#faq4" aria-expanded="true">
+              <span class="panelcontent">
+                <span style="font-weight: bold; color: #CD012A;">Q:</span> Why is using React.js an advantage
+                for
+                SKUcast?
+              </span>
+            </a>
+          </h4>
+        </div>
+        <div id="faq4" class="panel-collapse collapse show"
+          style="background-color:rgb(240, 244, 247); padding:15px">
+          <div>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> React.js offers a responsive and
+              adaptable
+              interface, making SKUcast not only user-friendly but also future-proof for scaling and updates.
+            </p>
+            <p class="mb-0" style="height:auto; padding-left:2%; margin-left:2%; font-family:Roboto">
+              <span style="font-weight: bold; color: #181A2D">A:</span> For more information or to discuss your
+              specific needs, please reach out to us at <a style="font-style: italic; margin: 0;"
+                href="mailto:info@techfinna.com">info@techfinna.com</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div> -->
+      </div>
+
+    </div>
+
+    <!-- additional module -->
+    <div class="shadow"
+      style="margin-top:50px; text-align:center; background-color:#5453FD; padding:30px 20px; border-radius:20px">
+      <h1 style="font-size:40px; font-weight:bold; color:white">
+        Additional Modification for Module
+      </h1>
+      <h3 style="font-weight:200; font-size:24px; color:#CCCCFE">If you have any modification for the module, contact us
+        and let us know</h3>
+      <div style="text-align:center">
+        <p style="font-size:20px; color:white">
+          <b style="color:white">Odoo Looker Connector verified by Google connects your Odoo data with Looker Directly
+          </b>
+          <br>AND<br>
+          <b style="color:white">This add-on provides additional feature of executing custom SQL queries</b>
+        </p>
+      </div>
+    </div>
+</body>
+
+</html>
