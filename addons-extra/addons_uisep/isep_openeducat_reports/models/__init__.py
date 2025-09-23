@@ -5,3 +5,6 @@ from . import ir_actions_report
 from . import account_move
 from . import op_sign_certificate
 from . import op_student
+from . import op_course
+from . import certificate_log
+from . import product

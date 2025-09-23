@@ -10,7 +10,7 @@
     "version": "1.0.0",
     'category': 'Tools',
     'sequence': 200,
-    'depends':['base','base_setup','contacts', 'crm'],
+    'depends':['base','base_setup','contacts', 'crm', 'sale_subscription', 'sale_temporal'],
     'data':[
         'views/dv_codeid_m_view.xml',
     ],

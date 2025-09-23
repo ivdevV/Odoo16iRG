@@ -2,7 +2,7 @@
 <odoo>
     
     <!-- View sale.order form -->
-    <record id="view_sale_order_form_website_sign" model="ir.ui.view">
+    <record id="view_sale_order_form_website_sale_2" model="ir.ui.view">
         <field name="name">view.sale.order.form</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
@@ -10,7 +10,11 @@
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="send_sign" readonly="1"/>
             </xpath>
+
         </field>
     </record>
+
+
+
 
 </odoo>

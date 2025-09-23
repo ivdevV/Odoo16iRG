@@ -51,14 +51,14 @@ class HelpdeskTicket(models.Model):
             textos_mensajes.append(f"{author}: {mensaje}")
         return textos_mensajes
 
-    def action_send_response_gpt(self):    
+    def action_send_response_gpt(self):#    
         for rec in self:
             ctx = {}    
             email_list = rec.partner_email  
             odoo_bot_partner = self.env.ref('base.partner_root')
             if email_list:
                 ctx['email_to'] = email_list
-                ctx['email_from'] = self.company_id.email
+                ctx['email_from'] = self.team_id.display_alias_name if self.team_id.display_alias_name else self.company_id.email
                 ctx['send_email'] = True
                 ctx['attendee'] = rec.partner_name
                 ctx['name'] = rec.name

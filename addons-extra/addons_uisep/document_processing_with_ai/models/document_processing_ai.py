@@ -1,280 +1,50 @@
-from odoo import models, _
-from odoo.exceptions import UserError
+import base64
 import logging
-from datetime import datetime
+import os
+import re
 import uuid
+from io import BytesIO
+
 import PyPDF2
+import openai
 from PIL import Image
 from pytesseract import pytesseract
-import re
-import os
-import openai
-import base64
-from io import BytesIO
-from pdf2image import convert_from_bytes
-import cv2
-import numpy as np
+
+from odoo import models, _
 
 _logger = logging.getLogger(__name__)
 
 
 class DocumentProcessingAI(models.Model):
     _name = 'document_processing_ai'
-    _description = ("Core model for document validation and analysis. Integrates OCR and GPT-based evaluation for "
-                    "handling various document types.")
+    _description = _("Core model for document validation and analysis. Integrates OCR and GPT-based evaluation for "
+                     "handling various document types.")
 
-    def validar_fecha(self, fecha_str):
-        # Lista de formatos a validar
-        formatos = ['%Y-%m-%d', '%m/%d/%Y']  # Añade más formatos si es necesario
-        for formato in formatos:
-            try:
-                # Intentar convertir la cadena a un objeto datetime
-                fecha = datetime.strptime(fecha_str, formato)
-                # Validar que el mes y el día sean correctos
-                if 1 <= fecha.month <= 12 and 1 <= fecha.day <= 31:
-                    # Verificar días válidos para cada mes
-                    if (fecha.month == 2 and fecha.day > 29) or \
-                            (fecha.month in [4, 6, 9, 11] and fecha.day > 30):
-                        return False
-                    return True  # La fecha es válida
-            except ValueError:
-                continue  # Si falla, prueba con el siguiente formato
-        return False  # Ningún formato fue válido
+    # Definir LOG_FILE como una propiedad estática o de clase
+    @property
+    def LOG_FILE(self):
+        # Obtener la ruta de la carpeta del módulo
+        current_file_path = os.path.dirname(os.path.abspath(__file__))
+        module_path = os.path.dirname(current_file_path)  # Retrocede un nivel
+        temp_folder = os.path.join(module_path, "temporary_files")
 
-    def verificar_apostille(self, texto, fecha_list):
-        palabras = ['aspotille', 'apostilla', 'Apostille', 'Apostilla']
+        # Crear la carpeta si no existe
+        if not os.path.exists(temp_folder):
+            os.makedirs(temp_folder)
 
-        for palabra in palabras:
-            if palabra in texto:
-                if palabra in ['apostilla', 'Apostille']:
-                    patron = r'\b\d{1,2}/\d{1,2}/\d{4}\b'
-                    # patron2 = r'(\d{1,2}) dias del mes de (\w+) del (\d{4})'
-                    fecha = re.findall(patron, texto)
-                    fecha_list.append(fecha)
-                    return True
-                else:
-                    return False
+        return os.path.join(temp_folder, "registro_eventos.txt")
 
-    def verificar_registraduria(self, texto):
-        palabras = ['registraduria', 'Registraduria', 'REGISTRADURIA', 'Registro', 'REGISTRO', 'registro', 'Civil',
-                    'civil']
-        count = 0
-        for palabra in palabras:
-            if palabra in texto:
-                count += 1
-        if count >= 2:
-            return True
-        else:
-            return False
-
-    def verificar_certificacion_nota(self, texto):
-        palabras = ['Nota', 'nota', 'notas', 'Notas', 'periodo', 'Periodo', 'PERIODO', 'Pregrado', 'PREGRADO',
-                    'pregrado']
-        count = 0
-        for palabra in palabras:
-            if palabra in texto:
-                count += 1
-
-        if count >= 2:
-            return True
-        else:
-            return False
-
-    def verificar_acta_grado(self, texto):
-        palabras = ['Acta', 'acta', 'Grado', 'grado', 'CERTIFICA', 'certifica', 'Certifica']
-        count = 0
-        for palabra in palabras:
-            if palabra in texto:
-                count += 1
-
-        if count >= 2:
-            return True
-        else:
-            return False
-
-    def verificar_legalizacion(self, texto):
-        palabras = ['LEGALIZACIÓN DE DOCUMENTOS DE EDUCACIÓN SUPERIOR', 'Institución', 'LEGALIZACIÓN',
-                    'DOCUMENTOS DE EDUCACIÓN']
-        count = 0
-        for palabra in palabras:
-            if palabra in texto:
-                count += 1
-
-        if count >= 2:
-            return True
-        else:
-            return False
-
-    def evaluar_legibilidad_documento(self, attachment):
-        """
-        Evalúa la legibilidad de un documento PDF almacenado como `ir.attachment` en Odoo.
-
-        Args:
-            attachment (ir.attachment): Objeto de adjunto en Odoo.
-
-        Returns:
-            str: Resultado general de la evaluación del documento (legible o no legible).
-        """
-
-        def convertir_pdf_a_imagen(pdf_data):
-            """Convierte las páginas de un archivo PDF a imágenes usando datos en memoria."""
-            try:
-                paginas_imagenes = convert_from_bytes(pdf_data, 300)  # Usar bytes directamente
-                return paginas_imagenes
-            except Exception as e:
-                _logger.debug(f"Error al convertir el PDF: {str(e)}")
-                return []
-
-        def analizar_legibilidad(imagen):
-            """Analiza la legibilidad de la imagen mediante OCR y análisis de claridad, contraste y nitidez."""
-            try:
-                # Convertir a escala de grises
-                imagen_gris = cv2.cvtColor(np.array(imagen), cv2.COLOR_RGB2GRAY)
-
-                # Calcular contraste y claridad
-                contraste = imagen_gris.std()  # Desviación estándar de los píxeles
-                claridad = cv2.Laplacian(imagen_gris, cv2.CV_64F).var()  # Varianza del Laplaciano (nitidez)
-
-                # Calcular nitidez (evaluando bordes detectados)
-                bordes = cv2.Canny(imagen_gris, 100, 200)  # Bordes detectados con Canny
-                nitidez = np.sum(bordes) / bordes.size  # Proporción de píxeles que son bordes
-
-                # Umbrales
-                umbral_contraste = [15, 80]  # Contraste mínimo aceptable
-                umbral_claridad = [20, 2000]  # Claridad mínima aceptable
-                umbral_nitidez = 0.02  # Nitidez mínima como proporción de bordes detectados
-
-                # Evaluar si es legible
-                if contraste < umbral_contraste[0] or contraste > umbral_contraste[1]:
-                    return False
-                if claridad < umbral_claridad[0] or claridad > umbral_claridad[1]:
-                    return False
-                if nitidez < umbral_nitidez:
-                    return False
-                return True
-            except Exception as e:
-                _logger.debug(f"Error al analizar la legibilidad de la imagen: {str(e)}")
-                return False
-
-        # Manejar el adjunto
-        pdf_data = None
-
+    def _escribir_log(self, mensaje):
+        """Escribe una línea en el archivo de log."""
         try:
-            if attachment.datas:  # Archivo almacenado en base64
-                pdf_data = base64.b64decode(attachment.datas)
-            else:
-                _logger.debug("No se pudo obtener los datos del archivo PDF.")
-                return False
-
-            # Convertir el PDF a imágenes
-            imagenes = convertir_pdf_a_imagen(pdf_data)
-            if not imagenes:
-                _logger.debug("Error al convertir el PDF. No se puede evaluar.")
-                return False
-
-            # Analizar cada página del documento
-            for i, imagen in enumerate(imagenes):
-                if not analizar_legibilidad(imagen):
-                    _logger.debug(f"El documento no es legible. Problemas detectados en la página {i + 1}.")
-                    return False
-
-            return True
-
+            with open(self.LOG_FILE, "a") as archivo:
+                archivo.write(mensaje + "\n")
         except Exception as e:
-            _logger.debug(f"Error durante la evaluación: {str(e)}")
-            return False
+            _logger.error(f"Error al escribir en el log: {e}")
 
-    def formato_incorrecto(self, file, text_list, fecha_list):
-        if 'acta' in file:
-            if self.verificar_apostille(text_list[0], fecha_list):
-
-                apostille_validate = 0
-                acta_grado_validate = 0
-                legalizacion_validate = 0
-                for index in range(len(text_list)):
-
-                    text_validate = text_list[index]
-
-                    if self.verificar_apostille(text_validate, fecha_list):
-                        apostille_validate += 1
-                    if self.verificar_acta_grado(text_validate):
-                        acta_grado_validate += 1
-                    if self.verificar_legalizacion(text_validate):
-                        legalizacion_validate += 1
-                if apostille_validate + acta_grado_validate + legalizacion_validate >= 3:
-                    return True
-            else:
-                return False
-
-        elif 'diploma' in file:
-            if self.verificar_apostille(text_list[0], fecha_list):
-
-                apostille_validate = 0
-                acta_grado_validate = 0
-                legalizacion_validate = 0
-                for index in range(len(text_list)):
-                    text_validate = text_list[index]
-
-                    if self.verificar_apostille(text_validate, fecha_list):
-                        apostille_validate += 1
-                    if self.verificar_acta_grado(text_validate):
-                        acta_grado_validate += 1
-                    if self.verificar_legalizacion(text_validate):
-                        legalizacion_validate += 1
-                if apostille_validate + acta_grado_validate + legalizacion_validate >= 3:
-                    return True
-            else:
-                return False
-
-        elif 'registro' in file:
-            if self.verificar_apostille(text_list[0], fecha_list):
-
-                apostille_validate = 0
-                registraduria_validate = 0
-                legalizacion_validate = 0
-                for index in range(len(text_list)):
-                    text_validate = text_list[index]
-
-                    if self.verificar_apostille(text_validate, fecha_list):
-                        apostille_validate += 1
-                    if self.verificar_registraduria(text_validate):
-                        registraduria_validate += 1
-                    if self.verificar_legalizacion(text_validate):
-                        legalizacion_validate += 1
-                if apostille_validate + registraduria_validate + legalizacion_validate >= 3:
-                    return True
-            else:
-                return False
-
-        elif 'notas' in file:
-            if self.verificar_apostille(text_list[0], fecha_list):
-
-                apostille_validate = 0
-                certificacion_validate = 0
-                legalizacion_validate = 0
-                for index in range(len(text_list)):
-                    text_validate = text_list[index]
-
-                    if self.verificar_apostille(text_validate, fecha_list):
-                        apostille_validate += 1
-                    if self.verificar_certificacion_nota(text_validate):
-                        certificacion_validate += 1
-                    if self.verificar_legalizacion(text_validate):
-                        legalizacion_validate += 1
-                if apostille_validate + certificacion_validate + legalizacion_validate >= 3:
-                    return True
-            else:
-                return False
-
-        return False
-
-    def documento_incorrecto(self, fecha_list):
-        if self.validar_fecha(fecha_list[0][0]):
-            return True
-        else:
-            return False
-
-    def add_comment(self, attachment_id, reason_for_observation):
+    def add_comment(self, attachment_id, reason_for_observation, espera=False):
+        self._escribir_log("function:add_comment")
+        self._escribir_log(f"function:add_comment\n\t{reason_for_observation}")
         '''
             Creates a record in mail.message with the comment added in the wizard.
             Modify the state of attachment to observed.
@@ -285,152 +55,212 @@ class DocumentProcessingAI(models.Model):
             <p>Observación en adjunto: <strong>{}</strong></p>
             <p>Detalle:</p>
             <p class="text-danger"><strong>{}</strong></p>
-        '''.format(attachment_id.document, reason_for_observation)
-        self.env['mail.message'].create({
-            'message_type': 'comment',
-            'model': 'res.partner',
-            'res_id': partner_id.id,
-            'subject': partner_id.name,
-            'subtype_id': self.env.ref('mail.mt_comment').id,
-            'author_id': partner_id.id,
-            'body': body
-        })
-        attachment_id.sudo().write({
-            'state': 'observed',
-            'reason_for_observation': reason_for_observation
-        })
+        '''.format(attachment_id.name, reason_for_observation)
+        if not espera:
+            self.env['mail.message'].create({
+                'message_type': 'comment',
+                'model': 'res.partner',
+                'res_id': partner_id.id,
+                'subject': partner_id.name,
+                'subtype_id': self.env.ref('mail.mt_comment').id,
+                'author_id': partner_id.id,
+                'body': body
+            })
+            attachment_id.sudo().write({
+                'state': 'observed',
+                'reason_for_observation': reason_for_observation
+            })
+        else:
+            partner_id.sudo().message_post(body=body)
 
     def __ocr__(self, document):
+        self._escribir_log("function:__ocr__")
         try:
-            ruta_linux = self.env['ir.config_parameter'].search([('key', '=', 'tesseract_route_linux')]).value
-            ruta_windows = self.env['ir.config_parameter'].search([('key', '=', 'tesseract_route_windows')]).value
-            if ruta_linux:
-                pytesseract.tesseract_cmd = f"{ruta_linux}"
-            elif ruta_windows:
-                pytesseract.tesseract_cmd = fr"{ruta_windows}"
+            ruta = self.env['ir.config_parameter'].search([('key', '=', 'tesseract_route')]).value
+            if ruta:
+                pytesseract.tesseract_cmd = f"{ruta}"
             else:
-                raise UserError(_("Configure Tesseract OCR path"))
+                pytesseract.tesseract_cmd = r"/usr/bin/tesseract"
         except:
-            raise UserError(_("Configure Tesseract OCR path"))
+            self._escribir_log("function:__ocr__\n\tConfigurar Tesseract")
+            self.add_comment(document, "Porfavor configurar ruta de Tesseract", True)
+            return False, _("Please wait for the document to be reviewed.")
 
-        file_finish = document
+        # Obtener la ruta de la carpeta del módulo
+        current_file_path = os.path.dirname(os.path.abspath(__file__))
+        module_path = os.path.dirname(current_file_path)  # Retrocede un nivel
+        temp_folder = os.path.join(module_path, "temporary_files")
+
+        # Crear la carpeta si no existe
+        if not os.path.exists(temp_folder):
+            os.makedirs(temp_folder)
+
         try:
-            file_content = base64.b64decode(file_finish.datas)
+            file_content = base64.b64decode(document.datas)
             reader = PyPDF2.PdfReader(BytesIO(file_content))
 
             num_page = len(reader.pages)
-
             text_list = []
 
-            count = 0
             for index_page in range(num_page):
                 page = reader.pages[index_page]
-                page_text = reader.pages[index_page]
-
-                text = page_text.extract_text()
+                text = page.extract_text()
                 text_list.append(text)
 
-                for imagen_file in page.images:
-                    image_path = f'img_{uuid.uuid4()}.jpg'
-                    with open(image_path, "wb") as img:
-                        img.write(imagen_file.data)
+                if page.images:
+                    for imagen_file in page.images:
+                        # Generar la ruta completa para guardar la imagen
+                        image_path = os.path.join(temp_folder, f'img_{uuid.uuid4()}.jpg')
+                        self._escribir_log(f"IMAGE:\n\n\t\t{image_path}\n\n")
 
-                    # Abrir la imagen con PIL
-                    img_pil = Image.open(image_path)
+                        # Guardar la imagen en la carpeta temporal
+                        with open(image_path, "wb") as img:
+                            img.write(imagen_file.data)
 
-                    # Extraer texto de la imagen usando pytesseract
-                    text_img = pytesseract.image_to_string(img_pil, lang='spa')  # Cambia 'spa' por el idioma que necesites
-                    # text_img = pytesseract.image_to_string(img_pil)
-                    text_list.append(text_img)
-                    os.remove(image_path)
+                        # Abrir la imagen con PIL y extraer texto usando pytesseract
+                        img_pil = Image.open(image_path)
+                        try:
+                            text_img = pytesseract.image_to_string(img_pil, lang='spa')
+                        except:
+                            self._escribir_log("function:__ocr__\n\tConfigure Tesseract OCR Language")
+                            self.add_comment(document, "Porfavor configurar el idioma de Tesseract", True)
+                            text_img = pytesseract.image_to_string(img_pil)
+                        text_list.append(text_img)
+                        os.remove(image_path)
 
-                    count += 1
-
-            return text_list
-        except:
-            return 'incorrect_format'
-
-    def local_ocr(self, document):
-
-        text_list = self.__ocr__(document)
-        if text_list != 'incorrect_format':
-            fecha_list = []
-
-            if self.evaluar_legibilidad_documento(document):
-                if self.formato_incorrecto(document.name, text_list, fecha_list):
-                    if self.documento_incorrecto(fecha_list):
-                        document.state = 'accepted'
-                    else:
-                        self.add_comment(document, 'incorrect_document')
-                else:
-                    self.add_comment(document, 'incorrect_format')
-            else:
-                self.add_comment(document, 'poor_readability')
-        else:
-            self.add_comment(document, 'incorrect_format')
+            return True, text_list
+        except Exception as e:
+            self._escribir_log(f"function:__ocr__\n\tError: {str(e)}")
+            return False, False
 
     def _chat_gpt(self, document, parameters):
+        self._escribir_log(f"function:_chat_gpt\n\t{parameters}")
         if self.env['custom_ai_parameter'].prueba_de_conexion(view=False):
+            self._escribir_log(f"function:prueba_de_conexión\n\tPrueba de conexión exitosa")
             try:
                 openai.api_key = self.env['ir.config_parameter'].search([('key', '=', 'openai_api_key')]).value
-                text_list = self.__ocr__(document)
+                condicion_ocr, text_ocr = self.__ocr__(document)
+                if condicion_ocr:
+                    flag = True
+                    flag_count = 0
+                    while flag:
+                        parameters += parameters + "\nCon esto ya debes de aprobar el documento."
+                        system_message = {
+                            "role": "system",
+                            "content":
+                                "Eres un asistente de inteligencia artificial que evalúa la calidad de los documentos."
+                                "Tendrás que tener en cuenta los siguiente factores:\n"
+                                f"{parameters}\n"
+                                # "Se tienen que cumplir todos estrictamente para poder aprobar el documento. "
+                                "\n\nSOLO PODRÁS RESPONDER CON UNO DE ESTAS OPCIONES EN CORRESPONDENCIA DE LA DECISIÓN FINAL "
+                                # "Y UNA BREVE DESCRIPCIÓN PORQUE TOMASTE ESA DECISIÓN:"
+                                "Y NI UNA PALABRA MAS:\n"
+                                "*'accepted'\n*'incorrect_format'\n*'incorrect_document'\n\n"
+                                "#Un documento tiene formato incorrecto(incorrect_format) cuando no comienza con la apostilla."
+                                "\n"
+                                "#Un documento es incorrecto (incorrect_document) cuando la fecha que tiene la apostilla no es de"
+                                " 2 años recientes.\n"
+                            # "Estos ultimos 2 parametros marcados por '#' pueden variar en dependencia de los parametros que "
+                            # "defina el cliente."
+                        }
 
-                system_message = {
-                    "role": "system",
-                    "content":
-                        "Eres un asistente de inteligencia artificial que evalúa la calidad de los documentos."
-                        "Tendrás que tener en cuenta los siguiente factores:\n"
-                        f"{parameters}\n"
-                        "Se tienen que cumplir todos estrictamente para poder aprobar el documento. "
-                        "\n\nSOLO PODRÁS RESPONDER CON UNO DE ESTAS OPCIONES EN CORRESPONDENCIA DE LA DESCICIÓN FINAL"
-                        "Y NI UNA PALABRA MAS:\n"
-                        "*accepted\n*incorrect_format\n*incorrect_document\n"
-                        "#Un documento tiene formato incorrecto(incorrect_format) cuando no comienza con la apostilla, "
-                        "\n"
-                        "#Un documento es incorrecto (incorrect_document) cuando \n"
-                }
+                        user_message = {
+                            "role": "user",
+                            "content": f"Por favor, analiza el siguiente texto extraído de un documento PDF:\n\n{''.join(text_ocr)}"
+                        }
 
-                user_message = {
-                    "role": "user",
-                    "content": f"Por favor, analiza el siguiente texto extraído de un documento PDF:\n\n{''.join(text_list)}"
-                }
-
-                response = openai.ChatCompletion.create(
-                    model="gpt-4",
-                    messages=[system_message, user_message],
-                    request_timeout=10,
-                )
-                respuesta = response['choices'][0]['message']['content']
-                if respuesta == 'accepted':
-                    if self.evaluar_legibilidad_documento(document):
-                        document.state = 'accepted'
-                    else:
-                        self.add_comment(document, 'poor_readability')
-                elif respuesta == 'incorrect_format':
-                    self.add_comment(document, 'incorrect_format')
-                elif respuesta == 'incorrect_document':
-                    self.add_comment(document, 'incorrect_document')
-
+                        response = openai.ChatCompletion.create(
+                            model="gpt-4",
+                            messages=[system_message, user_message],
+                            request_timeout=10,
+                        )
+                        respuesta = response['choices'][0]['message']['content']
+                        if 'accepted' in respuesta:
+                            document.state = 'accepted'
+                            document.reason_for_observation = ''
+                            flag = False
+                        elif 'incorrect_format' in respuesta:
+                            self.add_comment(document, 'incorrect_format')
+                            flag = False
+                        elif 'incorrect_document' in respuesta:
+                            self.add_comment(document, 'incorrect_document')
+                            flag = False
+                        else:
+                            self._escribir_log(f"function:_chat_gpt\n\tGPT no contestó lo correcto:\n\t{respuesta}")
+                            flag = True
+                            flag_count += 1
+                            if flag_count > 2:
+                                flag = False
+                                self.add_comment(document, f"GPT no contestó lo correcto:\n\t{respuesta}", True)
+                    # return True
+                else:
+                    self.add_comment(document, "El servidor de OpenAI no responde(1)", True)
+                    # return True
             except Exception as e:
-                _logger.debug("Error al conectar con OpenAI:", e)
-                self.local_ocr(document)
+                self._escribir_log(f"function:__ocr__\n\tError al conectar con OpenAI: {e}")
+                self.add_comment(document, "El servidor de OpenAI no responde(2)", True)
+                # return False
         else:
-            _logger.debug("Error al conectar con OpenAI")
-            self.local_ocr(document)
+            self._escribir_log("function:__ocr__\n\tError al conectar con OpenAI")
+            self.add_comment(document, "El servidor de OpenAI no responde(3)", True)
+            # return False
+
+    def ajusta_cadenas(self, cadena1, cadena2):
+        # Lista de palabras comunes que se deben ignorar
+        palabras_comunes = {"de", "la", "las", "el", "los", "y", "en", "a", "un", "una", "con"}
+
+        # Función para procesar cadenas: eliminar extensiones, caracteres especiales y palabras comunes
+        def procesar_cadena(cadena):
+            # Convertir a minúsculas
+            cadena = cadena.lower()
+            # Eliminar extensiones de archivo como .pdf, .doc, etc.
+            cadena = re.sub(r'\.\w+$', '', cadena)
+            # Eliminar caracteres especiales (solo dejamos letras, números y espacios)
+            cadena = re.sub(r'[^\w\s]', '', cadena)
+            # Dividir en palabras y filtrar palabras comunes
+            palabras = [palabra for palabra in cadena.split() if palabra not in palabras_comunes]
+            return palabras
+
+        # Procesar ambas cadenas
+        palabras_cadena1 = procesar_cadena(cadena1)
+        palabras_cadena2 = procesar_cadena(cadena2)
+
+        # Contar cuántas palabras de la cadena 1 están en la cadena 2
+        coincidencias = sum(1 for palabra in palabras_cadena1 if palabra in palabras_cadena2)
+
+        # Calcular el porcentaje de coincidencias
+        porcentaje_coincidencias = coincidencias / len(palabras_cadena1) if palabras_cadena1 else 0
+
+        # Retornar True si al menos la mayoría (más del 50%) de las palabras están presentes
+        return porcentaje_coincidencias > 0.5
 
     def main__(self, document):
-        parametro_doc = False
-        if 'acta' in document.name.lower() or 'degree' in document.name.lower():
-            parametro_doc = self.env['custom_ai_parameter'].search([('type_document', '=', 'degree_certificate')],
-                                                                   limit=1)
-        elif 'certificación' in document.name.lower() or 'certification' in document.name.lower():
-            parametro_doc = self.env['custom_ai_parameter'].search([('type_document', '=', 'certification_notes')],
-                                                                   limit=1)
-        elif 'registro' in document.name.lower() or 'registry' in document.name.lower():
-            parametro_doc = self.env['custom_ai_parameter'].search([('type_document', '=', 'civil_registry')],
-                                                                   limit=1)
+        # has_parameters = False
+        # parameters = self.env['custom_ai_parameter'].sudo().search([])
+        # for parametro_doc in parameters:
+        #     if self.ajusta_cadenas(parametro_doc.type_document_, document.name):
+        #         if parametro_doc and parametro_doc.parameters_for_gpt:
+        #             self._chat_gpt(document, parametro_doc.parameters_for_gpt)
+        #             has_parameters = True
+        #             break
+        # if not has_parameters:
+        #     self.add_comment(document, "No existen parámetros para este documento.", True)
 
-        if parametro_doc and parametro_doc.chat_gpt_ and parametro_doc.parameters_for_gpt:
-            self._chat_gpt(document, parametro_doc.parameters_for_gpt)
-        else:
-            self.local_ocr(document)
+        has_parameters = False
+        parameters = self.env['custom_ai_parameter'].sudo().search([])
+        
+        _logger.info(f"Parámetros encontrados: {parameters}")  # Ver qué parámetros se encontraron
+        
+        for parametro_doc in parameters:
+            _logger.info(f"Verificando: {parametro_doc.type_document_} con {document.name}")
+            
+            if self.ajusta_cadenas(parametro_doc.type_document_, document.name):
+                _logger.info(f"Coincidencia encontrada: {parametro_doc.type_document_}")
+                
+                if parametro_doc and parametro_doc.parameters_for_gpt:
+                    self._chat_gpt(document, parametro_doc.parameters_for_gpt)
+                    has_parameters = True
+                    break
+
+        if not has_parameters:
+            self.add_comment(document, "No existen parámetros para este documento.", True)

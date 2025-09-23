@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="portal_menu_tree_inherit" model="ir.ui.view">
+            <field name="name">portal.menu.tree.inherit</field>
+            <field name="model">openeducat.portal.menu</field>
+            <field name="inherit_id" ref="openeducat_web.portal_menu_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='is_visible_to_parent']" position="after">
+                    <field name="requires_completing_half"/>
+                    <field name="percentage" attrs="{'invisible': [('requires_completing_half', '=', False)]}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -40,7 +40,21 @@ class AccountMove(models.Model):
             payment_link.link_payment = f'{base_url}/payment/pay?{urls.url_encode(url_params)}&invoice_id={payment_link.id}&provider_id={provider_id.id}' or ''
 
 
-
+    def cron_generate_payment_links(self):
+        today = fields.Date.today()
+        three_months_ahead = today + timedelta(days=90)
+        invoices = self.search([
+            ('invoice_date', '>=', today),
+            ('invoice_date', '<=', three_months_ahead),
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted'),
+            '|',
+            ('link_payment_static', '=', False),
+            ('link_payment_static', '=', ''),
+        ])
+        for invoice in invoices:
+            invoice.compute_link_payment_link()
+            invoice.link_payment_static = invoice.link_payment
 
 
     # def _get_access_token(self):

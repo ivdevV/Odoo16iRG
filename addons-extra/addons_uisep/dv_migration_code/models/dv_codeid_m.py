@@ -13,3 +13,11 @@ class ResPartner(models.Model):
 class CrmLead(models.Model):
     _inherit="crm.lead"
     m_code= fields.Integer(string="ID origen")
+
+class SaleOrder(models.Model):
+    _inherit="sale.order"
+    m_code= fields.Integer(string="ID origen")
+
+class SaleOrder(models.Model):
+    _inherit="product.template"
+    m_code= fields.Integer(string="ID origen")

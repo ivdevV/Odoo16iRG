@@ -44,8 +44,13 @@ class AppGradebookSubject(models.Model):
     final_subject_note = fields.Float(string='Calificación final' , compute="compute_final_subject_note" , store=True)
     state = fields.Selection(
         string='Estado',
-        selection=[('in_progress', 'En proceso'), ('done', 'Finalizado') ], compute="compute_state", store=True
+        selection=[('draft', 'Borrador'),('in_progress', 'En proceso'), ('done', 'Finalizado') ], compute="compute_state", store=True
     )
+
+    def unlink_subject(self):
+        for rec in self:
+            rec.unlink()
+    
 
     def round_custom(self,num):
         if num - int(num) >= 0.5:
@@ -248,12 +253,13 @@ class AppGradebookSubject(models.Model):
             rec.point_average_foro = point_average_foro
 
 
-    @api.depends('admission_id')
+    @api.depends('op_subject_id', 'admission_id')
     def compute_gradebook_id(self):
         for rec in self:
-            gradebook_id = self.op_subject_id.gradebook_id
-            if gradebook_id:
-                rec.gradebook_id = gradebook_id
+            if rec.op_subject_id:
+                rec.gradebook_id = rec.op_subject_id.gradebook_id
+            else:
+                rec.gradebook_id = False
 
     @api.depends('op_subject_id','admission_id')
     def compute_name(self):

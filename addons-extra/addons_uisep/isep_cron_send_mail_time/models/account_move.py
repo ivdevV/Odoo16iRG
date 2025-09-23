@@ -10,8 +10,25 @@ _logger = logging.getLogger(__name__)
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
+    
+    isep_email_count = fields.Integer(string="Correos enviados")
 
-
+    @api.model
+    def _cron_send_template_link_payment_invoices(self, range_days, max_email):
+        today = fields.Date.today()
+        date_limit = today - timedelta(days=range_days)
+        account_move_records = self.search([
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted'),
+            ('invoice_date', '>=', date_limit),
+            ('invoice_date', '<=', today),
+            ('isep_email_count','<', max_email )
+        ])            
+        for inv in account_move_records:
+            self.send_mail_pay(inv)
+            inv.isep_email_count += 1 
+            
+            
     def send_template_link_payment_massive_for_time(self):
 
         num_day_time = int(self.env['ir.config_parameter'].sudo().get_param('num_day_time'))

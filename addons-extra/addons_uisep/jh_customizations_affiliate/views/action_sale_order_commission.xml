@@ -1,0 +1,14 @@
+<odoo>
+    <data noupdate="0">
+        <record id="ir_cron_affiliate_visit_batch" model="ir.cron">
+            <field name="name">[AUTO] Generar visitas de afiliado</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="state">code</field>
+            <field name="code">query = """SELECT a.id, b.id AS line_id, e.id AS invoice_id FROM sale_order a LEFT JOIN sale_order_line b ON b.order_id = a.id LEFT JOIN sale_order_line_invoice_rel c ON c.order_line_id = b.id LEFT JOIN account_move_line d ON c.invoice_line_id = d.id LEFT JOIN account_move e ON d.move_id = e.id WHERE b.invoice_status = 'invoiced' AND a.is_subscription IS TRUE AND d.parent_state = 'posted' AND e.state = 'posted' AND e.move_type = 'out_invoice' AND e.payment_state = 'paid' AND a.jh_affiliate_id IS NOT NULL"""; env.cr.execute(query); rows = env.cr.fetchall(); [env['sale.order'].browse(r[0]).create_affiliate_visit_precise(env['sale.order.line'].browse(r[1]), env['account.move'].browse(r[2])) for r in rows]</field>
+            <field name="interval_number">24</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+        </record>
+    </data>
+</odoo>

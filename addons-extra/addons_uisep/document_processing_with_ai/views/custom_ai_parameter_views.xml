@@ -30,8 +30,8 @@
         <field name="model">custom_ai_parameter</field>
         <field name="arch" type="xml">
             <tree string="Custom AI Parameters">
-                <field name="type_document"/>
-                <field name="chat_gpt_"/>
+                <field name="type_document_"/>
+                <field name="parameters_for_gpt"/>
             </tree>
         </field>
     </record>
@@ -49,18 +49,16 @@
 
                     <group>
                         <!-- Campo para seleccionar el tipo de documento -->
-                        <field name="type_document" widget="radio" options="{'vertical': true}"/>
+                        <field name="type_document_" options="{'vertical': true}"/>
 
                         <!-- Campo para entrada de texto relacionada con chat GPT -->
-                        <field name="chat_gpt_"/>
+                        <field name="chat_gpt_" attrs="{'invisible':True}"/>
                     </group>
 
                     <!-- Grupo que se muestra solo si 'chat_gpt_' es verdadero -->
                     <group attrs="{'invisible': [('chat_gpt_', '=', False)]}" style="width: 100%;">
-                        <!-- Separador para indicar el propósito del campo -->
-<!--                        <label for="parameters_for_gpt" class="o_address_label">Parameters for GPT:</label>-->
 
-                        <!-- Campo de texto que ocupa todo el ancho de la página -->
+                        <!-- Campo de texto que ocupa t?odo el ancho de la página -->
                         <field name="parameters_for_gpt"
                                attrs="{'required': [('chat_gpt_', '=', 'True')]}"
                                widget="text"/>

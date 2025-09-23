@@ -1,6 +1,8 @@
 import logging
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 _logger = logging.getLogger(__name__)
 
@@ -99,6 +101,70 @@ class OpAdmission(models.Model):
 
     # tutor_id = fields.Many2one('res.partner', string="Tutor" )
     email_send_ok = fields.Boolean('Correo de bienvenida enviado')
+    consul_down_id = fields.Many2one('admission.downconsult', string='Consultas de retiro')
+
+    state = fields.Selection(
+        selection_add=[('down', 'Retirado')]
+    )
+    mail_down = fields.Boolean('Correo de retiro enviado', store=True,default=False)
+    due_date = fields.Date('Fecha de vencimiento')
+    
+
+    def action_down(self):
+        down_consult = self.env['admission.downconsult'].sudo().create({
+            'admission_id': self.id, 
+        })
+        self.consul_down_id = down_consult.id
+        self.state = 'down'
+        if self.order_id:
+            self._cancel_unpaid_invoices_by_order(self.order_id.id)
+        self.message_post(
+            body=_(f"Se inició la encuesta de retiro. Encuesta vinculada a: <a href='#' data-oe-model='admission.downconsult' data-oe-id='{down_consult.id}'>{down_consult.name}</a>"),
+            subject="Inicio de Encuesta de Retiro"
+        )
+        return True
+
+    def _cancel_unpaid_invoices_by_order(self, order_id):
+        SaleOrder = self.env['sale.order'].sudo()
+        AccountMove = self.env['account.move'].sudo()
+        sale_order = SaleOrder.search([('id', '=', order_id)], limit=1)
+        if not sale_order:
+            return
+        unpaid_invoices = AccountMove.search([
+            ('order_subscription_id', '=', sale_order.id),
+            ('state', '=', 'posted'),
+            ('payment_state', '=', 'not_paid')
+        ])
+
+        for invoice in unpaid_invoices:
+            if invoice.state == 'posted':
+                invoice.button_draft()
+            invoice.button_cancel()
+
+    # def action_send_down_mail(self):   
+    #     for rec in self:
+    #         ctx = {}
+    #         email_list = rec.email
+    #         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+    #         survey = self.env.ref('isep_elearning_custom.survey_baja_estudiante')
+    #         if email_list:
+    #             ctx['email_to'] = email_list
+    #             ctx['email_from'] = self.env.user.partner_id.email
+    #             ctx['send_email'] = True
+    #             ctx['attendee'] = rec.partner_id.name
+    #             template = self.env.ref('isep_elearning_custom.email_template_down_report')
+    #             template.with_context(ctx).send_mail(self.id, force_send=True, raise_exception=False)
+    #             rec.update({
+    #                 'mail_down' : True,
+    #             }) 
+    #         else:
+    #             rec.update({
+    #                 'mail_down' : False,
+    #             })
+
+    # def action_print_report_donw(self):
+    #     return self.env.ref('isep_elearning_custom.action_report_down_adminsion').report_action(self)
+
 
     def get_student_vals(self):
         for student in self:
@@ -143,9 +209,11 @@ class OpAdmission(models.Model):
                 'company_id': self.company_id.id,
                 'partner_id': student_user.partner_id.id,
             }
-            student_user.with_context(create_user=1).sudo().action_reset_password()
+            # student_user.with_context(create_user=1).sudo().action_reset_password()
             # student_user.action_reset_password()
             return details
+
+    
 
 
     def submit_form(self):
@@ -277,3 +345,134 @@ class OpAdmission(models.Model):
         action = self.env["ir.actions.actions"]._for_xml_id("isep_elearning_custom.campus_content_elearning")        
         action['res_id'] = wizard.id
         return action
+
+
+    def auto_enroll_student(self):
+        """ Automatiza la inscripción de los alumnos y desactiva registros si ha pasado la fecha de finalización. """
+        today = date.today()        
+        for record in self:
+            if record.state == 'done':
+                if not record.batch_id:
+                    continue
+                
+                for subject_batch in record.batch_id.subject_to_batch_ids:
+                    if not subject_batch.subject_id.slide_channel_id:
+                        continue  
+                    if not subject_batch.date_from or not subject_batch.date_to:
+                        continue 
+                    channel_partners = self.env['slide.channel.partner'].search([
+                        ('partner_id', '=', record.partner_id.id),
+                        ('channel_id', '=', subject_batch.subject_id.slide_channel_id.id),
+                        ('batch_id', '=', record.batch_id.id),
+                    ])
+                    #print("aaqui///////////////////////////////",channel_partners)
+
+                    if subject_batch.date_from <= today <= subject_batch.date_to:
+                        if channel_partners:
+                            channel_partners.write({
+                                'active': True,
+                                'course_id': record.course_id.id,
+                                'register_id': record.register_id.id,
+                                'admission_id': record.id,
+                                'date_from': subject_batch.date_from,
+                                'date_to': subject_batch.date_to,
+                            })
+                        else:
+                            self.env['slide.channel.partner'].create({
+                                'active': True,
+                                'channel_id': subject_batch.subject_id.slide_channel_id.id,
+                                'partner_id': record.partner_id.id,
+                                'course_id': record.course_id.id,
+                                'batch_id': record.batch_id.id,
+                                'date_from': subject_batch.date_from,
+                                'date_to': subject_batch.date_to,
+                                'op_subject_id': subject_batch.subject_id.id,
+                                'register_id': record.register_id.id,
+                                'admission_id': record.id,
+                            })
+
+                    elif today > subject_batch.date_to and channel_partners:
+                        channel_partners.write({'active': False})
+
+    def cron_auto_enroll_student(self):
+
+        today = date.today()
+
+        admissions = self.search([('state', '=', 'done'), ('batch_id', '!=', False)])
+
+        for record in admissions:
+            for subject_batch in record.batch_id.subject_to_batch_ids:
+                if not subject_batch.subject_id.slide_channel_id:
+                    continue
+
+                if not subject_batch.date_from or not subject_batch.date_to:
+                    continue 
+
+                channel_partner = self.env['slide.channel.partner'].sudo().search([
+                    ('partner_id', '=', record.partner_id.id),
+                    #('op_subject_id', '=', subject_batch.subject_id.id),
+                    ('channel_id', '=', subject_batch.subject_id.slide_channel_id.id),
+                    '|',  # Operador OR para incluir registros activos y desactivados
+                    ('active', '=', True),
+                    ('active', '=', False),
+                ], order='create_date ASC', limit=1)
+                #print("aaqui///////////////////////////////",channel_partner)
+
+                if subject_batch.date_from <= today <= subject_batch.date_to:
+                    
+                    if channel_partner:                       
+                        channel_partner.write({
+                            'active': True,
+                            'course_id': record.course_id.id,
+                            'register_id': record.register_id.id,
+                            'admission_id': record.id,
+                            'batch_id': record.batch_id.id,
+                            'date_from': subject_batch.date_from,
+                            'date_to': subject_batch.date_to,
+                        })
+
+                    else:    
+                       # print("CREANDO///////////////////////////////********")                  
+                        self.env['slide.channel.partner'].create({
+                            'active': True,
+                            'channel_id': subject_batch.subject_id.slide_channel_id.id,
+                            'partner_id': record.partner_id.id,
+                            'course_id': record.course_id.id,
+                            'batch_id': record.batch_id.id,
+                            'date_from': subject_batch.date_from,
+                            'date_to': subject_batch.date_to,
+                            'op_subject_id': subject_batch.subject_id.id,
+                            'register_id': record.register_id.id,
+                            'admission_id': record.id,
+                        })
+
+                elif today > subject_batch.date_to and channel_partner:
+                    channel_partner.write({'active': False})
+
+    @api.onchange('course_id', 'admission_date','state')
+    def _onchange_state_due_date(self):
+        if self.course_id and self.course_id.duration and self.admission_date and not self.due_date:
+            duration = self.course_id.duration
+            if duration > 0:
+                self.due_date = self.admission_date + relativedelta(months=duration)
+        elif not self.course_id or not self.admission_date:
+            self.due_date = False
+
+    
+    @api.model
+    def create(self, vals):
+        res = super(OpAdmission, self).create(vals)
+        if res.course_id and res.course_id.duration and res.admission_date and not res.due_date:
+            duration = res.course_id.duration
+            if duration > 0:
+                res.due_date = res.admission_date + relativedelta(months=duration)
+        return res
+
+    def write(self, vals):
+        res = super(OpAdmission, self).write(vals)
+        for record in self:
+            if record.course_id and record.course_id.duration and record.admission_date and not record.due_date:
+                duration = record.course_id.duration
+                if duration > 0:
+                    record.due_date = record.admission_date + relativedelta(months=duration)
+        return res

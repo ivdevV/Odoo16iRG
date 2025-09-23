@@ -17,7 +17,7 @@ class OpStudent(models.Model):
     finalizacionestudios_from = fields.Date(related='partner_id.finalizacionestudios', string='Finalización de Estudios')
     status_student = fields.Selection(
         [('valid', 'Vigente'), ('graduate', 'Graduado'),
-         ('low', 'Baja')], default='Vigente', string="Estado de estudiante",
+         ('low', 'Baja')], default='valid', string="Estado de estudiante",
          compute='_compute_determine_status')
 
 
@@ -37,6 +37,36 @@ class OpStudent(models.Model):
 
     file_closing_date = fields.Date('Fecha cierre de expediente')
 
+    total_completion_porc = fields.Float(
+        string="Progreso Total",
+        compute='_compute_total_completion',
+        digits=(12, 2)
+    )
+
+    @api.depends('op_course_ids', 'op_course_ids.completion_porc')
+    def _compute_total_completion(self):
+        for student in self:
+            total_approved = 0
+            total_subjects = 0
+
+            for course in student.op_course_ids:
+                subjects = self.env['op.subject'].search([
+                    ('course_id', '=', course.course_id.id),
+                    ('subject_type', '=', 'compulsory')
+                ])
+                total_subjects += len(subjects)
+
+                approved = self.env['app.gradebook.subject'].search_count([
+                    ('gradebook_student_id.student_id', '=', student.id),
+                    ('gradebook_student_id.course_id', '=', course.course_id.id),
+                    ('op_subject_id', 'in', subjects.ids),
+                    ('final_subject_note', '>=', 8)
+                ])
+                total_approved += approved
+            if total_subjects > 0:
+                student.total_completion_porc = (total_approved / total_subjects) * 100
+            else:
+                student.total_completion_porc = 0.0
 
     def _compute_determine_status(self):
         """
@@ -74,3 +104,38 @@ class OpStudent(models.Model):
 
             object_op_course = self.env['op.student.course'].sudo().search([('student_id', '=', record.id)])
             record.op_course_ids = [(6, 0, object_op_course.ids)]
+
+
+
+class OpStudentCourse(models.Model):
+    _inherit = 'op.student.course'
+
+    completion_porc = fields.Float(
+        string="Progreso Curso", 
+        compute='_compute_advance_search', 
+        digits=(12, 2)
+    )
+
+    def _compute_advance_search(self):
+        for rec in self:
+            rec.completion_porc = 0.0
+            if rec.student_id and rec.course_id:
+                subject_count = self.env['op.subject'].search_count([
+                    ('course_id', '=', rec.course_id.id),
+                    ('subject_type', '=', 'compulsory')
+                ])
+                
+                gradebook_subject_count = self.env['app.gradebook.subject'].search_count([
+                    ('gradebook_student_id.student_id', '=', rec.student_id.id),
+                    ('op_subject_id.subject_type', '=', 'compulsory'),
+                    ('gradebook_student_id.course_id', '=', rec.course_id.id),
+                    ('final_subject_note', '>=', 8)  
+                ])
+                
+                if gradebook_subject_count > 0 and subject_count > 0:
+                    rec.completion_porc = (gradebook_subject_count / subject_count) * 100
+                else:
+                    rec.completion_porc = 0.0
+
+
+

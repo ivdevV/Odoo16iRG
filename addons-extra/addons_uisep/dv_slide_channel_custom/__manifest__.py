@@ -10,7 +10,7 @@
     "version": "1.0.3",
     'category': 'eLearning',
     'sequence': 200,
-    'depends':['base','base_setup','website_slides','survey'],
+    'depends':['base','base_setup','website_slides','survey','isep_survey'],
     'data':[
         'security/ir.model.access.csv',
         'views/dv_config_ia_view.xml',
@@ -20,7 +20,7 @@
         'data/cron_auto_score_ia.xml'
     ],
     'external_dependencies' : {
-        'python' : ['beautifulsoup4','openai==0.28','python-docx','PyMuPDF','numpy','tiktoken','openpyxl'],
+        'python' : ['beautifulsoup4','pandas','openai','python-docx','PyMuPDF','numpy','tiktoken','openpyxl','docx2txt'],
     },
     'demo':[],
     'qweb':[],

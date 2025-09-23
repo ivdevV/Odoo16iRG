@@ -1,0 +1,288 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* isep_academic_management
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0+e-20250520\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-28 22:41+0000\n"
+"PO-Revision-Date: 2025-07-28 22:41+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Address"
+msgstr ""
+
+#. module: isep_academic_management
+#: model:ir.model,name:isep_academic_management.model_op_admission
+msgid "Admission"
+msgstr "Admisión"
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Admission Confirm"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+msgid "Admission Date"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Admission Detail"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+msgid "Application Date"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+msgid "Archived"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+msgid "Batch"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Cancel"
+msgstr ""
+
+#. module: isep_academic_management
+#: model:ir.ui.menu,name:isep_academic_management.menu_certification
+msgid "Certificación SEP"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "City"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Confirm"
+msgstr ""
+
+#. module: isep_academic_management
+#: model:ir.ui.menu,name:isep_academic_management.menu_root
+msgid "Control Escolar"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Country"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+msgid "Course"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_tree
+msgid "Curso"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Detalle Oficialidad"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_tree
+msgid "Detalles Oficiales"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_tree
+msgid "Documentos Completos"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Educational Detail"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Email"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Enroll"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+msgid "Enrolled"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_tree
+msgid "Estatus Oficialidad"
+msgstr ""
+
+#. module: isep_academic_management
+#: model:ir.ui.menu,name:isep_academic_management.menu_payment_status
+msgid "Estatus de Pago"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_tree
+msgid "Estudiante"
+msgstr ""
+
+#. module: isep_academic_management
+#: model:ir.actions.act_window,name:isep_academic_management.academic_management_action
+#: model:ir.ui.menu,name:isep_academic_management.menu_enrolled_students
+msgid "Estudiantes Inscritos"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "First Name"
+msgstr ""
+
+#. module: isep_academic_management
+#: model:ir.ui.menu,name:isep_academic_management.menu_generations_lots
+msgid "Generaciones y Lotes"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_tree
+msgid "Generación"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+msgid "Group By..."
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_tree
+msgid "Grupo"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Last Name"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Middle Name"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Mobile"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Name"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Open Student Profile"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Pending"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Personal Detail"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Phone"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+msgid "Register"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_tree
+msgid "Registration"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Reject"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Set to Draft"
+msgstr ""
+
+#. module: isep_academic_management
+#: model:ir.model.fields,field_description:isep_academic_management.field_op_admission__state
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "State"
+msgstr "Estado"
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_search
+msgid "Status"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Street 2..."
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Street..."
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Student"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Submit"
+msgstr ""
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "Title"
+msgstr ""
+
+#. module: isep_academic_management
+#: model:ir.model.fields.selection,name:isep_academic_management.selection__op_admission__state__done
+msgid "Vigente"
+msgstr "Vigente"
+
+#. module: isep_academic_management
+#: model_terms:ir.ui.view,arch_db:isep_academic_management.op_admission_form
+msgid "ZIP"
+msgstr ""

@@ -48,7 +48,10 @@
                     <field name="register_id" readonly="1"  />
 
                     <field name="channel_user_id" invisible="1" />
-                    
+
+                    <field name="date_from" optional="hide" readonly="1"/> 
+                    <field name="date_to" optional="hide" readonly="1"/>                          
+                                 
                     <field name="create_date" string="Inscrito el"/>
                     <field name="write_date"   optional="hide"  string="Ultima accion el"/>
                     <field name="completion" string="Progress" widget="progressbar"/>

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_affiliate_pricelist_item_user,access_affiliate_pricelist_item_user,model_affiliate_product_pricelist_item,base.group_user,1,1,0,0
+access_affiliate_visit_user,access_affiliate_visit_user,model_affiliate_visit,base.group_user,1,1,0,0
+access_sale_order_user,access_sale_order_user,model_sale_order,base.group_user,1,1,0,0

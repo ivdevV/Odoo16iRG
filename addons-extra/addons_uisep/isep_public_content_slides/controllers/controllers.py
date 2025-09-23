@@ -26,23 +26,32 @@ class CourseController(http.Controller):
     def get_course_content(self, course_id):
         course = request.env['op.course'].sudo().browse(course_id)
         if not course:
-            return {"error": "Course content not found"}
+            return Response(
+                json.dumps({"error": "Course content not found"}),
+                content_type='application/json',
+                status=200
+            )
+             
         if not course.include_txt:
-            return {"error": "Course content restrict"}
+            return Response(
+                json.dumps({"error": "Course content restrict"}),
+                content_type='application/json',
+                status=200
+            )
+            
         
 
         course_data = []
         concatenated_html_content = []
-        for subject in course.sudo().subject_ids:
-           
-            content_lines = subject.sudo().line_ids
+        for subject in course.sudo().subject_ids:           
             
-            if content_lines:
-                for line in content_lines:
-                    concatenated_html_content.append({
-                        'name': line.name,
-                        'content': line.html_content
-                    })
+            if subject.slide_channel_id:
+                for slide in subject.slide_channel_id.slide_ids:
+                    if slide.content_line_id:
+                        concatenated_html_content.append({
+                            'name': slide.content_line_id.name,
+                            'content': slide.content_line_id.html_content
+                        })
 
                 # concatenated_html_content = " ".join(content_lines.mapped('html_content'))
                

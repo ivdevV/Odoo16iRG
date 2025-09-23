@@ -38,6 +38,8 @@ class IrAttachment(models.Model):
                 # Validar condiciones antes de procesar el archivo
                 if partner and (file.state == 'on_hold'):
                     if file.mimetype == 'application/pdf':
+                        self.env['document_processing_ai']._escribir_log("-" * 50)
+                        self.env['document_processing_ai']._escribir_log(f"{file.name}")
                         self.env['document_processing_ai'].main__(file)
                     elif file.mimetype != 'application/octet-stream':
                         self.env['document_processing_ai'].add_comment(file, 'incorrect_format')

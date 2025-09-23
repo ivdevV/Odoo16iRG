@@ -1,0 +1,3 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_student_report_doc,access.student_report_doc,model_student_report_doc,,1,1,1,1
+access_student_report_line,access.student_report_line,model_student_report_line,,1,1,1,1

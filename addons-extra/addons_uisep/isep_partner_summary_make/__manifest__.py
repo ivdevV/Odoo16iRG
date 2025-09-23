@@ -6,11 +6,12 @@
     'author': 'Breithner Aquituari',
     'website': '',
     'category': '',
-    'depends': ['base', 'crm'],
+    'depends': ['base', 'crm', 'hr'],
     "data": [
         "security/ir.model.access.csv",
         "views/res_partner_views.xml",
         "views/crm_lead_views.xml",
+        "views/hr_employee_views.xml"
     ],
     'application': True,
     'installable': True,

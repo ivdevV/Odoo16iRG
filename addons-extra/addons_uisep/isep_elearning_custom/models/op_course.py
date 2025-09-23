@@ -16,7 +16,7 @@ class OpCourse(models.Model):
         column2='openeducat',
     )
     
-
+    duration = fields.Integer(string='Duración (Meses)', help="Duración total del curso en meses.")
 
     @api.model
     def _lang_get(self):

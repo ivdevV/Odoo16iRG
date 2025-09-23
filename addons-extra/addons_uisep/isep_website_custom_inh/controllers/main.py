@@ -26,7 +26,7 @@ class DashboardPortalInh(DashboardPortal):
             [('is_visible_to_student', '=', True)])
         values.update({'menu_list': menu_list})
         invoice_ids = request.env['account.move'].search([('partner_id','=',user.partner_id.id),('move_type','=','out_invoice'),('state','=','posted'),('payment_state','=','not_paid'),('invoice_date_due','<',fields.Date.today())])        
-        if len(invoice_ids) > 4 :
+        if len(invoice_ids) > 1 : #cambia la cantidad de dias que se consideran vencidos
             values['menu_list'] = request.env['openeducat.portal.menu']
             values['courses_ongoing'] = False
             return request.render("isep_website_custom_inh.campus_pending_payments")

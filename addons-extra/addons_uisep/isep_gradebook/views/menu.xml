@@ -20,9 +20,6 @@
             groups="openeducat_core.group_op_faculty,openeducat_admission.group_op_admission_user"
          />
 
-
-         
-
         <menuitem 
             id="menu_app_gradebook_student_root" 
             name="Libretas" 
@@ -31,13 +28,14 @@
             parent="isep_gradebook.menu_app_gradebook_root"
             groups="openeducat_core.group_op_faculty,openeducat_admission.group_op_admission_user"
         />
-
-
-
-
+        <menuitem 
+            id="menu_app_gradebook_reports_root" 
+            name="Informes" 
+            sequence="5" 
+            parent="isep_gradebook.menu_app_gradebook_root"
+            groups="openeducat_core.group_op_faculty,openeducat_admission.group_op_admission_user"
+        />
 
     </data>
         
-    
-    
 </odoo>

@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+  <record id="isep_elearning_custom.email_op_admission_confirm" model="mail.template">
+    <field name="name">Confirmación de admisión Elearning Actualizado</field>
+    <field name="subject">¡Bienvenido/a a la Universidad ISEP! Tu nueva aventura comienza hoy</field>
+    <field name="email_from">{{ user.email or '' }}</field>
+    <field name="email_to">{{ object.email }}</field>
+    <field name="model_id" ref="openeducat_admission.model_op_admission"/>
+    <field name="auto_delete" eval="True"/>
+    <field name="body_html" type="html">
+      <table border="0" cellpadding="0" cellspacing="0" style="box-sizing:border-box;caption-side:bottom;padding-top: 16px; background-color: #FFFFFF; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;" width="100%">
+          <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+            <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+              <td align="center" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="box-sizing: border-box; caption-side: bottom; padding: 16px; background-color: #ffffff; color: #454748; border-collapse: separate; font-family: Verdana, Arial, sans-serif;">
+                  <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                    <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                      <td align="center" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;min-width: 590px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="590" style="box-sizing: border-box; caption-side: bottom; min-width: 590px; background-color: white; padding: 0px 8px; border-collapse: separate; color: #454748; font-family: Verdana, Arial, sans-serif;">
+                          <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                            <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                              <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                  <span style="font-size: 20px; color:#002E5D;">Hola </span>
+                                  <span style="font-size: 20px;  color:#371C82; font-weight: bold;">
+                                    <t t-out="object.name or ''">Estudiante</t>
+                                  </span>
+                              </td>
+                              <td valign="middle" align="right" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                  <img t-attf-src="/logo.png?company={{ object.company_id.id }}" style="box-sizing:border-box;vertical-align:middle;padding: 0px; margin: 0px; height: auto; width: 80px;" t-att-alt="object.company_id.name" width="80"/>
+                              </td>
+                            </tr>
+                            <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                <td colspan="2" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;text-align:center;">
+                                    <hr width="100%" style="border-style:none;border-left-width:medium;border-bottom-width:medium;border-right-width:medium;border-top-width:medium;box-sizing: border-box; height: 1px; opacity: 0.25; color: #454748; background-color: #cccccc; border: medium none; clear: both; display: block; font-size: 0px; min-height: 1px; line-height: 0; margin: 16px 0px;"/>
+                                </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                      <td align="center" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;min-width: 590px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="590" style="box-sizing: border-box; caption-side: bottom; min-width: 590px; background-color: white; padding: 0px 8px; border-collapse: separate; color: #454748; font-family: Verdana, Arial, sans-serif;">
+                          <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                            <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                              <td valign="top" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;font-size: 13px;">
+                                <!-- <div>
+                                  ¡El gran día ha llegado!
+                                </div>
+                                <br/> -->
+                                <div bis_skin_checked="1">
+                                    !Llegó el gran día! ✨ Hoy inicias una etapa que marcará un antes y un después en tu vida profesional y personal.<br/>
+                                    En la <span style="font-size: 15px;font-weight: 800 !important; color: #371C82;"><strong style="box-sizing:border-box;font-weight:500;"> Universidad ISEP</strong></span>
+                                    nos llena de alegría recibirte y acompañarte en este camino de crecimiento.
+                                    <br/>
+                                    Queremos que tu inicio sea tan emocionante como productivo, por eso aquí tienes todo lo que necesitas para empezar con el pie derecho:
+
+                                    <br/><br/>
+                                    <!-- <table cellpadding="0" cellspacing="0" border="0" style="box-sizing: border-box; border-collapse: collapse; caption-side: bottom; color: #454748; font-size: 13px; font-family: Verdana, Arial, sans-serif;">
+                                      <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                            <img src="/isep_elearning_custom/static/src/img_mail/table_15.png" width="36" style="box-sizing: border-box; vertical-align: middle; width: 36px; height: 36px;" height="36"/>
+                                            🚀
+                                          </td>
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left: 8px">
+                                            <p style="box-sizing:border-box;font-size: 20px; font-weight: 600; color: #371C82; margin: 0; padding: 0; line-height: 36px; mso-line-height-rule: exactly">
+                                                Tu Campus Virtual
+                                            </p>
+                                          </td>
+                                        </tr>
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">                                            
+                                          </td>
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left:10px">
+                                            Ya puedes acceder con tus credenciales:<br/><br/>
+                                            <div style="padding: 10px;background-color: #d3e1f1;border-left: 6px solid #371C82; " bis_skin_checked="1">
+                                              <div style="text-align: center;" bis_skin_checked="1">
+                                                  <div style="margin: 16px 0px 16px 0px;" bis_skin_checked="1">
+                                                      <a t-attf-href="https://bienvenida-pink.vercel.app/" style="box-sizing:border-box;background-color: #7848FF; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                                          Acceder a la bienvenida
+                                                      </a>
+                                                  </div>
+                                              </div>
+                                            </div>
+                                            <br/><br/>
+                                            Aquí encontrarás recursos esenciales, ingreso a tus clases, información del curso, y herramientas para 
+                                            tu éxito académico. Asegúrate de explorar todas las funcionalidades disponibles.<br/><br/>
+                                            Tu acceso ya está listo!!<br/>
+                                            Puedes acceder a tu campus virtual con este usuario:<br/><br/>
+                                            <div style="padding: 10px;background-color: #d3e1f1;border-left: 6px solid #002e5d; " bis_skin_checked="1">
+                                              <div style="text-align: center;" bis_skin_checked="1">
+                                                  <span style="font-size: 14px; font-weight: normal;color: #002e5d;">                                                      
+                                                      Su correo electrónico de inicio de
+                                                      sesión es:
+                                                      <b style="box-sizing:border-box;font-weight:500;">
+                                                          <a style="box-sizing:border-box;text-decoration: none;color: #002e5d; font-weight: bold;" t-attf-href="/web/login?login={{ object.email }}" target="_blank" t-out="object.email or ''">mark.brown23@ejemplo.com</a>
+                                                      </b>
+                                                  </span>
+                                                  <br/>
+                                                  <span style="font-size: 14px; font-weight: normal;color: #002e5d;">
+                                                      <t t-set="email" t-value="object.email"/>
+                                                      <t t-set="user" t-value="env['res.users'].sudo().search(
+                                                          [('login', '=', email)],
+                                                          limit=1,
+                                                          order='create_date desc, id desc'
+                                                      )"/>
+                                                      Su contraseña es:<t t-esc="user.new_password_user"/>
+                                                    </span>
+                                                  <div style="margin: 16px 0px 16px 0px;" bis_skin_checked="1">
+                                                      <a t-attf-href="/campus" style="box-sizing:border-box;background-color: #FA6A05; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                                           Acceder a mi campus
+                                                      </a>
+                                                  </div>
+                                              </div>
+                                            </div>
+
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table> -->
+                                    <br/>
+                                    <table cellpadding="0" cellspacing="0" border="0" style="box-sizing: border-box; border-collapse: collapse; caption-side: bottom; color: #454748; font-size: 13px; font-family: Verdana, Arial, sans-serif;">
+                                      <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                              <!-- <img src="/isep_elearning_custom/static/src/img_mail/table_16.png" width="36" style="box-sizing: border-box; vertical-align: middle; width: 36px; height: 36px;" height="36"/> -->
+                                              🚀
+                                          </td>
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left: 8px">
+                                              <p style="box-sizing:border-box;font-size: 20px; font-weight: 600; color: #371C82; margin: 0; padding: 0; line-height: 36px; mso-line-height-rule: exactly">
+                                                  Tu Campus Virtual
+                                              </p>
+                                          </td>
+                                        </tr>
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          </td> 
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left:10px">
+                                            Ya puedes acceder con tus credenciales.<br/><br/>
+                                            <div style="padding: 10px;background-color: #d3e1f1;border-left: 6px solid #371C82; " bis_skin_checked="1">
+                                              <div style="text-align: center;" bis_skin_checked="1">
+                                                  <span style="font-size: 14px; font-weight: normal;color: #371C82;">                                                      
+                                                      Usuario:
+                                                      <b style="box-sizing:border-box;font-weight:500;">
+                                                          <a style="box-sizing:border-box;text-decoration: none;color: #371C82; font-weight: bold;" t-attf-href="/web/login?login={{ object.email }}" target="_blank" t-out="object.email or ''">mark.brown23@ejemplo.com</a>
+                                                      </b>
+                                                  </span>
+                                                  <br/>
+                                                  <span style="font-size: 14px; font-weight: normal;color: #371C82;">
+                                                      <t t-set="email" t-value="object.email"/>
+                                                      <t t-set="user" t-value="env['res.users'].sudo().search(
+                                                          [('login', '=', email)],
+                                                          limit=1,
+                                                          order='create_date desc, id desc'
+                                                      )"/>
+                                                      Contraseña:<t t-esc="user.new_password_user"/>
+                                                    </span>
+                                                  <div style="margin: 16px 0px 16px 0px;" bis_skin_checked="1">
+                                                      <a t-attf-href="/campus" style="box-sizing:border-box;background-color: #7848FF; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;" target="_blank">
+                                                           Ingresa aquí
+                                                      </a>
+                                                  </div>
+                                              </div>
+                                            </div>
+                                            <br/>
+                                            <br/>
+                                            📘 Dentro encontrarás: clases, materiales, calendario de referencia y herramientas para que alcances tus metas.<br/>
+                                            💡 Tip: Guarda este acceso en tus favoritos, será tu puerta de entrada a todo el contenido.
+                                          </td>                                         
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                    <br/><br/>
+                                    
+                                    <table cellpadding="0" cellspacing="0" border="0" style="box-sizing: border-box; border-collapse: collapse; caption-side: bottom; color: #454748; font-size: 13px; font-family: Verdana, Arial, sans-serif;">
+                                      <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                              <!-- <img src="/isep_elearning_custom/static/src/img_mail/table_16.png" width="36" style="box-sizing: border-box; vertical-align: middle; width: 36px; height: 36px;" height="36"/> -->
+                                              📅
+                                          </td>
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left: 8px">
+                                              <p style="box-sizing:border-box;font-size: 20px; font-weight: 600; color: #371C82; margin: 0; padding: 0; line-height: 36px; mso-line-height-rule: exactly">
+                                                  Avanzas realmente a tu ritmo
+                                              </p>
+                                          </td>
+                                        </tr>
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          </td> 
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left:10px">
+                                            Al terminar el 100% de una materia y hayas aprobado tus actividades evaluativas, 
+                                            se desbloqueará automáticamente la siguiente. Así podrás aprender paso a paso y 
+                                            consolidar tus conocimientos.<br/><br/>
+                                            Consulta tu <span style="font-size: 15px; font-weight: bold;">calendario modelo </span> aquí: 
+                                            <a t-attf-href="https://calendario.universidadisep.com/" target="_blank">
+                                                https://calendario.universidadisep.com/
+                                            </a>
+                                          </td>                                         
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                    <br/><br/>
+                                    <table cellpadding="0" cellspacing="0" border="0" style="box-sizing: border-box; border-collapse: collapse; caption-side: bottom; color: #454748; font-size: 13px; font-family: Verdana, Arial, sans-serif;">
+                                      <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                              <!-- <img src="/isep_elearning_custom/static/src/img_mail/table_14.png" width="36" style="box-sizing: border-box; vertical-align: middle; width: 36px; height: 36px;" height="36"/> -->
+                                              🎯
+                                          </td>
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left: 8px">
+                                            <p style="box-sizing:border-box;font-size: 20px; font-weight: 600; color: #371C82; margin: 0; padding: 0; line-height: 36px; mso-line-height-rule: exactly">
+                                                Tu Número de Matrícula
+                                            </p>
+                                          </td>
+                                        </tr>
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          </td>
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left:10px">
+                                            Es tu identificación oficial en la Universidad. Úsalo en trámites, consultas y comunicaciones.<br/><br/>
+                                            <span style="font-size: 15px; font-weight: bold;">Número de matrícula:</span> <t t-out="object.application_number or ''">
+                                                    Matrícula</t>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table><br/><br/>
+                                    <table cellpadding="0" cellspacing="0" border="0" style="box-sizing: border-box; border-collapse: collapse; caption-side: bottom; color: #454748; font-size: 13px; font-family: Verdana, Arial, sans-serif;">
+                                      <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                              <!-- <img src="/isep_elearning_custom/static/src/img_mail/table_17.png" width="36" style="box-sizing: border-box; vertical-align: middle; width: 36px; height: 36px;" height="36"/> -->
+                                              🌟
+                                          </td>
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left: 8px">
+                                              <p style="box-sizing:border-box;font-size: 20px; font-weight: 600; color: #371C82; margin: 0; padding: 0; line-height: 36px; mso-line-height-rule: exactly">
+                                                  Eventos que te transformarán
+                                              </p>
+                                          </td>
+                                        </tr>
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          </td>
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left:10px">
+                                            Durante tu formación podrás participar en <span style="font-size: 15px; font-weight: bold;">masterclass exclusivas, talleres y actividades </span> diseñadas 
+                                            para potenciar tu aprendizaje y tu proyección profesional.<br/>
+                                            Mantente atento/a a tu correo y al campus para no perderte ninguna oportunidad.
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table><br/><br/>
+                                    <table cellpadding="0" cellspacing="0" border="0" style="box-sizing: border-box; border-collapse: collapse; caption-side: bottom; color: #454748; font-size: 13px; font-family: Verdana, Arial, sans-serif;">
+                                      <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                              <!-- <img src="/isep_elearning_custom/static/src/img_mail/table_17.png" width="36" style="box-sizing: border-box; vertical-align: middle; width: 36px; height: 36px;" height="36"/> -->
+                                              📞
+                                          </td>
+                                          <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left: 8px">
+                                              <p style="box-sizing:border-box;font-size: 20px; font-weight: 600; color: #371C82; margin: 0; padding: 0; line-height: 36px; mso-line-height-rule: exactly">
+                                                  Estamos aquí para ti
+                                              </p>
+                                          </td>
+                                        </tr>
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          </td>
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left:10px">
+                                            Si tienes dudas o necesitas apoyo, estos son nuestros canales: <br/>
+                                              <ul>
+                                                <li><span style="font-size: 15px; font-weight: bold;">WhatsApp Orientación Universitaria:</span> +52 333 400 8005</li>
+                                                <li><span style="font-size: 15px; font-weight: bold;">Teléfono alternativo:</span> +52 332 101 3999</li>
+                                                <li><span style="font-size: 15px; font-weight: bold;">Crea tus tickets para soporte:</span> <a t-attf-href="https://app.universidadisep.com/orientacion-universitaria" target="_blank">
+                                                      https://app.universidadisep.com/orientacion-universitaria
+                                                  </a>
+                                                </li>
+                                                <li><span style="font-size: 15px; font-weight: bold;">Soporte técnico:</span> <a t-attf-href="https://app.universidadisep.com/helpdesk/soporte-tecnico-campus-159" target="_blank">
+                                                      https://app.universidadisep.com/helpdesk/soporte-tecnico-campus-159
+                                                  </a>
+                                                </li>
+                                                <li><span style="font-size: 15px; font-weight: bold;">Apoyo con temas académicos:</span> <a t-attf-href="https://app.universidadisep.com/helpdesk/academico-161" target="_blank">
+                                                      https://app.universidadisep.com/helpdesk/academico-161
+                                                  </a>
+                                                </li>
+                                              </ul>
+
+                                              <br/><br/>
+                                              💬 <span style="font-size: 15px; font-weight: bold;">Bienvenido/a a una experiencia de formación única</span>, donde cada paso que des te 
+                                              acercará a la mejor versión de ti mismo/a. ¡Estamos felices de tenerte con nosotros!
+                                              <br/><br/>
+                                              Con entusiasmo,<br/><br/>
+                                              <span style="font-size: 15px; font-weight: bold;color: #371C82">Equipo Universidad ISEP</span>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                    <!-- <table cellpadding="0" cellspacing="0" border="0" style="box-sizing: border-box; border-collapse: collapse; caption-side: bottom; color: #454748; font-size: 13px; font-family: Verdana, Arial, sans-serif;">
+                                      <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                          </td>
+                                          <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-left:10px">
+                                            <span style="font-size: 20px;  color:#002E5D; font-weight: bold;"> Tip</span>: 
+                                              Mantente atento/a a las notificaciones y revisa tu correo regularmente para no
+                                              perderte ninguna novedad.<br/><br/>
+                                              <span style="font-size: 15px; font-weight: bold;">Nuestros canales de comunicación:</span>
+                                              <ul>
+                                                <li>Orientación Universitaria (WhatsApp): +52 333 400 8005</li>
+                                                <li>Teléfono alternativo: +52 332 101 3999</li>
+                                                <li>Portal de orientación: <a t-attf-href="https://app.universidadisep.com/orientacion-universitaria">
+                                                      https://app.universidadisep.com/orientacion-universitaria
+                                                  </a>
+                                                </li>
+                                              </ul>
+                                              <br/><br/>
+                                              ¡Te damos la bienvenida a esta experiencia de formación en 
+                                              <span style="font-size: 15px;  color:#FA6A05; font-weight: bold;"> Universidad ISEP</span> 
+                                              y te deseamos mucho éxito en tu aprendizaje!.
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table> -->
+
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+      </table>
+    </field>
+  </record>
+</odoo>

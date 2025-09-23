@@ -1,0 +1,7 @@
+<!-- 3.  JS asset bundle (add to __manifest__.py under 'assets') -->
+<record id="admission_kpis_tree_js" model="ir.asset">
+    <field name="name">Admission KPI Tree JS</field>
+    <field name="bundle">web.assets_backend</field>
+    <field name="path">isep_academic_management/static/src/js/admission_kpis_tree.js</field>
+</record>
+

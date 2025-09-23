@@ -23,7 +23,6 @@ class SurveySurvey(models.Model):
             res.is_attempts_limited = True
             res.users_can_go_back = True
             res.certification = False
-            res.scoring_success_min = 70
             res.scoring_type = 'no_scoring' if res.survey_type == 'assignment' else 'scoring_without_answers'
         return res
     
@@ -39,7 +38,6 @@ class SurveySurvey(models.Model):
                     'is_attempts_limited': True,
                     'users_can_go_back': True,
                     'certification': False,
-                    'scoring_success_min': 70,
                     'scoring_type': 'no_scoring' if values['survey_type'] == 'assignment' else 'scoring_without_answers'
                 })
         return super(SurveySurvey, self).write(values)

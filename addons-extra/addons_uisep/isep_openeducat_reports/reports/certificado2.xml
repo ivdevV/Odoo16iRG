@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data>
+    <data noupdate="1" >
 
         <record id="paperformat_certificado2" model="report.paperformat">
 	    <field name="name">Letter Certificado2</field>
@@ -44,10 +44,13 @@
                        <t t-set="admission" t-value="libreta.admission_id"/>
 
                        <t t-set="subscription" t-value="o.get_subscription_data()"/>
-                       <t t-set="detalles" t-value="{'Nombre del programa': admission.course_id.display_name,'Valor total del programa': '$ %.2f dólares estadounidenses' %(subscription.get('t_amount_total_sale',99999)),'Costo de inscripción': '$ %.2f dólares estadounidenses' %(subscription.get('t_amount_no_recurring_taxinc',99999)), '3 Mensualidades': '$ %.2f dólares estadounidenses cada una '%(subscription.get('t_amount_recurring_taxinc',99999))}"/>
+                       <t t-set="currency_id" t-value="subscription.get('currency_id',False)"/>
+                       <t t-set="currency_name" t-value="currency_id.currency_unit_label"/>
+                       <t t-set="detalles" t-value="{'Nombre del programa': admission.course_id.display_name,'Valor total del programa': '$ %.2f %s' %(subscription.get('t_amount_total',99999), currency_name),'Costo de inscripción': '$ %.2f %s' %(subscription.get('t_amount_no_recurring_taxinc',99999), currency_name), '3 Mensualidades': '$ %.2f %s cada una '%(subscription.get('t_amount_recurring_taxinc',99999), currency_name)}"/>
                       <t t-if="o and libreta and admission">
                        <t t-set="data_to_stamp" t-value="{'Fecha':today_string,'Estudiante':o.display_name,'Documento':'Certificado de inscripción y detalles del programa' , 'Carrera':admission.course_id.display_name, 'Libreta':libreta.display_name, 'Admision':admission.display_name}"/>
-                       <t t-set="data_to_stamp" t-value="data_to_stamp | detalles"/>
+                       <!-- <t t-set="data_to_stamp" t-value="data_to_stamp | detalles"/> -->
+                       <t t-set="data_to_stamp" t-value="dict(data_to_stamp, **detalles)"/>
                        <t t-set="dict_stamp" t-value="env['op.sign_certificate'].sudo().stamp_data(data_to_stamp, o)"/>
 
                         <div class="watermark" style="position: absolute; opacity:1.0; width:100%; height:100%; text-align:center; z-index:-1; margin: 0px; ">
@@ -128,11 +131,13 @@
 					<div class="row" style="font-size:16px;">
 					    <div class="col-12">
 
-                                        <img src="/isep_openeducat_reports/static/src/img/firma_isep.png" style="width:132px; height:81px;"/> 
+                                        <img src="/isep_openeducat_reports/static/src/img/firma_decana_isep.png" style="width:132px; height:81px;"/> 
                                         <img src="/isep_openeducat_reports/static/src/img/sello_isep.png" style="width:82px; height:48px;"/> 
 
 						<br></br>
-						<strong >SECRETARÍA ACADÉMICA</strong>
+						<strong >Dra. B. Nayeli Pérez Tamayo</strong>
+                        <br></br>
+                        <strong >Vicerrectora Académica</strong>
 					    </div>
 					</div>
 				 </div>

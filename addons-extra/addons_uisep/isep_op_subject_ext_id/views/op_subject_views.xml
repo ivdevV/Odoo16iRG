@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View op.subject form -->
+    <record id="view_op_id_exter_subject_form" model="ir.ui.view">
+        <field name="name">view.op.subject.form</field>
+        <field name="model">op.subject</field>
+        <field name="inherit_id" ref="isep_elearning_custom.customop_subject_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='slide_channel_id']" position="after">
+                <field name="id_elearning"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

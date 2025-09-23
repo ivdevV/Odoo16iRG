@@ -104,34 +104,48 @@ class DiplomasCertifies(models.TransientModel):
         options=self.get_data()
         report_id = self.env['ir.actions.report'].sudo().search([('id','=',self.file_id.id)])
         res = report_id.with_context(disable_attachment= True).report_action(self, data=options)
+        user_id = self.env.user 
+        student_id = self.student_id
+        certificate_log = self.env['certificate.log'].sudo()
+        log_vals = {
+                    'date':fields.Datetime.now(),
+                    'certificate_name':report_id.display_name,
+                    'user_id': user_id.id,
+                    'student_id': student_id.id,
+                   }
+        certificate_log.create(log_vals)
+
         return res
 
     def send_by_email(self):
-        if 'Digital' in self.file_id.name:
+         
+        check_send = self.file_id.check_web_available(self.student_id, self.batch_id)
+        if check_send == True :
             import base64
             body_message = '''Diploma/Certificado de %s
             ''' % self.student_id.partner_id.name
             subject = body_message
             report = self.print_diploma_certify()
-            pdf = self.env['ir.actions.report'].sudo().search([(
+            pdf, tipo = self.env['ir.actions.report'].sudo().search([(
                 'id',
                 '=',
-                self.file_id.id)]).render_qweb_pdf(None, data=self.get_data())
-            pdf_content = base64.b64encode(pdf[0])
+                self.file_id.id)]).with_context(disable_attachment=True)._render_qweb_pdf(self.file_id.xml_id, data=self.get_data())
+            pdf_content = base64.b64encode(pdf)
             attach = self.env['ir.attachment'].create({
                 'name': self.file_id.name,
                 'type': 'binary',
                 'datas': pdf_content,
-                'datas_fname': self.file_id.name + '.pdf',
-                'res_model': self._name,
-                'res_id': self.id,
+                'store_fname': self.file_id.name + '.pdf',
+                'res_model': self.student_id._name,
+                'res_id': self.student_id.id,
+                'certificado_web': True,
+                'certificado_gratuito': self.file_id.certificado_gratuito,
                 'mimetype': 'application/pdf'
             })
             message = self.student_id.message_post(body=body_message, subject=subject,
                                                    attachment_ids=[att.id for att in attach], message_type='comment')
             mail_id = self.student_id.env['mail.mail'].create({'mail_message_id': message.id,
                                                                'body_html': body_message,
-                                                               'notification': True,
                                                                'recipient_ids': [(4, self.student_id.partner_id.id)],
                                                                'auto_delete': False,
                                                                'references': message.message_id,
@@ -141,13 +155,10 @@ class DiplomasCertifies(models.TransientModel):
                 'mail_message_id': message.id,
                 'res_partner_id': self.student_id.partner_id.id,
                 'is_read': True,
-                'is_email': True,
-                'mail_id': mail_id.id
             })
             message.write({
                 "subtype_id": 1,
-                'needaction_partner_ids': [(4, self.student_id.partner_id.id)],
                 'partner_ids': [(4, self.student_id.partner_id.id)],
             })
         else:
-            raise UserError(_('Reporte No Soportado!!!'))
+            raise UserError(_('Reporte no cumple los requisitos: %s')% (check_send.get('error_message')) )

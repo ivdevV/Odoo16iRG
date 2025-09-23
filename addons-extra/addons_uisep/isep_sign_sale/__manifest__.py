@@ -16,6 +16,7 @@
         'sign',
         'isep_form_data',
         'l10n_latam_base',
+        'sale_subscription',
         ],
     'data': [
         'views/sale_order_view.xml',

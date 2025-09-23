@@ -12,6 +12,12 @@
                     <group>
                         <field name="login_date"/>
                     </group>
+                    <field name="login_line_ids" readonly="1">
+                        <tree>
+                            <field name="login_date" string="Fecha login"/>
+                            <field name="last_access" string="Hace"/>
+                        </tree>
+                    </field>
                 </page>
 
             </xpath>

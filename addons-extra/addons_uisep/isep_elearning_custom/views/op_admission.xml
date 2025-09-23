@@ -9,7 +9,8 @@
 
 
                 <xpath expr="//field[@name='prev_result']" position="after">
-                    <field name="email_send_ok"/>                                
+                    <field name="email_send_ok"/>  
+                    <field name="mail_down" />                              
                 </xpath>
 
                 <xpath expr="//button[@name='open_student']" position="after">
@@ -18,7 +19,8 @@
                     <button name="send_mail_view" string="Correo de bienvenida" type="object" attrs="{'invisible':[('email_send_ok','=', True)]}"
                                 class="oe_highlight"/>
 
-                                
+                    <button name="auto_enroll_student" string="Auto-Asignaturas" type="object" class="btn-warning" states="done"/>
+                    <button name="action_down" string="Dar de baja" type="object" states="done"  class="btn-danger"/>
                 </xpath>
 
 

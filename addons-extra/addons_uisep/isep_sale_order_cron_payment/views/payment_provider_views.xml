@@ -12,5 +12,14 @@
             </xpath>
         </field>
     </record>
-
+    <record id="saleOrderStage_inherit_module_name" model="ir.ui.view">
+        <field name="name">saleOrderStage_inherit_module_name</field>
+        <field name="model">sale.order.stage</field>
+        <field name="inherit_id" ref="sale_subscription.sale_subscription_stage_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='rating_template_id']" position="after">
+                <field name="autogenerate_subs_invoices"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

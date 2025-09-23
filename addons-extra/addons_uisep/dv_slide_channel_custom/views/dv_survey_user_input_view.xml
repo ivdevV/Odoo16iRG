@@ -30,6 +30,7 @@
                             <field name="resumen_ia" />                            
                             <field name="score_ia" />
                             <field name="extrae_alum" invisible="1"/>
+                            <field name="error_ai" />  
                         </group>
                         <button name="update_answer_scores" string="Usar analisis y Calificar" type="object" class="oe_highlight"/>
                     </page>

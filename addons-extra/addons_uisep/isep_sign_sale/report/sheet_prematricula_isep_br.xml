@@ -3,13 +3,14 @@
 
 
     <record id="report_sheet_prematricula_international_br" model="ir.actions.report">
-       <field name="name">Pré Matrícula LARAMIE</field>
+       <field name="name">Pré Matrícula Brasil</field>
        <field name="model">sale.order</field>
        <field name="report_type">qweb-pdf</field>
        <field name="report_name">isep_sign_sale.prematricula_isep_international_br</field>
        <field name="report_file">isep_sign_sale.prematricula_isep_international_br</field>
        <field name="paperformat_id" ref="isep_sign_sale.sheet_prematricula_custom_paperformat" />
        <field name="binding_type">report</field>
+       <field name="binding_model_id" ref="model_sale_order"/> 
    </record>
     
 
@@ -97,31 +98,31 @@
                                 <strong>População:</strong><br/>
                                 <strong>Móbil:</strong><br/>
                                 <strong>E-mail:</strong><br/>
-                                <strong>Estudos:</strong><br/>
-                                <strong>Universidad:</strong>
+                                <!-- <strong>Estudos:</strong><br/>
+                                <strong>Universidad:</strong> -->
                             </div>
                             <!--Second column-->
                             <div class="col-3">
                                 <span t-field="o.partner_id.city"/><br/>
                                 <span t-field="o.partner_id.mobile"/><br/>
                                 <span t-field="o.partner_id.email"/><br/>
-                                <span t-field="o.partner_id.titulacion"/><br/>
-                                <span t-field="o.partner_id.university"/>
+                                <!-- <span t-field="o.partner_id.titulacion"/><br/>
+                                <span t-field="o.partner_id.university"/> -->
                             </div>
                             <!--Third column-->
                             <div class="col-2">
                                 <strong>Estado:</strong><br/>
                                 <strong>Telefone:</strong><br/>
-                                <strong>Finalizados:</strong><br/>
-                                <strong>Profissão:</strong><br/>
+                                <!-- <strong>Finalizados:</strong><br/>
+                                <strong>Profissão:</strong><br/> -->
                                 <strong>Orientador:</strong><br/>
                             </div>
                             <!--Fourth column-->
                             <div class="col-2">
                                 <span t-field="o.partner_id.state_id"/><br/>
                                 <span t-field="o.partner_id.phone"/><br/>
-                                <span t-field="o.partner_id.finalizacionestudios"/><br/>
-                                <span t-field="o.partner_id.profession"/><br/> 
+                                <!-- <span t-field="o.partner_id.finalizacionestudios"/><br/>
+                                <span t-field="o.partner_id.profession"/><br/>  -->
                                 <span t-field="o.user_id.name"/><br/>
                             </div>
                             <!--Fourth column-->
@@ -255,8 +256,8 @@ condições gerais e acadêmicas amparadas neste contrato:</p>
                                 <strong>Método de Pagamento:</strong><br/>
                             </div>
                             <div class="col-3"> 
-                                <span t-field="o.recurring_rule_count"/> Meses <br/>
-                                <span t-esc="amount_recurring" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/> <span t-field="o.currency_id.name"/> por <span t-field="o.recurring_rule_count"/> Meses<br/>
+                                <span t-field="o.term_number"/> Meses <br/>
+                                <span t-esc="amount_recurring" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/> <span t-field="o.currency_id.name"/> por <span t-field="o.term_number"/> Meses<br/>
                                 <span t-esc="amount_no_recurring" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/> <span t-field="o.currency_id.name"/><br/>
                                 <span t-field="o.payment_term_id.name"/>
                             </div>
@@ -306,7 +307,7 @@ condições gerais e acadêmicas amparadas neste contrato:</p>
                                   <span t-field="o.partner_id.vat"/>
                               </div>
                               <div class="col-4" style="font-size:18px;text-align:center;">
-                                  <strong><span t-field="o.partner_invoice_id.name"/>
+                                  <strong><span t-field="o.partner_invoice_id.company_name"/>
                                   </strong><br/>
                               </div>
                               <div class="col-4" style="font-size:18px;text-align:center;">
@@ -498,7 +499,7 @@ condições gerais e acadêmicas amparadas neste contrato:</p>
                           <p>
                              <span t-esc="abc[index]"/>) <span t-field="line.name"/> 
                              <span t-if="line.product_template_id.recurring_invoice == False"> (Pagamento único de <span t-field="line.price_reduce_taxinc"/> <span t-field="o.currency_id.name"/>)</span>
-                             <span t-if="line.product_template_id.recurring_invoice"> (Débito recorrente de <span t-field="line.price_reduce_taxinc"/> <span t-field="o.currency_id.name"/> por <span t-field="o.recurring_rule_count"/> meses)</span> .
+                             <span t-if="line.product_template_id.recurring_invoice"> (Débito recorrente de <span t-field="line.price_reduce_taxinc"/> <span t-field="o.currency_id.name"/> por <span t-field="o.term_number"/> meses)</span> .
                            </p>
                            <t t-set="index" t-value="index+1"/>
                         </t>
@@ -595,7 +596,7 @@ condições gerais e acadêmicas amparadas neste contrato:</p>
 
 
                                 Devo e pagarei incondicionalmente esta série de
-                                <span t-esc="o.recurring_rule_count" style="margin:0 5px"/>
+                                <span t-esc="o.term_number" style="margin:0 5px"/>
                                 notas promissórias em favor da Laramie University, na cidade de Culiacán, Sinaloa, México, com
                                 endereço na Av. Teniente Juan de la Barrera Nte. 1349.
                                 <br/><br/>
@@ -610,15 +611,13 @@ condições gerais e acadêmicas amparadas neste contrato:</p>
                             <div class="row container-fluid" style="text-align:justify;font-size:14px">
                                 <t t-if="o.recurrence_id and o.start_date">
 
-                                    <tr t-foreach="range(0,o.recurring_rule_count)" t-as="l">
+                                    <tr t-foreach="o.subscription_schedule" t-as="l">
                                         PAGARÉ Pago
-                                        <span t-esc="str(l+1).zfill(2)" style="margin:0 2px"/>de
-                                        <span t-esc="o.recurring_rule_count" style="margin:0 2px"/>
-                                        ,o dia
+                                        <span t-esc="l.term_label" style="margin:0 0px"/>, o dia
 
-                                        <span t-esc="o.start_date + relativedelta(months=l)" t-options="{&quot;format&quot;: &quot;dd-MM-yyyy&quot;, 'widget': 'date'}"/>
-                                        a quantidade de <span t-field="o.currency_id.symbol"/>
-                                        <span t-esc="amount_recurring" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/>
+                                        <span t-esc="l.date_due"  t-options="{&quot;format&quot;: &quot;dd-MM-yyyy&quot;, 'widget': 'date'}"/>
+                                        a quantidade de <span t-field="l.currency_id.symbol"/>
+                                        <span t-esc="o.amount_recurring_taxinc" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/>
                                         <br/>
                                     </tr>
                                 </t>

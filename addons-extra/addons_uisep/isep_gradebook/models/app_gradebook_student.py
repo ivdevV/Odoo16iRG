@@ -28,9 +28,9 @@ class AppGradebookstudent(models.Model):
 
     state = fields.Selection(
         string='Estado',
-        selection=[('in_progress', 'En proceso'), ('done', 'Finalizado') ], required=True, default="in_progress"
+        selection=[('draft', 'Borrador'),('in_progress', 'En proceso'), ('done', 'Finalizado') ], required=True, default="in_progress"
     )
-
+    total_final = fields.Float(string='Promedio total', readonly=True, compute='_amount_prod_final', tracking=1)
 
     # @api.constrains('admission_id')
     # def _check_unique_admission_id(self):
@@ -48,6 +48,19 @@ class AppGradebookstudent(models.Model):
            
 
         return super(AppGradebookstudent, self).unlink()
+
+    def action_draft(self):
+        self.state = 'draft'
+
+    @api.depends('gradebook_subject_ids.final_subject_note')
+    def _amount_prod_final(self):
+        for order in self:
+            compulsory_notes = [
+                line.final_subject_note
+                for line in order.gradebook_subject_ids
+                if line.op_subject_id.subject_type == 'compulsory' and line.final_subject_note is not None
+            ]
+            order.total_final = sum(compulsory_notes) / len(compulsory_notes) if compulsory_notes else 0.0
 
 
     def state_to_done(self):

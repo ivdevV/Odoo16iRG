@@ -31,7 +31,29 @@
                     <field name="m_code"/>
                 </field>
             </field>
-        </record>     
+        </record>
+
+        <record id="sale_order_inherit_module_tree" model="ir.ui.view">
+            <field name="name">sale_order_inherit_module_tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale_subscription.sale_subscription_view_tree"/>
+            <field name="arch" type="xml">
+                <field name="percentage_satisfaction" position="before">
+                    <field name="m_code" optional="hide"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="product_template_inherit_module_tree" model="ir.ui.view">
+            <field name="name">product_template_inherit_module_tree</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="sale_temporal.product_template_tree_view"/>
+            <field name="arch" type="xml">
+                <field name="display_price" position="before">
+                    <field name="m_code" optional="hide"/>
+                </field>
+            </field>
+        </record>        
        
     </data>  
 </odoo>

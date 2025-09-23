@@ -11,7 +11,8 @@
     'depends': ['openeducat_core','openeducat_admission','openeducat_core_enterprise','openeducat_assignment_enterprise'],
     'images': ['static/description/icon.png'],
     'license': 'AGPL-3',
-    'data': [     
+    'data': [
+        'data/ir_cron_admission.xml',
         'views/op_admission_tree.xml',
         'views/op_batch.xml',
         'views/menus.xml',

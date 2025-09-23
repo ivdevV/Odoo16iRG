@@ -1,0 +1,6 @@
+<odoo>
+  <!-- Grupo propio -->
+  <record id="group_recurring_payment" model="res.groups">
+    <field name="name">Cobros Recurrentes porcentaje</field>
+  </record>
+</odoo>

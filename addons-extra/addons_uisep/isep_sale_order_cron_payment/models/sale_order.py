@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 from werkzeug import urls
 from odoo import models, fields, api, _
@@ -20,6 +20,7 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
     
 
+    invoice_schedule_done = fields.Boolean(string='Facturación programada completa', default=False, copy=False)
 
     def _recurring_invoice_domain_update(self, extra_domain=None):
         num_day = int(self.env['ir.config_parameter'].sudo().get_param('num_day'))
@@ -227,28 +228,172 @@ class SaleOrder(models.Model):
 
         return account_moves
 
+    def cron_generate_subscription_schedule_invoices(self, batch=False, date_run=False):
+        # Convertir fecha de formato DD-MM-YYYY a YYYY-MM-DD
+        try:
+            day, month, year = date_run.split('-')
+            today = date(int(year), int(month), int(day))
+        except ValueError as e:
+            raise UserError(_("Formato de fecha incorrecto. Use DD-MM-YYYY, por ejemplo: 01-03-2024")) from e
+        batch_size = batch
+        subscriptions = self.search([
+            ('is_subscription', '=', True),
+            ('state', '=', 'sale'),
+            ('stage_id.autogenerate_subs_invoices', '=', True),
+            ('invoice_schedule_done', '=', False),
+            ('amount_total', '>', 0)
+        ], limit=batch_size)
+        AccountMove = self.env['account.move']
 
+        for subscription in subscriptions:
+            try:
+                for schedule_line in subscription.subscription_schedule:
+                    if schedule_line.invoice_ids and schedule_line.payment_state != 'not_paid':
+                        continue
+                    if schedule_line.date_due and schedule_line.date_due >= today:
 
+                        total_invoiced = schedule_line.total_invoiced or 0.0
+                        expected = schedule_line.amount_recurring_taxinc or 0.0
 
+                        if round(total_invoiced, 2) >= round(expected, 2):
+                            continue
 
+                        remaining = expected - total_invoiced
+                        invoice_vals = subscription._prepare_invoice_from_schedule_line(schedule_line, remaining)                    
+                        # Verificar si hay líneas para facturar
+                        if not invoice_vals or not invoice_vals.get('invoice_line_ids'):
+                            continue
+                            
+                        invoice_vals['invoice_origin'] = subscription.name
+                        try:
+                            # Intentar crear la factura
+                            invoice = AccountMove.create(invoice_vals)
+                            try:
+                                # Intentar validar la factura
+                                invoice.action_post()
+                                schedule_line.invoice_ids = [(4, invoice.id)]
+                                subscription.next_invoice_date = subscription.end_date + relativedelta(days=30)
+                            except Exception as post_error:
+                                _logger.error(f"Error al validar la factura para la suscripción {subscription.name}: {str(post_error)}")
+                                subscription.message_post(
+                                    body=f"Error al validar la factura: {str(post_error)}",
+                                    subtype_xmlid="mail.mt_note"
+                                )
+                                # Intentar cancelar la factura si hubo error en la validación
+                                try:
+                                    invoice.button_cancel()
+                                except Exception:
+                                    pass
+                                continue
+                        except Exception as create_error:
+                            _logger.error(f"Error al crear la factura para la suscripción {subscription.name}: {str(create_error)}")
+                            subscription.message_post(
+                                body=f"Error al crear la factura: {str(create_error)}",
+                                subtype_xmlid="mail.mt_note"
+                            )
+                            continue
+                all_lines_done = all(
+                    (schedule_line.payment_state != 'not_paid') or
+                    (round(schedule_line.total_invoiced or 0.0, 2) >= round(schedule_line.amount_recurring_taxinc or 0.0, 2))
+                    for schedule_line in subscription.subscription_schedule
+                )
+                if all_lines_done:
+                    subscription.invoice_schedule_done = True
 
+            except Exception as e:
+                _logger = logging.getLogger(__name__)
+                _logger.error(f"Error al procesar la suscripción {subscription.name}: {str(e)}")
+                #dejar mensaje en el chatter para seguimiento
+                subscription.message_post(
+                    body=f"Error al generar factura de suscripción: {str(e)}",
+                    subtype_xmlid="mail.mt_note"
+                )
+                continue
                     
+    def _prepare_invoice_from_schedule_line(self, schedule_line, remaining_amount):
+        self.ensure_one()
+        num_day = int(self.env['ir.config_parameter'].sudo().get_param('num_day')) 
+        journal = self.env['account.journal'].search([
+            ('type', '=', 'sale'),
+            ('company_id', '=', self.company_id.id)
+        ], limit=1)
+
+        if not journal:
+            return
+
+        invoice_date = schedule_line.date_due - timedelta(days=num_day) if schedule_line.date_due else fields.Date.today()
+        # NO DEBE PASAR LOS PRODUCTOS NO RECURRENTES 
+        invoice_vals = {
+            'move_type': 'out_invoice',
+            'partner_id': self.partner_invoice_id.id,
+            'invoice_origin': self.name,
+            'payment_reference': self.name,
+            'ref': self.name,
+            'invoice_user_id': self.user_id.id,
+            'invoice_date': schedule_line.date_due,
+            'invoice_date_due': invoice_date,
+            'invoice_payment_term_id': False,
+            'currency_id': self.currency_id.id,
+            'journal_id': journal.id,
+            'invoice_line_ids': [],
+            'order_subscription_id': self.id,
+            'company_id': self.company_id.id,
+            'campaign_id': self.campaign_id.id,
+            'medium_id': self.medium_id.id,
+            'source_id': self.source_id.id,
+            'team_id': self.team_id.id,
+            'user_id': self.user_id.id,
+            
+        }
+
+        previous_invoices = schedule_line.invoice_ids
+        
+
+        is_first_invoice = not previous_invoices or all(inv.state == 'cancel' for inv in previous_invoices)
+
+
+        for line in self.order_line:
+            is_recurring = line.product_id.recurring_invoice
+            
+            # Si el term_label contiene "01 de" en cualquier parte del texto, incluir todos los productos
+            # Para los demás casos, solo productos recurrentes
+            is_first_payment = schedule_line.term_label and schedule_line.term_label.lower().find('01 de') >= 0
+            if not is_recurring and not is_first_payment:
+                continue
                 
 
+            line_total = line.price_unit * line.product_uom_qty
+            
 
+            invoiced_amount = 0.0
+            for invoice in previous_invoices:
+                if invoice.state != 'cancel':
+                    for inv_line in invoice.invoice_line_ids:
 
+                        if line.id in inv_line.sale_line_ids.ids:
+                            invoiced_amount += inv_line.price_unit * inv_line.quantity
 
+            remaining_for_line = line_total - invoiced_amount
+            
 
+            if remaining_for_line:  
+                invoice_vals['invoice_line_ids'].append((0, 0, {
+                    'product_id': line.product_id.id,
+                    'name': line.name,
+                    'quantity': line.product_uom_qty,
+                    'discount': line.discount,
+                    'product_uom_id': line.product_uom.id,
+                    'price_unit': remaining_for_line / line.product_uom_qty if remaining_for_line / line.product_uom_qty > 0 else line.price_unit, 
+                    'tax_ids': [(6, 0, line.tax_id.ids)],
+                    'sale_line_ids': [(6, 0, [line.id])],
+                }))
+ 
+        if not invoice_vals['invoice_line_ids']:
+            return None
         
-
-
+        return invoice_vals
         
-
-
-
-
-
-
-
+class SaleOrderStage(models.Model):
+    _inherit = 'sale.order.stage'
         
-
+    autogenerate_subs_invoices = fields.Boolean(string='Autogenerar facturas de suscripción')

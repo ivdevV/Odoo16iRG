@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_mass_update_survey_background_wizard_form" model="ir.ui.view">
+        <field name="name">update.survey.background.wizard.form</field>
+        <field name="model">update.survey.background.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Actualizar imagen de fondo en certificados">
+                <group>
+                    <group>
+                        <field name="background_image" widget="image"/>
+                    </group>
+                    <group>
+                        <field name="firm_response" widget="image"/>
+                    </group>
+                    <field name="survey_ids" widget="many2many_tags"/>
+                </group>
+                <footer>
+                    <button string="Aplicar" type="object" name="action_apply_background" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mass_update_survey_background_server" model="ir.actions.server">
+        <field name="name">Actualizar fondo certificados</field>
+        <field name="model_id" ref="survey.model_survey_survey"/>
+        <field name="binding_model_id" ref="survey.model_survey_survey"/>
+        <field name="binding_type">action</field>
+        <field name="state">code</field>
+        <field name="code">
+            active_ids = env.context.get('active_ids', []); action = {'type': 'ir.actions.act_window', 'res_model': 'update.survey.background.wizard', 'view_mode': 'form', 'target': 'new', 'context': {'active_ids': active_ids}}
+        </field>
+    </record>
+
+</odoo>

@@ -12,6 +12,9 @@
                     <field name="internal_note_record" nolabel="1" placeholder="Internal notes record"/>
                 </page>
             </page>
+            <field name="payment_term_id" position="before">
+                    <field name="state_paid"/>
+            </field>
         </field>
     </record>
 

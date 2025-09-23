@@ -3,7 +3,11 @@ from odoo import fields, models
 REASON_FOR_OBSERVATION_SELECTION = [
     ('incorrect_format', 'No está cargado en un formato correcto'),
     ('poor_readability', 'Legibilidad deficiente'),
-    ('incorrect_document', 'Documento incorrecto')
+    ('incorrect_document', 'Documento incorrecto'),
+    ('incomplet_document', 'Documento incompleto'),
+    ('certification_missing', 'Falta certificar ante notario público'),
+    ('apostille_missing', 'Falta apostillar'),
+    ('certification_apostille_missing', 'Falta certificar ante notario público y apostillar')
 ]
 
 

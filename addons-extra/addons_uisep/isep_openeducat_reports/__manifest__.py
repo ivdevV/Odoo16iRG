@@ -7,7 +7,7 @@
     'description': """
     - Certificados Isep
     """,
-    'version': '1.1.3',
+    'version': '1.4.0',
     'author': 'silvau',
     'website': 'https://www.isep.es/contacto/',
     'category': 'Tools',
@@ -22,9 +22,10 @@
         'isep_documents_portal',
         'isep_student_migration',
         'isep_student_filter',
+        'isep_sale_subscription_custom','website', 'website_sale'
     ],
     'external_dependencies':{'python': [
-      'base64','json','zlib','hashlib','cryptography','ssl','subprocess','tempfile'
+      'PyPDF2','base64','json','zlib','hashlib','cryptography','ssl','subprocess','tempfile'
      ],
     },
     'installable': True,
@@ -41,9 +42,12 @@
 
             '/isep_openeducat_reports/static/src/scss/custom_report_styles.scss',
             '/isep_openeducat_reports/static/src/img/background.png',
+            '/isep_openeducat_reports/static/src/img/background7.png',
             '/isep_openeducat_reports/static/src/img/firmaluis.png',
             '/isep_openeducat_reports/static/src/img/firma_isep.png',
             '/isep_openeducat_reports/static/src/img/sello_isep.png',
+            '/isep_openeducat_reports/static/src/img/firma_rector_isep.png',
+            '/isep_openeducat_reports/static/src/img/firma_decana_isep.png',
 
         ],
 
@@ -54,12 +58,16 @@
         'data/cron.xml',
         'data/data.xml',
         'wizards/diplomas_certifies_wizard.xml',
+        'views/product_view.xml',
+        'views/op_course_view.xml',
         'views/op_student_view.xml',
         'views/op_sign_certificate_view.xml',
         'views/ir_attachment_view.xml',
         'views/ir_actions_report_view.xml',
         'views/res_config_settings_view.xml',
         'views/certificates_portal_templates.xml',
+        'views/portal_order_detail_template.xml',
+        'views/certificate_log_view.xml',
         'reports/certified_diploma.xml',
         'reports/certificado1.xml',
         'reports/certificado2.xml',
@@ -67,6 +75,8 @@
         'reports/certificado4.xml',
         'reports/certificado5.xml',
         'reports/certificado6.xml',
+        'reports/certificado7.xml',
         'reports/certificado8.xml',
+        'reports/certificado9.xml',
     ]
 }

@@ -7,13 +7,8 @@
         </record>
 
         <record id="ir_config_parameter_tesseract_route_linux" model="ir.config_parameter">
-            <field name="key">tesseract_route_linux</field>
+            <field name="key">tesseract_route</field>
             <field name="value">/usr/bin/tesseract</field>
-        </record>
-
-        <record id="ir_config_parameter_tesseract_route_windows" model="ir.config_parameter">
-            <field name="key">tesseract_route_windows</field>
-            <field name="value">C:\\Program Files\\Tesseract-OCR\\tesseract.exe</field>
         </record>
     </data>
 </odoo>
