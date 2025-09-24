@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_partner_view_form" model="ir.ui.view">
+            <field name="name">view_partner_form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+	    <field name="arch" type="xml">
+		    <xpath expr="//field[@name='titulacion']" position="replace">
+			    <field name="study_type_id"/>
+		    </xpath>
+		    <xpath expr="//field[@name='profession']" position="replace">
+			    <field name="profession_id"/>
+		    </xpath>
+		    <xpath expr="//field[@name='university']" position="replace">
+			    <field name="university_id"/>
+		    </xpath>
+		    <xpath expr="//field[@name='x_studio_titulacion']" position="attributes">
+			    <attribute name="attrs">{}</attribute>
+			    <attribute name="force_save">True</attribute>
+			    <attribute name="readonly">1</attribute>
+		    </xpath>
+		    <xpath expr="//field[@name='x_studio_universidad']" position="attributes">
+			    <attribute name="attrs">{}</attribute>
+			    <attribute name="force_save">True</attribute>
+			    <attribute name="readonly">1</attribute>
+		    </xpath>
+		    <xpath expr="//field[@name='x_studio_ano_de_graduacion']" position="attributes">
+			    <attribute name="attrs">{}</attribute>
+			    <attribute name="force_save">True</attribute>
+			    <attribute name="readonly">1</attribute>
+		    </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

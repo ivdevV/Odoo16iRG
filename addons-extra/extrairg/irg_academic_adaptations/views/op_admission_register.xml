@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+         <record id="view_op_admission_register_form_extended" model="ir.ui.view">
+            <field name="model">op.admission.register</field>
+            <field name="inherit_id" ref="openeducat_admission.view_op_admission_register_form"/>
+            <field name="arch" type="xml">
+                    <xpath expr="//field[@name='end_date']" position="replace">
+                            <field name="end_date" attrs="{'readonly':False}"/>
+                    </xpath>
+                    <xpath expr="//field[@name='start_date']" position="replace">
+                            <field name="start_date" attrs="{'readonly':False}"/>
+                    </xpath>
+                    <xpath expr="//field[@name='max_count']" position="replace">
+                            <field name="max_count" attrs="{'readonly':False}"/>
+                    </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
