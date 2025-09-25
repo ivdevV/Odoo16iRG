@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_partner_view_form" model="ir.ui.view">
+        <field name="name">res.partner.view.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="after">
+                <group col="2">
+                    <group col="2">
+                        <group col="2">
+                            <field name="is_student" widget="boolean_toggle" attrs="{'readonly': [('is_student', '=', True)]}" />
+                            <field name="is_parent" widget="boolean_toggle" attrs="{'readonly': [('is_parent', '=', True)]}"/>
+                        </group>
+                    </group>
+                </group>
+            </xpath>
+            <!-- <xpath expr="//field[@name='title']" position="after">
+                <field name="studies" />
+                <field name="university" />
+                <field name="graduation_year" />
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/notebook[1]" position="inside">
+                <page name="moodle" string="Moodle">
+                    <group col="2">
+                        <group>
+                            <field name="username"/>
+                            <field name="birth_date"/>
+                            <field name="institution_id" domain="[('is_company', '=', True)]"/>
+                            <field name="is_active" widget="boolean_toggle"/>
+                            <field name="is_suspended" widget="boolean_toggle"/>
+                            <field name="moodle_id"/>
+                        </group>
+                        <group>
+                            <field name="gender_type"/>
+                            <field name="blood_group_type"/>
+                            <field name="department_id"/>
+                            <field name="language_id"/>
+                            <field name="is_confirmed" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath> -->
+        </field>
+    </record>
+</odoo>

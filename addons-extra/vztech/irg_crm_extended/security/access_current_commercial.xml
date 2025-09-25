@@ -1,0 +1,7 @@
+<odoo>
+    <data>
+        <record id="access_current_commercial" model="res.groups">
+            <field name="name">Access Current Commercial</field>
+        </record>
+    </data>
+</odoo>
