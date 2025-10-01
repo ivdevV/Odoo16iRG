@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="email_template_invoice_due_7_days" model="mail.template">
+        <field name="name">Factura: Recordatorio 7 días</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="subject">Queremos ayudarte a organizarte antes del {{ object.invoice_date_due.strftime('%d-%m-%Y') }}</field>
+        <field name="email_from">{{ user.email or '' }}</field>
+        <field name="email_to">{{ object.partner_id.email }}</field>
+        <field name="auto_delete" eval="False"/>
+        <field name="body_html" type="html">
+            <table border="0" cellpadding="0" cellspacing="0" style="padding:16px 0 0 0;box-sizing:border-box;caption-side:bottom;padding-top: 16px; background-color: #FFFFFF; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;" width="100%">
+                <tbody>
+                    <tr>
+                        <td align="center">
+                            <table border="0" cellpadding="0" cellspacing="0" width="590" style="box-sizing: border-box; padding: 16px; background-color: #ffffff; color: #454748; border-collapse: separate; font-family: Verdana, Arial, sans-serif;">
+                                <tbody>
+                                    <tr>
+                                        <td align="center" style="min-width: 590px;">
+                                            <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px; border-collapse: separate; color: #454748; font-family: Verdana, Arial, sans-serif;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td valign="top" style="font-size: 13px;">
+                                                            Hola <t t-out="object.partner_id.name or ''"/>, 💜<br/><br/>
+                                                            En ISEP nos interesa no solo que tu formación avance, sino también cómo te has sentido en el proceso.<br/> 
+                                                            Cuéntanos, ¿cómo va tu experiencia hasta ahora? 🙌<br/>
+                                                            Aprovechamos para compartirte que tu mensualidad por <span style="font-size: 13px; font-weight: bold;"><t t-out="object.currency_id.symbol or ''"/></span> <span style="font-size: 13px; font-weight: bold;"><t t-out="object.amount_residual or ''"/></span>
+                                                            vence el próximo <span style="font-size: 13px; font-weight: bold;"><t t-out="(object.invoice_date_due or '').strftime('%d-%m-%Y') if object.invoice_date_due else ''"/></span>.<br/>
+                                                            Al cubrirla a tiempo, sigues disfrutando de tu campus, tus clases y masterclass sin interrupciones.<br/>
+                                                            👉 Puedes hacer tu pago desde tu Campus Virtual o por los medios habituales.<br/>
+                                                            Si necesitas apoyo, aquí estamos para ti en este medio o en <span style="font-size: 13px; font-weight: bold;">cobranza@universidadisep.com</span>.<br/><br/>
+                                                            Con aprecio,<br/>
+                                                            <span style="font-size: 13px; font-weight: bold;">Equipo de Atención y Finanzas</span><br/><br/>
+                                                            <span style="font-size: 13px; font-weight: bold;color: #371C82">Universidad ISEP</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </field>
+    </record>
+
+
+    <record id="email_template_invoice_due_2_3_days" model="mail.template">
+        <field name="name">Factura: Recordatorio 2 días</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="subject">Te acompañamos para que tu cuenta siga al día</field>
+        <field name="email_from">{{ user.email or '' }}</field>
+        <field name="email_to">{{ object.partner_id.email }}</field>
+        <field name="auto_delete" eval="False"/>
+        <field name="body_html" type="html">
+            <table border="0" cellpadding="0" cellspacing="0" style="padding:16px 0 0 0;box-sizing:border-box;caption-side:bottom;padding-top: 16px; background-color: #FFFFFF; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;" width="100%">
+                <tbody>
+                    <tr>
+                        <td align="center">
+                            <table border="0" cellpadding="0" cellspacing="0" width="590" style="box-sizing: border-box; padding: 16px; background-color: #ffffff; color: #454748; border-collapse: separate; font-family: Verdana, Arial, sans-serif;">
+                                <tbody>
+                                    <tr>
+                                        <td align="center" style="min-width: 590px;">
+                                            <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px; border-collapse: separate; color: #454748; font-family: Verdana, Arial, sans-serif;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td valign="top" style="font-size: 13px;">
+                                                            Hola <t t-out="object.partner_id.name or ''"/>, 🙌<br/><br/>
+                                                            Queremos recordarte que tu mensualidad por 
+                                                            <span style="font-size: 13px; font-weight: bold;"><t t-out="object.currency_id.symbol or ''"/></span> 
+                                                            <span style="font-size: 13px; font-weight: bold;"><t t-out="object.amount_residual or ''"/></span> 
+                                                            vence el <span style="font-size: 13px; font-weight: bold;"><t t-out="(object.invoice_date_due or '').strftime('%d-%m-%Y') if object.invoice_date_due else ''"/></span>.
+                                                            Lo más importante para nosotros es que tengas una experiencia completa en tu formación. ¿Tienes alguna petición en seguimiento o algo que quieras que apoyemos desde aquí? Escríbenos y con gusto te damos respuesta.<br/>
+                                                            👉 Aquí tu acceso al pago: 
+                                                            <center>
+                                                                <div style="margin: 16px 0px 16px 0px;" bis_skin_checked="1">
+                                                                    <a t-attf-href="{{ object.link_payment }}"  target="_blank" style="box-sizing:border-box;background-color: #7848FF; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                                                        Enlace de pago aquí
+                                                                    </a>
+                                                                </div>
+                                                            </center><br/>
+                                                            Nuestro equipo está disponible en este medio o en <span style="font-size: 13px; font-weight: bold;">cobranza@universidadisep.com</span> para cualquier apoyo que necesites.<br/><br/>
+                                                            Un saludo cordial,<br/>
+                                                            <span style="font-size: 13px; font-weight: bold;">Equipo de Atención y Finanzas</span><br/><br/>
+                                                            <span style="font-size: 13px; font-weight: bold;color: #371C82">Universidad ISEP</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </field>
+    </record>
+
+    <record id="email_template_invoice_due_today" model="mail.template">
+        <field name="name">Factura: Recordatorio 0 días</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="subject">Hoy vence tu mensualidad – estamos aquí para apoyarte</field>
+        <field name="email_from">{{ user.email or '' }}</field>
+        <field name="email_to">{{ object.partner_id.email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+            <table border="0" cellpadding="0" cellspacing="0" style="padding:16px 0 0 0;box-sizing:border-box;caption-side:bottom;padding-top: 16px; background-color: #FFFFFF; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;" width="100%">
+                <tbody>
+                    <tr>
+                        <td align="center">
+                            <table border="0" cellpadding="0" cellspacing="0" width="590" style="box-sizing: border-box; padding: 16px; background-color: #ffffff; color: #454748; border-collapse: separate; font-family: Verdana, Arial, sans-serif;">
+                                <tbody>
+                                    <tr>
+                                        <td align="center" style="min-width: 590px;">
+                                            <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px; border-collapse: separate; color: #454748; font-family: Verdana, Arial, sans-serif;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td valign="top" style="font-size: 13px;">
+                                                            Hola <t t-out="object.partner_id.name or ''"/>, 👩‍🎓<br/><br/>
+                                                            Hoy, 
+                                                                <span style="font-size: 13px; font-weight: bold;"><t t-out="(object.invoice_date_due or '').strftime('%d-%m-%Y') if object.invoice_date_due else ''"/></span>, vence tu mensualidad por 
+                                                                <span style="font-size: 13px; font-weight: bold;"><t t-out="object.currency_id.symbol or ''"/></span>
+                                                                <span style="font-size: 13px; font-weight: bold;"><t t-out="object.amount_residual or ''"/></span>. 
+                                                            Queremos acompañarte para que tu experiencia académica siga activa sin interrupciones.<br/>
+                                                            Además, nos encantaría saber cómo te has sentido en tu programa y si tienes algún trámite o solicitud en curso para poder apoyarte 💜.<br/>
+                                                            👉 Aquí tu acceso directo: 
+                                                            <center>
+                                                                <div style="margin: 16px 0px 16px 0px;" bis_skin_checked="1">
+                                                                    <a t-attf-href="{{ object.link_payment }}"  target="_blank" style="box-sizing:border-box;background-color: #7848FF; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                                                        Enlace de pago aquí
+                                                                    </a>
+                                                                </div>
+                                                            </center><br/>
+                                                            Si ya realizaste el pago, por favor ignora este mensaje y gracias por tu puntualidad.
+                                                            <br/><br/>
+                                                            Con aprecio,
+                                                            <br/>
+                                                            <span style="font-size: 13px; font-weight: bold;">Equipo de Atención y Finanzas</span><br/><br/>
+                                                            <span style="font-size: 13px; font-weight: bold;color: #371C82">Universidad ISEP</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </field>
+    </record>
+
+
+    <record id="email_template_invoice_overdue_1_2_days" model="mail.template">
+        <field name="name">Factura: Recordatorio 1-2 días despues del vencimiento</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="subject">Aún estás a tiempo de regularizar tu cuenta</field>
+        <field name="email_from">{{ user.email or '' }}</field>
+        <field name="email_to">{{ object.partner_id.email }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+            <table border="0" cellpadding="0" cellspacing="0" style="padding:16px 0 0 0;box-sizing:border-box;caption-side:bottom;padding-top: 16px; background-color: #FFFFFF; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;" width="100%">
+                <tbody>
+                    <tr>
+                        <td align="center">
+                            <table border="0" cellpadding="0" cellspacing="0" width="590" style="box-sizing: border-box; padding: 16px; background-color: #ffffff; color: #454748; border-collapse: separate; font-family: Verdana, Arial, sans-serif;">
+                                <tbody>
+                                    <tr>
+                                        <td align="center" style="min-width: 590px;">
+                                            <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px; border-collapse: separate; color: #454748; font-family: Verdana, Arial, sans-serif;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td valign="top" style="font-size: 13px;">
+                                                            Hola <t t-out="object.partner_id.name or ''"/>, ✨<br/><br/>
+                                                            Tu mensualidad con vencimiento el 
+                                                                <span style="font-size: 13px; font-weight: bold;"><t t-out="(object.invoice_date_due or '').strftime('%d-%m-%Y') if object.invoice_date_due else ''"/></span>, por 
+                                                                <span style="font-size: 13px; font-weight: bold;"><t t-out="object.currency_id.symbol or ''"/></span>
+                                                                <span style="font-size: 13px; font-weight: bold;"><t t-out="object.amount_residual or ''"/></span>, 
+                                                            aparece pendiente de pago. Aún estás a tiempo de regularizar y mantener tu campus y clases activos.<br/>
+                                                            Queremos aprovechar para preguntarte: ¿hay alguna gestión en curso o apoyo que estés esperando de nuestra parte? Escríbenos para darle seguimiento inmediato 🙌.<br/>
+                                                            👉 Si ya realizaste el pago, por favor envíanos tu comprobante a <span style="font-size: 13px; font-weight: bold;">cobranza@universidadisep.com</span>.
+                                                            Y si necesitas apoyo, estamos aquí para resolverlo contigo.
+                                                            <br/><br/>
+                                                            Con gusto,<br/>
+                                                            <span style="font-size: 13px; font-weight: bold;">Equipo de Atención y Finanzas</span><br/><br/>
+                                                            <span style="font-size: 13px; font-weight: bold;color: #371C82">Universidad ISEP</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </field>
+    </record>
+</odoo>

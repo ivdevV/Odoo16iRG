@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <template id="custom_user_profile_content_design" name="Custom menu to frontend portal Design" inherit_id="isep_website_custom.user_profile_content">
+        <xpath expr="//t[@t-if='channel']/div" position="replace">
+            <div class="mb32">
+                <h5 class="border-bottom pb-1">Programa académico</h5>
+                <div class="row">
+                    <t t-set="msn_01" t-value="True"/>
+                    <div class="col-12 col-lg-6" t-if="course" t-foreach="env['op.admission'].sudo().search([('state','=','done'),('partner_id','=', user.partner_id.id)])" t-as="course">
+                        <t t-set="hoy" t-value="datetime.date.today()"/>
+                        <t t-set="vigente" t-value="not course.due_date or (course.due_date and course.due_date &gt;= hoy)"/>
+
+                        <div class="card mb-2">
+                            <t t-set="course_line_id" t-value="course.register_id.course_id.id"/>
+                            <div t-attf-class="card-body o_wprofile_slides_course_card_body p-0 d-flex #{'' if vigente else 'disabled-course'}" t-attf-onclick="#{ 'location.href=\'/campus/course/%s\'' % course_line_id if vigente else '' }">
+                                <t t-set="icon_admission" t-value="request.env['course.admission.icon'].sudo().search([('type','=','admission')], limit=1)"/>
+                                <div class="o_wslides_background_image ps-5 pe-4 rounded-start"
+                                    t-if="icon_admission"
+                                    t-attf-style="height:72px; background-image:url(#{website.image_url(icon_admission, 'image')});"/>
+                                <div class="p-2 w-100" style="line-height: 0px;">
+                                    <h5 class="mt-0 mb-1" style="color: #7848ff;" t-if="course.register_id" t-field="course.register_id.course_id.name"/>
+                                    <br/>
+                                    <h6 class="mt-0 mb-1" style="color: #7848ff;" t-if="course.batch_id">Grupo: <t t-out="course.batch_id.name"/>
+                                    </h6>
+                                    <h6 class="mt-0 mb-1" style="color: #7848ff;" t-if="course.due_date">
+                                        Vigencia: <t t-out="course.due_date"/>
+                                    </h6>
+                                    <t t-if="not vigente">
+                                        <span class="badge bg-danger">Vencido</span>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        <t t-set="msn_01" t-value="False"/>
+                    </div>
+                    <div t-if="msn_01 == True" class="text-muted d-inline-block">Sin inscripciones</div>
+                </div>
+
+
+            </div>
+        </xpath>
+
+    </template>
+</odoo>

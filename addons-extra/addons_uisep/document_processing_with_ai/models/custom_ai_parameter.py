@@ -2,24 +2,23 @@ import requests
 from odoo import models, fields, api, _
 
 
-# from odoo.exceptions import UserError
-
-
 class CustomAIParameter(models.Model):
     _name = 'custom_ai_parameter'
     _description = ("Configuration model for managing AI parameters. Allows selection of document types and specific "
                     "settings for OpenAI GPT integration.")
-    _rec_name = "type_document"
+    _rec_name = "type_document_"
 
-    type_document = fields.Selection(
-        [
-            ('degree_certificate', 'Degree certificate'),
-            ('certification_notes', 'Certification notes'),
-            ('civil_registry', 'Civil registry')
-        ],
-        string="Document type",
-        required=True)
-    chat_gpt_ = fields.Boolean(string="GPT Engine")
+    # type_document = fields.Selection(
+    #     [
+    #         ('degree_certificate', 'Degree certificate'),
+    #         ('certification_notes', 'Certification notes'),
+    #         ('civil_registry', 'Civil registry')
+    #     ],
+    #     string="Document type",
+    #     required=True)
+    type_document_ = fields.Char(string="Document type", required=True)
+
+    chat_gpt_ = fields.Boolean(string="GPT Engine", default="True")
     parameters_for_gpt = fields.Text(string='Parameters for GPT')
 
     @api.model

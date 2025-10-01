@@ -63,10 +63,10 @@
                                 </div> 
                                 <div class="row" style="text-align:justify; padding-top: 50px;">     
 					<div class="col-12">
-					    <p style='font-size:20px;'><strong>Asunto: Confirmación de Disertación y Proceso de Título Oficial</strong></p>
+					    <p style='font-size:20px;'><strong>Asunto: Proceso de Título Oficial </strong></p>
 					    <p style='font-size:20px;'>Estimad<span t-out="'a' if o.gender == 'f' else 'o'"/> <span t-out="o.name"/>,</p>
                                             <p style='font-size:20px;'>Espero que este mensaje te encuentre bien.</p>
-                                            <p style='font-size:20px;'>Nos complace informarte que has completado exitosamente la disertación el dia <span t-out="str(o.file_closing_date or '')"/>, 
+                                            <p style='font-size:20px;'>Nos complace informarte que has completado exitosamente tu cierre de expediente el dia <span t-out="str(o.file_closing_date or '')"/>, 
                                             como parte de los requisitos para obtener tu título oficial de la <strong t-out="admission.course_id.display_name"/>.</p>
                                             <p style='font-size:20px;'>Actualmente, la Universidad está llevando a cabo los procesos correspondientes con la institución pertinente para la emision del título
                                             oficial que acredite tu formación académica. Queremos asegurarte que estamos trabajando diligentemente para agilizar este procedimiento y que puedas recibir tu título
@@ -97,13 +97,13 @@
                                    <div class="row" style="text-align:center; font-size:16px;margin-left:1em;margin-right:1em;">
                                                                    <div class="col-12">
 
-                                        <img src="/isep_openeducat_reports/static/src/img/firma_isep.png" style="width:132px; height:81px;"/> 
+                                        <img src="/isep_openeducat_reports/static/src/img/firma_decana_isep.png" style="width:132px; height:81px;"/> 
                                         <img src="/isep_openeducat_reports/static/src/img/sello_isep.png" style="width:82px; height:48px;"/> 
 
                                         <br/>
-                                        <strong >DEPARTAMENTO DE ORIENTACIÓN UNIVERSITARIA</strong>
-                                        <br/>
-                                        <strong >UNIVERSIDAD ISEP</strong>
+                                        <strong >Dra. B. Nayeli Pérez Tamayo</strong>
+                                        <br></br>
+                                        <strong >Vicerrectora Académica</strong>
                                     </div>
                                 </div>
                                 </div>

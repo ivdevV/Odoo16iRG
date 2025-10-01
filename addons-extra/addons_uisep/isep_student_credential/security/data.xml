@@ -1,0 +1,32 @@
+<odoo>
+    <record id="op_admission_cre_rule_portal" model="ir.rule">
+        <field name="name">Portal: Solo sus propias admisiones credenciales</field>
+        <field name="model_id" ref="openeducat_admission.model_op_admission"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+        <field name="domain_force">[('partner_id', '=', user.partner_id.id)]</field>
+    </record>
+
+    <record id="access_op_admission_portal" model="ir.model.access">
+        <field name="name">op.admission portal access credenciales</field>
+        <field name="model_id" ref="openeducat_admission.model_op_admission"/>
+        <field name="group_id" ref="base.group_portal"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="access_op_course_portal" model="ir.model.access">
+        <field name="name">op.course portal access</field>
+        <field name="model_id" ref="openeducat_core.model_op_course"/>
+        <field name="group_id" ref="base.group_portal"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+</odoo>

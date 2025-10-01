@@ -1,48 +1,95 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-  <!-- OPORTUNIDADES -->
-
-  <data>
-          <record id="fanlab_crm_case_form_view_oppor" model="ir.ui.view">
-                  <field name="name">view_opportunity_form</field>
-
-    <field name="model">crm.lead</field>
-    <field name="inherit_id" ref="isep_custom.isep_crm_case_form_view_oppor"/>
-    <field name="arch" type="xml">
-        <xpath expr="//page[last()]" position="replace">
-                     <page string="Llamadas">
-                             <field name="call_ids" context="{'tree_view_ref' : 'voip.voip_phonecall_tree_view'}" ref="voip.voip_phonecall_tree_view"/>
-                     </page>
-
-     </xpath>
-     </field>
-   </record>
-<record id="fanlab_crm_lead_dashboard_view" model="ir.ui.view">
-                  <field name="name">lead_view_dashboard</field>
-
-    <field name="model">crm.lead</field>
-    <field name="inherit_id" ref="crm_enterprise.crm_lead_dashboard_view"/>
-    <field name="arch" type="xml">
-            <xpath expr="//widget[2]" position="replace">
-                    <widget name="pie_chart" title="Medium" attrs="{'groupby':'x_ga_medium'}"/>
-                    <widget name="pie_chart" title="Source" attrs="{'groupby':'x_ga_source'}"/>
-
-     </xpath>
-     </field>
-   </record>
-   <record id="fanlab_crm_opportunity_dashboard_view" model="ir.ui.view">
-                  <field name="name">opportunity_view_dashboard</field>
-
-    <field name="model">crm.lead</field>
-    <field name="inherit_id" ref="crm_enterprise.crm_opportunity_view_dashboard"/>
-    <field name="arch" type="xml">
-            <xpath expr="//widget[2]" position="replace">
-                    <widget name="pie_chart" title="Medium" attrs="{'groupby':'x_ga_medium'}"/>
-                    <widget name="pie_chart" title="Source" attrs="{'groupby':'x_ga_source'}"/>
-
-     </xpath>
-     </field>
-   </record>
+    <data>
+        <record id="crm_lead_view_form" model="ir.ui.view">
+            <field name="name">crm.lead.view.form</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+	    <field name="arch" type="xml">
+		    <xpath expr="//field[@name='user_id']" position="before">
+    <field name="x_studio_quiere_contacto_por_whatsapp" string="Quiere contacto por WhatsApp" force_save="True" attrs="{}"/>
+    <field name="x_studio_tipo_de_lead_1" string="Tipo de lead"/>
+    <field name="x_studio_ltimos_estudios" string="Últimos estudios" groups="sales_team.group_sale_manager,sales_team.group_sale_salesman" attrs="{}" invisible="1"/>
+    <field name="x_studio_delegacion"/>
+    <field name="x_studio_modalidad" string="Modalidad"/>
+  </xpath>
+  <xpath expr="//field[@name='current_commercial']" position="attributes">
+    <attribute name="attrs">{}</attribute>
+  </xpath>
+  <xpath expr="//form[1]/sheet[1]/group[1]" position="after">
+    <group name="studio_group_NcsXe">
+      <group name="studio_group_NcsXe_right" string="Producto de interés">
+        <field name="x_studio_id_curso" string="ID Curso"/>
+        <field name="x_studio_nombre_del_programa" string="Nombre del programa"/>
+        <field name="x_studio_referencia_interna_del_producto" string="Referencia interna del producto"/>
+      </group>
+    </group>
+  </xpath>
+  <xpath expr="//page[@name='extra']" position="attributes">
+    <attribute name="attrs">{}</attribute>
+    <!-- OPORTUNIDADES     <attribute name="groups">base.group_system,__export__.res_groups_86_2d9fa88d</attribute>
+    -->
+    <attribute name="string">Marketing</attribute>
+  </xpath>
+  <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='extra']/group[1]/group[@name='categorization']/field[@name='company_id']" position="before">
+    <field name="x_studio_campaa" string="Campaña"/>
+    <field name="x_studio_medio" string="Medio"/>
+    <field name="x_studio_fuente" string="Fuente"/>
+    <field name="x_studio_grupo_de_anuncio" string="Grupo de anuncio"/>
+    <field name="x_studio_keyword" string="Keyword"/>
+    <field name="x_studio_ga"/>
+  </xpath>
+  <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='extra']/group[1]/group[@name='categorization']/field[@name='campaign_id']" position="attributes">
+    <attribute name="attrs">{}</attribute>
+    <attribute name="invisible">1</attribute>
+    <attribute name="widget">radio</attribute>
+  </xpath>
+  <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='extra']/group[1]/group[@name='categorization']/field[@name='medium_id']" position="attributes">
+    <attribute name="attrs">{}</attribute>
+    <attribute name="invisible">1</attribute>
+  </xpath>
+  <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='extra']/group[1]/group[@name='categorization']/field[@name='source_id']" position="attributes">
+    <attribute name="attrs">{}</attribute>
+    <attribute name="invisible">1</attribute>
+  </xpath>
+  <xpath expr="//page[@name='lead']" position="attributes">
+    <attribute name="attrs">{"invisible": []}</attribute>
+  </xpath>
+  <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='lead']/group[1]/group[3]" position="attributes">
+    <attribute name="attrs">{}</attribute>
+    <attribute name="invisible">1</attribute>
+  </xpath>
+  <!--
+  <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='lead']/group[1]/group[3]/field[@name='campaign_id']" position="attributes">
+    <attribute name="attrs">{}</attribute>
+    <attribute name="invisible">1</attribute>
+  </xpath>
+  <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='lead']/group[1]/group[3]/field[@name='medium_id']" position="attributes">
+    <attribute name="attrs">{}</attribute>
+    <attribute name="invisible">1</attribute>
+  </xpath>
+  <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='lead']/group[1]/group[3]/field[@name='source_id']" position="attributes">
+    <attribute name="attrs">{}</attribute>
+    <attribute name="invisible">1</attribute>
+  </xpath>
+  <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='lead']/group[1]/group[3]/field[@name='referred']" position="attributes">
+    <attribute name="attrs">{}</attribute>
+    <attribute name="invisible">1</attribute>
+  </xpath>
+  -->
+  <xpath expr="//form[1]/sheet[1]/notebook[1]" position="inside">
+    <page string="Código" name="studio_page_EKkEF">
+      <group name="studio_group_EKkEF">
+        <group name="studio_group_EKkEF_left">
+          <field name="x_studio_cdigo_de_modalidad" string="Código de Modalidad" force_save="True" attrs="{}" readonly="1"/>
+        </group>
+        <group name="studio_group_EKkEF_right">
+          <field name="x_studio_cdigo_de_delegacin" string="Código de Delegación" force_save="True" attrs="{}" readonly="1"/>
+        </group>
+      </group>
+    </page>
+  </xpath>
+            </field>
+        </record>
    </data>
   </odoo>

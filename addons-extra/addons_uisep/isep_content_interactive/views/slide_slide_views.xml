@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View slide.slide form -->
+    <record id="view_slide_slide_form_inh" model="ir.ui.view">
+        <field name="name">view.slide.slide.form</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="content_interactive" string="Contenido Interactivo" invisible="0">
+                    <group name="content_interactive" string="contenido interactivo">
+                        <group>
+                            <field name="use_html_embed"/>
+                            <field name="html_embed_code"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

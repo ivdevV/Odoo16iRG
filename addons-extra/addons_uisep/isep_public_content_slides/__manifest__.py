@@ -10,7 +10,7 @@
         'security/ir.model.access.csv',
         'data/ir_cron_data.xml',
         'views/op_course.xml',
-        'views/op_subject.xml',
+        #'views/op_subject.xml',
         'views/slide_channel.xml',
 
         

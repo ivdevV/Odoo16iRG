@@ -22,6 +22,10 @@
                 </group>
             </xpath>
 
+            <xpath expr="//sheet/widget[@name='web_ribbon']" position="after">
+                <field name="total_completion_porc" widget="progressbar" />  
+            </xpath>
+
             <xpath expr="//page[@name='personal_information']" position="after">
                 <page name="educativo" string="Educativo">
                     <group>
@@ -61,13 +65,15 @@
                             <tree string="Curso">
                                 <field name="course_id"/>
                                 <field name="batch_id"/>
-                                <field name="subject_ids"/>
+                                <field name="completion_porc" widget="percentpie" optional="show"/>
+                                <field name="subject_ids" optional="hide"/>
                             </tree>
                             <form string="Detalles de curso">
                                 <group>
                                     <field name="course_id"/>
-                                    <field name="batch_id"/>
-                                    <field name="subject_ids"/>
+                                    <field name="batch_id"/>  
+                                    <field name="completion_porc" widget="percentpie" />                                  
+                                    <field name="subject_ids" />
                                 </group>
                             </form>
                         </field>
@@ -92,6 +98,17 @@
                 <field name="gender"/>
             </xpath>
 
+        </field>
+    </record>
+
+    <record id="op_student_course_inherit_module_name" model="ir.ui.view">
+        <field name="name">op_student_course_inherit_module_name</field>
+        <field name="model">op.student.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_course_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='batch_id']" position="after">
+                <field name="completion_porc" widget="progressbar" optional="show"/>
+            </xpath>
         </field>
     </record>
 

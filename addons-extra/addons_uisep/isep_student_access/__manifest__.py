@@ -8,6 +8,7 @@
     'category': 'OpenEducat',
     'depends': ['base', 'openeducat_core'],
     "data": [
+        "security/ir.model.access.csv",
         "views/op_student_views.xml"
     ],
     'application': True,

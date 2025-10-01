@@ -13,7 +13,11 @@
     'license': 'AGPL-3',
     'data': [ 
         'security/res_groups.xml',
-        'security/ir.model.access.csv',         
+        'security/ir.model.access.csv', 
+        'report/reports.xml',
+        'report/recognition_certificate.xml',
+        'data/cron_admission_summary.xml',
+        'data/mail_recognition_certificate.xml',        
         'views/app_gradebook.xml',
         'views/gradebook_templates.xml',
         'views/op_course.xml',
@@ -25,6 +29,8 @@
         'views/app_gradebook_pending.xml',
         'views/menu.xml',
         'views/app_gradebook_student_report.xml',
+        'views/app_gradebook_summary_view.xml',
+
         
     ],    
     'installable': True,

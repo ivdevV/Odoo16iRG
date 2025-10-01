@@ -40,6 +40,9 @@
 <p class="has-line-data" data-line-start="29" data-line-end="31">Linux<br>
     <a href="https://ucd-dnp.github.io/ConTexto/versiones/master/instalacion/instalacion_popple_teseract_linux.html">https://ucd-dnp.github.io/ConTexto/versiones/master/instalacion/instalacion_popple_teseract_linux.html</a>
 </p>
+<p>
+    Asegúrese de instalar el paquete de idioma Español.<br>
+</p>
 <h3 class="code-line" data-line-start=33 data-line-end=34><a id="3_Instalar_el_mdulo_33"></a>3. Instalar el módulo</h3>
 <ul>
     <li class="has-line-data" data-line-start="34" data-line-end="35">Vaya a <em>Aplicaciones &gt; Actualizar lista de
@@ -58,12 +61,12 @@
         Clave API de OpenAI.
     </li>
     <li class="has-line-data" data-line-start="40" data-line-end="41">
-        <strong><code>tesseract_route_linux</code></strong>: Ruta de Tesseract en Linux (por defecto: <code>/usr/bin/tesseract</code>).
+        <strong><code>tesseract_route</code></strong>: Ruta de Tesseract en Linux (por defecto: <code>/usr/bin/tesseract</code>).
     </li>
-    <li class="has-line-data" data-line-start="41" data-line-end="43">
-        <strong><code>tesseract_route_windows</code></strong>: Ruta de Tesseract en Windows (por defecto: <code>C:\\Program
-        Files\\Tesseract-OCR\\tesseract.exe</code>).
-    </li>
+<!--    <li class="has-line-data" data-line-start="41" data-line-end="43">-->
+<!--        <strong><code>tesseract_route_windows</code></strong>: Ruta de Tesseract en Windows (por defecto: <code>C:\\Program-->
+<!--        Files\\Tesseract-OCR\\tesseract.exe</code>).-->
+<!--    </li>-->
 </ul>
 <hr>
 <h2 class="code-line" data-line-start=45 data-line-end=46><a id="Uso_45"></a>Uso</h2>
@@ -111,6 +114,9 @@
     </li>
     <li class="has-line-data" data-line-start="64" data-line-end="66"><strong>Documento incorrecto (<code>incorrect_document</code>)</strong>:
         Datos inválidos o insuficientes.
+    </li>
+    <li class="has-line-data" data-line-start="64" data-line-end="66"><strong>Legibilidad deficiente (<code>poor_readability</code>)</strong>:
+        Legibilidad deficiente para la lectura.
     </li>
 </ul>
 <h3 class="code-line" data-line-start=66 data-line-end=67><a id="4_Notificaciones_automticas_66"></a>4. Notificaciones

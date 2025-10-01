@@ -55,7 +55,7 @@
     position:absolute;
     top: 1000px;
     margin-left: 54%;
-    color: #f78c02;
+    color: #371C82;
     font-weight: 700;
     /* border: 1px solid #000; */
     width: 195px;
@@ -88,7 +88,7 @@
 
 .certificate-isep-text{
     font-size: 20pt;
-    color: #FE6807;
+    color: #371C82;
     font-weight: 800;
     line-height: 1;
     font-weight: 700;
@@ -129,7 +129,7 @@
     /* width : 200px; */
     height: auto;
     margin-left: 57px;
-    color: #FE6807;
+    color: #371C82;
     font-weight: 600;    
     
 }

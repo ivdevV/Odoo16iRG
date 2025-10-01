@@ -9,6 +9,7 @@
 
                 <xpath expr="//field[@name='max_unit_load']" position="after">
                     <field name="lang" />
+                    <field name="duration" />
                 </xpath>
 
             </field>

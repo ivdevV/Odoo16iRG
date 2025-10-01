@@ -36,6 +36,13 @@
                     <xpath expr="//field[@name='email']" position="move"/>
                 </xpath>
 
+                <xpath expr="//field[@name='state']" position="after">
+                    <field name="duration_state" widget="badge"
+                          decoration-danger="duration_state == 'expired'" decoration-success="duration_state == 'in_progress'" />
+                </xpath>
+
+
+                 
             </field>
         </record>
 

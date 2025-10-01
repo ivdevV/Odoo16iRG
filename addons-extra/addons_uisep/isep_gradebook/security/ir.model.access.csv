@@ -15,6 +15,7 @@ id_app_gradebook_student_admin,app_gradebook_student_admin,model_app_gradebook_s
 id_app_gradebook_student_user,app_gradebook_student_user,model_app_gradebook_student,base.group_user,1,0,0,0
 id_app_gradebook_student_faculty,app_gradebook_student_faculty,model_app_gradebook_student,openeducat_core.group_op_faculty,1,1,1,0
 id_app_gradebook_pending_user,app_gradebook_pending_user,model_app_gradebook_pending,base.group_user,1,1,1,1
+id_appisep_gradebook_summary,appisep_gradebook_summary,model_appisep_gradebook_summary,base.group_user,1,1,1,1
 
 
 

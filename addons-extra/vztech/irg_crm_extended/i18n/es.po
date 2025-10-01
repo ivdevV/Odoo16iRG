@@ -1,0 +1,33 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* irg_crm_extended
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0+e-20240312\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-22 01:22+0000\n"
+"PO-Revision-Date: 2024-05-21 20:23-0500\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.4.4\n"
+
+#. module: irg_crm_extended
+#: model:res.groups,name:irg_crm_extended.access_current_commercial
+msgid "Access Current Commercial"
+msgstr "Acceso Comercial Actual"
+
+#. module: irg_crm_extended
+#: model:ir.model.fields,field_description:irg_crm_extended.field_crm_lead__current_commercial
+msgid "Current Commercial"
+msgstr "Comercial actual"
+
+#. module: irg_crm_extended
+#: model:ir.model,name:irg_crm_extended.model_crm_lead
+msgid "Lead/Opportunity"
+msgstr "Lead/Oportunidad"

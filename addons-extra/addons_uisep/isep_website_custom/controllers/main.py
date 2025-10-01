@@ -46,7 +46,6 @@ class DashboardPortal(WebsiteProfile):
         values.update({'menu_list': menu_list})
 
 
-
         return request.render("website_profile.user_profile_main", values)
 
     

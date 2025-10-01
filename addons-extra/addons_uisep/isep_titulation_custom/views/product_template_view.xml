@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="inherit_view_account_move_form" model="ir.ui.view">
+            <field name="name">view.move.account.form.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">        
+                <xpath expr="//field[@name='attribute_line_ids']" position="after">
+                    <field name="maintenance_request_id" attrs="{'invisible': [['invoice_filter_type_domain', '!=' , 'purchase']]}"/>
+                    
+                </xpath>          
+            </field>
+        </record>
+    </data>
+</odoo>

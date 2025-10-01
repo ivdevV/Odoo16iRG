@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View sale.order.line tree -->
+    <record id="view_sale_order_line_tree_ext" model="ir.ui.view">
+        <field name="name">view.sale.order.line.tree</field>
+        <field name="model">sale.order.line</field>
+        <field name="inherit_id" ref="isep_openeducat_sale.sale_order_line_tree"/>
+        <field name="mode">extension</field>
+        <field name="priority">18</field>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_send_student']" position="after">
+                <field name="admission_status"
+                    widget="badge"
+                    decoration-success="admission_status == 'yes'"
+                    decoration-danger="admission_status == 'no'"
+                    string="Admisión Website"
+                    optional="show"
+                    attrs="{'invisible': ['|','|',('admission_id','!=',False),('course_type','in',('online','none')),('admission_status', '!=', 'yes')]}"/>
+            </xpath>
+            <xpath expr="//button[@name='action_send_student']" position="replace">
+                <field name="admission_status" invisible="1"/>
+                <button name="action_send_student" 
+                    attrs="{'invisible': ['|','|',('admission_id','!=',False),('course_type','in',('online','none')),('admission_status', '==', 'yes')]}" 
+                    string="Inscribir" 
+                    icon="fa-book" 
+                    class="oe_highlight" 
+                    type="object"  />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

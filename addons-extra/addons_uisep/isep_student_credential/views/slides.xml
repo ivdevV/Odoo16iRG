@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+     <template id="credential_download_from_slide" name="credential_download_from_slide" inherit_id="website_slides.slide_content_detailed">
+        <xpath expr="//div/div[2]" position="inside">
+            <t t-if="slide.show_credential_download">
+                <t t-set="admission" t-value="request.env['op.admission'].sudo().search([('partner_id', '=', request.env.user.partner_id.id)], order='due_date desc', limit=1)"/>
+                <t t-if="admission">
+                    <a t-attf-href="/credential/download/{{ admission.id }}" download="credencial.pdf" class="btn btn-light border ms-2 my-1" role="button">
+                        <i class="fa fa-download me-xl-2 my-1"/>
+                        <span class="d-none d-sm-inline-block">Credencial</span>
+                    </a>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>

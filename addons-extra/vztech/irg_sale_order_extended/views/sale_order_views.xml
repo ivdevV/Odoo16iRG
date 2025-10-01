@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_view_form" model="ir.ui.view">
+        <field name="name">sale.order.view.form</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="student_id" required="1"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="string">Invoice Holder</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/group[@name='sale_header']/group[@name='order_details']" position="inside">
+                <field name="is_transfer_payment" invisible="1"/>
+                <field name="is_card_payment" invisible="1"/>
+                <field name="account_bank_id" attrs="{'invisible': [('is_transfer_payment', '=', False)]}"/>
+                <field name="valid_mandate_id" attrs="{'invisible': [('is_transfer_payment', '=', False)]}"/>
+                <field name="payment_date" attrs="{'invisible': [('is_card_payment', '=', False)]}"/>
+                <field name="card_number" password="True" attrs="{'invisible': [('is_card_payment', '=', False)]}"/>
+                <field name="expiration_month" password="True" attrs="{'invisible': [('is_card_payment', '=', False)]}"/>
+                <field name="expiration_year" password="True" attrs="{'invisible': [('is_card_payment', '=', False)]}"/>
+                <field name="display_card_number" attrs="{'invisible': ['|', ('is_card_payment', '=', False), ('id', '!=', False)]}" />
+                <field name="display_expiration_month" attrs="{'invisible': ['|', ('is_card_payment', '=', False), ('id', '!=', False)]}" />
+                <field name="display_expiration_year" attrs="{'invisible': ['|', ('is_card_payment', '=', False), ('id', '!=', False)]}" />
+                <field name="display_card_number" attrs="{'invisible': ['|', ('is_card_payment', '=', False), ('id', '=', False)]}" groups="account.group_account_invoice"/>
+                <field name="display_expiration_month" attrs="{'invisible': ['|', ('is_card_payment', '=', False), ('id', '=', False)]}" groups="account.group_account_invoice"/>
+                <field name="display_expiration_year" attrs="{'invisible': ['|', ('is_card_payment', '=', False), ('id', '=', False)]}" groups="account.group_account_invoice"/>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[@name='order_lines']/group[@name='note_group']/group[@name='sale_total']" position="inside">
+                <field name="initial_payment" />
+                <field name="rest_postponed" style="font-weight: bold; font-size: 1.2em"/>
+                <field name="is_card_payment" invisible="1"/>
+                <field name="monthly_payments" attrs="{'invisible': [('is_card_payment', '=', False)]}"/>
+                <field name="monthly_value" readonly="1" attrs="{'invisible': [('is_card_payment', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="sale_order_view_tree" model="ir.ui.view">
+        <field name="name">sale.order.view.tree</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="student_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

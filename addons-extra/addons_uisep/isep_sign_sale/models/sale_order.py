@@ -45,7 +45,7 @@ class sale_order_extends(models.Model):
                                 'width':0.165, 
                                 'height': 0.040
                                 })
-                
+                    
                 elif self.partner_id.id == self.partner_invoice_id.id:
                     for i in range(0,sign.num_pages):
                         self.env['sign.item'].create({

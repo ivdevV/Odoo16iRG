@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- View course.admission.icon View Tree -->
+    <record id="view_course_admission_icon_tree" model="ir.ui.view">
+        <field name="name">view.course.admission.icon.tree</field>
+        <field name="model">course.admission.icon</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="type"/>
+                <field name="image" widget="image"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- View course.admission.icon form -->
+    <record id="view_course_admission_icon_form" model="ir.ui.view">
+        <field name="name">view.course.admission.icon.form</field>
+        <field name="model">course.admission.icon</field>
+        <field name="arch" type="xml">
+            <form string="Course Admission Icon">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="type"/>
+                        <field name="image" widget="image"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Action course.admission.icon -->
+    <record id="action_course_admission_icon" model="ir.actions.act_window">
+        <field name="name">Course Admission Icon</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">course.admission.icon</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                There is no examples click here to add new Course Admission Icon.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_course_admission_icon_root"
+            name="Íconos Cursos y Admisiones"
+            parent="isep_openeducat_custom.id_tree_courses_admin_root"
+            action="action_course_admission_icon"/>
+
+</odoo>

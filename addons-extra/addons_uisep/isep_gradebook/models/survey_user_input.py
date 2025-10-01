@@ -75,8 +75,9 @@ class SurveyUser_input(models.Model):
 
     @api.depends('scoring_percentage')
     def compute_answer_score_total(self):
-        answer_score_total=round(self.scoring_percentage/10,2)
-        self.answer_score_total = answer_score_total
+        for record in self:
+            answer_score_total=round(record.scoring_percentage/10,2)
+            record.answer_score_total = answer_score_total
 
     @api.model
     def create(self, vals):
@@ -99,50 +100,52 @@ class SurveyUser_input(models.Model):
         '''
         Send the results of the exam and assignment type participations to the notebook.
         '''
-        rated_by = self.env.user.partner_id.id or False
-        result_id = False
-        for sp in self.slide_partner_id.user_input_ids:
-            if sp.result_id:
-                result_id = sp.result_id
-                break
-        self.result_id = result_id
-        if self.admission_id and self.op_subject_id and self.op_subject_id.subject_type == "compulsory":
-            answer_score_total = round(self.scoring_percentage/10,2)       
-            
-            if not self.result_id:
-                channel_partner_id = self.channel_partner_id.search_gradebook_subject(self.partner_id,self.admission_id,self.course_id,self.op_subject_id)
-                self.gradebook_student_id = channel_partner_id['gradebook_student_id']
-                self.gradebook_subject_id = channel_partner_id['gradebook_subject_id']
-                course_id = 'N/A'
-                application_number = 'N/A'
-                if self.course_id:
-                    course_id = self.course_id.name
-                if self.admission_id:
-                    application_number = self.admission_id.application_number
-                description = "%s - %s" % (application_number, course_id)
-                data = {
-                    'name': self.survey_id.title,
-                    'survey_user_input_id': self.id,
-                    'channel_id': self.channel_id.id,
-                    'channel_partner_id': self.channel_partner_id.id,
-                    'scoring_total': answer_score_total,
-                    'gradebook_subject_id': self.gradebook_subject_id.id,
-                    'survey_type': self.survey_type,
-                    'description': description,
-                    'rated_by': rated_by,
-                    'comment': self.comment
-                }
-                _logger.info(data)
-                result_id = self.env['app.gradebook.result'].create(data)
-            self.result_id = result_id
-            # Identificamos la nota mas alta
-            for sp in self.slide_partner_id.user_input_ids:
-                if answer_score_total <= sp.answer_score_total:
-                    answer_score_total = sp.answer_score_total
-            self.result_id.scoring_total = answer_score_total                
-            self.rated_by = rated_by
+        for record in self:
+            rated_by = record.env.user.partner_id.id or False
+            result_id = False
+            for sp in record.slide_partner_id.user_input_ids:
+                if sp.result_id:
+                    result_id = sp.result_id
+                    break
+            record.result_id = result_id
+            if record.admission_id and record.op_subject_id:
+            # if record.admission_id and record.op_subject_id and record.op_subject_id.subject_type == "compulsory":
+                answer_score_total = round(record.scoring_percentage/10,2)       
+                
+                if not record.result_id:
+                    channel_partner_id = record.channel_partner_id.search_gradebook_subject(record.partner_id,record.admission_id,record.course_id,record.op_subject_id)
+                    record.gradebook_student_id = channel_partner_id['gradebook_student_id']
+                    record.gradebook_subject_id = channel_partner_id['gradebook_subject_id']
+                    course_id = 'N/A'
+                    application_number = 'N/A'
+                    if record.course_id:
+                        course_id = record.course_id.name
+                    if record.admission_id:
+                        application_number = record.admission_id.application_number
+                    description = "%s - %s" % (application_number, course_id)
+                    data = {
+                        'name': record.survey_id.title,
+                        'survey_user_input_id': record.id,
+                        'channel_id': record.channel_id.id,
+                        'channel_partner_id': record.channel_partner_id.id,
+                        'scoring_total': answer_score_total,
+                        'gradebook_subject_id': record.gradebook_subject_id.id,
+                        'survey_type': record.survey_type,
+                        'description': description,
+                        'rated_by': rated_by,
+                        'comment': record.comment
+                    }
+                    _logger.info(data)
+                    result_id = record.env['app.gradebook.result'].create(data)
+                record.result_id = result_id
+                # Identificamos la nota mas alta
+                for sp in record.slide_partner_id.user_input_ids:
+                    if answer_score_total <= sp.answer_score_total:
+                        answer_score_total = sp.answer_score_total
+                record.result_id.scoring_total = answer_score_total                
+                record.rated_by = rated_by
 
-            if not self.gradebook_subject_id:
-                self.gradebook_subject_id =  self.result_id.gradebook_subject_id or False
-            if not self.gradebook_student_id:
-                self.gradebook_student_id =  self.result_id.gradebook_subject_id.gradebook_student_id or False
+                if not record.gradebook_subject_id:
+                    record.gradebook_subject_id =  record.result_id.gradebook_subject_id or False
+                if not record.gradebook_student_id:
+                    record.gradebook_student_id =  record.result_id.gradebook_subject_id.gradebook_student_id or False

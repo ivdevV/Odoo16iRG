@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <template id="user_profile_openeducat_design" name="Custom menu to frontend portal Design OP" inherit_id="isep_website_custom.user_profile_openeducat">
+        <xpath expr="//div[@name='ratings']" position="replace">
+            
+        </xpath>
+    </template>
+</odoo>

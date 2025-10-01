@@ -43,7 +43,7 @@
                        <t t-set="libreta" t-value="env['app.gradebook.student'].sudo().search([('student_id','=',o.id),('batch_id','=',batch_id)])"/>
                        <t t-set="admission" t-value="libreta.admission_id"/>
  <t t-if="o and libreta and admission">
-                       <!-- <t t-set="total_amount" t-value="o.get_subscription_data().get('t_amount_total_sale', 0)"/> -->
+                       <!-- <t t-set="total_amount" t-value="o.get_subscription_data().get('t_amount_total', 0)"/> -->
                       <t t-set="data_to_stamp" t-value="{'Fecha':today_string,'Estudiante':o.display_name,'Documento':'Carta no adeudo', 'Carrera':admission.course_id.display_name, 'Libreta':libreta.display_name, 'Admision':admission.display_name }"/>
                        <t t-set="dict_stamp" t-value="env['op.sign_certificate'].sudo().stamp_data(data_to_stamp, o)"/>
  
@@ -114,13 +114,13 @@
 					<div class="row" style="font-size:16px;">
 					    <div class="col-12">
 
-                                        <img src="/isep_openeducat_reports/static/src/img/firma_isep.png" style="width:132px; height:81px;"/> 
+                                        <img src="/isep_openeducat_reports/static/src/img/firma_ramon.png" style="width:132px; height:81px;"/> 
                                         <img src="/isep_openeducat_reports/static/src/img/sello_isep.png" style="width:82px; height:48px;"/> 
 
 						<br></br>
-						<strong >Universidad ISEP</strong>
-						<br></br>
-						<strong >Departamento de Finanzas</strong>
+						<strong >LCP. Jesús Ramon Niebla Corrales</strong>
+                        <br></br>
+                        <strong >Departamento Finanzas</strong>
 					    </div>
 					</div>
 				 </div>

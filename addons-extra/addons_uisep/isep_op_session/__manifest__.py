@@ -6,7 +6,7 @@
     'author': 'Breithner Aquituari',
     'website': '',
     'category': '',
-    'depends': ['base','openeducat_lesson', 'openeducat_timetable'],
+    'depends': ['base','openeducat_lesson', 'openeducat_timetable','isep_elearning_custom'],
     "data": [
         "security/ir.model.access.csv",
         "wizard/op_session_wizard.xml",

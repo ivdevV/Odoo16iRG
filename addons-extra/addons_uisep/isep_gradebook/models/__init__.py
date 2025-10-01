@@ -9,3 +9,4 @@ from . import app_gradebook_student
 from . import app_gradebook_pending
 from . import slide_channel_partner
 from . import forum_post
+from . import ap_gradebook_summary

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- View recurring.payment.wizard.cron form -->
+    <record id="view_recurring_payment_wizard_cron_form" model="ir.ui.view">
+        <field name="name">view.recurring.payment.wizard.cron.form</field>
+        <field name="model">recurring.payment.wizard.cron</field>
+        <field name="arch" type="xml">
+            <form string="Cobros Recurrentes">
+                <group>
+                    <field name="pendiente" string="Pendiente %"/>
+                    <field name="meses" string="Meses"/>
+                    <field name="conpany_all" string="Compañía"/>
+                </group>
+                <separator string="Nota"/>
+                    <field name="note" readonly="1" class="oe_readonly"/>
+                <footer>
+                    <button name="action_previsualizar" type="object" string="Previsualizar" class="btn-primary"/>
+                    <button name="action_ejecutar" type="object" string="EJECUTAR" confirm="¿Estás seguro de ejecutar el proceso de cobro con el porcentaje indicado?" class="btn-warning"/>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action recurring.payment.wizard.cron -->
+
+    <record id="action_recurring_payment_wizard_cron" model="ir.actions.act_window">
+        <field name="name">Suscripciones: Cobro sobre factura pendiente</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">recurring.payment.wizard.cron</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="groups_id" eval="[(4, ref('isep_payment_cron_extend.group_recurring_payment'))]"/>
+    </record>
+
+    <record id="menu_saleorder_carter_subscription2" model="ir.ui.menu">
+        <field name="name">Suscripciones: Cobro sobre factura pendiente</field>
+        <field name="parent_id" ref="isep_sale_subscription_custom.model_sale_subscription_schedule_menu"/>
+        <field name="action" ref="isep_payment_cron_extend.action_recurring_payment_wizard_cron"/>
+        <field name="sequence">6</field>
+        <field name="groups_id" eval="[(4, ref('isep_payment_cron_extend.group_recurring_payment'))]"/>
+    </record>
+
+</odoo>

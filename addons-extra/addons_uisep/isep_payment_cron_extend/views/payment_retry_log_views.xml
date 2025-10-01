@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- View payment.retry.log View Tree -->
+    <record id="view_payment_retry_log_tree" model="ir.ui.view">
+        <field name="name">view.payment.retry.log.tree</field>
+        <field name="model">payment.retry.log</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="invoice_id" optional="show"/>
+                <field name="sale_order_id" optional="show"/>
+                <field name="token_id" optional="show"/>
+                <field name="provider_id" optional="show"/>
+                <field name="retry_date" optional="show"/>
+                <field name="attempt_percent" optional="show"/>
+                <field name="state" optional="show"/>
+                <field name="error_message" optional="show"/>
+                <field name="reference" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- View payment.retry.log form -->
+    <record id="view_payment_retry_log_form" model="ir.ui.view">
+        <field name="name">view.payment.retry.log.form</field>
+        <field name="model">payment.retry.log</field>
+        <field name="arch" type="xml">
+            <form string="Logs de Reintento de Pago">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="invoice_id" class="oe_inline"/>
+                            <field name="sale_order_id" class="oe_inline"/>
+                            <field name="token_id" class="oe_inline"/>
+                            <field name="provider_id" class="oe_inline"/>
+                        </group>
+                        <group>
+                            <field name="retry_date"/>
+                            <field name="attempt_percent"/>
+                            <field name="state"/>
+                        </group>
+                    </group>
+
+                    <field name="error_message"  class="oe_full_width"/>
+                    <field name="reference"  class="oe_full_width"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Action payment.retry.log -->
+    <record id="action_payment_retry_log" model="ir.actions.act_window">
+        <field name="name">Logs de Reintento de Pago</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">payment.retry.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                There is no examples click here to add new Payment Retry Log.
+            </p>
+        </field>
+    </record>
+
+    <record id="menu_action_payment_retry_log" model="ir.ui.menu">
+        <field name="name">Logs de Reintento de Pago</field>
+        <field name="parent_id" ref="isep_sale_subscription_custom.model_sale_subscription_schedule_menu"/>
+        <field name="action" ref="isep_payment_cron_extend.action_payment_retry_log"/>
+        <field name="sequence">7</field>
+    </record>
+
+</odoo>

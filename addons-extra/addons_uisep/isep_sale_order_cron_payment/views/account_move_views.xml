@@ -9,7 +9,7 @@
         <field name="arch" type="xml">
             <xpath expr="//page[@name='other_info']/group[@id='other_tab_group']/group[@name='sale_info_group']/field[@name='ref']" position="after">
                 <group>
-                    <field name="link_payment" invisible="1"/>
+                    <field name="link_payment" invisible="0"/>
                     <field name="is_sent_mail" />
                     <field name="link_payment_static" invisible="1"/>
                 </group>

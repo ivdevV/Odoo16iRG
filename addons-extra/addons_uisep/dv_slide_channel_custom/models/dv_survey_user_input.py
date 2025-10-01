@@ -11,6 +11,7 @@ import os
 from zipfile import ZipFile
 import pandas as pd
 from odoo.tools import html2plaintext
+import olefile
 import json
 import requests
 import logging
@@ -24,7 +25,13 @@ class SurveyUserInput(models.Model):
     active_ia=fields.Boolean("Activada IA", related='survey_id.active_ia') 
     score_ia=fields.Float("Nota sugerida IA")
     extrae_alum=fields.Text("Texto 2")
+    error_ai=fields.Text("Error en procesar con IA")    
     resumen_ia=fields.Text("Resumen IA",help="Puede modificar el resultado de la IA pero mantenga la estrutura Calificacion entre '[]' y Comentario dentro de '{}'")
+
+
+    def _clean_null_chars(self, text):
+        """Limpia caracteres NULL (\x00) de un texto."""
+        return text.replace('\x00', '') if text else ''
 
     def analyze_score_test(self):        
         config = self.env['dv.config.ia'].search([], limit=1)
@@ -39,10 +46,10 @@ class SurveyUserInput(models.Model):
         )
 
         text1= self.survey_id.attach_text_extract if self.survey_id.attach_text_extract else html2plaintext(self.survey_id.description or '')
-        print("////////////////////////////////////",text1)
+        #print("////////////////////////////////////",text1)
         text_analize = "Texto 1 = {} Texto 2 = {}".format(
-            text1, 
-            self.extrae_alum
+            self._clean_null_chars(text1), 
+            self._clean_null_chars(self.extrae_alum)
         )
            
         headers = {
@@ -61,7 +68,7 @@ class SurveyUserInput(models.Model):
             response.raise_for_status()
             response_data = response.json()
 
-            ai_response_content = response_data['choices'][0]['message']['content']
+            ai_response_content = self._clean_null_chars(response_data['choices'][0]['message']['content'])
             self.resumen_ia = ai_response_content
 
         except requests.exceptions.RequestException as e:
@@ -77,15 +84,15 @@ class SurveyUserInput(models.Model):
                         file_content = base64.b64decode(archivo.datas)
                         file_extension = os.path.splitext(line.filename or '')[1].lower()
                         if file_extension == '.pdf':
-                            self.extrae_alum = self._extract_text_from_pdf(file_content)
+                            self.extrae_alum = self._clean_null_chars(self._extract_text_from_pdf(file_content))
                         elif file_extension in ['.docx', '.doc']:
-                            self.extrae_alum = self._extract_text_from_docx(file_content)
+                            self.extrae_alum = self._clean_null_chars(self._extract_text_from_docx(file_content))
                         elif file_extension == '.txt':
-                            self.extrae_alum = self._extract_text_from_txt(file_content)
+                            self.extrae_alum = self._clean_null_chars(self._extract_text_from_txt(file_content))
                         elif file_extension in ['.pptx', '.ppt']:
-                            self.extrae_alum = self._extract_text_from_pptx(file_content)
+                            self.extrae_alum = self._clean_null_chars(self._extract_text_from_pptx(file_content))
                         elif file_extension in ['.xlsx', '.xls']:
-                            self.extrae_alum = self._extract_text_from_excel(file_content, file_extension)
+                            self.extrae_alum = self._clean_null_chars(self._extract_text_from_excel(file_content, file_extension))
                         else:
                             self.extrae_alum = 'Formato de archivo no soportado.'
                         break
@@ -99,13 +106,59 @@ class SurveyUserInput(models.Model):
                 text += page.get_text()
         return text
 
+
+    def _clean_doc_text(self,text):
+        """
+        Elimina los caracteres de control y secuencias binarias extrañas,
+        dejando solo texto legible y saltos de línea.
+        """
+
+        return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]', '', text)
+
     def _extract_text_from_docx(self, file_content):
         text = ""
         with BytesIO(file_content) as f:
-            doc = Document(f)
-            for para in doc.paragraphs:
-                text += para.text + "\n"
-        return text
+            header = f.read(8)
+            f.seek(0)
+            
+            if header.startswith(b'\xD0\xCF\x11\xE0'): 
+                ole = olefile.OleFileIO(f)
+                streams_to_try = ['WordDocument', 'Contents', 'Main Content']
+                raw_text = ""
+                for stream in streams_to_try:
+                    if ole.exists(stream):
+                        word_stream = ole.openstream(stream)
+                        raw_text += word_stream.read().decode('latin1', errors='ignore')
+                ole.close()
+                text = self._clean_doc_text(raw_text)
+            else:
+                doc = Document(f)
+                text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+            
+            return text
+
+    # def _extract_text_from_docx(self, file_content):
+    #     text = ""
+    #     with BytesIO(file_content) as f:
+    #         # Detectar si es .doc por la firma del archivo
+    #         header = f.read(8)
+    #         f.seek(0)
+            
+    #         if header.startswith(b'\xD0\xCF\x11\xE0'):  # Firma de archivo .doc
+    #             # Procesar como .doc usando olefile
+    #             ole = olefile.OleFileIO(f)
+    #             streams_to_try = ['WordDocument', 'Contents', 'Main Content']
+    #             for stream in streams_to_try:
+    #                 if ole.exists(stream):
+    #                     word_stream = ole.openstream(stream)
+    #                     text += word_stream.read().decode('latin1', errors='ignore')
+    #             ole.close()
+    #         else:
+    #             # Es un archivo .docx
+    #             doc = Document(f)
+    #             text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+            
+    #         return text
 
     def _extract_text_from_txt(self, file_content):
         return file_content.decode('utf-8')
@@ -162,8 +215,8 @@ class SurveyUserInput(models.Model):
                     line.answer_score = record.score_ia  
 
 
-    def cron_ia_score_survey(self):
-        surveys = self.search([('active_ia', '=', True), ('resumen_ia', '=', False)])
+    def cron_ia_score_survey(self,limit):
+        surveys = self.search([('active_ia', '=', True), ('resumen_ia', '=', False), ('error_ai', '=', False)], limit=limit )
         config = self.env['dv.config.ia'].search([], limit=1)
         for survey in surveys:
             try:
@@ -174,6 +227,7 @@ class SurveyUserInput(models.Model):
                     survey.update_answer_scores()                    
             except Exception as e:
                 _logger.error(f"Error procesando la encuesta {survey.id}: {e}")
+                survey.error_ai = self._clean_null_chars(str(e))
 
 
     def analiza_a_mano_survey(self):

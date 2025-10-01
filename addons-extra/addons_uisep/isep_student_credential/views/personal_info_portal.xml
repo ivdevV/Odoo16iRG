@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="isep_website_custom_inh" inherit_id="isep_website_custom.user_profile_content_details">
+        <xpath expr="//h5[@class='border-bottom pb-1']" position="after">
+            <t t-set="admission" t-value="request.env['op.admission'].sudo().search([('partner_id', '=', request.env.user.partner_id.id)], limit=1)"/>
+            <a t-attf-href="/credential/download/{{ admission.id }}">
+                    <div class="d-flex align-items-start" style="cursor: pointer;">
+                        <img src="/openeducat_core_enterprise/static/img/passport.svg"
+                            class="img-fluid me-2" alt="Credencial" title="Credencial"
+                            style="width: 20px;"/>
+                        <div class="flex-grow-1">
+                            <strong class="text-secondary">Descargar Credencial</strong>
+                        </div>
+                    </div>
+                </a>
+        </xpath>
+    </template>
+</odoo>

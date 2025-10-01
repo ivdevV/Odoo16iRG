@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+{
+    'name': 'IRG Ventas Extendido',
+    'version': '0.1',
+    'description': """Extends the functionalities of the sales order""",
+    'author': "DFVZ TECH",
+    'website': "https://vztech.odoo.com/",
+    'category': 'Sale',
+    'depends': [
+        'base',
+        'hr',
+        'product',
+        'website_slides',
+        'sale_management',
+        'account_accountant',
+        'account_payment_mode',
+        'account_payment_sale',
+        'account_payment_order',
+        'account_payment_partner',
+        'account_payment_term_extension',
+        'account_banking_mandate',
+        'account_banking_pain_base',
+        'account_banking_sepa_direct_debit',
+    ],
+    "data": [
+        "reports/registration_order_paperformat.xml",
+        "reports/registration_order_template.xml",
+        "views/res_partner_views.xml",
+        "views/sale_order_views.xml",
+        "views/product_template_views.xml",
+        "views/product_product_views.xml",
+        "views/res_company_views.xml"
+    ],
+    'installable': True,
+    'auto_install': False,
+    'license': 'LGPL-3',
+}

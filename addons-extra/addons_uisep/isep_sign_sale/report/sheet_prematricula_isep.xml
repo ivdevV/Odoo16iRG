@@ -9,7 +9,7 @@
         <field name="page_width">210</field>
         <field name="orientation">Portrait</field>
         <field name="margin_top">40</field>
-        <field name="margin_bottom">65</field>
+        <field name="margin_bottom">85</field>
         <field name="margin_left">7</field>
         <field name="margin_right">7</field>
         <field name="header_line" eval="False"/>
@@ -25,6 +25,7 @@
        <field name="report_file">isep_sign_sale.prematricula_isep_international</field>
        <field name="paperformat_id" ref="isep_sign_sale.sheet_prematricula_custom_paperformat" />
        <field name="binding_type">report</field>
+       <field name="binding_model_id" ref="model_sale_order"/> 
    </record>
     
 
@@ -123,31 +124,31 @@
                                 <strong>Población:</strong><br/>
                                 <strong>Móvil:</strong><br/>
                                 <strong>Email:</strong><br/>
-                                <strong>Estudios:</strong><br/>
-                                <strong>Universidad:</strong>
+                                <!-- <strong>Estudios:</strong><br/> -->
+                                <!-- <strong>Universidad:</strong> -->
                             </div>
                             <!--Second column-->
                             <div class="col-3">
                                 <span t-field="o.partner_id.city"/><br/>
                                 <span t-field="o.partner_id.mobile"/><br/>
                                 <span t-field="o.partner_id.email"/><br/>
-                                <span t-field="o.partner_id.titulacion"/><br/>
-                                <span t-field="o.partner_id.university"/>
+                                <!-- <span t-field="o.partner_id.titulacion"/><br/> -->
+                                <!-- <span t-field="o.partner_id.university"/> -->
                             </div>
                             <!--Third column-->
                             <div class="col-2">
                                 <strong>Estado:</strong><br/>
                                 <strong>Teléfono Fijo:</strong><br/>
-                                <strong>Finalizados:</strong><br/>
-                                <strong>Profesión:</strong><br/>
+                                <!-- <strong>Finalizados:</strong><br/> -->
+                                <!-- <strong>Profesión:</strong><br/> -->
                                 <strong>Asesor:</strong><br/>
                             </div>
                             <!--Fourth column-->
                             <div class="col-2">
                                 <span t-field="o.partner_id.state_id"/><br/>
                                 <span t-field="o.partner_id.phone"/><br/>
-                                <span t-field="o.partner_id.finalizacionestudios"/><br/>
-                                <span t-field="o.partner_id.profession"/><br/> 
+                                <!-- <span t-field="o.partner_id.finalizacionestudios"/><br/> -->
+                                <!-- <span t-field="o.partner_id.profession"/><br/>  -->
                                 <span t-field="o.user_id.name"/><br/>
                             </div>
                             <!--Fourth column-->
@@ -282,8 +283,8 @@
                                 <strong>Forma de Pago:</strong><br/>
                             </div>
                             <div class="col-3"> 
-                                <span t-field="o.recurring_rule_count"/> Meses <br/>
-                                <span t-esc="amount_recurring" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/> <span t-field="o.currency_id.name"/> por <span t-field="o.recurring_rule_count"/> Meses<br/>
+                                <span t-field="o.term_number"/> Meses <br/>
+                                <span t-esc="amount_recurring" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/> <span t-field="o.currency_id.name"/> por <span t-field="o.term_number"/> Meses<br/>
                                 <span t-esc="amount_no_recurring" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/> <span t-field="o.currency_id.name"/><br/>
                                 <span t-field="o.payment_term_id.name"/>
                             </div>
@@ -333,7 +334,7 @@
                                   <span t-field="o.partner_id.vat"/>
                               </div>
                               <div class="col-4" style="font-size:18px;text-align:center;">
-                                  <strong><span t-field="o.partner_invoice_id.name"/>
+                                  <strong><span t-field="o.partner_invoice_id.company_name"/>
                                   </strong><br/>
                               </div>
                               <div class="col-4" style="font-size:18px;text-align:center;">
@@ -537,7 +538,7 @@
                           <p>
                              <span t-esc="abc[index]"/>) <span t-field="line.name"/> 
                              <span t-if="line.product_template_id.recurring_invoice == False"> (Pago por unica vez de <span t-field="line.price_reduce_taxinc"/> <span t-field="o.currency_id.name"/>)</span>
-                             <span t-if="line.product_template_id.recurring_invoice"> (Cargo recurrente de <span t-field="line.price_reduce_taxinc"/> <span t-field="o.currency_id.name"/> por <span t-field="o.recurring_rule_count"/> meses)</span> .
+                             <span t-if="line.product_template_id.recurring_invoice"> (Cargo recurrente de <span t-field="line.price_reduce_taxinc"/> <span t-field="o.currency_id.name"/> por <span t-field="o.term_number"/> meses)</span> .
                            </p>
                            <t t-set="index" t-value="index+1"/>
                         </t>
@@ -636,7 +637,7 @@
 
 
                                 Debo y pagaré incondicionalmente esta serie de
-                                <span t-esc="o.recurring_rule_count" style="margin:0 5px"/>
+                                <span t-esc="o.term_number" style="margin:0 5px"/>
                                 pagarés a la orden de Universidad ISEP. en la ciudad de Culiacán, Sinaloa,
                                 México, con domicilio en Av. Teniente Juan de la Barrera Nte. 1349.
                                 <br/><br/>
@@ -651,15 +652,13 @@
                             <div class="row container-fluid" style="text-align:justify;font-size:14px">
                                 <t t-if="o.recurrence_id and o.start_date">
 
-                                    <tr t-foreach="range(0,o.recurring_rule_count)" t-as="l">
+                                    <tr t-foreach="o.subscription_schedule" t-as="l">
                                         PAGARÉ Pago
-                                        <span t-esc="str(l+1).zfill(2)" style="margin:0 2px"/>de
-                                        <span t-esc="o.recurring_rule_count" style="margin:0 2px"/>
-                                        ,el día
+                                        <span t-esc="l.term_label" style="margin:0 0px"/>, el día
 
-                                        <span t-esc="o.start_date + relativedelta(months=l)" t-options="{&quot;format&quot;: &quot;dd-MM-yyyy&quot;, 'widget': 'date'}"/>
-                                        la cantidad de <span t-field="o.currency_id.symbol"/>
-                                        <span t-esc="amount_recurring" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/>
+                                        <span t-esc="l.date_due" t-options="{&quot;format&quot;: &quot;dd-MM-yyyy&quot;, 'widget': 'date'}"/>
+                                        la cantidad de <span t-field="l.currency_id.symbol"/>
+                                        <span t-esc="o.amount_recurring_taxinc" t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;precision&quot;: 2}"/>
                                         <br/>
                                     </tr>
                                 </t>

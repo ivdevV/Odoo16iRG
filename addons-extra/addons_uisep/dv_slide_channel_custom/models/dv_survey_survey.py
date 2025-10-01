@@ -9,6 +9,7 @@ from io import BytesIO
 import os
 from zipfile import ZipFile
 import pandas as pd
+import olefile
 
 class SurveySurvey(models.Model):
     _inherit= "survey.survey"
@@ -78,12 +79,25 @@ class SurveySurvey(models.Model):
         return text
 
     def _extract_text_from_docx(self, file_content):
-        text = ""
         with BytesIO(file_content) as f:
-            doc = Document(f)
-            for para in doc.paragraphs:
-                text += para.text + "\n"
-        return text
+            header = f.read(8)
+            f.seek(0)
+            
+            if header.startswith(b'\xD0\xCF\x11\xE0'): 
+
+                ole = olefile.OleFileIO(f)
+                streams_to_try = ['WordDocument', 'Contents', 'Main Content']
+                text = ""
+                for stream in streams_to_try:
+                    if ole.exists(stream):
+                        word_stream = ole.openstream(stream)
+                        text += word_stream.read().decode('latin1', errors='ignore')
+                ole.close()
+                return text
+            else:
+                doc = Document(f)
+                text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+                return text
 
     def _extract_text_from_txt(self, file_content):
         return file_content.decode('utf-8')

@@ -16,6 +16,7 @@
                         attrs="{'invisible':[('card','=',False)]}"
                         icon="fa-id-card" />
                 </div>
+                <field name="order_start_url" readonly="1"/>
 
             </xpath>
 

@@ -1,15 +1,17 @@
-import time
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
 import logging
 import pprint
-
+import requests
 from werkzeug import urls
 
-from odoo import _, models
+from odoo import _, models,fields
 from odoo.exceptions import UserError, ValidationError
-
+from odoo import http
 from odoo.addons.payment import utils as payment_utils
+from odoo.addons.payment_flywire import const
 from odoo.addons.payment_flywire.controllers.main import FlywireController
-import requests
+from werkzeug.urls import url_join
 
 _logger = logging.getLogger(__name__)
 
@@ -17,205 +19,167 @@ _logger = logging.getLogger(__name__)
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
-    def _flywire_make_redirect(self, reference):
-        reference = reference.get('reference')
-        tx = self.search([('reference', '=', reference), ('provider_code', '=', 'flywire')] , limit=1)
-        _logger.info("payload:\n%s" % str(tx))
-        if tx:
-            base_url = tx.provider_id.get_base_url()
-            partner_first_name, partner_last_name = payment_utils.split_partner_name(tx.partner_name)
-            webhook_url = urls.url_join(base_url, FlywireController._webhook_url)
-            return_url = f'{urls.url_join(base_url, FlywireController._return_url)}' \
-                            f'?reference={urls.url_quote_plus(tx.reference)}'
-            flywire_provider = False
-            flywire_payment_destination = False
+    flywire_session_url = fields.Char('flywire session url')
+    flywire_session_id = fields.Char('flywire session id')
+    flywire_type = fields.Selection([('tokenization_and_pay','Tokenization and pay'),('tokenization','Tokenization')], string="Tipo de operación")
+    
 
-            for line in  tx.provider_id.flywire_portal_ids:
-                if line.currency_id == tx.currency_id:
-                    flywire_provider = line.flywire_provider
-                    flywire_payment_destination = line.flywire_payment_destination
-                    break
-            if not flywire_provider or not flywire_payment_destination:
-                raise UserError('Divisa no no disponible')
+    def _get_flywire_session_confirm(self):
+        self.ensure_one()
+        
+        
+    def _get_flywire_payload_values(self):
+        
+        recipient_id = self.provider_id._get_flywire_recipient_id(self)
+        
+        
+        base_url = self.provider_id.get_base_url()
+        country = self.partner_id.country_id.code or self.company_id.partner_id.country_id.code or "-"
+        state_id = self.partner_id.state_id.code or self.company_id.partner_id.state_id.code or "-"
+        zip = self.partner_id.zip or self.company_id.partner_id.zip or "-"
+        currency_name = self.company_id.currency_id.name
+        factor = const.CURRENCIES.get(currency_name).get('unit')        
+        amount = int(self.amount*factor)
+        
 
-            if  tx.currency_id not in tx.provider_id.flywire_portal_ids.mapped('currency_id'):
-                raise UserError('Divisa no disponible.')
-
-            if not tx.partner_email:
-                raise UserError('El correo del cliente es requerido.')
-            """ if not tx.partner_address:
-                raise UserError('La dirección del cliente es requerido.')
-            if not tx.partner_city:
-                raise UserError('La ciudad del cliente es requerido.')
-            if not tx.partner_state_id:
-                raise UserError('El estado (Dirección) del cliente es requerido.')
-            if not tx.partner_zip:
-                raise UserError('El codigo ZIP del cliente es requerido.')
-            if not tx.partner_phone:
-                raise UserError('El número de teléfono del cliente es requerido.')"""
-            
-            client = False
-            if tx.sale_order_ids:
-                for line in tx.sale_order_ids:
-                    client = line.partner_id
-                    if line.partner_invoice_id:
-                        client = line.partner_id
-                    break       
-
-            if not client:
-                for line in tx.invoice_ids:
-                    client = line.partner_id
-                    break    
-
-                            
-
-            payload = {
-                    "provider": flywire_provider,
-                    "payment_destination": flywire_payment_destination,
-                    "country": tx.partner_country_id.code,
-                    "amount": int(tx.amount*100), # ok
-                    "return_cta": urls.url_join(base_url, FlywireController._return_url), # ok
-                    "return_cta_name": "Regresar a Universidad ISEP", # ok
-                    "sender_email": client.email or 'cobranza@universidadisep.com',
-                    "sender_first_name": client.name or  'Nombre',
-                    "sender_last_name": client.name or  'Apellidos' ,
-                    "sender_address1": client.street or  'Direccion' ,
-                    "sender_city": client.city or  'Ciudad',
-                    "sender_state": client.state_id.name  or 'Estado',
-                    "sender_zip": client.zip or "00000",
-                    "sender_phone": client.phone or "523334008005",
-                    "dynamic_fields": {
-                        "student_id": str(client.id).zfill(8),                    
-                    },
-                    "callback_id": tx.reference,
-                    "callback_version": "2",
-                    "callback_url": webhook_url,
-                    "return_url": return_url,
-                    # "recurringType": "tokenization",
-                }
-            # "amount_from": int(tx.amount*100),
-            #"currency_from": tx.currency_id.name,
-            #"currency_to": tx.currency_id.name,
-
-            
-            _logger.info("*******************************************")
-            _logger.info("*******************************************")
-            _logger.info("payload:\n%s", pprint.pformat(payload))
-
-            endpoint = tx.provider_id._flywire_get_api_url()        
-            flywire_url = tx.provider_id._flywire_make_request(endpoint, payload=payload)['url']
-
-            return flywire_url
+        name_list = self.partner_id.name.split()
+        first_name = False
+        last_name = False
+        if len(name_list) == 1:
+            first_name = name_list[0]
+            last_name = "-"
+        elif len(name_list) == 2:
+            first_name = name_list[0]
+            last_name = name_list[1]
+        elif len(name_list) == 3:
+            first_name = name_list[0]
+            last_name = f"{name_list[1]} {name_list[2]}"
+        elif len(name_list) == 4:
+            first_name = f"{name_list[0]} {name_list[1]}"
+            last_name = f"{name_list[2]} {name_list[3]}"
         else:
-            return ''
+            first_name = f"{name_list[0]} {name_list[1]}"
+            last_name = " ".join(name_list[2:])
 
-        """
-        "dynamic_fields": {
-                    "student_id": "123456",
-                    "student_first_name": "John",
-                    "student_last_name": "Doe"
-                }
-        """
+        
+        payload = {
+                "type": "one_off",
+                "charge_intent": {
+                    "mode": "one_off"
+                },
+                "payor": {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "address": self.partner_id.street,
+                    "city": self.partner_id.city or "-",
+                    "country": country,
+                    "state": state_id,
+                    "phone": self.partner_id.mobile or self.partner_id.phone,
+                    "email": self.partner_id.email,
+                    "zip": zip
+                },
+                "options": {
+                    "form": {
+                        "locale": "es-ES",
+                        "displayPayerInformation": True,
+                        "show_payor_information": True,
+                        "show_flywire_logo": True
+                    }
+                },
+                "recipient": {
+                    "fields": [
+                        {
+                            "id": "student_id",
+                            "value": str(self.partner_id.id).zfill(6)
+                        },
+                        {
+                            "id": "codigo_matricula",
+                            "value": str(self.partner_id.id).zfill(6)
+                        },
+                        {
+                            "id": "student_first_name",
+                            "value": first_name,
+                        },
+                        {
+                            "id": "student_last_name",
+                            "value": last_name,
+                        },
+                        {
+                            "id": "student_email",
+                            "value": self.partner_id.email,
+                        }
+                    ]
+                },
+                "items": [
+                    {
+                        "id": "default",
+                        "amount": amount, 
+                        "description": self.reference
+                    }
+                ],
+                "notifications_url": f"{base_url}payment/flywire/webhook",
+                "external_reference": self.reference,
+                "recipient_id": recipient_id, #Ejemplo "MFK" 
+                "payor_id": str(self.partner_id.id).zfill(6),
+                "displayPayerInformation": False,
+                "enable_email_notifications": False
+            }
+        _logger.info("****\n****\n****\n****\n****\n reference id:\n%s", str(self.id))
+        return payload
 
-    def _get_specific_rendering_values(self, processing_values):        
+    def _get_specific_rendering_values(self, processing_values):
         res = super()._get_specific_rendering_values(processing_values)
         if self.provider_code != 'flywire':
             return res
+        
+        base_url = self.provider_id.get_base_url()
+        payload = self._get_flywire_payload_values()
+        
+        _logger.info("**** payload:\n%s", pprint.pformat(payload))
+        payment_link_data = self.provider_id._flywire_make_request(payload=payload)
+        _logger.info("\n#####\n#####\n#####\nRequest session:\n%s\n#####\n#####\n#####\n", pprint.pformat(payment_link_data))
+        # payment_link_data debe devolver ejemplo:
+        """{
+            "id": "494d2e9d-c0c9-407c-9094-5b3b2a02c00f",
+            "expires_in_seconds": 1800,
+            "hosted_form": {
+                "url": "https://payment-checkout-dev-apache.flywire.cc/v1/form?session_id=494d2e9d-c0c9-407c-9094-5b3b2a02c00f",
+                "method": "GET"
+            },
+            "warnings": []
+            }"""
 
+        # Extract the payment link URL and embed it in the redirect form.
+        flywire_session_url = payment_link_data['hosted_form']['url']
         rendering_values = {
-            'api_url': '%s%s%s' % (FlywireController._redirect_url,'?reference=',self.reference),            
+            'api_url': '%spayment/flywire/sessions/%s/%s' % (base_url,str(self.id),payment_link_data['id']), #(base_url,payment_link_data['id']) # payment_link_data['hosted_form']['url'],
         }
-
+        try:
+            self.flywire_session_url = flywire_session_url
+            self.flywire_session_id = payment_link_data['id']
+        except:
+            pass
+        _logger.info("**** payload:\n%s", pprint.pformat(payload))
+        _logger.info("**** rendering_values:\n%s", pprint.pformat(rendering_values))
         return rendering_values
 
-    
-    def _get_tx_from_return_status_flywire(self, provider_code, notification_data):
-        """ Override of payment to find the transaction based on flywire data.
-
-        :param str provider_code: The code of the provider that handled the transaction
-        :param dict notification_data: The notification data sent by the provider
-        :return: The transaction if found
-        :rtype: recordset of `payment.transaction`
-        :raise: ValidationError if the data match no transaction
-        """
-        _logger.info("*******************************************")
-        _logger.info("*******************************************")
-        _logger.info("notification_data:\n%s", str(notification_data) )
-
-        reference = notification_data.get('reference')
-        tx = self.search([('reference', '=', reference), ('provider_code', '=', 'flywire')])
-        if not tx:
-            raise ValidationError(
-                "flywire: " + _("No transaction found matching reference %s.", reference)
-            )
-        return tx
-
-    def _get_tx_from_notification_data(self, provider_code, notification_data):
-        """ Override of payment to find the transaction based on flywire data.
-
-        :param str provider_code: The code of the provider that handled the transaction
-        :param dict notification_data: The notification data sent by the provider
-        :return: The transaction if found
-        :rtype: recordset of `payment.transaction`
-        :raise: ValidationError if the data match no transaction
-        """
-        _logger.info("*******************************************")
-        _logger.info("*******************************************")
-        _logger.info("notification_data:\n%s", str(notification_data) )
         
-        tx = super()._get_tx_from_notification_data(provider_code, notification_data)
-        if provider_code != 'flywire' or len(tx) == 1:
-            return tx
-
-        reference = notification_data.get('data').get('external_reference')
-        tx = self.search([('reference', '=', reference), ('provider_code', '=', 'flywire')])
-        if not tx:
-            raise ValidationError(
-                "flywire: " + _("No transaction found matching reference %s.", reference)
-            )
-        return tx
-
-    def _process_notification_data(self, notification_data):
-        """ Override of payment to process the transaction based on flywire data.
-
-        Note: self.ensure_one()
-
-        :param dict notification_data: The notification data sent by the provider
-        :return: None
-        :raise: ValidationError if inconsistent data were received
-        """
-        super()._process_notification_data(notification_data)
-        if self.provider_code != 'flywire':
-            return
-
-        txn_id = notification_data.get('data').get('payment_id')
-        txn_type = notification_data.get('event_type')
-        if not all((txn_id, txn_type)):
-            raise ValidationError(
-                "flywire: " + _(
-                    "Missing value for txn_id (%(txn_id)s) or txn_type (%(txn_type)s).",
-                    txn_id=txn_id, txn_type=txn_type
-                )
-            )
-        self.provider_reference = txn_id
-
-        payment_status = notification_data.get('event_type')
-        data=notification_data.get('data')
-        if payment_status in ['initiated','processed']:
-            self._set_pending(state_message=payment_status)
-        elif payment_status in ['delivered','guaranteed']:
-            self._set_done()
-        elif payment_status in ['failed']:
-            self._set_canceled("Flywire: Status failed: %s", data.get('reason'))
-        elif payment_status in ['cancelled']:
-            self._set_canceled("Flywire: Status cancelled: %s", data.get('cancellation_reason'))
-            
-        else:
-            _logger.info(
-                "received data with invalid payment status (%s) for transaction with reference %s",
-                payment_status, self.reference
-            )
-            self._set_error(
-                "flywire: " + _("Received data with invalid payment status: %s", payment_status)
-            )
+        """payload = {
+            'tx_ref': self.reference,
+            'amount': self.amount,
+            'currency': self.currency_id.name,
+            'redirect_url': urls.url_join(base_url, FlywireController._return_url),
+            'customer': {
+                'email': self.partner_email,
+                'name': self.partner_name,
+                'phonenumber': self.partner_phone,
+            },
+            'customizations': {
+                'title': self.company_id.name,
+                'logo': urls.url_join(base_url, f'web/image/res.company/{self.company_id.id}/logo'),
+            },
+            'payment_options': const.PAYMENT_METHODS_MAPPING.get(
+                self.payment_method_code, self.payment_method_code
+            ),
+        }"""
 

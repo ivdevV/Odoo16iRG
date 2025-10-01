@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <template id="restricted_user_profile_openeducat" name="Restricted menu to frontend portal" inherit_id="isep_website_custom.user_profile_openeducat">
+            <xpath expr="//div[hasclass('student_tile_portal')]" position="attributes">
+                <attribute name="t-if">
+                    not menu.requires_completing_half or menu.requires_completing_half and menu.percentage &lt;= course.student_id.total_completion_porc
+                </attribute>
+            </xpath>
+        </template>
+    </data>
+</odoo>

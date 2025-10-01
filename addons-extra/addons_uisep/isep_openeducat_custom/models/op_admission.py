@@ -4,7 +4,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
-
+from datetime import date
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -47,6 +47,40 @@ class OpAdmission(models.Model):
         default=lambda self: _('Nuevo'))
 
 
+    duration_state = fields.Selection(
+        selection=[
+            ('not_started', 'No iniciado'),
+            ('in_progress', 'En curso'),
+            ('expired', 'Finalizado')
+        ],
+        required=True,
+        string='Estd. Grupo',
+        default="not_started",
+        compute='_compute_duration_state',
+        store=True
+    )
+
+    
+    @api.depends('batch_id.end_date', 'state')
+    def _compute_duration_state(self):
+        today = date.today()
+        for record in self:
+            if record.state == 'done': 
+                if record.batch_id and record.batch_id.end_date:  # Check if batch_id exists
+                    if today <= record.batch_id.end_date:
+                        record.duration_state = 'in_progress'
+                    else:
+                        record.duration_state = 'expired'
+                else:
+                    record.duration_state = 'not_started'
+            else:
+                record.duration_state = 'not_started'
+
+    def _cron_update_duration_state(self):
+        records = self.env['op.admission'].search([])
+        records._compute_duration_state()
+            
+            
     
     @api.onchange('student_id', 'is_student')
     def onchange_student(self):

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View slide.slide form -->
+    <record id="view_slide_credential_slide_form" model="ir.ui.view">
+        <field name="name">view.slide.slide.form</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='total_views']" position="after">
+                <field name="show_credential_download"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

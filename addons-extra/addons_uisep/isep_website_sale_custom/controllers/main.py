@@ -1,67 +1,103 @@
-from odoo import http
+from odoo import fields, http, SUPERUSER_ID, tools, _
 import logging
-from odoo.addons.website_sale.controllers.main import WebsiteSale
+from odoo.addons.website_sale.controllers.main import WebsiteSale, WebsiteSaleForm
 from odoo.http import request
 from dateutil.relativedelta import relativedelta
-from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
+from odoo.exceptions import AccessError, MissingError, ValidationError
+import json
+from odoo.addons.base.models.ir_qweb_fields import nl2br
+import pprint
+    
+from odoo.addons.website_sale.controllers.main import WebsiteSale
+
+    
+
+class CustomWebsiteSaleForm(WebsiteSaleForm):
+       
+    
+    @http.route('/website/form/shop.sale.order', type='http', auth="public", methods=['POST'], website=True)
+    def website_form_saleorder(self, **kwargs):
+        model_record = request.env.ref('sale.model_sale_order')
+        try:
+            data = self.extract_data(model_record, kwargs)
+            _logger.info('********** DATA WEB: %s' % pprint.pformat(data))  # debug
+        except ValidationError as e:
+            return json.dumps({'error_fields': e.args[0]})
+
+        order = request.website.sale_get_order()
+        if data['record']:
+            order.write(data['record'])
+
+        # Garantizamos con isep_custom_form_shop y shop.sale.order que es el formulario que queremos tratar
+        # Vamos a obviar el grabado de informacion cuando el usuario es public, User Public siempre es el ID 4
+        # No deberia pasar este caso ya que se genera un usuario nuevo pero igual lo tratamos y mandamos la info al chatter
+        if 'isep_custom_form_shop' not in data['custom'] or order.partner_id.id == 4:  
+            if data['custom']:
+                values = {
+                    'body': nl2br(data['custom']),
+                    'model': 'sale.order',
+                    'message_type': 'comment',
+                    'res_id': order.id,
+                }
+                request.env['mail.message'].with_user(SUPERUSER_ID).create(values)
+        else:
+            if data['custom']:
+                order.sudo()._process_custom_form(order.partner_id,data['custom'] )
+
+        if data['attachments']:
+            self.insert_attachment(model_record, order.id, data['attachments'])
+
+        return json.dumps({'id': order.id})
+    
+  
 
 
-class CustomWebsiteSale(WebsiteSale):
+class CustomWebsiteSale(WebsiteSale):  
 
+    # Haciendo requerido el Vat
+    #def _get_mandatory_fields_billing(self, country_id=False):
+    #    result = super()._get_mandatory_fields_billing(country_id)
+    #    result.append("vat")
+    #    return result
 
-
-    def _checkout_form_save(self, mode, checkout, all_values):
-
-        partner_id = super(CustomWebsiteSale, self)._checkout_form_save(mode, checkout, all_values)
-        order_id = request.website.sale_get_order()
-
-
-        if partner_id:
-            partner = request.env['res.partner'].sudo().browse(partner_id)
-            order = request.env['sale.order'].sudo().browse(order_id.id)
-            order_line = request.env['sale.order.line'].sudo().search([('order_id', '=', order.id)])
-            list_product_comb = []
-            for ol in order_line:
-                list_product_comb.append(int(ol.product_id.combination_indices))
-            attribute = request.env['product.template.attribute.value'].sudo().search([('id', 'in', list_product_comb)])
-
-            max_plazo = max(attribute.mapped('plazo')) if attribute else 1
-
-
-            birth_date = all_values.get('birth_date', '')
-            university = all_values.get('university', '')
-            profession = all_values.get('profession', '')
-            titulacion = all_values.get('titulacion', '')
-            finalizacionestudios = all_values.get('finalizacionestudios', '')
-
-            partner.write({
-                'birth_date': birth_date,
-                'university': university,
-                'profession': profession,
-                'titulacion': titulacion,
-                'finalizacionestudios': finalizacionestudios
-                })
-
-            order.write({
-                'recurring_rule_count':max_plazo,
-            }) 
-
-            period = relativedelta(day=0)
-            duration = order.recurrence_id.duration*order.recurring_rule_count
-            unit = order.recurrence_id.unit
-            if  unit == 'month':
-                period=relativedelta(months=duration)
-            elif unit == 'day':
-                period=relativedelta(days=duration)
-            elif unit == 'week':
-                period=relativedelta(weeks=duration)
-            elif unit == 'year':
-                period=relativedelta(years=duration)
-            end_date = order.start_date + period - relativedelta(days=1)
-
-            order.write({
-                'end_date':end_date
-            })        
-
-        return partner_id
+    
+    @http.route(['/shop/confirm_order'], type='http', auth="public", website=True, sitemap=False)
+    def confirm_order(self, **post):
+        res = super(CustomWebsiteSale, self).confirm_order(**post)
+        try:       
+            order = request.website.sale_get_order()
+            if not order.subscription_schedule and order.partner_id.id != 4:
+                order.sudo()._auto_scheduled_order()
+        except:
+            pass
+        
+        return res
+    
+    
+    @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
+    def address(self, **kw):
+        res = super(CustomWebsiteSale, self).address(**kw)
+        order = request.website.sale_get_order()
+        try:            
+            if not order.subscription_schedule and order.partner_id.id != 4:
+                order.sudo()._auto_scheduled_order()
+        except:
+            pass        
+    
+        return res
+    
+    
+    @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
+    def extra_info(self, **post):
+        res = super(CustomWebsiteSale, self).extra_info(**post)
+        order = request.website.sale_get_order()       
+        
+        try:       
+            order.sudo().get_academic_product_template_id()
+        except:
+            pass
+        
+        return res
+    
+    

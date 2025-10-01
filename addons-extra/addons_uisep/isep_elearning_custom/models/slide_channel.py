@@ -10,9 +10,6 @@ class SlideChannel(models.Model):
 
     op_subject_ids = fields.One2many('op.subject','slide_channel_id', 'Asignaturas asociadas')
 
-
-
-
 class SlideSlide(models.Model):
     _inherit = 'slide.slide'
 

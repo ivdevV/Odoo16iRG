@@ -25,6 +25,32 @@
             <field name="nextcall" eval="(datetime.now() + timedelta(minutes=7)).strftime('%Y-%m-%d %H:%M:%S')"/>
         </record>
 
+        <record id="cron_generate_schedule_invoices" model="ir.cron">
+            <field name="name">Generar Facturas desde Cronograma de Suscripción</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_generate_subscription_schedule_invoices(batch=10, date_run='01-03-2024')
+# batch: cantidad de suscripciones ejecutara para crear las facturas segun las cuotas(el cron puede ser pesada por cada suscripcion se multiplica la cantidad de facturas)
+# date_run: entre comillas colocar la fecha desde que iniciaria la creacion de las facturas de las suscripciones
+            </field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active" eval="False"/>
+        </record>
+
+        <record id="ir_cron_generate_payment_links" model="ir.cron">
+            <field name="name">Generar links de pago para facturas (futuro 3 meses)</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_generate_payment_links()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">False</field>
+        </record>
+
     </data>
 
 </odoo>

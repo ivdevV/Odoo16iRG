@@ -1,0 +1,16 @@
+<odoo>
+    <data>
+         <record id='ir_cron_invoice_due_reminders' model='ir.cron'>
+            <field name='name'>Recordatorios de vencimiento de facturas</field>
+            <field name='model_id' ref='model_account_move'/>
+            <field name='state'>code</field>
+            <field name='code'>model.cron_invoice_due_reminders()</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name='numbercall'>-1</field>
+            <field name='active'>0</field>
+            <field name="nextcall" eval="(datetime.now() + timedelta(minutes=7)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        </record>
+
+    </data>
+</odoo>

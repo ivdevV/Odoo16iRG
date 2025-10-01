@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_student_report_doc_tree" model="ir.ui.view">
+        <field name="name">student.report.doc.tree</field>
+        <field name="model">student.report.doc</field>
+        <field name="arch" type="xml">
+            <tree string="Student Analysis Reports" create="1" decoration-danger="not data_complete" decoration-info="data_complete" decoration-muted="state == 'cancel'">
+                <field name="data_complete" invisible="1"/>
+                <field name="name"/>
+                <field name="state"/>
+               <field name="date"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="view_student_report_doc_form" model="ir.ui.view">
+        <field name="name">student.report.doc.form</field>
+        <field name="model">student.report.doc</field>
+        <field name="arch" type="xml">
+            <form string="Student Analysis Report">
+		<header>
+
+                  <button name="action_generate_csv"
+                         string="Generate CSV"
+                           type="object"
+                          class="oe_highlight"
+                          states="draft"
+                          />
+
+
+		    <button name="action_set_checked"
+			    string="Marcar como Revisado"
+			    type="object"
+			    class="oe_highlight"
+			    states="draft"
+            />
+
+		    <button name="action_set_sent"
+			    string="Marcar como Enviado"
+			    type="object"
+			    class="oe_highlight"
+			    states="checked"/>
+
+		    <button name="action_set_auth"
+			    string="Autorizar"
+			    type="object"
+			    class="oe_highlight"
+			    states="sent"/>
+
+		    <button name="action_set_cancel"
+			    string="Cancelar"
+			    type="object"
+			    class="btn-danger"
+			    states="draft,checked,sent"/>
+
+		    <field name="state"
+			   widget="statusbar"
+			   statusbar_visible="draft,checked,sent,auth"/>
+		</header>
+
+
+               <sheet>
+
+                <!-- Smart Buttons -->
+                <div class="oe_button_box" name="button_box">
+                    <button type="object"
+                        name="action_open_ins_students"
+                        class="oe_stat_button"
+                        icon="fa-users">
+                    <field string="Inscritos" name="ins_count" widget="statinfo"/>
+                    </button>
+                    <button type="object"
+                        name="action_open_reins_students"
+                        class="oe_stat_button"
+                        icon="fa-refresh">
+                    <field string="Reinscritos" name="reins_count" widget="statinfo"/>
+                    </button>
+                    <button type="object"
+                        name="action_open_baja_students"
+                        class="oe_stat_button"
+                        icon="fa-times-circle">
+                    <field string="De Baja" name="baja_count" widget="statinfo"/>
+                    </button>
+                </div>
+    
+                <widget name="web_ribbon" title="Datos Incompletos"  bg_color="bg-danger" attrs="{'invisible':[('data_complete','=',True)]}" /> 
+
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="csv_filename" invisible="1"/>
+                            <field name="csv_file" filename="csv_filename" readonly="1"/>
+                            <field name="data_complete" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Report Lines">
+                            <field name="report_lines"  attrs="{'readonly': [('state', '!=', 'draft')]}"> 
+
+                                <tree editable="bottom" decoration-danger="not data_complete">
+                                    <field name="data_complete" invisible="1"/>
+                                    <field name="admission_id" optional="show"/>
+                                    <field name="admission_status"/>
+                                    <field name="scholar_year" />
+                                    <field name="first_name" />
+                                    <field name="middle_name" />
+                                    <field name="last_name" />
+                                    <field name="gender" />
+                                    <field name="curp" />
+                                    <field name="date" />
+                                    <field name="nationality" />
+                                    <field name="lang" />
+                                    <field name="special_needs" />
+                                    <field name="academic_background" />
+                                    <field name="cct" />
+                                    <field name="application_number" />
+                                    <field name="education_level" />
+                                    <field name="institute_key" />
+                                    <field name="career_key" />
+                                    <field name="shift_type" />
+                                    <field name="rvoe_number" />
+                                    <field name="rvoe_date" />
+                                    <field name="educational_mod" />
+
+
+
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="admission_id"/>
+                                                <field name="academic_year"/>
+                                                <field name="admission_status"/>
+                                                <field name="first_name"/>
+                                                <field name="middle_name"/>
+                                                <field name="last_name"/>
+                                                <field name="curp"/>
+                                                <field name="gender"/>
+                                                <field name="date"/>
+                                                <field name="student_id"/>
+                                                <field name="nationality"/>
+                                                <field name="application_number"/>
+                                                <field name="cct"/>
+                                                <field name="institute_key"/>
+
+                                            </group>
+                                            <group>
+                                                <field name="lang"/>
+                                                <field name="partner_id"/>
+                                                <field name="user_id"/>
+                                                <field name="scholar_year"/>
+                                                <field name="special_needs"/>
+                                                <field name="academic_background"/>
+                                                <field name="career_key"/>
+                                                <field name="rvoe_number"/>
+                                                <field name="rvoe_date"/>
+                                                <field name="educational_mod"/>
+                                                <field name="shift_type"/>
+                                                <field name="education_level"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+		    <div class="oe_chatter">
+			<field name="message_follower_ids" widget="mail_followers"/>
+			<field name="activity_ids" widget="mail_activity"/>
+			<field name="message_ids" widget="mail_thread"/>
+		    </div>
+
+
+            </form>
+        </field>
+    </record>
+
+
+
+    <!-- Window action for the report header -->
+    <record id="action_student_report_doc" model="ir.actions.act_window">
+        <field name="name">Reportes Anexo 8</field>
+        <field name="res_model">student.report.doc</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Anexo 8.
+            </p>
+        </field>
+    </record>
+    
+    <!-- Child menu -->
+    <menuitem id="menu_student_report_doc"
+              name="Reportes Anexo 8"
+              parent="menu_reports"
+              action="action_student_report_doc"
+              sequence="10"/>
+</odoo> 

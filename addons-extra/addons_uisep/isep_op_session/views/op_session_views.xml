@@ -11,7 +11,13 @@
                 <field name="faculty_name"/>
                 <field name="course_name"/>
                 <field name="subject_name"/>
+                <field name="slide_channel_num"/>
             </xpath>
+
+            <xpath expr="//field[@name='classroom_id']" position="after">
+                <field name="start_date" />
+            </xpath>
+            
         </field>
     </record>
 

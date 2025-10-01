@@ -61,15 +61,23 @@ class AppGradebookResult(models.Model):
                 res.scoring_total = grading_scale
         return res
         
+         
     def write(self, values):        
         gradebook = self.gradebook_subject_id.gradebook_id or self.gradebook_subject_id.gradebook_student_id.gradebook_id
         grading_scale = gradebook.grading_scale
-        if gradebook:
+        
+        if gradebook and 'scoring_total' in values:
             round_subject_result = gradebook.round_subject_result
+            scoring_total = values['scoring_total']
+
             if round_subject_result:
-                values['scoring_total'] = self.round_custom(values['scoring_total'])
-            if values['scoring_total'] > grading_scale:
-                values['scoring_total'] = grading_scale
+                scoring_total = self.round_custom(scoring_total)
+
+            if scoring_total > grading_scale:
+                scoring_total = grading_scale
+
+            values['scoring_total'] = scoring_total
+        
         return super(AppGradebookResult, self).write(values)
 
     

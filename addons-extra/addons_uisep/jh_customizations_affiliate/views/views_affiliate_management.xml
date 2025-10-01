@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="affiliate_pricelist_item_form_inherit_monthly_commission" model="ir.ui.view">
+          <field name="name">affiliate.product.pricelist.item.form.inherit.monthly.commission</field>
+          <field name="model">affiliate.product.pricelist.item</field>
+          <field name="inherit_id" ref="affiliate_management.aaffiliate_product_pricelist_item_view_form"/>
+          <field name="mode">extension</field>
+          <field name="priority">17</field>
+          <field name="arch" type="xml">
+            <!-- 🔧 Insertamos después del <div> que contiene percent_price -->
+            <xpath expr="//field[@name='percent_price']/ancestor::div[1]" position="after">
+                <div attrs="{'invisible': [('compute_price', '!=', 'monthly')]}">
+                    <group>
+                        <field name="jh_fee_percent"/>
+                        <field name="jh_monthly_commission" />
+                        <field name="jh_duration" />
+                    </group>
+                </div>
+            </xpath>
+          </field>
+        </record>
+        <!--Campo de relación a Subscription-->
+        <record id="view_subscription_form_inherit_affiliate" model="ir.ui.view">
+            <field name="name">sale.subscription.form.inherit.affiliado</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale_subscription.sale_subscription_primary_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='payment_term_id']" position="after">
+                    <field name="jh_affiliate_id"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

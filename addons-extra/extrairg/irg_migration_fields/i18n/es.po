@@ -1,0 +1,998 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* irg_migration_fields
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0+e-20240522\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-29 02:09+0000\n"
+"PO-Revision-Date: 2024-05-28 21:10-0500\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.4.3\n"
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<b>\n"
+"                                                INFORMACIÓN PREVIA\n"
+"                                            </b>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                El alumno y el titular del "
+"contrato han recibido del Instituto Raimon Gaja, S.L. (en adelante iRG), en "
+"el momento de la firma del presente, la información necesaria acerca del "
+"programa a seguir, tanto académica, económica y administrativa.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <br/>\n"
+"                                            <b>FORMALIZACIÓN Y CUMPLIMIENTO "
+"DEL CONTRATO</b>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                1.El contrato queda "
+"formalizado con la aceptación de estas condiciones. Las partes tienen por "
+"no efectuado ningún pacto verbal. Estas cláusulas prevalecen sobre otros "
+"pactos escritos que las contradigan.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                2.Tras la formalización del "
+"contrato, el alumno se compromete a aportar la documentación en el tiempo y "
+"forma solicitados por iRG. En el caso de que el estudiante opte por la "
+"modalidad de la doble titulación, donde se otorga un título de una "
+"Universidad (e-Campus, Universidad ISEP, Facultade ISEP, u otra), se "
+"reconoce y acepta que la titulación correspondiente a dicha Universidad "
+"estará sujeta exclusivamente a la normativa, políticas y requisitos "
+"establecidos por dicha Universidad. iRG no asume responsabilidad alguna por "
+"cambios, modificaciones, adaptaciones o revisiones de la normativa, "
+"políticas o requisitos de la Universidad vinculada durante el proceso "
+"formativo del estudiante. Será responsabilidad del estudiante atender y "
+"cumplir cualquier procedimiento que la Universidad determine en caso de "
+"cambios en su normativa o requisitos.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                3.De acuerdo con el Real "
+"Decreto Legislativo 1/2007, el alumno/titular tiene derecho, en plazo de 14 "
+"días naturales tras la formalización del contrato a desistir, debiendo "
+"notificarlo de forma inequívoca al iRG donde se haya matriculado. En "
+"cualquier otro caso, la baja unilateral por parte del alumno no exime del "
+"pago de los importes pactados ni da derecho a devolución de importes ya "
+"abonados. En ambos casos, iRG retendrá las tasas académicas en concepto de "
+"gastos de administración y el gasto de material. La asistencia al aula o el "
+"acceso al campus virtual o clases en streaming durante ese plazo suponen "
+"una solicitud expresa de Inicio de la prestación del servicio. Como Anexo "
+"integrante de este contrato, en este enlace (institutoraimongaja.com/"
+"documentodesistimiento) se adjunta el documento de desistimiento.\n"
+"                                            </span>\n"
+"                                            <span>\n"
+"                                                4. El titular autoriza a "
+"iRG a realizar los cobros en la forma y los plazos según las condiciones "
+"aceptadas para el pago.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                5. En caso de "
+"incumplimiento de los vencimientos pactados, iRG podrá reclamar la "
+"totalidad del importe al alumno/titular, y los plazos acordados con "
+"anterioridad quedarán sin efecto.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                6. iRG se reserva el "
+"derecho de dejar de prestar el servicio cuando el alumno no cumpla con las "
+"obligaciones adquiridas, así como de reportar a ficheros de morosidad, "
+"solvencias patrimonial o crédito en caso de que alumno/titular no cumpla "
+"satisfactoriamente con las obligaciones de pago pactadas.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                7. Los programas "
+"presenciales serán realizados siempre que se alcance el número mínimo "
+"necesario de alumnos. En caso de anulación, el alumno podrá optar entre "
+"destinar el importe pagado a otro programa del iRG o bien el reintegro de "
+"los importes abonados. Si por causas de fuerza mayor (confinamiento por "
+"COVID-19, por ejemplo) no se pudiera realizar las sesiones presenciales, se "
+"mantendrían el programa y el alumno tiene derecho a las mismas horas de "
+"clase, bajo modalidad HomeClass© (clases en vivo por videoconferencia).\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                8. Los contenidos y la "
+"metodología del programa se actualizan para incorporar mejoras y novedades. "
+"En caso de cambios, el alumno estará informado a medida que se "
+"implementen.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <br/>\n"
+"                                            <b>\n"
+"                                                TITULACIÓN ACADÉMICA Y "
+"CERTIFICADOS\n"
+"                                            </b>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                9. El alumno podrá "
+"solicitar la expedición del título del iRG una vez haya superado los "
+"requisitos (económicos, administrativos, aportación de documentación en "
+"tiempo y forma, etc.).\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                10. El precio de expedición "
+"de títulos, certificados u otros no están incluidos en el importe del "
+"programa. Los importes vigentes pueden consultarse en las sedes del iRG.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                11. En caso de que el "
+"alumno haya contratado un curso presencial en el que se incluya la "
+"posibilidad opcional de realización de prácticas, el alumno deberá tener "
+"tanto disponibilidad horaria como geográfica para poder realizarlas en el "
+"centro disponible. En caso de que el alumno haya contratado un curso "
+"online, las prácticas son extracurriculares e iRG no asigna centro. Las "
+"prácticas extracurriculares en los cursos de iRG no van incluidas en el "
+"precio del curso contratado. Para poder optar a práctica es requisito "
+"indispensable que el alumno haya abonado todas las cuotas correspondientes "
+"a los cursos en los que se ha matriculado. El alumno cuenta con 12 meses de "
+"plazo desde su inscripción, para solicitar las prácticas.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                12. Los títulos propios de "
+"iRG son titulaciones de Formación Permanente, para el desarrollo y "
+"proyección profesional, no conducentes a estudios de doctorado. Los "
+"programas con doble titulación universitaria oficial (E-Campus, Universidad "
+"Isep, u otras), tienen su validez dentro del país o la zona geográfica que "
+"los regula.\n"
+"                                            </span>\n"
+"                                            <span>\n"
+"                                                Para cualquier proceso de "
+"homologación o acceso a programas de doctorado, el interesado debe "
+"consultar con la normativa del país donde desea que surta efecto. \n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<b>\n"
+"                                                PROPIEDAD INTELECTUAL Y "
+"DERECHOS DE IMAGEN\n"
+"                                            </b>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                13. Uso personal de "
+"contenidos: El alumno tiene permitido descargar contenidos, copiar e "
+"imprimir páginas de la web y del campus virtual \n"
+"                                            </span>\n"
+"                                            <span>\n"
+"                                                exclusivamente para uso "
+"personal, siempre y cuando se respeten los derechos de propiedad "
+"intelectual. No está autorizado a transmitir, cambiar, modificar o suprimir "
+"contenidos sin la previa autorización escrita de la entidad.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                14. La entidad se reserva "
+"el derecho de utilizar las contribuciones de los alumnos para varios "
+"propósitos: Utilizar el material para mejorar la enseñanza y el aprendizaje "
+"en el contexto académico. Evaluar el rendimiento de los alumnos en sus "
+"actividades académicas y proporcionar retroalimentación. Utilizar el "
+"material para llevar a cabo investigaciones académicas y científicas. "
+"Compartir el conocimiento y los logros académicos con la comunidad "
+"educativa o el público en general.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                15. Conforme al Reglamento "
+"General de Protección de Datos (UE) 679/2016, los datos que se solicitan en "
+"el presente contrato de matrícula, serán tratados por el responsable "
+"designado a tal efecto, asimismo el alumno da permiso a la entidad a captar "
+"su imagen (bien será en fotografía, vídeo o audio) durante su participación "
+"en actividades presenciales o virtuales, pudiendo ser difundidas y/o "
+"transcritas en página web, redes sociales y diferentes medios de "
+"comunicación presentes y futuros.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                16. Asimismo el alumno "
+"autoriza a la entidad a que pueda remitirle comunicaciones electrónicas "
+"sobre actividades, nuevos cursos y otra información de interés.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                17. Los datos personales "
+"del alumno o antiguo alumno serán conservados mientras dure la relación "
+"contractual entre el alumno y la entidad y una vez finalizada ésta, hasta "
+"que el alumno no manifieste su oposición a que la entidad siga tratando sus "
+"datos. \n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <br/>\n"
+"                                            <b>\n"
+"                                                INFORMACIÓN TECNOLÓGICA\n"
+"                                            </b>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                18. Compatibilidad de "
+"navegadores: El Campus Virtual está diseñado para funcionar de manera "
+"óptima en ordenadores personales que utilizan los navegadores Chrome y "
+"Firefox. No se puede garantizar un funcionamiento perfecto del Campus con "
+"otros dispositivos o navegadores.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                19. Recomendación de "
+"conexión a Internet: Se aconseja a los alumnos contar con una conexión de "
+"Internet de alta velocidad, como ADSL o Fibra Óptica.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                20. La entidad queda "
+"exonerada de los daños y perjuicios que puedan surgir como resultado de la "
+"indisponibilidad temporal de servicios telemáticos. Esta exoneración se "
+"aplica en situaciones específicas, como cuando la causa de la "
+"indisponibilidad es una fuerza mayor o errores en las redes telemáticas que "
+"están fuera del control de la entidad. \n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <br/>\n"
+"                                            <b>\n"
+"                                                DURACIÓN DEL CONTRATO\n"
+"                                            </b>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                21. La vigencia de esta "
+"matrícula es la misma que el calendario del programa. El contrato no se "
+"prorroga de forma automática. Las prórrogas condicionadas a la "
+"disponibilidad por parte de iRG no están incluidas en el precio.\n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                22. iRG se reserva el "
+"derecho de dejar de prestar el servicio cuando el alumno no cumpla con las "
+"obligaciones adquiridas, así como el derecho de reportar a ficheros de "
+"morosidad, solvencias patrimonial o crédito, en caso de que el alumno/"
+"titular no cumpla satisfactoriamente con las obligaciones de pago "
+"contempladas en este contrato. \n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <br/>\n"
+"                                            <b>\n"
+"                                                DATOS PERSONALES\n"
+"                                            </b>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                23. De acuerdo con la "
+"normativa vigente, iRG informa que los datos proporcionados se incorporarán "
+"al sistema de tratamiento, titularidad de iRG con finalidades de tramitar "
+"la matrícula, gestionar la inscripción y participación en la actividad "
+"formativa, finalidades administrativas y contables, gestión del expediente "
+"académico e instancias, finalidades comerciales y obligaciones legales. "
+"Para cumplimiento legal y gestión administrativa-contable, los datos se "
+"podrán ceder a Agencia Tributaria, bancos, cajas y organismos y/o "
+"administración pública. Puede ejercer sus derechos (acceso, rectificación, "
+"limitación, supresión portabilidad y oposición) o revocar el consentimiento "
+"por correo postal iRG o bien, por email: academica@institutoraimongaja.com, "
+"dirigirse a la autoridad competente si es oportuno. Más info. (finalidades, "
+"legitimación, destinatarios, derechos, etc): institutoraimongaja.com. \n"
+"                                            </span>\n"
+"                                            <br/>\n"
+"                                            <br/>\n"
+"                                            <b>\n"
+"                                                LEGISLACIÓN APLICABLE Y "
+"JURISDICCIÓN COMPETENTE\n"
+"                                            </b>\n"
+"                                            <br/>\n"
+"                                            <span>\n"
+"                                                24. El contrato se "
+"considera formalizado en Barcelona, rigiéndose por la Ley Española. Si "
+"alguna cláusula incluida en el contrato se declara nula o ineficaz, ya sea "
+"total o parcialmente, esa nulidad o ineficiencia afectará solo a esa "
+"disposición específica o a la parte de ella que resulte nula o ineficaz, "
+"subsistiendo el resto de las condiciones pactadas.\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "<b>•</b>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<em>\n"
+"                                                    SEPA Direct Debit "
+"Mandate\n"
+"                                                </em>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"color: #032B5B; font-weight: bold; margin: 0;\">\n"
+"                                                Año:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"color: #032B5B; font-weight: bold; margin: 0;\">\n"
+"                                                Código BIC:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"color: #032B5B; font-weight: bold; margin: 0;\">\n"
+"                                                Entidad bancaria:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"color: #032B5B; font-weight: bold; margin: 0;\">\n"
+"                                                Mes:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"color: #032B5B; font-weight: bold; margin: 0;\">\n"
+"                                                Nombre completo del titular "
+"de la tarjeta:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"color: #032B5B; font-weight: bold; margin: 0;\">\n"
+"                                                Número cuenta:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"color: #032B5B; font-weight: bold; margin: 0;\">\n"
+"                                                Número de tarjeta:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-size: 0.6em;\">\n"
+"                                                    -\n"
+"                                                </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-size: 0.6em;\">\n"
+"                                                    de\n"
+"                                                </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-size: 0.6em;\">\n"
+"                                                    de \n"
+"                                                </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-size: smaller\"> \n"
+"                                                        - \n"
+"                                                    </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold; \">\n"
+"                                                Referencia de la orden de "
+"domiciliación:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                    Fecha - Localidad:\n"
+"                                                </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Código postal - Población - "
+"Provincia:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Dirección:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Firma del Titular Cuenta de "
+"Cargo:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Identificador:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Nombre del Titular:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Nombre:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Pago recurrente\n"
+"                                            </span>\n"
+"                                            <span style=\"font-size: 0.6em;"
+"\">\n"
+"                                                (Recurrent payment)\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Pago único\n"
+"                                            </span>\n"
+"                                            <span style=\"font-size: 0.6em;"
+"\">\n"
+"                                                (One-off payment)\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                País del deudor:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                País:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Si la tarjeta es debito "
+"indicar número de clave bancaria estandarizada “CLABE”:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"font-weight: bold;\">\n"
+"                                                Titular cta. de Cargo:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "<span style=\"font-weight: bold;\">FIRMA TITULAR:</span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "<span style=\"font-weight: bold;\">Fecha:</span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "<span style=\"font-weight: bold;\">Programa:</span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"margin: 0; font-weight: bold;\">\n"
+"                                                    [EN] \n"
+"                                                </span>\n"
+"                                                <span>\n"
+"                                                    ALL GAPS ARE MANDATORY. "
+"ONCE THIS MANDATE HAS BEEN SIGNED MUST BE SENT TO CREDITOR FOR STORAGE.\n"
+"                                                </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"margin: 0; font-weight: bold;\">\n"
+"                                                    [EN] \n"
+"                                                </span>\n"
+"                                                <span>\n"
+"                                                    By signing this mandate "
+"form, you authorize (A) the Creditor to send instructions to your bank to "
+"debit your account and (B) your bank to debit your account in accordance "
+"with the instructions from the Creditor. As part of your rights, you are "
+"entitled to a refund from your bank under the terms and conditions of your "
+"agreement with your bank. A refund must be claimed within eight weeks "
+"starting from the date on which your account was debited. Your rights are "
+"explained in a statement that you can obtain from your bank.\n"
+"                                                </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"margin: 0; font-weight: bold;\">\n"
+"                                                    [ES] \n"
+"                                                </span>\n"
+"                                                <span>\n"
+"                                                    Mediante la firma de "
+"esta orden de domiciliación, el deudor autoriza (A) al acreedor a enviar "
+"instrucciones a la entidad del deudor para adeudar su cuenta y (B) a la\n"
+"                                                    entidad para efectuar "
+"los adeudos en su cuenta siguiendo las instrucciones del acreedor. Como "
+"parte de sus derechos, el deudor está legitimado al reembolso por su "
+"entidad\n"
+"                                                    en los términos y "
+"condiciones del contrato suscrito con la misma. La solicitud de reembolso "
+"deberá efectuarse dentro de las ocho semanas que siguen a la fecha de "
+"adeudo\n"
+"                                                    en cuenta. Puede "
+"obtener información adicional sobre sus derechos en su entidad financiera.\n"
+"                                                </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"margin: 0; font-weight: bold;\">\n"
+"                                                    [ES] \n"
+"                                                </span>\n"
+"                                                <span>\n"
+"                                                    TODOS LOS CAMPOS HAN DE "
+"SER CUMPLIMENTADOS OBLIGATORIAMENTE. UNA VEZ FIRMADA ESTA ORDEN DE "
+"DOMICILIACIÓN DEBE SER ENVIADA AL ACREEDOR PARA SU CUSTODIA.\n"
+"                                                </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span style=\"margin: 0; padding: 0;\">\n"
+"                                            Suscrito en dos ejemplares en "
+"Barcelona a:\n"
+"                                        </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                                    -\n"
+"                                                </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                                    /\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                                , para que en mi nombre "
+"realice y gestiona cualquier trámite administrativo, pagos académicos y de "
+"titulización del Centro de Estudios en donde he formalizado la inscripción, "
+"al no disponer de una tarjeta de crédito habilitada para cobros "
+"internacionales y evitarme los costos bancarios de las transferencias "
+"internacionales para dichos pagos. \n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                                -\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                                Entregar este formato a su "
+"gestor comercial\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                                He leído y autorizo lo "
+"manifestado en la presente orden de pago.\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                                Solicito y autorizo a \n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                                con fecha\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                                mensualidades de \n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                            No\n"
+"                                        </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span>\n"
+"                                            Si\n"
+"                                        </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span> \n"
+"                                                Autorizo a\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"<span> \n"
+"                                                a realizar cargos "
+"correspndientes a:\n"
+"                                            </span>"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "A cumplimentar por el acreedor"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "A cumplimentar por el deudor"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Address"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Address of the debitor"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Asesor:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Año graduación:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "CONDICIONES ACEPTADAS PARA EL PAGO DE TU FORMACIÓN"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "CP:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Country"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Country of the debitor"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Creditor’s name"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "DATOS DE FACTURACIÓN"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "DATOS PERSONALES DEL ALUMNO"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "DNI/Pasaporte:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Date - location in which you are signing"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Datos cuenta bancaria"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Debtor's name"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Domicilio:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Email:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Estudios:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "FIRMA DEL ALUMNO/A"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "FIRMA DEL TITULAR (si es distinto al alumno/a)"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "FIRMA IRG"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Forma de Pago:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Identifier"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"Leído y conforme con las condiciones generales y mis derechos y deberes que "
+"se adjuntan (recibo copia)."
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Logo"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Mandate reference"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Matrícula/Pago Inicial:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Móvil:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "NO ES VÁLIDO NINGÚN ACUERDO VERBAL."
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Nacimiento:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Nombres y Apellidos:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "OPCIONAL"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Orden de Pago"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Orden de domiciliación de adeudo directo SEPA"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "País:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Plazo de Pago:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Población:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Postal Code - City - Town"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Primer Vencimiento:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Profesión:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid ""
+"Reconozco haber recibido la información detallada de las características "
+"del curso, contenido y demás cuestiones relacionadas. Acepto las "
+"condiciones generales y académicas amparadas en este contrato y SOLICITO LA "
+"MATRÍCULA PARA:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model:ir.actions.report,name:irg_migration_fields.irg_migration_fields_registration_order_template
+msgid "Registration Order"
+msgstr "Pedido de matrícula"
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Resto Aplazado:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Signature of the debtor"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Tipo de pago:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "To be completed by the creditor"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Type of payment"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Título oficial de Universidad e-campus."
+msgstr ""
+
+#. module: irg_migration_fields
+#: model_terms:ir.ui.view,arch_db:irg_migration_fields.registration_order_template
+msgid "Universidad:"
+msgstr ""
+
+#. module: irg_migration_fields
+#: model:ir.actions.report,print_report_name:irg_migration_fields.irg_migration_fields_registration_order_template
+msgid "object.name"
+msgstr ""

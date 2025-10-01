@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<template id="pedido_matricula_report" inherit_id="irg_sale_order_extended.registration_order_template">
+		<xpath expr="/t/t/t/t/t/div[1]/table[2]/tr[2]/td[2]/table/tr[4]/td[2]" position="replace">
+			<td class="borderless-td">
+				<t t-if="o.student_id.study_type_id">
+					<t t-esc="o.student_id.study_type_id.name"/>
+				</t>
+				<t t-elif="o.student_id.titulacion">
+					<t t-esc="o.student_id.titulacion"/>
+				</t>
+				<t t-elif="o.student_id.x_studio_titulacion">
+					<t t-esc="o.student_id.x_studio_titulacion"/>
+				</t>
+				<t t-elif="o.partner_id.x_studio_titulacion">
+					<t t-esc="o.partner_id.x_studio_titulacion"/>
+				</t>
+			</td>
+		</xpath>
+		<xpath expr="/t/t/t/t/t/div[1]/table[2]/tr[2]/td[2]/table/tr[5]/td[2]" position="replace">
+                        <td class="borderless-td">
+                                <t t-if="o.student_id.university_id">
+                                        <t t-esc="o.student_id.university_id.name"/>
+                                </t>
+                                <t t-elif="o.student_id.university">
+                                        <t t-esc="o.student_id.university"/>
+                                </t>
+                                <t t-elif="o.student_id.x_studio_universidad">
+                                        <t t-esc="o.student_id.x_studio_universidad"/>
+                                </t>
+                                <t t-elif="o.partner_id.x_studio_universidad">
+                                        <t t-esc="o.partner_id.x_studio_universidad"/>
+                                </t>
+                        </td>
+		</xpath>
+		<xpath expr="/t/t/t/t/t/div[1]/table[2]/tr[2]/td[2]/table/tr[6]/td[2]" position="replace">
+                        <td class="borderless-td">
+                                <t t-if="o.student_id.finalizacionestudios">
+                                        <t t-esc="o.student_id.finalizacionestudios" t-options='{"widget": "date","format": "yyyy"}'/>
+				</t>
+				<t t-elif="o.student_id.x_studio_ano_de_graduacion">
+					<t t-esc="o.student_id.x_studio_ano_de_graduacion"/>
+				</t>
+				<t t-elif="o.partner_id.x_studio_ano_de_graduacion">
+					<t t-esc="o.partner_id.x_studio_ano_de_graduacion"/>
+				</t>
+                        </td>
+		</xpath>
+		<xpath expr="/t/t/t/t/t/div[1]/table[2]/tr[2]/td[2]/table/tr[7]/td[2]" position="replace">
+                        <td class="borderless-td">
+                                <t t-if="o.student_id.profession_id">
+                                        <t t-esc="o.student_id.profession_id.name"/>
+                                </t>
+                                <t t-elif="o.student_id.profession">
+                                        <t t-esc="o.student_id.profession"/>
+				</t>
+				<t t-elif="o.student_id.function">
+					<t t-esc="o.student_id.function"/>
+				</t>
+				<t t-elif="o.partner_id.function">
+					<t t-esc="o.partner_id.function"/>
+				</t>
+                        </td>
+                </xpath>
+    </template>
+</odoo>

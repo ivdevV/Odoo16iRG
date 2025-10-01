@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View sale.order form -->
+    <record id="view_sale_admissions_order_form" model="ir.ui.view">
+        <field name="name">view.sale.order.form</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="isep_openeducat_sale.view_sale_order_form_website_sale"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='sale_admission']" position="inside">
+                <field name="admission_multi_ids" string="Admisiones">
+                    <tree readonly="1" create="false" delete="false" editable="bottom">
+                        <field name="admission_date" optional="show"/>
+                        <field name="period" optional="show"/>
+                        <field name="product_template_id" optional="show"/>
+                        <field name="course_id" optional="show"/>
+                        <field name="admission_register_id" optional="show"/>
+                        <field name="admission_id" optional="show"/>
+                        <field name="error_admission" optional="hide"/>
+                        <field name="error_admission_msn" optional="hide"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

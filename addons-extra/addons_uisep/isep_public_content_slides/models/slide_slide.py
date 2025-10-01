@@ -10,6 +10,7 @@ class SlideSlide(models.Model):
     _inherit = 'slide.slide'
 
     content_line_id = fields.Many2one('subject.content.line', string="Content line txt" )
+    # content_line_ids = fields.Many2many('subject.content.line', string="Content Lines txt")    
     update_txt_slide = fields.Boolean('Txt requiere actualizar')
 
     

@@ -2,7 +2,7 @@
 <odoo>
 
 
-   <template id="portal_my_home_certificates" name="Show Certificates" inherit_id="portal.portal_my_home" priority="25">
+    <!-- <template id="portal_my_home_certificates" name="Show Certificates" inherit_id="portal.portal_my_home" priority="25">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
             <t t-call="portal.portal_docs_entry">
                 <t t-set="title">Certificados</t>
@@ -10,96 +10,254 @@
                 <t t-set="placeholder_count" t-value="'certificates_count'" />
             </t>
         </xpath>
-    </template> 
+    </template> -->
+
+    <template id="portal_my_home_servicios_menu" name="Show servicios adicionales" inherit_id="portal.portal_my_home" priority="26">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Servicios adicionales</t>
+                <t t-set="url" t-value="'/my/servicios_academicos'" />
+                <t t-set="placeholder_count" t-value="'servicios_count'" />
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_servicios_academicos" name="Servicios Académicos">
+        <t t-call="portal.portal_layout">
+        <t t-set="breadcrumbs_searchbar" t-value="True" />
+        <div style="margin-top: -32px !important;">
+            <div id="portal_certificates_title" class="oe_structure oe_empty" data-editor-message-default="true" data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">   
+                <section>         
+                    <div class="container">
+
+                        <div class="o_wprofile_header o_wprofile_gradient position-relative text-white">
+                            <div class="container pb-3 pb-md-0 pt-2 pt-md-5">
+                                <div class="row">
+
+                                    <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h1>
+                                                <span>Servicios adicionales</span>
+                                            </h1>
+                                            <h3>
+                                                <small></small>
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <t t-call="portal.portal_searchbar">
+
+                            <t t-set="title">Servicios adicionales</t>
+
+                        </t>                        
+                        <!-- Servicios Académicos Section -->
+                        <div class="container mt-4">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card shadow-lg border-0">
+                                        <div class="card-header bg-primary text-white">
+                                            <h3 class="mb-0"><i class="fa fa-graduation-cap me-2"></i>Selecciona</h3>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <div class="row g-4">
+                                                <!-- Opción Constancias -->
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card h-100 shadow-lg border-0 service-card">
+                                                        <div class="card-body text-center p-4">
+                                                            <div class="service-icon mb-3">
+                                                                <i class="fa fa-certificate fa-3x text-primary"></i>
+                                                            </div>
+                                                            <h5 class="card-title fw-bold">Constancias</h5>
+                                                            <p class="card-text text-muted">Descarga o paga tus constancias en línea de forma rápida y segura.</p>
+                                                            <a href="/my/certificates" class="btn btn-primary btn-lg w-100">
+                                                                <i class="fa fa-arrow-right me-2"></i>Ir a Constancias
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Opción Titulaciones -->
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card h-100 shadow-lg border-0 service-card">
+                                                        <div class="card-body text-center p-4">
+                                                            <div class="service-icon mb-3">
+                                                                <i class="fa fa-trophy fa-3x text-success"></i>
+                                                            </div>
+                                                            <h5 class="card-title fw-bold">Opciones de Titulación</h5>
+                                                            <p class="card-text text-muted">Accede a los productos de titulación y realiza el pago correspondiente.</p>
+                                                            <a href="/my/titulaciones" class="btn btn-success btn-lg w-100">
+                                                                <i class="fa fa-arrow-right me-2"></i>Ir a Titulación
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Opción Prácticas -->
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card h-100 shadow-lg border-0 service-card">
+                                                        <div class="card-body text-center p-4">
+                                                            <div class="service-icon mb-3">
+                                                                <i class="fa fa-briefcase fa-3x text-info"></i>
+                                                            </div>
+                                                            <h5 class="card-title fw-bold">Prácticas</h5>
+                                                            <p class="card-text text-muted">Accede a los productos de prácticas profesionales y realiza el pago.</p>
+                                                            <a href="/my/p_practices" class="btn btn-info btn-lg w-100">
+                                                                <i class="fa fa-arrow-right me-2"></i>Ir a Prácticas
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Opción Otros Servicios -->
+                                                <div class="col-md-6 col-lg-3">
+                                                    <div class="card h-100 shadow-lg border-0 service-card">
+                                                        <div class="card-body text-center p-4">
+                                                            <div class="service-icon mb-3">
+                                                                <i class="fa fa-cogs fa-3x text-warning"></i>
+                                                            </div>
+                                                            <h5 class="card-title fw-bold">Otros Servicios</h5>
+                                                            <p class="card-text text-muted">Accede a otros recursos y servicios universitarios disponibles.</p>
+                                                            <a href="/my/p_other_services" class="btn btn-warning btn-lg w-100">
+                                                                <i class="fa fa-arrow-right me-2"></i>Ir a Otros Servicios
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom CSS for service cards -->
+                        <style>
+                            .service-card {
+                                transition: all 0.3s ease;
+                                border-radius: 15px;
+                            }
+                            .service-card:hover {
+                                transform: translateY(-5px);
+                                box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+                            }
+                            .service-icon {
+                                transition: transform 0.3s ease;
+                            }
+                            .service-card:hover .service-icon {
+                                transform: scale(1.1);
+                            }
+                        </style>                             
+                    </div>
+                </section>
+                <br/>
+                <br/>
+                <div class="text-center mt-4">
+                    <a href="/campus" class="btn btn-success">Regresar</a>
+                </div>
+
+            </div>
+        </div>
+        
+        </t>
+    </template>
 
     <template id="portal_my_certificates" name="My Certificates">
 
         <t t-call="portal.portal_layout">
             <t t-set="breadcrumbs_searchbar" t-value="True" />
-
-          
-
             <div style="margin-top: -32px !important;" class="">
-                <div id="portal_certificates_title" class="oe_structure oe_empty" data-editor-message-default="true"
-                    data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
+                <div id="portal_certificates_title" class="oe_structure oe_empty" data-editor-message-default="true" data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
                     <section>
                         <div class="container">
 
 
-        <div class="o_wprofile_header o_wprofile_gradient position-relative text-white">
-            <div class="container pb-3 pb-md-0 pt-2 pt-md-5">
-                <div class="row">
-                    
-                    <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h1>
-                                <span>Certificados</span>
-                            </h1>
-                            <h2>
-                                <small>Aquí puedes solicitar tus certificados, pagarlos y descargarlos.</small>
-                            </h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                            <div class="o_wprofile_header o_wprofile_gradient position-relative text-white">
+                                <div class="container pb-3 pb-md-0 pt-2 pt-md-5">
+                                    <div class="row">
 
-                <div class="row pt-2">
-                    <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-center text-white bg-info">
-                            <h6>
-                                <span t-esc="'Los certificados se pueden pagar hasta %i dias después de solicitarlos. La descarga estará disponible hasta %i dias después del pago.' %(cert_days_fpayment,cert_days_fdownload)" />
-                            </h6>
-                        </div>
-                    </div>
-                </div>
-
-
-            <t t-call="portal.portal_searchbar">
-
-                <t t-set="title">Certificados</t>
-
-            </t>
- 
-
-
-                             <div class="row mt-5">
-                                       <div class="col-4">
-                                        <h5> Tipo de Certificado </h5>
-                                       </div>
-                                       <div class="col-4">
-                                         <h5> Matrícula </h5>
-                                       </div>
-                                       <div class="col-4"/>
-                             </div>
-                             <div class="row mt-1">
-                                   <div class="col-12">
-                                           <form method="POST" t-attf-action ="/my/certificates">
-                                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                                    <div class="row">
-<div class="col-4">
-							    <select id="certificate_selected" name="selection_value" data_init="1" class="form-select mb-3">
-	        						<t t-foreach="certificate_ids" t-as="certificate">
-									<option t-att-value="certificate.id"><t t-esc="certificate.display_name"/> </option>
-								</t>
-							   </select>
-</div>
-<div class="col-4">
-							    <select id="batch_selected" name="batch_value" data_init="1" class="form-select mb-3">
-	        						<t t-foreach="batch_ids" t-as="batch">
-									<option t-att-value="batch.id"><t t-esc="batch.display_name"/> </option>
-								</t>
-							   </select>
-
-</div>
-<div class="col-4">
-							   <button type="submit" class="btn btn-primary"><span>Solicitar</span><i class="fa fa-chevron.right"></i></button>
-</div>
-                                                    </div>
-                                              </form>
+                                        <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h1>
+                                                    <span>Certificados</span>
+                                                </h1>
+                                                <h3>
+                                                    <small>Aquí puedes solicitar tus certificados, pagarlos y descargarlos.</small>
+                                                </h3>
+                                            </div>
+                                        </div>
                                     </div>
-                             </div>
-                         </div>
+                                </div>
+                            </div>
+
+                            <div class="row pt-2">
+                                <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center text-white bg-info">
+                                        <h6>
+                                            <span t-esc="'Los certificados se pueden pagar hasta %i dias después de solicitarlos. La descarga estará disponible hasta %i dias después del pago.' %(cert_days_fpayment,cert_days_fdownload)" />
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <t t-call="portal.portal_searchbar">
+
+                                <t t-set="title">Certificados</t>
+
+                            </t>
+
+
+
+                            <div class="container mt-4">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card shadow-lg border-0">
+                                            <div class="card-header bg-primary text-white">
+                                                <h4 class="mb-0"><i class="fa fa-certificate me-2"></i>Solicitar Certificado</h4>
+                                            </div>
+                                            <div class="card-body p-4">
+                                                <form method="POST" t-attf-action ="/my/certificates">
+                                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-4">
+                                                            <label class="form-label fw-bold">Tipo de Certificado:</label>
+                                                            <select id="certificate_selected" name="selection_value" data_init="1" class="form-select">
+                                                                <t t-foreach="certificate_ids" t-as="certificate">
+                                                                    <option t-att-value="certificate.id">
+                                                                        <t t-esc="certificate.display_name"/>
+                                                                    </option>
+                                                                </t>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label fw-bold">Matrícula:</label>
+                                                            <select id="batch_selected" name="batch_value" data_init="1" class="form-select">
+                                                                <t t-foreach="batch_ids" t-as="batch">
+                                                                    <option t-att-value="batch.id">
+                                                                        <t t-esc="batch.display_name"/>
+                                                                    </option>
+                                                                </t>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="d-flex align-items-end h-100">
+                                                                <button type="submit" class="btn btn-success btn-lg">
+                                                                    <i class="fa fa-plus me-2"></i>Solicitar
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
                     </section>
 
 
@@ -108,91 +266,92 @@
                 </div>
             </div>
 
-            <t t-if="not certificates">
-                <p>Aún no existen certificados solicitados.</p>
-            </t>
-
-
-
-            <t t-if="certificates" t-call="portal.portal_table">
-                <style>
-                    .o_portal_wrap .o_portal_my_doc_table td {
-                        white-space: normal !important;
-                    }
-                    .table > :not(:first-child) {
-                        border-top: 0px solid #dee2e6 !important;
-                        border-bottom: 2px solid #dee2e6 !important;
-                    }
-                    .rounded {
-                        border-radius: 0rem !important;
-                    }
-                </style>
-                <t t-foreach="grouped_certificates" t-as="certificate_group">
-                    <thead>
-
-                           <tr>
-                                <th class="text-left">Fecha de Solicitud</th>
-                                <th class="text-left">Vencimiento Factura</th>
-                                <th class="text-left">Fecha de Pago</th>
-                                <th class="text-left">Nombre</th>
-                                <th class="text-left">Descripción</th>
-                                <th class="text-center">Pendiente de Pago</th>
-                                <th class="text-center">Descargar</th>
-                            </tr>
-
-                    </thead>
-                    <tbody>
-                        <t t-foreach="certificate_group" t-as="document">
-                            <t t-set="document_url"
-                                t-value="base_url + '/web/content/ir.attachment/' + str(document.id)" />
-                            <t t-set="payment_url"
-                                t-value="base_url + '/new_payment_link/' + str(document.id)" />
-                            <tr>
-                                <td>
-                                        <span t-field="document.create_date" widget="datetime" />
-                                </td>
-                                 <td>
-                                        <span t-field="document.cert_invoice_id.invoice_date_due" widget="date" />
-                                </td>
-                                <td>
-                                        <span t-esc="document.cert_invoice_id and document.cert_invoice_id.get_last_payment_date() or False" t-options='{"widget": "date"}' />
-                                </td>
- 
-
-                                <td>
-                                        <span t-field="document.name" />
-                                </td>
-                                <td>
-                                    <span t-field="document.description" />
-                                </td>
-                                <td style="text-align: center;">
-                                    <t t-if="document.cert_invoice_id and document.cert_invoice_id.payment_state not in ['paid']">
-                                        <a target="new" t-att-href="payment_url" title="Pagar" class="mr4">
-                                            <i class="fa fa-credit-card fa-1x" role="img" aria-label="Pagar"></i>
-                                        </a>
+            <section class="mt-5">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card shadow-lg border-0">
+                                <div class="card-header bg-secondary text-white">
+                                    <h4 class="mb-0"><i class="fa fa-history me-2"></i>Historial de Certificados</h4>
+                                </div>
+                                <div class="card-body p-4">
+                                    <t t-if="not certificates">
+                                        <div class="text-center py-4">
+                                            <p class="text-muted">Aún no existen certificados solicitados.</p>
+                                        </div>
                                     </t>
-                                </td>
-
-                                <td style="text-align: center;">
-
-                                    <t t-if="(document.cert_invoice_id and document.cert_invoice_id.payment_state == 'paid') or document.certificado_gratuito ">
-                                        <a target="new" t-att-href="document_url + '/datas?download=true'" title="Download"
-                                            class="mr4">
-                                            <i class="fa fa-download fa-1x" role="img" aria-label="Download"></i>
-                                        </a>
-                                        <a target="_blank" t-att-href="document_url + '/datas'" title="Open">
-                                            <i class="fa fa-newspaper-o fa-1x" role="img" aria-label="Open"></i>
-                                        </a>
+                                    <t t-if="certificates">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <t t-foreach="grouped_certificates" t-as="certificate_group">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th>Fecha de Solicitud</th>
+                                                            <th>Vencimiento Factura</th>
+                                                            <th>Fecha de Pago</th>
+                                                            <th>Nombre</th>
+                                                            <th>Descripción</th>
+                                                            <th class="text-center">Pendiente de Pago</th>
+                                                            <th class="text-center">Descargar</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="certificate_group" t-as="document">
+                                                            <t t-set="document_url" t-value="base_url + '/web/content/ir.attachment/' + str(document.id)" />
+                                                            <t t-set="payment_url" t-value="base_url + '/new_payment_link/' + str(document.id)" />
+                                                            <tr>
+                                                                <td>
+                                                                    <span t-field="document.create_date" widget="datetime" />
+                                                                </td>
+                                                                <td>
+                                                                    <span t-field="document.cert_invoice_id.invoice_date_due" widget="date" />
+                                                                </td>
+                                                                <td>
+                                                                    <span t-esc="document.cert_invoice_id and document.cert_invoice_id.get_last_payment_date() or False" t-options='{"widget": "date"}' />
+                                                                </td>
+                                                                <td>
+                                                                    <span t-field="document.name" />
+                                                                </td>
+                                                                <td>
+                                                                    <span t-field="document.description" />
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <t t-if="document.cert_invoice_id and document.cert_invoice_id.payment_state not in ['paid','in_payment']">
+                                                                        <a target="new" t-att-href="payment_url" title="Pagar" class="btn btn-sm btn-warning">
+                                                                            <i class="fa fa-credit-card me-1"></i>Pagar
+                                                                        </a>
+                                                                    </t>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <t t-if="(document.cert_invoice_id and document.cert_invoice_id.payment_state in ['paid','in_payment']) or document.certificado_gratuito ">
+                                                                        <a target="new" t-att-href="document_url + '/datas?download=true'" title="Descargar" class="btn btn-sm btn-success me-1">
+                                                                            <i class="fa fa-download"></i>
+                                                                        </a>
+                                                                        <a target="_blank" t-att-href="document_url + '/datas'" title="Ver" class="btn btn-sm btn-info">
+                                                                            <i class="fa fa-eye"></i>
+                                                                        </a>
+                                                                    </t>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </t>
+                                            </table>
+                                        </div>
                                     </t>
-                                </td>
-                            </tr>
-                        </t>
-                    </tbody>
-                </t>
-            </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="mt-4">
+                <a href="/my/servicios_academicos" class="btn btn-success">Regresar</a>
+                <a href="/campus" class="btn btn-primary">Campus</a>
+            </div>
         </t>
     </template>
-
 
 
     <template id="portal_verificar_documento" name="Verificar Documento">
@@ -200,28 +359,27 @@
         <t t-call="portal.portal_layout">
 
             <div style="margin-top: -32px !important;" class="">
-                <div id="portal_verificar_documento_title" class="oe_structure oe_empty" data-editor-message-default="true"
-                    data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
+                <div id="portal_verificar_documento_title" class="oe_structure oe_empty" data-editor-message-default="true" data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
                     <section>
                         <div class="container">
-				<div class="o_wprofile_header o_wprofile_gradient position-relative text-white">
-				    <div class="container pb-3 pb-md-0 pt-2 pt-md-5">
-					<div class="row">
-					    
-					    <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
-						<div class="d-flex justify-content-between align-items-center">
-						    <h1>
-							<span>Verificar Documento</span>
-						    </h1>
-						</div>
-					    </div>
-					</div>
-				    </div>
-				</div>
+                            <div class="o_wprofile_header o_wprofile_gradient position-relative text-white">
+                                <div class="container pb-3 pb-md-0 pt-2 pt-md-5">
+                                    <div class="row">
+
+                                        <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h1>
+                                                    <span>Verificar Documento</span>
+                                                </h1>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
-            <t t-call="portal.portal_table">
-                <style>
+                    <t t-call="portal.portal_table">
+                        <style>
                     .o_portal_wrap .o_portal_my_doc_table td {
                         white-space: normal !important;
                     }
@@ -232,38 +390,38 @@
                     .rounded {
                         border-radius: 0rem !important;
                     }
-                </style>
-                    <thead>
+                        </style>
+                        <thead>
 
-                           <tr>
+                            <tr>
                                 <th class="text-left">Dato Revisado</th>
                                 <th class="text-left">Valor Verificado</th>
                             </tr>
 
-                    </thead>
-                
-                    <tbody>
-                             <t t-foreach="values" t-as="value" >
-                                 <t t-pdb="pdb"/>
-                                 <t t-foreach="value.keys()" t-as="key" >
-                              
-					    <tr>
-						<td>
-							<span t-esc="key" />
-						</td>
-						 <td>
-							<span t-esc="value[key]"/>
-						</td>
-					    </tr>
-		                 </t>
-		             </t>
-                             <tr>
-                                  <td colspan="2" class ="text-justified bg-warning">
-                                      <h5>Favor de verificar los datos mostrados contra los que se muestran en su documento impreso. Cualquier duda o discrepancia favor de ponerse en contacto con la Secretaría Académica de esta Universidad.</h5>
-                                  </td>
-                             </tr>
-                    </tbody>
-                </t>
+                        </thead>
+
+                        <tbody>
+                            <t t-foreach="values" t-as="value">
+                                <t t-pdb="pdb"/>
+                                <t t-foreach="value.keys()" t-as="key">
+
+                                    <tr>
+                                        <td>
+                                            <span t-esc="key" />
+                                        </td>
+                                        <td>
+                                            <span t-esc="value[key]"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                            <tr>
+                                <td colspan="2" class ="text-justified bg-warning">
+                                    <h5>Favor de verificar los datos mostrados contra los que se muestran en su documento impreso. Cualquier duda o discrepancia favor de ponerse en contacto con la Secretaría Académica de esta Universidad.</h5>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </t>
 
                 </div>
             </div>
@@ -271,23 +429,915 @@
     </template>
 
     <template id="error_template_message" name="Error Message">
-	        <t t-if="error_message">
+        <t t-if="error_message">
 
-                    <t t-call="portal.portal_layout">
-			    <div class="row" style="padding-top: 5%;" >
-                                <div class="col-12 d-flex justify-content-center">
-					    <div class="alert alert-danger">
-						<t t-out="error_message"/>
-					    </div>
-                                </div>
-                             </div>
-			    <div class="row" style="padding-top: 5%;" >
-                                    <div class="col-12 d-flex justify-content-center">
-					<button type="button" onclick="history.back();" class="btn btn-secondary mt-2">Regresar</button>
-				    </div>
-			    </div>
-		    </t>
-		</t>
+            <t t-call="portal.portal_layout">
+                <div class="row" style="padding-top: 5%;">
+                    <div class="col-12 d-flex justify-content-center">
+                        <div class="alert alert-danger">
+                            <t t-out="error_message"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="padding-top: 5%;">
+                    <div class="col-12 d-flex justify-content-center">
+                        <button type="button" onclick="history.back();" class="btn btn-secondary mt-2">Regresar</button>
+                    </div>
+                </div>
+            </t>
+        </t>
     </template>
 
+    <!-- TEMPORAL PARA TITULOS COMPRAS -->
+
+    <template id="auto_post_cart" name="Auto Add To Cart" >
+        <t t-call="website.layout">
+            <form id="add_to_cart_form" method="POST" action="/shop/cart/update">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" />
+                <input type="hidden" name="product_id" t-att-value="product_id"/>
+                <input type="hidden" name="add_qty" value="1"/>
+                <input type="hidden" name="set_qty" value="1"/>
+                <input type="hidden" name="express" value="1"/>
+            </form>
+            <script>
+                document.getElementById("add_to_cart_form").submit();
+            </script>
+        </t>
+    </template>
+    <!-- TEMPORAL PARA TITULOS COMPRAS -->
+    
+
+    <template id="portal_titulaciones" name="My Titulos "> <!-- TEMPORAL PARA TITULOS COMPRAS -->
+
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True" />
+            <div style="margin-top: -32px !important;" class="">
+                <div id="portal_certificates_title" class="oe_structure oe_empty" data-editor-message-default="true" data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
+                    <section>
+                        <div class="container">
+
+
+                            <div class="o_wprofile_header o_wprofile_gradient position-relative text-white">
+                                <div class="container pb-3 pb-md-0 pt-2 pt-md-5">
+                                    <div class="row">
+
+                                        <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h1>
+                                                    <span>Titulaciones</span>
+                                                </h1>
+                                                <h3>
+                                                    <small>Aquí puedes pagar tus titulos</small>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row pt-2">
+                                <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center text-white bg-info">
+                                        <h6>
+                                            Refresca la página para ver los cambios en los titulos disponibles.
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <t t-call="portal.portal_searchbar">
+
+                                <t t-set="title">Titulos</t>
+
+                            </t>                            
+                            
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div style="margin-top: -32px !important;" class="">
+                <div id="portal_certificates_title" class="oe_structure oe_empty" data-editor-message-default="true" data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
+                    <section>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card shadow-lg border-0">
+                                        <div class="card-header bg-primary text-white">
+                                            <h4 class="mb-0"><i class="fa fa-trophy me-2"></i>Selección de Titulación</h4>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-bold">Titulación:</label>
+                                                    <select id="product_selector" class="form-select">
+                                                        <option value="">Selecciona una titulación...</option>
+                                                        <t t-foreach="product_ids" t-as="product">
+                                                            <option t-att-value="product.id" t-att-data-has-variants="product_variants and product.id in product_variants">
+                                                                <t t-esc="product.display_name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div id="variant_section" style="display: none;">
+                                                        <label class="form-label fw-bold">Modalidad:</label>
+                                                        <select id="variant_selector" class="form-select">
+                                                            <option value="">Selecciona modalidad...</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="d-flex align-items-end h-100">
+                                                        <form method="POST" action="/my/certificates?titulacion=1" target="_blank" id="payment_form">
+                                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                            <input type="hidden" name="product_id" id="selected_product_id" value=""/>
+                                                            <button type="submit" id="pay_button" class="btn btn-success btn-lg" disabled="disabled">
+                                                                <i class="fa fa-credit-card me-2"></i>Pagar
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div id="product_image_section" class="text-center" style="display: none;">
+                                                        <img id="product_image" src="" alt="Imagen del producto" class="img-fluid rounded shadow" style="max-height: 120px; max-width: 100%;" />
+                                                        <p id="product_name" class="mt-2 mb-0 fw-bold text-muted small"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                    
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const productSelector = document.getElementById('product_selector');
+                                const variantSection = document.getElementById('variant_section');
+                                const variantSelector = document.getElementById('variant_selector');
+                                const payButton = document.getElementById('pay_button');
+                                const productImageSection = document.getElementById('product_image_section');
+                                const productImage = document.getElementById('product_image');
+                                const productName = document.getElementById('product_name');
+                                const selectedProductInput = document.getElementById('selected_product_id');
+                                
+                                productSelector.addEventListener('change', function() {
+                                    const productId = this.value;
+                                    const hasVariants = this.options[this.selectedIndex].dataset.hasVariants === 'True';
+                                    const selectedOption = this.options[this.selectedIndex];
+                                    
+                                    if (productId) {
+                                        // Mostrar imagen del producto
+                                        const imageUrl = '/web/image/product.template/' + productId + '/image_1920';
+                                        productImage.src = imageUrl;
+                                        productName.textContent = selectedOption.textContent;
+                                        productImageSection.style.display = 'block';
+                                        
+                                        if (hasVariants) {
+                                            // Cargar variantes
+                                            fetch('/my/get_product_variants/' + productId, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-Requested-With': 'XMLHttpRequest'
+                                                },
+                                                body: JSON.stringify({})
+                                            })
+                                            .then(response => response.json())
+                                            .then(response => {
+                                                const variants = response.result || response;
+                                                
+                                                variantSelector.innerHTML = '<option value="">Selecciona modalidad...</option>';
+                                                
+                                                if (Array.isArray(variants)) {
+                                                    variants.sort((a, b) => a.name.localeCompare(b.name));
+                                                    
+                                                    variants.forEach(variant => {
+                                                        if (variant.product_variant_ids &amp;&amp; variant.product_variant_ids.length > 0) {
+                                                            const option = document.createElement('option');
+                                                            option.value = variant.product_variant_ids[0];
+                                                            option.textContent = variant.name;
+                                                            variantSelector.appendChild(option);
+                                                        }
+                                                    });
+                                                }
+                                                variantSection.style.display = 'block';
+                                            })
+                                            .catch(error => {
+                                                console.error('Error loading variants:', error);
+                                            });
+                                            payButton.disabled = true;
+                                        } else {
+                                            // Sin variantes, funcionalidad actual
+                                            variantSection.style.display = 'none';
+                                            selectedProductInput.value = productId;
+                                            payButton.disabled = false;
+                                        }
+                                    } else {
+                                        variantSection.style.display = 'none';
+                                        productImageSection.style.display = 'none';
+                                        selectedProductInput.value = '';
+                                        payButton.disabled = true;
+                                    }
+                                });
+                                
+                                variantSelector.addEventListener('change', function() {
+                                    payButton.disabled = !this.value;
+                                });
+                                
+                                payButton.addEventListener('click', function(e) {
+                                    const productId = productSelector.value;
+                                    const hasVariants = productSelector.options[productSelector.selectedIndex].dataset.hasVariants === 'True';
+                                    
+                                    if (hasVariants) {
+                                        e.preventDefault();
+                                        const variantId = variantSelector.value;
+                                        const variantText = variantSelector.options[variantSelector.selectedIndex].textContent;
+                                        if (variantId) {
+                                            const url = '/my/redirect_add_to_cart/' + variantId + '?variant_text=' + encodeURIComponent(variantText);
+                                            window.open(url, '_blank');
+                                        }
+                                    }
+                                    // Si no tiene variantes, el form se envía normalmente
+                                });
+                            });
+                        </script>
+                    </section>
+                        <section class="mt-5">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card shadow-lg border-0">
+                                            <div class="card-header bg-secondary text-white">
+                                                <h4 class="mb-0"><i class="fa fa-history me-2"></i>Historial de Pagos de Titulación</h4>
+                                            </div>
+                                            <div class="card-body p-4">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Orden</th>
+                                                <th>Producto</th>
+                                                <th>Fecha</th>
+                                                <th>Monto</th>
+                                                <th>Estado de la Orden</th>
+                                                <th>Estado de Pagos</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="payment_info">
+                                                <t t-foreach="payment_info" t-as="info">
+                                                    <tr>
+                                                        <td><t t-esc="info['order_name']"/></td>
+                                                        <td><t t-esc="info['product_name']"/></td>
+                                                        <td><t t-esc="info['order_date']" t-options='{"widget": "date"}'/></td>
+                                                        <td>
+                                                            <span t-esc="info['amount']" t-options='{"widget": "monetary", "display_currency": info["currency_id"]}'/>
+                                                        </td>
+                                                        <td>
+                                                            <span t-if="info['state'] == 'sale'" class="fa fa-exclamation-circle text-success">Completado</span>
+                                                            <span t-elif="info['state'] == 'draf'" class="fa fa-exclamation-circle text-warning">En Proceso</span>
+                                                            <span t-else="" class="badge badge-warning"><t t-esc="info['state']"/></span>
+                                                        </td>
+                                                        <td>
+                                                            <t t-if="info['transactions']">
+                                                                <t t-foreach="info['transactions']" t-as="transaction">
+                                                                    <div class="mb-1">
+                                                                        <span t-if="transaction['state'] == 'done'" class="fa fa-exclamation-circle text-success" 
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - Pagado
+                                                                        </span>
+                                                                        <span t-elif="transaction['state'] == 'pending'" class="fa fa-exclamation-circle text-warning"
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - Pendiente
+                                                                        </span>
+                                                                        <span t-elif="transaction['state'] == 'cancel'" class="fa fa-exclamation-circle text-danger"
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - Cancelado
+                                                                        </span>
+                                                                        <span t-else="" class="badge badge-secondary"
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - <t t-esc="transaction['state']"/>
+                                                                        </span>
+                                                                    </div>
+                                                                </t>
+                                                            </t>
+                                                            <t t-elif="info['schedule_info']">
+                                                                <div class="mb-1">
+                                                                    <span class="badge badge-info fa fa-exclamation-circle text-info">
+                                                                        <i class="fa fa-calendar me-1"></i><t t-esc="info['schedule_info']"/>
+                                                                    </span>
+                                                                </div>
+                                                            </t>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <tr t-if="not payment_info">
+                                                <td colspan="6" class="text-center">No hay pagos de titulación registrados.</td>
+                                            </tr>
+                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <div class="mt-4">
+                            <a href="/my/servicios_academicos" class="btn btn-success">Regresar</a>
+                            <a href="/campus" class="btn btn-primary">Campus</a>
+                        </div>
+
+                </div>
+            </div>
+            <!-- TEMPORAL PARA TITULOS COMPRAS -->
+        </t>
+    </template>
+
+    <template id="portal_p_practicas" name="My practicas"> <!-- TEMPORAL PARA practicas COMPRAS -->
+
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True" />
+            <div style="margin-top: -32px !important;" class="">
+                <div id="portal_p_practices_title" class="oe_structure oe_empty" data-editor-message-default="true" data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
+                    <section>
+                        <div class="container">
+
+
+                            <div class="o_wprofile_header o_wprofile_gradient position-relative text-white">
+                                <div class="container pb-3 pb-md-0 pt-2 pt-md-5">
+                                    <div class="row">
+
+                                        <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h1>
+                                                    <span>Prácticas</span>
+                                                </h1>
+                                                <h3>
+                                                    <small>Aquí puedes pagar servicios de prácticas</small>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row pt-2">
+                                <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center text-white bg-info">
+                                        <h6>
+                                            Refresca la página para ver los cambios en los servicios de prácticas disponibles.
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <t t-call="portal.portal_searchbar">
+
+                                <t t-set="title">Prácticas</t>
+
+                            </t>                            
+                            
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div style="margin-top: -32px !important;" class="">
+                <div id="portal_practices_p_title" class="oe_structure oe_empty" data-editor-message-default="true" data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
+                    <section>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card shadow-lg border-0">
+                                        <div class="card-header bg-primary text-white">
+                                            <h4 class="mb-0"><i class="fa fa-graduation-cap me-2"></i>Selección de Prácticas</h4>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-bold">Práctica:</label>
+                                                    <select id="product_selector" class="form-select">
+                                                        <option value="">Selecciona una práctica...</option>
+                                                        <t t-foreach="product_ids" t-as="product">
+                                                            <option t-att-value="product.id" t-att-data-has-variants="product.id in product_variants">
+                                                                <t t-esc="product.display_name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div id="variant_section" style="display: none;">
+                                                        <label class="form-label fw-bold">Modalidad de pago:</label>
+                                                        <select id="variant_selector" class="form-select">
+                                                            <option value="">Selecciona modalidad...</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="d-flex align-items-end h-100">
+                                                        <button type="button" id="pay_button" class="btn btn-success btn-lg" disabled="disabled">
+                                                            <i class="fa fa-credit-card me-2"></i>Pagar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div id="product_image_section" class="text-center" style="display: none;">
+                                                        <img id="product_image" src="" alt="Imagen del producto" class="img-fluid rounded shadow" style="max-height: 120px; max-width: 100%;" />
+                                                        <p id="product_name" class="mt-2 mb-0 fw-bold text-muted small"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                    
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const productSelector = document.getElementById('product_selector');
+                                const variantSection = document.getElementById('variant_section');
+                                const variantSelector = document.getElementById('variant_selector');
+                                const payButton = document.getElementById('pay_button');
+                                const productImageSection = document.getElementById('product_image_section');
+                                const productImage = document.getElementById('product_image');
+                                const productName = document.getElementById('product_name');
+                                
+                                productSelector.addEventListener('change', function() {
+                                    const productId = this.value;
+                                    const hasVariants = this.options[this.selectedIndex].dataset.hasVariants === 'True';
+                                    const selectedOption = this.options[this.selectedIndex];
+                                    
+                                    if (productId) {
+                                        // Mostrar imagen del producto
+                                        const imageUrl = '/web/image/product.template/' + productId + '/image_1920';
+                                        productImage.src = imageUrl;
+                                        productName.textContent = selectedOption.textContent;
+                                        productImageSection.style.display = 'block';
+                                        
+                                        if (hasVariants) {
+                                            // Cargar variantes
+                                            fetch('/my/get_product_variants/' + productId, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-Requested-With': 'XMLHttpRequest'
+                                                },
+                                                body: JSON.stringify({})
+                                            })
+                                            .then(response => response.json())
+                                            .then(response => {
+                                                const variants = response.result || response;
+                                                
+                                                variantSelector.innerHTML = '<option value="">Selecciona modalidad...</option>';
+                                                
+                                                if (Array.isArray(variants)) {
+                                                    variants.sort((a, b) => a.name.localeCompare(b.name));
+                                                    
+                                                    variants.forEach(variant => {
+                                                        if (variant.product_variant_ids &amp;&amp; variant.product_variant_ids.length > 0) {
+                                                            const option = document.createElement('option');
+                                                            option.value = variant.product_variant_ids[0];
+                                                            option.textContent = variant.name;
+                                                            variantSelector.appendChild(option);
+                                                        }
+                                                    });
+                                                }
+                                                variantSection.style.display = 'block';
+                                            })
+                                            .catch(error => {
+                                                console.error('Error loading variants:', error);
+                                            });
+                                            payButton.disabled = true;
+                                        } else {
+                                            // Sin variantes, habilitar pago directo
+                                            variantSection.style.display = 'none';
+                                            payButton.disabled = false;
+                                        }
+                                    } else {
+                                        variantSection.style.display = 'none';
+                                        productImageSection.style.display = 'none';
+                                        payButton.disabled = true;
+                                    }
+                                });
+                                
+                                variantSelector.addEventListener('change', function() {
+                                    payButton.disabled = !this.value;
+                                });
+                                
+                                payButton.addEventListener('click', function(e) {
+                                    const productId = productSelector.value;
+                                    const hasVariants = productSelector.options[productSelector.selectedIndex].dataset.hasVariants === 'True';
+                                    
+                                    if (hasVariants) {
+                                        e.preventDefault();
+                                        const variantId = variantSelector.value;
+                                        const variantText = variantSelector.options[variantSelector.selectedIndex].textContent;
+                                        if (variantId) {
+                                            const url = '/my/redirect_add_to_cart/' + variantId + '?variant_text=' + encodeURIComponent(variantText);
+                                            window.open(url, '_blank');
+                                        }
+                                    } else {
+                                        window.open('/my/certificates?titulacion=1&amp;product_id=' + productId, '_blank');
+                                    }
+                                });
+                            });
+                        </script>
+                    </section>
+                        <section class="mt-5">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card shadow-lg border-0">
+                                            <div class="card-header bg-secondary text-white">
+                                                <h4 class="mb-0"><i class="fa fa-history me-2"></i>Historial de Pagos de Prácticas</h4>
+                                            </div>
+                                            <div class="card-body p-4">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Orden</th>
+                                                <th>Producto</th>
+                                                <th>Fecha</th>
+                                                <th>Monto</th>
+                                                <th>Estado de la Orden</th>
+                                                <th>Estado de Pagos</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="payment_info">
+                                                <t t-foreach="payment_info" t-as="info">
+                                                    <tr>
+                                                        <td><t t-esc="info['order_name']"/></td>
+                                                        <td><t t-esc="info['product_name']"/></td>
+                                                        <td><t t-esc="info['order_date']" t-options='{"widget": "date"}'/></td>
+                                                        <td>
+                                                            <span t-esc="info['amount']" t-options='{"widget": "monetary", "display_currency": info["currency_id"]}'/>
+                                                        </td>
+                                                        <td>
+                                                            <span t-if="info['state'] == 'sale'" class="fa fa-exclamation-circle text-success">Completado</span>
+                                                            <span t-elif="info['state'] == 'draf'" class="fa fa-exclamation-circle text-warning">En Proceso</span>
+                                                            <span t-else="" class="badge badge-warning"><t t-esc="info['state']"/></span>
+                                                        </td>
+                                                        <td>
+                                                            <t t-if="info['transactions']">
+                                                                <t t-foreach="info['transactions']" t-as="transaction">
+                                                                    <div class="mb-1">
+                                                                        <span t-if="transaction['state'] == 'done'" class="fa fa-exclamation-circle text-success" 
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - Pagado
+                                                                        </span>
+                                                                        <span t-elif="transaction['state'] == 'pending'" class="fa fa-exclamation-circle text-warning"
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - Pendiente
+                                                                        </span>
+                                                                        <span t-elif="transaction['state'] == 'cancel'" class="fa fa-exclamation-circle text-danger"
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - Cancelado
+                                                                        </span>
+                                                                        <span t-else="" class="badge badge-secondary"
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - <t t-esc="transaction['state']"/>
+                                                                        </span>
+                                                                    </div>
+                                                                </t>
+                                                            </t>
+                                                            <t t-elif="info['schedule_info']">
+                                                                <div class="mb-1">
+                                                                    <span class="badge badge-info fa fa-exclamation-circle text-info">
+                                                                        <i class="fa fa-calendar me-1"></i><t t-esc="info['schedule_info']"/>
+                                                                    </span>
+                                                                </div>
+                                                            </t>
+                                                        </td>
+                                                        
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <tr t-if="not payment_info">
+                                                <td colspan="6" class="text-center">No hay pagos de prácticas registrados.</td>
+                                            </tr>
+                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <div class="mt-4">
+                            <a href="/my/servicios_academicos" class="btn btn-success">Regresar</a>
+                            <a href="/campus" class="btn btn-primary">Campus</a>
+                        </div>
+                </div>
+            </div>
+            <!-- TEMPORAL PARA TITULOS COMPRAS -->
+        </t>
+    </template>
+    
+    <template id="portal_p_other_services" name="My Otros servicios"> <!-- TEMPORAL PARA practicas COMPRAS -->
+
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True" />
+            <div style="margin-top: -32px !important;" class="">
+                <div id="portal_p_other_services_title" class="oe_structure oe_empty" data-editor-message-default="true" data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
+                    <section>
+                        <div class="container">
+
+
+                            <div class="o_wprofile_header o_wprofile_gradient position-relative text-white">
+                                <div class="container pb-3 pb-md-0 pt-2 pt-md-5">
+                                    <div class="row">
+
+                                        <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h1>
+                                                    <span>Otros servicios</span>
+                                                </h1>
+                                                <h3>
+                                                    <small>Aquí puedes pagar otros servicios</small>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row pt-2">
+                                <div class="col-12 col-md-12 col-lg-12 d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center text-white bg-info">
+                                        <h6>
+                                            Refresca la página para ver los cambios en otros servicios disponibles.
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <t t-call="portal.portal_searchbar">
+
+                                <t t-set="title">Otros servicios</t>
+
+                            </t>                            
+                            
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div style="margin-top: -32px !important;" class="">
+                <div id="portal_other_servic_p_title" class="oe_structure oe_empty" data-editor-message-default="true" data-editor-message="ARRASTRE BLOQUES DE CREACIÓN AQUÍ">
+                    <section>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card shadow-lg border-0">
+                                        <div class="card-header bg-primary text-white">
+                                            <h4 class="mb-0"><i class="fa fa-cogs me-2"></i>Selección de Otros Servicios</h4>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-bold">Servicio:</label>
+                                                    <select id="product_selector" class="form-select">
+                                                        <option value="">Selecciona un servicio...</option>
+                                                        <t t-foreach="product_ids" t-as="product">
+                                                            <option t-att-value="product.id" t-att-data-has-variants="product_variants and product.id in product_variants">
+                                                                <t t-esc="product.display_name"/>
+                                                            </option>
+                                                        </t>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div id="variant_section" style="display: none;">
+                                                        <label class="form-label fw-bold">Modalidad:</label>
+                                                        <select id="variant_selector" class="form-select">
+                                                            <option value="">Selecciona modalidad...</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="d-flex align-items-end h-100">
+                                                        <form method="POST" action="/my/certificates?titulacion=1" target="_blank" id="payment_form">
+                                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                            <input type="hidden" name="product_id" id="selected_product_id" value=""/>
+                                                            <button type="submit" id="pay_button" class="btn btn-success btn-lg" disabled="disabled">
+                                                                <i class="fa fa-credit-card me-2"></i>Pagar
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div id="product_image_section" class="text-center" style="display: none;">
+                                                        <img id="product_image" src="" alt="Imagen del producto" class="img-fluid rounded shadow" style="max-height: 120px; max-width: 100%;" />
+                                                        <p id="product_name" class="mt-2 mb-0 fw-bold text-muted small"></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                    
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const productSelector = document.getElementById('product_selector');
+                                const variantSection = document.getElementById('variant_section');
+                                const variantSelector = document.getElementById('variant_selector');
+                                const payButton = document.getElementById('pay_button');
+                                const productImageSection = document.getElementById('product_image_section');
+                                const productImage = document.getElementById('product_image');
+                                const productName = document.getElementById('product_name');
+                                const selectedProductInput = document.getElementById('selected_product_id');
+                                
+                                productSelector.addEventListener('change', function() {
+                                    const productId = this.value;
+                                    const hasVariants = this.options[this.selectedIndex].dataset.hasVariants === 'True';
+                                    const selectedOption = this.options[this.selectedIndex];
+                                    
+                                    if (productId) {
+                                        // Mostrar imagen del producto
+                                        const imageUrl = '/web/image/product.template/' + productId + '/image_1920';
+                                        productImage.src = imageUrl;
+                                        productName.textContent = selectedOption.textContent;
+                                        productImageSection.style.display = 'block';
+                                        
+                                        if (hasVariants) {
+                                            // Cargar variantes
+                                            fetch('/my/get_product_variants/' + productId, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-Requested-With': 'XMLHttpRequest'
+                                                },
+                                                body: JSON.stringify({})
+                                            })
+                                            .then(response => response.json())
+                                            .then(response => {
+                                                const variants = response.result || response;
+                                                
+                                                variantSelector.innerHTML = '<option value="">Selecciona modalidad...</option>';
+                                                
+                                                if (Array.isArray(variants)) {
+                                                    variants.sort((a, b) => a.name.localeCompare(b.name));
+                                                    
+                                                    variants.forEach(variant => {
+                                                        if (variant.product_variant_ids &amp;&amp; variant.product_variant_ids.length > 0) {
+                                                            const option = document.createElement('option');
+                                                            option.value = variant.product_variant_ids[0];
+                                                            option.textContent = variant.name;
+                                                            variantSelector.appendChild(option);
+                                                        }
+                                                    });
+                                                }
+                                                variantSection.style.display = 'block';
+                                            })
+                                            .catch(error => {
+                                                console.error('Error loading variants:', error);
+                                            });
+                                            payButton.disabled = true;
+                                        } else {
+                                            // Sin variantes, funcionalidad actual
+                                            variantSection.style.display = 'none';
+                                            selectedProductInput.value = productId;
+                                            payButton.disabled = false;
+                                        }
+                                    } else {
+                                        variantSection.style.display = 'none';
+                                        productImageSection.style.display = 'none';
+                                        selectedProductInput.value = '';
+                                        payButton.disabled = true;
+                                    }
+                                });
+                                
+                                variantSelector.addEventListener('change', function() {
+                                    payButton.disabled = !this.value;
+                                });
+                                
+                                payButton.addEventListener('click', function(e) {
+                                    const productId = productSelector.value;
+                                    const hasVariants = productSelector.options[productSelector.selectedIndex].dataset.hasVariants === 'True';
+                                    
+                                    if (hasVariants) {
+                                        e.preventDefault();
+                                        const variantId = variantSelector.value;
+                                        const variantText = variantSelector.options[variantSelector.selectedIndex].textContent;
+                                        if (variantId) {
+                                            const url = '/my/redirect_add_to_cart/' + variantId + '?variant_text=' + encodeURIComponent(variantText);
+                                            window.open(url, '_blank');
+                                        }
+                                    }
+                                    // Si no tiene variantes, el form se envía normalmente
+                                });
+                            });
+                        </script>
+                    </section>
+                        <section class="mt-5">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card shadow-lg border-0">
+                                            <div class="card-header bg-secondary text-white">
+                                                <h4 class="mb-0"><i class="fa fa-history me-2"></i>Historial de Pagos de Otros Servicios</h4>
+                                            </div>
+                                            <div class="card-body p-4">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Orden</th>
+                                                <th>Producto</th>
+                                                <th>Fecha</th>
+                                                <th>Monto</th>
+                                                <th>Estado de la Orden</th>
+                                                <th>Estado de Pagos</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="payment_info">
+                                                <t t-foreach="payment_info" t-as="info">
+                                                    <tr>
+                                                        <td><t t-esc="info['order_name']"/></td>
+                                                        <td><t t-esc="info['product_name']"/></td>
+                                                        <td><t t-esc="info['order_date']" t-options='{"widget": "date"}'/></td>
+                                                        <td>
+                                                            <span t-esc="info['amount']" t-options='{"widget": "monetary", "display_currency": info["currency_id"]}'/>
+                                                        </td>
+                                                        <td>
+                                                            <span t-if="info['state'] == 'sale'" class="fa fa-exclamation-circle text-success">Completado</span>
+                                                            <span t-elif="info['state'] == 'draf'" class="fa fa-exclamation-circle text-warning">En Proceso</span>
+                                                            <span t-else="" class="badge badge-warning"><t t-esc="info['state']"/></span>
+                                                        </td>
+                                                        <td>
+                                                            <t t-if="info['transactions']">
+                                                                <t t-foreach="info['transactions']" t-as="transaction">
+                                                                    <div class="mb-1">
+                                                                        <span t-if="transaction['state'] == 'done'" class="fa fa-exclamation-circle text-success" 
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - Pagado
+                                                                        </span>
+                                                                        <span t-elif="transaction['state'] == 'pending'" class="fa fa-exclamation-circle text-warning"
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - Pendiente
+                                                                        </span>
+                                                                        <span t-elif="transaction['state'] == 'cancel'" class="fa fa-exclamation-circle text-danger"
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - Cancelado
+                                                                        </span>
+                                                                        <span t-else="" class="badge badge-secondary"
+                                                                              t-attf-title="Referencia: #{transaction['reference']}">
+                                                                            <span t-esc="transaction['amount']" t-options='{"widget": "monetary", "display_currency": transaction["currency_id"]}'/> - <t t-esc="transaction['state']"/>
+                                                                        </span>
+                                                                    </div>
+                                                                </t>
+                                                            </t>
+                                                            <t t-elif="info['schedule_info']">
+                                                                <div class="mb-1">
+                                                                    <span class="badge badge-info fa fa-exclamation-circle text-info">
+                                                                        <i class="fa fa-calendar me-1"></i><t t-esc="info['schedule_info']"/>
+                                                                    </span>
+                                                                </div>
+                                                            </t>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <tr t-if="not payment_info">
+                                                <td colspan="6" class="text-center">No hay pagos de otros servicios registrados.</td>
+                                            </tr>
+                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <div class="mt-4">
+                            <a href="/my/servicios_academicos" class="btn btn-success">Regresar</a>
+                            <a href="/campus" class="btn btn-primary">Campus</a>
+                        </div>
+
+                </div>
+            </div>
+            <!-- TEMPORAL PARA TITULOS COMPRAS -->
+        </t>
+    </template>
+
+    <!-- ELIMINAR FACTURAS CANCELADAS DE /my/invoices -->
+     <template id="portal_my_invoices_hide_cancelled" inherit_id="account.portal_my_invoices">
+            <xpath expr="//tbody/t[@t-foreach='invoices']/tr" position="attributes">
+                <attribute name="t-if">invoice.state != 'cancel'</attribute>
+            </xpath>
+        </template>
 </odoo>

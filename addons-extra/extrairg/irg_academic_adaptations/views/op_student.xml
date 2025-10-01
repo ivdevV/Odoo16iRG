@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+	 <record id="view_op_student_form_extended" model="ir.ui.view">
+            <field name="model">op.student</field>
+            <field name="inherit_id" ref="openeducat_fees.view_op_student_form_fees_inherit"/>
+	    <field name="arch" type="xml">
+		    <xpath expr="//button[@name='action_view_invoice']" position="after">
+			    <!-- xpath expr="//button[@name='action_view_invoice']" position="inside">-->
+                    <button class="btn oe_stat_button" type="object" name="action_open_exam_attendees"
+                            style="border-right: 1px solid;" icon="fa-pencil">
+                        <field string="Libretas" name="gradebook_ids" widget="statinfo"/>
+                    </button>
+                </xpath>
+
+            </field>
+    </record>
+
+    <!-- actualizando Vista-->
+        <record model="ir.actions.act_window" id="act_open_op_exam_attendees_view_new">
+            <field name="name">Libreta de Calificaciones</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">app.gradebook.student</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="isep_gradebook.app_gradebook_student_search"/>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+        </record>
+   </data>
+  </odoo>
+
+

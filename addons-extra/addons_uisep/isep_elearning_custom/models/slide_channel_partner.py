@@ -15,3 +15,5 @@ class SlideChannelPartner(models.Model):
     op_subject_id = fields.Many2one('op.subject', string="ASIGNATURA" )
     active = fields.Boolean(string='Activo', default=True)
     
+    date_to=fields.Date(string="Fecha de Fin", help="Fecha de Fin registrada en el Lote")
+    date_from=fields.Date(string="Fecha de Inicio", help="Fecha de Inicio registrada en el Lote")

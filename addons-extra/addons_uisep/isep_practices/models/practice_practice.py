@@ -268,7 +268,7 @@ class PracticePractice(models.Model):
             if sign_template:
                 sign_items = {
                     '-0': {'required': True, 'responsible_id': 10, 'page': 2, 'type_id': 1, 'posX': 0.169, 'posY': 0.566, 'width': 0.200, 'height': 0.050},
-                    '-1': {'required': True, 'responsible_id': 1, 'page': 2, 'type_id': 1, 'posX': 0.639, 'posY': 0.566, 'width': 0.200, 'height': 0.050}
+                    '-1': {'required': True, 'responsible_id': 1, 'page': 2, 'type_id': 1, 'posX': 0.150, 'posY': 0.480, 'width': 0.200, 'height': 0.050}
                 }
 
                 sign_template.update_from_pdfviewer(sign_items=sign_items)
