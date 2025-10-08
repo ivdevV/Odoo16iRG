@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- View op.academic.term form -->
+    <record id="view_op_academic_term_form" model="ir.ui.view">
+        <field name="name">view.op.academic.term.form</field>
+        <field name="model">op.academic.term</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_academic_term_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='term_end_date']" position="after">
+                <field name="code"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_op_academic_term_tree" model="ir.ui.view">
+        <field name="name">view.op.academic.term.tree</field>
+        <field name="model">op.academic.term</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_academic_term_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="code"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
