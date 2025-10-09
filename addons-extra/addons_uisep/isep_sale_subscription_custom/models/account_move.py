@@ -72,9 +72,10 @@ class AccountMove(models.Model):
     def create(self, vals):
         record = super(AccountMove, self).create(vals)
         if record:
-            record.search_order_subscription_id()
-            if record.order_subscription_id and not record.schedule_id:
-                record.search_order_schedule_id(record.order_subscription_id)
+            for recs in record:
+                 recs.search_order_subscription_id()
+                 if recs.order_subscription_id and not recs.schedule_id:
+                      recs.search_order_schedule_id(recs.order_subscription_id)
         return record
 
     """def write(self, vals):
