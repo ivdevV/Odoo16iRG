@@ -19,7 +19,7 @@ class SaleOrderAdmission(models.Model):
         ad = self.env['auto.admission.required'].search([], limit=1)
         lang = course.lang if course else (self.course_id.lang if self.course_id else False)
 
-        if lang == 'es_MX' and ad.mx_active:
+        if lang in ('es_MX', 'es_ES') and ad.mx_active:
             return True
         if lang == 'pt_BR' and ad.br_active:
             return True
@@ -134,7 +134,7 @@ class SaleOrderAdmission(models.Model):
         if auto_ad and lang and admission:
             try:
 
-                if lang == 'es_MX':
+                if lang in ('es_MX', 'es_ES'):
                     if ad.mx_state_admission_done:
                         admission.submit_form()
                         admission.confirm_in_progress()
