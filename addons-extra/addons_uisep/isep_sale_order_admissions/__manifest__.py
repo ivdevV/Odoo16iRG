@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Isep Sale Order Admissions',
-    'version': '16.5',
+    'version': '16.6',
     'summary': """ Admissions for sale order """,
     'author': 'Breithner Aquituari',
     'website': '',
