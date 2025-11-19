@@ -148,16 +148,73 @@ class SaleOrder(models.Model):
             order.amount_due_total = amount_due_total
 
     # Se usa en el ecommerce para llenar data relevante de la suscripcion
+    # def _auto_scheduled_order(self):
+    #     list_product_comb = []
+    #     term_number_tb = self.env['product.term.schedule'].sudo()
+    #     for ol in self.order_line:            
+    #         #if ol.product_id.is_academic_program and ol.product_id.recurring_invoice and ol.product_id.combination_indices:
+    #         if ol.product_id.recurring_invoice and ol.product_id.combination_indices:
+    #             list_product_comb.append(int(ol.product_id.combination_indices))
+    #     if list_product_comb:
+    #         attribute = self.env['product.template.attribute.value'].sudo().search([('id', 'in', list_product_comb)])
+    #         max_plazo = max(attribute.mapped('plazo'))
+    #         if max_plazo == 0:
+    #             max_plazo_str = attribute.mapped('name')
+    #             max_plazo_str = ','.join(max_plazo_str)                    
+    #             coincidencias = re.findall(r'\d+', max_plazo_str)
+    #             if coincidencias:
+    #                 plazos = [int(num) for num in coincidencias]
+    #                 max_plazo = max(plazos)
+    #             else:
+    #                 max_plazo = 1
+    #         term_number_id = False
+    #         for term in term_number_tb.search([]):
+    #             if term.term_number == max_plazo:
+    #                 term_number_id = term.id
+    #                 break
+    #         if not term_number_id:
+    #             try:
+    #                 term_number_id = term_number_tb.search([('custom','=',True)],limit=1).id
+    #             except:
+    #                 pass
+                
+    #         self.write({
+    #                 'term_number_id':term_number_id,
+    #                 'term_number':max_plazo,
+    #             })
+    #         self.onchange_end_date_suscrip()
+    #         self.create_subscription_schedule()
+
     def _auto_scheduled_order(self):
         list_product_comb = []
         term_number_tb = self.env['product.term.schedule'].sudo()
+        
         for ol in self.order_line:            
-            #if ol.product_id.is_academic_program and ol.product_id.recurring_invoice and ol.product_id.combination_indices:
-            if ol.product_id.recurring_invoice and ol.product_id.combination_indices:
-                list_product_comb.append(int(ol.product_id.combination_indices))
+            if ol.product_id.recurring_invoice:
+                if ol.product_id.product_template_attribute_value_ids:
+                    for ptav in ol.product_id.product_template_attribute_value_ids:
+                        if ptav.attribute_id.name == 'Planes':
+                            list_product_comb.append(ptav.id)
+                            break
+                        
+                elif ol.product_id.combination_indices:
+                    combination_str = str(ol.product_id.combination_indices)
+                    if ',' in combination_str:
+                        first_id = combination_str.split(',')[0].strip()
+                        try:
+                            list_product_comb.append(int(first_id))
+                        except ValueError:
+                            _logger.warning("No se pudo convertir combination_indices: %s", first_id)
+                    else:
+                        try:
+                            list_product_comb.append(int(combination_str))
+                        except ValueError:
+                            _logger.warning("No se pudo convertir combination_indices: %s", combination_str)
+        
         if list_product_comb:
             attribute = self.env['product.template.attribute.value'].sudo().search([('id', 'in', list_product_comb)])
-            max_plazo = max(attribute.mapped('plazo'))
+            max_plazo = max(attribute.mapped('plazo')) if attribute.mapped('plazo') else 0
+            
             if max_plazo == 0:
                 max_plazo_str = attribute.mapped('name')
                 max_plazo_str = ','.join(max_plazo_str)                    
@@ -167,21 +224,23 @@ class SaleOrder(models.Model):
                     max_plazo = max(plazos)
                 else:
                     max_plazo = 1
+            
             term_number_id = False
             for term in term_number_tb.search([]):
                 if term.term_number == max_plazo:
                     term_number_id = term.id
                     break
+            
             if not term_number_id:
                 try:
-                    term_number_id = term_number_tb.search([('custom','=',True)],limit=1).id
+                    term_number_id = term_number_tb.search([('custom','=',True)], limit=1).id
                 except:
                     pass
-                
+            
             self.write({
-                    'term_number_id':term_number_id,
-                    'term_number':max_plazo,
-                })
+                'term_number_id': term_number_id,
+                'term_number': max_plazo,
+            })
             self.onchange_end_date_suscrip()
             self.create_subscription_schedule()
             
