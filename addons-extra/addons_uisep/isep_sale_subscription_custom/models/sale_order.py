@@ -187,17 +187,21 @@ class SaleOrder(models.Model):
 
     def _auto_scheduled_order(self):
         list_product_comb = []
-        term_number_tb = self.env['product.term.schedule'].sudo()
+        # Usamos nombres distintos para el modelo y el registro para evitar confusiones
+        TermSchedule = self.env['product.term.schedule'].sudo()
+        PaymentTerm = self.env['account.payment.term'].sudo()
         
         for ol in self.order_line:            
             if ol.product_id.recurring_invoice:
                 if ol.product_id.product_template_attribute_value_ids:
                     for ptav in ol.product_id.product_template_attribute_value_ids:
+                        # Buscamos por nombre o si tiene un 'plazo' definido
                         if ptav.attribute_id.name == 'Planes':
                             list_product_comb.append(ptav.id)
                             break
                         
                 elif ol.product_id.combination_indices:
+                    # ... (Tu lógica de combinación indices se mantiene igual) ...
                     combination_str = str(ol.product_id.combination_indices)
                     if ',' in combination_str:
                         first_id = combination_str.split(',')[0].strip()
@@ -209,12 +213,13 @@ class SaleOrder(models.Model):
                         try:
                             list_product_comb.append(int(combination_str))
                         except ValueError:
-                            _logger.warning("No se pudo convertir combination_indices: %s", combination_str)
-        
+                            pass # Ignoramos errores silenciosamente
+
         if list_product_comb:
             attribute = self.env['product.template.attribute.value'].sudo().search([('id', 'in', list_product_comb)])
             max_plazo = max(attribute.mapped('plazo')) if attribute.mapped('plazo') else 0
             
+            # Lógica de rescate por nombre
             if max_plazo == 0:
                 max_plazo_str = attribute.mapped('name')
                 max_plazo_str = ','.join(max_plazo_str)                    
@@ -225,22 +230,33 @@ class SaleOrder(models.Model):
                 else:
                     max_plazo = 1
             
-            term_number_id = False
-            for term in term_number_tb.search([]):
-                if term.term_number == max_plazo:
-                    term_number_id = term.id
-                    break
+            term_number_record = TermSchedule.search([('term_number', '=', max_plazo)], limit=1)
+            if not term_number_record:
+                 term_number_record = TermSchedule.search([('custom','=',True)], limit=1)
             
-            if not term_number_id:
-                try:
-                    term_number_id = term_number_tb.search([('custom','=',True)], limit=1).id
-                except:
-                    pass
+            term_number_id = term_number_record.id if term_number_record else False
+
+            payment_term_name = f'{max_plazo} Meses'
+            payment_term_record = PaymentTerm.search([('name', '=', payment_term_name)], limit=1)
             
-            self.write({
+            if not payment_term_record:
+                 payment_term_record = PaymentTerm.search([('name', 'ilike', payment_term_name)], limit=1)
+
+            payment_term_id = payment_term_record.id if payment_term_record else False
+            
+            # Escritura
+            vals = {
                 'term_number_id': term_number_id,
                 'term_number': max_plazo,
-            })
+            }
+            # Solo escribimos el plazo de pago si lo encontramos, para no borrar uno manual si existía
+            if payment_term_id:
+                vals['payment_term_id'] = payment_term_id
+                
+            self.write(vals)
+            
+            _logger.info("Autoschedule: Plazos=%s, PaymentTerm=%s", max_plazo, payment_term_record.name if payment_term_record else 'No encontrado')
+
             self.onchange_end_date_suscrip()
             self.create_subscription_schedule()
             
@@ -262,8 +278,8 @@ class SaleOrder(models.Model):
                     period=relativedelta(years=duration)
                 end_date = sub.start_date + period - relativedelta(days=1)
                 sub.write({'end_date': end_date})
-                sub.order_line._reset_subscription_qty_to_invoice()
-            
+                
+                sub.order_line._reset_subscription_qty_to_invoice()  
 
 
     @api.onchange('term_number_id')
