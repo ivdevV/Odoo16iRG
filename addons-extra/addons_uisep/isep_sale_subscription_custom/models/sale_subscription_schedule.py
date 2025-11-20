@@ -1,5 +1,5 @@
 from os import terminal_size
-from odoo import _, api, fields, models, Command
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Date
 from datetime import datetime, date, timedelta
@@ -8,6 +8,8 @@ from odoo.tools import date_utils
 from dateutil.relativedelta import relativedelta
 from odoo.osv import expression
 from odoo.tools import formatLang
+
+
 
 class SaleSubscriptionPaymentSchedule(models.Model):
     _name = "sale.subscription.schedule"
@@ -37,6 +39,7 @@ class SaleSubscriptionPaymentSchedule(models.Model):
         required=True,
     )
 
+
     date_executed = fields.Date(
         string="Fecha a ejecutar",
         compute="_compute_date_executed",
@@ -47,18 +50,9 @@ class SaleSubscriptionPaymentSchedule(models.Model):
         default="not_paid", 
         string="Estado", 
         compute="compute_payment_state", store=True, index=True)
-    
     user_id = fields.Many2one('res.users',string="Responsable")
     name = fields.Char(string="Nombre", compute="_compute_ref_name", store=True, index=True)
 
-    # --- NUEVO CAMPO PARA SOPORTAR FACTURA GLOBAL ---
-    # Vincula este plazo con la línea contable específica (430) de la factura global
-    move_line_id = fields.Many2one(
-        'account.move.line', 
-        string="Apunte de Vencimiento",
-        check_company=True,
-        copy=False
-    )
 
     def action_open_order(self):
         self.ensure_one()
@@ -73,6 +67,7 @@ class SaleSubscriptionPaymentSchedule(models.Model):
             'target': 'current',
         }
 
+
     def open_full_view_term(self):
         self.ensure_one()
         result = self.env['ir.actions.act_window']._for_xml_id('isep_sale_subscription_custom.sale_subscription_schedule_action')
@@ -82,33 +77,26 @@ class SaleSubscriptionPaymentSchedule(models.Model):
 
     @api.model_create_multi
     def create(self, vals):
-        # Pequeño fix: si viene vals como lista o dict
-        # A veces create_multi recibe lista, a veces super().create espera un dict si es uno solo
-        # Lo dejamos estandard llamando a super
-        records = super(SaleSubscriptionPaymentSchedule, self).create(vals)
-        for record in records:     
-            if record.amount_recurring_taxinc <= 0:
-                # Warning opcional, a veces hay cuotas gratis o ajustes
-                # raise UserError('El Total a cobrar debe ser diferente de CERO.')
-                pass
-        return records
+        record = super(SaleSubscriptionPaymentSchedule, self).create(vals)        
+        if record.amount_recurring_taxinc <= 0:
+            raise UserError('El Total a cobrar debe ser diferente de CERO.')
+        return record
 
-    @api.depends('total_paid', 'amount_recurring_taxinc')
+    
+
+    @api.depends('total_paid')
     def compute_payment_state(self):
         for record in self:
-            # Forzar float para evitar errores de comparacion
-            total_paid = round(record.total_paid or 0.0, 2)
-            amount_recurring_taxinc = round(record.amount_recurring_taxinc or 0.0, 2)
-            
+            total_paid =round(record.total_paid,2)
             payment_state = 'not_paid'
-            
-            # Tolerancia de céntimos
-            if total_paid >= (amount_recurring_taxinc - 0.01):
-                payment_state = 'paid'
-            elif total_paid > 0:
+            amount_recurring_taxinc = record.amount_recurring_taxinc
+            if total_paid > 0 and total_paid < amount_recurring_taxinc:
                 payment_state = 'partial'
-                
+            elif total_paid >= amount_recurring_taxinc:
+                payment_state = 'paid'
             record.payment_state = payment_state
+
+    
 
     @api.depends('order_id','term_label')
     def _compute_ref_name(self):
@@ -117,6 +105,8 @@ class SaleSubscriptionPaymentSchedule(models.Model):
             if record.order_id and record.term_label:
                 name = '%s - Plazo %s' % (record.order_id.name, record.term_label)
             record.name = name
+
+    
     
     currency_id = fields.Many2one(
         string="Moneda",
@@ -146,6 +136,7 @@ class SaleSubscriptionPaymentSchedule(models.Model):
         index=True,
     )    
 
+
     partner_id = fields.Many2one(
         string="Cliente",
         comodel_name="res.partner",
@@ -174,6 +165,8 @@ class SaleSubscriptionPaymentSchedule(models.Model):
             inv.schedule_id = False
             inv.aux_disassociate = False
 
+        
+
     def action_add_invoices(self):
         return {
             'name': 'Agregar Facturas',
@@ -183,12 +176,35 @@ class SaleSubscriptionPaymentSchedule(models.Model):
             'target': 'new',
             'flags': {'action_buttons': False},      
             'context': {'default_partner_id': self.partner_id.id , 'default_partner_invoice_id': self.partner_invoice_id.id , 'default_currency_id': self.currency_id.id , },
+            #'context': {'default_invoice_ids': [(6, 0, self.invoice_ids.ids)]},
         }
     
+    
+
+    """def action_add_invoices(self):
+        self.ensure_one()
+        action = self.env["ir.actions.act_window"]._for_xml_id("account.action_move_out_invoice_type")        
+        action['domain'] = [('partner_id','in', (self.partner_id.id,self.partner_invoice_id.id)), ('state','=','posted'), ('currency_id','=',self.currency_id.id), ('schedule_id','=',False )  ]
+        action['context'] = {}
+        action['target'] = 'new'
+        action['flags'] = {'action_buttons': False}
+        return action"""
+    
+
+
+    """invoice_ids = fields.Many2many(
+        string="Facturas",
+        domain=[
+            ('move_type', 'in', ['out_invoice', 'out_refund']),
+            ('schedule_id', '=', False),
+        ],
+    )"""
+
     payment_legacy_ids = fields.One2many(
         'sale.note.inv.legacy', 'schedule_id',
         string="Otros pagos/facturas"
     )
+
 
     total_invoiced = fields.Monetary(
         compute='_compute_total_invoiced', 
@@ -211,66 +227,57 @@ class SaleSubscriptionPaymentSchedule(models.Model):
     warning_ignore = fields.Boolean("Ignorar warning")
     warning_count = fields.Integer("Warning", compute="compute_warning_count", store=True, index=True)
     warning_msn = fields.Text("Warning Mensaje", compute="compute_warning_count", store=True, index=True)
+    
 
-    @api.depends('amount_recurring_taxinc','total_invoiced','invoice_ids.currency_id','warning_ignore', 'move_line_id')
+    @api.depends('amount_recurring_taxinc','total_invoiced','invoice_ids.currency_id','warning_ignore')
     def compute_warning_count(self):
         for record in self:
             msn = []
             count = 0
             if not record.warning_ignore:
-                # Si usamos el nuevo método (move_line_id), los montos siempre coinciden, ignoramos esta validación
-                if not record.move_line_id: 
-                    if record.total_invoiced > record.amount_recurring_taxinc + 0.01: # Pequeña tolerancia
-                        count+=1 
-                        msn.append('** El total facturado excede el Total a cobrar.')
-                
+                if record.total_invoiced > record.amount_recurring_taxinc:
+                    count+=1 
+                    msn.append('** El total facturado excede el Total a cobrar.')
                 if any(inv.currency_id != record.currency_id for inv in record.invoice_ids):             
                     count+=1 
                     msn.append('** La divisa/moneda son diferente.')
             record.warning_msn = '\n'.join(msn)
             record.warning_count = count
 
+
+
     note = fields.Html(string="Nota interna")
 
-    # ### MODIFICACIÓN CLAVE PARA FACTURA GLOBAL ###
-    @api.depends('invoice_ids.amount_total', 'invoice_ids.amount_residual', 
-                 'payment_legacy_ids.amount_total_invoice', 'payment_legacy_ids.amount_total_payment',
-                 'move_line_id', 'move_line_id.amount_residual', 'move_line_id.amount_residual_currency')
+    # NOTE: SOLO SOPORTA UNA DIVISA, PENDIENTE MULTIDIVISA
+    @api.depends('invoice_ids.amount_total','payment_legacy_ids.amount_total_invoice','invoice_ids.amount_residual','payment_legacy_ids.amount_total_payment')
     def _compute_total_invoiced(self):
         for schedule in self:
-            # CASO 1: Usando Factura Global (Línea de asiento vinculada)
-            if schedule.move_line_id:
-                # Se considera "Facturado" porque está incluido en la factura global
-                schedule.total_invoiced = schedule.amount_recurring_taxinc
-                
-                # El residual se lee directamente del apunte contable
-                if schedule.currency_id and schedule.move_line_id.currency_id and schedule.currency_id == schedule.move_line_id.currency_id:
-                    residual = abs(schedule.move_line_id.amount_residual_currency)
-                else:
-                    residual = abs(schedule.move_line_id.amount_residual)
-                
-                schedule.total_residual = residual
-                schedule.total_paid = schedule.amount_recurring_taxinc - residual
+            schedule.total_invoiced = sum(schedule.invoice_ids.mapped('amount_total')) + sum(schedule.payment_legacy_ids.mapped('amount_total_invoice'))
+            diff_invoice = round(schedule.amount_recurring_taxinc - schedule.total_invoiced , 2)
+            
+            schedule.total_residual = diff_invoice +  sum(schedule.invoice_ids.mapped('amount_residual')) + sum(schedule.payment_legacy_ids.mapped('amount_residual'))
+            schedule.total_paid = schedule.amount_recurring_taxinc - schedule.total_residual
 
-            # CASO 2: Lógica Antigua (Facturas individuales vinculadas por invoice_ids)
-            else:
-                schedule.total_invoiced = sum(schedule.invoice_ids.mapped('amount_total')) + sum(schedule.payment_legacy_ids.mapped('amount_total_invoice'))
-                diff_invoice = round(schedule.amount_recurring_taxinc - schedule.total_invoiced , 2)
-                
-                schedule.total_residual = diff_invoice + sum(schedule.invoice_ids.mapped('amount_residual')) + sum(schedule.payment_legacy_ids.mapped('amount_residual'))
-                schedule.total_paid = schedule.amount_recurring_taxinc - schedule.total_residual
+       
+
 
     def unlink(self):
         for record in self:
+
             if record.order_id:
                 raise UserError(
                     "No se puede eliminar un registro con una suscripción vinculada (order_id)."
                 )
-            if record.invoice_ids or record.payment_legacy_ids or record.move_line_id:
+            if record.invoice_ids or record.payment_legacy_ids:
                 raise UserError(
-                    "%s: No se puede eliminar un registro con facturas o apuntes asociados." % record.name
+                    "%s: No se puede eliminar un registro con facturas asociadas." % record.name
                 )
+            
+            
+
         return super(SaleSubscriptionPaymentSchedule, self).unlink()
+
+    
 
     def action_view_source_sale_order(self):
         self.ensure_one()
@@ -280,48 +287,50 @@ class SaleSubscriptionPaymentSchedule(models.Model):
         result['res_id'] = source_orders.id
         return result
 
+
+    """
+    def action_view_source_sale_orders(self):
+        self.ensure_one()
+        source_orders = self.line_ids.sale_line_ids.order_id
+        result = self.env['ir.actions.act_window']._for_xml_id('sale.action_orders')
+        if len(source_orders) > 1:
+            result['domain'] = [('id', 'in', source_orders.ids)]
+        elif len(source_orders) == 1:
+            result['views'] = [(self.env.ref('sale.view_order_form', False).id, 'form')]
+            result['res_id'] = source_orders.id
+        else:
+            result = {'type': 'ir.actions.act_window_close'}
+        return result"""
+
+
     @api.model
     def read_grid(self, row_fields, col_field, cell_field, domain=None, range=None):
+        # Filtro por defecto para estados no pagados
         self = self.with_context(prefetch_fields=True)
         default_domain = expression.AND([
             [('payment_state', 'in', ['not_paid', 'partial'])],
             [('date_due', '!=', False)],
             [('total_residual', '>', 0)]
         ])
+        
         if domain:
             domain = expression.AND([domain, default_domain])
         else:
             domain = default_domain
-        return super().read_grid(row_fields, col_field, cell_field, domain=domain, range=range)
+            
+        return super().read_grid(
+            row_fields, 
+            col_field, 
+            cell_field, 
+            domain=domain, 
+            range=range
+        )
 
     def action_open_invoices(self):
-        """
-        Modificado: Si tenemos factura global vinculada por linea, abrimos esa factura.
-        Si no, abrimos la orden o las facturas vinculadas antiguamente.
-        """
+        self = self.sudo()
         self.ensure_one()
         
-        if self.move_line_id:
-            return {
-                'name': 'Factura Global',
-                'type': 'ir.actions.act_window',
-                'res_model': 'account.move',
-                'res_id': self.move_line_id.move_id.id,
-                'view_mode': 'form',
-                'target': 'current',
-            }
-            
-        if self.invoice_ids:
-             return {
-                'name': 'Facturas',
-                'type': 'ir.actions.act_window',
-                'res_model': 'account.move',
-                'domain': [('id', 'in', self.invoice_ids.ids)],
-                'view_mode': 'tree,form',
-                'target': 'current',
-            }
-
-        # Fallback original
+        # Forzar apertura de la orden
         return {
             'type': 'ir.actions.act_window',
             'name': 'Orden de Venta',
@@ -332,6 +341,8 @@ class SaleSubscriptionPaymentSchedule(models.Model):
             'flags': {'action_buttons': True, 'headless': True},
         }
 
+
+    
     token_exist = fields.Char(
         string="Tokens",
         compute="_compute_tokens",
@@ -359,6 +370,7 @@ class SaleSubscriptionPaymentSchedule(models.Model):
         store=True
     )
     
+
     total_paid_new = fields.Char(
         string="Total pagos",
         compute="_compute_order_pagos_total",
@@ -381,6 +393,7 @@ class SaleSubscriptionPaymentSchedule(models.Model):
             formatted_amount = formatLang(self.env, amount, currency_obj=currency)
             rec.total_paid_new = f"Total pagos: {formatted_amount}"
 
+
     @api.depends('order_id.total_recurring', 'order_id.total_paid')
     def _compute_order_diff_total(self):
         for rec in self:
@@ -392,7 +405,4 @@ class SaleSubscriptionPaymentSchedule(models.Model):
             formatted_amount = formatLang(self.env, amount, currency_obj=currency)
             rec.total_diff = f"Residual: {formatted_amount}"
 
-    # --- CAMPOS COMPUTADOS AUXILIARES PARA LA VISTA ---
-    def _compute_date_executed(self):
-        # Tu logica original si la tenias, o dejar vacio si no se usa
-        pass
+
