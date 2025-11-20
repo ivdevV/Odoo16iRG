@@ -423,10 +423,46 @@ class SaleOrder(models.Model):
                 sc.order_id = False
                 sc.unlink()
 
+            # Pre-calcular terms si existen para usarlos en el bucle
+            terms = []
+            if order.payment_term_id:
+                # Calculo de terminos usando _compute_terms (Odoo 16)
+                date_ref = start_date
+                currency = order.currency_id
+                company = order.company_id
+                sign = 1
+                
+                untaxed_amount_currency = order.amount_untaxed
+                tax_amount_currency = order.amount_tax
+                
+                if currency != company.currency_id:
+                    untaxed_amount = currency._convert(untaxed_amount_currency, company.currency_id, company, date_ref)
+                    tax_amount = currency._convert(tax_amount_currency, company.currency_id, company, date_ref)
+                else:
+                    untaxed_amount = untaxed_amount_currency
+                    tax_amount = tax_amount_currency
+                    
+                terms = order.payment_term_id._compute_terms(
+                    date_ref=date_ref,
+                    currency=currency,
+                    company=company,
+                    tax_amount=tax_amount,
+                    tax_amount_currency=tax_amount_currency,
+                    sign=sign,
+                    untaxed_amount=untaxed_amount,
+                    untaxed_amount_currency=untaxed_amount_currency,
+                    cash_rounding=None
+                )
+
+            remaining_amount = order.amount_total
             
             term_number = 0
             term_label = False
             total_period_recurrin = order.term_number
+            
+            if total_period_recurrin <= 0:
+                total_period_recurrin = 1
+
             for i in range(0, total_period_recurrin):
                 # Calcular la fecha de cada periodo
                 if unit == 'month':
@@ -441,11 +477,30 @@ class SaleOrder(models.Model):
                 payment_date = start_date + period
                 notification_date = payment_date # - relativedelta(days=order.recurrence_id.notification_days or 0)
 
-                # Solo la primera cuota es monto completo:
-                if i == 0:
-                    amount_recurring_taxinc= order.amount_total
+                # Determinar el monto de la cuota
+                amount_recurring_taxinc = 0.0
+                
+                if order.payment_term_id and terms:
+                    if i < len(terms):
+                         amount_recurring_taxinc = terms[i].get('foreign_amount', 0.0)
+                    else:
+                         # Si hay mas periodos que terminos, poner 0 o el resto en el ultimo
+                         if i == total_period_recurrin - 1:
+                             amount_recurring_taxinc = remaining_amount
+                         else:
+                             amount_recurring_taxinc = 0.0
                 else:
-                    amount_recurring_taxinc= order.amount_recurring_taxinc
+                    # Fallback si no hay terms: dividir equitativamente
+                    if total_period_recurrin > 0:
+                        if i == total_period_recurrin - 1:
+                            amount_recurring_taxinc = remaining_amount
+                        else:
+                            amount_recurring_taxinc = round(order.amount_total / total_period_recurrin, 2)
+                    else:
+                        amount_recurring_taxinc = order.amount_total
+                
+                remaining_amount -= amount_recurring_taxinc
+
                 # Crear el cronograma de pago
                 term_number += 1
                 term_label = '%s de %s' % ( str(term_number).zfill(2) ,  str(total_period_recurrin).zfill(2) )
@@ -544,7 +599,77 @@ class SaleOrder(models.Model):
             self.create_subscription_schedule()
         return res
 
-# class SaleOrderStage(models.Model):
-#     _inherit = 'sale.order.stage'
+    def _create_payment_transaction(self, vals):
+        # Use sudo() to ensure we can read the schedule even if the user is public/portal
+        order_sudo = self.sudo()
+        if order_sudo.subscription_schedule:
+            # Prioritize the first unpaid schedule line amount
+            first_unpaid = order_sudo.subscription_schedule.filtered(lambda s: s.payment_state == 'not_paid').sorted('date_due')
+            if first_unpaid:
+                installment_amount = first_unpaid[0].amount_recurring_taxinc
+                
+                # If the passed amount is the total, we assume we want to charge the installment
+                # Use order_sudo.amount_total to avoid Access Errors
+                current_total = order_sudo.amount_total
+                if vals.get('amount') and abs(vals['amount'] - current_total) < 0.01:
+                     vals['amount'] = installment_amount
+            
+        return super(SaleOrder, self)._create_payment_transaction(vals)
 
-#     view_cartera = fields.Boolean(string='ver en Cartera', default=False)
+class PaymentTransaction(models.Model):
+    _inherit = 'payment.transaction'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # Attempt to find the related sale order
+            order = False
+            # Check sale_order_ids (Many2many)
+            if vals.get('sale_order_ids'):
+                commands = vals['sale_order_ids']
+                # Handle [(6, 0, [ids])]
+                for cmd in commands:
+                    if cmd[0] == 6 and cmd[2]:
+                        order_id = cmd[2][0]
+                        order = self.env['sale.order'].sudo().browse(order_id)
+                        break
+            
+            # Fallback: Check reference
+            if not order and vals.get('reference'):
+                order = self.env['sale.order'].sudo().search([('name', '=', vals['reference'])], limit=1)
+            
+            if order:
+                # Check for subscription schedule
+                if hasattr(order, 'subscription_schedule') and order.subscription_schedule:
+                     first_unpaid = order.subscription_schedule.filtered(lambda s: s.payment_state == 'not_paid').sorted('date_due')
+                     if first_unpaid:
+                         installment_amount = first_unpaid[0].amount_recurring_taxinc
+                         current_amount = vals.get('amount', 0.0)
+                         
+                         # If amount matches total, override it
+                         if abs(current_amount - order.amount_total) < 0.01:
+                             vals['amount'] = installment_amount
+        
+        return super(PaymentTransaction, self).create(vals_list)
+
+    def _reconcile_after_done(self):
+        # Override to handle subscription partial payments (installments)
+        for tx in self:
+            if tx.sale_order_ids:
+                for order in tx.sale_order_ids:
+                    if hasattr(order, 'subscription_schedule') and order.subscription_schedule and order.state in ('draft', 'sent'):
+                        # Check if amount matches any unpaid installment
+                        # We prioritize the first unpaid one
+                        first_unpaid = order.subscription_schedule.filtered(lambda s: s.payment_state == 'not_paid').sorted('date_due')
+                        if first_unpaid:
+                            installment_amount = first_unpaid[0].amount_recurring_taxinc
+                            # Allow a small difference for rounding
+                            if abs(tx.amount - installment_amount) < 0.01:
+                                order.sudo().action_confirm()
+                                # Force invoice creation for the full amount (Factura Global)
+                                invoices = order.sudo()._create_invoices()
+                                if invoices:
+                                    invoices.sudo().action_post()
+                                # We manually confirm it, so super() won't complain about mismatch because state is now 'sale'
+        
+        return super(PaymentTransaction, self)._reconcile_after_done()
