@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="payment_confirmation_status_monthly" inherit_id="website_sale.payment_confirmation_status">
+        <xpath expr="//div[hasclass('alert-warning')]" position="replace">
+            <!-- Removed warning -->
+        </xpath>
+    </template>
+</odoo>
