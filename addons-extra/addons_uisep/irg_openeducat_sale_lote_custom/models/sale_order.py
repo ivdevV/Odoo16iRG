@@ -85,11 +85,17 @@ class SaleOrder(models.Model):
                     'modality_id': ad.br_modality_id.id if ad.br_modality_id else False,
                 })
                 
+            if prefix_02 in ['HC', 'PRS']:
+                batch_start_date = date.replace(day=1)
+            else:
+                batch_start_date = date
+
             lot_values.update({
                 'name': code,
                 'code': code,
                 'course_id': course_id.id,
-                'end_date': fields.Date.today() + relativedelta(years=1),
+                'start_date': batch_start_date,
+                'end_date': batch_start_date + relativedelta(years=1),
             })            
             lot_id = op_batch.create(lot_values)            
         return lot_id
