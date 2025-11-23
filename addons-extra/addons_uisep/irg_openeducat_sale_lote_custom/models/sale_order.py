@@ -13,7 +13,11 @@ class SaleOrder(models.Model):
         # If the original method was smaller or split, we could call super(), 
         # but since the logic for constructing 'code' is monolithic, we rewrite it.
         
+        _logger.info("IRG Custom Logic: get_lot_id called for course %s", course_id.name)
+        
         date = self.admission_date
+        _logger.info("IRG Custom Logic: Initial admission_date: %s", date)
+        
         profix_01 = course_id.product_template_id.categ_id.code or ''
         prefix_02 = 'GE'
 
@@ -26,6 +30,8 @@ class SaleOrder(models.Model):
                         if ptav.attribute_id.name == 'Modalidad':
                             # Custom logic for Modalidad code
                             modalidad_name = ptav.product_attribute_value_id.name
+                            _logger.info("IRG Custom Logic: Found Modalidad: %s", modalidad_name)
+                            
                             if modalidad_name == 'Online':
                                 prefix_02 = 'ONL'
                             elif modalidad_name == 'HomeClass':
@@ -41,9 +47,12 @@ class SaleOrder(models.Model):
                             break
                 break
 
+        _logger.info("IRG Custom Logic: Determined prefix_02: %s", prefix_02)
+
         # Logic for date shift based on modality: HomeClass (HC) or Presencial (PRS)
         if prefix_02 in ['HC', 'PRS'] and date.day > 7:
              date = date + relativedelta(months=1)
+             _logger.info("IRG Custom Logic: Date shifted to next month: %s", date)
 
         year = date.strftime("%y")
         month = date.strftime("%m")
@@ -58,6 +67,8 @@ class SaleOrder(models.Model):
         
         # Constructed code without prefix_06
         code = profix_01 + prefix_011 + prefix_02 +  prefix_05 + prefix_04
+        
+        _logger.info("IRG Custom Logic: Generated Code: %s", code)
         
         lot_id = op_batch.search([('code','=',code)])        
     
@@ -96,6 +107,12 @@ class SaleOrder(models.Model):
                 'course_id': course_id.id,
                 'start_date': batch_start_date,
                 'end_date': batch_start_date + relativedelta(years=1),
-            })            
+            })
+            
+            _logger.info("IRG Custom Logic: Creating new batch with values: %s", lot_values)
+            
             lot_id = op_batch.create(lot_values)            
+        else:
+            _logger.info("IRG Custom Logic: Found existing batch: %s", lot_id.name)
+            
         return lot_id
