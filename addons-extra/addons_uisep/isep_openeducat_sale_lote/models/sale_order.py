@@ -13,6 +13,7 @@ class SaleOrder(models.Model):
 
 
     def get_lot_id(self, course_id):
+        _logger.info("BASE MODULE LOGIC: get_lot_id called for course %s", course_id.name)
         date = self.admission_date
         year = date.strftime("%y")
         month = date.strftime("%m")        
