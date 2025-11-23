@@ -51,10 +51,11 @@ class SaleOrder(models.Model):
 
         # Logic for date shift based on modality: HomeClass (HC) or Presencial (PRS)
         # We check against TODAY's day because admission_date is often set to the 1st of the month by the website.
-        current_day = fields.Date.today().day
-        if prefix_02 in ['HC', 'PRS'] and current_day > 7:
+        # We also ensure we only shift if the selected admission_date is actually in the current month.
+        today = fields.Date.today()
+        if prefix_02 in ['HC', 'PRS'] and today.day > 7 and date.month == today.month and date.year == today.year:
              date = date + relativedelta(months=1)
-             _logger.info("IRG Custom Logic: Date shifted to next month (Current day %s > 7): %s", current_day, date)
+             _logger.info("IRG Custom Logic: Date shifted to next month (Current day %s > 7 and selected date is current month): %s", today.day, date)
 
         year = date.strftime("%y")
         month = date.strftime("%m")
