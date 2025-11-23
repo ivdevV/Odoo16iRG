@@ -50,9 +50,11 @@ class SaleOrder(models.Model):
         _logger.info("IRG Custom Logic: Determined prefix_02: %s", prefix_02)
 
         # Logic for date shift based on modality: HomeClass (HC) or Presencial (PRS)
-        if prefix_02 in ['HC', 'PRS'] and date.day > 7:
+        # We check against TODAY's day because admission_date is often set to the 1st of the month by the website.
+        current_day = fields.Date.today().day
+        if prefix_02 in ['HC', 'PRS'] and current_day > 7:
              date = date + relativedelta(months=1)
-             _logger.info("IRG Custom Logic: Date shifted to next month: %s", date)
+             _logger.info("IRG Custom Logic: Date shifted to next month (Current day %s > 7): %s", current_day, date)
 
         year = date.strftime("%y")
         month = date.strftime("%m")
