@@ -18,12 +18,35 @@ class SaleOrder(models.Model):
         date = self.admission_date
         _logger.info("IRG Custom Logic: Initial admission_date: %s", date)
         
-        profix_01 = course_id.product_template_id.categ_id.code or ''
+        # Determine profix_01 (Category Code)
+        # Priority: 
+        # 1. From the Sale Order Line product (if found)
+        # 2. From course_id.product_template_id
+        # 3. From course_id.product_template_ids (first one)
+        
+        profix_01 = ''
+        # Default fallback
+        if course_id.product_template_id:
+            profix_01 = course_id.product_template_id.categ_id.code or ''
+        elif hasattr(course_id, 'product_template_ids') and course_id.product_template_ids:
+            profix_01 = course_id.product_template_ids[0].categ_id.code or ''
+
         prefix_02 = 'GE'
 
         for line in self.order_line:
-            if (hasattr(line.product_id, 'course_id') and line.product_id.course_id.id == course_id.id) or \
-            (line.product_id.product_tmpl_id.id == course_id.product_template_id.id):
+            # Check if line matches the course
+            is_match = False
+            if hasattr(line.product_id, 'course_id') and line.product_id.course_id.id == course_id.id:
+                is_match = True
+            elif course_id.product_template_id and line.product_id.product_tmpl_id.id == course_id.product_template_id.id:
+                is_match = True
+            elif hasattr(course_id, 'product_template_ids') and line.product_id.product_tmpl_id.id in course_id.product_template_ids.ids:
+                is_match = True
+            
+            if is_match:
+                # If we found the line, we prefer the category code from the line's product
+                if line.product_id.categ_id.code:
+                    profix_01 = line.product_id.categ_id.code
                 
                 if line.product_id.product_template_attribute_value_ids:
                     for ptav in line.product_id.product_template_attribute_value_ids:
