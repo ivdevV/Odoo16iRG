@@ -70,9 +70,13 @@ class SaleOrderAdmission(models.Model):
 
 
     def _create_or_get_admission(self, line):
-        course = self.env['op.course'].search([
-            ('product_template_id', '=', line.product_template_id.id)
-        ], limit=1)
+        # Search for course in both single and multi product fields
+        domain = ['|', 
+                 ('product_template_id', '=', line.product_template_id.id),
+                 ('product_template_ids', 'in', line.product_template_id.id)]
+        
+        course = self.env['op.course'].search(domain, limit=1)
+        
         if not course:
             self._upsert_admission_row(
                 line,
@@ -196,8 +200,10 @@ class SaleOrderAdmission(models.Model):
         Register = self.env['op.admission.register']
         reg = Register.search([
             ('state', 'in', ['confirm', 'application', 'admission']),
-            ('product_template_id', '=', product_template.id),
             ('period', '=', period),
+            '|',
+            ('product_template_id', '=', product_template.id),
+            ('product_template_ids', 'in', product_template.id),
         ], limit=1)
 
         if reg and reg.state == 'confirm':

@@ -15,17 +15,24 @@ class SaleOrder(models.Model):
             
             if order_line:
                 for line in order_line:
+                    _logger.info(f"DEBUG: Processing line {line.id}, Product: {line.product_template_id.name} ({line.product_template_id.id})")
                     # Updated search to find course where product is in product_template_ids
                     course_id = self.env['op.course'].search([('product_template_ids', 'in', [line.product_template_id.id])], limit=1)
+                    _logger.info(f"DEBUG: Search by product_template_ids result: {course_id}")
                     
                     if not course_id:
                         # Fallback to old search if new field is empty (during migration/transition)
                         course_id = self.env['op.course'].search([('product_template_id', '=', line.product_template_id.id)], limit=1)
+                        _logger.info(f"DEBUG: Search by product_template_id result: {course_id}")
                     
                     # Fallback to self.course_id if it matches the product
                     if not course_id and record.course_id:
+                        _logger.info(f"DEBUG: Checking fallback record.course_id: {record.course_id.name} ({record.course_id.id})")
                         if record.course_id.product_template_id.id == line.product_template_id.id or line.product_template_id.id in record.course_id.product_template_ids.ids:
                             course_id = record.course_id
+                            _logger.info("DEBUG: Fallback to record.course_id successful")
+                        else:
+                            _logger.info("DEBUG: Fallback to record.course_id FAILED - Product mismatch")
 
                     if course_id:
                         # We still set the single product_template_id on the order for backward compatibility 
