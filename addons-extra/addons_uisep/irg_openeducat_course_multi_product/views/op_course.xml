@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_course_form_inherit_multi_product" model="ir.ui.view">
+        <field name="name">op.course.form.inherit.multi.product</field>
+        <field name="model">op.course</field>
+        <field name="inherit_id" ref="isep_openeducat_sale.isep_custom_op_course_form"/>
+        <field name="arch" type="xml">
+            <field name="product_template_id" position="replace">
+                <field name="product_template_ids" widget="many2many_tags"/>
+            </field>
+        </field>
+    </record>
+</odoo>
