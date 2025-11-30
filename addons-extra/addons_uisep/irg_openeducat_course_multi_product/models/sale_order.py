@@ -71,6 +71,11 @@ class SaleOrder(models.Model):
             if not course_id:
                 course_id = self.env['op.course'].search([('product_template_id', '=', product_template_id.id)], limit=1)
 
+            # Fallback to self.course_id if it matches the product
+            if not course_id and self.course_id:
+                if self.course_id.product_template_id.id == product_template_id.id or product_template_id.id in self.course_id.product_template_ids.ids:
+                    course_id = self.course_id
+
             _logger.info("\n###\n log 001 \n###")
             if course_id:
                 register_id = self.env['op.admission.register'].create({
@@ -98,6 +103,11 @@ class SaleOrder(models.Model):
         # Updated to use product_template_ids
         # We take the category code from the first product found
         product = course_id.product_template_ids[:1]
+        
+        # Fallback to old field if new field is empty
+        if not product:
+            product = course_id.product_template_id
+
         profix_01 = product.categ_id.code or '' if product else ''
         
         prefix_02 = 'GE'
