@@ -18,6 +18,15 @@ class SaleOrder(models.Model):
                     # Updated search to find course where product is in product_template_ids
                     course_id = self.env['op.course'].search([('product_template_ids', 'in', [line.product_template_id.id])], limit=1)
                     
+                    if not course_id:
+                        # Fallback to old search if new field is empty (during migration/transition)
+                        course_id = self.env['op.course'].search([('product_template_id', '=', line.product_template_id.id)], limit=1)
+                    
+                    # Fallback to self.course_id if it matches the product
+                    if not course_id and record.course_id:
+                        if record.course_id.product_template_id.id == line.product_template_id.id or line.product_template_id.id in record.course_id.product_template_ids.ids:
+                            course_id = record.course_id
+
                     if course_id:
                         # We still set the single product_template_id on the order for backward compatibility 
                         # or we might need to decide which one to set if multiple lines. 
@@ -25,13 +34,7 @@ class SaleOrder(models.Model):
                         record.product_template_id = line.product_template_id.id # Set the specific product from the line
                         record.course_id = course_id.id
                     else:
-                        # Fallback to old search if new field is empty (during migration/transition)
-                        course_id = self.env['op.course'].search([('product_template_id', '=', line.product_template_id.id)], limit=1)
-                        if course_id:
-                             record.product_template_id = course_id.product_template_id
-                             record.course_id = course_id.id
-                        else:
-                            error_admission_msn.append("* El programa académico %s debe asociarse con el curso, comunicate con un asesor." % line.product_template_id.name)
+                        error_admission_msn.append("* El programa académico %s debe asociarse con el curso, comunicate con un asesor." % line.product_template_id.name)
             
             if error_admission_msn:
                 record.error_admission_msn = '\n'.join(error_admission_msn)
