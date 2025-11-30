@@ -11,11 +11,12 @@ import re
 
 _logger = logging.getLogger(__name__)
 
-
-
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    # ... (I will copy the content here)
+    # For now I'll just put the structure and then use insert_edit_into_file or replace_string_in_file to fill it
+    # Actually I have the content in memory from the previous read_file.
     
     subscription_schedule = fields.One2many('sale.subscription.schedule', 'order_id', string='Cronograma de pagos')
     term_number_id = fields.Many2one('product.term.schedule', string='Plan de Suscripción' )
@@ -28,12 +29,6 @@ class SaleOrder(models.Model):
         store=True,
         currency_field='currency_id'
     )
-
-    # suscription_comment = fields.Html(
-    #     string='Detalles Suscripción',
-    #     compute='_compute_suscription_comment',
-    #     store=False
-    # )
 
     due_line_ids = fields.Many2many(
         comodel_name='sale.subscription.schedule',
@@ -79,65 +74,6 @@ class SaleOrder(models.Model):
                 lambda l: l.date_due and l.date_due < today and l.payment_state == 'not_paid'
             )
 
-#     @api.depends(
-#         'subscription_schedule.date_due',
-#         'subscription_schedule.payment_state',
-#         'subscription_schedule.term_label',
-#         'subscription_schedule.amount_recurring_taxinc',
-#         'subscription_schedule.invoice_ids'
-#     )
-#     def _compute_suscription_comment(self):
-#         today = fields.Date.today()
-#         for order in self:
-#             filtered = order.subscription_schedule.filtered(
-#                 lambda s: s.date_due and s.date_due < today and s.payment_state == 'not_paid'
-#             )
-#             if not filtered:
-#                 order.suscription_comment = ""
-#                 continue
-
-#             html = '''<table class="table table-bordered o_table" style="width: 403.183px;">
-#     <tbody>
-#         <tr style="height: 33.4167px;">
-#             <td style="width: 76px;"><p><strong>Plazo</strong></p></td>
-#             <td style="width: 76.0667px;"><p><strong>Total a cobrar</strong></p></td>
-#             <td style="width: 96.9334px;"><p><strong>Facturas</strong></p></td>
-#             <td style="width: 73.0667px;"><p><strong>Estado</strong></p></td>
-#             <td style="width: 80px;"><p><strong>Fecha vence</strong></p></td>
-#         </tr>
-# '''
-#             for sched in filtered:
-#                 if sched.date_due:
-#                     try:
-#                         date_due_formatted = fields.Date.from_string(
-#                             sched.date_due).strftime('%d/%m/%Y')
-#                     except Exception:
-#                         date_due_formatted = sched.date_due
-#                 else:
-#                     date_due_formatted = ''
-
-#                 invoice_links = ""
-#                 if sched.invoice_ids:
-#                     for inv in sched.invoice_ids:
-
-#                         invoice_links += '<a href="/web#id=%s&amp;model=account.move&amp;view_type=form" >%s</a><br/>' % (
-#                             inv.id, html_escape(inv.display_name or '')
-#                         )
-
-#                 html += '''<tr style="height: 33.3px;">
-#     <td style="width: 76px;"><p>%s</p></td>
-#     <td style="width: 82px;"><p>%s</p></td>
-#     <td style="width: 91px;"><p>%s</p></td>
-#     <td style="width: 29px;"><p><font style="background-color: rgba(255, 0, 0, 0.6);">Sin pagar</font></p></td>
-#     <td style="width: 109px;"><p>%s</p></td>
-# </tr>
-# ''' % (html_escape(sched.term_label or ''),
-#                     html_escape(str(sched.amount_recurring_taxinc or '')),
-#                     invoice_links,
-#                     html_escape(date_due_formatted))
-#             html += "</tbody></table><p><br></p>"
-#             order.suscription_comment = html
-
     @api.depends('invoice_ids.amount_residual', 'invoice_ids.state')
     def _compute_amount_due_total(self):
         for order in self:
@@ -146,44 +82,6 @@ class SaleOrder(models.Model):
                 if invoice.state == 'posted':
                     amount_due_total += invoice.amount_residual
             order.amount_due_total = amount_due_total
-
-    # Se usa en el ecommerce para llenar data relevante de la suscripcion
-    # def _auto_scheduled_order(self):
-    #     list_product_comb = []
-    #     term_number_tb = self.env['product.term.schedule'].sudo()
-    #     for ol in self.order_line:            
-    #         #if ol.product_id.is_academic_program and ol.product_id.recurring_invoice and ol.product_id.combination_indices:
-    #         if ol.product_id.recurring_invoice and ol.product_id.combination_indices:
-    #             list_product_comb.append(int(ol.product_id.combination_indices))
-    #     if list_product_comb:
-    #         attribute = self.env['product.template.attribute.value'].sudo().search([('id', 'in', list_product_comb)])
-    #         max_plazo = max(attribute.mapped('plazo'))
-    #         if max_plazo == 0:
-    #             max_plazo_str = attribute.mapped('name')
-    #             max_plazo_str = ','.join(max_plazo_str)                    
-    #             coincidencias = re.findall(r'\d+', max_plazo_str)
-    #             if coincidencias:
-    #                 plazos = [int(num) for num in coincidencias]
-    #                 max_plazo = max(plazos)
-    #             else:
-    #                 max_plazo = 1
-    #         term_number_id = False
-    #         for term in term_number_tb.search([]):
-    #             if term.term_number == max_plazo:
-    #                 term_number_id = term.id
-    #                 break
-    #         if not term_number_id:
-    #             try:
-    #                 term_number_id = term_number_tb.search([('custom','=',True)],limit=1).id
-    #             except:
-    #                 pass
-                
-    #         self.write({
-    #                 'term_number_id':term_number_id,
-    #                 'term_number':max_plazo,
-    #             })
-    #         self.onchange_end_date_suscrip()
-    #         self.create_subscription_schedule()
 
     def _auto_scheduled_order(self):
         list_product_comb = []
@@ -295,8 +193,8 @@ class SaleOrder(models.Model):
 
     def open_expand_view_tree_term(self):
         self.ensure_one()
-        result = self.env['ir.actions.act_window']._for_xml_id('isep_sale_subscription_custom.sale_subscription_schedule_action')
-        result['views'] = [(self.env.ref('isep_sale_subscription_custom.sale_subscription_schedule_view_tree', False).id, 'tree')]
+        result = self.env['ir.actions.act_window']._for_xml_id('isep_sale_subscription_extension.sale_subscription_schedule_action')
+        result['views'] = [(self.env.ref('isep_sale_subscription_extension.sale_subscription_schedule_view_tree', False).id, 'tree')]
         result['domain'] = [('id', 'in', self.subscription_schedule.ids)]
         # result['target'] = 'new'
         return result
@@ -313,10 +211,6 @@ class SaleOrder(models.Model):
                     term_number_id = line.product_id.subscription_plan.id
         
         self.term_number_id = term_number_id
-
-    
-    
-        
 
     def wizard_update_date_due(self):
         model_date_due = self.env['schedule.date.due']
@@ -341,10 +235,6 @@ class SaleOrder(models.Model):
 
             })
 
-
-
-
-        
         return {
             'name': 'Prorogar fechas de vencimiento',
             'type': 'ir.actions.act_window',
@@ -353,7 +243,6 @@ class SaleOrder(models.Model):
             'target': 'new',
             'flags': {'action_buttons': False},      
             'res_id': wizard.id
-            #'context': {'default_invoice_ids': [(6, 0, self.invoice_ids.ids)]},
         }
     
     
@@ -393,8 +282,6 @@ class SaleOrder(models.Model):
                             })
                 
 
-              
-
     def create_subscription_schedule(self):
         for order in self:
             msn = []
@@ -423,10 +310,46 @@ class SaleOrder(models.Model):
                 sc.order_id = False
                 sc.unlink()
 
+            # Pre-calcular terms si existen para usarlos en el bucle
+            terms = []
+            if order.payment_term_id:
+                # Calculo de terminos usando _compute_terms (Odoo 16)
+                date_ref = start_date
+                currency = order.currency_id
+                company = order.company_id
+                sign = 1
+                
+                untaxed_amount_currency = order.amount_untaxed
+                tax_amount_currency = order.amount_tax
+                
+                if currency != company.currency_id:
+                    untaxed_amount = currency._convert(untaxed_amount_currency, company.currency_id, company, date_ref)
+                    tax_amount = currency._convert(tax_amount_currency, company.currency_id, company, date_ref)
+                else:
+                    untaxed_amount = untaxed_amount_currency
+                    tax_amount = tax_amount_currency
+                    
+                terms = order.payment_term_id._compute_terms(
+                    date_ref=date_ref,
+                    currency=currency,
+                    company=company,
+                    tax_amount=tax_amount,
+                    tax_amount_currency=tax_amount_currency,
+                    sign=sign,
+                    untaxed_amount=untaxed_amount,
+                    untaxed_amount_currency=untaxed_amount_currency,
+                    cash_rounding=None
+                )
+
+            remaining_amount = order.amount_total
             
             term_number = 0
             term_label = False
             total_period_recurrin = order.term_number
+            
+            if total_period_recurrin <= 0:
+                total_period_recurrin = 1
+
             for i in range(0, total_period_recurrin):
                 # Calcular la fecha de cada periodo
                 if unit == 'month':
@@ -441,11 +364,30 @@ class SaleOrder(models.Model):
                 payment_date = start_date + period
                 notification_date = payment_date # - relativedelta(days=order.recurrence_id.notification_days or 0)
 
-                # Solo la primera cuota es monto completo:
-                if i == 0:
-                    amount_recurring_taxinc= order.amount_total
+                # Determinar el monto de la cuota
+                amount_recurring_taxinc = 0.0
+                
+                if order.payment_term_id and terms:
+                    if i < len(terms):
+                         amount_recurring_taxinc = terms[i].get('foreign_amount', 0.0)
+                    else:
+                         # Si hay mas periodos que terminos, poner 0 o el resto en el ultimo
+                         if i == total_period_recurrin - 1:
+                             amount_recurring_taxinc = remaining_amount
+                         else:
+                             amount_recurring_taxinc = 0.0
                 else:
-                    amount_recurring_taxinc= order.amount_recurring_taxinc
+                    # Fallback si no hay terms: dividir equitativamente
+                    if total_period_recurrin > 0:
+                        if i == total_period_recurrin - 1:
+                            amount_recurring_taxinc = remaining_amount
+                        else:
+                            amount_recurring_taxinc = round(order.amount_total / total_period_recurrin, 2)
+                    else:
+                        amount_recurring_taxinc = order.amount_total
+                
+                remaining_amount -= amount_recurring_taxinc
+
                 # Crear el cronograma de pago
                 term_number += 1
                 term_label = '%s de %s' % ( str(term_number).zfill(2) ,  str(total_period_recurrin).zfill(2) )
@@ -462,10 +404,6 @@ class SaleOrder(models.Model):
 
             _logger.info("Cronograma de pagos creado para la orden: %s", order.name)
 
-
-
-
-
     recurring_rule_count = fields.Integer(string="Número de pagos") # OLD: Se mantiene temporalmente
 
 
@@ -481,32 +419,6 @@ class SaleOrder(models.Model):
         string="Invoice Warnings",
     )
         
-
-    
-
-
-
-
-    """
-    invoice_payments_widget
-    {   'title': 'Menos pagos', 'outstanding': False, 
-        'content': [{   'name': 'Pago de cliente $\xa02,000.00 - JUAN MENDEZ OLIVARES - 11/12/2023', 
-                        'journal_name': 'Banco', 
-                        'amount': 2000.0, 
-                        'currency_id': 33, 
-                        'date': datetime.date(2023, 12, 11), 
-                        'partial_id': 4, 
-                        'account_payment_id': 2, 
-                        'payment_method_name': 'Manual', 
-                        'move_id': 25, 
-                        'ref': 'PBNK1/2023/00001 (INV/2023/00014)', 
-                        'is_exchange': False, 
-                        'amount_company_currency': '$\xa02,000.00', 
-                        'amount_foreign_currency': False}, 
-        ]}
-    """
-    
-
     @api.depends('is_subscription', 'amount_untaxed')
     def _compute_amount_recurring_taxinc(self):
         for order in self:
@@ -544,7 +456,77 @@ class SaleOrder(models.Model):
             self.create_subscription_schedule()
         return res
 
-# class SaleOrderStage(models.Model):
-#     _inherit = 'sale.order.stage'
+    def _create_payment_transaction(self, vals):
+        # Use sudo() to ensure we can read the schedule even if the user is public/portal
+        order_sudo = self.sudo()
+        if order_sudo.subscription_schedule:
+            # Prioritize the first unpaid schedule line amount
+            first_unpaid = order_sudo.subscription_schedule.filtered(lambda s: s.payment_state == 'not_paid').sorted('date_due')
+            if first_unpaid:
+                installment_amount = first_unpaid[0].amount_recurring_taxinc
+                
+                # If the passed amount is the total, we assume we want to charge the installment
+                # Use order_sudo.amount_total to avoid Access Errors
+                current_total = order_sudo.amount_total
+                if vals.get('amount') and abs(vals['amount'] - current_total) < 0.01:
+                     vals['amount'] = installment_amount
+            
+        return super(SaleOrder, self)._create_payment_transaction(vals)
 
-#     view_cartera = fields.Boolean(string='ver en Cartera', default=False)
+class PaymentTransaction(models.Model):
+    _inherit = 'payment.transaction'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # Attempt to find the related sale order
+            order = False
+            # Check sale_order_ids (Many2many)
+            if vals.get('sale_order_ids'):
+                commands = vals['sale_order_ids']
+                # Handle [(6, 0, [ids])]
+                for cmd in commands:
+                    if cmd[0] == 6 and cmd[2]:
+                        order_id = cmd[2][0]
+                        order = self.env['sale.order'].sudo().browse(order_id)
+                        break
+            
+            # Fallback: Check reference
+            if not order and vals.get('reference'):
+                order = self.env['sale.order'].sudo().search([('name', '=', vals['reference'])], limit=1)
+            
+            if order:
+                # Check for subscription schedule
+                if hasattr(order, 'subscription_schedule') and order.subscription_schedule:
+                     first_unpaid = order.subscription_schedule.filtered(lambda s: s.payment_state == 'not_paid').sorted('date_due')
+                     if first_unpaid:
+                         installment_amount = first_unpaid[0].amount_recurring_taxinc
+                         current_amount = vals.get('amount', 0.0)
+                         
+                         # If amount matches total, override it
+                         if abs(current_amount - order.amount_total) < 0.01:
+                             vals['amount'] = installment_amount
+        
+        return super(PaymentTransaction, self).create(vals_list)
+
+    def _reconcile_after_done(self):
+        # Override to handle subscription partial payments (installments)
+        for tx in self:
+            if tx.sale_order_ids:
+                for order in tx.sale_order_ids:
+                    if hasattr(order, 'subscription_schedule') and order.subscription_schedule and order.state in ('draft', 'sent'):
+                        # Check if amount matches any unpaid installment
+                        # We prioritize the first unpaid one
+                        first_unpaid = order.subscription_schedule.filtered(lambda s: s.payment_state == 'not_paid').sorted('date_due')
+                        if first_unpaid:
+                            installment_amount = first_unpaid[0].amount_recurring_taxinc
+                            # Allow a small difference for rounding
+                            if abs(tx.amount - installment_amount) < 0.01:
+                                order.sudo().action_confirm()
+                                # Force invoice creation for the full amount (Factura Global)
+                                invoices = order.sudo()._create_invoices()
+                                if invoices:
+                                    invoices.sudo().action_post()
+                                # We manually confirm it, so super() won't complain about mismatch because state is now 'sale'
+        
+        return super(PaymentTransaction, self)._reconcile_after_done()

@@ -23,13 +23,27 @@ class SaleOrder(models.Model):
                     if line.product_template_id.is_tesis:
                         continue
 
+                    # First try to find course by product_template_ids (new many2many field)
                     course_id = self.env['op.course'].search(
-                        [('product_template_id', '=', line.product_template_id.id)],
+                        [('product_template_ids', 'in', [line.product_template_id.id])],
                         limit=1
                     )
+                    
+                    # Fallback to old product_template_id field if not found
+                    if not course_id:
+                        course_id = self.env['op.course'].search(
+                            [('product_template_id', '=', line.product_template_id.id)],
+                            limit=1
+                        )
+                    
+                    # Fallback to self.course_id if it matches the product
+                    if not course_id and record.course_id:
+                        if record.course_id.product_template_id.id == line.product_template_id.id or \
+                           line.product_template_id.id in record.course_id.product_template_ids.ids:
+                            course_id = record.course_id
 
                     if course_id:
-                        record.product_template_id = course_id.product_template_id
+                        record.product_template_id = course_id.product_template_id if course_id.product_template_id else line.product_template_id
                         record.course_id = course_id.id
                     else:
                         error_admission_msn.append(

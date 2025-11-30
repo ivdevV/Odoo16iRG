@@ -19,7 +19,7 @@ class SaleOrderAdmission(models.Model):
         ad = self.env['auto.admission.required'].search([], limit=1)
         lang = course.lang if course else (self.course_id.lang if self.course_id else False)
 
-        if lang == 'es_MX' and ad.mx_active:
+        if lang in ('es_MX', 'es_ES') and ad.mx_active:
             return True
         if lang == 'pt_BR' and ad.br_active:
             return True
@@ -70,9 +70,13 @@ class SaleOrderAdmission(models.Model):
 
 
     def _create_or_get_admission(self, line):
-        course = self.env['op.course'].search([
-            ('product_template_id', '=', line.product_template_id.id)
-        ], limit=1)
+        # Search for course in both single and multi product fields
+        domain = ['|', 
+                 ('product_template_id', '=', line.product_template_id.id),
+                 ('product_template_ids', 'in', line.product_template_id.id)]
+        
+        course = self.env['op.course'].search(domain, limit=1)
+        
         if not course:
             self._upsert_admission_row(
                 line,
@@ -134,7 +138,7 @@ class SaleOrderAdmission(models.Model):
         if auto_ad and lang and admission:
             try:
 
-                if lang == 'es_MX':
+                if lang in ('es_MX', 'es_ES'):
                     if ad.mx_state_admission_done:
                         admission.submit_form()
                         admission.confirm_in_progress()
@@ -196,8 +200,10 @@ class SaleOrderAdmission(models.Model):
         Register = self.env['op.admission.register']
         reg = Register.search([
             ('state', 'in', ['confirm', 'application', 'admission']),
-            ('product_template_id', '=', product_template.id),
             ('period', '=', period),
+            '|',
+            ('product_template_id', '=', product_template.id),
+            ('product_template_ids', 'in', product_template.id),
         ], limit=1)
 
         if reg and reg.state == 'confirm':
@@ -221,3 +227,52 @@ class SaleOrderAdmission(models.Model):
 
     def get_admision_id(self, admission_register_id):
         return False
+
+
+    def action_get_admision_id_manual(self):
+        auto_ad = self.auto_ad_active()
+        if auto_ad:
+            if self.admission_register_id:
+                self.create_admission_manual(self.admission_register_id)
+
+
+    
+    def create_admission_manual(self, admission_register_id):
+        op_admission = self.env['op.admission']
+        
+        name = self.partner_id.name.replace('  ',' ').replace('   ',' ').replace('    ',' ').replace('     ',' ').replace('      ',' ').split(' ')
+        
+        first_name = '-'
+        last_name = '-'
+        if len(name)==1:
+            first_name=name[0]
+        if len(name)>1:
+            first_name = ''
+            for i in range(0,len(name)-1):
+                first_name+=str(name[i])+' '
+            last_name = name[-1]
+        
+        op_admission = op_admission.create({
+            'name': self.partner_id.name,
+            'first_name': first_name.strip(),
+            'last_name': last_name.strip(),
+            'sale_id': self.id,
+            'email': self.partner_id.email,
+            'mobile': self.partner_id.mobile,
+            'phone':self.partner_id.phone,
+            # 'product_template_id': self.product_template_id.id,
+            'partner_id': self.partner_id.id,
+            'register_id' : admission_register_id.id,
+            'course_id' : admission_register_id.course_id.id,
+            'application_date': fields.datetime.now(),
+            'admission_date': fields.datetime.now(),
+            'fees_term_id': self.env['op.fees.terms'].search([], limit=1).id,
+            'gender': self.gender or self.partner_id.gender or 'o',
+            'batch_id': self.get_lot_id(admission_register_id.course_id).id,
+            'order_id': self.id,    
+            
+        })
+        
+        
+        self.admission_id = op_admission.id
+

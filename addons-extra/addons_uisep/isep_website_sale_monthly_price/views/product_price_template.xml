@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Override product price to show monthly installment -->
+    <template id="product_price_monthly" inherit_id="website_sale.product_price" priority="100">
+        <xpath expr="//span[hasclass('oe_price')]" position="replace">
+            <t t-set="product_variant_id" t-value="combination_info.get('product_id')"/>
+            <t t-set="months" t-value="combination_info.get('months', 1)"/>
+            
+            <!-- Fallback calculation if months not in combination_info (e.g. if model override not loaded yet) -->
+            <t t-if="months == 1 and product_variant_id">
+                <t t-set="product_obj" t-value="request.env['product.product'].browse(product_variant_id)"/>
+                <t t-foreach="product_obj.product_template_attribute_value_ids" t-as="ptav">
+                    <t t-if="ptav.attribute_id.name == 'Planes'">
+                        <t t-if="ptav.plazo > 0">
+                            <t t-set="months" t-value="ptav.plazo"/>
+                        </t>
+                        <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
+                             <!-- Simple parsing for XML fallback -->
+                             <t t-if="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
+                             <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
+                             <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
+                             <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
+                             <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
+                             <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
+                             <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                             <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
+                             <t t-elif="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
+                        </t>
+                    </t>
+                </t>
+            </t>
+            
+            <t t-if="months > 1">
+                <span class="oe_price" style="white-space: nowrap;" t-esc="combination_info['price'] / months" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                <span class="text-muted isep_month_suffix" style="font-size: 0.8rem;"> / mes</span>
+                <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="months">Active-Monthly</span>
+            </t>
+            <t t-else="">
+                <span class="oe_price" style="white-space: nowrap;" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="months">Active-Single</span>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Cart Lines Override -->
+    <template id="cart_lines_monthly" inherit_id="website_sale.cart_lines" priority="100">
+        <xpath expr="//td[hasclass('td-price')]/span" position="replace">
+            <t t-set="months" t-value="1"/>
+            <t t-foreach="line.product_id.product_template_attribute_value_ids" t-as="ptav">
+                <t t-if="ptav.attribute_id.name.lower() == 'planes'">
+                    <t t-if="ptav.plazo > 0">
+                        <t t-set="months" t-value="ptav.plazo"/>
+                    </t>
+                    <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
+                         <t t-if="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
+                         <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
+                         <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
+                         <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
+                         <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
+                         <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
+                         <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                         <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
+                         <t t-elif="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
+                    </t>
+                </t>
+            </t>
+            
+            <!-- Fallback: Parse line name if attributes failed -->
+            <t t-if="months == 1 and line.name_short and 'mes' in line.name_short.lower()">
+                 <t t-if="'3' in line.name_short"><t t-set="months" t-value="3"/></t>
+                 <t t-elif="'6' in line.name_short"><t t-set="months" t-value="6"/></t>
+                 <t t-elif="'9' in line.name_short"><t t-set="months" t-value="9"/></t>
+                 <t t-elif="'12' in line.name_short"><t t-set="months" t-value="12"/></t>
+                 <t t-elif="'13' in line.name_short"><t t-set="months" t-value="13"/></t>
+                 <t t-elif="'18' in line.name_short"><t t-set="months" t-value="18"/></t>
+                 <t t-elif="'19' in line.name_short"><t t-set="months" t-value="19"/></t>
+                 <t t-elif="'24' in line.name_short"><t t-set="months" t-value="24"/></t>
+                 <t t-elif="'25' in line.name_short"><t t-set="months" t-value="25"/></t>
+            </t>
+            
+            <t t-if="months > 1">
+                <span t-esc="line.price_reduce_taxexcl / months" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" groups="account.group_show_line_subtotals_tax_excluded" />
+                <span t-esc="line.price_reduce_taxinc / months" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" groups="account.group_show_line_subtotals_tax_included" />
+                <span class="text-muted" style="font-size: 0.8rem;"> / mes</span>
+            </t>
+            <t t-else="">
+                <span t-field="line.price_reduce_taxexcl" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" groups="account.group_show_line_subtotals_tax_excluded" />
+                <span t-field="line.price_reduce_taxinc" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" groups="account.group_show_line_subtotals_tax_included" />
+            </t>
+        </xpath>
+        
+        <!-- Remove standard subscription unit display to avoid duplication -->
+        <xpath expr="//td[hasclass('td-price')]/div[@t-if=&quot;line.temporal_type == 'subscription'&quot;]" position="replace">
+            <!-- Removed by isep_website_sale_monthly_price -->
+        </xpath>
+    </template>
+
+    <!-- Cart Summary Override (Checkout) -->
+    <template id="cart_summary_monthly" inherit_id="website_sale.cart_summary" priority="100">
+        <xpath expr="//td[hasclass('td-price')]/span" position="replace">
+            <t t-set="months" t-value="1"/>
+            <t t-foreach="line.product_id.product_template_attribute_value_ids" t-as="ptav">
+                <t t-if="ptav.attribute_id.name.lower() == 'planes'">
+                    <t t-if="ptav.plazo > 0">
+                        <t t-set="months" t-value="ptav.plazo"/>
+                    </t>
+                    <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
+                         <t t-if="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
+                         <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
+                         <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
+                         <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
+                         <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
+                         <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
+                         <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                         <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
+                         <t t-elif="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
+                    </t>
+                </t>
+            </t>
+            
+            <!-- Fallback: Parse line name if attributes failed -->
+            <t t-if="months == 1 and line.name_short and 'mes' in line.name_short.lower()">
+                 <t t-if="'3' in line.name_short"><t t-set="months" t-value="3"/></t>
+                 <t t-elif="'6' in line.name_short"><t t-set="months" t-value="6"/></t>
+                 <t t-elif="'9' in line.name_short"><t t-set="months" t-value="9"/></t>
+                 <t t-elif="'12' in line.name_short"><t t-set="months" t-value="12"/></t>
+                 <t t-elif="'13' in line.name_short"><t t-set="months" t-value="13"/></t>
+                 <t t-elif="'18' in line.name_short"><t t-set="months" t-value="18"/></t>
+                 <t t-elif="'19' in line.name_short"><t t-set="months" t-value="19"/></t>
+                 <t t-elif="'24' in line.name_short"><t t-set="months" t-value="24"/></t>
+                 <t t-elif="'25' in line.name_short"><t t-set="months" t-value="25"/></t>
+            </t>
+            
+            <t t-if="months > 1">
+                <span t-esc="line.price_reduce_taxexcl / months" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" groups="account.group_show_line_subtotals_tax_excluded" />
+                <span t-esc="line.price_reduce_taxinc / months" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" groups="account.group_show_line_subtotals_tax_included" />
+                <span class="text-muted" style="font-size: 0.8rem;"> / mes</span>
+            </t>
+            <t t-else="">
+                <span t-field="line.price_reduce_taxexcl" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" groups="account.group_show_line_subtotals_tax_excluded" />
+                <span t-field="line.price_reduce_taxinc" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" groups="account.group_show_line_subtotals_tax_included" />
+            </t>
+        </xpath>
+        
+        <!-- Remove standard subscription unit display to avoid duplication -->
+        <xpath expr="//td[hasclass('td-price')]/div[@t-if=&quot;line.temporal_type == 'subscription'&quot;]" position="replace">
+            <!-- Removed by isep_website_sale_monthly_price -->
+        </xpath>
+    </template>
+
+    <!-- Cart Popover Override -->
+    <template id="cart_popover_monthly" inherit_id="website_sale.cart_popover" priority="100">
+        <xpath expr="//div[hasclass('col-9')]" position="inside">
+            <div class="mt-1">
+                <t t-set="months" t-value="1"/>
+                <t t-foreach="line.product_id.product_template_attribute_value_ids" t-as="ptav">
+                    <t t-if="ptav.attribute_id.name.lower() == 'planes'">
+                        <t t-if="ptav.plazo > 0">
+                            <t t-set="months" t-value="ptav.plazo"/>
+                        </t>
+                        <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
+                             <t t-if="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
+                             <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
+                             <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
+                             <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
+                             <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
+                             <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
+                             <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                             <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
+                             <t t-elif="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
+                        </t>
+                    </t>
+                </t>
+                
+                <t t-if="months > 1">
+                    <span t-esc="line.price_reduce_taxexcl / months" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span class="text-muted" style="font-size: 0.8rem;"> / mes</span>
+                </t>
+                <t t-else="">
+                    <span t-field="line.price_reduce_taxexcl" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+</odoo>

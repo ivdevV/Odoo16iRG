@@ -5,7 +5,7 @@
 
         <xpath expr="//div[@class='s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required']" position="replace">
             <t t-set="product_ids" t-value="order.order_line.mapped('product_id.product_tmpl_id').ids"/>
-            <t t-set="has_course" t-value="request.env['op.course'].sudo().search_count([('product_template_id', 'in', product_ids)]) > 0"/>
+            <t t-set="has_course" t-value="request.env['op.course'].sudo().search_count(['|', ('product_template_id', 'in', product_ids), ('product_template_ids', 'in', product_ids)]) > 0"/>
 
             <t t-if="has_course">
                 <div class="s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required" data-type="selection" data-name="admission_date">
