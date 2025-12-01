@@ -15,16 +15,17 @@
                             <t t-set="months" t-value="ptav.plazo"/>
                         </t>
                         <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
-                             <!-- Simple parsing for XML fallback -->
-                             <t t-if="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
-                             <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
-                             <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
-                             <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
-                             <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
-                             <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
-                             <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                             <!-- Simple parsing for XML fallback - ORDER MATTERS (Longer first) -->
+                             <t t-if="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
                              <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
-                             <t t-elif="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
+                             <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                             <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
+                             <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
+                             <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
+                             <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
+                             <t t-elif="'7' in ptav.name"><t t-set="months" t-value="7"/></t>
+                             <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
+                             <t t-elif="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
                         </t>
                     </t>
                 </t>
@@ -52,30 +53,33 @@
                         <t t-set="months" t-value="ptav.plazo"/>
                     </t>
                     <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
-                         <t t-if="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
-                         <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
-                         <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
-                         <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
-                         <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
-                         <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
-                         <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                         <!-- Simple parsing for XML fallback - ORDER MATTERS (Longer first) -->
+                         <t t-if="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
                          <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
-                         <t t-elif="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
+                         <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                         <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
+                         <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
+                         <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
+                         <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
+                         <t t-elif="'7' in ptav.name"><t t-set="months" t-value="7"/></t>
+                         <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
+                         <t t-elif="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
                     </t>
                 </t>
             </t>
             
             <!-- Fallback: Parse line name if attributes failed -->
             <t t-if="months == 1 and line.name_short and 'mes' in line.name_short.lower()">
-                 <t t-if="'3' in line.name_short"><t t-set="months" t-value="3"/></t>
-                 <t t-elif="'6' in line.name_short"><t t-set="months" t-value="6"/></t>
-                 <t t-elif="'9' in line.name_short"><t t-set="months" t-value="9"/></t>
-                 <t t-elif="'12' in line.name_short"><t t-set="months" t-value="12"/></t>
-                 <t t-elif="'13' in line.name_short"><t t-set="months" t-value="13"/></t>
-                 <t t-elif="'18' in line.name_short"><t t-set="months" t-value="18"/></t>
-                 <t t-elif="'19' in line.name_short"><t t-set="months" t-value="19"/></t>
+                 <t t-if="'25' in line.name_short"><t t-set="months" t-value="25"/></t>
                  <t t-elif="'24' in line.name_short"><t t-set="months" t-value="24"/></t>
-                 <t t-elif="'25' in line.name_short"><t t-set="months" t-value="25"/></t>
+                 <t t-elif="'19' in line.name_short"><t t-set="months" t-value="19"/></t>
+                 <t t-elif="'18' in line.name_short"><t t-set="months" t-value="18"/></t>
+                 <t t-elif="'13' in line.name_short"><t t-set="months" t-value="13"/></t>
+                 <t t-elif="'12' in line.name_short"><t t-set="months" t-value="12"/></t>
+                 <t t-elif="'9' in line.name_short"><t t-set="months" t-value="9"/></t>
+                 <t t-elif="'7' in line.name_short"><t t-set="months" t-value="7"/></t>
+                 <t t-elif="'6' in line.name_short"><t t-set="months" t-value="6"/></t>
+                 <t t-elif="'3' in line.name_short"><t t-set="months" t-value="3"/></t>
             </t>
             
             <t t-if="months > 1">
@@ -105,30 +109,33 @@
                         <t t-set="months" t-value="ptav.plazo"/>
                     </t>
                     <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
-                         <t t-if="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
-                         <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
-                         <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
-                         <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
-                         <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
-                         <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
-                         <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                         <!-- Simple parsing for XML fallback - ORDER MATTERS (Longer first) -->
+                         <t t-if="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
                          <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
-                         <t t-elif="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
+                         <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                         <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
+                         <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
+                         <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
+                         <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
+                         <t t-elif="'7' in ptav.name"><t t-set="months" t-value="7"/></t>
+                         <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
+                         <t t-elif="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
                     </t>
                 </t>
             </t>
             
             <!-- Fallback: Parse line name if attributes failed -->
             <t t-if="months == 1 and line.name_short and 'mes' in line.name_short.lower()">
-                 <t t-if="'3' in line.name_short"><t t-set="months" t-value="3"/></t>
-                 <t t-elif="'6' in line.name_short"><t t-set="months" t-value="6"/></t>
-                 <t t-elif="'9' in line.name_short"><t t-set="months" t-value="9"/></t>
-                 <t t-elif="'12' in line.name_short"><t t-set="months" t-value="12"/></t>
-                 <t t-elif="'13' in line.name_short"><t t-set="months" t-value="13"/></t>
-                 <t t-elif="'18' in line.name_short"><t t-set="months" t-value="18"/></t>
-                 <t t-elif="'19' in line.name_short"><t t-set="months" t-value="19"/></t>
+                 <t t-if="'25' in line.name_short"><t t-set="months" t-value="25"/></t>
                  <t t-elif="'24' in line.name_short"><t t-set="months" t-value="24"/></t>
-                 <t t-elif="'25' in line.name_short"><t t-set="months" t-value="25"/></t>
+                 <t t-elif="'19' in line.name_short"><t t-set="months" t-value="19"/></t>
+                 <t t-elif="'18' in line.name_short"><t t-set="months" t-value="18"/></t>
+                 <t t-elif="'13' in line.name_short"><t t-set="months" t-value="13"/></t>
+                 <t t-elif="'12' in line.name_short"><t t-set="months" t-value="12"/></t>
+                 <t t-elif="'9' in line.name_short"><t t-set="months" t-value="9"/></t>
+                 <t t-elif="'7' in line.name_short"><t t-set="months" t-value="7"/></t>
+                 <t t-elif="'6' in line.name_short"><t t-set="months" t-value="6"/></t>
+                 <t t-elif="'3' in line.name_short"><t t-set="months" t-value="3"/></t>
             </t>
             
             <t t-if="months > 1">
