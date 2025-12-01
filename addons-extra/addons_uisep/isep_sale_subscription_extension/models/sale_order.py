@@ -84,6 +84,7 @@ class SaleOrder(models.Model):
             order.amount_due_total = amount_due_total
 
     def _auto_scheduled_order(self):
+        _logger.info("--- START _auto_scheduled_order for order %s ---", self.name)
         list_product_comb = []
         # Usamos nombres distintos para el modelo y el registro para evitar confusiones
         TermSchedule = self.env['product.term.schedule'].sudo()
@@ -92,11 +93,13 @@ class SaleOrder(models.Model):
         # Variable para almacenar la duración del curso si no hay atributos
         course_duration = 0
 
-        for ol in self.order_line:            
+        for ol in self.order_line:
+            _logger.info("Processing line: %s (Recurring: %s)", ol.product_id.name, ol.product_id.recurring_invoice)
             if ol.product_id.recurring_invoice:
                 # Intento 1: Atributos (Planes)
                 if ol.product_id.product_template_attribute_value_ids:
                     for ptav in ol.product_id.product_template_attribute_value_ids:
+                        _logger.info("Attribute found: %s (ID: %s, Name: %s)", ptav.attribute_id.name, ptav.attribute_id.id, ptav.name)
                         # Buscamos por nombre o si tiene un 'plazo' definido
                         if ptav.attribute_id.name == 'Planes':
                             list_product_comb.append(ptav.id)
@@ -132,6 +135,8 @@ class SaleOrder(models.Model):
                              # Asumimos que duration es un float/int representando meses o la unidad configurada
                              if course.duration > course_duration:
                                  course_duration = course.duration
+        
+        _logger.info("Course Duration Fallback: %s", course_duration)
 
         max_plazo = 0
         if list_product_comb:
@@ -147,9 +152,12 @@ class SaleOrder(models.Model):
                     plazos = [int(num) for num in coincidencias]
                     max_plazo = max(plazos)
         
+        _logger.info("Max Plazo from Attributes: %s", max_plazo)
+
         # Si no sacamos plazo de los atributos, usamos la duración del curso
         if max_plazo == 0 and course_duration > 0:
             max_plazo = int(course_duration)
+            _logger.info("Using Course Duration as Max Plazo: %s", max_plazo)
 
         if max_plazo > 0:
             term_number_record = TermSchedule.search([('term_number', '=', max_plazo)], limit=1)
@@ -165,11 +173,13 @@ class SaleOrder(models.Model):
             # Usamos =ilike para que sea exacto pero no importe si escribieron "meses" o "Meses"
             payment_term_name = f'{max_plazo} Meses'
             payment_term_record = PaymentTerm.search([('name', '=ilike', payment_term_name)], limit=1)
+            _logger.info("Search 1 '%s': Found %s", payment_term_name, payment_term_record.name if payment_term_record else 'None')
             
             # 2. Búsqueda con Cero a la Izquierda (Insensible a mayúsculas): "03 Meses", "03 meses"
             if not payment_term_record:
                  payment_term_name_02 = f'{max_plazo:02d} Meses'
                  payment_term_record = PaymentTerm.search([('name', '=ilike', payment_term_name_02)], limit=1)
+                 _logger.info("Search 2 '%s': Found %s", payment_term_name_02, payment_term_record.name if payment_term_record else 'None')
 
             # NOTA: Se ha eliminado la búsqueda parcial ('ilike') para evitar que seleccione
             # términos como "15 Meses día 1" o "15 Meses matrícula" cuando buscamos solo "15 Meses".
@@ -187,7 +197,7 @@ class SaleOrder(models.Model):
                 
             self.write(vals)
             
-            _logger.info("Autoschedule: Plazos=%s, PaymentTerm=%s", max_plazo, payment_term_record.name if payment_term_record else 'No encontrado')
+            _logger.info("Autoschedule FINAL: Plazos=%s, PaymentTerm=%s (ID: %s)", max_plazo, payment_term_record.name if payment_term_record else 'No encontrado', payment_term_id)
 
             self.onchange_end_date_suscrip()
             self.create_subscription_schedule()
