@@ -7,7 +7,7 @@
     'author': "Unknown",
     'category': 'Sales',
     'version': '16.0.1.0.0',
-    'depends': ['base', 'sale', 'sale_subscription', 'sales_team', 'account', 'web', 'report_xlsx', 'web_grid', 'isep_openeducat_sale'],
+    'depends': ['base', 'sale', 'sale_subscription', 'sales_team', 'account', 'web', 'report_xlsx', 'web_grid', 'isep_openeducat_sale', 'isep_website_sale_custom'],
     'data': [
         'security/ir.model.access.csv',
         'data/cron.xml',
