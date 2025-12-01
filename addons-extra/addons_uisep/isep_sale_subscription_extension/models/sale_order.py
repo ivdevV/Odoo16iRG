@@ -89,8 +89,12 @@ class SaleOrder(models.Model):
         TermSchedule = self.env['product.term.schedule'].sudo()
         PaymentTerm = self.env['account.payment.term'].sudo()
         
+        # Variable para almacenar la duración del curso si no hay atributos
+        course_duration = 0
+
         for ol in self.order_line:            
             if ol.product_id.recurring_invoice:
+                # Intento 1: Atributos (Planes)
                 if ol.product_id.product_template_attribute_value_ids:
                     for ptav in ol.product_id.product_template_attribute_value_ids:
                         # Buscamos por nombre o si tiene un 'plazo' definido
@@ -112,7 +116,24 @@ class SaleOrder(models.Model):
                             list_product_comb.append(int(combination_str))
                         except ValueError:
                             pass # Ignoramos errores silenciosamente
+                
+                # Intento 3: Duración del curso (Fallback si no hay atributos)
+                if not list_product_comb:
+                     # Buscar curso vinculado (Soporte para M2O y M2M si existe)
+                     courses = False
+                     if hasattr(ol.product_id.product_tmpl_id, 'product_template_ids'):
+                         courses = ol.product_id.product_tmpl_id.product_template_ids
+                     
+                     if not courses and hasattr(ol.product_id.product_tmpl_id, 'course_id'):
+                         courses = ol.product_id.product_tmpl_id.course_id
+                     
+                     if courses:
+                         for course in courses:
+                             # Asumimos que duration es un float/int representando meses o la unidad configurada
+                             if course.duration > course_duration:
+                                 course_duration = course.duration
 
+        max_plazo = 0
         if list_product_comb:
             attribute = self.env['product.template.attribute.value'].sudo().search([('id', 'in', list_product_comb)])
             max_plazo = max(attribute.mapped('plazo')) if attribute.mapped('plazo') else 0
@@ -125,20 +146,33 @@ class SaleOrder(models.Model):
                 if coincidencias:
                     plazos = [int(num) for num in coincidencias]
                     max_plazo = max(plazos)
-                else:
-                    max_plazo = 1
-            
+        
+        # Si no sacamos plazo de los atributos, usamos la duración del curso
+        if max_plazo == 0 and course_duration > 0:
+            max_plazo = int(course_duration)
+
+        if max_plazo > 0:
             term_number_record = TermSchedule.search([('term_number', '=', max_plazo)], limit=1)
             if not term_number_record:
                  term_number_record = TermSchedule.search([('custom','=',True)], limit=1)
             
             term_number_id = term_number_record.id if term_number_record else False
 
-            payment_term_name = f'{max_plazo} Meses'
-            payment_term_record = PaymentTerm.search([('name', '=', payment_term_name)], limit=1)
+            # Búsqueda de Términos de Pago Estricta
+            payment_term_record = False
             
+            # 1. Búsqueda Exacta (Insensible a mayúsculas): "3 Meses", "3 meses"
+            # Usamos =ilike para que sea exacto pero no importe si escribieron "meses" o "Meses"
+            payment_term_name = f'{max_plazo} Meses'
+            payment_term_record = PaymentTerm.search([('name', '=ilike', payment_term_name)], limit=1)
+            
+            # 2. Búsqueda con Cero a la Izquierda (Insensible a mayúsculas): "03 Meses", "03 meses"
             if not payment_term_record:
-                 payment_term_record = PaymentTerm.search([('name', 'ilike', payment_term_name)], limit=1)
+                 payment_term_name_02 = f'{max_plazo:02d} Meses'
+                 payment_term_record = PaymentTerm.search([('name', '=ilike', payment_term_name_02)], limit=1)
+
+            # NOTA: Se ha eliminado la búsqueda parcial ('ilike') para evitar que seleccione
+            # términos como "15 Meses día 1" o "15 Meses matrícula" cuando buscamos solo "15 Meses".
 
             payment_term_id = payment_term_record.id if payment_term_record else False
             
