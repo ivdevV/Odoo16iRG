@@ -12,10 +12,22 @@
             <field name="term_number">6</field>
         </record>
 
+        <!-- Plan de Suscripción de 7 meses -->
+        <record id="subscription_plan_7_term_number" model="product.term.schedule">
+            <field name="name">07 Plazos</field>
+            <field name="term_number">7</field>
+        </record>
+
         <!-- Plan de Suscripción de 12 meses -->
         <record id="subscription_plan_12_term_number" model="product.term.schedule">
             <field name="name">12 Plazos</field>
             <field name="term_number">12</field>
+        </record>
+
+        <!-- Plan de Suscripción de 13 meses -->
+        <record id="subscription_plan_13_term_number" model="product.term.schedule">
+            <field name="name">13 Plazos</field>
+            <field name="term_number">13</field>
         </record>
 
         <!-- Plan de Suscripción de 16 meses -->
@@ -30,10 +42,22 @@
             <field name="term_number">18</field>
         </record>
 
+        <!-- Plan de Suscripción de 19 meses -->
+        <record id="subscription_plan_19_term_number" model="product.term.schedule">
+            <field name="name">19 Plazos</field>
+            <field name="term_number">19</field>
+        </record>
+
         <!-- Plan de Suscripción de 24 meses -->
         <record id="subscription_plan_24_term_number" model="product.term.schedule">
             <field name="name">24 Plazos</field>
             <field name="term_number">24</field>
+        </record>
+
+        <!-- Plan de Suscripción de 25 meses -->
+        <record id="subscription_plan_25_term_number" model="product.term.schedule">
+            <field name="name">25 Plazos</field>
+            <field name="term_number">25</field>
         </record>
 
         <!-- Plan de Suscripción de 48 meses -->
