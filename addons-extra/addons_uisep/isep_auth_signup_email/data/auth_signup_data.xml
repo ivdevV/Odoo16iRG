@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- Unlock the template to allow updates -->
+        <function name="write" model="ir.model.data">
+            <function name="search" model="ir.model.data">
+                <value eval="[('module', '=', 'auth_signup'), ('name', '=', 'set_password_email')]"/>
+            </function>
+            <value eval="{'noupdate': False}"/>
+        </function>
+
         <record id="auth_signup.set_password_email" model="mail.template">
             <field name="subject">¡Bienvenida a tu Aventura Académica!</field>
             <field name="body_html" type="html">
