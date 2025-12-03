@@ -10,6 +10,12 @@ class AccountMove(models.Model):
         string="Certificado Web",
     )
 
+    def _get_reconciled_info_JSON_values(self):
+        res = super()._get_reconciled_info_JSON_values()
+        if res:
+            res.sort(key=lambda k: k['date'])
+        return res
+
     def get_last_payment_date(self):
         self.ensure_one()  # Ensure this method is called on a single record
         if self.invoice_payments_widget and 'content' in self.invoice_payments_widget.keys():
