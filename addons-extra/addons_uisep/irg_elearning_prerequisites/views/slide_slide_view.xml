@@ -6,30 +6,26 @@
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="priority" eval="99"/>
         <field name="arch" type="xml">
-            <!-- ESTRATEGIA DE DIAGNÓSTICO Y FUERZA BRUTA -->
+            <!-- INTENTO FINAL: Insertar en grupos específicos que sabemos que existen -->
             
-            <!-- 1. Insertar en el Título (Parte superior, muy visible) -->
-            <xpath expr="//div[hasclass('oe_title')]" position="inside">
-                <label for="prerequisite_slide_id" class="oe_edit_only" string="Requisito Previo (iRG)"/>
-                <h3>
-                    <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]" placeholder="Seleccionar requisito previo..."/>
-                </h3>
+            <!-- 1. En el grupo de detalles (Izquierda) -->
+            <xpath expr="//group[@name='slide_details']" position="inside">
+                <field name="prerequisite_slide_id" string="Requisito (Detalles)"/>
             </xpath>
 
-            <!-- 2. Insertar como PRIMERA pestaña del notebook -->
+            <!-- 2. En el grupo de estadísticas (Derecha) -->
+            <xpath expr="//group[@name='slide_statistics']" position="inside">
+                <field name="prerequisite_slide_id" string="Requisito (Estadísticas)"/>
+            </xpath>
+
+            <!-- 3. Pestaña dedicada -->
             <xpath expr="//notebook" position="inside">
                 <page string="Prerrequisitos (iRG)" name="prerequisites_irg">
                     <group>
-                        <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
+                        <field name="prerequisite_slide_id"/>
                     </group>
                 </page>
             </xpath>
-            
-            <!-- 3. Insertar después del Responsable (user_id) -->
-            <xpath expr="//field[@name='user_id']" position="after">
-                 <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
-            </xpath>
-
         </field>
     </record>
 
