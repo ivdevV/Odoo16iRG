@@ -5,12 +5,30 @@
         <field name="model">slide.slide</field>
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='description']" position="before">
-                <page string="Prerrequisitos" name="prerequisites">
+            <!-- 1. Intentamos añadirlo como una pestaña al final del notebook (método más seguro) -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Prerrequisitos (iRG)" name="prerequisites_irg">
                     <group>
                         <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
                     </group>
                 </page>
+            </xpath>
+            
+            <!-- 2. También intentamos añadirlo en la cabecera, usando un campo que seguro existe -->
+            <xpath expr="//field[@name='channel_id']" position="after">
+                 <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]" placeholder="Seleccionar requisito previo..."/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- AÑADIDO: Mostrar columna en la lista de contenidos del curso -->
+    <record id="view_slide_channel_form_prerequisite" model="ir.ui.view">
+        <field name="name">slide.channel.form.prerequisite</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']//tree//field[@name='name']" position="after">
+                <field name="prerequisite_slide_id" optional="show"/>
             </xpath>
         </field>
     </record>
