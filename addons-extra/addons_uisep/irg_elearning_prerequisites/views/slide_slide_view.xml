@@ -4,6 +4,7 @@
         <field name="name">slide.slide.form.prerequisite</field>
         <field name="model">slide.slide</field>
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="priority" eval="99"/>
         <field name="arch" type="xml">
             <!-- 1. Intentamos añadirlo como una pestaña al final del notebook (método más seguro) -->
             <xpath expr="//notebook" position="inside">
@@ -15,7 +16,7 @@
             </xpath>
             
             <!-- 2. También intentamos añadirlo en la cabecera, usando un campo que seguro existe -->
-            <xpath expr="//field[@name='channel_id']" position="after">
+            <xpath expr="//field[@name='user_id']" position="after">
                  <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]" placeholder="Seleccionar requisito previo..."/>
             </xpath>
         </field>
