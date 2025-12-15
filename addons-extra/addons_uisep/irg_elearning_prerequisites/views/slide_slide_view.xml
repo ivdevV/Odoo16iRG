@@ -6,16 +6,11 @@
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="priority" eval="99"/>
         <field name="arch" type="xml">
-            <!-- ESTRATEGIA SEGURA: Usar solo la pestaña nueva -->
-            <!-- Los grupos 'slide_details' y 'slide_statistics' no existen en la vista padre original -->
-            <!-- o han sido eliminados por otro módulo, por eso falló el xpath anterior -->
-            
-            <xpath expr="//notebook" position="inside">
-                <page string="Prerrequisitos (iRG)" name="prerequisites_irg">
-                    <group>
-                        <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
-                    </group>
-                </page>
+            <!-- ESTRATEGIA: Insertar después de un campo que sabemos que existe y es usado por otros módulos -->
+            <xpath expr="//field[@name='total_views']" position="after">
+                <group string="Prerrequisitos (iRG)">
+                    <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
+                </group>
             </xpath>
         </field>
     </record>
