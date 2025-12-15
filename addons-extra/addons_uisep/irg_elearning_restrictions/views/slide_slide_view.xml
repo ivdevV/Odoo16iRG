@@ -6,12 +6,11 @@
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="priority" eval="100"/>
         <field name="arch" type="xml">
-            <!-- PRUEBA 1: Insertar en el título (lo más visible posible) -->
-            <xpath expr="//div[@class='oe_title']" position="inside">
-                <label for="test_visibility_field" class="oe_edit_only"/>
-                <h1>
+            <!-- PRUEBA 1: Insertar después de total_views (punto de anclaje probado en otros módulos) -->
+            <xpath expr="//field[@name='total_views']" position="after">
+                <group string="TEST VISIBILIDAD">
                     <field name="test_visibility_field" placeholder="TEST VISIBILIDAD"/>
-                </h1>
+                </group>
             </xpath>
         </field>
     </record>
