@@ -6,11 +6,14 @@
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="priority" eval="100"/>
         <field name="arch" type="xml">
-            <!-- PRUEBA 1: Insertar después de total_views (punto de anclaje probado en otros módulos) -->
-            <xpath expr="//field[@name='total_views']" position="after">
-                <group string="TEST VISIBILIDAD">
-                    <field name="test_visibility_field" placeholder="TEST VISIBILIDAD"/>
-                </group>
+            <!-- ESTRATEGIA PROBADA: Usar el mismo punto de anclaje que 'connect_chatgpt' -->
+            <!-- Sabemos que la página 'quiz' existe y que se pueden añadir pestañas después -->
+            <xpath expr="//notebook/page[@name='quiz']" position="after">
+                <page string="TEST VISIBILIDAD" name="test_visibility_page">
+                    <group>
+                        <field name="test_visibility_field" placeholder="Si ves esto, funciona"/>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>
