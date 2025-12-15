@@ -5,8 +5,12 @@
         <field name="model">slide.slide</field>
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='slide_category']" position="before">
-                <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
+            <xpath expr="//page[@name='description']" position="before">
+                <page string="Prerrequisitos" name="prerequisites">
+                    <group>
+                        <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>
