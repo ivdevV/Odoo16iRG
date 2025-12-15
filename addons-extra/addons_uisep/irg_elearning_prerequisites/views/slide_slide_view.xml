@@ -5,7 +5,7 @@
         <field name="model">slide.slide</field>
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='channel_id']" position="after">
+            <xpath expr="//field[@name='slide_category']" position="before">
                 <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
             </xpath>
         </field>
