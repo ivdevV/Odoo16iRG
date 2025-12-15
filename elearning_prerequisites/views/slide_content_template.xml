@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. VISTA NORMAL (WEB) -->
+    <template id="slide_content_detailed_prerequisite" inherit_id="website_slides.slide_content_detailed">
+        <!-- Ocultamos el contenido si no se cumple el requisito -->
+        <xpath expr="//div[hasclass('o_wslides_lesson_content_type')]" position="attributes">
+            <attribute name="t-if">slide.is_prerequisite_met</attribute>
+        </xpath>
+        
+        <!-- Mostramos el mensaje si NO se cumple (usamos t-if="not" en lugar de t-else para evitar errores) -->
+        <xpath expr="//div[hasclass('o_wslides_lesson_content_type')]" position="after">
+            <div t-if="not slide.is_prerequisite_met">
+                <t t-call="elearning_prerequisites.course_locked_message"/>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- 2. VISTA PANTALLA COMPLETA (FULLSCREEN) -->
+    <template id="slide_fullscreen_prerequisite" inherit_id="website_slides.slide_fullscreen">
+        <xpath expr="//div[hasclass('o_wslides_fs_content')]" position="attributes">
+            <attribute name="t-if">slide.is_prerequisite_met</attribute>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('o_wslides_fs_content')]" position="after">
+            <div t-if="not slide.is_prerequisite_met" class="d-flex flex-column flex-grow-1 justify-content-center align-items-center bg-white" style="height: 100%;">
+                <t t-call="elearning_prerequisites.course_locked_message"/>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- 3. MENSAJE DE BLOQUEO CON URL CORREGIDA -->
+    <template id="course_locked_message">
+        <div class="alert alert-warning text-center mt-4" style="z-index: 9999; max-width: 600px; margin: auto;">
+            <i class="fa fa-lock fa-3x mb-3"></i>
+            <h3>Contenido Bloqueado</h3>
+            <p>Debes completar la siguiente actividad antes de acceder a esta:</p>
+            <p class="font-weight-bold" style="font-size: 1.2em;">
+                <t t-esc="slide.prerequisite_slide_id.name"/>
+            </p>
+            
+            <!-- AQUI ESTÁ LA CORRECCIÓN DE LA URL -->
+            <!-- Usamos website_url, que es la forma segura de Odoo para enlazar -->
+            <a t-att-href="slide.prerequisite_slide_id.website_url" class="btn btn-primary mt-2">
+                Ir a la actividad requerida
+            </a>
+        </div>
+    </template>
+</odoo>
