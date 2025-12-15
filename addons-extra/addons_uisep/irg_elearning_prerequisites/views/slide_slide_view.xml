@@ -6,7 +6,17 @@
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="priority" eval="99"/>
         <field name="arch" type="xml">
-            <!-- 1. Intentamos añadirlo como una pestaña al final del notebook (método más seguro) -->
+            <!-- ESTRATEGIA DE DIAGNÓSTICO Y FUERZA BRUTA -->
+            
+            <!-- 1. Insertar en el Título (Parte superior, muy visible) -->
+            <xpath expr="//div[hasclass('oe_title')]" position="inside">
+                <label for="prerequisite_slide_id" class="oe_edit_only" string="Requisito Previo (iRG)"/>
+                <h3>
+                    <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]" placeholder="Seleccionar requisito previo..."/>
+                </h3>
+            </xpath>
+
+            <!-- 2. Insertar como PRIMERA pestaña del notebook -->
             <xpath expr="//notebook" position="inside">
                 <page string="Prerrequisitos (iRG)" name="prerequisites_irg">
                     <group>
@@ -15,10 +25,11 @@
                 </page>
             </xpath>
             
-            <!-- 2. También intentamos añadirlo en la cabecera, usando un campo que seguro existe -->
+            <!-- 3. Insertar después del Responsable (user_id) -->
             <xpath expr="//field[@name='user_id']" position="after">
-                 <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]" placeholder="Seleccionar requisito previo..."/>
+                 <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
             </xpath>
+
         </field>
     </record>
 
