@@ -10,7 +10,7 @@
         <!-- Mostramos el mensaje si NO se cumple (usamos t-if="not" en lugar de t-else para evitar errores) -->
         <xpath expr="//div[hasclass('o_wslides_lesson_content_type')]" position="after">
             <div t-if="not slide.is_prerequisite_met">
-                <t t-call="elearning_prerequisites.course_locked_message"/>
+                <t t-call="irg_elearning_prerequisites.course_locked_message"/>
             </div>
         </xpath>
     </template>
@@ -23,7 +23,7 @@
         
         <xpath expr="//div[hasclass('o_wslides_fs_content')]" position="after">
             <div t-if="not slide.is_prerequisite_met" class="d-flex flex-column flex-grow-1 justify-content-center align-items-center bg-white" style="height: 100%;">
-                <t t-call="elearning_prerequisites.course_locked_message"/>
+                <t t-call="irg_elearning_prerequisites.course_locked_message"/>
             </div>
         </xpath>
     </template>
