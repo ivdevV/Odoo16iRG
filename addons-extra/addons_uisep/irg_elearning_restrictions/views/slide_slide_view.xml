@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_restriction" model="ir.ui.view">
+        <field name="name">slide.slide.form.restriction</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="priority" eval="100"/>
+        <field name="arch" type="xml">
+            <!-- PRUEBA 1: Insertar en el título (lo más visible posible) -->
+            <xpath expr="//div[@class='oe_title']" position="inside">
+                <label for="test_visibility_field" class="oe_edit_only"/>
+                <h1>
+                    <field name="test_visibility_field" placeholder="TEST VISIBILIDAD"/>
+                </h1>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- PRUEBA 2: Insertar en la vista de lista (Tree) para confirmar que el campo existe -->
+    <record id="view_slide_slide_tree_restriction" model="ir.ui.view">
+        <field name="name">slide.slide.tree.restriction</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="test_visibility_field" optional="show"/>
+            </field>
+        </field>
+    </record>
+</odoo>
