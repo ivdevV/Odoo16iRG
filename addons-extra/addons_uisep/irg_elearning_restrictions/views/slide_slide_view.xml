@@ -34,22 +34,7 @@
                 <field name="display_name" string="VISTA CARGADA OK" readonly="1"/>
             </xpath>
 
-            <!-- NUCLEAR OPTION: Reemplazar el campo slide_ids completo -->
-            <!-- Esto elimina cualquier formulario inline (Studio) y fuerza el uso de la vista externa -->
-            <xpath expr="//page[@name='content']//field[@name='slide_ids']" position="replace">
-                <field name="slide_ids" context="{'default_channel_id': active_id, 'form_view_ref': 'website_slides.view_slide_slide_form'}">
-                    <tree>
-                        <field name="sequence" widget="handle"/>
-                        <field name="name"/>
-                        <field name="slide_category"/>
-                        <field name="completion_time" widget="float_time"/>
-                        <field name="total_views"/>
-                        <field name="is_preview"/>
-                        <field name="is_published" widget="boolean_toggle"/>
-                        <field name="test_visibility_field" optional="show" string="Test Columna"/>
-                    </tree>
-                </field>
-            </xpath>
+
         </field>
     </record>
 
