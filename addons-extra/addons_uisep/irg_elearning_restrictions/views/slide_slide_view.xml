@@ -6,18 +6,12 @@
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="priority" eval="100"/>
         <field name="arch" type="xml">
-            <!-- DEBUG: Insertar campo en el encabezado para verificar que la vista se carga -->
-            <xpath expr="//field[@name='slide_category']" position="after">
-                <field name="test_visibility_field" readonly="1"/>
-            </xpath>
-
-            <!-- ESTRATEGIA: Insertar ANTES de la descripción, que es una pestaña estándar -->
-            <xpath expr="//notebook/page[@name='description']" position="before">
-                <page string="TEST VISIBILIDAD" name="test_visibility_page">
-                    <group>
-                        <field name="test_visibility_field" placeholder="Si ves esto, funciona"/>
-                    </group>
-                </page>
+            <!-- ESTRATEGIA: Insertar DENTRO de la pestaña Descripción -->
+            <!-- Esta pestaña existe en todos los tipos de contenido -->
+            <xpath expr="//page[@name='description']" position="inside">
+                <group string="Test Visibility (iRG)">
+                    <field name="test_visibility_field"/>
+                </group>
             </xpath>
         </field>
     </record>
