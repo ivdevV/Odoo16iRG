@@ -4,17 +4,11 @@
         <field name="name">slide.slide.form.restriction</field>
         <field name="model">slide.slide</field>
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
-        <field name="priority" eval="999"/>
+        <field name="priority" eval="99"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='quiz']" position="inside">
-                <group string="Test Visibility (iRG) - Quiz Tab">
-                    <field name="test_visibility_field"/>
-                </group>
-            </xpath>
-
-            <xpath expr="//page[@name='document']" position="inside">
-                <group string="Test Visibility (iRG) - Document Tab">
-                    <field name="test_visibility_field"/>
+            <xpath expr="//field[@name='total_views']" position="after">
+                <group string="Restricciones (Test)">
+                    <field name="restriction_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
                 </group>
             </xpath>
         </field>
