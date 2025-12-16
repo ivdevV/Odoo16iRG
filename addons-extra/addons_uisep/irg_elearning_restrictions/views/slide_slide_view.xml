@@ -42,7 +42,7 @@
                         <field name="sequence" widget="handle"/>
                         <field name="name"/>
                         <field name="slide_category"/>
-                        <field name="duration" widget="float_time"/>
+                        <field name="completion_time" widget="float_time"/>
                         <field name="total_views"/>
                         <field name="is_preview"/>
                         <field name="is_published" widget="boolean_toggle"/>
