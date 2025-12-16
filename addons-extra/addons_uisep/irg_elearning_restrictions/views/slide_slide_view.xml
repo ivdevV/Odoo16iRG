@@ -34,15 +34,10 @@
                 <field name="name" string="VISTA CARGADA OK" readonly="1"/>
             </xpath>
 
-            <!-- INTENTO: Inyectar el campo en la vista inline de Studio si existe -->
-            <!-- Usamos ignore_missing="1" (o similar lógica) no existe en xpath estándar, pero si falla, sabremos que no hay form inline -->
-            <!-- Asumimos que el form inline existe porque el usuario lo confirmó -->
-            <xpath expr="//field[@name='slide_ids']/form//notebook" position="inside">
-                <page string="TEST VISIBILIDAD (INLINE)">
-                    <group>
-                        <field name="test_visibility_field"/>
-                    </group>
-                </page>
+            <!-- INTENTO 3: Si no podemos encontrar el form inline, forzamos el contexto -->
+            <!-- Esto es más seguro y debería funcionar si el form inline no está explícitamente definido en el XML base -->
+            <xpath expr="//field[@name='slide_ids']" position="attributes">
+                 <attribute name="context">{'default_channel_id': active_id, 'form_view_ref': 'website_slides.view_slide_slide_form'}</attribute>
             </xpath>
         </field>
     </record>
