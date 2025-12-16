@@ -4,14 +4,33 @@
         <field name="name">slide.slide.form.restriction</field>
         <field name="model">slide.slide</field>
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
-        <field name="priority" eval="100"/>
+        <field name="priority" eval="999"/>
         <field name="arch" type="xml">
-            <!-- ESTRATEGIA: Insertar DENTRO de la pestaña Descripción -->
-            <!-- Esta pestaña existe en todos los tipos de contenido -->
-            <xpath expr="//page[@name='description']" position="inside">
-                <group string="Test Visibility (iRG)">
+            <!-- ESTRATEGIA: Prioridad Alta (999) para vencer a Odoo Studio -->
+            <xpath expr="//page[@name='quiz']" position="inside">
+                <group string="Test Visibility (iRG) - Quiz Tab">
                     <field name="test_visibility_field"/>
                 </group>
+            </xpath>
+
+            <!-- RESPALDO: Insertar también en la pestaña Documento -->
+            <xpath expr="//page[@name='document']" position="inside">
+                <group string="Test Visibility (iRG) - Document Tab">
+                    <field name="test_visibility_field"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- FIX: Forzar que el campo slide_ids en el canal use la vista de formulario estándar -->
+    <record id="view_slide_channel_form_restriction" model="ir.ui.view">
+        <field name="name">slide.channel.form.restriction</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+        <field name="priority" eval="1000"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='slide_ids']" position="attributes">
+                <attribute name="context">{'default_channel_id': active_id, 'form_view_ref': 'website_slides.view_slide_slide_form'}</attribute>
             </xpath>
         </field>
     </record>
