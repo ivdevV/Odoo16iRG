@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <!-- ESTRATEGIA PROBADA: Usar el mismo punto de anclaje que 'connect_chatgpt' -->
             <!-- Sabemos que la página 'quiz' existe y que se pueden añadir pestañas después -->
-            <xpath expr="//notebook/page[@name='quiz']" position="after">
+            <xpath expr="//notebook" position="inside">
                 <page string="TEST VISIBILIDAD" name="test_visibility_page">
                     <group>
                         <field name="test_visibility_field" placeholder="Si ves esto, funciona"/>
