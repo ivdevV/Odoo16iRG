@@ -27,10 +27,22 @@
         <field name="name">slide.channel.form.restriction</field>
         <field name="model">slide.channel</field>
         <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
-        <field name="priority" eval="1000"/>
+        <field name="priority" eval="2000"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='slide_ids']" position="attributes">
-                <attribute name="context">{'default_channel_id': active_id, 'form_view_ref': 'website_slides.view_slide_slide_form'}</attribute>
+            <!-- DEBUG: Verificar que esta vista se está cargando -->
+            <xpath expr="//field[@name='channel_type']" position="after">
+                <field name="name" string="VISTA CARGADA OK" readonly="1"/>
+            </xpath>
+
+            <!-- INTENTO: Inyectar el campo en la vista inline de Studio si existe -->
+            <!-- Usamos ignore_missing="1" (o similar lógica) no existe en xpath estándar, pero si falla, sabremos que no hay form inline -->
+            <!-- Asumimos que el form inline existe porque el usuario lo confirmó -->
+            <xpath expr="//field[@name='slide_ids']/form//notebook" position="inside">
+                <page string="TEST VISIBILIDAD (INLINE)">
+                    <group>
+                        <field name="test_visibility_field"/>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>
