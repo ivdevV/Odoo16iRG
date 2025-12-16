@@ -29,19 +29,26 @@
         <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
         <field name="priority" eval="2000"/>
         <field name="arch" type="xml">
-            <!-- DEBUG: Verificar que esta vista se está cargando (Anchor en 'name' es más seguro) -->
+            <!-- DEBUG: Verificar que esta vista se está cargando -->
             <xpath expr="//field[@name='name']" position="after">
                 <field name="display_name" string="VISTA CARGADA OK" readonly="1"/>
             </xpath>
 
-            <!-- INTENTO 4: Target específico a la página de contenido y forzar contexto -->
-            <xpath expr="//page[@name='content']//field[@name='slide_ids']" position="attributes">
-                 <attribute name="context">{'default_channel_id': active_id, 'form_view_ref': 'website_slides.view_slide_slide_form'}</attribute>
-            </xpath>
-
-            <!-- DEBUG: Añadir columna a la lista de contenidos para confirmar que estamos en el lugar correcto -->
-            <xpath expr="//page[@name='content']//field[@name='slide_ids']/tree/field[@name='name']" position="after">
-                <field name="test_visibility_field" optional="show" string="Test Columna"/>
+            <!-- NUCLEAR OPTION: Reemplazar el campo slide_ids completo -->
+            <!-- Esto elimina cualquier formulario inline (Studio) y fuerza el uso de la vista externa -->
+            <xpath expr="//page[@name='content']//field[@name='slide_ids']" position="replace">
+                <field name="slide_ids" context="{'default_channel_id': active_id, 'form_view_ref': 'website_slides.view_slide_slide_form'}">
+                    <tree>
+                        <field name="sequence" widget="handle"/>
+                        <field name="name"/>
+                        <field name="slide_category"/>
+                        <field name="duration" widget="float_time"/>
+                        <field name="total_views"/>
+                        <field name="is_preview"/>
+                        <field name="is_published" widget="boolean_toggle"/>
+                        <field name="test_visibility_field" optional="show" string="Test Columna"/>
+                    </tree>
+                </field>
             </xpath>
         </field>
     </record>
