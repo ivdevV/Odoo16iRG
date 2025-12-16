@@ -29,15 +29,19 @@
         <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
         <field name="priority" eval="2000"/>
         <field name="arch" type="xml">
-            <!-- DEBUG: Verificar que esta vista se está cargando -->
-            <xpath expr="//field[@name='channel_type']" position="after">
-                <field name="name" string="VISTA CARGADA OK" readonly="1"/>
+            <!-- DEBUG: Verificar que esta vista se está cargando (Anchor en 'name' es más seguro) -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="display_name" string="VISTA CARGADA OK" readonly="1"/>
             </xpath>
 
-            <!-- INTENTO 3: Si no podemos encontrar el form inline, forzamos el contexto -->
-            <!-- Esto es más seguro y debería funcionar si el form inline no está explícitamente definido en el XML base -->
-            <xpath expr="//field[@name='slide_ids']" position="attributes">
+            <!-- INTENTO 4: Target específico a la página de contenido y forzar contexto -->
+            <xpath expr="//page[@name='content']//field[@name='slide_ids']" position="attributes">
                  <attribute name="context">{'default_channel_id': active_id, 'form_view_ref': 'website_slides.view_slide_slide_form'}</attribute>
+            </xpath>
+
+            <!-- DEBUG: Añadir columna a la lista de contenidos para confirmar que estamos en el lugar correcto -->
+            <xpath expr="//page[@name='content']//field[@name='slide_ids']/tree/field[@name='name']" position="after">
+                <field name="test_visibility_field" optional="show" string="Test Columna"/>
             </xpath>
         </field>
     </record>
