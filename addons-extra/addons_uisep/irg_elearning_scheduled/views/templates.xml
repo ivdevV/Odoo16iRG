@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="slide_scheduled_error" name="Slide Scheduled Error">
+        <t t-call="website.layout">
+            <div class="container mt-5">
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">
+                        <i class="fa fa-clock-o"/> Contenido Programado
+                    </h4>
+                    <p>
+                        El contenido <strong><t t-esc="slide.name"/></strong> 
+                        aún no está disponible.
+                    </p>
+                    <hr/>
+                    <p class="mb-0">
+                        <i class="fa fa-calendar"/> Estará disponible a partir del: 
+                        <strong><t t-esc="scheduled_date" t-options="{'widget': 'date'}"/></strong>
+                    </p>
+                    <br/>
+                    <a t-att-href="slide.channel_id.website_url" class="btn btn-primary">
+                        <i class="fa fa-arrow-left"/> Volver al curso
+                    </a>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
