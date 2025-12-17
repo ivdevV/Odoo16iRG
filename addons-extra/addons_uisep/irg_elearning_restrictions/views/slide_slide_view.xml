@@ -6,8 +6,10 @@
         <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
         <field name="priority" eval="99"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='total_views']" position="after">
-                <group string="Restricciones (Test)">
+            <!-- ESTRATEGIA DEFINITIVA: Insertar en la pestaña Quiz, antes de los premios -->
+            <!-- Basado en el XML proporcionado por el usuario donde se ve la estructura real -->
+            <xpath expr="//page[@name='quiz']//group[@name='quiz_rewards']" position="before">
+                <group string="Prerrequisitos (iRG)">
                     <field name="restriction_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
                 </group>
             </xpath>

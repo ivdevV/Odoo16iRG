@@ -1,6 +1,6 @@
 {
     'name': 'iRG eLearning Restrictions',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.4',
     'category': 'Website/eLearning',
     'summary': 'Restricciones de acceso a diapositivas',
     'description': """
