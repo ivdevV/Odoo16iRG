@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_prerequisite" model="ir.ui.view">
+        <field name="name">slide.slide.form.prerequisite</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <!-- ESTRATEGIA: Insertar después de un campo que sabemos que existe y es usado por otros módulos -->
+            <xpath expr="//field[@name='total_views']" position="after">
+                <group string="Prerrequisitos (iRG)">
+                    <field name="prerequisite_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- AÑADIDO: Mostrar columna en la lista de contenidos del curso -->
+    <record id="view_slide_channel_form_prerequisite" model="ir.ui.view">
+        <field name="name">slide.channel.form.prerequisite</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']//tree//field[@name='name']" position="after">
+                <field name="prerequisite_slide_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_scheduled" model="ir.ui.view">
+        <field name="name">slide.slide.form.scheduled</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_published']" position="after">
+                <field name="scheduled_date"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

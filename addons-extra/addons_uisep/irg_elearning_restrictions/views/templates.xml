@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="slide_restriction_error" name="Slide Restriction Error">
+        <t t-call="website.layout">
+            <div class="container mt-5">
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Contenido Bloqueado</h4>
+                    <p>
+                        Para acceder a este contenido (<strong><t t-esc="slide.name"/></strong>), 
+                        primero debes completar el siguiente requisito:
+                    </p>
+                    <hr/>
+                    <p class="mb-0">
+                        <a t-att-href="'/slides/slide/%s' % prerequisite.id" class="btn btn-primary">
+                            Ir a <t t-esc="prerequisite.name"/>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
