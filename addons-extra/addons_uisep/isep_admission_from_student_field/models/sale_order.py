@@ -7,7 +7,21 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    # Override del onchange de irg_sale_order_extended para evitar que machaque el estudiante
+    # si ya tiene un valor distinto, o simplemente para permitir que sean distintos.
+    @api.onchange('partner_id')
+    def _onchange_student_id(self):
+        # Mantenemos la lógica de irg_sale_order_extended SOLO si el student_id está vacío
+        # o si queremos forzar que por defecto sea el partner, PERO
+        # permitiendo cambiarlo después sin que vuelva a cambiar automáticamente 
+        # a menos que volvamos a cambiar el partner.
+        if self.partner_id and not self.student_id:
+            self.student_id = self.partner_id
+
     def _create_or_get_admission(self, line):
+        _logger.info(f"ISEP_DEBUG: _create_or_get_admission para orden {self.name}")
+        _logger.info(f"ISEP_DEBUG: student_id={self.student_id}, partner_id={self.partner_id}")
+        
         # Primero invocamos a super, aunque sabemos que el método original en 
         # isep_sale_order_admissions hace el create inmediatamente y retorna.
         # Por lo tanto, necesitamos sobrescribir la lógica si queremos interceptarla ANTES de crear.
@@ -47,10 +61,35 @@ class SaleOrder(models.Model):
         )
 
         admission = line.admission_id
-        if not admission:
-            # --- MODIFICACIÓN: Usar student_id (definido en irg_sale_order_extended) o partner_id ---
-            target_partner = self.student_id or self.partner_id
+        
+        # Fallback: Si no hay admisión en la línea, pero existe en la cabecera (creada manualmente), usémosla
+        if not admission and self.admission_id:
+             _logger.info(f"ISEP_DEBUG: Usando admisión existente en cabecera {self.admission_id.id}")
+             admission = self.admission_id
+             line.admission_id = admission.id
+
+        # --- MODIFICACIÓN: Usar student_id (definido en irg_sale_order_extended) o partner_id ---
+        target_partner = self.student_id or self.partner_id
+        
+        # LOGICA DE ACTUALIZACIÓN (por si ya existía la admisión pero con partner incorrecto)
+        if admission and admission.partner_id != target_partner:
+            _logger.info(f"ISEP_DEBUG: Actualizando admisión {admission.id} con nuevo partner {target_partner.name}")
+            parts = (target_partner.name or '').split()
+            first_name = ' '.join(parts[:-1]) if len(parts) > 1 else (parts[0] if parts else '-')
+            last_name = parts[-1] if len(parts) > 1 else '-'
             
+            admission.write({
+                'name': target_partner.name,
+                'first_name': (first_name or '-').strip(),
+                'last_name': (last_name or '-').strip(),
+                'email': target_partner.email,
+                'mobile': target_partner.mobile,
+                'phone': target_partner.phone,
+                'partner_id': target_partner.id,
+                'gender': self.gender or target_partner.gender or 'o',
+            })
+
+        if not admission:
             parts = (target_partner.name or '').split()
             first_name = ' '.join(parts[:-1]) if len(parts) > 1 else (parts[0] if parts else '-')
             last_name = parts[-1] if len(parts) > 1 else '-'
@@ -79,11 +118,15 @@ class SaleOrder(models.Model):
 
 
     def create_admission_manual(self, admission_register_id):
+        _logger.info(f"ISEP_DEBUG: create_admission_manual para orden {self.name}")
+        _logger.info(f"ISEP_DEBUG: student_id={self.student_id}, partner_id={self.partner_id}")
+
         # Override para usar student_id en creación manual
         op_admission = self.env['op.admission']
         
         # --- MODIFICACIÓN: Usar student_id ---
         target_partner = self.student_id or self.partner_id
+        _logger.info(f"ISEP_DEBUG: target_partner seleccionado: {target_partner.name} (ID: {target_partner.id})")
 
         name = target_partner.name.replace('  ',' ').replace('   ',' ').replace('    ',' ').replace('     ',' ').replace('      ',' ').split(' ')
         
