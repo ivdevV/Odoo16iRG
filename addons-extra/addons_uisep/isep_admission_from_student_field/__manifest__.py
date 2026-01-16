@@ -1,6 +1,6 @@
 {
     'name': 'ISEP Admission from Student Field',
-    'version': '16.0.1.0.5',
+    'version': '16.0.1.0.6',
     'category': 'Sales',
     'summary': 'Use existing student_id field from sale_order to create admissions',
     'description': """

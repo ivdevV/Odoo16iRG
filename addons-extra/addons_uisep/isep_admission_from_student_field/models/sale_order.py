@@ -145,6 +145,22 @@ class SaleOrder(models.Model):
                 'batch_id': self.get_lot_id(course).id,
                 'order_id': self.id,
             })
+            
+            # --- VERIFICACIÓN Y CORRECCIÓN POST-CREATION ---
+            # Si search_user_portal en isep_openeducat_sale sobrescribió la admisión
+            # (devuelve al partner_id del pedido), lo arreglamos aquí.
+            if admission.partner_id != target_partner:
+                _logger.warning(f"ISEP_DEBUG: Admisión {admission.id} fue sobrescrita durante create! Restaurando.")
+                _logger.warning(f"Valor incorrecto: {admission.partner_id.name} | Valor correcto: {target_partner.name}")
+                admission.write({
+                    'partner_id': target_partner.id,
+                    'student_id': op_student.id,
+                    'is_student': True,
+                    'mobile': target_partner.mobile,
+                    'phone': target_partner.phone,
+                    'email': target_partner.email,
+                })
+
             line.admission_id = admission.id
 
         return admission
@@ -240,5 +256,16 @@ class SaleOrder(models.Model):
             'batch_id': self.get_lot_id(admission_register_id.course_id).id,
             'order_id': self.id,
         })
+
+        if op_admission.partner_id != target_partner:
+            _logger.warning(f"ISEP_DEBUG: Admisión {op_admission.id} (manual) fue sobrescrita durante create! Restaurando.")
+            op_admission.write({
+                'partner_id': target_partner.id,
+                'mobile': target_partner.mobile,
+                'phone': target_partner.phone,
+                'email': target_partner.email,
+            })
+            # student_id no lo tenemos aquí explícitamente como objeto 'op.student' si no lo buscamos antes,
+            # pero podemos reasignar si era necesario. En get_admision_id original no se crea op.student.
         
         self.admission_id = op_admission.id

@@ -92,8 +92,9 @@ class OpAdmission(models.Model):
         Override para evitar que isep_openeducat_sale machaque el partner_id 
         con el partner del pedido (titular) si ya hemos asignado uno diferente (el alumno).
         """
+        _logger.warning(f"ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id={self.id}")
         if self.sale_id:
-            _logger.warning("ISEP_ADMISSION_FROM_STUDENT: search_user_portal EJECUTADO")
+            _logger.warning("ISEP_ADMISSION_FROM_STUDENT: search_user_portal con sale_id")
             student_from_order = self.sale_id.student_id
             titular_from_order = self.sale_id.partner_id
             
