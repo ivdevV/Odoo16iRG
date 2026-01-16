@@ -285,3 +285,16 @@ class SaleOrder(models.Model):
             # pero podemos reasignar si era necesario. En get_admision_id original no se crea op.student.
         
         self.admission_id = op_admission.id
+
+    def _process_auto_admission(self, admission, line):
+        """
+        Override para detener el flujo automático. 
+        El cliente requiere que la admisión se cree pero NO se complete automáticamente,
+        para permitir inscripción manual.
+        """
+        _logger.warning("=" * 60)
+        _logger.warning(f"ISEP_ADMISSION_FROM_STUDENT: _process_auto_admission INTERCEPTADO para {admission.name}")
+        _logger.warning("DETENIENDO flujo automático (submit/confirm/enroll) por requerimiento.")
+        _logger.warning("La admisión permanecerá en estado borrador/creado para revisión manual.")
+        _logger.warning("=" * 60)
+        return
