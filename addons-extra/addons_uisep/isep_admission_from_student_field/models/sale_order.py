@@ -98,6 +98,30 @@ class SaleOrder(models.Model):
             first_name = ' '.join(parts[:-1]) if len(parts) > 1 else (parts[0] if parts else '-')
             last_name = parts[-1] if len(parts) > 1 else '-'
 
+            # --- CORRECCIÓN ISEP: Asegurar student_id ---
+            # Buscamos o creamos el op.student asociado al partner objetivo.
+            # Esto es CRÍTICO para que search_user_portal en isep_openeducat_sale 
+            # NO sobrescriba el partner_id con el del titular al ver que falta el student_id.
+            op_student = self.env['op.student'].search([('partner_id', '=', target_partner.id)], limit=1)
+            if not op_student:
+                _logger.info(f"ISEP_DEBUG: Creando op.student para {target_partner.name} anticipadamente.")
+                target_user = self.env['res.users'].search([('partner_id', '=', target_partner.id)], limit=1)
+                
+                op_student = self.env['op.student'].create({
+                     'name': target_partner.name,
+                     'first_name': (first_name or '-').strip(),
+                     'last_name': (last_name or '-').strip(),
+                     'gender': self.gender or target_partner.gender or 'o',
+                     'partner_id': target_partner.id,
+                     'user_id': target_user.id if target_user else False,
+                     'email': target_partner.email,
+                     'mobile': target_partner.mobile,
+                     'phone': target_partner.phone,
+                     'birth_date': fields.Date.today(), # Valor por defecto requerido
+                })
+            
+            _logger.info(f"ISEP_DEBUG: Creando Admisión con op.student {op_student.id} y partner {target_partner.id}.")
+
             admission = self.env['op.admission'].create({
                 'name': target_partner.name,
                 'first_name': (first_name or '-').strip(),
@@ -107,6 +131,11 @@ class SaleOrder(models.Model):
                 'mobile': target_partner.mobile,
                 'phone': target_partner.phone,
                 'partner_id': target_partner.id,
+                
+                # Campos añadidos para evitar sobrescritura incorrecta:
+                'student_id': op_student.id,
+                'is_student': True,
+                
                 'register_id': register.id,
                 'course_id': register.course_id.id,
                 'application_date': fields.Datetime.now(),

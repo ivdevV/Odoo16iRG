@@ -93,12 +93,17 @@ class OpAdmission(models.Model):
         con el partner del pedido (titular) si ya hemos asignado uno diferente (el alumno).
         """
         if self.sale_id:
+            _logger.warning("ISEP_ADMISSION_FROM_STUDENT: search_user_portal EJECUTADO")
             student_from_order = self.sale_id.student_id
             titular_from_order = self.sale_id.partner_id
             
+            if self.partner_id:
+                 _logger.warning(f"  > Partner actual en admisión: {self.partner_id.name} (ID: {self.partner_id.id})")
+            
             # Si hay un alumno diferente al titular, PRESERVAR el partner_id actual
             if student_from_order and student_from_order != titular_from_order:
-                _logger.info("search_user_portal: Bloqueando cambio - Alumno != Titular")
+                _logger.warning(f"  > Detectado Alumno ({student_from_order.name}) != Titular ({titular_from_order.name})")
+                _logger.warning("  > BLOQUEANDO search_user_portal original para evitar sobrescritura.")
                 return
         
         return super(OpAdmission, self).search_user_portal()
