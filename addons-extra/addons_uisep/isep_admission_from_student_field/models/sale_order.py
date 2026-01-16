@@ -226,92 +226,6 @@ class SaleOrder(models.Model):
         
         self.admission_id = op_admission.id
 
-    def get_admision_id(self, admission_register_id):
-        """
-        Override del método de isep_openeducat_sale para usar student_id en lugar de partner_id.
-        Este método es llamado desde isep_openeducat_sale._action_confirm cuando auto_ad está activo.
-        """
-        _logger.warning("=" * 60)
-        _logger.warning("ISEP_ADMISSION_FROM_STUDENT: get_admision_id EJECUTADO")
-        _logger.warning(f"Orden: {self.name}")
-        _logger.warning(f"student_id: {self.student_id.name if self.student_id else 'VACIO'} (ID: {self.student_id.id if self.student_id else 'N/A'})")
-        _logger.warning(f"partner_id: {self.partner_id.name if self.partner_id else 'VACIO'} (ID: {self.partner_id.id if self.partner_id else 'N/A'})")
-        _logger.warning("=" * 60)
-        
-        # --- MODIFICACIÓN: Usar student_id (Alumno) en lugar de partner_id (Titular factura) ---
-        target_partner = self.student_id or self.partner_id
-        _logger.info(f"ISEP_DEBUG: target_partner seleccionado: {target_partner.name} (ID: {target_partner.id})")
-
-        name = target_partner.name.replace('  ', ' ').replace('   ', ' ').replace('    ', ' ').replace('     ', ' ').replace('      ', ' ').split(' ')
-        
-        first_name = '-'
-        last_name = '-'
-        if len(name) == 1:
-            first_name = name[0]
-        if len(name) > 1:
-            first_name = ''
-            for i in range(0, len(name) - 1):
-                first_name += str(name[i]) + ' '
-            last_name = name[-1]
-        
-        op_admission = self.env['op.admission'].create({
-            'name': target_partner.name,
-            'first_name': first_name.strip(),
-            'last_name': last_name.strip(),
-            'sale_id': self.id,
-            'email': target_partner.email,
-            'mobile': target_partner.mobile,
-            'phone': target_partner.phone,
-            'partner_id': target_partner.id,
-            'register_id': admission_register_id.id,
-            'course_id': admission_register_id.course_id.id,
-            'application_date': fields.Datetime.now(),
-            'admission_date': fields.Datetime.now(),
-            'fees_term_id': self.env['op.fees.terms'].search([], limit=1).id,
-            'gender': self.gender or target_partner.gender or 'o',
-            'batch_id': self.get_lot_id(admission_register_id.course_id).id,
-            'order_id': self.id,
-        })
-
-        if op_admission.partner_id != target_partner:
-            _logger.warning(f"ISEP_DEBUG: Admisión {op_admission.id} (manual) fue sobrescrita durante create! Restaurando.")
-            op_admission.write({
-                'partner_id': target_partner.id,
-                'mobile': target_partner.mobile,
-                'phone': target_partner.phone,
-                'email': target_partner.email,
-            })
-            # student_id no lo tenemos aquí explícitamente como objeto 'op.student' si no lo buscamos antes,
-            # pero podemos reasignar si era necesario. En get_admision_id original no se crea op.student.
-        
-        self.admission_id = op_admission.id
-
-    def _process_auto_admission(self, admission, line):
-        """
-        Override para detener el flujo automático. 
-        El cliente requiere que la admisión se cree pero NO se complete automáticamente,
-        para permitir inscripción manual.
-        """
-        _logger.warning("=" * 60)
-        _logger.warning(f"ISEP_ADMISSION_FROM_STUDENT: _process_auto_admission INTERCEPTADO para {admission.name}")
-        _logger.warning("DETENIENDO flujo automático (submit/confirm/enroll) por requerimiento.")
-        _logger.warning("La admisión permanecerá en estado borrador/creado para revisión manual.")
-        _logger.warning("=" * 60)
-        return
-
-    # --- BLOCKING ISEP_OPENEDUCAT_SALE AUTOMATION ---
-    # The module isep_openeducat_sale also attempts to auto-confirm and send emails
-    # inside its _action_confirm, running BEFORE isep_sale_order_admissions logic.
-    # We must block these methods to ensure the admission stays in draft.
-
-    def ad_state_admission_done(self, order):
-        _logger.warning(f"ISEP_ADMISSION_FROM_STUDENT: Bloqueando ad_state_admission_done para orden {order.name}")
-        return
-
-    def ad_auto_email_welcome(self, order):
-        _logger.warning(f"ISEP_ADMISSION_FROM_STUDENT: Bloqueando ad_auto_email_welcome para orden {order.name}")
-        return
-
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
@@ -321,3 +235,103 @@ class SaleOrderLine(models.Model):
         readonly=True,
         store=True
     )
+
+    def action_send_student(self):
+        """
+        Override para que el botón 'Inscribir' use el student_id correcto por defecto.
+        """
+        if self.order_id.student_id:
+            target_partner = self.order_id.student_id
+        else:
+            target_partner = self.order_partner_id or self.order_id.partner_id
+            
+        _logger.warning(f"ISEP_ADMISSION: action_send_student manual para {target_partner.name}")
+        
+        name = target_partner.name.replace('  ',' ').replace('   ',' ').replace('    ',' ').replace('     ',' ').replace('      ',' ').split(' ')
+        
+        first_name = ''
+        last_name = ''
+        if len(name)==1:
+            first_name=name[0]
+        if len(name)>1:
+            first_name = ''
+            for i in range(0,len(name)-1):
+                first_name+=str(name[i])+' '
+            last_name = name[-1]
+        
+        return {
+            'res_model': 'op.admission',
+            'type': 'ir.actions.act_window',
+            'context': {
+                'default_first_name':first_name.strip(),
+                'default_last_name':last_name.strip(),
+                'default_sale_id':self.order_id.id,
+                'default_email':target_partner.email,
+                'default_mobile':target_partner.mobile,
+                'default_phone':target_partner.phone,
+                'default_product_template_id':self.product_template_id.id,
+                'default_sale_line_id':self.id,
+                'default_partner_id': target_partner.id,
+                'default_order_id': self.order_id.id
+            },
+            'view_mode': 'form',
+            'view_type': 'form',
+            'view_id': self.env.ref("openeducat_admission.view_op_admission_form").id,
+            'target': 'new'
+        }
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    student_id = fields.Many2one(
+        related='order_id.student_id',
+        string='Alumno',
+        readonly=True,
+        store=True
+    )
+
+    def action_send_student(self):
+        """
+        Override para que el botón 'Inscribir' use el student_id correcto por defecto.
+        """
+        if self.order_id.student_id:
+            target_partner = self.order_id.student_id
+        else:
+            target_partner = self.order_partner_id or self.order_id.partner_id
+            
+        _logger.warning(f"ISEP_ADMISSION: action_send_student manual para {target_partner.name}")
+        
+        name = target_partner.name.replace('  ',' ').replace('   ',' ').replace('    ',' ').replace('     ',' ').replace('      ',' ').split(' ')
+        
+        first_name = ''
+        last_name = ''
+        if len(name)==1:
+            first_name=name[0]
+        if len(name)>1:
+            first_name = ''
+            for i in range(0,len(name)-1):
+                first_name+=str(name[i])+' '
+            last_name = name[-1]
+        
+        return {
+            'res_model': 'op.admission',
+            'type': 'ir.actions.act_window',
+            'context': {
+                'default_first_name':first_name.strip(),
+                'default_last_name':last_name.strip(),
+                'default_sale_id':self.order_id.id,
+                'default_email':target_partner.email,
+                'default_mobile':target_partner.mobile,
+                'default_phone':target_partner.phone,
+                'default_product_template_id':self.product_template_id.id,
+                'default_sale_line_id':self.id,
+                'default_partner_id': target_partner.id,
+                'default_order_id': self.order_id.id
+            },
+            'view_mode': 'form',
+            'view_type': 'form',
+            'view_id': self.env.ref("openeducat_admission.view_op_admission_form").id,
+            'target': 'new'
+        }
