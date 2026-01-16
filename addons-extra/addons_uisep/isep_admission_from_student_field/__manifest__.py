@@ -1,6 +1,6 @@
 {
     'name': 'ISEP Admission from Student Field',
-    'version': '16.0.1.0.3',
+    'version': '16.0.1.0.4',
     'category': 'Sales',
     'summary': 'Use existing student_id field from sale_order to create admissions',
     'description': """
@@ -15,6 +15,7 @@
         'sale',
         'isep_openeducat_sale',
         'isep_sale_order_admissions',
+        'isep_elearning_custom',  # IMPORTANTE: para que nuestro override de submit_form se aplique después
         'irg_sale_order_extended', 
     ],
     'data': [],
