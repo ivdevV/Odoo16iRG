@@ -19,8 +19,12 @@ class SaleOrder(models.Model):
             self.student_id = self.partner_id
 
     def _create_or_get_admission(self, line):
-        _logger.info(f"ISEP_DEBUG: _create_or_get_admission para orden {self.name}")
-        _logger.info(f"ISEP_DEBUG: student_id={self.student_id}, partner_id={self.partner_id}")
+        _logger.warning("=" * 60)
+        _logger.warning("ISEP_ADMISSION_FROM_STUDENT: _create_or_get_admission EJECUTADO")
+        _logger.warning(f"Orden: {self.name}")
+        _logger.warning(f"student_id: {self.student_id.name if self.student_id else 'VACIO'} (ID: {self.student_id.id if self.student_id else 'N/A'})")
+        _logger.warning(f"partner_id: {self.partner_id.name if self.partner_id else 'VACIO'} (ID: {self.partner_id.id if self.partner_id else 'N/A'})")
+        _logger.warning("=" * 60)
         
         # Primero invocamos a super, aunque sabemos que el método original en 
         # isep_sale_order_admissions hace el create inmediatamente y retorna.
@@ -166,8 +170,12 @@ class SaleOrder(models.Model):
         Override del método de isep_openeducat_sale para usar student_id en lugar de partner_id.
         Este método es llamado desde isep_openeducat_sale._action_confirm cuando auto_ad está activo.
         """
-        _logger.info(f"ISEP_DEBUG: get_admision_id para orden {self.name}")
-        _logger.info(f"ISEP_DEBUG: student_id={self.student_id}, partner_id={self.partner_id}")
+        _logger.warning("=" * 60)
+        _logger.warning("ISEP_ADMISSION_FROM_STUDENT: get_admision_id EJECUTADO")
+        _logger.warning(f"Orden: {self.name}")
+        _logger.warning(f"student_id: {self.student_id.name if self.student_id else 'VACIO'} (ID: {self.student_id.id if self.student_id else 'N/A'})")
+        _logger.warning(f"partner_id: {self.partner_id.name if self.partner_id else 'VACIO'} (ID: {self.partner_id.id if self.partner_id else 'N/A'})")
+        _logger.warning("=" * 60)
         
         # --- MODIFICACIÓN: Usar student_id (Alumno) en lugar de partner_id (Titular factura) ---
         target_partner = self.student_id or self.partner_id

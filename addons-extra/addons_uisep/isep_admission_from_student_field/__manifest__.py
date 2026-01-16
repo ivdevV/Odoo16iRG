@@ -1,6 +1,6 @@
 {
     'name': 'ISEP Admission from Student Field',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.2',
     'category': 'Sales',
     'summary': 'Use existing student_id field from sale_order to create admissions',
     'description': """
@@ -13,6 +13,7 @@
     'author': 'ISEP',
     'depends': [
         'sale',
+        'isep_openeducat_sale',
         'isep_sale_order_admissions',
         'irg_sale_order_extended', 
     ],
