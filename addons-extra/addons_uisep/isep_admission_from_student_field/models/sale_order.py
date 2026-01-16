@@ -160,3 +160,48 @@ class SaleOrder(models.Model):
         })
         
         self.admission_id = op_admission.id
+
+    def get_admision_id(self, admission_register_id):
+        """
+        Override del método de isep_openeducat_sale para usar student_id en lugar de partner_id.
+        Este método es llamado desde isep_openeducat_sale._action_confirm cuando auto_ad está activo.
+        """
+        _logger.info(f"ISEP_DEBUG: get_admision_id para orden {self.name}")
+        _logger.info(f"ISEP_DEBUG: student_id={self.student_id}, partner_id={self.partner_id}")
+        
+        # --- MODIFICACIÓN: Usar student_id (Alumno) en lugar de partner_id (Titular factura) ---
+        target_partner = self.student_id or self.partner_id
+        _logger.info(f"ISEP_DEBUG: target_partner seleccionado: {target_partner.name} (ID: {target_partner.id})")
+
+        name = target_partner.name.replace('  ', ' ').replace('   ', ' ').replace('    ', ' ').replace('     ', ' ').replace('      ', ' ').split(' ')
+        
+        first_name = '-'
+        last_name = '-'
+        if len(name) == 1:
+            first_name = name[0]
+        if len(name) > 1:
+            first_name = ''
+            for i in range(0, len(name) - 1):
+                first_name += str(name[i]) + ' '
+            last_name = name[-1]
+        
+        op_admission = self.env['op.admission'].create({
+            'name': target_partner.name,
+            'first_name': first_name.strip(),
+            'last_name': last_name.strip(),
+            'sale_id': self.id,
+            'email': target_partner.email,
+            'mobile': target_partner.mobile,
+            'phone': target_partner.phone,
+            'partner_id': target_partner.id,
+            'register_id': admission_register_id.id,
+            'course_id': admission_register_id.course_id.id,
+            'application_date': fields.Datetime.now(),
+            'admission_date': fields.Datetime.now(),
+            'fees_term_id': self.env['op.fees.terms'].search([], limit=1).id,
+            'gender': self.gender or target_partner.gender or 'o',
+            'batch_id': self.get_lot_id(admission_register_id.course_id).id,
+            'order_id': self.id,
+        })
+        
+        self.admission_id = op_admission.id
