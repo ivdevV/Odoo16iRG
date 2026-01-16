@@ -239,45 +239,45 @@ class SaleOrderLine(models.Model):
     def action_send_student(self):
         """
         Override para que el botón 'Inscribir' use el student_id correcto por defecto.
+        Mantenemos compatibilidad con otros módulos usando super() y parcheando el contexto.
         """
+        # Ejecutamos la lógica original (isep_openeducat_sale / isep_record_request)
+        res = super(SaleOrderLine, self).action_send_student()
+        
+        # Verificamos si tenemos un estudiante explícito en el pedido
         if self.order_id.student_id:
             target_partner = self.order_id.student_id
-        else:
-            target_partner = self.order_partner_id or self.order_id.partner_id
+            _logger.warning(f"ISEP_ADMISSION: action_send_student INTERCEPTANDO para Estudiante: {target_partner.name}")
             
-        _logger.warning(f"ISEP_ADMISSION: action_send_student manual para {target_partner.name}")
-        
-        name = target_partner.name.replace('  ',' ').replace('   ',' ').replace('    ',' ').replace('     ',' ').replace('      ',' ').split(' ')
-        
-        first_name = ''
-        last_name = ''
-        if len(name)==1:
-            first_name=name[0]
-        if len(name)>1:
-            first_name = ''
-            for i in range(0,len(name)-1):
-                first_name+=str(name[i])+' '
-            last_name = name[-1]
-        
-        return {
-            'res_model': 'op.admission',
-            'type': 'ir.actions.act_window',
-            'context': {
-                'default_first_name':first_name.strip(),
-                'default_last_name':last_name.strip(),
-                'default_sale_id':self.order_id.id,
-                'default_email':target_partner.email,
-                'default_mobile':target_partner.mobile,
-                'default_phone':target_partner.phone,
-                'default_product_template_id':self.product_template_id.id,
-                'default_sale_line_id':self.id,
-                'default_partner_id': target_partner.id,
-                'default_order_id': self.order_id.id
-            },
-            'view_mode': 'form',
-            'view_type': 'form',
-            'view_id': self.env.ref("openeducat_admission.view_op_admission_form").id,
-            'target': 'new'
-        }
+            # Recálculo de nombre (Portado de lógica original para asegurar consistencia)
+            # Limpieza básica de espacios múltiples
+            clean_name = " ".join(target_partner.name.split())
+            name_parts = clean_name.split(" ")
+            
+            first_name = ""
+            last_name = ""
+            
+            if len(name_parts) == 1:
+                first_name = name_parts[0]
+            elif len(name_parts) > 1:
+                first_name = " ".join(name_parts[:-1])
+                last_name = name_parts[-1]
+
+            # Actualizamos el contexto del resultado devuelto por super
+            if isinstance(res, dict) and 'context' in res:
+                # Aseguramos que el contexto es un dict mutable
+                if not isinstance(res['context'], dict):
+                    res['context'] = {} 
+                
+                res['context'].update({
+                    'default_first_name': first_name.strip(),
+                    'default_last_name': last_name.strip(),
+                    'default_partner_id': target_partner.id,
+                    'default_email': target_partner.email,
+                    'default_mobile': target_partner.mobile,
+                    'default_phone': target_partner.phone,
+                })
+                
+        return res
 
 
