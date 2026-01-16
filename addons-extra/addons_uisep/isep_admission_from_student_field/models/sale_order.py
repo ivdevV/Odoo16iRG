@@ -40,22 +40,27 @@ class SaleOrder(models.Model):
                  ('product_template_ids', 'in', line.product_template_id.id)]
         
         course = self.env['op.course'].search(domain, limit=1)
+        _logger.warning(f"ISEP_DEBUG: Course found: {course}")
         
         if not course:
             self._upsert_admission_row(
                 line,
                 error_msg=f"No se encontró Curso para {line.product_template_id.display_name}.",
             )
+            _logger.warning("ISEP_DEBUG: No course found. Returning False.")
             return False
 
         if not self.period:
             self._compute_period()
+        _logger.warning(f"ISEP_DEBUG: Period: {self.period}")
+
         if not self.period:
             self._upsert_admission_row(
                 line,
                 course=course,
                 error_msg="No se pudo determinar el Periodo de Admisión.",
             )
+            _logger.warning("ISEP_DEBUG: No period found. Returning False.")
             return False
 
         register = self._find_or_create_register(
@@ -63,21 +68,24 @@ class SaleOrder(models.Model):
             product_template=line.product_template_id,
             course=course,
         )
+        _logger.warning(f"ISEP_DEBUG: Register: {register}")
 
         admission = line.admission_id
+        _logger.warning(f"ISEP_DEBUG: Existing admission on line: {admission}")
         
         # Fallback: Si no hay admisión en la línea, pero existe en la cabecera (creada manualmente), usémosla
         if not admission and self.admission_id:
-             _logger.info(f"ISEP_DEBUG: Usando admisión existente en cabecera {self.admission_id.id}")
+             _logger.warning(f"ISEP_DEBUG: Usando admisión existente en cabecera {self.admission_id.id}")
              admission = self.admission_id
              line.admission_id = admission.id
 
         # --- MODIFICACIÓN: Usar student_id (definido en irg_sale_order_extended) o partner_id ---
         target_partner = self.student_id or self.partner_id
+        _logger.warning(f"ISEP_DEBUG: Target Partner: {target_partner.name} (ID: {target_partner.id})")
         
         # LOGICA DE ACTUALIZACIÓN (por si ya existía la admisión pero con partner incorrecto)
         if admission and admission.partner_id != target_partner:
-            _logger.info(f"ISEP_DEBUG: Actualizando admisión {admission.id} con nuevo partner {target_partner.name}")
+            _logger.warning(f"ISEP_DEBUG: Actualizando admisión {admission.id} con nuevo partner {target_partner.name}")
             parts = (target_partner.name or '').split()
             first_name = ' '.join(parts[:-1]) if len(parts) > 1 else (parts[0] if parts else '-')
             last_name = parts[-1] if len(parts) > 1 else '-'
@@ -104,7 +112,7 @@ class SaleOrder(models.Model):
             # NO sobrescriba el partner_id con el del titular al ver que falta el student_id.
             op_student = self.env['op.student'].search([('partner_id', '=', target_partner.id)], limit=1)
             if not op_student:
-                _logger.info(f"ISEP_DEBUG: Creando op.student para {target_partner.name} anticipadamente.")
+                _logger.warning(f"ISEP_DEBUG: Creando op.student para {target_partner.name} anticipadamente.")
                 target_user = self.env['res.users'].search([('partner_id', '=', target_partner.id)], limit=1)
                 
                 op_student = self.env['op.student'].create({
@@ -120,7 +128,7 @@ class SaleOrder(models.Model):
                      'birth_date': fields.Date.today(), # Valor por defecto requerido
                 })
             
-            _logger.info(f"ISEP_DEBUG: Creando Admisión con op.student {op_student.id} y partner {target_partner.id}.")
+            _logger.warning(f"ISEP_DEBUG: Creando Admisión con op.student {op_student.id} y partner {target_partner.id}.")
 
             admission = self.env['op.admission'].create({
                 'name': target_partner.name,

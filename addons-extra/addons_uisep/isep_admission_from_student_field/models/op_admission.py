@@ -94,7 +94,7 @@ class OpAdmission(models.Model):
         """
         _logger.warning(f"ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id={self.id}")
         if self.sale_id:
-            _logger.warning("ISEP_ADMISSION_FROM_STUDENT: search_user_portal con sale_id")
+            _logger.warning(f"ISEP_ADMISSION_FROM_STUDENT: search_user_portal con sale_id {self.sale_id.name}")
             student_from_order = self.sale_id.student_id
             titular_from_order = self.sale_id.partner_id
             
