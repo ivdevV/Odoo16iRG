@@ -45,6 +45,41 @@ class OpAdmission(models.Model):
             _logger.warning(f"partner_id fue cambiado a: {self.partner_id.name if self.partner_id else 'VACIO'}")
             _logger.warning(f"RESTAURANDO partner_id a: {original_partner_id.name}")
             self.partner_id = original_partner_id
+
+            # CORRECCIÓN ADICIONAL: Verificar y restaurar student_id
+            # Si isep_elearning_custom cambió el partner, también pudo haber asignado el student_id del titular
+            if self.student_id and self.student_id.partner_id != original_partner_id:
+                _logger.warning(f"student_id incorrecto detectado: {self.student_id.name} (Partner vinculado: {self.student_id.partner_id.name})")
+                
+                # Buscar si ya existe un estudiante para el partner correcto
+                correct_student = self.env['op.student'].search([('partner_id', '=', original_partner_id.id)], limit=1)
+                
+                if not correct_student:
+                    _logger.warning(f"Creando nuevo op.student para el partner correcto: {original_partner_id.name}")
+                    
+                    # Intentar obtener usuario asociado al partner si existe
+                    user_for_student = False
+                    if original_partner_id.user_ids:
+                        user_for_student = original_partner_id.user_ids[0]
+                    
+                    details = {
+                        'title': self.title and self.title.id or False,
+                        'first_name': self.first_name,
+                        'middle_name': self.middle_name,
+                        'last_name': self.last_name,
+                        'birth_date': self.birth_date,
+                        'gender': self.gender,
+                        # Usamos self.image como en isep_elearning_custom, asumiendo que existe en el modelo
+                        'image_1920': self.image or False,
+                        'user_id': user_for_student.id if user_for_student else False,
+                        'company_id': self.company_id.id,
+                        'partner_id': original_partner_id.id,
+                    }
+                    correct_student = self.env['op.student'].create(details)
+                
+                _logger.warning(f"RESTAURANDO student_id a: {correct_student.name} (ID: {correct_student.id})")
+                self.student_id = correct_student.id
+
             _logger.warning("=" * 60)
         elif should_preserve:
             _logger.warning(f"partner_id NO fue cambiado, sigue siendo: {self.partner_id.name}")
