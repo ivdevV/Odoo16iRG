@@ -298,3 +298,26 @@ class SaleOrder(models.Model):
         _logger.warning("La admisión permanecerá en estado borrador/creado para revisión manual.")
         _logger.warning("=" * 60)
         return
+
+    # --- BLOCKING ISEP_OPENEDUCAT_SALE AUTOMATION ---
+    # The module isep_openeducat_sale also attempts to auto-confirm and send emails
+    # inside its _action_confirm, running BEFORE isep_sale_order_admissions logic.
+    # We must block these methods to ensure the admission stays in draft.
+
+    def ad_state_admission_done(self, order):
+        _logger.warning(f"ISEP_ADMISSION_FROM_STUDENT: Bloqueando ad_state_admission_done para orden {order.name}")
+        return
+
+    def ad_auto_email_welcome(self, order):
+        _logger.warning(f"ISEP_ADMISSION_FROM_STUDENT: Bloqueando ad_auto_email_welcome para orden {order.name}")
+        return
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    student_id = fields.Many2one(
+        related='order_id.student_id',
+        string='Alumno',
+        readonly=True,
+        store=True
+    )

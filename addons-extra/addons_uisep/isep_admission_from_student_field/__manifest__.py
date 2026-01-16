@@ -18,7 +18,9 @@
         'isep_elearning_custom',  # IMPORTANTE: para que nuestro override de submit_form se aplique después
         'irg_sale_order_extended', 
     ],
-    'data': [],
+    'data': [
+        'views/sale_order_line_views.xml',
+    ],
     'installable': True,
     'application': False,
     'license': 'AGPL-3',
