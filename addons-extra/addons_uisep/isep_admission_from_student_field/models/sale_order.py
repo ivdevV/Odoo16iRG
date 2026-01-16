@@ -46,6 +46,16 @@ class SaleOrder(models.Model):
                 return False
 
             if not self.period:
+                if not self.admission_date:
+                    # Intentar obtener fecha de start_date (suscripciones) o date_order
+                    if hasattr(self, 'start_date') and self.start_date:
+                        self.admission_date = self.start_date
+                    elif self.date_order:
+                        self.admission_date = self.date_order.date()
+                    else:
+                        self.admission_date = fields.Date.today()
+                    _logger.warning(f"ISEP_DEBUG: Forced admission_date to {self.admission_date}")
+
                 self._compute_period()
             _logger.warning(f"ISEP_DEBUG: Period: {self.period}")
 
