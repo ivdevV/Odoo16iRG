@@ -6,20 +6,15 @@
             <t t-foreach="docs" t-as="batch">
                 <t t-call="web.external_layout">
                     <div class="page">
-                        <!-- Header con logo iRG -->
+                        <!-- Header -->
                         <div class="row mb-4">
-                            <div class="col-3">
-                                <span style="font-size: 48px; font-weight: bold;">
-                                    <span style="color: #f58220;">i</span><span style="color: #333;">RG</span>
-                                </span>
-                            </div>
-                            <div class="col-9 text-center">
-                                <h2 style="color: #f58220;">Información del grupo</h2>
+                            <div class="col-12 text-center">
+                                <h2 style="color: #3592bf;">Información del grupo</h2>
                             </div>
                         </div>
 
                         <!-- Información del Grupo -->
-                        <div class="row mb-4" style="border-bottom: 2px solid #f58220; padding-bottom: 15px;">
+                        <div class="row mb-4" style="border-bottom: 2px solid #3592bf; padding-bottom: 15px;">
                             <div class="col-4">
                                 <strong>Grupo:</strong><br/>
                                 <span t-field="batch.name"/>
