@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_batch_students_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="batch">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Header con logo iRG -->
+                        <div class="row mb-4">
+                            <div class="col-3">
+                                <span style="font-size: 48px; font-weight: bold;">
+                                    <span style="color: #f58220;">i</span><span style="color: #333;">RG</span>
+                                </span>
+                            </div>
+                            <div class="col-9 text-center">
+                                <h2 style="color: #f58220;">Información del grupo</h2>
+                            </div>
+                        </div>
+
+                        <!-- Información del Grupo -->
+                        <div class="row mb-4" style="border-bottom: 2px solid #f58220; padding-bottom: 15px;">
+                            <div class="col-4">
+                                <strong>Grupo:</strong><br/>
+                                <span t-field="batch.name"/>
+                            </div>
+                            <div class="col-4">
+                                <strong>Código:</strong><br/>
+                                <span t-field="batch.code"/>
+                            </div>
+                            <div class="col-2">
+                                <strong>Fecha de inicio:</strong><br/>
+                                <span t-field="batch.start_date" t-options="{'widget': 'date'}"/>
+                            </div>
+                            <div class="col-2">
+                                <strong>Fecha finalización:</strong><br/>
+                                <span t-field="batch.end_date" t-options="{'widget': 'date'}"/>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Estudiantes -->
+                        <table class="table table-sm table-bordered" style="font-size: 11px;">
+                            <thead style="background-color: #f5f5f5;">
+                                <tr>
+                                    <th style="width: 5%;">Foto</th>
+                                    <th style="width: 15%;">Nombre alumno</th>
+                                    <th style="width: 12%;">Teléfono</th>
+                                    <th style="width: 12%;">Móvil</th>
+                                    <th style="width: 18%;">Correo electrónico</th>
+                                    <th style="width: 10%;">Fecha de Nacimiento</th>
+                                    <th style="width: 13%;">Estudios</th>
+                                    <th style="width: 10%;">Profesión</th>
+                                    <th style="width: 5%;">F.Mat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Buscar admisiones del lote -->
+                                <t t-set="admissions" t-value="env['op.admission'].sudo().search([('batch_id', '=', batch.id), ('state', '=', 'done')], order='name')"/>
+                                <t t-foreach="admissions" t-as="admission">
+                                    <tr>
+                                        <!-- Foto -->
+                                        <td class="text-center" style="vertical-align: middle;">
+                                            <t t-if="admission.student_id and admission.student_id.image_1920">
+                                                <img t-att-src="image_data_uri(admission.student_id.image_128)" 
+                                                     style="max-width: 40px; max-height: 40px; border-radius: 50%;"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span style="color: #ccc;">●</span>
+                                            </t>
+                                        </td>
+                                        <!-- Nombre -->
+                                        <td style="vertical-align: middle;">
+                                            <t t-if="admission.student_id">
+                                                <span t-esc="admission.student_id.name"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-field="admission.name"/>
+                                            </t>
+                                        </td>
+                                        <!-- Teléfono -->
+                                        <td style="vertical-align: middle;">
+                                            <t t-if="admission.student_id and admission.student_id.partner_id">
+                                                <span t-esc="admission.student_id.partner_id.phone or ''"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-esc="admission.phone or ''"/>
+                                            </t>
+                                        </td>
+                                        <!-- Móvil -->
+                                        <td style="vertical-align: middle;">
+                                            <t t-if="admission.student_id and admission.student_id.partner_id">
+                                                <span t-esc="admission.student_id.partner_id.mobile or ''"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-esc="admission.mobile or ''"/>
+                                            </t>
+                                        </td>
+                                        <!-- Email -->
+                                        <td style="vertical-align: middle; word-break: break-all;">
+                                            <t t-if="admission.student_id and admission.student_id.partner_id">
+                                                <span t-esc="admission.student_id.partner_id.email or ''"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-esc="admission.email or ''"/>
+                                            </t>
+                                        </td>
+                                        <!-- Fecha Nacimiento -->
+                                        <td style="vertical-align: middle;">
+                                            <t t-if="admission.student_id and admission.student_id.birth_date">
+                                                <span t-field="admission.student_id.birth_date" t-options="{'widget': 'date'}"/>
+                                            </t>
+                                            <t t-elif="admission.birth_date">
+                                                <span t-field="admission.birth_date" t-options="{'widget': 'date'}"/>
+                                            </t>
+                                        </td>
+                                        <!-- Estudios (Titulación) -->
+                                        <td style="vertical-align: middle;">
+                                            <t t-if="admission.student_id and admission.student_id.partner_id">
+                                                <span t-esc="admission.student_id.partner_id.titulacion or ''"/>
+                                            </t>
+                                        </td>
+                                        <!-- Profesión -->
+                                        <td style="vertical-align: middle;">
+                                            <t t-if="admission.student_id and admission.student_id.partner_id">
+                                                <span t-esc="admission.student_id.partner_id.profession or ''"/>
+                                            </t>
+                                        </td>
+                                        <!-- Fecha Matrícula -->
+                                        <td style="vertical-align: middle;">
+                                            <t t-if="admission.admission_date">
+                                                <span t-field="admission.admission_date" t-options="{'widget': 'date', 'format': 'dd/MM'}"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <!-- Mensaje si no hay estudiantes -->
+                                <t t-if="not admissions">
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted">
+                                            No hay estudiantes registrados en este grupo.
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <!-- Pie con total -->
+                        <div class="row mt-3">
+                            <div class="col-12 text-right">
+                                <strong>Total de estudiantes: </strong>
+                                <span t-esc="len(admissions)"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
