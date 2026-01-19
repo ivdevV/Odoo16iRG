@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_restriction" model="ir.ui.view">
+        <field name="name">slide.slide.form.restriction</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <!-- ESTRATEGIA DEFINITIVA: Insertar en la pestaña Quiz, antes de los premios -->
+            <!-- Basado en el XML proporcionado por el usuario donde se ve la estructura real -->
+            <xpath expr="//page[@name='quiz']//group[@name='quiz_rewards']" position="before">
+                <group string="Prerrequisitos (iRG)">
+                    <field name="restriction_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

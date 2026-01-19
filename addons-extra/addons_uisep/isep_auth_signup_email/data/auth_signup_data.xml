@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- Unlock the template to allow updates -->
+        <function name="write" model="ir.model.data">
+            <function name="search" model="ir.model.data">
+                <value eval="[('module', '=', 'auth_signup'), ('name', '=', 'set_password_email')]"/>
+            </function>
+            <value eval="{'noupdate': False}"/>
+        </function>
+
         <record id="auth_signup.set_password_email" model="mail.template">
             <field name="subject">¡Bienvenida a tu Aventura Académica!</field>
             <field name="body_html" type="html">
@@ -10,14 +18,14 @@
                         <br/><br/>
                         Estás a punto de iniciar una nueva etapa de crecimiento y especialización en tu formación. Estamos seguros de que esta aventura te brindará las herramientas y conocimientos necesarios para alcanzar tus metas profesionales.
                         <br/><br/>
-                        Para completar tu registro y acceder a la plataforma, por favor establece tu contraseña haciendo clic en el siguiente botón:
+                        En breves recibirás un correo con tus credenciales de acceso a la plataforma educativa, donde podrás explorar los recursos, materiales y actividades diseñadas para enriquecer tu experiencia de aprendizaje.
                         <br/><br/>
-                        <div style="text-align: center; margin: 16px 0px 16px 0px;">
-                            <a t-att-href="object.signup_url"
-                                style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
-                                Acceder ahora
-                            </a>
+                        Atentamente, el equipo de:
+                        <div style="text-align: center;">
+                            <img src="https://rd.institutoraimongaja.com/imagenes/logo.png" alt="Logo"/>
                         </div>
+                        <br/><br/>
+
                         <br/>
                         Si no has solicitado este acceso, puedes ignorar este correo.
                     </p>
