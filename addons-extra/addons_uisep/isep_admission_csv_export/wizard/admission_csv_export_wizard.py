@@ -11,7 +11,7 @@ class AdmissionCsvExportWizard(models.TransientModel):
     _name = 'admission.csv.export.wizard'
     _description = 'Wizard para exportar admisiones a CSV'
 
-    admission_ids = fields.Many2many('op.admission', string='Admisiones')
+    register_id = fields.Many2one('op.admission.register', string='Registro de Admisión', readonly=True)
     admission_count = fields.Integer(string='Cantidad de admisiones', compute='_compute_admission_count')
     csv_file = fields.Binary(string='Archivo CSV', readonly=True)
     csv_filename = fields.Char(string='Nombre del archivo')
@@ -20,17 +20,17 @@ class AdmissionCsvExportWizard(models.TransientModel):
         ('done', 'Hecho')
     ], default='choose', string='Estado')
 
-    @api.depends('admission_ids')
+    @api.depends('register_id')
     def _compute_admission_count(self):
         for record in self:
-            record.admission_count = len(record.admission_ids)
+            record.admission_count = len(record.register_id.admission_ids) if record.register_id else 0
 
     @api.model
     def default_get(self, fields_list):
         res = super(AdmissionCsvExportWizard, self).default_get(fields_list)
-        active_ids = self.env.context.get('active_ids', [])
-        if active_ids:
-            res['admission_ids'] = [(6, 0, active_ids)]
+        active_id = self.env.context.get('active_id')
+        if active_id:
+            res['register_id'] = active_id
         return res
 
     def _get_csv_headers(self):
@@ -39,6 +39,7 @@ class AdmissionCsvExportWizard(models.TransientModel):
             'Número de Aplicación',
             'Título',
             'Nombre',
+            'Correo electrónico',
             'Fecha de Admisión',
             'Fecha de Aplicación',
             'Curso',
@@ -79,11 +80,15 @@ class AdmissionCsvExportWizard(models.TransientModel):
         ]
 
     def action_export_csv(self):
-        """Genera el archivo CSV con las admisiones seleccionadas"""
+        """Genera el archivo CSV con las admisiones del registro"""
         self.ensure_one()
         
-        if not self.admission_ids:
-            raise UserError(_('No se han seleccionado admisiones para exportar.'))
+        if not self.register_id:
+            raise UserError(_('No se ha seleccionado ningún registro de admisión.'))
+        
+        admissions = self.register_id.admission_ids
+        if not admissions:
+            raise UserError(_('No hay admisiones en este registro.'))
         
         # Crear el CSV
         output = io.StringIO()
@@ -93,7 +98,7 @@ class AdmissionCsvExportWizard(models.TransientModel):
         writer.writerow(self._get_csv_headers())
         
         # Escribir datos
-        for admission in self.admission_ids:
+        for admission in admissions:
             writer.writerow(self._get_admission_row(admission))
         
         # Convertir a base64 con BOM para Excel
@@ -102,7 +107,7 @@ class AdmissionCsvExportWizard(models.TransientModel):
         csv_base64 = base64.b64encode(csv_bytes).decode()
         
         # Actualizar el wizard
-        filename = f"admisiones_{fields.Date.today().strftime('%Y%m%d')}.csv"
+        filename = f"admisiones_{self.register_id.name or 'export'}_{fields.Date.today().strftime('%Y%m%d')}.csv"
         self.write({
             'csv_file': csv_base64,
             'csv_filename': filename,

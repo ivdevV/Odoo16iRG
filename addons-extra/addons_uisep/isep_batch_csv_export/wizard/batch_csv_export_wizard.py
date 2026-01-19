@@ -33,6 +33,7 @@ class BatchCsvExportWizard(models.TransientModel):
             'Número de Aplicación',
             'Lote',
             'Nombre',
+            'Correo electrónico',
             'Fecha de Admisión',
             'Fecha de Aplicación',
             'Curso',

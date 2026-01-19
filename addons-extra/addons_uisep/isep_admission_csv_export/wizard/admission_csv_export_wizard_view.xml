@@ -9,10 +9,11 @@
             <form string="Exportar Admisiones a CSV">
                 <group attrs="{'invisible': [('state', '=', 'done')]}">
                     <group>
-                        <field name="admission_count" readonly="1" string="Admisiones seleccionadas"/>
+                        <field name="register_id" readonly="1"/>
+                        <field name="admission_count" readonly="1" string="Admisiones a exportar"/>
                     </group>
                     <group>
-                        <p>Se exportarán las admisiones seleccionadas a un archivo CSV.</p>
+                        <p>Se exportarán todas las admisiones del registro seleccionado a un archivo CSV.</p>
                     </group>
                 </group>
                 <group attrs="{'invisible': [('state', '=', 'choose')]}">
@@ -25,7 +26,6 @@
                     </group>
                 </group>
                 <field name="state" invisible="1"/>
-                <field name="admission_ids" invisible="1"/>
                 <footer>
                     <button name="action_export_csv" string="Exportar CSV" type="object" class="btn-primary" attrs="{'invisible': [('state', '=', 'done')]}"/>
                     <button string="Cerrar" class="btn-secondary" special="cancel"/>
@@ -34,14 +34,14 @@
         </field>
     </record>
     
-    <!-- Action to open wizard from op.admission (tree view - multiple selection) -->
+    <!-- Action to open wizard from op.admission.register -->
     <record id="action_admission_csv_export_wizard" model="ir.actions.act_window">
-        <field name="name">Exportar a CSV</field>
+        <field name="name">Exportar Admisiones a CSV</field>
         <field name="res_model">admission.csv.export.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
-        <field name="binding_model_id" ref="openeducat_admission.model_op_admission"/>
-        <field name="binding_view_types">list,form</field>
+        <field name="binding_model_id" ref="openeducat_admission.model_op_admission_register"/>
+        <field name="binding_view_types">form</field>
     </record>
 
 </odoo>
