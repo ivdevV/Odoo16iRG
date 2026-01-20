@@ -12,17 +12,25 @@
                 .diploma-container {
                      position: relative; 
                      width: 100%; 
-                     height: 100vh; /* Full viewport height for PDF page */
                      color: #000;
                      overflow: hidden;
                 }
             </style>
             
-            <div class="page diploma-container">
-            
-                <!-- Background & Logo (Digital Only) -->
-                <t t-if="data.get('diploma_type') == 'digital'">
-                   <!-- Background Image Absolute -->
+            <!-- Set different page sizes based on type -->
+            <t t-if="data.get('diploma_type') == 'physical'">
+                <!-- A3 Size for physical (420mm x 297mm) -->
+                 <div class="page diploma-container" style="position: relative; width: 420mm; height: 297mm; overflow: hidden; margin: 0; padding: 0;">
+                     <!-- Scale content slightly for A3 if needed, or keep same relative size -->
+                     <!-- Physical: Just spacing for pre-printed logo. Since it's A3, the header space might need to be larger or proportional -->
+                     <div style="height: 200px;"></div>
+                     <t t-call="irg_generacion_diplomas.diploma_content" />
+                 </div>
+            </t>
+            <t t-else="">
+                <!-- A4 Size for digital (297mm x 209mm) -->
+                 <div class="page diploma-container" style="position: relative; width: 297mm; height: 209mm; overflow: hidden; margin: 0; padding: 0;">
+                     <!-- Background Image Absolute -->
                     <div style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:-1;">
                         <!-- You must upload digital_bg.png to static/src/img/ -->
                         <img src="/irg_generacion_diplomas/static/src/img/digital_bg.png" style="width:100%; height:100%; object-fit: cover;" onerror="this.style.display='none'"/>
@@ -32,13 +40,15 @@
                     <div style="text-align: center; padding-top: 50px; min-height: 150px;">
                         <img src="/irg_generacion_diplomas/static/src/img/logo_irg.png" style="height: 100px;" alt="Logo iRG" onerror="this.style.display='none'"/>
                     </div>
-                </t>
-                <t t-else="">
-                     <!-- Physical: Just spacing, NO logo -->
-                     <div style="height: 150px;"></div>
-                </t>
-
+                    <t t-call="irg_generacion_diplomas.diploma_content" />
+                 </div>
+            </t>
+        </t>
+    </template>
+    
+    <template id="diploma_content">
                 <!-- Content Wrapper (Margins adjusted visually) -->
+                <!-- We use 100% width but with padding. -->
                 <div style="padding: 0 60px;">
                     
                     <!-- 1. Intro Texts -->
@@ -53,10 +63,10 @@
 
                     <!-- 2. Master Names (Huge & Bold) -->
                     <div class="row" style="margin-top: 25px;">
-                        <div class="col-6" style="text-align: center; font-weight: 700; font-size: 26px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
+                        <div class="col-6" style="text-align: center; font-weight: 700; font-size: 24px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
                             <span t-esc="data.get('course_name_cat')"/>
                         </div>
-                        <div class="col-6" style="text-align: center; font-weight: 700; font-size: 26px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
+                        <div class="col-6" style="text-align: center; font-weight: 700; font-size: 24px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
                             <span t-esc="data.get('course_name_es')"/>
                         </div>
                     </div>
@@ -74,20 +84,20 @@
                     <!-- 5. Body Texts -->
                     <div class="row" style="margin-top: 45px;">
                         <!-- Catalan Left -->
-                        <div class="col-6" style="text-align: justify-all; padding-right: 25px; font-size: 15px; line-height: 1.4;">
-                            <p style="margin-bottom: 20px; text-align: justify;">
+                        <div class="col-6" style="text-align: justify; padding-right: 25px; font-size: 15px; line-height: 1.4;">
+                            <p style="margin-bottom: 20px;">
                                 En reconeixement del rendiment acadèmic i a l’aprofitament dels estudis cursats en el programa del màster.
                             </p>
-                            <p style="text-align: justify;">
+                            <p>
                                 Aquest màster té el reconeixement d’excel·lència acadèmica de l’European Association of Applied Psychology.
                             </p>
                         </div>
                         <!-- Spanish Right -->
-                        <div class="col-6" style="text-align: justify-all; padding-left: 25px; font-size: 15px; line-height: 1.4;">
-                             <p style="margin-bottom: 20px; text-align: justify;">
+                        <div class="col-6" style="text-align: justify; padding-left: 25px; font-size: 15px; line-height: 1.4;">
+                             <p style="margin-bottom: 20px;">
                                 En reconocimiento al rendimiento académico y al aprovechamiento de los estudios cursados en el programa del máster.
                             </p>
-                            <p style="text-align: justify;">
+                            <p>
                                 Este máster cuenta con el reconocimiento de excelencia académica de la European Association of Applied Psychology.
                             </p>
                         </div>
@@ -95,7 +105,7 @@
 
                      <!-- 6. Date -->
                      <!-- Added margin-top to push it down towards signature area -->
-                    <div class="row" style="margin-top: 80px;">
+                    <div class="row" style="margin-top: 60px;">
                          <div class="col-6" style="text-align: center; font-size: 15px;">
                             Barcelona, a <span t-esc="data.get('date_cat')"/>
                         </div>
@@ -105,7 +115,7 @@
                     </div>
                     
                     <!-- 7. Signatures -->
-                    <div class="row" style="margin-top: 60px;">
+                    <div class="row" style="margin-top: 40px;">
                          <div class="col-6" style="text-align: center;">
                             <!-- Signature Image - if exists -->
                             <div style="height: 70px; margin-bottom: 5px;">
@@ -138,8 +148,5 @@
                          Nº Registro: <span t-esc="data.get('registry_number')"/>
                      </div>
                  </div>
-
-            </div>
-        </t>
     </template>
 </odoo>

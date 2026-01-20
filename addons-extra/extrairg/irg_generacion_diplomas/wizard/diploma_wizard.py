@@ -58,4 +58,7 @@ class DiplomaWizard(models.TransientModel):
             }
         }
         
-        return self.env.ref('irg_generacion_diplomas.action_report_diploma').report_action(self, data=data)
+        if self.diploma_type == 'physical':
+             return self.env.ref('irg_generacion_diplomas.action_report_diploma_physical').report_action(self, data=data)
+        else:
+             return self.env.ref('irg_generacion_diplomas.action_report_diploma').report_action(self, data=data)
