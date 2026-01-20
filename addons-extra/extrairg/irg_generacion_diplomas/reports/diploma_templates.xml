@@ -1,57 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    
+    <!-- WRAPPER DIGITAL (A4) -->
     <template id="report_diploma_document">
         <t t-call="web.html_container">
-            <!-- Inject Font CSS -->
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap');
-                
-                body {
-                    font-family: 'Montserrat', sans-serif !important;
-                }
-                .diploma-container {
-                     position: relative; 
-                     width: 100%; 
-                     color: #000;
-                     overflow: hidden;
-                }
+                @page { margin: 0; }
+                body { font-family: 'Montserrat', sans-serif !important; }
+                .diploma-container { position: relative; width: 100%; color: #000; overflow: hidden; }
             </style>
             
-            <!-- Set different page sizes based on type -->
-            <t t-if="data.get('diploma_type') == 'physical'">
-                <!-- A3 Size for physical (420mm x 297mm) -->
-                 <div class="page diploma-container" style="position: relative; width: 420mm; height: 297mm; overflow: hidden; margin: 0; padding: 0;">
-                     <!-- Scale content slightly for A3 if needed, or keep same relative size -->
-                     <!-- Physical: Just spacing for pre-printed logo. Since it's A3, the header space might need to be larger or proportional -->
-                     <div style="height: 200px;"></div>
-                     <t t-call="irg_generacion_diplomas.diploma_content" />
-                 </div>
-            </t>
-            <t t-else="">
-                <!-- A4 Size for digital (297mm x 209mm) -->
-                 <div class="page diploma-container" style="position: relative; width: 297mm; height: 209mm; overflow: hidden; margin: 0; padding: 0;">
-                     <!-- Background Image Absolute -->
-                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:-1;">
-                        <!-- You must upload digital_bg.png to static/src/img/ -->
-                        <img src="/irg_generacion_diplomas/static/src/img/digital_bg.png" style="width:100%; height:100%; object-fit: cover;" onerror="this.style.display='none'"/>
-                    </div>
-                    
-                    <!-- Logo Centered Top -->
-                    <div style="text-align: center; padding-top: 50px; min-height: 150px;">
-                        <img src="/irg_generacion_diplomas/static/src/img/logo_irg.png" style="height: 100px;" alt="Logo iRG" onerror="this.style.display='none'"/>
-                    </div>
-                    <t t-call="irg_generacion_diplomas.diploma_content" />
-                 </div>
-            </t>
+            <div class="page diploma-container" style="position: relative; width: 297mm; height: 209mm; overflow: hidden; margin: 0; padding: 0;">
+                <!-- Digital Background -->
+                <div style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:-1;">
+                    <img src="/irg_generacion_diplomas/static/src/img/digital_bg.png" style="width:100%; height:100%; object-fit: cover;"/>
+                </div>
+                
+                <!-- Logo -->
+                <div style="text-align: center; padding-top: 50px; min-height: 150px;">
+                    <img src="/irg_generacion_diplomas/static/src/img/logo_irg.png" style="height: 100px;" alt="Logo iRG"/>
+                </div>
+                
+                <t t-call="irg_generacion_diplomas.diploma_content" />
+            </div>
+        </t>
+    </template>
+
+    <!-- WRAPPER FISICO (A3) -->
+    <template id="report_diploma_document_physical">
+        <t t-call="web.html_container">
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap');
+                @page { margin: 0; }
+                body { font-family: 'Montserrat', sans-serif !important; }
+                .diploma-container { position: relative; width: 100%; color: #000; overflow: hidden; }
+            </style>
+
+            <div class="page diploma-container" style="position: relative; width: 420mm; height: 297mm; overflow: hidden; margin: 0; padding: 0;">
+                <!-- Physical Header Spacing (More space for A3) -->
+                <div style="height: 250px;"></div>
+                
+                <t t-call="irg_generacion_diplomas.diploma_content" />
+            </div>
         </t>
     </template>
     
+    <!-- SHARED CONTENT -->
     <template id="diploma_content">
-                <!-- Content Wrapper (Margins adjusted visually) -->
-                <!-- We use 100% width but with padding. -->
                 <div style="padding: 0 60px;">
-                    
-                    <!-- 1. Intro Texts -->
+                    <!-- Intro -->
                     <div class="row" style="margin-top: 10px;">
                         <div class="col-6" style="text-align: center; font-size: 15px; padding: 0 10px;">
                             L’Institut Raimon Gaja atorga el present diploma de
@@ -61,7 +59,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. Master Names (Huge & Bold) -->
+                    <!-- Course Name -->
                     <div class="row" style="margin-top: 25px;">
                         <div class="col-6" style="text-align: center; font-weight: 700; font-size: 24px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
                             <span t-esc="data.get('course_name_cat')"/>
@@ -71,19 +69,15 @@
                         </div>
                     </div>
                     
-                    <!-- 3. 'a' Separator -->
-                    <div style="text-align: center; margin-top: 25px; font-size: 18px;">
-                        a
-                    </div>
+                    <div style="text-align: center; margin-top: 25px; font-size: 18px;">a</div>
 
-                    <!-- 4. Student Name -->
+                    <!-- Student Name -->
                     <div style="text-align: center; margin-top: 15px; font-weight: 700; font-size: 38px; color: #000;">
                         <span t-esc="data.get('student_name')"/>
                     </div>
 
-                    <!-- 5. Body Texts -->
+                    <!-- Body -->
                     <div class="row" style="margin-top: 45px;">
-                        <!-- Catalan Left -->
                         <div class="col-6" style="text-align: justify; padding-right: 25px; font-size: 15px; line-height: 1.4;">
                             <p style="margin-bottom: 20px;">
                                 En reconeixement del rendiment acadèmic i a l’aprofitament dels estudis cursats en el programa del màster.
@@ -92,7 +86,6 @@
                                 Aquest màster té el reconeixement d’excel·lència acadèmica de l’European Association of Applied Psychology.
                             </p>
                         </div>
-                        <!-- Spanish Right -->
                         <div class="col-6" style="text-align: justify; padding-left: 25px; font-size: 15px; line-height: 1.4;">
                              <p style="margin-bottom: 20px;">
                                 En reconocimiento al rendimiento académico y al aprovechamiento de los estudios cursados en el programa del máster.
@@ -103,8 +96,7 @@
                         </div>
                     </div>
 
-                     <!-- 6. Date -->
-                     <!-- Added margin-top to push it down towards signature area -->
+                     <!-- Date -->
                     <div class="row" style="margin-top: 60px;">
                          <div class="col-6" style="text-align: center; font-size: 15px;">
                             Barcelona, a <span t-esc="data.get('date_cat')"/>
@@ -114,10 +106,9 @@
                         </div>
                     </div>
                     
-                    <!-- 7. Signatures -->
+                    <!-- Signatures -->
                     <div class="row" style="margin-top: 40px;">
                          <div class="col-6" style="text-align: center;">
-                            <!-- Signature Image - if exists -->
                             <div style="height: 70px; margin-bottom: 5px;">
                                 <img src="/irg_generacion_diplomas/static/src/img/firma_raimon.png" style="height: 100%;" alt="" onerror="this.style.display='none'"/>
                             </div>
@@ -126,7 +117,6 @@
                             <div style="font-size: 13px;">Fundador</div>
                         </div>
                         <div class="col-6" style="text-align: center;">
-                             <!-- Signature Image - if exists -->
                              <div style="height: 70px; margin-bottom: 5px;">
                                  <img src="/irg_generacion_diplomas/static/src/img/firma_grecia.png" style="height: 100%;" alt="" onerror="this.style.display='none'"/>
                              </div>
@@ -135,15 +125,11 @@
                              <div style="font-size: 13px;">Directora Acadèmica</div>
                         </div>
                     </div>
-
                 </div>
 
-                 <!-- Footer: QR & Registry (Absolute Bottom Left) -->
+                 <!-- Footer: QR & Registry -->
                  <div style="position: absolute; bottom: 40px; left: 60px;">
-                     <!-- QR Code -->
                      <img t-att-src="'/report/barcode/?type=QR&amp;value=%s&amp;width=100&amp;height=100' % data.get('qr_url')" style="width: 90px; height: 90px;"/>
-                     
-                     <!-- Registry Number -->
                      <div style="margin-top: 5px; font-size: 11px; font-weight: 700;">
                          Nº Registro: <span t-esc="data.get('registry_number')"/>
                      </div>

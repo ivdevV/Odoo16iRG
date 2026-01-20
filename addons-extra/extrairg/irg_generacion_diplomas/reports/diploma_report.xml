@@ -52,8 +52,8 @@
         model="irg.diploma.wizard"
         string="Diploma Alumno (Físico A3)"
         report_type="qweb-pdf"
-        name="irg_generacion_diplomas.report_diploma_document"
-        file="irg_generacion_diplomas.report_diploma_document"
+        name="irg_generacion_diplomas.report_diploma_document_physical"
+        file="irg_generacion_diplomas.report_diploma_document_physical"
         paperformat="paperformat_diploma_irg_a3"
         menu="False"
     />
