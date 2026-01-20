@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard View -->
+    <record id="view_irg_diploma_wizard_form" model="ir.ui.view">
+        <field name="name">irg.diploma.wizard.form</field>
+        <field name="model">irg.diploma.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generar Diploma">
+                <group>
+                    <group>
+                        <field name="student_id" invisible="1"/>
+                        <field name="student_course_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="date"/>
+                    </group>
+                    <group>
+                        <field name="diploma_type" widget="radio"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print_diploma" string="Generar PDF" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open Wizard -->
+    <record id="action_irg_diploma_wizard" model="ir.actions.act_window">
+        <field name="name">Generar Diploma</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">irg.diploma.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_irg_diploma_wizard_form"/>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="openeducat_core.model_op_student"/>
+        <field name="binding_view_types">form</field>
+    </record>
+
+</odoo>

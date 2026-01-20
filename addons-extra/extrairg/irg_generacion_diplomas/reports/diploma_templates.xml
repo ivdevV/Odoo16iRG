@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_diploma_document">
+        <t t-call="web.html_container">
+            <div class="page" style="font-family: 'Montserrat', sans-serif; color: #000; position: relative; height: 100vh; overflow: hidden;">
+                <!-- Background (Digital Only) -->
+                <t t-if="data.get('diploma_type') == 'digital'">
+                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:-1;">
+                        <!-- Placeholder for background image -->
+                        <!-- <img src="/irg_generacion_diplomas/static/src/img/digital_bg.png" style="width:100%; height:100%; object-fit: cover;"/> -->
+                    </div>
+                    <!-- Logo (Digital Only) -->
+                    <div style="text-align: center; padding-top: 40px;">
+                        <img src="/irg_generacion_diplomas/static/src/img/logo_irg.png" style="height: 80px;" alt="Logo iRG"/>
+                    </div>
+                </t>
+                <t t-else="">
+                     <!-- Spacing for Physical version where logo is pre-printed -->
+                     <div style="height: 120px;"></div>
+                </t>
+
+                <!-- Main Content Container with margins -->
+                <div style="padding: 0 50px;">
+                    
+                    <!-- Intro Text Row -->
+                    <div class="row" style="margin-top: 20px;">
+                        <div class="col-6" style="text-align: center; font-size: 14px;">
+                            L’Institut Raimon Gaja atorga el present diploma de
+                        </div>
+                        <div class="col-6" style="text-align: center; font-size: 14px;">
+                            El Instituto Raimon Gaja otorga el presente diploma de
+                        </div>
+                    </div>
+
+                    <!-- Master Name Row -->
+                    <div class="row" style="margin-top: 20px;">
+                        <div class="col-6" style="text-align: center; font-weight: bold; font-size: 24px; text-transform: uppercase;">
+                            <span t-esc="data.get('course_name_cat')"/>
+                        </div>
+                        <div class="col-6" style="text-align: center; font-weight: bold; font-size: 24px; text-transform: uppercase;">
+                            <span t-esc="data.get('course_name_es')"/>
+                        </div>
+                    </div>
+                    
+                    <!-- 'a' -->
+                    <div style="text-align: center; margin-top: 20px; font-size: 16px;">
+                        a
+                    </div>
+
+                    <!-- Student Name -->
+                    <div style="text-align: center; margin-top: 10px; font-weight: bold; font-size: 32px;">
+                        <span t-esc="data.get('student_name')"/>
+                    </div>
+
+                    <!-- Body Text Row -->
+                    <div class="row" style="margin-top: 40px;">
+                        <div class="col-6" style="text-align: justify; padding-right: 30px; font-size: 14px;">
+                            En reconeixement del rendiment acadèmic i a l’aprofitament dels estudis cursats en el programa del màster.
+                            <br/><br/>
+                            Aquest màster té el reconeixement d’excel·lència acadèmica de l’European Association of Applied Psychology.
+                        </div>
+                        <div class="col-6" style="text-align: justify; padding-left: 30px; font-size: 14px;">
+                            En reconocimiento al rendimiento académico y al aprovechamiento de los estudios cursados en el programa del máster.
+                            <br/><br/>
+                            Este máster cuenta con el reconocimiento de excelencia académica de la European Association of Applied Psychology.
+                        </div>
+                    </div>
+
+                     <!-- Date Row -->
+                    <div class="row" style="margin-top: 60px;">
+                         <div class="col-6" style="text-align: center; font-size: 14px;">
+                            Barcelona, a <span t-esc="data.get('date_cat')"/>
+                        </div>
+                        <div class="col-6" style="text-align: center; font-size: 14px;">
+                            Barcelona, a <span t-esc="data.get('date_es')"/>
+                        </div>
+                    </div>
+                    
+                    <!-- Signatures Row -->
+                    <div class="row" style="margin-top: 50px;">
+                         <!-- Assuming fixed signature images -->
+                         <div class="col-6" style="text-align: center;">
+                            <img src="/irg_generacion_diplomas/static/src/img/firma_raimon.png" style="height: 60px;" alt="Firma Raimon"/>
+                            <div style="font-weight: bold;">Raimon Gaja</div>
+                            <div style="font-size: 12px;">Director</div>
+                            <div style="font-size: 12px;">Fundador</div>
+                        </div>
+                        <div class="col-6" style="text-align: center;">
+                             <img src="/irg_generacion_diplomas/static/src/img/firma_grecia.png" style="height: 60px;" alt="Firma Grecia"/>
+                             <div style="font-weight: bold;">Grecia Malcotti</div>
+                             <div style="font-size: 12px;">Directora Académica</div>
+                             <div style="font-size: 12px;">Directora Acadèmica</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                 <!-- Footer / QR (Absolute Positioned Bottom Left) -->
+                 <div style="position: absolute; bottom: 30px; left: 50px;">
+                     <img t-att-src="'/report/barcode/?type=QR&amp;value=%s&amp;width=100&amp;height=100' % data.get('qr_url')" style="width: 80px; height: 80px;"/>
+                     <div style="margin-top: 5px; font-size: 10px; font-weight: bold;">
+                         Nº Registro: <span t-esc="data.get('registry_number')"/>
+                     </div>
+                 </div>
+
+            </div>
+        </t>
+    </template>
+</odoo>

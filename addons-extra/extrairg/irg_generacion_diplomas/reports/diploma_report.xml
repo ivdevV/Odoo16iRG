@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_diploma_irg" model="report.paperformat">
+        <field name="name">Diploma A4 Horizontal (Sin Margenes)</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <report
+        id="action_report_diploma"
+        model="irg.diploma.wizard"
+        string="Diploma Alumno (iRG)"
+        report_type="qweb-pdf"
+        name="irg_generacion_diplomas.report_diploma_document"
+        file="irg_generacion_diplomas.report_diploma_document"
+        paperformat="paperformat_diploma_irg"
+        menu="False"
+    />
+</odoo>

@@ -1,0 +1,61 @@
+from odoo import models, fields, api, _
+from babel.dates import format_date
+
+class DiplomaWizard(models.TransientModel):
+    _name = 'irg.diploma.wizard'
+    _description = 'Asistente de Generación de Diplomas'
+
+    def _default_student(self):
+        return self.env.context.get('active_id')
+
+    student_id = fields.Many2one('op.student', string='Estudiante', default=_default_student, required=True, readonly=True)
+    student_course_id = fields.Many2one('op.student.course', string='Curso Completado', required=True, 
+                                        domain="[('student_id', '=', student_id)]")
+    
+    diploma_type = fields.Selection([
+        ('digital', 'Digital (Con Logo)'),
+        ('physical', 'Físico (Sin Logo)')
+    ], string='Tipo de Diploma', default='digital', required=True)
+    
+    date = fields.Date(string='Fecha de Expedición', default=fields.Date.context_today, required=True)
+    
+    def _get_formatted_date(self, date_obj, locale='es_ES'):
+        # Format: 20 de enero de 2026
+        return format_date(date_obj, format='d MMMM y', locale=locale)
+
+    def action_print_diploma(self):
+        self.ensure_one()
+        # Get or create sequence
+        registry_number = self.env['ir.sequence'].next_by_code('irg.diploma.registry') or 'DRAFT'
+        
+        # Format dates
+        # Spanish: 18 de noviembre de 2025
+        # Catalan: 18 de novembre de 2025
+        date_es = "{} de {} de {}".format(self.date.day, format_date(self.date, format='MMMM', locale='es_ES'), self.date.year)
+        date_cat = "{} de {} de {}".format(self.date.day, format_date(self.date, format='MMMM', locale='ca_ES'), self.date.year)
+
+        # Names
+        # For student, we prefer Title Case if not already
+        student_name = self.student_id.search([('id','=',self.student_id.id)]).name or ""
+        
+        course_name_es = self.student_course_id.course_id.name
+        course_name_cat = self.student_course_id.course_id.name_cat or course_name_es
+
+        # QR URL
+        # https://institutoraimongaja.com/verificar/?id=CODIGO_REGISTRO
+        qr_url = "https://institutoraimongaja.com/verificar/?id={}".format(registry_number)
+
+        data = {
+            'form': {
+                'student_name': student_name,
+                'course_name_es': course_name_es,
+                'course_name_cat': course_name_cat,
+                'diploma_type': self.diploma_type,
+                'date_es': date_es,
+                'date_cat': date_cat,
+                'registry_number': registry_number,
+                'qr_url': qr_url,
+            }
+        }
+        
+        return self.env.ref('irg_generacion_diplomas.action_report_diploma').report_action(self, data=data)

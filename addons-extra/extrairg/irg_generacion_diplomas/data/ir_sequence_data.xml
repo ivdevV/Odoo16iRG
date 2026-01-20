@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_irg_diploma_registry" model="ir.sequence">
+            <field name="name">Registro de Diplomas iRG</field>
+            <field name="code">irg.diploma.registry</field>
+            <field name="prefix">IRG-%(y)s-</field>
+            <field name="padding">4</field>
+            <field name="number_next">100</field>
+            <field name="number_increment">1</field>
+        </record>
+    </data>
+</odoo>

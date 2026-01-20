@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_course_form_inherit_diploma" model="ir.ui.view">
+        <field name="name">op.course.form.inherit.diploma</field>
+        <field name="model">op.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_course_form"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="name_cat"/>
+            </field>
+        </field>
+    </record>
+</odoo>
