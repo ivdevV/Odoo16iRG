@@ -4,6 +4,8 @@
     <!-- WRAPPER DIGITAL (A4) -->
     <template id="report_diploma_document">
         <t t-call="web.html_container">
+            <!-- Ensure UTF-8 Charset -->
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap');
                 @page { margin: 0; }
@@ -12,14 +14,14 @@
             </style>
             
             <div class="page diploma-container" style="position: relative; width: 297mm; height: 209mm; overflow: hidden; margin: 0; padding: 0;">
-                <!-- Digital Background -->
+                <!-- Digital Background from Base64 -->
                 <div style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:-1;">
-                    <img src="/irg_generacion_diplomas/static/src/img/digital_bg.png" style="width:100%; height:100%; object-fit: cover;"/>
+                    <img t-if="data.get('bg_image')" t-att-src="'data:image/png;base64,%s' % data.get('bg_image')" style="width:100%; height:100%; object-fit: cover;"/>
                 </div>
                 
-                <!-- Logo -->
+                <!-- Logo from Base64 -->
                 <div style="text-align: center; padding-top: 50px; min-height: 150px;">
-                    <img src="/irg_generacion_diplomas/static/src/img/logo_irg.png" style="height: 100px;" alt="Logo iRG"/>
+                    <img t-if="data.get('logo_img')" t-att-src="'data:image/png;base64,%s' % data.get('logo_img')" style="height: 100px;" alt="Logo iRG"/>
                 </div>
                 
                 <t t-call="irg_generacion_diplomas.diploma_content" />
@@ -30,6 +32,8 @@
     <!-- WRAPPER FISICO (A3) -->
     <template id="report_diploma_document_physical">
         <t t-call="web.html_container">
+            <!-- Ensure UTF-8 Charset -->
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap');
                 @page { margin: 0; }
@@ -38,7 +42,7 @@
             </style>
 
             <div class="page diploma-container" style="position: relative; width: 420mm; height: 297mm; overflow: hidden; margin: 0; padding: 0;">
-                <!-- Physical Header Spacing (More space for A3) -->
+                <!-- Physical Header Spacing -->
                 <div style="height: 250px;"></div>
                 
                 <t t-call="irg_generacion_diplomas.diploma_content" />
@@ -106,11 +110,11 @@
                         </div>
                     </div>
                     
-                    <!-- Signatures -->
+                    <!-- Signatures from Base64 -->
                     <div class="row" style="margin-top: 40px;">
                          <div class="col-6" style="text-align: center;">
                             <div style="height: 70px; margin-bottom: 5px;">
-                                <img src="/irg_generacion_diplomas/static/src/img/firma_raimon.png" style="height: 100%;" alt="" onerror="this.style.display='none'"/>
+                                <img t-if="data.get('sign_raimon')" t-att-src="'data:image/png;base64,%s' % data.get('sign_raimon')" style="height: 100%;" alt="Firma"/>
                             </div>
                             <div style="font-weight: 700; font-size: 16px;">Raimon Gaja</div>
                             <div style="font-size: 13px;">Director</div>
@@ -118,7 +122,7 @@
                         </div>
                         <div class="col-6" style="text-align: center;">
                              <div style="height: 70px; margin-bottom: 5px;">
-                                 <img src="/irg_generacion_diplomas/static/src/img/firma_grecia.png" style="height: 100%;" alt="" onerror="this.style.display='none'"/>
+                                 <img t-if="data.get('sign_grecia')" t-att-src="'data:image/png;base64,%s' % data.get('sign_grecia')" style="height: 100%;" alt="Firma"/>
                              </div>
                              <div style="font-weight: 700; font-size: 16px;">Grecia Malcotti</div>
                              <div style="font-size: 13px;">Directora Académica</div>

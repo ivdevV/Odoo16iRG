@@ -1,5 +1,7 @@
-from odoo import models, fields, api, _
+from odoo import models, fields, api, _, modules
 from babel.dates import format_date
+import base64
+import os
 
 class DiplomaWizard(models.TransientModel):
     _name = 'irg.diploma.wizard'
@@ -23,6 +25,17 @@ class DiplomaWizard(models.TransientModel):
         # Format: 20 de enero de 2026
         return format_date(date_obj, format='d MMMM y', locale=locale)
 
+    def _get_image_data(self, image_name):
+        """ Returns base64 string of the image or None """
+        try:
+            image_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/img', image_name)
+            if image_path and os.path.exists(image_path):
+                with open(image_path, "rb") as image_file:
+                    return base64.b64encode(image_file.read()).decode('utf-8')
+        except Exception as e:
+            return None
+        return None
+
     def action_print_diploma(self):
         self.ensure_one()
         # Get or create sequence
@@ -45,6 +58,12 @@ class DiplomaWizard(models.TransientModel):
         # https://institutoraimongaja.com/verificar/?id=CODIGO_REGISTRO
         qr_url = "https://institutoraimongaja.com/verificar/?id={}".format(registry_number)
 
+        # Load images as base64 to avoid wkhtmltopdf path issues
+        bg_image = self._get_image_data('digital_bg.png')
+        logo_img = self._get_image_data('logo_irg.png')
+        sign_raimon = self._get_image_data('firma_raimon.png')
+        sign_grecia = self._get_image_data('firma_grecia.png')
+
         data = {
             'form': {
                 'student_name': student_name,
@@ -55,6 +74,10 @@ class DiplomaWizard(models.TransientModel):
                 'date_cat': date_cat,
                 'registry_number': registry_number,
                 'qr_url': qr_url,
+                'bg_image': bg_image,
+                'logo_img': logo_img,
+                'sign_raimon': sign_raimon,
+                'sign_grecia': sign_grecia,
             }
         }
         
