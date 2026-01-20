@@ -18,6 +18,7 @@
     'data': [
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
+        'data/report_config.xml',
         'views/op_course_views.xml',
         'views/op_student_views.xml',
         'wizard/diploma_wizard_views.xml',

@@ -2,6 +2,7 @@ from odoo import models, fields, api, _, modules
 from babel.dates import format_date
 import base64
 import os
+import urllib.parse
 
 class DiplomaWizard(models.TransientModel):
     _name = 'irg.diploma.wizard'
@@ -57,6 +58,7 @@ class DiplomaWizard(models.TransientModel):
         # QR URL
         # https://institutoraimongaja.com/verificar/?id=CODIGO_REGISTRO
         qr_url = "https://institutoraimongaja.com/verificar/?id={}".format(registry_number)
+        qr_url_encoded = urllib.parse.quote(qr_url)
 
         # Load images as base64 to avoid wkhtmltopdf path issues
         bg_image = self._get_image_data('digital_bg.png')
@@ -73,7 +75,7 @@ class DiplomaWizard(models.TransientModel):
                 'date_es': date_es,
                 'date_cat': date_cat,
                 'registry_number': registry_number,
-                'qr_url': qr_url,
+                'qr_url': qr_url_encoded,
                 'bg_image': bg_image,
                 'logo_img': logo_img,
                 'sign_raimon': sign_raimon,

@@ -15,6 +15,7 @@
         <field name="header_line" eval="False" />
         <field name="header_spacing">0</field>
         <field name="dpi">90</field>
+        <field name="disable_shrinking" eval="True"/>
     </record>
 
     <!-- A3 Paper Format (Physical) -->
@@ -32,6 +33,7 @@
         <field name="header_line" eval="False" />
         <field name="header_spacing">0</field>
         <field name="dpi">90</field>
+        <field name="disable_shrinking" eval="True"/>
     </record>
 
     <!-- Digital Report (A4) -->

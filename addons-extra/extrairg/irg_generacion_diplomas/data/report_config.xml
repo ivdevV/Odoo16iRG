@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Set wkhtmltopdf to use UTF-8 encoding -->
+    <record id="report_webkit_utf8" model="ir.config_parameter">
+        <field name="key">report.wkhtmltopdf.options</field>
+        <field name="value">{"encoding": "UTF-8"}</field>
+    </record>
+</odoo>
