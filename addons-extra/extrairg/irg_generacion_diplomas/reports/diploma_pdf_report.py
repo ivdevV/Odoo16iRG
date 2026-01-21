@@ -140,17 +140,17 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- INTRO TEXT ---
         y = start_y
         self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de", 
-                                   left_col_x, y, col_width - 80, font_regular, 12)
+                                   left_col_x, y, col_width - 80, font_regular, 12, align='left')
         self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de", 
-                                   right_col_x, y, col_width - 80, font_regular, 12)
+                                   right_col_x, y, col_width - 80, font_regular, 12, align='right')
         
         # --- COURSE NAME ---
         y -= 40
         course_cat = data.get('course_name_cat', '')
         course_es = data.get('course_name_es', '')
         
-        self._draw_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, 14)
-        self._draw_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, 14)
+        self._draw_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, 20, align='left')
+        self._draw_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, 20, align='right')
         
         # --- "a" ---
         y -= 40
@@ -159,7 +159,7 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- STUDENT NAME ---
         y -= 35
         student_name = data.get('student_name', '')
-        self._draw_centered_text(c, student_name, y, font_bold, 32, page_width)
+        self._draw_centered_text(c, student_name, y, font_bold, 24, page_width)
         
         # --- BODY TEXT CATALAN ---
         y -= 50
@@ -168,13 +168,13 @@ class DiplomaReportPDF(models.AbstractModel):
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width - 80, font_regular, 11, align='left')
         y -= 15
-        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width - 80, font_regular, 11, align='left')
         y -= 25
-        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width - 80, font_regular, 11, align='left')
         y -= 15
-        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width - 80, font_regular, 11, align='left')
         
         # --- BODY TEXT SPANISH ---
         y_es = y + 55  # Reset Y for right column
@@ -183,21 +183,21 @@ class DiplomaReportPDF(models.AbstractModel):
         body_es_3 = "Este máster cuenta con el reconocimiento de excelencia académica"
         body_es_4 = "de la European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width - 80, font_regular, 11, align='right')
         y_es -= 15
-        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width - 80, font_regular, 11, align='right')
         y_es -= 25
-        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width - 80, font_regular, 11, align='right')
         y_es -= 15
-        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width - 80, font_regular, 11, align='right')
         
         # --- DATES ---
         y -= 60
         date_cat = data.get('date_cat', '')
         date_es = data.get('date_es', '')
         
-        self._draw_text_in_column(c, f"Barcelona, a {date_cat}", left_col_x, y, col_width - 80, font_regular, 12)
-        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width - 80, font_regular, 12)
+        self._draw_text_in_column(c, f"Barcelona, a {date_cat}", left_col_x, y, col_width - 80, font_regular, 12, align='left')
+        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width - 80, font_regular, 12, align='right')
         
         # --- SIGNATURES ---
         y -= 80
@@ -208,39 +208,37 @@ class DiplomaReportPDF(models.AbstractModel):
         # Signature Raimon (left)
         sign_raimon_path = self._get_image_path('firma_raimon.png')
         if sign_raimon_path and os.path.exists(sign_raimon_path):
-            sig_x = left_col_x + (col_width - 80) / 2 - 50
+            # Align left
+            sig_x = left_col_x
             c.drawImage(sign_raimon_path, sig_x, y_images, width=100, height=50, preserveAspectRatio=True, mask='auto')
         
         # Signature Grecia (right)
         sign_grecia_path = self._get_image_path('firma_grecia.png')
+        img_width = 100
         if sign_grecia_path and os.path.exists(sign_grecia_path):
-            sig_x = right_col_x + (col_width - 80) / 2 - 50
-            # User asked for Grecia's signature "mas para abajo".
-            # Raimon's is at y_images. We will put Grecia's at y_images - 10 (slightly lower) or same.
-            # Given the previous code put it way too high, putting it at y_images is already "mas para abajo".
-            # But "mas para abajo" might mean lower than Raimon's? Usually they are aligned.
-            # I will align them (y_images) because the previous error was it was too high.
-            c.drawImage(sign_grecia_path, sig_x, y_images, width=100, height=50, preserveAspectRatio=True, mask='auto')
+            # Align right: Start X = (Column Start + Column Width) - Image Width
+            sig_x = right_col_x + (col_width - 80) - img_width
+            c.drawImage(sign_grecia_path, sig_x, y_images, width=img_width, height=50, preserveAspectRatio=True, mask='auto')
 
         # Text Names (Aligned)
         y -= 15
-        self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width - 80, font_bold, 14)
-        self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width - 80, font_bold, 14)
+        self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width - 80, font_bold, 14, align='left')
+        self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width - 80, font_bold, 14, align='right')
         
         y -= 15
-        self._draw_text_in_column(c, "Director", left_col_x, y, col_width - 80, font_regular, 11)
-        self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, "Director", left_col_x, y, col_width - 80, font_regular, 11, align='left')
+        self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width - 80, font_regular, 11, align='right')
         
         y -= 13
-        self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width - 80, font_regular, 11)
-        self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width - 80, font_regular, 11, align='left')
+        self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width - 80, font_regular, 11, align='right')
         
         # --- QR CODE & REGISTRY ---
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
         registry = data.get('registry_number', 'DRAFT')
         
         qr_image = self._generate_qr(qr_url)
-        c.drawImage(qr_image, 50, 40, width=70, height=70)
+        c.drawImage(qr_image, 50, 40, width=50, height=50)
         
         c.setFont(font_bold, 9)
         c.drawString(50, 28, f"Nº Registro: {registry}")
