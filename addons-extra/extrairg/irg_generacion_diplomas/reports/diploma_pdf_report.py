@@ -21,17 +21,17 @@ class DiplomaReportPDF(models.AbstractModel):
         return modules.get_module_resource('irg_generacion_diplomas', 'static/src/img', image_name)
 
     def _register_fonts(self):
-        """Register Montserrat fonts if available, otherwise use Helvetica"""
+        """Register Inter fonts if available, otherwise use Helvetica"""
         try:
-            # Try to use Montserrat from Google Fonts path or system
-            font_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/fonts', 'Montserrat-Regular.ttf')
-            font_bold_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/fonts', 'Montserrat-Bold.ttf')
+            # Try to use Inter from fonts path
+            font_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/fonts', 'Inter-Regular.ttf')
+            font_bold_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/fonts', 'Inter-Bold.ttf')
             
             if font_path and os.path.exists(font_path):
-                pdfmetrics.registerFont(TTFont('Montserrat', font_path))
+                pdfmetrics.registerFont(TTFont('Inter', font_path))
                 if font_bold_path and os.path.exists(font_bold_path):
-                    pdfmetrics.registerFont(TTFont('Montserrat-Bold', font_bold_path))
-                return 'Montserrat', 'Montserrat-Bold'
+                    pdfmetrics.registerFont(TTFont('Inter-Bold', font_bold_path))
+                return 'Inter', 'Inter-Bold'
         except:
             pass
         return 'Helvetica', 'Helvetica-Bold'
