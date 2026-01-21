@@ -146,11 +146,11 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- COURSE NAME ---
         y -= 40
-        course_cat = data.get('course_name_cat', '').upper()
-        course_es = data.get('course_name_es', '').upper()
+        course_cat = data.get('course_name_cat', '')
+        course_es = data.get('course_name_es', '')
         
-        self._draw_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, 18)
-        self._draw_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, 18)
+        self._draw_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, 14)
+        self._draw_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, 14)
         
         # --- "a" ---
         y -= 40
@@ -202,31 +202,38 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- SIGNATURES ---
         y -= 80
         
+        # Store Y for images (top of signature area)
+        y_images = y
+        
         # Signature Raimon (left)
         sign_raimon_path = self._get_image_path('firma_raimon.png')
         if sign_raimon_path and os.path.exists(sign_raimon_path):
             sig_x = left_col_x + (col_width - 80) / 2 - 50
-            c.drawImage(sign_raimon_path, sig_x, y, width=100, height=50, preserveAspectRatio=True, mask='auto')
-        
-        y -= 15
-        self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width - 80, font_bold, 14)
-        y -= 15
-        self._draw_text_in_column(c, "Director", left_col_x, y, col_width - 80, font_regular, 11)
-        y -= 13
-        self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width - 80, font_regular, 11)
+            c.drawImage(sign_raimon_path, sig_x, y_images, width=100, height=50, preserveAspectRatio=True, mask='auto')
         
         # Signature Grecia (right)
-        y_sig = y + 43  # Reset for right signature
         sign_grecia_path = self._get_image_path('firma_grecia.png')
         if sign_grecia_path and os.path.exists(sign_grecia_path):
             sig_x = right_col_x + (col_width - 80) / 2 - 50
-            c.drawImage(sign_grecia_path, sig_x, y_sig + 65, width=100, height=50, preserveAspectRatio=True, mask='auto')
+            # User asked for Grecia's signature "mas para abajo".
+            # Raimon's is at y_images. We will put Grecia's at y_images - 10 (slightly lower) or same.
+            # Given the previous code put it way too high, putting it at y_images is already "mas para abajo".
+            # But "mas para abajo" might mean lower than Raimon's? Usually they are aligned.
+            # I will align them (y_images) because the previous error was it was too high.
+            c.drawImage(sign_grecia_path, sig_x, y_images, width=100, height=50, preserveAspectRatio=True, mask='auto')
+
+        # Text Names (Aligned)
+        y -= 15
+        self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width - 80, font_bold, 14)
+        self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width - 80, font_bold, 14)
         
-        self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y_sig, col_width - 80, font_bold, 14)
-        y_sig -= 15
-        self._draw_text_in_column(c, "Directora Académica", right_col_x, y_sig, col_width - 80, font_regular, 11)
-        y_sig -= 13
-        self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y_sig, col_width - 80, font_regular, 11)
+        y -= 15
+        self._draw_text_in_column(c, "Director", left_col_x, y, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width - 80, font_regular, 11)
+        
+        y -= 13
+        self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width - 80, font_regular, 11)
+        self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width - 80, font_regular, 11)
         
         # --- QR CODE & REGISTRY ---
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
