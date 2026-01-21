@@ -22,19 +22,33 @@ class DiplomaReportPDF(models.AbstractModel):
 
     def _register_fonts(self):
         """Register Inter fonts if available, otherwise use Helvetica"""
+        font_regular = 'Helvetica'
+        font_bold = 'Helvetica-Bold'
+        
         try:
-            # Try to use Inter from fonts path
+            # Check Regular
             font_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/fonts', 'Inter-Regular.ttf')
-            font_bold_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/fonts', 'Inter-Bold.ttf')
+            if not (font_path and os.path.exists(font_path)):
+                 font_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/fonts', 'Inter-regular.ttf')
             
             if font_path and os.path.exists(font_path):
                 pdfmetrics.registerFont(TTFont('Inter', font_path))
-                if font_bold_path and os.path.exists(font_bold_path):
-                    pdfmetrics.registerFont(TTFont('Inter-Bold', font_bold_path))
-                return 'Inter', 'Inter-Bold'
-        except:
+                font_regular = 'Inter'
+
+            # Check Bold
+            font_bold_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/fonts', 'Inter-Bold.ttf')
+            if not (font_bold_path and os.path.exists(font_bold_path)):
+                 font_bold_path = modules.get_module_resource('irg_generacion_diplomas', 'static/src/fonts', 'Inter-bold.ttf')
+            
+            if font_bold_path and os.path.exists(font_bold_path):
+                pdfmetrics.registerFont(TTFont('Inter-Bold', font_bold_path))
+                font_bold = 'Inter-Bold'
+                
+        except Exception as e:
+            # Log error but fallback to Helvetica
             pass
-        return 'Helvetica', 'Helvetica-Bold'
+            
+        return font_regular, font_bold
 
     def _generate_qr(self, url, size=90):
         """Generate QR code image"""
