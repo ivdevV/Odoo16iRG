@@ -30,3 +30,9 @@ class CrmLead(models.Model):
     x_studio_quiere_contacto_por_whatsapp = fields.Char("Quiere contacto por WhatsApp")
     x_studio_tipo_de_lead_1 = fields.Selection([('Encuesta','Encuesta'),('Referido','Referido'),('Antiguo Alumno','Antiguo Alumno'),('Entrada normal','Entrada normal'),('Cita Calendly','Cita Calendly'),('Webinar','Webinar'),('Whatsapp','Whatsapp'),('Portal','Portal')],string='Tipo de lead',)
     x_studio_char_field_iRhji = fields.Char("Comercial actual")
+    
+    # CAMPOS LEGACY (NO BORRAR para evitar error de upgrade crm_lead_message_main_attachment_id_fkey)
+    # Estos campos fueron creados por error en commit 0112c3a0 y la BD los tiene.
+    # Los mantenemos aquí para que Odoo no intente borrarlos y falle.
+    x_studio_comercial_actual_irg = fields.Many2one('res.users', "Comercial Actual (Legacy)")
+    previous_user_id = fields.Many2one('res.users', string="Comercial Anterior (Legacy)", readonly=True)
