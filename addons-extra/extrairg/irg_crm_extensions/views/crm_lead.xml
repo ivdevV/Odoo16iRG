@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='user_id']" position="after">
-                <field name="previous_user_id" widget="many2one_avatar_user"/>
+                <field name="last_user_id" widget="many2one_avatar_user"/>
             </xpath>
         </field>
     </record>
