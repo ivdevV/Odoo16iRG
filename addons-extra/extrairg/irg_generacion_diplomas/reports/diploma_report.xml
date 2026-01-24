@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- A4 Paper Format (Digital) -->
+    <record id="paperformat_diploma_irg" model="report.paperformat">
+        <field name="name">Diploma A4 Horizontal (Sin Margenes)</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+        <field name="disable_shrinking" eval="True"/>
+    </record>
+
+    <!-- A3 Paper Format (Physical) -->
+    <record id="paperformat_diploma_irg_a3" model="report.paperformat">
+        <field name="name">Diploma A3 Horizontal (Sin Margenes)</field>
+        <field name="default" eval="False" />
+        <field name="format">A3</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+        <field name="disable_shrinking" eval="True"/>
+    </record>
+
+    <!-- Digital Report (A4) -->
+    <report
+        id="action_report_diploma"
+        model="irg.diploma.wizard"
+        string="Diploma Alumno (Digital A4)"
+        report_type="qweb-pdf"
+        name="irg_generacion_diplomas.report_diploma_document"
+        file="irg_generacion_diplomas.report_diploma_document"
+        paperformat="paperformat_diploma_irg"
+        menu="False"
+    />
+
+    <!-- Physical Report (A3) -->
+    <report
+        id="action_report_diploma_physical"
+        model="irg.diploma.wizard"
+        string="Diploma Alumno (Físico A3)"
+        report_type="qweb-pdf"
+        name="irg_generacion_diplomas.report_diploma_document_physical"
+        file="irg_generacion_diplomas.report_diploma_document_physical"
+        paperformat="paperformat_diploma_irg_a3"
+        menu="False"
+    />
+</odoo>

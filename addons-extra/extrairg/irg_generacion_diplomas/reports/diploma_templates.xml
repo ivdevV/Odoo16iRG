@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- WRAPPER DIGITAL (A4) -->
+    <template id="report_diploma_document">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="docs[0] if docs else None"/>
+            <head>
+                <meta charset="UTF-8"/>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            </head>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap');
+                @page { margin: 0; size: A4 landscape; }
+                body { font-family: 'Montserrat', Arial, sans-serif !important; margin: 0; padding: 0; }
+                .diploma-container { position: relative; width: 297mm; height: 209mm; color: #000; overflow: hidden; margin: 0; padding: 0; }
+                .row { display: flex; flex-wrap: wrap; }
+                .col-6 { width: 50%; box-sizing: border-box; }
+            </style>
+            
+            <div class="page diploma-container">
+                <!-- Digital Background -->
+                <div style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:-1;">
+                    <img t-if="data.get('bg_image')" t-att-src="'data:image/png;base64,' + data.get('bg_image')" style="width:100%; height:100%; object-fit: cover;"/>
+                </div>
+                
+                <!-- Logo -->
+                <div style="text-align: center; padding-top: 50px; min-height: 150px;">
+                    <img t-if="data.get('logo_img')" t-att-src="'data:image/png;base64,' + data.get('logo_img')" style="height: 100px;"/>
+                </div>
+                
+                <t t-call="irg_generacion_diplomas.diploma_content" />
+            </div>
+        </t>
+    </template>
+
+    <!-- WRAPPER FISICO (A3) -->
+    <template id="report_diploma_document_physical">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="docs[0] if docs else None"/>
+            <head>
+                <meta charset="UTF-8"/>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            </head>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap');
+                @page { margin: 0; size: A3 landscape; }
+                body { font-family: 'Montserrat', Arial, sans-serif !important; margin: 0; padding: 0; }
+                .diploma-container { position: relative; width: 420mm; height: 297mm; color: #000; overflow: hidden; margin: 0; padding: 0; }
+                .row { display: flex; flex-wrap: wrap; }
+                .col-6 { width: 50%; box-sizing: border-box; }
+            </style>
+
+            <div class="page diploma-container">
+                <!-- Physical Header Spacing -->
+                <div style="height: 250px;"></div>
+                
+                <t t-call="irg_generacion_diplomas.diploma_content" />
+            </div>
+        </t>
+    </template>
+    
+    <!-- SHARED CONTENT -->
+    <template id="diploma_content">
+        <div style="padding: 0 60px;">
+            <!-- Intro -->
+            <div class="row" style="margin-top: 10px;">
+                <div class="col-6" style="text-align: center; font-size: 15px; padding: 0 10px;">
+                    L'Institut Raimon Gaja atorga el present diploma de
+                </div>
+                <div class="col-6" style="text-align: center; font-size: 15px; padding: 0 10px;">
+                    El Instituto Raimon Gaja otorga el presente diploma de
+                </div>
+            </div>
+
+            <!-- Course Name -->
+            <div class="row" style="margin-top: 25px;">
+                <div class="col-6" style="text-align: center; font-weight: 700; font-size: 24px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
+                    <t t-esc="data.get('course_name_cat')"/>
+                </div>
+                <div class="col-6" style="text-align: center; font-weight: 700; font-size: 24px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
+                    <t t-esc="data.get('course_name_es')"/>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 25px; font-size: 18px;">a</div>
+
+            <!-- Student Name -->
+            <div style="text-align: center; margin-top: 15px; font-weight: 700; font-size: 38px; color: #000;">
+                <t t-esc="data.get('student_name')"/>
+            </div>
+
+            <!-- Body -->
+            <div class="row" style="margin-top: 45px;">
+                <!-- CATALAN -->
+                <div class="col-6" style="text-align: justify; padding-right: 25px; font-size: 15px; line-height: 1.4;">
+                    <p style="margin-bottom: 20px;">
+                        En reconeixement del rendiment academic i a l'aprofitament dels estudis cursats en el programa del master.
+                    </p>
+                    <p>
+                        Aquest master te el reconeixement d'excel.lencia academica de l'European Association of Applied Psychology.
+                    </p>
+                </div>
+                <!-- SPANISH -->
+                <div class="col-6" style="text-align: justify; padding-left: 25px; font-size: 15px; line-height: 1.4;">
+                    <p style="margin-bottom: 20px;">
+                        En reconocimiento al rendimiento academico y al aprovechamiento de los estudios cursados en el programa del master.
+                    </p>
+                    <p>
+                        Este master cuenta con el reconocimiento de excelencia academica de la European Association of Applied Psychology.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Date -->
+            <div class="row" style="margin-top: 60px;">
+                <div class="col-6" style="text-align: center; font-size: 15px;">
+                    Barcelona, a <t t-esc="data.get('date_cat')"/>
+                </div>
+                <div class="col-6" style="text-align: center; font-size: 15px;">
+                    Barcelona, a <t t-esc="data.get('date_es')"/>
+                </div>
+            </div>
+            
+            <!-- Signatures -->
+            <div class="row" style="margin-top: 40px;">
+                <div class="col-6" style="text-align: center;">
+                    <div style="height: 70px; margin-bottom: 5px;">
+                        <img t-if="data.get('sign_raimon')" t-att-src="'data:image/png;base64,' + data.get('sign_raimon')" style="height: 100%;"/>
+                    </div>
+                    <div style="font-weight: 700; font-size: 16px;">Raimon Gaja</div>
+                    <div style="font-size: 13px;">Director</div>
+                    <div style="font-size: 13px;">Fundador</div>
+                </div>
+                <div class="col-6" style="text-align: center;">
+                    <div style="height: 70px; margin-bottom: 5px;">
+                        <img t-if="data.get('sign_grecia')" t-att-src="'data:image/png;base64,' + data.get('sign_grecia')" style="height: 100%;"/>
+                    </div>
+                    <div style="font-weight: 700; font-size: 16px;">Grecia Malcotti</div>
+                    <div style="font-size: 13px;">Directora Academica</div>
+                    <div style="font-size: 13px;">Directora Academica</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer: QR & Registry -->
+        <div style="position: absolute; bottom: 40px; left: 60px;">
+            <img t-att-src="'/report/barcode/?type=QR&amp;value=' + data.get('qr_url') + '&amp;width=100&amp;height=100'" style="width: 90px; height: 90px;"/>
+            <div style="margin-top: 5px; font-size: 11px; font-weight: 700;">
+                No Registro: <t t-esc="data.get('registry_number')"/>
+            </div>
+        </div>
+    </template>
+</odoo>
