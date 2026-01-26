@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de formulario mejorada - hereda y modifica la original -->
+    <record id="view_practice_request_form_fix" model="ir.ui.view">
+        <field name="name">practice.request.form.fix</field>
+        <field name="model">practice.request</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_request_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <!-- El campo user_id es el punto de partida - hacerlo editable -->
+            <xpath expr="//field[@name='user_id']" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+                <attribute name="options">{'no_create': True}</attribute>
+                <attribute name="domain">[('partner_id.is_student', '=', True)]</attribute>
+            </xpath>
+            
+            <!-- Mostrar op_student_id después de user_id (readonly porque es computado) -->
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="op_student_id" readonly="1"/>
+            </xpath>
+            
+            <!-- Ocultar el op_student_id invisible original -->
+            <xpath expr="//field[@name='op_student_id' and @invisible]" position="replace">
+            </xpath>
+            
+            <!-- Modificar op_admission_id para filtrar por estudiante -->
+            <xpath expr="//field[@name='op_admission_id']" position="attributes">
+                <attribute name="domain">[('student_id', '=', op_student_id)]</attribute>
+                <attribute name="options">{'no_create': True}</attribute>
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            </xpath>
+            
+            <!-- Agregar dominio al campo course_id para filtrar por estudiante -->
+            <xpath expr="//field[@name='course_id']" position="attributes">
+                <attribute name="domain">[('student_id', '=', op_student_id)]</attribute>
+                <attribute name="options">{'no_create': True}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
