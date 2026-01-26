@@ -9,30 +9,31 @@ class PracticeRequestFix(models.Model):
     user_id = fields.Many2one(
         'res.users',
         string="Usuario Estudiante",
-        required=True,
+        required=False,  # Quitamos required para evitar problemas
         default=lambda self: self.env.user,
     )
 
-    # Sobrescribe op_student_id para que sea computado desde user_id
-    op_student_id = fields.Many2one(
+    # Nuevo campo para el estudiante basado en user_id (no related)
+    # Usamos un nombre diferente para evitar conflicto con el original
+    estudiante_id = fields.Many2one(
         'op.student',
-        string='Estudiante',
-        compute='_compute_student_from_user',
+        string='Estudiante (Usuario)',
+        compute='_compute_estudiante_from_user',
         store=True,
-        help="Estudiante asociado al usuario. Se obtiene automáticamente."
+        help="Estudiante asociado al usuario actual."
     )
 
     @api.depends('user_id')
-    def _compute_student_from_user(self):
+    def _compute_estudiante_from_user(self):
         """Obtiene el estudiante a partir del usuario"""
         for record in self:
             if record.user_id:
                 student = self.env['op.student'].sudo().search([
                     ('user_id', '=', record.user_id.id)
                 ], limit=1)
-                record.op_student_id = student.id if student else False
+                record.estudiante_id = student.id if student else False
             else:
-                record.op_student_id = False
+                record.estudiante_id = False
 
     @api.onchange('user_id')
     def _onchange_user_fill_data(self):
