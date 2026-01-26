@@ -37,8 +37,30 @@
             <xpath expr="//field[@name='course_id']" position="attributes">
                 <attribute name="domain">[('student_id', '=', estudiante_id)]</attribute>
                 <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+                <attribute name="string">Inscripción (Student Course)</attribute>
             </xpath>
 
         </field>
+    </record>
+
+    <!-- Agregar filtros de búsqueda -->
+    <record id="view_practice_request_search_fix" model="ir.ui.view">
+        <field name="name">practice.request.search.fix</field>
+        <field name="model">practice.request</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_request_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <filter string="Mis Solicitudes" name="my_requests" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="En Proceso" name="active" domain="[('state', 'in', ['assigned', 'approved', 'progress'])]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Modificar la acción para activar "Mis Solicitudes" por defecto -->
+    <record id="isep_practices_2.action_practice_request" model="ir.actions.act_window">
+        <!-- Preservamos el contexto pero añadimos el filtro por defecto -->
+        <field name="context">{'search_default_my_requests': 1}</field>
     </record>
 </odoo>
