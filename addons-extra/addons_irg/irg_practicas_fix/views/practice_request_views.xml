@@ -7,16 +7,14 @@
         <field name="inherit_id" ref="isep_practices_2.view_practice_request_form"/>
         <field name="priority">100</field>
         <field name="arch" type="xml">
-            <!-- El campo user_id es el punto de partida - hacerlo editable -->
-            <xpath expr="//field[@name='user_id']" position="attributes">
-                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
-                <attribute name="options">{'no_create': True}</attribute>
-                <attribute name="domain">[('partner_id.is_student', '=', True)]</attribute>
+            <!-- Reemplazar el campo user_id para hacerlo editable y sin restricciones -->
+            <xpath expr="//field[@name='user_id']" position="replace">
+                <field name="user_id" options="{'no_create': True, 'no_create_edit': True}"/>
             </xpath>
             
             <!-- Mostrar op_student_id después de user_id (readonly porque es computado) -->
-            <xpath expr="//field[@name='user_id']" position="after">
-                <field name="op_student_id" readonly="1"/>
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="op_student_id" readonly="1" string="Estudiante"/>
             </xpath>
             
             <!-- Ocultar el op_student_id invisible original -->
@@ -24,16 +22,17 @@
             </xpath>
             
             <!-- Modificar op_admission_id para filtrar por estudiante -->
-            <xpath expr="//field[@name='op_admission_id']" position="attributes">
-                <attribute name="domain">[('student_id', '=', op_student_id)]</attribute>
-                <attribute name="options">{'no_create': True}</attribute>
-                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')]}</attribute>
+            <xpath expr="//field[@name='op_admission_id']" position="replace">
+                <field name="op_admission_id" 
+                       domain="[('student_id', '=', op_student_id)]"
+                       options="{'no_create': True, 'no_create_edit': True}"/>
             </xpath>
             
             <!-- Agregar dominio al campo course_id para filtrar por estudiante -->
-            <xpath expr="//field[@name='course_id']" position="attributes">
-                <attribute name="domain">[('student_id', '=', op_student_id)]</attribute>
-                <attribute name="options">{'no_create': True}</attribute>
+            <xpath expr="//field[@name='course_id']" position="replace">
+                <field name="course_id" 
+                       domain="[('student_id', '=', op_student_id)]"
+                       options="{'no_create': True, 'no_create_edit': True}"/>
             </xpath>
         </field>
     </record>
