@@ -5,13 +5,20 @@ from odoo import models, fields, api
 class PracticeRequestFix(models.Model):
     _inherit = 'practice.request'
 
+    # Sobrescribir user_id para agregar default del usuario actual
+    user_id = fields.Many2one(
+        'res.users',
+        string="Usuario Estudiante",
+        required=True,
+        default=lambda self: self.env.user,
+    )
+
     # Sobrescribe op_student_id para que sea computado desde user_id
     op_student_id = fields.Many2one(
         'op.student',
         string='Estudiante',
         compute='_compute_student_from_user',
         store=True,
-        readonly=True,
         help="Estudiante asociado al usuario. Se obtiene automáticamente."
     )
 
@@ -37,6 +44,9 @@ class PracticeRequestFix(models.Model):
             if student:
                 self.name = student.name or ''
                 self.email = student.email or self.user_id.email or ''
+            else:
+                self.name = self.user_id.name or ''
+                self.email = self.user_id.email or ''
             # Limpiar campos dependientes
             self.op_admission_id = False
             self.course_id = False
