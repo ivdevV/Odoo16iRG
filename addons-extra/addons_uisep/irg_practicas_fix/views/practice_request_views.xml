@@ -54,6 +54,7 @@
                 <separator/>
                 <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
                 <filter string="En Proceso" name="active" domain="[('state', 'in', ['assigned', 'approved', 'progress'])]"/>
+                <filter string="Finalizado" name="finished" domain="[('state', '=', 'end')]"/>
             </xpath>
         </field>
     </record>
