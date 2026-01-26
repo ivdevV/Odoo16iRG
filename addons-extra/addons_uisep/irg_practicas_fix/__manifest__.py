@@ -6,13 +6,16 @@
     'description': """
         Este módulo contiene correcciones para el módulo isep_practices_2:
         - Corrige el campo user_id para que sea relacionado con op_student_id.user_id
+        - Mejora la vista del formulario con un flujo más lógico
     """,
     'author': 'IRG',
     'category': 'Education',
     'depends': [
         'isep_practices_2',
     ],
-    'data': [],
+    'data': [
+        'views/practice_request_views.xml',
+    ],
     'installable': True,
     'auto_install': False,
     'license': 'LGPL-3',

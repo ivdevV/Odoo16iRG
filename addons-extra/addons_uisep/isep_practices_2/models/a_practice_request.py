@@ -39,7 +39,8 @@ class PracticeRequest(models.Model):
     user_id = fields.Many2one(
         'res.users',
         string="Usuario Estudiante",
-        required=True,
+        related="op_student_id.user_id",
+        store=True,
     )
     
     op_student_course_course_id = fields.Many2one(related="course_id.course_id")
