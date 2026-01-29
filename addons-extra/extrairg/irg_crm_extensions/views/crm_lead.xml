@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- VISTA FORMULARIO (Ya la tenías) -->
     <record id="crm_lead_view_form_extension" model="ir.ui.view">
         <field name="name">crm.lead.view.form.extension</field>
         <field name="model">crm.lead</field>
@@ -7,6 +8,18 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='user_id']" position="after">
                 <field name="last_user_id" widget="many2one_avatar_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- VISTA LISTA (Nueva para que se vea en el listado) -->
+    <record id="crm_lead_view_tree_extension" model="ir.ui.view">
+        <field name="name">crm.lead.view.tree.extension</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="last_user_id" optional="show"/>
             </xpath>
         </field>
     </record>

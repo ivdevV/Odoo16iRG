@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de formulario mejorada - hereda y modifica la original -->
+    <record id="view_practice_request_form_fix" model="ir.ui.view">
+        <field name="name">practice.request.form.fix</field>
+        <field name="model">practice.request</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_request_form"/>
+        <field name="priority">999</field> <!-- Prioridad muy alta para asegurar que se aplique al final -->
+        <field name="arch" type="xml">
+            
+            <!-- 1. Modificar user_id: Quitar required si lo tuviera por vista, y relajar restricciones -->
+            <xpath expr="//field[@name='user_id']" position="attributes">
+                <attribute name="required">0</attribute>
+                <attribute name="readonly">0</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+                <!-- Quitamos cualquier dominio restrictivo previo -->
+                <attribute name="domain">[]</attribute> 
+            </xpath>
+
+            <!-- 2. Insertar estudiante_id DESPUÉS de user_id -->
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="estudiante_id" readonly="1" force_save="1"/>
+            </xpath>
+
+            <!-- 3. Modificar Ocultar op_student_id original -->
+            <xpath expr="//field[@name='op_student_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- 4. Modificar op_admission_id para usar estudiante_id -->
+            <xpath expr="//field[@name='op_admission_id']" position="attributes">
+                 <attribute name="domain">[('student_id', '=', estudiante_id)]</attribute>
+                 <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+            </xpath>
+
+            <!-- 5. Modificar course_id para usar estudiante_id -->
+            <xpath expr="//field[@name='course_id']" position="attributes">
+                <attribute name="domain">[('student_id', '=', estudiante_id)]</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+                <attribute name="string">Inscripción (Student Course)</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Agregar filtros de búsqueda -->
+    <record id="view_practice_request_search_fix" model="ir.ui.view">
+        <field name="name">practice.request.search.fix</field>
+        <field name="model">practice.request</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_request_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <filter string="Mis Solicitudes" name="my_requests" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="En Proceso" name="active" domain="[('state', 'in', ['assigned', 'approved', 'progress'])]"/>
+                <filter string="Finalizado" name="finished" domain="[('state', '=', 'end')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Modificar la acción para activar "Mis Solicitudes" por defecto -->
+    <record id="isep_practices_2.action_practice_request" model="ir.actions.act_window">
+        <!-- Preservamos el contexto pero añadimos el filtro por defecto -->
+        <field name="context">{'search_default_my_requests': 1}</field>
+    </record>
+</odoo>
