@@ -30,4 +30,3 @@ class CrmLead(models.Model):
     x_studio_quiere_contacto_por_whatsapp = fields.Char("Quiere contacto por WhatsApp")
     x_studio_tipo_de_lead_1 = fields.Selection([('Encuesta','Encuesta'),('Referido','Referido'),('Antiguo Alumno','Antiguo Alumno'),('Entrada normal','Entrada normal'),('Cita Calendly','Cita Calendly'),('Webinar','Webinar'),('Whatsapp','Whatsapp'),('Portal','Portal')],string='Tipo de lead',)
     x_studio_char_field_iRhji = fields.Char("Comercial actual")
-

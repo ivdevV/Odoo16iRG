@@ -94,7 +94,7 @@ class OpAdmission(models.Model):
          ('reject', 'Rejected'), ('pending', 'Pending'),
          ('cancel', 'Cancelled'), ('done', 'Done')],
         'State', default='draft', tracking=True)
-    due_date = fields.Date('Due Date', states={'done': [('readonly', True)]})
+    due_date = fields.Date('Due Date')
     prev_institute_id = fields.Char('Previous Institute',
                                     states={'done': [('readonly', True)]})
     prev_course_id = fields.Char('Previous Course',
