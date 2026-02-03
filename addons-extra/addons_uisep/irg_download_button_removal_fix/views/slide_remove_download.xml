@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Remove Download Button from Fullscreen View -->
+        <template id="remove_download_button_fullscreen" inherit_id="website_slides.slide_fullscreen">
+            <xpath expr="//a[@id='custom_download_button']" position="replace"/>
+        </template>
+
+        <!-- Remove Download Button from Detailed Content View -->
+        <template id="remove_download_button_detailed" inherit_id="website_slides.slide_content_detailed">
+            <xpath expr="//a[@id='custom_download_button']" position="replace"/>
+        </template>
+    </data>
+</odoo>
