@@ -36,6 +36,7 @@ class CalendarEvent(models.Model):
         # Pattern: [Course Name] Subject Name
         match = re.match(r'^\[(.*?)\]\s*(.*)$', self.name)
         if not match:
+            _logger.warning(f"Event '{self.name}' (ID: {self.id}) skipped OpenEducat sync: Title format does not match '[Course] Subject'")
             return
 
         course_name = match.group(1).strip()
