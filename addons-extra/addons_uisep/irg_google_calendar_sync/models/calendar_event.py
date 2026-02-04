@@ -95,9 +95,14 @@ class CalendarEvent(models.Model):
         summary = g_event.get('summary', '')
         description = g_event.get('description', '')
         
-        # Skip events without proper format
-        if not summary or not re.match(r'^\[.*?\]', summary):
-            _logger.warning(f"Skipping event without [Course] format: {summary}")
+        # Normalize brackets (some systems use different unicode brackets)
+        summary = summary.replace('［', '[').replace('］', ']')
+        
+        # Skip events without proper format [Course] Subject
+        # The regex checks for: starts with [, has content, closes with ], has content after
+        match = re.match(r'^\[(.+?)\]\s*(.+)$', summary)
+        if not summary or not match:
+            _logger.warning(f"Skipping event - format mismatch: '{summary}' (first chars: {[ord(c) for c in summary[:5]] if summary else 'empty'})")
             return 'skipped_format'
         
         # Parse start/end times
