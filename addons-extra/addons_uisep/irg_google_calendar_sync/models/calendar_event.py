@@ -50,13 +50,27 @@ class CalendarEvent(models.Model):
 
         # Find or Create Course
         Course = self.env['op.course']
-        # Use ilike for case-insensitive matching which is more robust
-        course = Course.search([('name', 'ilike', course_name)], limit=1)
+        # First try to use courses already selected in the event (from calendar.event.course_ids)
+        course = False
+        if hasattr(self, 'course_ids') and self.course_ids:
+            course = self.course_ids[0]
+            _logger.info(f"Using course from event selection: {course.name}")
+        
         if not course:
-            # Fallback: try searching with wildcards if exact match fails? 
-            # Or assume creation is needed. 
-            # Note: Odoo 'ilike' uses %string%, so it's already a containment search largely equal to wildcard
+            # Normalize for accent-insensitive comparison using unaccent if available
+            # Fallback: search by containment of key words
+            course = Course.search([('name', 'ilike', course_name)], limit=1)
+        
+        if not course:
+            # Try partial matching - extract key words
+            key_words = [w for w in course_name.split() if len(w) > 4]
+            for word in key_words[:3]:  # Try first 3 significant words
+                course = Course.search([('name', 'ilike', word)], limit=1)
+                if course:
+                    _logger.info(f"Found course by keyword '{word}': {course.name}")
+                    break
             
+        if not course:
             course_code = self._get_unique_code('op.course', course_name, 16)
             course = Course.create({
                 'name': course_name, 
@@ -68,7 +82,18 @@ class CalendarEvent(models.Model):
 
         # Find or Create Subject
         Subject = self.env['op.subject']
+        # First try to find exact or similar match
         subject = Subject.search([('name', 'ilike', subject_name)], limit=1)
+        
+        if not subject:
+            # Try partial matching - extract key words (min 5 chars to be meaningful)
+            key_words = [w for w in subject_name.split() if len(w) > 4]
+            for word in key_words[:3]:
+                subject = Subject.search([('name', 'ilike', word)], limit=1)
+                if subject:
+                    _logger.info(f"Found subject by keyword '{word}': {subject.name}")
+                    break
+        
         if not subject:
             subject_code = self._get_unique_code('op.subject', subject_name, 256)
             subject = Subject.create({
@@ -115,21 +140,17 @@ class CalendarEvent(models.Model):
             # 'name' is computed
         }
 
-        # Add Google Meet URL
-        if 'attendee_meeting_url' in Session._fields and self.videocall_location:
-                session_vals['attendee_meeting_url'] = self.videocall_location
-        elif 'meeting_url' in Session._fields and self.videocall_location:
-                session_vals['meeting_url'] = self.videocall_location
-        elif 'url' in Session._fields and self.videocall_location:
-                session_vals['url'] = self.videocall_location
+        # Add Google Meet URL - Check for the correct field name
+        meeting_url = self.videocall_location or self._parse_url_from_description()
         
-        # Check description for URL if not present
-        if not session_vals.get('attendee_meeting_url') and not session_vals.get('meeting_url') and not session_vals.get('url'):
-            url_in_desc = self._parse_url_from_description()
-            if url_in_desc:
-                 if 'attendee_meeting_url' in Session._fields: session_vals['attendee_meeting_url'] = url_in_desc
-                 elif 'meeting_url' in Session._fields: session_vals['meeting_url'] = url_in_desc
-                 elif 'url' in Session._fields: session_vals['url'] = url_in_desc
+        if meeting_url:
+            # Try different field names that might exist in op.session
+            url_fields = ['time_url_meeting', 'attendee_meeting_url', 'meeting_url', 'url']
+            for field_name in url_fields:
+                if field_name in Session._fields:
+                    session_vals[field_name] = meeting_url
+                    _logger.info(f"Setting {field_name} = {meeting_url}")
+                    break
 
         if existing_session:
             existing_session.write(session_vals)
