@@ -84,8 +84,25 @@ class CalendarEvent(models.Model):
         Subject = self.env['op.subject']
         _logger.info(f"Searching for subject: {subject_name}")
         
-        # First try to find exact or similar match
-        subject = Subject.search([('name', 'ilike', subject_name)], limit=1)
+        # First try to find exact match
+        subject = Subject.search([('name', '=', subject_name)], limit=1)
+        
+        if not subject:
+            # Try ilike (partial/case-insensitive)
+            subject = Subject.search([('name', 'ilike', subject_name)], limit=1)
+            if subject:
+                _logger.info(f"Found subject by ilike: {subject.name}")
+        
+        if not subject:
+            # Try searching for significant parts (split by dash)
+            parts = subject_name.split('-')
+            for part in parts:
+                part = part.strip()
+                if len(part) > 10:  # Only meaningful parts
+                    subject = Subject.search([('name', 'ilike', part)], limit=1)
+                    if subject:
+                        _logger.info(f"Found subject by part '{part}': {subject.name}")
+                        break
         
         if not subject:
             # Try partial matching - look for significant keywords
@@ -170,8 +187,9 @@ class CalendarEvent(models.Model):
             meeting_url = meeting_url.strip().strip('"').strip("'")
             _logger.info(f"Final meeting_url = {meeting_url}")
             
+            # The field is called time_url_metting (with typo in original module)
             # Try different field names that might exist in op.session
-            url_fields = ['time_url_meeting', 'attendee_meeting_url', 'meeting_url', 'url']
+            url_fields = ['time_url_metting', 'time_url_meeting', 'attendee_meeting_url', 'meeting_url', 'url']
             for field_name in url_fields:
                 if field_name in Session._fields:
                     session_vals[field_name] = meeting_url
