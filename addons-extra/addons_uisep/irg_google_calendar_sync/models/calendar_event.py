@@ -127,10 +127,16 @@ class CalendarEvent(models.Model):
 
         if existing_session:
             existing_session.write(session_vals)
+            msg = f"Sincronización OpenEducat: Sesión actualizada ({existing_session.name})"
             _logger.info(f"Updated OpSession {existing_session.id} for event {self.name}")
         else:
             session = Session.create(session_vals)
+            msg = f"Sincronización OpenEducat: Sesión creada ({session.name})"
             _logger.info(f"Created OpSession {session.id} for event {self.name}")
+        
+        # Post message to chatter if available
+        if hasattr(self, 'message_post'):
+            self.message_post(body=msg)
 
     def _get_unique_code(self, model_name, base_name, size_limit):
         """Generates a unique code based on the base_name."""
