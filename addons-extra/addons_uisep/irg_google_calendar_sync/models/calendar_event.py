@@ -56,7 +56,8 @@ class CalendarEvent(models.Model):
             course = Course.create({
                 'name': course_name, 
                 'code': course_code,
-                'evaluation_type': 'normal'
+                'evaluation_type': 'normal',
+                'lang': self.env.user.lang or 'es_ES'
             })
             _logger.info(f"Created new Course: {course.name} ({course.code})")
 
