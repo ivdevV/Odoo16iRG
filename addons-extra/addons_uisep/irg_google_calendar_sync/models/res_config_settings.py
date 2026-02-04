@@ -38,19 +38,20 @@ class ResConfigSettings(models.TransientModel):
         api_key = ICP.get_param('irg_google_calendar_sync.api_key', '')
         calendar_id = ICP.get_param('irg_google_calendar_sync.calendar_id', '')
         enabled = ICP.get_param('irg_google_calendar_sync.enabled', '')
+        sync_days = int(ICP.get_param('irg_google_calendar_sync.sync_days', '30'))
         
-        _logger.info(f"Config - API Key: {'SET' if api_key else 'NOT SET'}, Calendar ID: {calendar_id}, Enabled: {enabled}")
+        _logger.info(f"Config - API Key: {'SET' if api_key else 'NOT SET'}, Calendar ID: {calendar_id}, Enabled: {enabled}, Days: {sync_days}")
         
         # Force sync regardless of enabled flag
         CalendarEvent = self.env['calendar.event']
         if api_key and calendar_id:
-            CalendarEvent._fetch_and_sync_google_events(api_key, calendar_id, 30)
+            CalendarEvent._fetch_and_sync_google_events(api_key, calendar_id, sync_days)
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': 'Sincronización completada',
-                    'message': 'Revisa los logs para ver los resultados',
+                    'message': f'Sincronizados eventos de los próximos {sync_days} días. Revisa los logs.',
                     'type': 'success',
                     'sticky': False,
                 }
