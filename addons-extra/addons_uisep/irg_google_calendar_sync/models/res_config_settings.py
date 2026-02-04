@@ -1,4 +1,7 @@
-from odoo import fields, models
+from odoo import fields, models, api
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
@@ -25,3 +28,41 @@ class ResConfigSettings(models.TransientModel):
         default=30,
         help='Number of days ahead to sync events'
     )
+
+    def action_sync_google_calendar_now(self):
+        """Manual trigger to sync Google Calendar immediately"""
+        _logger.info("Manual Google Calendar sync triggered from settings")
+        
+        # Log current config for debugging
+        ICP = self.env['ir.config_parameter'].sudo()
+        api_key = ICP.get_param('irg_google_calendar_sync.api_key', '')
+        calendar_id = ICP.get_param('irg_google_calendar_sync.calendar_id', '')
+        enabled = ICP.get_param('irg_google_calendar_sync.enabled', '')
+        
+        _logger.info(f"Config - API Key: {'SET' if api_key else 'NOT SET'}, Calendar ID: {calendar_id}, Enabled: {enabled}")
+        
+        # Force sync regardless of enabled flag
+        CalendarEvent = self.env['calendar.event']
+        if api_key and calendar_id:
+            CalendarEvent._fetch_and_sync_google_events(api_key, calendar_id, 30)
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Sincronización completada',
+                    'message': 'Revisa los logs para ver los resultados',
+                    'type': 'success',
+                    'sticky': False,
+                }
+            }
+        else:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Error de configuración',
+                    'message': 'Falta API Key o Calendar ID. Guarda la configuración primero.',
+                    'type': 'danger',
+                    'sticky': True,
+                }
+            }
