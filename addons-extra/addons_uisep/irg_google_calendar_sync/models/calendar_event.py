@@ -106,16 +106,17 @@ class CalendarEvent(models.Model):
         match = re.match(r'^\[(.+?)\]\s*(.*)$', summary)
         
         if not match:
-            # Maybe the title doesn't have closing bracket - try to find it
-            if summary.startswith('[') and ']' not in summary:
-                _logger.warning(f"Event title missing closing bracket: {summary[:100]}")
+            # Handle case where title is too long and ] is missing
+            # If starts with [ treat everything as course name, subject will come from Bloque
+            if summary.startswith('['):
+                # Extract course name without the opening bracket
+                course_name = summary[1:].strip()
+                _logger.info(f"Event title missing ']' - using full title as course: {course_name[:50]}...")
+                # We'll process it but need to handle differently in the vals
+                match = None  # Will use special handling below
+            else:
+                _logger.warning(f"Skipping event - doesn't start with [: {summary[:100]}")
                 return 'skipped_format'
-            # Other format issues
-            _logger.warning(f"Skipping event - format mismatch: {summary[:100]}")
-            return 'skipped_format'
-        
-        # Subject can be empty - we'll use Bloque from description later
-        # So we don't require subject in the title anymore
         
         # Parse start/end times
         start_data = g_event.get('start', {})
@@ -229,8 +230,8 @@ class CalendarEvent(models.Model):
     def _sync_to_openeducat(self):
         """
         Syncs the calendar event to OpenEduCat op.session if it matches the pattern.
-        Pattern: [Course Name] Subject Name
-        Description: Professor: Name
+        Pattern: [Course Name] Subject Name  OR  [Course Name (without closing bracket)
+        Description: Professor: Name, Bloque: Subject Name
         """
         self.ensure_one()
         if not self.name:
@@ -238,12 +239,19 @@ class CalendarEvent(models.Model):
 
         # Pattern: [Course Name] Subject Name
         match = re.match(r'^\[(.*?)\]\s*(.*)$', self.name)
-        if not match:
-            _logger.warning(f"Event '{self.name}' (ID: {self.id}) skipped OpenEducat sync: Title format does not match '[Course] Subject'")
+        
+        if match:
+            course_name = match.group(1).strip()
+            subject_name = match.group(2).strip()
+        elif self.name.startswith('['):
+            # Handle case where title is too long and ] is missing
+            # Use everything after [ as course name, subject from Bloque
+            course_name = self.name[1:].strip()
+            subject_name = ''  # Will be filled from Bloque
+            _logger.info(f"Event title missing ']' - using as course: {course_name[:50]}...")
+        else:
+            _logger.warning(f"Event '{self.name}' (ID: {self.id}) skipped OpenEducat sync: Title format does not match '[Course]'")
             return
-
-        course_name = match.group(1).strip()
-        subject_name = match.group(2).strip()
 
         # Find or Create Course
         Course = self.env['op.course']
