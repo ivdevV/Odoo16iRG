@@ -74,6 +74,8 @@ class CalendarEvent(models.Model):
         
         for g_event in events:
             try:
+                summary = g_event.get('summary', '')
+                _logger.info(f"Processing event: {summary[:80]}...")
                 result = self._process_google_event(g_event)
                 if result == 'created':
                     created_count += 1
@@ -81,6 +83,7 @@ class CalendarEvent(models.Model):
                     updated_count += 1
                 else:
                     skipped_count += 1
+                    _logger.info(f"Event skipped: {summary[:50]}... (reason: {result})")
             except Exception as e:
                 _logger.error(f"Error processing Google event {g_event.get('id')}: {str(e)}")
         
@@ -94,8 +97,8 @@ class CalendarEvent(models.Model):
         
         # Skip events without proper format
         if not summary or not re.match(r'^\[.*?\]', summary):
-            _logger.debug(f"Skipping event without [Course] format: {summary}")
-            return 'skipped'
+            _logger.warning(f"Skipping event without [Course] format: {summary}")
+            return 'skipped_format'
         
         # Parse start/end times
         start_data = g_event.get('start', {})
@@ -163,11 +166,12 @@ class CalendarEvent(models.Model):
                 existing.write(vals)
                 _logger.info(f"Updated event: {summary}")
                 return 'updated'
-            return 'skipped'
+            _logger.info(f"Event unchanged, skipping: {summary[:50]}...")
+            return 'skipped_unchanged'
         else:
             # Create new event
-            self.create(vals)
-            _logger.info(f"Created event from Google: {summary}")
+            new_event = self.create(vals)
+            _logger.info(f"Created event from Google: {summary} (ID: {new_event.id})")
             return 'created'
 
     def _parse_google_datetime(self, dt_str):
