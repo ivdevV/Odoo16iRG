@@ -1,0 +1,19 @@
+{
+    'name': 'IRG Google Calendar Sync',
+    'version': '16.0.1.0.2',
+    'category': 'Extra Tools',
+    'summary': 'Sync Google Calendar Events to OpenEduCat Sessions',
+    'author': 'Copilot',
+    'depends': ['calendar', 'openeducat_timetable', 'openeducat_core', 'isep_time_link_url'],
+    'data': [
+        'security/ir.model.access.csv',
+        'data/ir_cron.xml',
+        'views/res_config_settings_views.xml',
+        'views/calendar_event_view.xml',
+    ],
+    'external_dependencies': {
+        'python': ['requests'],
+    },
+    'installable': True,
+    'application': False,
+}

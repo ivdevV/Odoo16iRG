@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Acción de servidor para auto-verificar usuarios seleccionados -->
+    <record id="action_auto_verify_users" model="ir.actions.server">
+        <field name="name">Auto-verificar usuarios</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="binding_model_id" ref="base.model_res_users"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    records.action_auto_verify_users()
+        </field>
+    </record>
+
+    <!-- Cron job para auto-verificar usuarios nuevos que aún no tengan karma -->
+    <record id="ir_cron_auto_verify_users" model="ir.cron">
+        <field name="name">Auto-verificar usuarios sin karma</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="state">code</field>
+        <field name="code">
+# Buscar usuarios con karma = 0 y auto-verificarlos
+users_to_verify = env['res.users'].sudo().search([('karma', '=', 0), ('active', '=', True)])
+if users_to_verify:
+    users_to_verify.write({'karma': 3})
+        </field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+</odoo>

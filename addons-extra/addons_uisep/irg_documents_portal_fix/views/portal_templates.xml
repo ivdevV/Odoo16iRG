@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- 
+        Este template oculta la entrada duplicada de "Documentos" 
+        que viene del módulo isep_record_request.
+        
+        Esto evita el conflicto con isep_documents_portal que ya 
+        tiene su propia entrada "Documentación" con el contador correcto.
+    -->
+    <template id="portal_my_home_hide_duplicate" 
+              inherit_id="isep_record_request.portal_my_home"
+              priority="100">
+        <xpath expr="//t[@t-call='portal.portal_docs_entry']" position="replace">
+            <!-- Entrada eliminada para evitar duplicado con isep_documents_portal -->
+        </xpath>
+    </template>
+
+</odoo>

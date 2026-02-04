@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.irg.google.calendar.sync</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Google Calendar Sync" string="Google Calendar Sync" data-key="irg_google_calendar_sync">
+                    <h2>Google Calendar Sync</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="google_calendar_sync_enabled"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="google_calendar_sync_enabled"/>
+                                <div class="text-muted">
+                                    Enable automatic synchronization from Google Calendar (every 15 min)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="google_calendar_api_key"/>
+                                <field name="google_calendar_api_key" placeholder="AIzaSy..." class="w-100"/>
+                                <div class="text-muted">
+                                    API Key from Google Cloud Console
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="google_calendar_id"/>
+                                <field name="google_calendar_id" placeholder="xxx@group.calendar.google.com" class="w-100"/>
+                                <div class="text-muted">
+                                    ID of the Google Calendar to sync
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="google_calendar_sync_days"/>
+                                <field name="google_calendar_sync_days"/>
+                                <div class="text-muted">
+                                    Number of days ahead to sync events
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <button name="action_sync_google_calendar_now" type="object" string="🔄 Sincronizar Ahora" class="btn btn-primary mt-2"/>
+                                <div class="text-muted mt-2">
+                                    Click to sync Google Calendar events immediately (check logs for results)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

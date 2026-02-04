@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_calendar_event_form_inherit_irg_sync" model="ir.ui.view">
+        <field name="name">calendar.event.form.inherit.irg.sync</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_manual_sync_openeducat" string="Sincronizar OpenEducat" type="object" class="oe_highlight" groups="base.group_no_one"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action to trigger manual sync from Google Calendar -->
+    <record id="action_sync_google_calendar_now" model="ir.actions.server">
+        <field name="name">Sync Google Calendar Now</field>
+        <field name="model_id" ref="calendar.model_calendar_event"/>
+        <field name="binding_model_id" ref="calendar.model_calendar_event"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+model._cron_sync_google_calendar()
+action = {'type': 'ir.actions.client', 'tag': 'display_notification', 'params': {'title': 'Sincronización', 'message': 'Sincronización con Google Calendar completada', 'type': 'success', 'sticky': False}}
+        </field>
+    </record>
+</odoo>
