@@ -11,11 +11,41 @@
                     <div class="row mt16 o_settings_container">
                         <div class="col-12 col-lg-6 o_setting_box">
                             <div class="o_setting_left_pane">
+                                <field name="google_calendar_sync_enabled"/>
                             </div>
                             <div class="o_setting_right_pane">
-                                <span class="o_form_label">Sync Settings</span>
+                                <label for="google_calendar_sync_enabled"/>
                                 <div class="text-muted">
-                                    Sync events from Google Calendar to OpenEduCat Sessions based on format [Course] Subject
+                                    Enable automatic synchronization from Google Calendar
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt16 o_settings_container" attrs="{'invisible': [('google_calendar_sync_enabled', '=', False)]}">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="google_calendar_api_key"/>
+                                <field name="google_calendar_api_key" placeholder="AIzaSy..."/>
+                                <div class="text-muted">
+                                    API Key from Google Cloud Console
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="google_calendar_id"/>
+                                <field name="google_calendar_id" placeholder="xxx@group.calendar.google.com"/>
+                                <div class="text-muted">
+                                    ID of the Google Calendar to sync
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="google_calendar_sync_days"/>
+                                <field name="google_calendar_sync_days"/>
+                                <div class="text-muted">
+                                    Number of days ahead to sync events
                                 </div>
                             </div>
                         </div>

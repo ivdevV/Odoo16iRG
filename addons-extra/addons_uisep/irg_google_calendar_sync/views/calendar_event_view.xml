@@ -10,4 +10,17 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Action to trigger manual sync from Google Calendar -->
+    <record id="action_sync_google_calendar_now" model="ir.actions.server">
+        <field name="name">Sync Google Calendar Now</field>
+        <field name="model_id" ref="calendar.model_calendar_event"/>
+        <field name="binding_model_id" ref="calendar.model_calendar_event"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+model._cron_sync_google_calendar()
+action = {'type': 'ir.actions.client', 'tag': 'display_notification', 'params': {'title': 'Sincronización', 'message': 'Sincronización con Google Calendar completada', 'type': 'success', 'sticky': False}}
+        </field>
+    </record>
 </odoo>

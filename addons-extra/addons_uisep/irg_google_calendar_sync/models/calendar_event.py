@@ -1,13 +1,189 @@
 import re
 import logging
 import random
-from datetime import timedelta
+import requests
+from datetime import datetime, timedelta
 from odoo import models, api, fields, _
 
 _logger = logging.getLogger(__name__)
 
 class CalendarEvent(models.Model):
     _inherit = 'calendar.event'
+
+    google_event_id = fields.Char(string='Google Event ID', index=True, copy=False)
+
+    @api.model
+    def _cron_sync_google_calendar(self):
+        """Cron job to sync events from Google Calendar"""
+        ICP = self.env['ir.config_parameter'].sudo()
+        
+        enabled = ICP.get_param('irg_google_calendar_sync.enabled', 'False')
+        if enabled.lower() != 'true':
+            _logger.info("Google Calendar sync is disabled")
+            return
+        
+        api_key = ICP.get_param('irg_google_calendar_sync.api_key', '')
+        calendar_id = ICP.get_param('irg_google_calendar_sync.calendar_id', '')
+        sync_days = int(ICP.get_param('irg_google_calendar_sync.sync_days', '30'))
+        
+        if not api_key or not calendar_id:
+            _logger.warning("Google Calendar sync: API Key or Calendar ID not configured")
+            return
+        
+        _logger.info(f"Starting Google Calendar sync for calendar: {calendar_id}")
+        
+        try:
+            self._fetch_and_sync_google_events(api_key, calendar_id, sync_days)
+        except Exception as e:
+            _logger.error(f"Error syncing Google Calendar: {str(e)}")
+
+    def _fetch_and_sync_google_events(self, api_key, calendar_id, sync_days):
+        """Fetch events from Google Calendar API and create/update in Odoo"""
+        
+        # Calculate time range
+        now = datetime.utcnow()
+        time_min = now.isoformat() + 'Z'
+        time_max = (now + timedelta(days=sync_days)).isoformat() + 'Z'
+        
+        # Google Calendar API endpoint
+        url = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events"
+        
+        params = {
+            'key': api_key,
+            'timeMin': time_min,
+            'timeMax': time_max,
+            'singleEvents': 'true',
+            'orderBy': 'startTime',
+            'maxResults': 250,
+        }
+        
+        response = requests.get(url, params=params, timeout=30)
+        
+        if response.status_code != 200:
+            _logger.error(f"Google Calendar API error: {response.status_code} - {response.text}")
+            return
+        
+        data = response.json()
+        events = data.get('items', [])
+        
+        _logger.info(f"Fetched {len(events)} events from Google Calendar")
+        
+        created_count = 0
+        updated_count = 0
+        skipped_count = 0
+        
+        for g_event in events:
+            try:
+                result = self._process_google_event(g_event)
+                if result == 'created':
+                    created_count += 1
+                elif result == 'updated':
+                    updated_count += 1
+                else:
+                    skipped_count += 1
+            except Exception as e:
+                _logger.error(f"Error processing Google event {g_event.get('id')}: {str(e)}")
+        
+        _logger.info(f"Google Calendar sync completed: {created_count} created, {updated_count} updated, {skipped_count} skipped")
+
+    def _process_google_event(self, g_event):
+        """Process a single Google Calendar event"""
+        google_event_id = g_event.get('id')
+        summary = g_event.get('summary', '')
+        description = g_event.get('description', '')
+        
+        # Skip events without proper format
+        if not summary or not re.match(r'^\[.*?\]', summary):
+            _logger.debug(f"Skipping event without [Course] format: {summary}")
+            return 'skipped'
+        
+        # Parse start/end times
+        start_data = g_event.get('start', {})
+        end_data = g_event.get('end', {})
+        
+        if 'dateTime' in start_data:
+            # Timed event
+            start_str = start_data['dateTime']
+            end_str = end_data.get('dateTime', start_str)
+            allday = False
+            
+            # Parse ISO format datetime
+            start_dt = self._parse_google_datetime(start_str)
+            end_dt = self._parse_google_datetime(end_str)
+        elif 'date' in start_data:
+            # All-day event
+            start_dt = datetime.strptime(start_data['date'], '%Y-%m-%d')
+            end_dt = datetime.strptime(end_data.get('date', start_data['date']), '%Y-%m-%d')
+            allday = True
+        else:
+            _logger.warning(f"Event {google_event_id} has no valid start time")
+            return 'skipped'
+        
+        # Check if event already exists
+        existing = self.search([('google_event_id', '=', google_event_id)], limit=1)
+        
+        # Get video call URL from Google Meet
+        video_url = ''
+        hangout_link = g_event.get('hangoutLink', '')
+        if hangout_link:
+            video_url = hangout_link
+        
+        # Also check conferenceData
+        conference_data = g_event.get('conferenceData', {})
+        entry_points = conference_data.get('entryPoints', [])
+        for ep in entry_points:
+            if ep.get('entryPointType') == 'video':
+                video_url = ep.get('uri', video_url)
+                break
+        
+        # Build description with video URL if not already there
+        full_description = description
+        if video_url and 'Enlace a clase' not in full_description:
+            full_description = f'{description}<p>Enlace a clase: "{video_url}"</p>' if description else f'<p>Enlace a clase: "{video_url}"</p>'
+        
+        vals = {
+            'name': summary,
+            'description': full_description,
+            'start': start_dt,
+            'stop': end_dt,
+            'allday': allday,
+            'google_event_id': google_event_id,
+        }
+        
+        # Add video URL to videocall_location if field exists
+        if video_url and 'videocall_location' in self._fields:
+            vals['videocall_location'] = video_url
+        
+        if existing:
+            # Check if update is needed
+            if (existing.name != summary or 
+                existing.start != start_dt or 
+                existing.stop != end_dt or
+                existing.description != full_description):
+                existing.write(vals)
+                _logger.info(f"Updated event: {summary}")
+                return 'updated'
+            return 'skipped'
+        else:
+            # Create new event
+            self.create(vals)
+            _logger.info(f"Created event from Google: {summary}")
+            return 'created'
+
+    def _parse_google_datetime(self, dt_str):
+        """Parse Google Calendar datetime format"""
+        # Remove timezone info for simplicity (Google returns ISO 8601)
+        # Example: 2026-02-05T16:00:00+01:00
+        if '+' in dt_str:
+            dt_str = dt_str.rsplit('+', 1)[0]
+        elif dt_str.endswith('Z'):
+            dt_str = dt_str[:-1]
+        
+        # Handle milliseconds if present
+        if '.' in dt_str:
+            dt_str = dt_str.split('.')[0]
+        
+        return datetime.strptime(dt_str, '%Y-%m-%dT%H:%M:%S')
 
     @api.model_create_multi
     def create(self, vals_list):
