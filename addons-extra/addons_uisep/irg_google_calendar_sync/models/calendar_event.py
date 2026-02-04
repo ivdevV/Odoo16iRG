@@ -50,8 +50,13 @@ class CalendarEvent(models.Model):
 
         # Find or Create Course
         Course = self.env['op.course']
-        course = Course.search([('name', '=', course_name)], limit=1)
+        # Use ilike for case-insensitive matching which is more robust
+        course = Course.search([('name', 'ilike', course_name)], limit=1)
         if not course:
+            # Fallback: try searching with wildcards if exact match fails? 
+            # Or assume creation is needed. 
+            # Note: Odoo 'ilike' uses %string%, so it's already a containment search largely equal to wildcard
+            
             course_code = self._get_unique_code('op.course', course_name, 16)
             course = Course.create({
                 'name': course_name, 
@@ -63,7 +68,7 @@ class CalendarEvent(models.Model):
 
         # Find or Create Subject
         Subject = self.env['op.subject']
-        subject = Subject.search([('name', '=', subject_name)], limit=1)
+        subject = Subject.search([('name', 'ilike', subject_name)], limit=1)
         if not subject:
             subject_code = self._get_unique_code('op.subject', subject_name, 256)
             subject = Subject.create({
@@ -171,22 +176,33 @@ class CalendarEvent(models.Model):
         if not self.description:
             return None
         
+        # Clean HTML to text-like format for easier parsing
+        desc_text = self.description
+        # Replace block endings with newlines
+        desc_text = re.sub(r'<(div|p|br|/p|/div)[^>]*>', '\n', desc_text, flags=re.IGNORECASE)
+        # Remove remaining tags
+        desc_text = re.sub(r'<[^>]+>', '', desc_text)
+        
         faculty_name = None
         # Use regex to find lines starting with Professor keywords
         # Matches "Profesor:", "Profesor/a:", "Docente:", "Professor:"
         pattern = r'(?:Profesor(?:/a)?|Professor|Docente)\s*:\s*(.*)'
         
-        lines = self.description.split('\n')
+        lines = desc_text.split('\n')
         for line in lines:
+            line = line.strip()
+            if not line: continue
+            
             match = re.search(pattern, line, re.IGNORECASE)
             if match:
                 faculty_name = match.group(1).strip()
+                # Stop reading if we hit another keyword or just take the first meaningful part
+                # In case "Professor: Name Link: ..." 
+                # (Though with newline replacement this is less likely)
                 break
 
         if faculty_name:
             Faculty = self.env['op.faculty']
-            # Remove HTML tags if any
-            faculty_name = re.sub('<[^<]+?>', '', faculty_name).strip()
             
             # Search loosely
             domain = ['|', '|', ('first_name', 'ilike', faculty_name), ('last_name', 'ilike', faculty_name), ('name', 'ilike', faculty_name)]
@@ -205,8 +221,11 @@ class CalendarEvent(models.Model):
                         first_name = parts[1]
                         last_name = ' '.join(parts[2:]) if len(parts) > 2 else 'Professor'
 
+                # Ensure we have a valid name to avoid constraint errors
+                full_name = f"{first_name} {last_name}"
+                
                 faculty = Faculty.create({
-                    'name': f"{first_name} {last_name}",
+                    'name': full_name,
                     'first_name': first_name,
                     'last_name': last_name,
                     'birth_date': '1980-01-01', 
