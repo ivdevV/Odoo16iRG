@@ -23,6 +23,12 @@ class CalendarEvent(models.Model):
             event._sync_to_openeducat()
         return res
 
+    def action_manual_sync_openeducat(self):
+        """Allow manual triggering from the UI"""
+        for event in self:
+            _logger.info(f"Manual sync triggered for event: {event.name}")
+            event._sync_to_openeducat()
+
     def _sync_to_openeducat(self):
         """
         Syncs the calendar event to OpenEduCat op.session if it matches the pattern.

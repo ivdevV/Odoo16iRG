@@ -7,6 +7,7 @@
     'depends': ['calendar', 'openeducat_timetable', 'openeducat_core'],
     'data': [
         'views/res_config_settings_views.xml',
+        'views/calendar_event_view.xml',
     ],
     'installable': True,
     'application': False,
