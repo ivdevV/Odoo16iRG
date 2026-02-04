@@ -82,13 +82,30 @@ class CalendarEvent(models.Model):
 
         # Find or Create Subject
         Subject = self.env['op.subject']
+        _logger.info(f"Searching for subject: {subject_name}")
+        
         # First try to find exact or similar match
         subject = Subject.search([('name', 'ilike', subject_name)], limit=1)
         
         if not subject:
+            # Try partial matching - look for significant keywords
+            # Prioritize specific educational terms
+            priority_words = ['infantojuvenil', 'adulta', 'cognitivo', 'conductual', 'emocional',
+                              'depresivos', 'ansiedad', 'parejas', 'familiar', 'neuropsicol']
+            
+            # Check priority words first
+            subject_lower = subject_name.lower()
+            for pw in priority_words:
+                if pw in subject_lower:
+                    subject = Subject.search([('name', 'ilike', pw)], limit=1)
+                    if subject:
+                        _logger.info(f"Found subject by priority keyword '{pw}': {subject.name}")
+                        break
+        
+        if not subject:
             # Try partial matching - extract key words (min 5 chars to be meaningful)
-            key_words = [w for w in subject_name.split() if len(w) > 4]
-            for word in key_words[:3]:
+            key_words = [w for w in subject_name.split() if len(w) > 5]
+            for word in key_words[:5]:
                 subject = Subject.search([('name', 'ilike', word)], limit=1)
                 if subject:
                     _logger.info(f"Found subject by keyword '{word}': {subject.name}")
@@ -141,9 +158,18 @@ class CalendarEvent(models.Model):
         }
 
         # Add Google Meet URL - Check for the correct field name
-        meeting_url = self.videocall_location or self._parse_url_from_description()
+        meeting_url = self.videocall_location
+        _logger.info(f"videocall_location = {meeting_url}")
+        
+        if not meeting_url:
+            meeting_url = self._parse_url_from_description()
+            _logger.info(f"URL from description = {meeting_url}")
         
         if meeting_url:
+            # Clean URL if needed (remove trailing quotes, etc)
+            meeting_url = meeting_url.strip().strip('"').strip("'")
+            _logger.info(f"Final meeting_url = {meeting_url}")
+            
             # Try different field names that might exist in op.session
             url_fields = ['time_url_meeting', 'attendee_meeting_url', 'meeting_url', 'url']
             for field_name in url_fields:
@@ -151,6 +177,8 @@ class CalendarEvent(models.Model):
                     session_vals[field_name] = meeting_url
                     _logger.info(f"Setting {field_name} = {meeting_url}")
                     break
+                else:
+                    _logger.debug(f"Field {field_name} not found in op.session")
 
         if existing_session:
             existing_session.write(session_vals)
@@ -272,11 +300,33 @@ class CalendarEvent(models.Model):
     def _parse_url_from_description(self):
         if not self.description:
             return None
-        # Enlace a clase: "url"
-        pattern = r'(?:Enlace a clase|Link|Videollamada)\s*:\s*["\']?(https?://[^\s"\'<>]+)["\']?'
-        match = re.search(pattern, self.description, re.IGNORECASE)
+        
+        # Clean HTML first
+        desc_text = self.description
+        # Extract href values from anchor tags
+        href_pattern = r'href=["\']?(https?://[^"\'>\s]+)["\']?'
+        href_match = re.search(href_pattern, desc_text, re.IGNORECASE)
+        if href_match:
+            url = href_match.group(1)
+            _logger.info(f"Found URL in href: {url}")
+            return url
+        
+        # Fallback: Enlace a clase: "url"
+        pattern = r'(?:Enlace a clase|Link|Videollamada|meet\.google\.com)\s*:?\s*["\']?(https?://[^\s"\'<>]+)["\']?'
+        match = re.search(pattern, desc_text, re.IGNORECASE)
         if match:
-            return match.group(1)
+            url = match.group(1)
+            _logger.info(f"Found URL in text: {url}")
+            return url
+        
+        # Try to find any Google Meet URL
+        meet_pattern = r'(https?://meet\.google\.com/[a-z\-]+)'
+        meet_match = re.search(meet_pattern, desc_text, re.IGNORECASE)
+        if meet_match:
+            url = meet_match.group(1)
+            _logger.info(f"Found Google Meet URL: {url}")
+            return url
+            
         return None
 
     def _find_or_create_batch(self, course):
