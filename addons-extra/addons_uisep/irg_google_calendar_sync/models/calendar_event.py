@@ -266,6 +266,7 @@ class CalendarEvent(models.Model):
                  return batch
 
         # 2. Standard Logic
+        batches = Batch.search([
             ('course_id', '=', course.id),
             ('start_date', '<=', event_date),
             ('end_date', '>=', event_date)
