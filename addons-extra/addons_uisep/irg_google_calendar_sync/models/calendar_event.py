@@ -80,22 +80,26 @@ class CalendarEvent(models.Model):
             })
             _logger.info(f"Created new Course: {course.name} ({course.code})")
 
+        # Parse "Bloque: ..." from description to use as subject name
+        bloque_name = self._parse_bloque_from_description()
+        search_subject_name = bloque_name if bloque_name else subject_name
+        
         # Find or Create Subject
         Subject = self.env['op.subject']
-        _logger.info(f"Searching for subject: {subject_name}")
+        _logger.info(f"Searching for subject using: {search_subject_name}")
         
         # First try to find exact match
-        subject = Subject.search([('name', '=', subject_name)], limit=1)
+        subject = Subject.search([('name', '=', search_subject_name)], limit=1)
         
         if not subject:
             # Try ilike (partial/case-insensitive)
-            subject = Subject.search([('name', 'ilike', subject_name)], limit=1)
+            subject = Subject.search([('name', 'ilike', search_subject_name)], limit=1)
             if subject:
                 _logger.info(f"Found subject by ilike: {subject.name}")
         
         if not subject:
-            # Try searching for significant parts (split by dash)
-            parts = subject_name.split('-')
+            # Try searching for significant parts (split by dash or comma)
+            parts = re.split(r'[-,]', search_subject_name)
             for part in parts:
                 part = part.strip()
                 if len(part) > 10:  # Only meaningful parts
@@ -105,23 +109,8 @@ class CalendarEvent(models.Model):
                         break
         
         if not subject:
-            # Try partial matching - look for significant keywords
-            # Prioritize specific educational terms
-            priority_words = ['infantojuvenil', 'adulta', 'cognitivo', 'conductual', 'emocional',
-                              'depresivos', 'ansiedad', 'parejas', 'familiar', 'neuropsicol']
-            
-            # Check priority words first
-            subject_lower = subject_name.lower()
-            for pw in priority_words:
-                if pw in subject_lower:
-                    subject = Subject.search([('name', 'ilike', pw)], limit=1)
-                    if subject:
-                        _logger.info(f"Found subject by priority keyword '{pw}': {subject.name}")
-                        break
-        
-        if not subject:
             # Try partial matching - extract key words (min 5 chars to be meaningful)
-            key_words = [w for w in subject_name.split() if len(w) > 5]
+            key_words = [w for w in search_subject_name.split() if len(w) > 5]
             for word in key_words[:5]:
                 subject = Subject.search([('name', 'ilike', word)], limit=1)
                 if subject:
@@ -129,9 +118,11 @@ class CalendarEvent(models.Model):
                     break
         
         if not subject:
-            subject_code = self._get_unique_code('op.subject', subject_name, 256)
+            # Create new subject - use bloque_name if available, else subject_name
+            final_subject_name = bloque_name if bloque_name else subject_name
+            subject_code = self._get_unique_code('op.subject', final_subject_name, 256)
             subject = Subject.create({
-                'name': subject_name, 
+                'name': final_subject_name, 
                 'code': subject_code,
                 'type': 'theory', 
                 'subject_type': 'compulsory'
@@ -314,6 +305,39 @@ class CalendarEvent(models.Model):
                 'gender': 'male',
             })
         return faculty.id
+
+    def _parse_bloque_from_description(self):
+        """
+        Parses description for 'Bloque: Name' to use as subject name.
+        Returns the bloque name or None if not found.
+        """
+        if not self.description:
+            return None
+        
+        # Clean HTML to text-like format for easier parsing
+        desc_text = self.description
+        # Replace block endings with newlines
+        desc_text = re.sub(r'<(div|p|br|/p|/div)[^>]*>', '\n', desc_text, flags=re.IGNORECASE)
+        # Remove remaining tags
+        desc_text = re.sub(r'<[^>]+>', '', desc_text)
+        
+        # Match "Bloque: ..." or "Asignatura: ..." or "Materia: ..."
+        pattern = r'(?:Bloque|Asignatura|Materia)\s*:\s*(.*)'
+        
+        lines = desc_text.split('\n')
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            match = re.search(pattern, line, re.IGNORECASE)
+            if match:
+                bloque_name = match.group(1).strip()
+                if bloque_name:
+                    _logger.info(f"Found Bloque in description: {bloque_name}")
+                    return bloque_name
+        
+        return None
 
     def _parse_url_from_description(self):
         if not self.description:
