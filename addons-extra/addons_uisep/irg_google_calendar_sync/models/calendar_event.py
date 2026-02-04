@@ -206,6 +206,7 @@ class CalendarEvent(models.Model):
                         last_name = ' '.join(parts[2:]) if len(parts) > 2 else 'Professor'
 
                 faculty = Faculty.create({
+                    'name': f"{first_name} {last_name}",
                     'first_name': first_name,
                     'last_name': last_name,
                     'birth_date': '1980-01-01', 
@@ -220,6 +221,7 @@ class CalendarEvent(models.Model):
         faculty = Faculty.search([('last_name', '=', 'Professor'), ('first_name', '=', 'Unknown')], limit=1)
         if not faculty:
             faculty = Faculty.create({
+                'name': 'Unknown Professor',
                 'first_name': 'Unknown',
                 'last_name': 'Professor',
                 'birth_date': '1980-01-01',
