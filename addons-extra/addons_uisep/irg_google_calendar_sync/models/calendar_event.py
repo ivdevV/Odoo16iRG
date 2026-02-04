@@ -378,12 +378,22 @@ class CalendarEvent(models.Model):
         # 1. Try to parse "Grupo: XYZ" or "Lote: XYZ" from description
         batch_name_from_desc = None
         if self.description:
-            pattern = r'(?:Grupo|Lote|Batch)\s*:\s*(.*)'
-            match = re.search(pattern, self.description, re.IGNORECASE)
-            if match:
-                batch_name_from_desc = match.group(1).strip()
-                # Remove HTML tags if any
-                batch_name_from_desc = re.sub('<[^<]+?>', '', batch_name_from_desc).strip()
+            # Clean HTML first to work with plain text lines
+            desc_text = self.description
+            desc_text = re.sub(r'<(div|p|br|/p|/div)[^>]*>', '\n', desc_text, flags=re.IGNORECASE)
+            desc_text = re.sub(r'<[^>]+>', '', desc_text)
+            
+            # Search line by line for Grupo/Lote/Batch
+            pattern = r'(?:Grupo|Lote|Batch)\s*:\s*(\S+)'
+            for line in desc_text.split('\n'):
+                line = line.strip()
+                if not line:
+                    continue
+                match = re.search(pattern, line, re.IGNORECASE)
+                if match:
+                    batch_name_from_desc = match.group(1).strip()
+                    _logger.info(f"Found Batch/Grupo in description: {batch_name_from_desc}")
+                    break
 
         if batch_name_from_desc:
              # Search by code or name
