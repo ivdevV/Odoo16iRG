@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- 
+        Fix: Modificar la obtención de slide_channel_active_ids para que filtre 
+        por slide.channel.partner con active=True, respetando las fechas del lote.
+        
+        El problema original era que user.partner_id.slide_channel_ids no filtraba
+        por el campo active del modelo intermedio slide.channel.partner.
+    -->
+    <template id="user_profile_content_details_fix" 
+              inherit_id="isep_website_custom.user_profile_content_details">
+        
+        <!-- Reemplazar la línea que obtiene slide_channel_active_ids -->
+        <xpath expr="//t[@t-set='slide_channel_active_ids']" position="replace">
+            <!-- Buscar slide.channel.partner activos para este usuario -->
+            <t t-set="active_channel_partners" t-value="env['slide.channel.partner'].sudo().search([('partner_id', '=', user.partner_id.id), ('active', '=', True)])"/>
+            <!-- Obtener los IDs de los canales donde tiene inscripción activa -->
+            <t t-set="slide_channel_active_ids" t-value="active_channel_partners.mapped('channel_id').ids"/>
+        </xpath>
+
+    </template>
+
+</odoo>
