@@ -152,9 +152,9 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- INTRO TEXT ---
         y = start_y
         self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de", 
-                                   left_col_x, y, col_width - 80, font_regular, 12, align='center')
+                                   left_col_x, y, col_width - 80, font_regular, 12, align='right')
         self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de", 
-                                   right_col_x, y, col_width - 80, font_regular, 12, align='center')
+                                   right_col_x, y, col_width - 80, font_regular, 12, align='left')
         
         # --- COURSE NAME ---
         y -= 30  # Reduced gap
@@ -164,8 +164,9 @@ class DiplomaReportPDF(models.AbstractModel):
         course_font_size = 24  # Same as student name
         
         # Draw wrapped text and get new Y
-        y_next_cat = self._draw_wrapped_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, course_font_size, align='left')
-        y_next_es = self._draw_wrapped_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, course_font_size, align='right')
+        # Draw wrapped text and get new Y
+        y_next_cat = self._draw_wrapped_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, course_font_size, align='right')
+        y_next_es = self._draw_wrapped_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, course_font_size, align='left')
         
         # Update Y to the lowest point from both columns
         y = min(y_next_cat, y_next_es)
@@ -188,13 +189,13 @@ class DiplomaReportPDF(models.AbstractModel):
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width - 80, font_regular, 11, align='right')
         y -= 15
-        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width - 80, font_regular, 11, align='right')
         y -= 25
-        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width - 80, font_regular, 11, align='right')
         y -= 15
-        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width - 80, font_regular, 11, align='right')
         
         # --- BODY TEXT SPANISH ---
         y_es = y + 55  # Reset Y for right column
@@ -203,13 +204,13 @@ class DiplomaReportPDF(models.AbstractModel):
         body_es_3 = "Este máster cuenta con el reconocimiento de excelencia académica"
         body_es_4 = "de la European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width - 80, font_regular, 11, align='left')
         y_es -= 15
-        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width - 80, font_regular, 11, align='left')
         y_es -= 25
-        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width - 80, font_regular, 11, align='left')
         y_es -= 15
-        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width - 80, font_regular, 11, align='left')
         
         # --- DATES ---
         y -= 40  # Reduced gap
