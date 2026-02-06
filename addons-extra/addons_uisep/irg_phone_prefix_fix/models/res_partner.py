@@ -11,25 +11,41 @@ class ResPartner(models.Model):
         # Ejecutar validación estándar primero
         res = super(ResPartner, self)._phone_format(number, country=country, company=company)
         
-        if not number or not res:
+        if not number or not isinstance(number, str):
             return res
 
-        country = country or self.country_id or self.env.company.country_id
+        # Intentar resolver el país si no viene dado
+        if not country and self:
+            country = self.country_id
+        if not country and company:
+            country = company.country_id
+        if not country:
+            country = self.env.company.country_id
+            
         if country and country.code == 'MX':
-            # Limpiar entradas para comparación segura
-            clean_input = number.replace(" ", "").replace("-", "")
-            clean_res = res.replace(" ", "").replace("-", "")
+            # Limpiar entradas para comparación segura (quitamos espacios, guiones, paréntesis y +)
+            # Objetivo: detectar si el usuario escribió la secuencia 521
+            clean_input = number.replace(" ", "").replace("-", "").replace("(", "").replace(")", "").replace("+", "")
+            
+            # Limpiar resultado para verificar si se perdió el 1
+            if not res:
+                return res
+            clean_res = res.replace(" ", "").replace("-", "").replace("(", "").replace(")", "").replace("+", "")
 
-            # Si el input tenía +521...
-            if clean_input.startswith("+521"):
-                # Y el resultado formateado empieza por +52 pero NO por +521 (lo perdió)
-                if clean_res.startswith("+52") and not clean_res.startswith("+521"):
+            # Si el input tenía 521 al inicio...
+            if clean_input.startswith("521"):
+                # Y el resultado formateado empieza por 52 pero NO por 521 (el 1 fue eliminado)
+                if clean_res.startswith("52") and not clean_res.startswith("521"):
                     # Reconstruir el número añadiendo el 1
-                    # Asumimos que res tiene formato "+52 XX..."
-                    # Queremos "+52 1 XX..."
                     
-                    # Extraer el resto del número después del +52
-                    suffix = res[3:].strip()
-                    return "+52 1 " + suffix
+                    # Extraer el sufijo del resultado (quitando el +52 inicial)
+                    # El formato estándar suele ser +52 XX...
+                    # Buscamos dónde termina el +52
+                    
+                    # Normalizamos res para trabajar más fácil, asegurando que empiece por +52
+                    temp_res = res.lstrip("+")
+                    if temp_res.startswith("52"):
+                        suffix = temp_res[2:].strip() # Lo que sigue al 52
+                        return "+52 1 " + suffix
         
         return res
