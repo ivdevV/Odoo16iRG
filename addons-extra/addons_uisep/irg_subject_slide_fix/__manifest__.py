@@ -3,14 +3,16 @@
     'name': 'IRG Subject Slide Fix',
     'version': '16.0.1.0.0',
     'category': 'Education',
-    'summary': 'Fix para filtrar asignaturas activas en el panel de control del campus',
+    'summary': 'Fix para filtrar asignaturas activas y en lote en el panel de control del campus',
     'description': """
-        Este módulo corrige el panel de control del campus virtual para que solo muestre
-        como activas las asignaturas donde el estudiante tiene un registro activo en
-        slide.channel.partner (respetando las fechas del lote).
+        Este módulo corrige el panel de control del campus virtual para que:
+        1. Solo muestre las asignaturas que corresponden al lote (batch) del estudiante.
+        2. Solo muestre como disponibles/activas las asignaturas donde el estudiante tiene un registro activo en
+           slide.channel.partner (respetando las fechas del lote).
         
         El problema original era que user.partner_id.slide_channel_ids no filtraba
-        por el campo active del modelo intermedio slide.channel.partner.
+        por el campo active del modelo intermedio slide.channel.partner, y se mostraban
+        todas las asignaturas del curso en lugar de solo las del lote.
     """,
     'author': 'IRG',
     'website': '',
