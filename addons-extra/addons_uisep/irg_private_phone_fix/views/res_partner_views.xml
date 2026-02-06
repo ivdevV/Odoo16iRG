@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <record id="view_res_partner_phone_fix_form" model="ir.ui.view">
+        <field name="name">view.res.partner.form.fix</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="isep_private_phone.view_res_partner_phone_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- PHONE -->
+            <!-- Eliminar campo con password=True -->
+            <xpath expr="//field[@name='phone'][@password='True']" position="replace"/>
+            
+            <!-- Asegurar que el campo restante sea visible siempre -->
+            <xpath expr="//field[@name='phone']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+            </xpath>
+
+            <!-- MOBILE -->
+            <!-- Eliminar campo con password=True -->
+            <xpath expr="//field[@name='mobile'][@password='True']" position="replace"/>
+            
+            <!-- Asegurar que el campo restante sea visible siempre -->
+            <xpath expr="//field[@name='mobile']" position="attributes">
+                <attribute name="attrs">{}</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
