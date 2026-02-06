@@ -140,8 +140,7 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- CONTENT POSITIONING ---
         # Adjust Y positions based on page size
-        if diploma_type == 'physical':
-            start_y = page_height - 180
+        start_y = page_height - 180
         
         col_width = page_width / 2
         left_col_x = 60
