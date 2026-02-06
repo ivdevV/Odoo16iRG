@@ -84,6 +84,20 @@ class DiplomaReportPDF(models.AbstractModel):
             
         c.drawString(draw_x, y, text)
 
+    def _draw_fit_text_in_column(self, c, text, x, y, width, font_name, max_font_size, min_font_size=10, align='center'):
+        """Draw text within a column area, reducing font size if needed"""
+        font_size = max_font_size
+        c.setFont(font_name, font_size)
+        text_width = c.stringWidth(text, font_name, font_size)
+        
+        # Reduce font size until it fits
+        while text_width > width and font_size > min_font_size:
+            font_size -= 1
+            c.setFont(font_name, font_size)
+            text_width = c.stringWidth(text, font_name, font_size)
+            
+        self._draw_text_in_column(c, text, x, y, width, font_name, font_size, align)
+
     @api.model
     def _get_report_values(self, docids, data=None):
         return {'data': data}
@@ -149,8 +163,8 @@ class DiplomaReportPDF(models.AbstractModel):
         course_cat = data.get('course_name_cat', '')
         course_es = data.get('course_name_es', '')
         
-        self._draw_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, 20, align='left')
-        self._draw_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, 20, align='right')
+        self._draw_fit_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, 20, align='left')
+        self._draw_fit_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, 20, align='right')
         
         # --- "a" ---
         y -= 40
@@ -208,30 +222,34 @@ class DiplomaReportPDF(models.AbstractModel):
         # Signature Raimon (left)
         sign_raimon_path = self._get_image_path('firma_raimon.png')
         if sign_raimon_path and os.path.exists(sign_raimon_path):
-            # Align left
-            sig_x = left_col_x
+            # Align center of left column
+            # Left column starts at left_col_x, width is (col_width - 80)
+            # Center of column is left_col_x + (col_width - 80) / 2
+            # Draw X = Center - Image Width / 2
+            sig_x = left_col_x + (col_width - 80 - 100) / 2
             c.drawImage(sign_raimon_path, sig_x, y_images, width=100, height=50, preserveAspectRatio=True, mask='auto')
         
         # Signature Grecia (right)
         sign_grecia_path = self._get_image_path('firma_grecia.png')
         img_width = 100
         if sign_grecia_path and os.path.exists(sign_grecia_path):
-            # Align right: Start X = (Column Start + Column Width) - Image Width
-            sig_x = right_col_x + (col_width - 80) - img_width
+            # Align center of right column
+            # Right column starts at right_col_x, width is (col_width - 80)
+            sig_x = right_col_x + (col_width - 80 - img_width) / 2
             c.drawImage(sign_grecia_path, sig_x, y_images, width=img_width, height=50, preserveAspectRatio=True, mask='auto')
 
         # Text Names (Aligned)
         y -= 15
-        self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width - 80, font_bold, 14, align='left')
-        self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width - 80, font_bold, 14, align='right')
+        self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width - 80, font_bold, 14, align='center')
+        self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width - 80, font_bold, 14, align='center')
         
         y -= 15
-        self._draw_text_in_column(c, "Director", left_col_x, y, col_width - 80, font_regular, 11, align='left')
-        self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width - 80, font_regular, 11, align='right')
+        self._draw_text_in_column(c, "Director", left_col_x, y, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width - 80, font_regular, 11, align='center')
         
         y -= 13
-        self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width - 80, font_regular, 11, align='left')
-        self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width - 80, font_regular, 11, align='right')
+        self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width - 80, font_regular, 11, align='center')
         
         # --- QR CODE & REGISTRY ---
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
