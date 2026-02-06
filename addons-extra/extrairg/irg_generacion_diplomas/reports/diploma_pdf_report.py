@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.utils import ImageReader
+from reportlab.lib.utils import ImageReader, simpleSplit
 from babel.dates import format_date
 import io
 import os
@@ -84,19 +84,20 @@ class DiplomaReportPDF(models.AbstractModel):
             
         c.drawString(draw_x, y, text)
 
-    def _draw_fit_text_in_column(self, c, text, x, y, width, font_name, max_font_size, min_font_size=10, align='center'):
-        """Draw text within a column area, reducing font size if needed"""
-        font_size = max_font_size
-        c.setFont(font_name, font_size)
-        text_width = c.stringWidth(text, font_name, font_size)
-        
-        # Reduce font size until it fits
-        while text_width > width and font_size > min_font_size:
-            font_size -= 1
-            c.setFont(font_name, font_size)
-            text_width = c.stringWidth(text, font_name, font_size)
+    def _draw_wrapped_text_in_column(self, c, text, x, y, width, font_name, font_size, align='center', leading=None):
+        """Draw text wrapping to new lines if needed. Returns new Y position."""
+        if leading is None:
+            leading = font_size * 1.2
             
-        self._draw_text_in_column(c, text, x, y, width, font_name, font_size, align)
+        c.setFont(font_name, font_size)
+        lines = simpleSplit(text, font_name, font_size, width)
+        
+        current_y = y
+        for line in lines:
+            self._draw_text_in_column(c, line, x, current_y, width, font_name, font_size, align)
+            current_y -= leading
+            
+        return current_y
 
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -163,8 +164,14 @@ class DiplomaReportPDF(models.AbstractModel):
         course_cat = data.get('course_name_cat', '')
         course_es = data.get('course_name_es', '')
         
-        self._draw_fit_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, 20, align='left')
-        self._draw_fit_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, 20, align='right')
+        course_font_size = 24  # Same as student name
+        
+        # Draw wrapped text and get new Y
+        y_next_cat = self._draw_wrapped_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, course_font_size, align='left')
+        y_next_es = self._draw_wrapped_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, course_font_size, align='right')
+        
+        # Update Y to the lowest point from both columns
+        y = min(y_next_cat, y_next_es)
         
         # --- "a" ---
         y -= 40
@@ -210,8 +217,8 @@ class DiplomaReportPDF(models.AbstractModel):
         date_cat = data.get('date_cat', '')
         date_es = data.get('date_es', '')
         
-        self._draw_text_in_column(c, f"Barcelona, a {date_cat}", left_col_x, y, col_width - 80, font_regular, 12, align='left')
-        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width - 80, font_regular, 12, align='right')
+        self._draw_text_in_column(c, f"Barcelona, a {date_cat}", left_col_x, y, col_width - 80, font_regular, 12, align='center')
+        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width - 80, font_regular, 12, align='center')
         
         # --- SIGNATURES ---
         y -= 80
