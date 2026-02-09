@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="assets_frontend" inherit_id="web.assets_frontend" name="elearning student ui assets">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/elearning_student_ui/static/src/js/elearning_student_ui.js"/>
+        </xpath>
+    </template>
+</odoo>
