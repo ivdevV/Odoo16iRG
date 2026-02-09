@@ -25,32 +25,16 @@ class IrgWebsiteSale(CustomWebsiteSale):
         """
         _logger.info("IRG controller confirm_order: ENTERING")
         res = super(IrgWebsiteSale, self).confirm_order(**post)
-        try:
-            order = request.website.sale_get_order()
-            _logger.info("IRG controller confirm_order: order=%s, partner=%s",
-                         order.name if order else 'NONE',
-                         order.partner_id.id if order else 'N/A')
-            if order and order.partner_id.id != 4:
-                _logger.info("IRG controller confirm_order: Calling _auto_scheduled_order for %s", order.name)
-                order.sudo()._auto_scheduled_order()
-            else:
-                _logger.info("IRG controller confirm_order: No order or public user, skipping")
-        except Exception as e:
-            _logger.error("IRG controller confirm_order: Error: %s", str(e), exc_info=True)
+        # No llamamos _auto_scheduled_order aquí porque super() ya lo hace
         return res
 
     @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
     def address(self, **kw):
         """
-        Sobreescribe address para ejecutar _auto_scheduled_order al completar dirección.
+        Sobreescribe address. super() -> CustomWebsiteSale.address ya llama
+        _auto_scheduled_order internamente, no necesitamos llamarlo otra vez.
         """
         _logger.info("IRG controller address: ENTERING")
         res = super(IrgWebsiteSale, self).address(**kw)
-        try:
-            order = request.website.sale_get_order()
-            if order and order.partner_id.id != 4:
-                _logger.info("IRG controller address: Calling _auto_scheduled_order for %s", order.name)
-                order.sudo()._auto_scheduled_order()
-        except Exception as e:
-            _logger.error("IRG controller address: Error: %s", str(e), exc_info=True)
+        # No llamamos _auto_scheduled_order aquí porque super() ya lo hace
         return res
