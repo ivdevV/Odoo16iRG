@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="registration_order_debug_sale_ext" inherit_id="irg_sale_order_extended.registration_order_template">
-        <xpath expr="//table[1]" position="before">
-            <h2 style="color: red; text-align: center; font-weight: bold;">PRUEBA DEBUG</h2>
-        </xpath>
-    </template>
+    <data>
+        <template id="registration_order_debug_sale_ext" inherit_id="irg_sale_order_extended.registration_order_template">
+            <xpath expr="//table[1]" position="before">
+                <h2 style="color: red; text-align: center; font-weight: bold;">PRUEBA DEBUG</h2>
+            </xpath>
+        </template>
 
-    <template id="registration_order_debug_migration" inherit_id="irg_migration_fields.registration_order_template" inherit_mode="primary">
-        <xpath expr="//table[1]" position="before">
-            <h2 style="color: red; text-align: center; font-weight: bold;">PRUEBA DEBUG</h2>
-        </xpath>
-    </template>
+        <template id="registration_order_debug_migration" inherit_id="irg_migration_fields.registration_order_template" inherit_mode="primary">
+            <xpath expr="//table[1]" position="before">
+                <h2 style="color: red; text-align: center; font-weight: bold;">PRUEBA DEBUG</h2>
+            </xpath>
+        </template>
+    </data>
 </odoo>
