@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="address_website_sale_custom_sign_fix" inherit_id="isep_website_sale_custom.address_website_sale_custom_sign">
+            <xpath expr="//div[@class='alert alert-info mt-3']" position="replace">
+                <div class="alert alert-info mt-3">
+                    <div class="row border rounded p-2 align-items-center">
+                        <div class="col-auto">
+                            <i class="fa fa-info-circle fa-2x"/>
+                        </div>
+                        <div class="col">
+                            <p>
+                                ¡El documento para firmar la matrícula ha sido enviado a tu correo! Recuerda que tienes que firmarla para seguir. Gracias por tu paciencia.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

@@ -14,7 +14,7 @@
         'irg_sale_order_extended',
     ],
     'data': [
-        'views/registration_order_debug.xml',
+        'views/payment_message.xml',
     ],
     'installable': True,
     'auto_install': False,
