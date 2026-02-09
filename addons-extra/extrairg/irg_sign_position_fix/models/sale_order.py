@@ -32,31 +32,38 @@ class SaleOrderSignFix(models.Model):
                 'sale_id': self.id,
             })
             if sign:
+                # Solo firmas en páginas 1 y 3 con posiciones alineadas a la firma IRG
+                sign_pages = {
+                    1: 0.855,  # posY en página 1 (alineado con firma IRG)
+                    3: 0.630,  # posY en página 3 (alineado con firma IRG)
+                }
                 if self.partner_id.id != self.partner_invoice_id.id:
-                    for i in range(0, sign.num_pages):
-                        self.env['sign.item'].create({
-                            'template_id': sign.id,
-                            'type_id': 1,
-                            'required': True,
-                            'responsible_id': 1,
-                            'page': i + 1,
-                            'posX': 0.420,
-                            'posY': 0.280,
-                            'width': 0.165,
-                            'height': 0.040,
-                        })
+                    for page, pos_y in sign_pages.items():
+                        if page <= sign.num_pages:
+                            self.env['sign.item'].create({
+                                'template_id': sign.id,
+                                'type_id': 1,
+                                'required': True,
+                                'responsible_id': 1,
+                                'page': page,
+                                'posX': 0.420,
+                                'posY': pos_y,
+                                'width': 0.165,
+                                'height': 0.040,
+                            })
                 elif self.partner_id.id == self.partner_invoice_id.id:
-                    for i in range(0, sign.num_pages):
-                        self.env['sign.item'].create({
-                            'template_id': sign.id,
-                            'type_id': 1,
-                            'required': True,
-                            'responsible_id': 4,
-                            'page': i + 1,
-                            'posX': 0.120,
-                            'posY': 0.280,
-                            'width': 0.165,
-                            'height': 0.040,
-                        })
+                    for page, pos_y in sign_pages.items():
+                        if page <= sign.num_pages:
+                            self.env['sign.item'].create({
+                                'template_id': sign.id,
+                                'type_id': 1,
+                                'required': True,
+                                'responsible_id': 4,
+                                'page': page,
+                                'posX': 0.120,
+                                'posY': pos_y,
+                                'width': 0.165,
+                                'height': 0.040,
+                            })
 
                 self.sign_id = sign.id
