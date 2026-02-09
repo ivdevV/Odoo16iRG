@@ -15,7 +15,7 @@ class SaleOrderSignFix(models.Model):
         report = self.env['ir.actions.report']
         pdf = report._render_qweb_pdf(self.company_id.isep_prematricula_id.id, res_ids=self.id)
         pdf_content = base64.b64encode(pdf[0])
-        fname = 'Matrícula ' + self.partner_id.name
+        fname = 'PRUEBA DEBUG - Matrícula ' + self.partner_id.name
         attach = self.env['ir.attachment'].create({
             'name': fname,
             'type': 'binary',
