@@ -22,6 +22,12 @@ class SaleOrder(models.Model):
         
         if not financing_product:
             financing_product = self.env['product.product'].search([('default_code', '=', 'GASTOS_FIN')], limit=1)
+            
+        if not financing_product:
+             # Fallback: ID proporcionado explícitamente
+             financing_product = self.env['product.product'].browse(108)
+             if not financing_product.exists():
+                 financing_product = False
 
         # 1. Limpieza inicial: Eliminar líneas de financiación antiguas para recalcular
         if financing_product:
@@ -41,7 +47,7 @@ class SaleOrder(models.Model):
                 
                 # --- LÓGICA DE FINANCIACIÓN (NUEVO) ---
                 # Buscamos si tiene atributo "Planes"
-                ptav_plan = ol.product_template_attribute_value_ids.filtered(lambda x: x.attribute_id.name == 'Planes')
+                ptav_plan = ol.product_id.product_template_attribute_value_ids.filtered(lambda x: x.attribute_id.name == 'Planes')
                 
                 if ptav_plan and financing_product:
                     # Asumimos un solo valor para planes
@@ -53,7 +59,7 @@ class SaleOrder(models.Model):
                         
                         # 1. Buscar la variante "Contado" hermana
                         # Debe tener el mismo template y los MISMOS otros atributos (excepto Planes)
-                        other_attributes = ol.product_template_attribute_value_ids.filtered(lambda x: x.attribute_id.name != 'Planes')
+                        other_attributes = ol.product_id.product_template_attribute_value_ids.filtered(lambda x: x.attribute_id.name != 'Planes')
                         
                         # Buscamos el valor "Contado" para el atributo Planes
                         # Primero obtenemos todos los valores posibles para ese atributo en este template
