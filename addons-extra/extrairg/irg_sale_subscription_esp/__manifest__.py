@@ -13,7 +13,8 @@
         'sale',
         'website_sale',
         'sale_subscription',
-        'isep_sale_subscription_extension',  # Dependencia para sobrescribir su lógica
+        'isep_sale_subscription_extension',
+        'isep_sale_subscription_custom',  # Dependencia critica para asegurar orden de carga correcto
     ],
     'data': [
         'data/product_data.xml',
