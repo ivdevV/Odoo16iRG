@@ -11,7 +11,14 @@ class IrgWebsiteSale(WebsiteSale):
         Sobrescribe la actualización del carrito para forzar el recálculo de financiación
         cada vez que se modifica el carrito.
         """
-        res = super(IrgWebsiteSale, self).cart_update_json(product_id, line_id, add_qty, set_qty, display, **kw)
+        res = super(IrgWebsiteSale, self).cart_update_json(
+            product_id=product_id, 
+            line_id=line_id, 
+            add_qty=add_qty, 
+            set_qty=set_qty, 
+            display=display, 
+            **kw
+        )
         
         order = request.website.sale_get_order()
         if order:
