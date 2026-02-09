@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Producto para Gastos de Financiación -->
+        <record id="product_financing_fees" model="product.product">
+            <field name="name">Gastos de Financiación</field>
+            <field name="type">service</field>
+            <field name="list_price">0.0</field>
+            <field name="standard_price">0.0</field>
+            <field name="default_code">GASTOS_FIN</field>
+            <field name="invoice_policy">order</field>
+            <field name="taxes_id" eval="[(5, 0, 0)]"/>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+        </record>
+    </data>
+</odoo>
