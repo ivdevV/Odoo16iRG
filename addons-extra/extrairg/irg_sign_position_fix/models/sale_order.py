@@ -34,8 +34,8 @@ class SaleOrderSignFix(models.Model):
             if sign:
                 # Solo firmas en páginas 1 y 3 con posiciones alineadas a la firma IRG
                 sign_pages = {
-                    1: 0.540,  # posY en página 1 (alineado con firma IRG)
-                    3: 0.310,  # posY en página 3 (alineado con firma IRG)
+                    1: 0.240,  # posY en página 1 (alineado con firma IRG)
+                    3: 0.210,  # posY en página 3 (alineado con firma IRG)
                 }
                 if self.partner_id.id != self.partner_invoice_id.id:
                     for page, pos_y in sign_pages.items():
