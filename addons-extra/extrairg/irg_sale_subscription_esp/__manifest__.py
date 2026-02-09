@@ -14,7 +14,8 @@
         'website_sale',
         'sale_subscription',
         'isep_sale_subscription_extension',
-        'isep_sale_subscription_custom',  # Dependencia critica para asegurar orden de carga correcto
+        'isep_sale_subscription_custom',
+        'isep_website_sale_custom',  # Dependencia para asegurar que nuestro controller override gana
     ],
     'data': [
         'data/product_data.xml',
