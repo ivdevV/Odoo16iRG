@@ -20,14 +20,18 @@ class SaleOrder(models.Model):
         PaymentTerm = self.env['account.payment.term'].sudo()
         financing_product = self.env.ref('irg_sale_subscription_esp.product_financing_fees', raise_if_not_found=False)
         
+        # Fallback 1: Código interno
         if not financing_product:
             financing_product = self.env['product.product'].search([('default_code', '=', 'GASTOS_FIN')], limit=1)
             
+        # Fallback 2: ID explícita
         if not financing_product:
-             # Fallback: ID proporcionado explícitamente
              financing_product = self.env['product.product'].browse(108)
              if not financing_product.exists():
                  financing_product = False
+
+        if not financing_product:
+            _logger.error("IRG Financing: Product NOT FOUND.")
 
         # 1. Limpieza inicial: Eliminar líneas de financiación antiguas para recalcular
         if financing_product:
@@ -45,73 +49,85 @@ class SaleOrder(models.Model):
                 
             if ol.product_id.recurring_invoice:
                 
-                # --- LÓGICA DE FINANCIACIÓN (NUEVO) ---
-                # Buscamos si tiene atributo "Planes"
-                ptav_plan = ol.product_id.product_template_attribute_value_ids.filtered(lambda x: x.attribute_id.name == 'Planes')
-                
-                if ptav_plan and financing_product:
-                    # Asumimos un solo valor para planes
-                    plan_value = ptav_plan[0]
+                # --- LÓGICA DE FINANCIACIÓN (MEJORADA) ---
+                try:
+                    # Buscamos si tiene atributo "Planes" (Case insensitive)
+                    ptavs = ol.product_id.product_template_attribute_value_ids
+                    ptav_plan = ptavs.filtered(lambda x: x.attribute_id.name.lower() == 'planes')
                     
-                    # Si NO es Contado, calculamos la diferencia
-                    if 'contado' not in plan_value.name.lower():
-                        _logger.info("Producto financiado detectado: %s - Plan: %s", ol.product_id.name, plan_value.name)
+                    if ptav_plan and financing_product:
+                        # Asumimos un solo valor para planes
+                        plan_value = ptav_plan[0]
                         
-                        # 1. Buscar la variante "Contado" hermana
-                        # Debe tener el mismo template y los MISMOS otros atributos (excepto Planes)
-                        other_attributes = ol.product_id.product_template_attribute_value_ids.filtered(lambda x: x.attribute_id.name != 'Planes')
-                        
-                        # Buscamos el valor "Contado" para el atributo Planes
-                        # Primero obtenemos todos los valores posibles para ese atributo en este template
-                        contado_value = plan_value.attribute_id.value_ids.filtered(lambda x: 'contado' in x.name.lower())
-                        
-                        if contado_value:
-                            # Ahora buscamos el product.product que sea hermano
-                            # Domain: Mismo Template + Atributo Contado + Otros Atributos
-                            domain = [
-                                ('product_tmpl_id', '=', ol.product_id.product_tmpl_id.id),
-                                ('product_template_attribute_value_ids.product_attribute_value_id', 'in', contado_value.ids)
-                            ]
+                        # Si NO es Contado, calculamos la diferencia
+                        if 'contado' not in plan_value.name.lower():
+                            _logger.info("IRG Financing: Producto financiado detectado: %s - Plan: %s", ol.product_id.name, plan_value.name)
                             
-                            # Añadimos los otros atributos al dominio
-                            for attr in other_attributes:
-                                domain.append(('product_template_attribute_value_ids', 'in', attr.ids))
-                                
-                            sibling_contado = self.env['product.product'].search(domain, limit=1)
+                            # 1. Buscar el valor de atributo "Contado" (PAV)
+                            contado_pav = plan_value.attribute_id.value_ids.filtered(lambda x: 'contado' in x.name.lower())
                             
-                            if sibling_contado:
-                                # Calcular diferencia
-                                current_price = ol.price_unit
+                            if contado_pav:
+                                # 2. Buscar el PTAV correspondiente en este template
+                                contado_ptav = self.env['product.template.attribute.value'].search([
+                                    ('product_tmpl_id', '=', ol.product_id.product_tmpl_id.id),
+                                    ('product_attribute_value_id', 'in', contado_pav.ids)
+                                ], limit=1)
                                 
-                                # Obtener precio usando la tarifa si existe
-                                if self.pricelist_id:
-                                    contado_price = sibling_contado.with_context(
-                                        pricelist=self.pricelist_id.id, 
-                                        uom=ol.product_uom.id
-                                    ).price
-                                else:
-                                    contado_price = sibling_contado.lst_price
+                                if contado_ptav:
+                                    # 3. Construir dominio para buscar el hermano
+                                    # Debe tener contado_ptav Y conservar los otros atributos
+                                    other_ptavs = ptavs.filtered(lambda x: x.attribute_id.name.lower() != 'planes')
+                                    
+                                    domain = [
+                                        ('product_tmpl_id', '=', ol.product_id.product_tmpl_id.id),
+                                        ('product_template_attribute_value_ids', 'in', contado_ptav.ids)
+                                    ]
+                                    
+                                    for ptav in other_ptavs:
+                                        domain.append(('product_template_attribute_value_ids', 'in', ptav.ids))
+                                        
+                                    sibling_contado = self.env['product.product'].search(domain, limit=1)
+                                    
+                                    if sibling_contado:
+                                        # Calcular diferencia
+                                        current_price = ol.price_unit
+                                        
+                                        # Obtener precio usando la tarifa si existe
+                                        if self.pricelist_id:
+                                            # Asegurar contexto limpio de variantes forzadas
+                                            contado_price = sibling_contado.with_context(
+                                                pricelist=self.pricelist_id.id, 
+                                                uom=ol.product_uom.id
+                                            ).price
+                                        else:
+                                            contado_price = sibling_contado.lst_price
 
-                                financing_fee_unit = current_price - contado_price
-                                
-                                if financing_fee_unit > 0:
-                                    _logger.info("Aplicando financiación. Diferencia unitaria: %s", financing_fee_unit)
-                                    
-                                    # 2. Actualizar línea actual al precio de contado
-                                    ol.write({'price_unit': contado_price})
-                                    
-                                    # 3. Crear línea de gastos de financiación
-                                    # Usamos la misma cantidad que la línea original
-                                    self.env['sale.order.line'].create({
-                                        'order_id': self.id,
-                                        'product_id': financing_product.id,
-                                        'name': f"Gastos de Financiación ({plan_value.name}) - {ol.product_id.name}",
-                                        'product_uom_qty': ol.product_uom_qty,
-                                        'price_unit': financing_fee_unit,
-                                        'tax_id': [(6, 0, financing_product.taxes_id.ids)],
-                                    })
+                                        financing_fee_unit = current_price - contado_price
+                                        
+                                        if financing_fee_unit > 0:
+                                            _logger.info("IRG Financing: Aplicando financiación. Diferencia unitaria: %s", financing_fee_unit)
+                                            
+                                            # 2. Actualizar línea actual al precio de contado
+                                            ol.write({'price_unit': contado_price})
+                                            
+                                            # 3. Crear línea de gastos de financiación
+                                            # Usamos la misma cantidad que la línea original
+                                            self.env['sale.order.line'].create({
+                                                'order_id': self.id,
+                                                'product_id': financing_product.id,
+                                                'name': f"Gastos de Financiación ({plan_value.name}) - {ol.product_id.name}",
+                                                'product_uom_qty': ol.product_uom_qty,
+                                                'price_unit': financing_fee_unit,
+                                                'tax_id': [(6, 0, financing_product.taxes_id.ids)],
+                                            })
+                                    else:
+                                        _logger.warning("IRG Financing: No se encontró variante Contado hermana para %s", ol.product_id.name)
+                                else:
+                                    _logger.warning("IRG Financing: No se encontró PTAV Contado para el template")
                             else:
-                                _logger.warning("No se encontró variante Contado para %s", ol.product_id.name)
+                                _logger.warning("IRG Financing: No se encontró valor de atributo Contado")
+                except Exception as e:
+                    _logger.error("IRG Financing: Error crítico en cálculo de financiación: %s", str(e))
 
                 # --- FIN LÓGICA FINANCIACIÓN ---
 
