@@ -11,8 +11,11 @@
     'version': '16.0.1.0.0',
     'depends': [
         'isep_sign_sale',
+        'irg_sale_order_extended',
     ],
-    'data': [],
+    'data': [
+        'views/registration_order_debug.xml',
+    ],
     'installable': True,
     'auto_install': False,
 }
