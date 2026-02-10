@@ -44,8 +44,8 @@ class SaleOrderSignReposition(models.Model):
         # Position map: pages -> posY (values tuned to 'subir bastante')
         # Adjust these numbers further after testing with real PDF output.
         sign_pages = {
-            1: 0.540,  # move up on page 1
-            3: 0.310,  # move up on page 3
+            1: 0.750,  # move up on page 1
+            3: 0.600,  # move up on page 3
         }
 
         # Horizontal offsets depending on whether invoice partner equals partner
