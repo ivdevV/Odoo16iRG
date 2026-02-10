@@ -21,20 +21,32 @@ class IrgWebsiteSale(CustomWebsiteSale):
         sin la restricción de subscription_schedule del módulo antiguo.
         super() -> CustomWebsiteSale.confirm_order (que llama al base y opcionalmente
         ejecuta _auto_scheduled_order con condición bloqueante).
-        Nosotros SIEMPRE lo ejecutamos después para asegurar la financiación.
+        Nosotros ejecutamos _auto_scheduled_order aquí también para asegurar la financiación
+        incluso para el usuario público (anónimo).
         """
         _logger.info("IRG controller confirm_order: ENTERING")
         res = super(IrgWebsiteSale, self).confirm_order(**post)
-        # No llamamos _auto_scheduled_order aquí porque super() ya lo hace
+        try:
+            order = request.website.sale_get_order()
+            if order and not order.subscription_schedule:
+                order.sudo()._auto_scheduled_order()
+        except Exception as e:
+            _logger.exception("IRG confirm_order _auto_scheduled_order failed: %s", e)
         return res
 
     @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
     def address(self, **kw):
         """
         Sobreescribe address. super() -> CustomWebsiteSale.address ya llama
-        _auto_scheduled_order internamente, no necesitamos llamarlo otra vez.
+        _auto_scheduled_order internamente, pero nos aseguramos ejecutarlo aquí
+        para el flujo público y capturamos errores para debugging.
         """
         _logger.info("IRG controller address: ENTERING")
         res = super(IrgWebsiteSale, self).address(**kw)
-        # No llamamos _auto_scheduled_order aquí porque super() ya lo hace
+        try:
+            order = request.website.sale_get_order()
+            if order and not order.subscription_schedule:
+                order.sudo()._auto_scheduled_order()
+        except Exception as e:
+            _logger.exception("IRG address _auto_scheduled_order failed: %s", e)
         return res
