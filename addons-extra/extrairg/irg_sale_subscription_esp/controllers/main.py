@@ -27,7 +27,9 @@ class IrgWebsiteSale(CustomWebsiteSale):
         # Ejecutar la lógica de scheduling antes de renderizar la página
         try:
             order = request.website.sale_get_order()
-            if order and not order.subscription_schedule:
+            if order:
+                if order.subscription_schedule:
+                    _logger.info("IRG confirm_order: order %s already has subscription_schedule - forcing recalculation", order.name)
                 order.sudo()._auto_scheduled_order()
         except Exception as e:
             _logger.exception("IRG confirm_order pre-super _auto_scheduled_order failed: %s", e)
@@ -47,7 +49,9 @@ class IrgWebsiteSale(CustomWebsiteSale):
         # Ejecutar scheduling antes de renderizar la página
         try:
             order = request.website.sale_get_order()
-            if order and not order.subscription_schedule:
+            if order:
+                if order.subscription_schedule:
+                    _logger.info("IRG address: order %s already has subscription_schedule - forcing recalculation", order.name)
                 order.sudo()._auto_scheduled_order()
         except Exception as e:
             _logger.exception("IRG address pre-super _auto_scheduled_order failed: %s", e)
