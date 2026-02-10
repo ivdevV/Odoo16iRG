@@ -141,9 +141,9 @@ class SaleOrder(models.Model):
                                     # 2. Actualizar línea actual al precio de contado
                                     ol.write({'price_unit': contado_price})
 
-                                    # 3. Crear línea de gastos de financiación
+                                    # 3. Crear línea de gastos de financiación (usar sudo para evitar problemas de permisos)
                                     _logger.info("IRG: about to create financing line for order %s (product %s), fee_unit=%s", self.name, financing_product.default_code or financing_product.id, financing_fee_unit)
-                                    fin_line = self.env['sale.order.line'].create({
+                                    fin_line = self.env['sale.order.line'].sudo().create({
                                         'order_id': self.id,
                                         'product_id': financing_product.id,
                                         'name': f"Gastos de Financiación ({plan_value.name}) - {ol.product_id.name}",
@@ -153,8 +153,17 @@ class SaleOrder(models.Model):
                                     })
                                     if fin_line:
                                         _logger.info("IRG: created financing line %s (qty=%s, price_unit=%s) on order %s", fin_line.id, fin_line.product_uom_qty, fin_line.price_unit, self.name)
+                                        try:
+                                            # Post a message in order chatter so we can see the result from the backend/UI
+                                            self.message_post(body=(f"IRG: Financing line created (id={fin_line.id}) - qty={fin_line.product_uom_qty}, unit_price={fin_line.price_unit} for order {self.name}"))
+                                        except Exception as e:
+                                            _logger.exception("IRG: failed to post message on order %s: %s", self.name, e)
                                     else:
                                         _logger.warning("IRG: failed to create financing line for order %s", self.name)
+                                        try:
+                                            self.message_post(body=(f"IRG: failed to create financing line for order {self.name} (fee={financing_fee_unit})"))
+                                        except Exception as e:
+                                            _logger.exception("IRG: failed to post failure message on order %s: %s", self.name, e)
                             else:
                                 _logger.warning("No se encontró variante Contado para %s", ol.product_id.name)
 
