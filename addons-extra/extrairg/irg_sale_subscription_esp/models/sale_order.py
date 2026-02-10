@@ -142,7 +142,8 @@ class SaleOrder(models.Model):
                                     ol.write({'price_unit': contado_price})
 
                                     # 3. Crear línea de gastos de financiación
-                                    self.env['sale.order.line'].create({
+                                    _logger.info("IRG: about to create financing line for order %s (product %s), fee_unit=%s", self.name, financing_product.default_code or financing_product.id, financing_fee_unit)
+                                    fin_line = self.env['sale.order.line'].create({
                                         'order_id': self.id,
                                         'product_id': financing_product.id,
                                         'name': f"Gastos de Financiación ({plan_value.name}) - {ol.product_id.name}",
@@ -150,6 +151,10 @@ class SaleOrder(models.Model):
                                         'price_unit': financing_fee_unit,
                                         'tax_id': [(6, 0, financing_product.taxes_id.ids)],
                                     })
+                                    if fin_line:
+                                        _logger.info("IRG: created financing line %s (qty=%s, price_unit=%s) on order %s", fin_line.id, fin_line.product_uom_qty, fin_line.price_unit, self.name)
+                                    else:
+                                        _logger.warning("IRG: failed to create financing line for order %s", self.name)
                             else:
                                 _logger.warning("No se encontró variante Contado para %s", ol.product_id.name)
 
