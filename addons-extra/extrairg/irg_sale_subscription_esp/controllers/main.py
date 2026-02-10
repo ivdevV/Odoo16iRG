@@ -19,34 +19,38 @@ class IrgWebsiteSale(CustomWebsiteSale):
         """
         Sobreescribe confirm_order para SIEMPRE ejecutar _auto_scheduled_order
         sin la restricción de subscription_schedule del módulo antiguo.
-        super() -> CustomWebsiteSale.confirm_order (que llama al base y opcionalmente
-        ejecuta _auto_scheduled_order con condición bloqueante).
-        Nosotros ejecutamos _auto_scheduled_order aquí también para asegurar la financiación
-        incluso para el usuario público (anónimo).
+        Ejecutamos _auto_scheduled_order ANTES de llamar a super() para que la
+        página renderizada por super() incluya cualquier línea de financiación
+        añadida por nuestra lógica (evita que se cree la línea *después* de renderizar).
         """
         _logger.info("IRG controller confirm_order: ENTERING")
-        res = super(IrgWebsiteSale, self).confirm_order(**post)
+        # Ejecutar la lógica de scheduling antes de renderizar la página
         try:
             order = request.website.sale_get_order()
             if order and not order.subscription_schedule:
                 order.sudo()._auto_scheduled_order()
         except Exception as e:
-            _logger.exception("IRG confirm_order _auto_scheduled_order failed: %s", e)
+            _logger.exception("IRG confirm_order pre-super _auto_scheduled_order failed: %s", e)
+
+        # Llamar al flujo original (que ahora encontrará la orden ya actualizada)
+        res = super(IrgWebsiteSale, self).confirm_order(**post)
         return res
 
     @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
     def address(self, **kw):
         """
-        Sobreescribe address. super() -> CustomWebsiteSale.address ya llama
-        _auto_scheduled_order internamente, pero nos aseguramos ejecutarlo aquí
-        para el flujo público y capturamos errores para debugging.
+        Sobreescribe address. Ejecutamos _auto_scheduled_order ANTES de llamar a
+        super() para asegurar que la página devuelta incluye la línea de financiación
+        si procede. Capturamos errores para debugging.
         """
         _logger.info("IRG controller address: ENTERING")
-        res = super(IrgWebsiteSale, self).address(**kw)
+        # Ejecutar scheduling antes de renderizar la página
         try:
             order = request.website.sale_get_order()
             if order and not order.subscription_schedule:
                 order.sudo()._auto_scheduled_order()
         except Exception as e:
-            _logger.exception("IRG address _auto_scheduled_order failed: %s", e)
+            _logger.exception("IRG address pre-super _auto_scheduled_order failed: %s", e)
+
+        res = super(IrgWebsiteSale, self).address(**kw)
         return res
