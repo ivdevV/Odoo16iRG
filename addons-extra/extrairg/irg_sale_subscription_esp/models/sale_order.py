@@ -80,34 +80,67 @@ class SaleOrder(models.Model):
                             sibling_contado = self.env['product.product'].search(domain, limit=1)
                             
                             if sibling_contado:
-                                # IDEMPOTENTE: Siempre usar el precio de la variante del producto,
-                                # NO ol.price_unit (que puede haber sido modificado por una llamada previa)
-                                variant_price = ol.product_id.lst_price
-                                if self.pricelist_id:
-                                    pricelist_variant = self.pricelist_id._get_product_price(
-                                        ol.product_id, 1.0
-                                    )
-                                    if pricelist_variant > 0:
-                                        variant_price = pricelist_variant
+                                # === CÁLCULO DE FEE EN 3 NIVELES ===
+                                # Nivel 1: Precios raw (lst_price = template.list_price + variant.price_extra)
+                                raw_variant = ol.product_id.lst_price
+                                raw_contado = sibling_contado.lst_price
+                                _logger.info("IRG Financiación [RAW lst_price]: variant=%s, contado=%s, diff=%s",
+                                             raw_variant, raw_contado, raw_variant - raw_contado)
 
-                                contado_price = sibling_contado.lst_price
+                                # Nivel 2: Precios con pricelist
+                                pl_variant = raw_variant
+                                pl_contado = raw_contado
                                 if self.pricelist_id:
-                                    pricelist_contado = self.pricelist_id._get_product_price(
-                                        sibling_contado, 1.0
-                                    )
-                                    if pricelist_contado > 0:
-                                        contado_price = pricelist_contado
+                                    pv = self.pricelist_id._get_product_price(ol.product_id, 1.0)
+                                    pc = self.pricelist_id._get_product_price(sibling_contado, 1.0)
+                                    if pv > 0:
+                                        pl_variant = pv
+                                    if pc > 0:
+                                        pl_contado = pc
+                                    _logger.info("IRG Financiación [PRICELIST '%s']: variant=%s, contado=%s, diff=%s",
+                                                 self.pricelist_id.name, pl_variant, pl_contado, pl_variant - pl_contado)
 
-                                financing_fee_unit = variant_price - contado_price
-                                _logger.info("IRG Financiación: variant_price=%s, contado_price=%s, fee=%s",
-                                             variant_price, contado_price, financing_fee_unit)
-                                
+                                # Nivel 3: price_extra directos del atributo Planes
+                                plan_extra = ptav_plan[0].price_extra or 0.0
+                                # Buscar el PTAV de Contado en el mismo template y atributo
+                                contado_ptav = ol.product_id.product_tmpl_id.attribute_line_ids.filtered(
+                                    lambda l: l.attribute_id.id == ptav_plan[0].attribute_id.id
+                                ).product_template_value_ids.filtered(
+                                    lambda v: 'contado' in (v.name or '').lower()
+                                )
+                                contado_extra = contado_ptav[0].price_extra if contado_ptav else 0.0
+                                _logger.info("IRG Financiación [PRICE_EXTRA]: plan_extra=%s, contado_extra=%s, diff=%s",
+                                             plan_extra, contado_extra, plan_extra - contado_extra)
+
+                                # === DECIDIR FEE: primer nivel que dé diferencia > 0 ===
+                                financing_fee_unit = pl_variant - pl_contado
+                                fee_source = "PRICELIST"
+                                if financing_fee_unit <= 0:
+                                    financing_fee_unit = raw_variant - raw_contado
+                                    fee_source = "RAW lst_price"
+                                if financing_fee_unit <= 0:
+                                    financing_fee_unit = plan_extra - contado_extra
+                                    fee_source = "PRICE_EXTRA"
+
+                                _logger.info("IRG Financiación FINAL: fee=%s (fuente: %s)",
+                                             financing_fee_unit, fee_source)
+
                                 if financing_fee_unit > 0:
                                     _logger.info("IRG Aplicando financiación. Diferencia unitaria: %s", financing_fee_unit)
-                                    
+
+                                    # Precio de contado para la línea del curso
+                                    # Preferimos pricelist si da diferencia, sino raw
+                                    if pl_variant - pl_contado > 0:
+                                        contado_price = pl_contado
+                                    elif raw_variant - raw_contado > 0:
+                                        contado_price = raw_contado
+                                    else:
+                                        # Fee viene de price_extra: contado_price = precio actual - fee
+                                        contado_price = pl_variant - financing_fee_unit
+
                                     # 2. Actualizar línea actual al precio de contado
                                     ol.write({'price_unit': contado_price})
-                                    
+
                                     # 3. Crear línea de gastos de financiación
                                     self.env['sale.order.line'].create({
                                         'order_id': self.id,
