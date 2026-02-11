@@ -33,10 +33,10 @@
                 <t t-set="subject_ids" t-value="course_id.subject_ids"/>
             </t>
 
-            <!-- Canales ACTIVOS: consultar slide.channel.partner con active=True -->
+            <!-- Canales ACTIVOS: consultar slide.channel.partner (incluyendo inactivos para evitar bloqueo por desincronización) -->
             <t t-set="active_channel_partners" t-value="env['slide.channel.partner'].sudo().search([
                 ('partner_id', '=', user.partner_id.id),
-                ('active', '=', True)])"/>
+                '|', ('active', '=', True), ('active', '=', False)])"/>
             <t t-set="slide_channel_active_ids" t-value="active_channel_partners.mapped('channel_id').ids"/>
 
             <!-- Cursos complementarios (no curriculares) -->
