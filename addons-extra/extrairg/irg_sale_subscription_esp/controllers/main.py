@@ -58,3 +58,22 @@ class IrgWebsiteSale(CustomWebsiteSale):
 
         res = super(IrgWebsiteSale, self).address(**kw)
         return res
+
+    @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
+    def extra_info(self, **post):
+        """
+        Sobreescribe extra_info para ejecutar _auto_scheduled_order antes de renderizar
+        el resumen y mantener las lineas de financiacion y matricula.
+        """
+        _logger.info("IRG controller extra_info: ENTERING")
+        try:
+            order = request.website.sale_get_order()
+            if order:
+                if order.subscription_schedule:
+                    _logger.info("IRG extra_info: order %s already has subscription_schedule - forcing recalculation", order.name)
+                order.sudo()._auto_scheduled_order()
+        except Exception as e:
+            _logger.exception("IRG extra_info pre-super _auto_scheduled_order failed: %s", e)
+
+        res = super(IrgWebsiteSale, self).extra_info(**post)
+        return res

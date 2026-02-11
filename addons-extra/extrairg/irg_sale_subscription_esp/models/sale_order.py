@@ -188,26 +188,35 @@ class SaleOrder(models.Model):
                                         except Exception as e:
                                             _logger.exception("IRG: failed to post failure message on order %s: %s", self.name, e)
 
-                                    # Add Matricula line per master line (if product is available)
-                                    if matricula_product:
-                                        existing_matricula_lines = self.order_line.filtered(
-                                            lambda l: l.irg_parent_line_id == ol and l.irg_line_type == 'matricula'
-                                        )
-                                        if existing_matricula_lines:
-                                            existing_matricula_lines.unlink()
+                                    # Add Matricula line per master line (always show it, even without a product)
+                                    existing_matricula_lines = self.order_line.filtered(
+                                        lambda l: l.irg_parent_line_id == ol and l.irg_line_type == 'matricula'
+                                    )
+                                    if existing_matricula_lines:
+                                        existing_matricula_lines.unlink()
 
-                                        self.env['sale.order.line'].sudo().create({
-                                            'order_id': self.id,
+                                    matricula_vals = {
+                                        'order_id': self.id,
+                                        'name': "Matricula (BONIFICADA 100%)",
+                                        'product_uom_qty': 1.0,
+                                        'price_unit': 0.0,
+                                        'irg_line_type': 'matricula',
+                                        'irg_parent_line_id': ol.id,
+                                    }
+                                    if matricula_product:
+                                        matricula_vals.update({
                                             'product_id': matricula_product.id,
-                                            'name': "Matricula (BONIFICADA 100%)",
-                                            'product_uom_qty': 1.0,
-                                            'price_unit': 0.0,
                                             'tax_id': [(6, 0, matricula_product.taxes_id.ids)],
                                             'irg_force_price_unit': 0.0,
                                             'irg_force_price_unit_set': True,
-                                            'irg_line_type': 'matricula',
-                                            'irg_parent_line_id': ol.id,
                                         })
+                                    else:
+                                        # Display-only line when no Matricula product exists
+                                        matricula_vals.update({
+                                            'display_type': 'line_note',
+                                        })
+
+                                    self.env['sale.order.line'].sudo().create(matricula_vals)
                             else:
                                 _logger.warning("No se encontró variante Contado para %s", ol.product_id.name)
 
