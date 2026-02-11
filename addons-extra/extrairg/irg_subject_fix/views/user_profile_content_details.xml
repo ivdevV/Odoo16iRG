@@ -24,7 +24,10 @@
 
             <!-- Asignaturas filtradas por lote (batch) del estudiante -->
             <t t-if="student_admission and student_admission.batch_id">
-                <t t-set="subject_ids" t-value="student_admission.batch_id.subject_to_batch_ids.mapped('subject_id')"/>
+                 <t t-set="today_date" t-value="datetime.date.today()"/>
+                 <!-- Filtrar solo asignaturas vigentes en fecha -->
+                 <t t-set="valid_batch_lines" t-value="student_admission.batch_id.subject_to_batch_ids.filtered(lambda l: l.date_from and l.date_to and l.date_from &lt;= today_date and l.date_to &gt;= today_date)"/>
+                 <t t-set="subject_ids" t-value="valid_batch_lines.mapped('subject_id')"/>
             </t>
             <t t-else="">
                 <t t-set="subject_ids" t-value="course_id.subject_ids"/>

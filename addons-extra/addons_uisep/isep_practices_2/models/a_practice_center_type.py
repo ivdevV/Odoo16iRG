@@ -84,6 +84,11 @@ class PracticeCenterTypes(models.Model):
         result = []
         for record in self:
             day_dict = dict(self._fields['type_of_practice'].selection)  # Obtiene el diccionario de selección
-            name = day_dict.get(record.type_of_practice, record.type_of_practice)  # Traduce el valor técnico
+            # Fix: Asegurar que name sea siempre un string para evitar error JS (split is not a function)
+            val = record.type_of_practice
+            if val:
+                name = day_dict.get(val, val)
+            else:
+                name = "Indefinido"
             result.append((record.id, name))
         return result
