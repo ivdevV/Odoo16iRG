@@ -26,17 +26,6 @@ class SaleOrder(models.Model):
             matricula_product = self.env['product.product'].search(
                 [('name', 'ilike', 'Matricula')], limit=1
             )
-        discount_matricula_product = self.env['product.product'].search(
-            [('default_code', '=', 'DESCUENTO_MATRICULA')], limit=1
-        )
-        if not discount_matricula_product:
-            discount_matricula_product = self.env['product.product'].search(
-                [('name', 'ilike', 'Descuento Matricula')], limit=1
-            )
-        if not discount_matricula_product:
-            discount_matricula_product = self.env.ref(
-                'irg_custom_discount.product_irg_discount', raise_if_not_found=False
-            )
         
         if not financing_product:
             financing_product = self.env['product.product'].search([('default_code', '=', 'GASTOS_FIN')], limit=1)
@@ -102,25 +91,25 @@ class SaleOrder(models.Model):
                                 if ol.irg_line_type != 'master':
                                     ol.write({'irg_line_type': 'master'})
                                 # === CÁLCULO DE FEE EN 3 NIVELES ===
-                                # Nivel 1: Precios raw (use the actual order line price if present,
+                                # If the line is forced to contado, do not reuse it for the financed price.
+                                use_line_price = not (ol.irg_force_price_unit_set or (ol.irg_force_price_unit and ol.irg_force_price_unit > 0))
+                                # Nivel 1: Precios raw (use line price only when not forced)
                                 # otherwise fall back to variant lst_price = template.list_price + variant.price_extra)
-                                raw_variant = ol.price_unit or ol.product_id.lst_price
+                                raw_variant = ol.price_unit if use_line_price else ol.product_id.lst_price
                                 raw_contado = sibling_contado.lst_price
                                 _logger.info("IRG Financiación [RAW lst_price]: variant=%s, contado=%s, diff=%s",
                                              raw_variant, raw_contado, raw_variant - raw_contado)
 
                                 # Nivel 2: Precios con pricelist
-                                # Prefer the actual order line price (what the customer will pay)
-                                # when available; otherwise try the pricelist price; finally
-                                # fall back to the raw lst_price values.
-                                pl_variant = ol.price_unit if (ol.price_unit and ol.price_unit > 0) else raw_variant
+                                # Prefer line price only when not forced; otherwise use pricelist first.
+                                pl_variant = ol.price_unit if (use_line_price and ol.price_unit and ol.price_unit > 0) else raw_variant
                                 pl_contado = raw_contado
                                 if self.pricelist_id:
                                     qty = ol.product_uom_qty or 1.0
                                     pv = self.pricelist_id._get_product_price(ol.product_id, qty)
                                     pc = self.pricelist_id._get_product_price(sibling_contado, qty)
-                                    # If the line price wasn't provided, allow pricelist to set variant price
-                                    if (not (ol.price_unit and ol.price_unit > 0)) and pv and pv > 0:
+                                    # If the line price isn't used, allow pricelist to set variant price
+                                    if (not (use_line_price and ol.price_unit and ol.price_unit > 0)) and pv and pv > 0:
                                         pl_variant = pv
                                     if pc and pc > 0:
                                         pl_contado = pc
@@ -170,6 +159,7 @@ class SaleOrder(models.Model):
                                     ol.write({
                                         'price_unit': contado_price,
                                         'irg_force_price_unit': contado_price,
+                                        'irg_force_price_unit_set': True,
                                     })
 
                                     # 3. Crear línea de gastos de financiación (usar sudo para evitar problemas de permisos)
@@ -193,50 +183,31 @@ class SaleOrder(models.Model):
                                             _logger.exception("IRG: failed to post message on order %s: %s", self.name, e)
                                     else:
                                         _logger.warning("IRG: failed to create financing line for order %s", self.name)
-
-                                # Add Matricula + discount lines per master line (if products are available)
-                                if matricula_product:
-                                    existing_matricula_lines = self.order_line.filtered(
-                                        lambda l: l.irg_parent_line_id == ol and l.irg_line_type in ['matricula', 'matricula_discount']
-                                    )
-                                    if existing_matricula_lines:
-                                        existing_matricula_lines.unlink()
-
-                                    qty = 1.0
-                                    matricula_price = matricula_product.lst_price
-                                    if self.pricelist_id:
-                                        pl_price = self.pricelist_id._get_product_price(matricula_product, qty)
-                                        if pl_price and pl_price > 0:
-                                            matricula_price = pl_price
-
-                                    matricula_line = self.env['sale.order.line'].sudo().create({
-                                        'order_id': self.id,
-                                        'product_id': matricula_product.id,
-                                        'name': f"Matricula - {ol.product_id.name}",
-                                        'product_uom_qty': qty,
-                                        'price_unit': matricula_price,
-                                        'tax_id': [(6, 0, matricula_product.taxes_id.ids)],
-                                        'irg_force_price_unit': matricula_price,
-                                        'irg_line_type': 'matricula',
-                                        'irg_parent_line_id': ol.id,
-                                    })
-                                    if matricula_line and discount_matricula_product:
-                                        discount_price = -(matricula_price * 0.5)
-                                        self.env['sale.order.line'].sudo().create({
-                                            'order_id': self.id,
-                                            'product_id': discount_matricula_product.id,
-                                            'name': f"Descuento Matricula - {ol.product_id.name}",
-                                            'product_uom_qty': qty,
-                                            'price_unit': discount_price,
-                                            'tax_id': [(6, 0, discount_matricula_product.taxes_id.ids)],
-                                            'irg_force_price_unit': discount_price,
-                                            'irg_line_type': 'matricula_discount',
-                                            'irg_parent_line_id': ol.id,
-                                        })
                                         try:
                                             self.message_post(body=(f"IRG: failed to create financing line for order {self.name} (fee={financing_fee_unit})"))
                                         except Exception as e:
                                             _logger.exception("IRG: failed to post failure message on order %s: %s", self.name, e)
+
+                                    # Add Matricula line per master line (if product is available)
+                                    if matricula_product:
+                                        existing_matricula_lines = self.order_line.filtered(
+                                            lambda l: l.irg_parent_line_id == ol and l.irg_line_type == 'matricula'
+                                        )
+                                        if existing_matricula_lines:
+                                            existing_matricula_lines.unlink()
+
+                                        self.env['sale.order.line'].sudo().create({
+                                            'order_id': self.id,
+                                            'product_id': matricula_product.id,
+                                            'name': "Matricula (BONIFICADA 100%)",
+                                            'product_uom_qty': 1.0,
+                                            'price_unit': 0.0,
+                                            'tax_id': [(6, 0, matricula_product.taxes_id.ids)],
+                                            'irg_force_price_unit': 0.0,
+                                            'irg_force_price_unit_set': True,
+                                            'irg_line_type': 'matricula',
+                                            'irg_parent_line_id': ol.id,
+                                        })
                             else:
                                 _logger.warning("No se encontró variante Contado para %s", ol.product_id.name)
 
