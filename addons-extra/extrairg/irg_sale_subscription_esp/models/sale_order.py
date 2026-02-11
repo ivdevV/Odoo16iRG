@@ -81,21 +81,24 @@ class SaleOrder(models.Model):
                             
                             if sibling_contado:
                                 # === CÁLCULO DE FEE EN 3 NIVELES ===
-                                # Nivel 1: Precios raw (lst_price = template.list_price + variant.price_extra)
-                                raw_variant = ol.product_id.lst_price
+                                # Nivel 1: Precios raw (use the actual order line price if present,
+                                # otherwise fall back to variant lst_price = template.list_price + variant.price_extra)
+                                raw_variant = ol.price_unit or ol.product_id.lst_price
                                 raw_contado = sibling_contado.lst_price
                                 _logger.info("IRG Financiación [RAW lst_price]: variant=%s, contado=%s, diff=%s",
                                              raw_variant, raw_contado, raw_variant - raw_contado)
 
                                 # Nivel 2: Precios con pricelist
-                                pl_variant = raw_variant
+                                # Prefer the actual order line price as the pricelist-applied
+                                # variant price when available, otherwise compute via pricelist.
+                                pl_variant = ol.price_unit if ol.price_unit else raw_variant
                                 pl_contado = raw_contado
                                 if self.pricelist_id:
                                     pv = self.pricelist_id._get_product_price(ol.product_id, 1.0)
                                     pc = self.pricelist_id._get_product_price(sibling_contado, 1.0)
-                                    if pv > 0:
+                                    if pv and pv > 0:
                                         pl_variant = pv
-                                    if pc > 0:
+                                    if pc and pc > 0:
                                         pl_contado = pc
                                     _logger.info("IRG Financiación [PRICELIST '%s']: variant=%s, contado=%s, diff=%s",
                                                  self.pricelist_id.name, pl_variant, pl_contado, pl_variant - pl_contado)
