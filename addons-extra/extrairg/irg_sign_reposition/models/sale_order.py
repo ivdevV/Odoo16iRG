@@ -51,7 +51,7 @@ class SaleOrderSignReposition(models.Model):
         # Horizontal offsets depending on whether invoice partner equals partner
         for page, pos_y in sign_pages.items():
             if page <= sign.num_pages:
-                pos_x = 0.21
+                pos_x = 0.17
                 responsible = self.env.user.id
                 self.env['sign.item'].create({
                     'template_id': sign.id,
