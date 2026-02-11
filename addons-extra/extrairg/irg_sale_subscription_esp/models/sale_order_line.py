@@ -10,6 +10,21 @@ class SaleOrderLine(models.Model):
         help="If set, this unit price is enforced to avoid pricelist recompute overrides.",
         copy=False,
     )
+    irg_line_type = fields.Selection(
+        [
+            ("master", "Master"),
+            ("financing", "Financing"),
+            ("matricula", "Matricula"),
+            ("matricula_discount", "Matricula Discount"),
+        ],
+        string="IRG Line Type",
+        copy=False,
+    )
+    irg_parent_line_id = fields.Many2one(
+        "sale.order.line",
+        string="IRG Parent Line",
+        copy=False,
+    )
 
     def _compute_price_unit(self):
         super()._compute_price_unit()

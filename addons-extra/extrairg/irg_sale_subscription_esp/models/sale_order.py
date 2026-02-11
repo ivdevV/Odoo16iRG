@@ -19,6 +19,24 @@ class SaleOrder(models.Model):
         TermSchedule = self.env['product.term.schedule'].sudo()
         PaymentTerm = self.env['account.payment.term'].sudo()
         financing_product = self.env.ref('irg_sale_subscription_esp.product_financing_fees', raise_if_not_found=False)
+        matricula_product = self.env['product.product'].search(
+            [('default_code', '=', 'MATRICULA')], limit=1
+        )
+        if not matricula_product:
+            matricula_product = self.env['product.product'].search(
+                [('name', 'ilike', 'Matricula')], limit=1
+            )
+        discount_matricula_product = self.env['product.product'].search(
+            [('default_code', '=', 'DESCUENTO_MATRICULA')], limit=1
+        )
+        if not discount_matricula_product:
+            discount_matricula_product = self.env['product.product'].search(
+                [('name', 'ilike', 'Descuento Matricula')], limit=1
+            )
+        if not discount_matricula_product:
+            discount_matricula_product = self.env.ref(
+                'irg_custom_discount.product_irg_discount', raise_if_not_found=False
+            )
         
         if not financing_product:
             financing_product = self.env['product.product'].search([('default_code', '=', 'GASTOS_FIN')], limit=1)
@@ -80,6 +98,9 @@ class SaleOrder(models.Model):
                             sibling_contado = self.env['product.product'].search(domain, limit=1)
                             
                             if sibling_contado:
+                                # Mark the main line so we can order the summary consistently
+                                if ol.irg_line_type != 'master':
+                                    ol.write({'irg_line_type': 'master'})
                                 # === CÁLCULO DE FEE EN 3 NIVELES ===
                                 # Nivel 1: Precios raw (use the actual order line price if present,
                                 # otherwise fall back to variant lst_price = template.list_price + variant.price_extra)
@@ -160,6 +181,8 @@ class SaleOrder(models.Model):
                                         'product_uom_qty': ol.product_uom_qty,
                                         'price_unit': financing_fee_unit,
                                         'tax_id': [(6, 0, financing_product.taxes_id.ids)],
+                                        'irg_line_type': 'financing',
+                                        'irg_parent_line_id': ol.id,
                                     })
                                     if fin_line:
                                         _logger.info("IRG: created financing line %s (qty=%s, price_unit=%s) on order %s", fin_line.id, fin_line.product_uom_qty, fin_line.price_unit, self.name)
@@ -170,6 +193,45 @@ class SaleOrder(models.Model):
                                             _logger.exception("IRG: failed to post message on order %s: %s", self.name, e)
                                     else:
                                         _logger.warning("IRG: failed to create financing line for order %s", self.name)
+                                                                        # Add Matricula + discount lines per master line (if products are available)
+                                                                        if matricula_product:
+                                                                            existing_matricula_lines = self.order_line.filtered(
+                                                                                lambda l: l.irg_parent_line_id == ol and l.irg_line_type in ['matricula', 'matricula_discount']
+                                                                            )
+                                                                            if existing_matricula_lines:
+                                                                                existing_matricula_lines.unlink()
+
+                                                                            qty = 1.0
+                                                                            matricula_price = matricula_product.lst_price
+                                                                            if self.pricelist_id:
+                                                                                pl_price = self.pricelist_id._get_product_price(matricula_product, qty)
+                                                                                if pl_price and pl_price > 0:
+                                                                                    matricula_price = pl_price
+
+                                                                            matricula_line = self.env['sale.order.line'].sudo().create({
+                                                                                'order_id': self.id,
+                                                                                'product_id': matricula_product.id,
+                                                                                'name': f"Matricula - {ol.product_id.name}",
+                                                                                'product_uom_qty': qty,
+                                                                                'price_unit': matricula_price,
+                                                                                'tax_id': [(6, 0, matricula_product.taxes_id.ids)],
+                                                                                'irg_force_price_unit': matricula_price,
+                                                                                'irg_line_type': 'matricula',
+                                                                                'irg_parent_line_id': ol.id,
+                                                                            })
+                                                                            if matricula_line and discount_matricula_product:
+                                                                                discount_price = -(matricula_price * 0.5)
+                                                                                self.env['sale.order.line'].sudo().create({
+                                                                                    'order_id': self.id,
+                                                                                    'product_id': discount_matricula_product.id,
+                                                                                    'name': f"Descuento Matricula - {ol.product_id.name}",
+                                                                                    'product_uom_qty': qty,
+                                                                                    'price_unit': discount_price,
+                                                                                    'tax_id': [(6, 0, discount_matricula_product.taxes_id.ids)],
+                                                                                    'irg_force_price_unit': discount_price,
+                                                                                    'irg_line_type': 'matricula_discount',
+                                                                                    'irg_parent_line_id': ol.id,
+                                                                                })
                                         try:
                                             self.message_post(body=(f"IRG: failed to create financing line for order {self.name} (fee={financing_fee_unit})"))
                                         except Exception as e:

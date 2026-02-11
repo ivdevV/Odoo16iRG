@@ -51,9 +51,7 @@ class SaleOrderSignReposition(models.Model):
         # Horizontal offsets depending on whether invoice partner equals partner
         for page, pos_y in sign_pages.items():
             if page <= sign.num_pages:
-                # Align signatures at ~6% of page width (posX is relative 0..1)
-                # Use the same small left offset for both cases to align X axis
-                pos_x = 0.06
+                pos_x = 0.70
                 responsible = self.env.user.id
                 self.env['sign.item'].create({
                     'template_id': sign.id,
