@@ -209,30 +209,30 @@ class SaleOrder(models.Model):
                                         if pl_price and pl_price > 0:
                                             matricula_price = pl_price
 
-                                                                            matricula_line = self.env['sale.order.line'].sudo().create({
-                                                                                'order_id': self.id,
-                                                                                'product_id': matricula_product.id,
-                                                                                'name': f"Matricula - {ol.product_id.name}",
-                                                                                'product_uom_qty': qty,
-                                                                                'price_unit': matricula_price,
-                                                                                'tax_id': [(6, 0, matricula_product.taxes_id.ids)],
-                                                                                'irg_force_price_unit': matricula_price,
-                                                                                'irg_line_type': 'matricula',
-                                                                                'irg_parent_line_id': ol.id,
-                                                                            })
-                                                                            if matricula_line and discount_matricula_product:
-                                                                                discount_price = -(matricula_price * 0.5)
-                                                                                self.env['sale.order.line'].sudo().create({
-                                                                                    'order_id': self.id,
-                                                                                    'product_id': discount_matricula_product.id,
-                                                                                    'name': f"Descuento Matricula - {ol.product_id.name}",
-                                                                                    'product_uom_qty': qty,
-                                                                                    'price_unit': discount_price,
-                                                                                    'tax_id': [(6, 0, discount_matricula_product.taxes_id.ids)],
-                                                                                    'irg_force_price_unit': discount_price,
-                                                                                    'irg_line_type': 'matricula_discount',
-                                                                                    'irg_parent_line_id': ol.id,
-                                                                                })
+                                    matricula_line = self.env['sale.order.line'].sudo().create({
+                                        'order_id': self.id,
+                                        'product_id': matricula_product.id,
+                                        'name': f"Matricula - {ol.product_id.name}",
+                                        'product_uom_qty': qty,
+                                        'price_unit': matricula_price,
+                                        'tax_id': [(6, 0, matricula_product.taxes_id.ids)],
+                                        'irg_force_price_unit': matricula_price,
+                                        'irg_line_type': 'matricula',
+                                        'irg_parent_line_id': ol.id,
+                                    })
+                                    if matricula_line and discount_matricula_product:
+                                        discount_price = -(matricula_price * 0.5)
+                                        self.env['sale.order.line'].sudo().create({
+                                            'order_id': self.id,
+                                            'product_id': discount_matricula_product.id,
+                                            'name': f"Descuento Matricula - {ol.product_id.name}",
+                                            'product_uom_qty': qty,
+                                            'price_unit': discount_price,
+                                            'tax_id': [(6, 0, discount_matricula_product.taxes_id.ids)],
+                                            'irg_force_price_unit': discount_price,
+                                            'irg_line_type': 'matricula_discount',
+                                            'irg_parent_line_id': ol.id,
+                                        })
                                         try:
                                             self.message_post(body=(f"IRG: failed to create financing line for order {self.name} (fee={financing_fee_unit})"))
                                         except Exception as e:
