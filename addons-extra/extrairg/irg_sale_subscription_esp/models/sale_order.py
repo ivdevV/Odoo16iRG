@@ -193,20 +193,21 @@ class SaleOrder(models.Model):
                                             _logger.exception("IRG: failed to post message on order %s: %s", self.name, e)
                                     else:
                                         _logger.warning("IRG: failed to create financing line for order %s", self.name)
-                                                                        # Add Matricula + discount lines per master line (if products are available)
-                                                                        if matricula_product:
-                                                                            existing_matricula_lines = self.order_line.filtered(
-                                                                                lambda l: l.irg_parent_line_id == ol and l.irg_line_type in ['matricula', 'matricula_discount']
-                                                                            )
-                                                                            if existing_matricula_lines:
-                                                                                existing_matricula_lines.unlink()
 
-                                                                            qty = 1.0
-                                                                            matricula_price = matricula_product.lst_price
-                                                                            if self.pricelist_id:
-                                                                                pl_price = self.pricelist_id._get_product_price(matricula_product, qty)
-                                                                                if pl_price and pl_price > 0:
-                                                                                    matricula_price = pl_price
+                                # Add Matricula + discount lines per master line (if products are available)
+                                if matricula_product:
+                                    existing_matricula_lines = self.order_line.filtered(
+                                        lambda l: l.irg_parent_line_id == ol and l.irg_line_type in ['matricula', 'matricula_discount']
+                                    )
+                                    if existing_matricula_lines:
+                                        existing_matricula_lines.unlink()
+
+                                    qty = 1.0
+                                    matricula_price = matricula_product.lst_price
+                                    if self.pricelist_id:
+                                        pl_price = self.pricelist_id._get_product_price(matricula_product, qty)
+                                        if pl_price and pl_price > 0:
+                                            matricula_price = pl_price
 
                                                                             matricula_line = self.env['sale.order.line'].sudo().create({
                                                                                 'order_id': self.id,
