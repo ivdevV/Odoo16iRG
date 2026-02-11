@@ -145,7 +145,11 @@ class SaleOrder(models.Model):
                                         contado_price = pl_variant - financing_fee_unit
 
                                     # 2. Actualizar línea actual al precio de contado
-                                    ol.write({'price_unit': contado_price})
+                                    # y fijarlo para evitar que la pricelist lo sobrescriba después.
+                                    ol.write({
+                                        'price_unit': contado_price,
+                                        'irg_force_price_unit': contado_price,
+                                    })
 
                                     # 3. Crear línea de gastos de financiación (usar sudo para evitar problemas de permisos)
                                     _logger.info("IRG: about to create financing line for order %s (product %s), fee_unit=%s", self.name, financing_product.default_code or financing_product.id, financing_fee_unit)
