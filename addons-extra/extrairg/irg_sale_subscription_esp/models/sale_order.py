@@ -89,14 +89,17 @@ class SaleOrder(models.Model):
                                              raw_variant, raw_contado, raw_variant - raw_contado)
 
                                 # Nivel 2: Precios con pricelist
-                                # Prefer the actual order line price as the pricelist-applied
-                                # variant price when available, otherwise compute via pricelist.
-                                pl_variant = ol.price_unit if ol.price_unit else raw_variant
+                                # Prefer the actual order line price (what the customer will pay)
+                                # when available; otherwise try the pricelist price; finally
+                                # fall back to the raw lst_price values.
+                                pl_variant = ol.price_unit if (ol.price_unit and ol.price_unit > 0) else raw_variant
                                 pl_contado = raw_contado
                                 if self.pricelist_id:
-                                    pv = self.pricelist_id._get_product_price(ol.product_id, 1.0)
-                                    pc = self.pricelist_id._get_product_price(sibling_contado, 1.0)
-                                    if pv and pv > 0:
+                                    qty = ol.product_uom_qty or 1.0
+                                    pv = self.pricelist_id._get_product_price(ol.product_id, qty)
+                                    pc = self.pricelist_id._get_product_price(sibling_contado, qty)
+                                    # If the line price wasn't provided, allow pricelist to set variant price
+                                    if (not (ol.price_unit and ol.price_unit > 0)) and pv and pv > 0:
                                         pl_variant = pv
                                     if pc and pc > 0:
                                         pl_contado = pc
