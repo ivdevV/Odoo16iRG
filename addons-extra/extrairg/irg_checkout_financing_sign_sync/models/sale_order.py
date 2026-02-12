@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+import logging
 
 from odoo import models, fields, api
+
+
+_logger = logging.getLogger(__name__)
 
 
 class SaleOrder(models.Model):
@@ -23,6 +27,33 @@ class SaleOrder(models.Model):
                 vals['amount'] = installment_amount
 
         return super(SaleOrder, self)._create_payment_transaction(vals)
+
+    def _auto_scheduled_order(self):
+        res = super(SaleOrder, self)._auto_scheduled_order()
+
+        for order in self:
+            try:
+                had_financing = bool(order.order_line.filtered(lambda l: l.irg_line_type == 'financing'))
+                order._irg_ensure_financing_lines_consistent()
+                has_financing_now = bool(order.order_line.filtered(lambda l: l.irg_line_type == 'financing'))
+
+                if (
+                    not had_financing
+                    and has_financing_now
+                    and (order.term_number or 0) > 1
+                    and order.recurrence_id
+                    and order.start_date
+                    and order.end_date
+                ):
+                    order.create_subscription_schedule()
+            except Exception as exc:
+                _logger.exception(
+                    "IRG post _auto_scheduled_order consistency failed for order %s: %s",
+                    order.name,
+                    exc,
+                )
+
+        return res
 
     academic_attachment_ids = fields.Many2many(
         'ir.attachment',
