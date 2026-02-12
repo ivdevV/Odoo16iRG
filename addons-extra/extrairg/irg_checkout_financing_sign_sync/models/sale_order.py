@@ -99,7 +99,8 @@ class SaleOrder(models.Model):
                 key, value = row.split(' : ', 1)
                 data_dict[key.strip()] = value.strip()
 
-        partner = (partner_id or self.partner_id).sudo()
+        partner = partner_id if hasattr(partner_id, '_name') else self.env['res.partner'].browse(partner_id or self.partner_id.id)
+        partner = partner.sudo()
 
         def parse_date(date_str):
             try:

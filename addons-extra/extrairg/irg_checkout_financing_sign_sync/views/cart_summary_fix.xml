@@ -2,7 +2,7 @@
 <odoo>
     <template id="irg_checkout_financing_monthly_fix" inherit_id="irg_sale_subscription_esp.irg_cart_summary" priority="260">
         <xpath expr="//t[@t-set='monthly_amount']" position="replace">
-            <t t-set="monthly_amount" t-value="(summary_order.term_number and (summary_order.amount_total / summary_order.term_number)) or (summary_order.subscription_schedule and summary_order.subscription_schedule[0].amount_recurring_taxinc) or 0.0"/>
+            <t t-set="monthly_amount" t-value="(summary_order.subscription_schedule and summary_order.subscription_schedule[0].amount_recurring_taxinc) or (('term_number' in summary_order._fields and summary_order.term_number) and (float(summary_order.amount_total or 0.0) / float(summary_order.term_number))) or 0.0"/>
         </xpath>
     </template>
 </odoo>
