@@ -12,7 +12,7 @@
             <field name="taxes_id" eval="[(5, 0, 0)]"/>
             <field name="supplier_taxes_id" eval="[(5, 0, 0)]"/>
             <field name="invoice_policy">order</field>
-            <field name="image_1920" type="base64">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==</field>
+            <field name="image_1920">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==</field>
         </record>
     </data>
 </odoo>
