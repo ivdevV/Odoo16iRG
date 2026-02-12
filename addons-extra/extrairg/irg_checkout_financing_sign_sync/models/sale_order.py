@@ -56,15 +56,15 @@ class SaleOrder(models.Model):
             for line in order.order_line.filtered(
                 lambda l: not l.display_type
                 and l.irg_line_type not in ('financing', 'matricula', 'matricula_discount')
-                and l.product_id.recurring_invoice
             ):
                 plan_ptav = line.product_id.product_template_attribute_value_ids.filtered(
                     lambda x: x.attribute_id.name == 'Planes'
                 )
-                if not plan_ptav:
-                    continue
-                plan_ptav = plan_ptav[0]
-                if 'contado' in (plan_ptav.name or '').lower():
+                plan_ptav = plan_ptav[0] if plan_ptav else False
+
+                is_financed_plan = bool(plan_ptav and 'contado' not in (plan_ptav.name or '').lower())
+                is_multiterm_master = bool((order.term_number or 0) > 1 and line.irg_line_type == 'master')
+                if not (is_financed_plan or is_multiterm_master):
                     continue
 
                 existing_fin_line = order.order_line.filtered(
@@ -79,9 +79,9 @@ class SaleOrder(models.Model):
                 other_attrs = line.product_id.product_template_attribute_value_ids.filtered(
                     lambda x: x.attribute_id.name != 'Planes'
                 )
-                contado_av = plan_ptav.attribute_id.value_ids.filtered(
+                contado_av = plan_ptav and plan_ptav.attribute_id.value_ids.filtered(
                     lambda x: 'contado' in x.name.lower()
-                )
+                ) or False
                 sibling_contado = False
                 if contado_av:
                     domain = [
@@ -110,12 +110,17 @@ class SaleOrder(models.Model):
                 # Fallback al price_extra del atributo
                 if financing_fee_unit <= 0:
                     contado_ptav = line.product_id.product_tmpl_id.attribute_line_ids.filtered(
-                        lambda l: l.attribute_id.id == plan_ptav.attribute_id.id
+                        lambda l: plan_ptav and l.attribute_id.id == plan_ptav.attribute_id.id
                     ).product_template_value_ids.filtered(
                         lambda v: 'contado' in (v.name or '').lower()
                     )
                     contado_extra = contado_ptav[0].price_extra if contado_ptav else 0.0
-                    financing_fee_unit = (plan_ptav.price_extra or 0.0) - contado_extra
+                    plan_extra = (plan_ptav.price_extra or 0.0) if plan_ptav else 0.0
+                    financing_fee_unit = plan_extra - contado_extra
+
+                # Último fallback: variante financiada en lst_price vs línea actual (normalmente contado)
+                if financing_fee_unit <= 0:
+                    financing_fee_unit = (line.product_id.lst_price or 0.0) - (line.price_unit or 0.0)
 
                 if financing_fee_unit <= 0:
                     continue
@@ -126,7 +131,7 @@ class SaleOrder(models.Model):
                 self.env['sale.order.line'].sudo().create({
                     'order_id': order.id,
                     'product_id': financing_product.id,
-                    'name': "Gastos de Financiación (%s) - %s" % (plan_ptav.name, line.product_id.name),
+                    'name': "Gastos de Financiación (%s) - %s" % ((plan_ptav and plan_ptav.name) or ('%s meses' % (order.term_number or 1)), line.product_id.name),
                     'product_uom_qty': line.product_uom_qty,
                     'price_unit': financing_fee_unit,
                     'tax_id': [(6, 0, financing_product.taxes_id.ids)],

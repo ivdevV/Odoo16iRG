@@ -12,24 +12,25 @@ _logger = logging.getLogger(__name__)
 class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
     """Final controller layer to keep checkout totals/lines consistent."""
 
-    def _irg_sync_checkout_order(self):
+    def _irg_sync_checkout_order(self, recalculate=False):
         order = request.website.sale_get_order()
         if not order:
             return
         try:
-            order.sudo()._auto_scheduled_order()
+            if recalculate:
+                order.sudo()._auto_scheduled_order()
             order.sudo()._irg_ensure_financing_lines_consistent()
         except Exception as exc:
             _logger.exception("IRG checkout sync failed for order %s: %s", order.name, exc)
 
     @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def extra_info(self, **post):
-        self._irg_sync_checkout_order()
+        self._irg_sync_checkout_order(recalculate=False)
         return super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
 
     @http.route(['/shop/payment'], type='http', auth='public', website=True, sitemap=False)
     def shop_payment(self, **post):
-        self._irg_sync_checkout_order()
+        self._irg_sync_checkout_order(recalculate=False)
         return super().shop_payment(**post)
 
     @http.route(['/shop/academic_documents/upload'], type='http', auth='public', website=True, methods=['POST'], csrf=True)

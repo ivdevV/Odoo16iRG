@@ -74,3 +74,8 @@
 ## Resultado final (go/no-go)
 - GO si todos los ítems críticos A1/A2/B2/B3/C4/D2/D3/D4 pasan.
 - NO-GO si cualquier ítem crítico falla.
+
+## TODOs siguientes (firma)
+- Recopilar (conforms y queries) para identificar los datos faltantes del documento de matrícula.
+- Recoger esos datos en pasos previos del checkout (antes de payment).
+- Reflejar esos datos en el documento final ANTES de generar y enviar a firma.
