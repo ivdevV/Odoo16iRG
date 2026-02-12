@@ -24,6 +24,11 @@ class IrgDiscountProgram(models.Model):
         string='Descripción',
         help='Descripción visible para el cliente en la línea de descuento.'
     )
+    table_id = fields.Many2one(
+        'irg.discount.table',
+        string='Tabla de tarifas',
+        help='Tabla de referencia para mantener tarifas/importes del Excel.'
+    )
     target_product_id = fields.Many2one(
         'product.product',
         string='Producto objetivo',
@@ -37,6 +42,22 @@ class IrgDiscountProgram(models.Model):
         string='Productos objetivo',
         help='Productos sobre los que se calcula la variable product_amount. Si está vacío, product_amount será 0.'
     )
+    product_1_ids = fields.Many2many(
+        'product.product',
+        'irg_discount_program_product1_rel',
+        'program_id',
+        'product_id',
+        string='Producto 1',
+        help='Producto(s) del bloque 1 para las variables product_1_amount y products_diff_amount.'
+    )
+    product_2_ids = fields.Many2many(
+        'product.product',
+        'irg_discount_program_product2_rel',
+        'program_id',
+        'product_id',
+        string='Producto 2',
+        help='Producto(s) del bloque 2 para las variables product_2_amount y products_diff_amount.'
+    )
     formula = fields.Text(
         string='Fórmula de Descuento',
         required=True,
@@ -47,11 +68,15 @@ Variables disponibles:
   - qty_total: Cantidad total de productos
   - line_count: Número de líneas de producto
     - product_amount: Subtotal sin impuestos de los productos objetivo en el pedido
+    - product_1_amount: Subtotal sin impuestos de Producto 1
+    - product_2_amount: Subtotal sin impuestos de Producto 2
+    - products_diff_amount: Diferencia (product_1_amount - product_2_amount)
   - order: El objeto sale.order completo
 
 Ejemplos:
   amount_untaxed * 0.10            → 10%% de descuento
     product_amount * 0.20            → 20%% del importe de los productos objetivo
+    round(max(0, products_diff_amount), 2) → Diferencia positiva entre Producto 1 y 2
   min(amount_untaxed * 0.15, 500)  → 15%% con tope de 500€
   100 if amount_untaxed > 1000 else 50
   amount_untaxed * 0.05 if qty_total >= 2 else 0
@@ -126,6 +151,9 @@ Ejemplos:
                         'qty_total': 2.0,
                         'line_count': 2,
                         'product_amount': 300.0,
+                        'product_1_amount': 500.0,
+                        'product_2_amount': 300.0,
+                        'products_diff_amount': 200.0,
                         'min': min,
                         'max': max,
                         'abs': abs,
@@ -177,21 +205,34 @@ Ejemplos:
         )
         qty_total = sum(product_lines.mapped('product_uom_qty'))
         line_count = len(product_lines)
-        product_amount = 0.0
+
+        def _lines_amount_for_products(products):
+            if not products:
+                return 0.0
+            target_templates = products.mapped('product_tmpl_id')
+            target_lines = product_lines.filtered(
+                lambda l: l.product_id in products or l.product_id.product_tmpl_id in target_templates
+            )
+            return sum(target_lines.mapped('price_subtotal'))
 
         target_products = self.env['product.product']
         if self._table_exists('irg_discount_program_product_rel'):
             target_products = self.target_product_ids
-
         if not target_products and self._column_exists('irg_discount_program', 'target_product_id'):
             target_products = self.target_product_id
+        product_amount = _lines_amount_for_products(target_products)
 
-        if target_products:
-            target_templates = target_products.mapped('product_tmpl_id')
-            target_lines = product_lines.filtered(
-                lambda l: l.product_id in target_products or l.product_id.product_tmpl_id in target_templates
-            )
-            product_amount = sum(target_lines.mapped('price_subtotal'))
+        product_1_products = self.env['product.product']
+        if self._table_exists('irg_discount_program_product1_rel'):
+            product_1_products = self.product_1_ids
+        product_1_amount = _lines_amount_for_products(product_1_products)
+
+        product_2_products = self.env['product.product']
+        if self._table_exists('irg_discount_program_product2_rel'):
+            product_2_products = self.product_2_ids
+        product_2_amount = _lines_amount_for_products(product_2_products)
+
+        products_diff_amount = product_1_amount - product_2_amount
 
         return {
             'amount_untaxed': order.amount_untaxed,
@@ -199,6 +240,9 @@ Ejemplos:
             'qty_total': qty_total,
             'line_count': line_count,
             'product_amount': product_amount,
+            'product_1_amount': product_1_amount,
+            'product_2_amount': product_2_amount,
+            'products_diff_amount': products_diff_amount,
             'order': order,
             'min': min,
             'max': max,
@@ -212,7 +256,7 @@ Ejemplos:
 
         safe_vars = self._get_formula_context(order)
         _logger.info(
-            "IRG Discount debug [%s]: order=%s amount_untaxed=%s amount_total=%s qty_total=%s line_count=%s product_amount=%s formula=%s",
+            "IRG Discount debug [%s]: order=%s amount_untaxed=%s amount_total=%s qty_total=%s line_count=%s product_amount=%s product_1_amount=%s product_2_amount=%s products_diff_amount=%s formula=%s",
             self.code,
             order.name,
             safe_vars['amount_untaxed'],
@@ -220,6 +264,9 @@ Ejemplos:
             safe_vars['qty_total'],
             safe_vars['line_count'],
             safe_vars['product_amount'],
+            safe_vars['product_1_amount'],
+            safe_vars['product_2_amount'],
+            safe_vars['products_diff_amount'],
             self.formula,
         )
 
