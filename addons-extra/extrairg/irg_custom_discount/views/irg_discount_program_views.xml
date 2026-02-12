@@ -23,6 +23,7 @@
                             <field name="code"/>
                             <field name="sequence"/>
                             <field name="description"/>
+                            <field name="target_product_id"/>
                         </group>
                         <group string="Uso">
                             <field name="usage_limit"/>
@@ -53,12 +54,14 @@
                             <li><code>amount_total</code> — Total con impuestos del pedido</li>
                             <li><code>qty_total</code> — Cantidad total de productos</li>
                             <li><code>line_count</code> — Número de líneas de producto</li>
+                            <li><code>product_amount</code> — Subtotal sin impuestos del producto objetivo</li>
                             <li><code>order</code> — El objeto sale.order completo</li>
                             <li><code>min(a, b)</code>, <code>max(a, b)</code>, <code>abs(x)</code>, <code>round(x, n)</code></li>
                         </ul>
                         <strong>Ejemplos:</strong>
                         <ul>
                             <li><code>amount_untaxed * 0.10</code> → 10% de descuento</li>
+                            <li><code>product_amount * 0.20</code> → 20% del producto objetivo</li>
                             <li><code>min(amount_untaxed * 0.15, 500)</code> → 15% con tope de 500€</li>
                             <li><code>100 if amount_untaxed > 1000 else 50</code> → 100€ si supera 1000, sino 50€</li>
                         </ul>

@@ -24,6 +24,11 @@ class IrgDiscountProgram(models.Model):
         string='Descripción',
         help='Descripción visible para el cliente en la línea de descuento.'
     )
+    target_product_id = fields.Many2one(
+        'product.product',
+        string='Producto objetivo',
+        help='Producto sobre el que se calcula la variable product_amount. Si está vacío, product_amount será 0.'
+    )
     formula = fields.Text(
         string='Fórmula de Descuento',
         required=True,
@@ -33,10 +38,12 @@ Variables disponibles:
   - amount_total: Total con impuestos
   - qty_total: Cantidad total de productos
   - line_count: Número de líneas de producto
+    - product_amount: Subtotal sin impuestos del producto objetivo en el pedido
   - order: El objeto sale.order completo
 
 Ejemplos:
   amount_untaxed * 0.10            → 10%% de descuento
+    product_amount * 0.20            → 20%% del importe del producto objetivo
   min(amount_untaxed * 0.15, 500)  → 15%% con tope de 500€
   100 if amount_untaxed > 1000 else 50
   amount_untaxed * 0.05 if qty_total >= 2 else 0
@@ -93,6 +100,7 @@ Ejemplos:
                         'amount_total': 1210.0,
                         'qty_total': 2.0,
                         'line_count': 2,
+                        'product_amount': 300.0,
                         'min': min,
                         'max': max,
                         'abs': abs,
@@ -145,12 +153,19 @@ Ejemplos:
         )
         qty_total = sum(product_lines.mapped('product_uom_qty'))
         line_count = len(product_lines)
+        product_amount = 0.0
+        if self.target_product_id:
+            target_lines = product_lines.filtered(
+                lambda l: l.product_id.id == self.target_product_id.id
+            )
+            product_amount = sum(target_lines.mapped('price_subtotal'))
 
         safe_vars = {
             'amount_untaxed': order.amount_untaxed,
             'amount_total': order.amount_total,
             'qty_total': qty_total,
             'line_count': line_count,
+            'product_amount': product_amount,
             'order': order,
             'min': min,
             'max': max,
