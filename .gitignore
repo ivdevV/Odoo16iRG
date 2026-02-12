@@ -51,6 +51,4 @@ tmp/
 htmlcov/
 reports/
 
-# Keep SPECIFICATIONS and docs tracked
-!SPECIFICATIONS.md
-!doc/
+

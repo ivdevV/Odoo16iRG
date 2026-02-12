@@ -26,6 +26,7 @@
         'security/ir.model.access.csv',
         'data/config_data.xml',
         'data/cron_data.xml',
+        'views/sale_order_views.xml',
     ],
     'installable': True,
     'auto_install': False,
