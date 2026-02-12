@@ -7,6 +7,23 @@ from odoo import models, fields, api
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    def _create_payment_transaction(self, vals):
+        self.ensure_one()
+
+        provider_code = False
+        provider_id = vals.get('provider_id')
+        if provider_id:
+            provider = self.env['payment.provider'].sudo().browse(provider_id)
+            provider_code = provider.code if provider.exists() else False
+
+        is_stripe_checkout = provider_code in (False, 'stripe')
+        if is_stripe_checkout and (self.term_number or 0) > 1 and (self.amount_total or 0.0) > 0:
+            installment_amount = self.currency_id.round(self.amount_total / self.term_number)
+            if installment_amount > 0:
+                vals['amount'] = installment_amount
+
+        return super(SaleOrder, self)._create_payment_transaction(vals)
+
     academic_attachment_ids = fields.Many2many(
         'ir.attachment',
         string='Documentación académica',
