@@ -96,6 +96,23 @@ Ejemplos:
         ('code_uniq', 'unique(code)', 'El código de descuento debe ser único.'),
     ]
 
+    def _table_exists(self, table_name):
+        self.env.cr.execute("SELECT to_regclass(%s)", (table_name,))
+        return bool(self.env.cr.fetchone()[0])
+
+    def _column_exists(self, table_name, column_name):
+        self.env.cr.execute(
+            """
+            SELECT 1
+              FROM information_schema.columns
+             WHERE table_name = %s
+               AND column_name = %s
+             LIMIT 1
+            """,
+            (table_name, column_name),
+        )
+        return bool(self.env.cr.fetchone())
+
     @api.constrains('formula')
     def _check_formula(self):
         """Valida que la fórmula sea sintácticamente correcta."""
@@ -162,9 +179,14 @@ Ejemplos:
         qty_total = sum(product_lines.mapped('product_uom_qty'))
         line_count = len(product_lines)
         product_amount = 0.0
-        target_products = self.target_product_ids
-        if not target_products and self.target_product_id:
+
+        target_products = self.env['product.product']
+        if self._table_exists('irg_discount_program_product_rel'):
+            target_products = self.target_product_ids
+
+        if not target_products and self._column_exists('irg_discount_program', 'target_product_id'):
             target_products = self.target_product_id
+
         if target_products:
             target_lines = product_lines.filtered(
                 lambda l: l.product_id in target_products
