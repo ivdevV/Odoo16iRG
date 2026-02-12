@@ -14,6 +14,8 @@ class PracticeCenterTypes(models.Model):
         ('on_site', 'Presencial'),
         ('distance', 'Distancia'),
         ('validation', 'Convalidación'),
+        ('homeclass_asincronas', 'HomeClass Asincronas'),
+        ('homeclass_sincronas', 'HomeClass Sincronas'),
         # ('on_site_spain', 'Presencial España')
     ], default='on_site')
 
