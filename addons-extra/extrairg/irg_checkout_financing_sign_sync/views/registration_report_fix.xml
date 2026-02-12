@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="irg_registration_template_financing_fix" inherit_id="irg_sale_order_extended.registration_order_template" priority="260">
-        <xpath expr="//p[contains(., 'Móvil:')]/ancestor::tr/td[2]" position="replace">
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'), 'Movil')]]/td[2]" position="replace">
             <td>
                 <t t-if="o.student_id.mobile">
                     <t t-esc="o.student_id.mobile"/>
@@ -18,7 +18,7 @@
             </td>
         </xpath>
 
-        <xpath expr="//p[contains(., 'Estudios:')]/ancestor::tr/td[2]" position="replace">
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'), 'Estudios')]]/td[2]" position="replace">
             <td>
                 <t t-if="o.student_id.x_studio_titulacion">
                     <t t-esc="o.student_id.x_studio_titulacion"/>
@@ -35,7 +35,7 @@
             </td>
         </xpath>
 
-        <xpath expr="//p[contains(., 'Universidad:')]/ancestor::tr/td[2]" position="replace">
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'), 'Universidad')]]/td[2]" position="replace">
             <td>
                 <t t-if="o.student_id.x_studio_universidad">
                     <t t-esc="o.student_id.x_studio_universidad"/>
@@ -52,7 +52,7 @@
             </td>
         </xpath>
 
-        <xpath expr="//p[contains(., 'Año graduación:')]/ancestor::tr/td[2]" position="replace">
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'), 'Ano graduacion')]]/td[2]" position="replace">
             <td>
                 <t t-if="o.student_id.x_studio_ano_de_graduacion">
                     <t t-esc="o.student_id.x_studio_ano_de_graduacion"/>
@@ -69,7 +69,7 @@
             </td>
         </xpath>
 
-        <xpath expr="//p[contains(., 'Profesión:')]/ancestor::tr/td[2]" position="replace">
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'), 'Profesion')]]/td[2]" position="replace">
             <td>
                 <t t-if="o.student_id.function">
                     <t t-esc="o.student_id.function"/>
@@ -86,7 +86,7 @@
             </td>
         </xpath>
 
-        <xpath expr="//p[contains(., 'Asesor:')]/ancestor::tr/td[2]" position="replace">
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'), 'Asesor')]]/td[2]" position="replace">
             <td>
                 <t t-if="o.user_id and o.user_id.name">
                     <t t-esc="o.user_id.name"/>
@@ -95,7 +95,7 @@
             </td>
         </xpath>
 
-        <xpath expr="//p[contains(., 'Matrícula/Pago Inicial:')]/ancestor::tr/td[2]" position="replace">
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'), 'Matricula/Pago Inicial')]]/td[2]" position="replace">
             <td>
                 <t t-set="first_schedule" t-value="o.subscription_schedule and o.subscription_schedule.sorted(key=lambda s: s.date)[0] or False"/>
                 <t t-set="first_installment" t-value="(first_schedule and first_schedule.amount_recurring_taxinc) or (o.term_number and (o.amount_total / o.term_number)) or o.initial_payment or 0.0"/>
@@ -104,7 +104,7 @@
             </td>
         </xpath>
 
-        <xpath expr="//p[contains(., 'Forma de Pago:')]/ancestor::tr/td[2]" position="replace">
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'), 'Forma de Pago')]]/td[2]" position="replace">
             <td>
                 <t t-if="o.payment_mode_id and o.payment_mode_id.name">
                     <t t-esc="o.payment_mode_id.name"/>
@@ -117,7 +117,7 @@
             </td>
         </xpath>
 
-        <xpath expr="//p[contains(., 'Primer Vencimiento:')]/ancestor::tr/td[2]" position="replace">
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ÁÉÍÓÚáéíóú', 'AEIOUaeiou'), 'Primer Vencimiento')]]/td[2]" position="replace">
             <td>
                 <t t-set="month_names" t-value="{'January': 'enero', 'February': 'febrero', 'March': 'marzo', 'April': 'abril', 'May': 'mayo', 'June': 'junio', 'July': 'julio', 'August': 'agosto', 'September': 'septiembre', 'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'}"/>
                 <t t-set="first_schedule" t-value="o.subscription_schedule and o.subscription_schedule.sorted(key=lambda s: s.date)[0] or False"/>
