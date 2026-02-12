@@ -28,9 +28,9 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
         return super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
 
     @http.route(['/shop/payment'], type='http', auth='public', website=True, sitemap=False)
-    def payment(self, **post):
+    def shop_payment(self, **post):
         self._irg_sync_checkout_order()
-        return super(IrgWebsiteSaleFinancingSync, self).payment(**post)
+        return super().shop_payment(**post)
 
     @http.route(['/shop/academic_documents/upload'], type='http', auth='public', website=True, methods=['POST'], csrf=True)
     def upload_academic_documents(self, **post):
