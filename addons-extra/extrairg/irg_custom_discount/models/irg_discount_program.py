@@ -29,6 +29,14 @@ class IrgDiscountProgram(models.Model):
         string='Producto objetivo',
         help='Producto sobre el que se calcula la variable product_amount. Si está vacío, product_amount será 0.'
     )
+    target_product_ids = fields.Many2many(
+        'product.product',
+        'irg_discount_program_product_rel',
+        'program_id',
+        'product_id',
+        string='Productos objetivo',
+        help='Productos sobre los que se calcula la variable product_amount. Si está vacío, product_amount será 0.'
+    )
     formula = fields.Text(
         string='Fórmula de Descuento',
         required=True,
@@ -38,12 +46,12 @@ Variables disponibles:
   - amount_total: Total con impuestos
   - qty_total: Cantidad total de productos
   - line_count: Número de líneas de producto
-    - product_amount: Subtotal sin impuestos del producto objetivo en el pedido
+    - product_amount: Subtotal sin impuestos de los productos objetivo en el pedido
   - order: El objeto sale.order completo
 
 Ejemplos:
   amount_untaxed * 0.10            → 10%% de descuento
-    product_amount * 0.20            → 20%% del importe del producto objetivo
+    product_amount * 0.20            → 20%% del importe de los productos objetivo
   min(amount_untaxed * 0.15, 500)  → 15%% con tope de 500€
   100 if amount_untaxed > 1000 else 50
   amount_untaxed * 0.05 if qty_total >= 2 else 0
@@ -154,9 +162,12 @@ Ejemplos:
         qty_total = sum(product_lines.mapped('product_uom_qty'))
         line_count = len(product_lines)
         product_amount = 0.0
-        if self.target_product_id:
+        target_products = self.target_product_ids
+        if not target_products and self.target_product_id:
+            target_products = self.target_product_id
+        if target_products:
             target_lines = product_lines.filtered(
-                lambda l: l.product_id.id == self.target_product_id.id
+                lambda l: l.product_id in target_products
             )
             product_amount = sum(target_lines.mapped('price_subtotal'))
 
