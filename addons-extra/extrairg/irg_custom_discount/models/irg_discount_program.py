@@ -188,8 +188,9 @@ Ejemplos:
             target_products = self.target_product_id
 
         if target_products:
+            target_templates = target_products.mapped('product_tmpl_id')
             target_lines = product_lines.filtered(
-                lambda l: l.product_id in target_products
+                lambda l: l.product_id in target_products or l.product_id.product_tmpl_id in target_templates
             )
             product_amount = sum(target_lines.mapped('price_subtotal'))
 
