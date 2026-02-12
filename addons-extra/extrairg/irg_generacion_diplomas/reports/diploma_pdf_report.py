@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.utils import ImageReader
+from reportlab.lib.utils import ImageReader, simpleSplit
 from babel.dates import format_date
 import io
 import os
@@ -84,6 +84,21 @@ class DiplomaReportPDF(models.AbstractModel):
             
         c.drawString(draw_x, y, text)
 
+    def _draw_wrapped_text_in_column(self, c, text, x, y, width, font_name, font_size, align='center', leading=None):
+        """Draw text wrapping to new lines if needed. Returns new Y position."""
+        if leading is None:
+            leading = font_size * 1.2
+            
+        c.setFont(font_name, font_size)
+        lines = simpleSplit(text, font_name, font_size, width)
+        
+        current_y = y
+        for line in lines:
+            self._draw_text_in_column(c, line, x, current_y, width, font_name, font_size, align)
+            current_y -= leading
+            
+        return current_y
+
     @api.model
     def _get_report_values(self, docids, data=None):
         return {'data': data}
@@ -125,10 +140,7 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- CONTENT POSITIONING ---
         # Adjust Y positions based on page size
-        if diploma_type == 'physical':
-            start_y = page_height - 180  # More space for A3
-        else:
-            start_y = page_height - 180
+        start_y = page_height - 140
         
         col_width = page_width / 2
         left_col_x = 60
@@ -140,41 +152,50 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- INTRO TEXT ---
         y = start_y
         self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de", 
-                                   left_col_x, y, col_width - 80, font_regular, 12, align='left')
+                                   left_col_x, y, col_width - 80, font_regular, 12, align='right')
         self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de", 
-                                   right_col_x, y, col_width - 80, font_regular, 12, align='right')
+                                   right_col_x, y, col_width - 80, font_regular, 12, align='left')
         
         # --- COURSE NAME ---
-        y -= 40
+        y -= 30  # Reduced gap
         course_cat = data.get('course_name_cat', '')
         course_es = data.get('course_name_es', '')
         
-        self._draw_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, 20, align='left')
-        self._draw_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, 20, align='right')
+        course_font_size = 24  # Same as student name
+        
+        # Draw wrapped text and get new Y
+        # Draw wrapped text and get new Y
+        y_next_cat = self._draw_wrapped_text_in_column(c, course_cat, left_col_x, y, col_width - 80, font_bold, course_font_size, align='right')
+        y_next_es = self._draw_wrapped_text_in_column(c, course_es, right_col_x, y, col_width - 80, font_bold, course_font_size, align='left')
+        
+        # Update Y to the lowest point from both columns
+        y = min(y_next_cat, y_next_es)
         
         # --- "a" ---
-        y -= 40
+        
+        # --- "a" ---
+        y -= 30  # Reduced gap
         self._draw_centered_text(c, "a", y, font_regular, 14, page_width)
         
         # --- STUDENT NAME ---
-        y -= 35
+        y -= 30  # Reduced gap
         student_name = data.get('student_name', '')
         self._draw_centered_text(c, student_name, y, font_bold, 24, page_width)
         
         # --- BODY TEXT CATALAN ---
-        y -= 50
+        y -= 40  # Reduced gap
         body_cat_1 = "En reconeixement del rendiment acadèmic i a l'aprofitament"
         body_cat_2 = "dels estudis cursats en el programa del màster."
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width - 80, font_regular, 11, align='left')
+        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width - 80, font_regular, 11, align='right')
         y -= 15
-        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width - 80, font_regular, 11, align='left')
+        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width - 80, font_regular, 11, align='right')
         y -= 25
-        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width - 80, font_regular, 11, align='left')
+        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width - 80, font_regular, 11, align='right')
         y -= 15
-        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width - 80, font_regular, 11, align='left')
+        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width - 80, font_regular, 11, align='right')
         
         # --- BODY TEXT SPANISH ---
         y_es = y + 55  # Reset Y for right column
@@ -183,24 +204,25 @@ class DiplomaReportPDF(models.AbstractModel):
         body_es_3 = "Este máster cuenta con el reconocimiento de excelencia académica"
         body_es_4 = "de la European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width - 80, font_regular, 11, align='right')
+        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width - 80, font_regular, 11, align='left')
         y_es -= 15
-        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width - 80, font_regular, 11, align='right')
+        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width - 80, font_regular, 11, align='left')
         y_es -= 25
-        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width - 80, font_regular, 11, align='right')
+        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width - 80, font_regular, 11, align='left')
         y_es -= 15
-        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width - 80, font_regular, 11, align='right')
+        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width - 80, font_regular, 11, align='left')
         
         # --- DATES ---
-        y -= 60
+        y -= 40  # Reduced gap
         date_cat = data.get('date_cat', '')
         date_es = data.get('date_es', '')
         
-        self._draw_text_in_column(c, f"Barcelona, a {date_cat}", left_col_x, y, col_width - 80, font_regular, 12, align='left')
-        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width - 80, font_regular, 12, align='right')
+        self._draw_text_in_column(c, f"Barcelona, a {date_cat}", left_col_x, y, col_width - 80, font_regular, 12, align='center')
+        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width - 80, font_regular, 12, align='center')
+        
         
         # --- SIGNATURES ---
-        y -= 80
+        y -= 60  # Reduced gap
         
         # Store Y for images (top of signature area)
         y_images = y
@@ -208,30 +230,34 @@ class DiplomaReportPDF(models.AbstractModel):
         # Signature Raimon (left)
         sign_raimon_path = self._get_image_path('firma_raimon.png')
         if sign_raimon_path and os.path.exists(sign_raimon_path):
-            # Align left
-            sig_x = left_col_x
+            # Align center of left column
+            # Left column starts at left_col_x, width is (col_width - 80)
+            # Center of column is left_col_x + (col_width - 80) / 2
+            # Draw X = Center - Image Width / 2
+            sig_x = left_col_x + (col_width - 80 - 100) / 2
             c.drawImage(sign_raimon_path, sig_x, y_images, width=100, height=50, preserveAspectRatio=True, mask='auto')
         
         # Signature Grecia (right)
         sign_grecia_path = self._get_image_path('firma_grecia.png')
         img_width = 100
         if sign_grecia_path and os.path.exists(sign_grecia_path):
-            # Align right: Start X = (Column Start + Column Width) - Image Width
-            sig_x = right_col_x + (col_width - 80) - img_width
+            # Align center of right column
+            # Right column starts at right_col_x, width is (col_width - 80)
+            sig_x = right_col_x + (col_width - 80 - img_width) / 2
             c.drawImage(sign_grecia_path, sig_x, y_images, width=img_width, height=50, preserveAspectRatio=True, mask='auto')
 
         # Text Names (Aligned)
-        y -= 15
-        self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width - 80, font_bold, 14, align='left')
-        self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width - 80, font_bold, 14, align='right')
+        y -= 10  # Reduced gap
+        self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width - 80, font_bold, 14, align='center')
+        self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width - 80, font_bold, 14, align='center')
         
         y -= 15
-        self._draw_text_in_column(c, "Director", left_col_x, y, col_width - 80, font_regular, 11, align='left')
-        self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width - 80, font_regular, 11, align='right')
+        self._draw_text_in_column(c, "Director", left_col_x, y, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width - 80, font_regular, 11, align='center')
         
         y -= 13
-        self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width - 80, font_regular, 11, align='left')
-        self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width - 80, font_regular, 11, align='right')
+        self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width - 80, font_regular, 11, align='center')
+        self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width - 80, font_regular, 11, align='center')
         
         # --- QR CODE & REGISTRY ---
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')

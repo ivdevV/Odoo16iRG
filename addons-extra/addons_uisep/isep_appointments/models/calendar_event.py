@@ -15,6 +15,8 @@ from datetime import date, datetime,timedelta
 class CalendarEvent(models.Model):
     _inherit = "calendar.event"
 
+    duration = fields.Float(default=0.5)
+
     def _create_penalization(self):
         #Fecha y Hora Actual
         now = datetime.now()

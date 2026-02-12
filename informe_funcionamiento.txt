@@ -1,0 +1,482 @@
+================================================================================
+     INFORME DE ANÁLISIS DEL FLUJO: ECOMMERCE → SUSCRIPCIÓN → ADMISIÓN → MATRÍCULA
+================================================================================
+Fecha: 5 de Febrero de 2026
+Proyecto: Odoo 16 IRG - Instituto Raimon Gaja
+================================================================================
+
+ÍNDICE
+------
+1. RESUMEN EJECUTIVO
+2. FLUJO GENERAL DEL PROCESO
+3. MÓDULOS INVOLUCRADOS
+4. ANÁLISIS DETALLADO POR ETAPA
+   4.1 Etapa 1: Compra Ecommerce
+   4.2 Etapa 2: Auto Suscripción
+   4.3 Etapa 3: Auto Admisión
+   4.4 Etapa 4: Auto Matrícula
+5. PROBLEMAS DETECTADOS Y RECOMENDACIONES
+6. DIAGRAMA DE DEPENDENCIAS
+
+================================================================================
+1. RESUMEN EJECUTIVO
+================================================================================
+
+El sistema implementa un flujo automatizado completo que permite:
+- Compra online de programas académicos
+- Generación automática de planes de pago (suscripción)
+- Creación automática de admisiones (op.admission)
+- Inscripción automática en el campus virtual (slide.channel.partner)
+
+ESTADO GENERAL: ✓ FUNCIONAL (con observaciones)
+
+Principales observaciones:
+- El flujo está bien estructurado pero distribuido en muchos módulos
+- Hay duplicación de código entre módulos similares
+- La configuración de auto-matrícula depende del idioma (mx/br)
+- El panel de control del campus tenía un bug (corregido en irg_subject_slide_fix)
+
+================================================================================
+2. FLUJO GENERAL DEL PROCESO
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           FLUJO COMPLETO                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  CLIENTE                    SISTEMA                         CAMPUS
+    │                           │                               │
+    ▼                           │                               │
+┌─────────────┐                 │                               │
+│ 1. Navega   │                 │                               │
+│    /shop    │                 │                               │
+└──────┬──────┘                 │                               │
+       │                        │                               │
+       ▼                        │                               │
+┌─────────────┐                 │                               │
+│ 2. Añade    │                 │                               │
+│    producto │                 │                               │
+│    al carrito                 │                               │
+└──────┬──────┘                 │                               │
+       │                        │                               │
+       ▼                        │                               │
+┌─────────────┐                 │                               │
+│ 3. /address │─────────────────▶ _auto_scheduled_order()       │
+│    Datos    │                 │ (Crea plan de suscripción)    │
+└──────┬──────┘                 │                               │
+       │                        │                               │
+       ▼                        │                               │
+┌─────────────┐                 │                               │
+│ 4. /extra_  │─────────────────▶ _process_custom_form()        │
+│    info     │                 │ (Datos académicos)            │
+└──────┬──────┘                 │                               │
+       │                        │                               │
+       ▼                        │                               │
+┌─────────────┐                 │                               │
+│ 5. /payment │─────────────────▶ send_automated_action()       │
+│             │                 │ (Genera firma digital)        │
+└──────┬──────┘                 │                               │
+       │                        │                               │
+       ▼                        │                               │
+┌─────────────┐                 │                               │
+│ 6. PAGA     │─────────────────▶ action_confirm()              │
+│             │                 │   │                           │
+└─────────────┘                 │   ├─ create_subscription_schedule()
+                                │   │   (Cronograma de pagos)   │
+                                │   │                           │
+                                │   ├─ get_register_id()        │
+                                │   │   (op.admission.register) │
+                                │   │                           │
+                                │   ├─ get_admision_id()        │
+                                │   │   (op.admission)          │
+                                │   │                           │
+                                │   └─ ad_state_admission_done()│
+                                │       ├─ submit_form()        │
+                                │       ├─ confirm_in_progress()│
+                                │       ├─ admission_confirm()  │
+                                │       └─ enroll_student() ────────────────▶ slide.channel.partner
+                                │           (Inscripción)       │     (Acceso al campus)
+                                │                               │
+                                │                               │
+       CRON DIARIO ─────────────▶ cron_auto_enroll_student() ───────────────▶ Activa/Desactiva
+                                │   (Gestiona fechas)           │     según fechas
+
+================================================================================
+3. MÓDULOS INVOLUCRADOS
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    MÓDULOS POR ETAPA                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+ETAPA 1 - ECOMMERCE:
+├── isep_website_sale_custom        → Controladores checkout, extra_info
+├── isep_ecommerce_fix              → Correcciones, firma en /payment
+├── isep_website_custom             → Plantillas del portal
+├── isep_custom_ecommerce           → Personalizaciones adicionales
+└── theme_silon                     → Tema visual
+
+ETAPA 2 - SUSCRIPCIÓN:
+├── isep_sale_subscription_custom   → Modelo sale.subscription.schedule
+├── isep_sale_subscription_extension→ Extensión con mejoras
+├── payment_flywire_recurring       → Pagos recurrentes Flywire
+└── isep_payment_recurring          → Lógica de pagos recurrentes
+
+ETAPA 3 - ADMISIÓN:
+├── isep_openeducat_sale            → Conexión sale.order ↔ op.admission
+├── isep_sale_order_admissions      → Múltiples admisiones por pedido
+├── isep_admission_from_student_field → Override para student_id
+└── openeducat_admission (base)     → Modelo op.admission original
+
+ETAPA 4 - MATRÍCULA:
+├── isep_elearning_custom           → auto_enroll_student, cron
+├── isep_subject_precedence         → Precedencias entre asignaturas
+├── irg_elearning_restrictions      → Restricciones de acceso
+└── irg_subject_slide_fix (NUEVO)   → Fix del panel de control
+
+================================================================================
+4. ANÁLISIS DETALLADO POR ETAPA
+================================================================================
+
+--------------------------------------------------------------------------------
+4.1 ETAPA 1: COMPRA ECOMMERCE
+--------------------------------------------------------------------------------
+
+ARCHIVOS CLAVE:
+- isep_website_sale_custom/controllers/main.py
+- isep_ecommerce_fix/controllers/main.py
+- isep_website_sale_custom/views/template_extra_info.xml
+
+RUTAS HTTP:
+┌────────────────────┬─────────────────────────────────────────────────────────┐
+│ Ruta               │ Acción                                                  │
+├────────────────────┼─────────────────────────────────────────────────────────┤
+│ /shop              │ Catálogo de productos (programas académicos)            │
+│ /shop/cart         │ Carrito de compra                                       │
+│ /shop/address      │ Datos del cliente + _auto_scheduled_order()             │
+│ /shop/extra_info   │ Formulario datos académicos (fecha inicio, género)      │
+│ /shop/confirm_order│ Confirmación + actualización recurrencia                │
+│ /shop/payment      │ Pago + send_automated_action() (firma)                  │
+└────────────────────┴─────────────────────────────────────────────────────────┘
+
+MÉTODO CLAVE - _auto_scheduled_order():
+Ubicación: isep_website_sale_custom/controllers/main.py:77
+
+Funcionalidad:
+1. Recorre líneas de pedido buscando productos con recurring_invoice=True
+2. Extrae número de plazos del atributo "Planes" del producto
+3. Si no tiene atributos, usa course.duration
+4. Busca/asigna product.term.schedule correspondiente
+5. Asigna account.payment.term basado en número de meses
+
+ESTADO: ✓ FUNCIONAL
+
+--------------------------------------------------------------------------------
+4.2 ETAPA 2: AUTO SUSCRIPCIÓN
+--------------------------------------------------------------------------------
+
+ARCHIVOS CLAVE:
+- isep_sale_subscription_custom/models/sale_order.py
+- isep_sale_subscription_custom/models/sale_subscription_schedule.py
+- isep_sale_subscription_extension/models/sale_order.py
+
+MODELO: sale.subscription.schedule
+┌────────────────────┬─────────────────────────────────────────────────────────┐
+│ Campo              │ Descripción                                             │
+├────────────────────┼─────────────────────────────────────────────────────────┤
+│ order_id           │ Relación con sale.order                                 │
+│ term_number        │ Número de cuota (1, 2, 3...)                            │
+│ term_label         │ Etiqueta ("01 de 12", "02 de 12"...)                    │
+│ date_due           │ Fecha de vencimiento                                    │
+│ amount_recurring   │ Monto de la cuota                                       │
+│ invoice_ids        │ Facturas generadas                                      │
+│ payment_state      │ Estado de pago                                          │
+└────────────────────┴─────────────────────────────────────────────────────────┘
+
+MÉTODO CLAVE - create_subscription_schedule():
+Ubicación: isep_sale_subscription_custom/models/sale_order.py:398-460
+
+Funcionalidad:
+1. Valida recurrence_id, start_date, end_date, term_number
+2. Elimina cronogramas existentes
+3. Itera según term_number (número de plazos)
+4. Crea un registro sale.subscription.schedule por cada cuota
+5. Calcula fecha de vencimiento según recurrence_id.duration
+
+DISPARADOR:
+- Se ejecuta en action_confirm() si recurrence_id existe y no hay schedule
+
+OBSERVACIÓN:
+⚠ Hay duplicación de código entre isep_sale_subscription_custom e 
+  isep_sale_subscription_extension. El módulo extension parece ser una
+  refactorización más reciente con logs y fallbacks mejorados.
+
+ESTADO: ✓ FUNCIONAL (con duplicación de código)
+
+--------------------------------------------------------------------------------
+4.3 ETAPA 3: AUTO ADMISIÓN
+--------------------------------------------------------------------------------
+
+ARCHIVOS CLAVE:
+- isep_openeducat_sale/models/sale_order.py
+- isep_sale_order_admissions/models/sale_order.py
+- isep_openeducat_sale/models/auto_admission_required.py
+
+MODELO: auto.admission.required
+Configuración que controla si la auto-matrícula está activa por país:
+
+┌────────────────────┬─────────────────────────────────────────────────────────┐
+│ Campo              │ Descripción                                             │
+├────────────────────┼─────────────────────────────────────────────────────────┤
+│ mx_active          │ Activar auto-matrícula para México                      │
+│ br_active          │ Activar auto-matrícula para Brasil                      │
+│ mx_state_admission_│ Llevar admisión a estado 'done' automáticamente         │
+│ mx_auto_email_     │ Enviar email de bienvenida                              │
+│ welcome            │                                                         │
+│ mx_tutor_id        │ Tutor de orientación asignado                           │
+│ mx_professor_id    │ Tutor académico asignado                                │
+└────────────────────┴─────────────────────────────────────────────────────────┘
+
+FLUJO DE CREACIÓN:
+
+1. _action_confirm() se dispara al confirmar sale.order
+   Ubicación: isep_openeducat_sale/models/sale_order.py
+
+2. auto_ad_active() verifica si auto-matrícula está activa
+   - Revisa partner.lang (es_MX, pt_BR)
+   - Consulta auto.admission.required
+
+3. get_academic_product_template_id() busca producto académico
+   - Filtra líneas con is_academic_program=True
+
+4. get_register_id() busca/crea op.admission.register
+   - Agrupa por período (YYYY-01, YYYY-02, YYYY-03) y curso
+
+5. get_admision_id() crea op.admission
+   - Crea partner si no existe
+   - Crea usuario portal si no existe
+   - Crea op.student si no existe
+   - Crea op.batch (lote) si no existe
+
+6. ad_state_admission_done() procesa estados automáticamente:
+   - submit_form() → estado 'submit'
+   - confirm_in_progress() → estado 'confirm'
+   - admission_confirm() → estado 'admitted'
+   - enroll_student() → estado 'done' + inscripción
+
+MÚLTIPLES ADMISIONES:
+El módulo isep_sale_order_admissions permite crear varias admisiones
+cuando hay múltiples líneas con productos académicos diferentes.
+Usa el modelo intermedio sale.order.admission.line.
+
+ESTADO: ✓ FUNCIONAL
+
+--------------------------------------------------------------------------------
+4.4 ETAPA 4: AUTO MATRÍCULA (Inscripción en Campus)
+--------------------------------------------------------------------------------
+
+ARCHIVOS CLAVE:
+- isep_elearning_custom/models/op_admission.py
+- isep_elearning_custom/models/slide_channel_partner.py
+- isep_elearning_custom/models/op_batch.py
+- isep_subject_precedence/models/op_admission.py
+
+MODELO: slide.channel.partner
+Representa la inscripción de un estudiante en un curso del campus:
+
+┌────────────────────┬─────────────────────────────────────────────────────────┐
+│ Campo              │ Descripción                                             │
+├────────────────────┼─────────────────────────────────────────────────────────┤
+│ partner_id         │ Estudiante (res.partner)                                │
+│ channel_id         │ Curso en campus (slide.channel)                         │
+│ course_id          │ Programa académico (op.course)                          │
+│ batch_id           │ Lote/Grupo (op.batch)                                   │
+│ admission_id       │ Admisión (op.admission)                                 │
+│ op_subject_id      │ Asignatura (op.subject)                                 │
+│ active             │ Controla acceso al curso                                │
+│ date_from          │ Fecha inicio de acceso                                  │
+│ date_to            │ Fecha fin de acceso                                     │
+└────────────────────┴─────────────────────────────────────────────────────────┘
+
+MODELO: op.subject.to.batch
+Relaciona asignaturas con lotes y define fechas específicas:
+
+┌────────────────────┬─────────────────────────────────────────────────────────┐
+│ Campo              │ Descripción                                             │
+├────────────────────┼─────────────────────────────────────────────────────────┤
+│ batch_id           │ Lote (op.batch)                                         │
+│ subject_id         │ Asignatura (op.subject)                                 │
+│ date_from          │ Fecha inicio de la asignatura en este lote              │
+│ date_to            │ Fecha fin de la asignatura en este lote                 │
+└────────────────────┴─────────────────────────────────────────────────────────┘
+
+MÉTODOS DE INSCRIPCIÓN:
+
+1. auto_enroll_student() - Botón manual
+   Ubicación: isep_elearning_custom/models/op_admission.py:350
+   
+   Lógica:
+   - Solo procesa admisiones en estado 'done'
+   - Itera por batch_id.subject_to_batch_ids
+   - IMPORTANTE: Salta asignaturas sin date_from o date_to
+   - Si fecha actual está en rango → crea/actualiza con active=True
+   - Si fecha actual pasó date_to → pone active=False
+
+2. cron_auto_enroll_student() - Cron diario
+   Ubicación: isep_elearning_custom/models/op_admission.py:397
+   
+   Se ejecuta automáticamente cada día para:
+   - Activar asignaturas que inician hoy
+   - Desactivar asignaturas que finalizaron
+
+3. auto_enroll_student_auto() - Al confirmar admisión
+   Ubicación: isep_subject_precedence/models/op_admission.py
+   
+   Llama a auto_enroll_student() si modality='auto'
+
+4. enroll_student_subject() - Por precedencias
+   Ubicación: isep_subject_precedence/models/op_subject.py
+   
+   Inscribe en asignaturas dependientes cuando se completa una precedente
+
+PROBLEMA DETECTADO:
+El método auto_enroll_student() tiene esta condición:
+    if not subject_batch.date_from or not subject_batch.date_to:
+        continue
+
+Esto significa que las asignaturas SIN fechas configuradas en 
+op.subject.to.batch son IGNORADAS completamente.
+
+ESTADO: ✓ FUNCIONAL (pero depende de configuración correcta de fechas)
+
+================================================================================
+5. PROBLEMAS DETECTADOS Y RECOMENDACIONES
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PROBLEMA #1: Asignaturas sin fechas no se procesan                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Ubicación: isep_elearning_custom/models/op_admission.py:361                 │
+│                                                                             │
+│ Código actual:                                                              │
+│     if not subject_batch.date_from or not subject_batch.date_to:            │
+│         continue                                                            │
+│                                                                             │
+│ Impacto: Si no se configuran fechas en op.subject.to.batch, el estudiante   │
+│          nunca será inscrito en esas asignaturas.                           │
+│                                                                             │
+│ Recomendación: Considerar usar fechas del batch como fallback:              │
+│     date_from = subject_batch.date_from or batch.start_date                 │
+│     date_to = subject_batch.date_to or batch.end_date                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PROBLEMA #2: Panel de control no filtraba por active                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Ubicación: isep_website_custom/views/user_profile_content_details.xml       │
+│                                                                             │
+│ Código original:                                                            │
+│     <t t-set="slide_channel_active_ids"                                     │
+│        t-value="user.partner_id.slide_channel_ids.ids"/>                    │
+│                                                                             │
+│ Impacto: Mostraba como activas asignaturas donde el estudiante tenía        │
+│          active=False en slide.channel.partner                              │
+│                                                                             │
+│ SOLUCIÓN: Se creó módulo irg_subject_slide_fix que filtra correctamente     │
+│           por slide.channel.partner.active = True                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PROBLEMA #3: Duplicación de código                                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Módulos afectados:                                                          │
+│ - isep_sale_subscription_custom                                             │
+│ - isep_sale_subscription_extension                                          │
+│                                                                             │
+│ Ambos implementan lógica similar para create_subscription_schedule()        │
+│                                                                             │
+│ Recomendación: Consolidar en un solo módulo o documentar cuál es el         │
+│                "oficial" y deprecar el otro.                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PROBLEMA #4: Configuración dependiente del idioma                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Ubicación: isep_openeducat_sale/models/auto_admission_required.py           │
+│                                                                             │
+│ La auto-matrícula solo funciona si:                                         │
+│ - partner.lang = 'es_MX' y mx_active = True, o                              │
+│ - partner.lang = 'pt_BR' y br_active = True                                 │
+│                                                                             │
+│ Impacto: Estudiantes con otros idiomas (es_ES, en_US) no tienen             │
+│          auto-matrícula aunque compren por ecommerce.                       │
+│                                                                             │
+│ Recomendación: Añadir configuración para español de España (es_ES)          │
+│                o crear un flag genérico global.                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ OBSERVACIÓN #5: Cadena de herencia compleja                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ El método action_confirm() de sale.order es heredado por:                   │
+│ 1. isep_sale_subscription_custom                                            │
+│ 2. isep_website_sale_custom                                                 │
+│ 3. isep_ecommerce_fix                                                       │
+│ 4. isep_openeducat_sale                                                     │
+│ 5. isep_sale_order_admissions                                               │
+│                                                                             │
+│ El orden de ejecución depende del orden de instalación de módulos.          │
+│                                                                             │
+│ Recomendación: Documentar el orden esperado y/o usar @api.model para        │
+│                controlar la secuencia de forma explícita.                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+6. DIAGRAMA DE DEPENDENCIAS
+================================================================================
+
+                    ┌──────────────────────────────────────┐
+                    │         MÓDULOS BASE ODOO            │
+                    │  sale, website_sale, sale_subscription│
+                    │  website_slides, openeducat_*        │
+                    └───────────────────┬──────────────────┘
+                                        │
+            ┌───────────────────────────┼───────────────────────────┐
+            │                           │                           │
+            ▼                           ▼                           ▼
+┌───────────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐
+│ isep_website_sale_    │   │ isep_sale_subscription│   │ isep_openeducat_sale  │
+│ custom                │   │ _custom               │   │                       │
+│ (Checkout ecommerce)  │   │ (Cronograma pagos)    │   │ (Admisiones auto)     │
+└───────────┬───────────┘   └───────────┬───────────┘   └───────────┬───────────┘
+            │                           │                           │
+            │                           │                           ▼
+            │                           │               ┌───────────────────────┐
+            │                           │               │ isep_sale_order_      │
+            │                           │               │ admissions            │
+            │                           │               │ (Múltiples admisiones)│
+            │                           │               └───────────┬───────────┘
+            │                           │                           │
+            └───────────────────────────┼───────────────────────────┘
+                                        │
+                                        ▼
+                            ┌───────────────────────┐
+                            │ isep_elearning_custom │
+                            │ (auto_enroll_student) │
+                            └───────────┬───────────┘
+                                        │
+                        ┌───────────────┴───────────────┐
+                        │                               │
+                        ▼                               ▼
+            ┌───────────────────────┐       ┌───────────────────────┐
+            │ isep_subject_         │       │ irg_subject_slide_fix │
+            │ precedence            │       │ (Fix panel control)   │
+            │ (Prereqs asignaturas) │       │                       │
+            └───────────────────────┘       └───────────────────────┘
+
+================================================================================
+FIN DEL INFORME
+================================================================================
+Generado automáticamente por análisis de código
+Workspace: c:\Workspace\odoo16irg
+================================================================================
