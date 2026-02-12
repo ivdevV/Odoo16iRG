@@ -19,6 +19,7 @@
     ],
     'data': [
         'data/product_data.xml',
+        'views/cart_summary.xml',
     ],
     'installable': True,
     'auto_install': False,

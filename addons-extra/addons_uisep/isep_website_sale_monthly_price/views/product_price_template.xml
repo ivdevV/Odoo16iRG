@@ -136,16 +136,6 @@
                     </tr>
                 </t>
 
-                <t t-foreach="lines.filtered(lambda l: l.irg_line_type == 'matricula_discount')" t-as="line">
-                    <tr>
-                        <td class="td-product_name"><t t-esc="line.name"/></td>
-                        <td class="td-qty text-center">50%</td>
-                        <td class="td-price text-end">
-                            <span t-esc="line.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </td>
-                    </tr>
-                </t>
-
                 <t t-foreach="lines.filtered(lambda l: l.irg_line_type not in ['master', 'financing', 'matricula', 'matricula_discount'])" t-as="line">
                     <tr>
                         <td class="td-product_name"><t t-esc="line.name"/></td>
@@ -165,7 +155,7 @@
 
         <xpath expr="//tr[hasclass('cart_total')]" position="after">
             <t t-set="summary_order" t-value="order or website_sale_order"/>
-            <t t-set="matricula_total" t-value="sum(summary_order.order_line.filtered(lambda l: l.irg_line_type in ['matricula', 'matricula_discount']).mapped('price_subtotal'))"/>
+            <t t-set="matricula_total" t-value="sum(summary_order.order_line.filtered(lambda l: l.irg_line_type == 'matricula').mapped('price_subtotal'))"/>
             <t t-set="monthly_amount" t-value="summary_order.subscription_schedule and summary_order.subscription_schedule[0].amount_recurring_taxinc or 0.0"/>
             <tr>
                 <td colspan="2" class="text-start">1ra Cuota + Matricula:</td>
