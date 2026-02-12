@@ -13,7 +13,6 @@
     ],
     'data': [
         'views/cart_summary_fix.xml',
-        'views/post_payment_upload.xml',
         'views/sale_order_academic_attachments.xml',
     ],
     'installable': True,
