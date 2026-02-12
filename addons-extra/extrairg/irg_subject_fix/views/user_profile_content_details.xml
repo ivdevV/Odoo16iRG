@@ -75,7 +75,6 @@
                                 <div class="o_wslides_background_image ps-5 pe-4 rounded-start" t-if="icon_course"
                                      t-attf-style="#{'filter: grayscale(0.7);' if not can_be_taken or not (slide_id in slide_channel_active_ids) else ''} height: 72px; background-image: url(#{website.image_url(icon_course, 'image')});"/>
                                 <div class="p-2 w-100" style="font-size: 13px;font-weight: 600;">
-                                    <span class="mt-0 mb-1" t-if="subject.code"><t t-esc="subject.code"/> - </span>
                                     <span class="mt-0 mb-1" t-field="subject.name"/>
                                 </div>
                             </div>
