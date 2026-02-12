@@ -27,6 +27,7 @@
         'security/ir.model.access.csv',
         'data/product_data.xml',
         'views/irg_discount_program_views.xml',
+        'views/website_cart_feedback.xml',
     ],
     'installable': True,
     'auto_install': False,

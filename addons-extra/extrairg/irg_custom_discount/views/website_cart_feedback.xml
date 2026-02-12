@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_custom_discount_cart_feedback" inherit_id="website_sale.cart" priority="120">
+        <xpath expr="//div[@id='wrap']" position="inside">
+            <t t-set="irg_discount_error" t-value="request.session.pop('irg_discount_error', False)"/>
+            <t t-if="irg_discount_error">
+                <div class="container mt-3">
+                    <div class="alert alert-warning" role="alert">
+                        <t t-esc="irg_discount_error"/>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

@@ -168,11 +168,10 @@ Ejemplos:
 
         return True, ''
 
-    def _compute_discount(self, order):
-        """Evalúa la fórmula y devuelve el importe de descuento."""
+    def _get_formula_context(self, order):
+        """Prepara las variables disponibles para la fórmula."""
         self.ensure_one()
 
-        # Calcular qty_total excluyendo líneas de descuento
         product_lines = order.order_line.filtered(
             lambda l: not l.display_type and l.price_unit >= 0
         )
@@ -194,7 +193,7 @@ Ejemplos:
             )
             product_amount = sum(target_lines.mapped('price_subtotal'))
 
-        safe_vars = {
+        return {
             'amount_untaxed': order.amount_untaxed,
             'amount_total': order.amount_total,
             'qty_total': qty_total,
@@ -206,6 +205,23 @@ Ejemplos:
             'abs': abs,
             'round': round,
         }
+
+    def _compute_discount(self, order):
+        """Evalúa la fórmula y devuelve el importe de descuento."""
+        self.ensure_one()
+
+        safe_vars = self._get_formula_context(order)
+        _logger.info(
+            "IRG Discount debug [%s]: order=%s amount_untaxed=%s amount_total=%s qty_total=%s line_count=%s product_amount=%s formula=%s",
+            self.code,
+            order.name,
+            safe_vars['amount_untaxed'],
+            safe_vars['amount_total'],
+            safe_vars['qty_total'],
+            safe_vars['line_count'],
+            safe_vars['product_amount'],
+            self.formula,
+        )
 
         try:
             discount = eval(self.formula.strip(), {"__builtins__": {}}, safe_vars)
