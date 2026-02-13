@@ -8,6 +8,51 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    def _irg_get_variant_order_price(self, product, recurrence=None, pricelist=None):
+        """Return unit price for a product variant in current order context.
+
+        Priority:
+        1) product.pricing with same variant + pricelist + recurrence
+        2) product.pricing variant + no pricelist + recurrence
+        3) product.pricing template-level + pricelist + recurrence
+        4) product.pricing template-level + no pricelist + recurrence
+        5) fallback product.lst_price
+        """
+        self.ensure_one()
+        if not product:
+            return 0.0
+
+        recurrence = recurrence or self.recurrence_id
+        pricelist = pricelist or self.pricelist_id
+
+        pricing_domain = [
+            ('product_template_id', '=', product.product_tmpl_id.id),
+        ]
+        if recurrence:
+            pricing_domain.append(('recurrence_id', '=', recurrence.id))
+
+        pricing_rules = self.env['product.pricing'].search(pricing_domain)
+        if not pricing_rules:
+            return product.lst_price
+
+        variant_rules = pricing_rules.filtered(lambda rule: product in rule.product_variant_ids)
+        template_rules = pricing_rules.filtered(lambda rule: not rule.product_variant_ids)
+
+        def _pick(rules):
+            if not rules:
+                return False
+            if pricelist:
+                with_pricelist = rules.filtered(lambda r: r.pricelist_id == pricelist)
+                if with_pricelist:
+                    return with_pricelist[0]
+            no_pricelist = rules.filtered(lambda r: not r.pricelist_id)
+            if no_pricelist:
+                return no_pricelist[0]
+            return rules[0]
+
+        selected_rule = _pick(variant_rules) or _pick(template_rules)
+        return selected_rule.price if selected_rule else product.lst_price
+
     def _irg_get_sibling_contado(self, product):
         """Find the exact contado sibling variant for a financed variant."""
         self.ensure_one()
@@ -116,7 +161,11 @@ class SaleOrder(models.Model):
                                 # Contado: usar SIEMPRE el precio de la variante contado (lst_price)
                                 use_line_price = not (ol.irg_force_price_unit_set or (ol.irg_force_price_unit and ol.irg_force_price_unit > 0))
                                 financed_price = ol.price_unit if (use_line_price and ol.price_unit and ol.price_unit > 0) else ol.product_id.lst_price
-                                contado_price = sibling_contado.lst_price
+                                contado_price = self._irg_get_variant_order_price(
+                                    sibling_contado,
+                                    recurrence=self.recurrence_id,
+                                    pricelist=self.pricelist_id,
+                                )
                                 _logger.info("IRG Financiación [BASE]: financed=%s, contado=%s, diff=%s",
                                              financed_price, contado_price, financed_price - contado_price)
 

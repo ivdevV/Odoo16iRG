@@ -125,7 +125,11 @@ class SaleOrder(models.Model):
 
                 use_line_price = not (line.irg_force_price_unit_set or (line.irg_force_price_unit and line.irg_force_price_unit > 0))
                 financed_price = line.price_unit if (use_line_price and line.price_unit and line.price_unit > 0) else line.product_id.lst_price
-                contado_price = sibling_contado.lst_price
+                contado_price = order._irg_get_variant_order_price(
+                    sibling_contado,
+                    recurrence=order.recurrence_id,
+                    pricelist=order.pricelist_id,
+                )
 
                 plan_extra = (plan_ptav.price_extra or 0.0) if plan_ptav else 0.0
                 contado_ptav = line.product_id.product_tmpl_id.attribute_line_ids.filtered(
