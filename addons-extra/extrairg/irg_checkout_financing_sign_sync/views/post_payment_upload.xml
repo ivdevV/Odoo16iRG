@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="irg_payment_confirmation_academic_upload" inherit_id="website_sale.payment_confirmation_status" priority="260">
-        <xpath expr="//div[hasclass('alert')][last()]" position="after">
+        <xpath expr="//div[hasclass('alert-warning')]" position="after">
             <t t-set="last_order_id" t-value="request.session.get('sale_last_order_id')"/>
             <t t-set="last_order" t-value="last_order_id and request.env['sale.order'].sudo().browse(last_order_id) or False"/>
             <t t-if="last_order and last_order.exists() and last_order.state in ('sale', 'done')">
