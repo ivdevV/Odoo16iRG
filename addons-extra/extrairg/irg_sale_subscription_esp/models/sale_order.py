@@ -8,6 +8,46 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    def _irg_get_sibling_contado(self, product):
+        """Find the exact contado sibling variant for a financed variant."""
+        self.ensure_one()
+        if not product:
+            return self.env['product.product']
+
+        plan_ptav = product.product_template_attribute_value_ids.filtered(
+            lambda x: x.attribute_id.name == 'Planes'
+        )
+        if not plan_ptav:
+            return self.env['product.product']
+
+        plan_ptav = plan_ptav[0]
+        contado_values = plan_ptav.attribute_id.value_ids.filtered(
+            lambda x: 'contado' in (x.name or '').lower()
+        )
+        if not contado_values:
+            return self.env['product.product']
+
+        other_ptav_ids = set(
+            product.product_template_attribute_value_ids.filtered(
+                lambda x: x.attribute_id.name != 'Planes'
+            ).ids
+        )
+
+        candidates = self.env['product.product'].search([
+            ('product_tmpl_id', '=', product.product_tmpl_id.id),
+            ('product_template_attribute_value_ids.product_attribute_value_id', 'in', contado_values.ids),
+        ])
+        for candidate in candidates:
+            candidate_other_ids = set(
+                candidate.product_template_attribute_value_ids.filtered(
+                    lambda x: x.attribute_id.name != 'Planes'
+                ).ids
+            )
+            if candidate_other_ids == other_ptav_ids:
+                return candidate
+
+        return self.env['product.product']
+
     def _auto_scheduled_order(self):
         """
         Sobrescribe la lógica de programación automática para incluir el cálculo
@@ -64,29 +104,10 @@ class SaleOrder(models.Model):
                     if 'contado' not in plan_value.name.lower():
                         _logger.info("Producto financiado detectado: %s - Plan: %s", ol.product_id.name, plan_value.name)
                         
-                        # 1. Buscar la variante "Contado" hermana
-                        # Debe tener el mismo template y los MISMOS otros atributos (excepto Planes)
-                        other_attributes = ol.product_id.product_template_attribute_value_ids.filtered(lambda x: x.attribute_id.name != 'Planes')
-                        
-                        # Buscamos el valor "Contado" para el atributo Planes
-                        # Primero obtenemos todos los valores posibles para ese atributo en este template
-                        contado_value = plan_value.attribute_id.value_ids.filtered(lambda x: 'contado' in x.name.lower())
-                        
-                        if contado_value:
-                            # Ahora buscamos el product.product que sea hermano
-                            # Domain: Mismo Template + Atributo Contado + Otros Atributos
-                            domain = [
-                                ('product_tmpl_id', '=', ol.product_id.product_tmpl_id.id),
-                                ('product_template_attribute_value_ids.product_attribute_value_id', 'in', contado_value.ids)
-                            ]
-                            
-                            # Añadimos los otros atributos al dominio
-                            for attr in other_attributes:
-                                domain.append(('product_template_attribute_value_ids', 'in', attr.ids))
-                                
-                            sibling_contado = self.env['product.product'].search(domain, limit=1)
-                            
-                            if sibling_contado:
+                        # 1. Buscar la variante "Contado" hermana exacta
+                        sibling_contado = self._irg_get_sibling_contado(ol.product_id)
+
+                        if sibling_contado:
                                 # Mark the main line so we can order the summary consistently
                                 if ol.irg_line_type != 'master':
                                     ol.write({'irg_line_type': 'master'})
@@ -217,8 +238,8 @@ class SaleOrder(models.Model):
                                         })
 
                                     self.env['sale.order.line'].sudo().create(matricula_vals)
-                            else:
-                                _logger.warning("No se encontró variante Contado para %s", ol.product_id.name)
+                        else:
+                            _logger.warning("No se encontró variante Contado para %s", ol.product_id.name)
 
                 # --- FIN LÓGICA FINANCIACIÓN ---
 

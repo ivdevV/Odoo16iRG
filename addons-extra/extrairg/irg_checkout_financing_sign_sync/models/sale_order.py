@@ -11,6 +11,10 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    irg_forma_pago = fields.Char(string='Forma de pago (web)', copy=False)
+    irg_primer_vencimiento = fields.Date(string='Primer vencimiento (web)', copy=False)
+    irg_matricula_pago_inicial = fields.Float(string='Matrícula/Pago inicial (web)', copy=False)
+
     def _create_payment_transaction(self, vals):
         self.ensure_one()
 
@@ -115,77 +119,82 @@ class SaleOrder(models.Model):
                 if not (is_financed_plan or is_multiterm_master):
                     continue
 
-                existing_fin_line = order.order_line.filtered(
-                    lambda l: l.irg_line_type == 'financing'
-                    and l.irg_parent_line_id == line
-                )
-                if existing_fin_line:
+                sibling_contado = order._irg_get_sibling_contado(line.product_id)
+                if not sibling_contado:
                     continue
 
-                # --- Calcular fee: misma lógica multi-nivel que _auto_scheduled_order ---
-                # Nivel 1: buscar variante contado hermana
-                other_attrs = line.product_id.product_template_attribute_value_ids.filtered(
-                    lambda x: x.attribute_id.name != 'Planes'
-                )
-                contado_av = plan_ptav and plan_ptav.attribute_id.value_ids.filtered(
-                    lambda x: 'contado' in x.name.lower()
-                ) or False
-                sibling_contado = False
-                if contado_av:
-                    domain = [
-                        ('product_tmpl_id', '=', line.product_id.product_tmpl_id.id),
-                        ('product_template_attribute_value_ids.product_attribute_value_id', 'in', contado_av.ids),
-                    ]
-                    for attr in other_attrs:
-                        domain.append(('product_template_attribute_value_ids', 'in', attr.ids))
-                    sibling_contado = self.env['product.product'].search(domain, limit=1)
+                use_line_price = not (line.irg_force_price_unit_set or (line.irg_force_price_unit and line.irg_force_price_unit > 0))
+                raw_variant = line.price_unit if use_line_price else line.product_id.lst_price
+                raw_contado = sibling_contado.lst_price
 
-                financing_fee_unit = 0.0
-                if sibling_contado:
-                    # Preferir pricelist si existe
-                    raw_variant = line.price_unit or line.product_id.lst_price
-                    raw_contado = sibling_contado.lst_price
-                    if order.pricelist_id:
-                        qty = line.product_uom_qty or 1.0
-                        pv = order.pricelist_id._get_product_price(line.product_id, qty)
-                        pc = order.pricelist_id._get_product_price(sibling_contado, qty)
-                        if pv and pv > 0:
-                            raw_variant = pv
-                        if pc and pc > 0:
-                            raw_contado = pc
+                pl_variant = line.price_unit if (use_line_price and line.price_unit and line.price_unit > 0) else raw_variant
+                pl_contado = raw_contado
+                if order.pricelist_id:
+                    qty = line.product_uom_qty or 1.0
+                    pv = order.pricelist_id._get_product_price(line.product_id, qty)
+                    pc = order.pricelist_id._get_product_price(sibling_contado, qty)
+                    if (not (use_line_price and line.price_unit and line.price_unit > 0)) and pv and pv > 0:
+                        pl_variant = pv
+                    if pc and pc > 0:
+                        pl_contado = pc
+
+                plan_extra = (plan_ptav.price_extra or 0.0) if plan_ptav else 0.0
+                contado_ptav = line.product_id.product_tmpl_id.attribute_line_ids.filtered(
+                    lambda attr_line: plan_ptav and attr_line.attribute_id.id == plan_ptav.attribute_id.id
+                ).product_template_value_ids.filtered(
+                    lambda value: 'contado' in (value.name or '').lower()
+                )
+                contado_extra = contado_ptav[0].price_extra if contado_ptav else 0.0
+
+                financing_fee_unit = pl_variant - pl_contado
+                if financing_fee_unit <= 0:
                     financing_fee_unit = raw_variant - raw_contado
-
-                # Fallback al price_extra del atributo
                 if financing_fee_unit <= 0:
-                    contado_ptav = line.product_id.product_tmpl_id.attribute_line_ids.filtered(
-                        lambda l: plan_ptav and l.attribute_id.id == plan_ptav.attribute_id.id
-                    ).product_template_value_ids.filtered(
-                        lambda v: 'contado' in (v.name or '').lower()
-                    )
-                    contado_extra = contado_ptav[0].price_extra if contado_ptav else 0.0
-                    plan_extra = (plan_ptav.price_extra or 0.0) if plan_ptav else 0.0
                     financing_fee_unit = plan_extra - contado_extra
-
-                # Último fallback: variante financiada en lst_price vs línea actual (normalmente contado)
-                if financing_fee_unit <= 0:
-                    financing_fee_unit = (line.product_id.lst_price or 0.0) - (line.price_unit or 0.0)
-
                 if financing_fee_unit <= 0:
                     continue
 
-                if line.irg_line_type != 'master':
-                    line.write({'irg_line_type': 'master'})
+                if pl_variant - pl_contado > 0:
+                    contado_price = pl_contado
+                elif raw_variant - raw_contado > 0:
+                    contado_price = raw_contado
+                else:
+                    contado_price = pl_variant - financing_fee_unit
 
-                self.env['sale.order.line'].sudo().create({
-                    'order_id': order.id,
-                    'product_id': financing_product.id,
-                    'name': "Gastos de Financiación (%s) - %s" % ((plan_ptav and plan_ptav.name) or ('%s meses' % (order.term_number or 1)), line.product_id.name),
-                    'product_uom_qty': line.product_uom_qty,
-                    'price_unit': financing_fee_unit,
-                    'tax_id': [(6, 0, financing_product.taxes_id.ids)],
-                    'irg_line_type': 'financing',
-                    'irg_parent_line_id': line.id,
+                line.write({
+                    'price_unit': contado_price,
+                    'irg_force_price_unit': contado_price,
+                    'irg_force_price_unit_set': True,
+                    'irg_line_type': 'master',
                 })
+
+                existing_fin_lines = order.order_line.filtered(
+                    lambda ln: ln.irg_line_type == 'financing' and ln.irg_parent_line_id == line
+                )
+                fin_name = "Gastos de Financiación (%s) - %s" % (
+                    (plan_ptav and plan_ptav.name) or ('%s meses' % (order.term_number or 1)),
+                    line.product_id.name,
+                )
+                if existing_fin_lines:
+                    fin_line = existing_fin_lines[0]
+                    (existing_fin_lines - fin_line).unlink()
+                    fin_line.write({
+                        'name': fin_name,
+                        'product_uom_qty': line.product_uom_qty,
+                        'price_unit': financing_fee_unit,
+                        'tax_id': [(6, 0, financing_product.taxes_id.ids)],
+                    })
+                else:
+                    self.env['sale.order.line'].sudo().create({
+                        'order_id': order.id,
+                        'product_id': financing_product.id,
+                        'name': fin_name,
+                        'product_uom_qty': line.product_uom_qty,
+                        'price_unit': financing_fee_unit,
+                        'tax_id': [(6, 0, financing_product.taxes_id.ids)],
+                        'irg_line_type': 'financing',
+                        'irg_parent_line_id': line.id,
+                    })
 
     def _process_custom_form(self, partner_id, form_data):
         """
@@ -209,15 +218,33 @@ class SaleOrder(models.Model):
             try:
                 return datetime.strptime(date_str, '%d/%m/%Y').date()
             except Exception:
-                return False
+                try:
+                    return datetime.strptime(date_str, '%Y-%m-%d').date()
+                except Exception:
+                    return False
+
+        def parse_float(value):
+            if not value:
+                return 0.0
+            normalized = str(value).replace('€', '').replace(' ', '').replace('.', '').replace(',', '.')
+            try:
+                return float(normalized)
+            except Exception:
+                return 0.0
 
         finalizacion = parse_date(data_dict.get('finalizacionestudios', ''))
+        graduation_year_input = data_dict.get('graduation_year')
         graduation_year = str(finalizacion.year) if finalizacion else False
+        if graduation_year_input:
+            graduation_year = str(graduation_year_input).strip()
         phone = data_dict.get('phone')
         profession = data_dict.get('profession')
         university = data_dict.get('university')
         titulacion = data_dict.get('titulacion')
         vat = data_dict.get('vat')
+        forma_pago = data_dict.get('forma_pago')
+        primer_vencimiento = parse_date(data_dict.get('primer_vencimiento', ''))
+        matricula_pago_inicial = parse_float(data_dict.get('matricula_pago_inicial'))
 
         partner_vals = {}
         if vat and 'vat' in partner._fields:
@@ -253,5 +280,15 @@ class SaleOrder(models.Model):
             student_vals = {key: value for key, value in partner_vals.items() if key in student._fields}
             if student_vals:
                 student.write(student_vals)
+
+        order_vals = {}
+        if forma_pago and 'irg_forma_pago' in self._fields:
+            order_vals['irg_forma_pago'] = forma_pago
+        if primer_vencimiento and 'irg_primer_vencimiento' in self._fields:
+            order_vals['irg_primer_vencimiento'] = primer_vencimiento
+        if 'irg_matricula_pago_inicial' in self._fields:
+            order_vals['irg_matricula_pago_inicial'] = matricula_pago_inicial
+        if order_vals:
+            self.sudo().write(order_vals)
 
         return res

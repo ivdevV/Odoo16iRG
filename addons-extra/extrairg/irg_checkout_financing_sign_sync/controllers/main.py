@@ -25,12 +25,12 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
 
     @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def extra_info(self, **post):
-        self._irg_sync_checkout_order(recalculate=False)
+        self._irg_sync_checkout_order(recalculate=True)
         return super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
 
     @http.route(['/shop/payment'], type='http', auth='public', website=True, sitemap=False)
     def shop_payment(self, **post):
-        self._irg_sync_checkout_order(recalculate=False)
+        self._irg_sync_checkout_order(recalculate=True)
         return super().shop_payment(**post)
 
     @http.route(['/shop/academic_documents/upload'], type='http', auth='public', website=True, methods=['POST'], csrf=True)
