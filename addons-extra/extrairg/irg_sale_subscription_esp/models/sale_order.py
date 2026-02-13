@@ -14,9 +14,7 @@ class SaleOrder(models.Model):
         Priority:
         1) product.pricing with same variant + pricelist + recurrence
         2) product.pricing variant + no pricelist + recurrence
-        3) product.pricing template-level + pricelist + recurrence
-        4) product.pricing template-level + no pricelist + recurrence
-        5) fallback product.lst_price
+        3) fallback product.lst_price of that exact variant
         """
         self.ensure_one()
         if not product:
@@ -36,8 +34,6 @@ class SaleOrder(models.Model):
             return product.lst_price
 
         variant_rules = pricing_rules.filtered(lambda rule: product in rule.product_variant_ids)
-        template_rules = pricing_rules.filtered(lambda rule: not rule.product_variant_ids)
-
         def _pick(rules):
             if not rules:
                 return False
@@ -50,7 +46,7 @@ class SaleOrder(models.Model):
                 return no_pricelist[0]
             return rules[0]
 
-        selected_rule = _pick(variant_rules) or _pick(template_rules)
+        selected_rule = _pick(variant_rules)
         return selected_rule.price if selected_rule else product.lst_price
 
     def _irg_get_sibling_contado(self, product):
