@@ -124,19 +124,8 @@ class SaleOrder(models.Model):
                     continue
 
                 use_line_price = not (line.irg_force_price_unit_set or (line.irg_force_price_unit and line.irg_force_price_unit > 0))
-                raw_variant = line.price_unit if use_line_price else line.product_id.lst_price
-                raw_contado = sibling_contado.lst_price
-
-                pl_variant = line.price_unit if (use_line_price and line.price_unit and line.price_unit > 0) else raw_variant
-                pl_contado = raw_contado
-                if order.pricelist_id:
-                    qty = line.product_uom_qty or 1.0
-                    pv = order.pricelist_id._get_product_price(line.product_id, qty)
-                    pc = order.pricelist_id._get_product_price(sibling_contado, qty)
-                    if (not (use_line_price and line.price_unit and line.price_unit > 0)) and pv and pv > 0:
-                        pl_variant = pv
-                    if pc and pc > 0:
-                        pl_contado = pc
+                financed_price = line.price_unit if (use_line_price and line.price_unit and line.price_unit > 0) else line.product_id.lst_price
+                contado_price = sibling_contado.lst_price
 
                 plan_extra = (plan_ptav.price_extra or 0.0) if plan_ptav else 0.0
                 contado_ptav = line.product_id.product_tmpl_id.attribute_line_ids.filtered(
@@ -146,20 +135,11 @@ class SaleOrder(models.Model):
                 )
                 contado_extra = contado_ptav[0].price_extra if contado_ptav else 0.0
 
-                financing_fee_unit = pl_variant - pl_contado
-                if financing_fee_unit <= 0:
-                    financing_fee_unit = raw_variant - raw_contado
+                financing_fee_unit = financed_price - contado_price
                 if financing_fee_unit <= 0:
                     financing_fee_unit = plan_extra - contado_extra
                 if financing_fee_unit <= 0:
                     continue
-
-                if pl_variant - pl_contado > 0:
-                    contado_price = pl_contado
-                elif raw_variant - raw_contado > 0:
-                    contado_price = raw_contado
-                else:
-                    contado_price = pl_variant - financing_fee_unit
 
                 line.write({
                     'price_unit': contado_price,

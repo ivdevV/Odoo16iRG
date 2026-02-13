@@ -111,31 +111,14 @@ class SaleOrder(models.Model):
                                 # Mark the main line so we can order the summary consistently
                                 if ol.irg_line_type != 'master':
                                     ol.write({'irg_line_type': 'master'})
-                                # === CÁLCULO DE FEE EN 3 NIVELES ===
-                                # If the line is forced to contado, do not reuse it for the financed price.
+                                # === CÁLCULO DE FEE ===
+                                # Financiado: usar el precio real actual de la línea (si no está forzado)
+                                # Contado: usar SIEMPRE el precio de la variante contado (lst_price)
                                 use_line_price = not (ol.irg_force_price_unit_set or (ol.irg_force_price_unit and ol.irg_force_price_unit > 0))
-                                # Nivel 1: Precios raw (use line price only when not forced)
-                                # otherwise fall back to variant lst_price = template.list_price + variant.price_extra)
-                                raw_variant = ol.price_unit if use_line_price else ol.product_id.lst_price
-                                raw_contado = sibling_contado.lst_price
-                                _logger.info("IRG Financiación [RAW lst_price]: variant=%s, contado=%s, diff=%s",
-                                             raw_variant, raw_contado, raw_variant - raw_contado)
-
-                                # Nivel 2: Precios con pricelist
-                                # Prefer line price only when not forced; otherwise use pricelist first.
-                                pl_variant = ol.price_unit if (use_line_price and ol.price_unit and ol.price_unit > 0) else raw_variant
-                                pl_contado = raw_contado
-                                if self.pricelist_id:
-                                    qty = ol.product_uom_qty or 1.0
-                                    pv = self.pricelist_id._get_product_price(ol.product_id, qty)
-                                    pc = self.pricelist_id._get_product_price(sibling_contado, qty)
-                                    # If the line price isn't used, allow pricelist to set variant price
-                                    if (not (use_line_price and ol.price_unit and ol.price_unit > 0)) and pv and pv > 0:
-                                        pl_variant = pv
-                                    if pc and pc > 0:
-                                        pl_contado = pc
-                                    _logger.info("IRG Financiación [PRICELIST '%s']: variant=%s, contado=%s, diff=%s",
-                                                 self.pricelist_id.name, pl_variant, pl_contado, pl_variant - pl_contado)
+                                financed_price = ol.price_unit if (use_line_price and ol.price_unit and ol.price_unit > 0) else ol.product_id.lst_price
+                                contado_price = sibling_contado.lst_price
+                                _logger.info("IRG Financiación [BASE]: financed=%s, contado=%s, diff=%s",
+                                             financed_price, contado_price, financed_price - contado_price)
 
                                 # Nivel 3: price_extra directos del atributo Planes
                                 plan_extra = ptav_plan[0].price_extra or 0.0
@@ -149,12 +132,9 @@ class SaleOrder(models.Model):
                                 _logger.info("IRG Financiación [PRICE_EXTRA]: plan_extra=%s, contado_extra=%s, diff=%s",
                                              plan_extra, contado_extra, plan_extra - contado_extra)
 
-                                # === DECIDIR FEE: primer nivel que dé diferencia > 0 ===
-                                financing_fee_unit = pl_variant - pl_contado
-                                fee_source = "PRICELIST"
-                                if financing_fee_unit <= 0:
-                                    financing_fee_unit = raw_variant - raw_contado
-                                    fee_source = "RAW lst_price"
+                                # === DECIDIR FEE ===
+                                financing_fee_unit = financed_price - contado_price
+                                fee_source = "LINE vs CONTADO"
                                 if financing_fee_unit <= 0:
                                     financing_fee_unit = plan_extra - contado_extra
                                     fee_source = "PRICE_EXTRA"
@@ -165,21 +145,14 @@ class SaleOrder(models.Model):
                                 if financing_fee_unit > 0:
                                     _logger.info("IRG Aplicando financiación. Diferencia unitaria: %s", financing_fee_unit)
 
-                                    # Precio de contado para la línea del curso
-                                    # Preferimos pricelist si da diferencia, sino raw
-                                    if pl_variant - pl_contado > 0:
-                                        contado_price = pl_contado
-                                    elif raw_variant - raw_contado > 0:
-                                        contado_price = raw_contado
-                                    else:
-                                        # Fee viene de price_extra: contado_price = precio actual - fee
-                                        contado_price = pl_variant - financing_fee_unit
+                                    # Precio contado fijo tomado de la variante contado
+                                    line_contado_price = contado_price
 
                                     # 2. Actualizar línea actual al precio de contado
                                     # y fijarlo para evitar que la pricelist lo sobrescriba después.
                                     ol.write({
-                                        'price_unit': contado_price,
-                                        'irg_force_price_unit': contado_price,
+                                        'price_unit': line_contado_price,
+                                        'irg_force_price_unit': line_contado_price,
                                         'irg_force_price_unit_set': True,
                                     })
 
