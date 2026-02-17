@@ -1,12 +1,13 @@
 from odoo import models
 from odoo.exceptions import UserError
+from odoo.addons.isep_openeducat_sale.models.sale_order import SaleOrder as OpenEducatSaleOrder
 
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     def action_confirm(self):
-        res = super().action_confirm()
+        res = super(OpenEducatSaleOrder, self).action_confirm()
         for product in self.order_line.filtered(
             lambda l: not l.display_type
             and l.product_id
