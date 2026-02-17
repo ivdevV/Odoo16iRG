@@ -42,8 +42,8 @@
                 <input type="text" name="profession" required="1" t-att-value="order and (order.partner_id.profession or order.partner_id.function) or ''" class="form-control s_website_form_input"/>
             </div>
 
-            <t t-set="first_schedule" t-value="order.subscription_schedule and order.subscription_schedule.sorted(key=lambda s: s.date)[0] or False"/>
-            <t t-set="first_due" t-value="first_schedule and first_schedule.date or False"/>
+            <t t-set="first_schedule" t-value="order.subscription_schedule and order.subscription_schedule.sorted(key=lambda s: (s.date_schedule or s.date_due))[0] or False"/>
+            <t t-set="first_due" t-value="first_schedule and (first_schedule.date_schedule or first_schedule.date_due) or False"/>
             <t t-set="default_installment" t-value="(order.term_number and round(order.amount_total / order.term_number, 2)) or 0.0"/>
             <t t-set="first_amount" t-value="first_schedule and first_schedule.amount_recurring_taxinc or default_installment"/>
 

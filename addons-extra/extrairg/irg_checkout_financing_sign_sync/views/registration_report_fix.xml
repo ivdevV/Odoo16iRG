@@ -97,7 +97,7 @@
 
         <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'matricula/pago inicial')]]/td[2]" position="replace">
             <td>
-                <t t-set="first_schedule" t-value="o.subscription_schedule and o.subscription_schedule.sorted(key=lambda s: s.date)[0] or False"/>
+                <t t-set="first_schedule" t-value="o.subscription_schedule and o.subscription_schedule.sorted(key=lambda s: (s.date_schedule or s.date_due))[0] or False"/>
                 <t t-set="first_installment" t-value="o.irg_matricula_pago_inicial or (first_schedule and first_schedule.amount_recurring_taxinc) or (o.term_number and (o.amount_total / o.term_number)) or o.initial_payment or 0.0"/>
                 <t t-esc="'{:.2f}'.format(first_installment)"/>
                 <t t-esc="o.currency_id.symbol"/>
@@ -123,8 +123,8 @@
         <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'primer vencimiento')]]/td[2]" position="replace">
             <td>
                 <t t-set="month_names" t-value="{'January': 'enero', 'February': 'febrero', 'March': 'marzo', 'April': 'abril', 'May': 'mayo', 'June': 'junio', 'July': 'julio', 'August': 'agosto', 'September': 'septiembre', 'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'}"/>
-                <t t-set="first_schedule" t-value="o.subscription_schedule and o.subscription_schedule.sorted(key=lambda s: s.date)[0] or False"/>
-                <t t-set="first_due_date" t-value="o.irg_primer_vencimiento or (first_schedule and first_schedule.date) or o.validity_date"/>
+                <t t-set="first_schedule" t-value="o.subscription_schedule and o.subscription_schedule.sorted(key=lambda s: (s.date_schedule or s.date_due))[0] or False"/>
+                <t t-set="first_due_date" t-value="o.irg_primer_vencimiento or (first_schedule and (first_schedule.date_schedule or first_schedule.date_due)) or o.validity_date"/>
                 <t t-if="first_due_date">
                     <t t-esc="first_due_date.strftime('%d de ')"/>
                     <t t-esc="month_names.get(first_due_date.strftime('%B'), '')"/>
