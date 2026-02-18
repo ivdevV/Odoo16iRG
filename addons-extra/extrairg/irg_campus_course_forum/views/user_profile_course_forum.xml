@@ -13,6 +13,8 @@
         <xpath expr="//div[@id='profile_tab_content_about']" position="after">
             <div role="tabpanel" t-attf-class="tab-pane #{ 'show active' if active_tab == 'forum' else '' }"
                  id="profile_tab_content_forum">
+                <t t-set="course_forum" t-value="env['op.course'].browse(op_course_id).forum_id if op_course_id else env['forum.forum']"/>
+                <t t-set="course_forum_post_ids" t-value="env['forum.post'].search([('forum_id', '=', course_forum.id), ('parent_id', '=', False)], order='create_date desc') if course_forum else env['forum.post']"/>
                 <div class="mb32">
                     <h5 class="border-bottom pb-1">Foro del curso</h5>
 
