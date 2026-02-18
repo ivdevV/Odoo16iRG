@@ -153,8 +153,9 @@ class DiplomaReportPDF(models.AbstractModel):
         def sf(value, min_size=7):
             return max(min_size, value * scale_factor)
 
+        logo_width_base = 145
         side_margin = page_width * 0.080
-        gutter = page_width * 0.065
+        gutter = sp(logo_width_base)
         col_width = (page_width - (2 * side_margin) - gutter) / 2
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
@@ -173,7 +174,7 @@ class DiplomaReportPDF(models.AbstractModel):
         if diploma_type == 'digital':
             logo_path = self._get_image_path('logo_irg.png')
             if logo_path and os.path.exists(logo_path):
-                logo_width = sp(145)
+                logo_width = sp(logo_width_base)
                 logo_height = sp(76)
                 logo_x = (page_width - logo_width) / 2
                 logo_y = page_height - sp(118)
