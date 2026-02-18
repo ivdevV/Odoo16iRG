@@ -64,9 +64,22 @@
         <field name="model">forum.forum</field>
         <field name="inherit_id" ref="website_forum.view_forum_forum_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='name']" position="after">
-                <field name="visibility_batch_ids" widget="many2many_tags"/>
+            <xpath expr="//page[@name='options']/group/group[@name='group_order']" position="after">
+                <group string="Lotes de visibilidad">
+                    <field name="visibility_batch_ids" widget="many2many_tags"/>
+                </group>
             </xpath>
+        </field>
+    </record>
+
+    <record id="view_forum_post_list_batch_visibility" model="ir.ui.view">
+        <field name="name">forum.post.list.batch.visibility</field>
+        <field name="model">forum.post</field>
+        <field name="inherit_id" ref="website_forum.view_forum_post_list"/>
+        <field name="arch" type="xml">
+            <field name="forum_id" position="after">
+                <field name="visibility_batch_ids" widget="many2many_tags" optional="hide"/>
+            </field>
         </field>
     </record>
 </odoo>
