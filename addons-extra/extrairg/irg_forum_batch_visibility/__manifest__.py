@@ -8,9 +8,9 @@
     'license': 'LGPL-3',
     'depends': [
         'website_forum',
+        'openeducat_core',
     ],
     'data': [
-        'security/ir.model.access.csv',
         'security/forum_batch_visibility_rules.xml',
         'views/forum_batch_visibility_views.xml',
     ],

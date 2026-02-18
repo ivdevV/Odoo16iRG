@@ -5,7 +5,7 @@ class ForumForum(models.Model):
     _inherit = 'forum.forum'
 
     visibility_batch_ids = fields.Many2many(
-        'forum.visibility.batch',
+        'op.batch',
         'forum_forum_visibility_batch_rel',
         'forum_id',
         'batch_id',

@@ -8,7 +8,7 @@
         <field name="perm_write" eval="False"/>
         <field name="perm_create" eval="False"/>
         <field name="perm_unlink" eval="False"/>
-        <field name="domain_force">['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.forum_batch_ids.ids)]</field>
+        <field name="domain_force">['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.op_batch_ids.ids)]</field>
     </record>
 
     <record id="forum_post_visibility_rule_user" model="ir.rule">
@@ -19,7 +19,7 @@
         <field name="perm_write" eval="False"/>
         <field name="perm_create" eval="False"/>
         <field name="perm_unlink" eval="False"/>
-        <field name="domain_force">['&amp;', '|', ('forum_id.visibility_batch_ids', '=', False), ('forum_id.visibility_batch_ids', 'in', user.forum_batch_ids.ids), '|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.forum_batch_ids.ids)]</field>
+        <field name="domain_force">['&amp;', '|', ('forum_id.visibility_batch_ids', '=', False), ('forum_id.visibility_batch_ids', 'in', user.op_batch_ids.ids), '|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.op_batch_ids.ids)]</field>
     </record>
 
     <record id="forum_forum_visibility_rule_system" model="ir.rule">
