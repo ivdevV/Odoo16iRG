@@ -154,7 +154,7 @@ class DiplomaReportPDF(models.AbstractModel):
             return max(min_size, value * scale_factor)
 
         side_margin = page_width * 0.080
-        gutter = page_width * 0.045
+        gutter = page_width * 0.065
         col_width = (page_width - (2 * side_margin) - gutter) / 2
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
@@ -188,20 +188,20 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- INTRO TEXT ---
         y = start_y
         self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de", 
-                                   left_col_x, y, col_width, font_regular, sf(11), align='right')
+                                   left_col_x, y, col_width, font_regular, sf(11), align='center')
         self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de", 
-                                   right_col_x, y, col_width, font_regular, sf(11), align='left')
+                                   right_col_x, y, col_width, font_regular, sf(11), align='center')
         
         # --- COURSE NAME ---
         y -= sp(28)
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
         
-        course_font_size = sf(22)
+        course_font_size = sf(21)
         
         # Draw wrapped text and get new Y
-        y_next_cat = self._draw_wrapped_text_in_column(c, course_cat, left_col_x, y, col_width, font_bold, course_font_size, align='right')
-        y_next_es = self._draw_wrapped_text_in_column(c, course_es, right_col_x, y, col_width, font_bold, course_font_size, align='left')
+        y_next_cat = self._draw_wrapped_text_in_column(c, course_cat, left_col_x, y, col_width, font_bold, course_font_size, align='center')
+        y_next_es = self._draw_wrapped_text_in_column(c, course_es, right_col_x, y, col_width, font_bold, course_font_size, align='center')
         
         # Update Y to the lowest point from both columns
         y = min(y_next_cat, y_next_es)
@@ -231,13 +231,13 @@ class DiplomaReportPDF(models.AbstractModel):
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, sf(10), align='center')
         y -= sp(15)
-        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, sf(10), align='center')
         y -= sp(25)
-        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, sf(10), align='center')
         y -= sp(15)
-        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, sf(10), align='center')
         
         # --- BODY TEXT SPANISH ---
         y_es = y + sp(55)
@@ -246,13 +246,13 @@ class DiplomaReportPDF(models.AbstractModel):
         body_es_3 = "Este máster cuenta con el reconocimiento de excelencia académica"
         body_es_4 = "de la European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width, font_regular, sf(10), align='center')
         y_es -= sp(15)
-        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width, font_regular, sf(10), align='center')
         y_es -= sp(25)
-        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width, font_regular, sf(10), align='center')
         y_es -= sp(15)
-        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width, font_regular, sf(10), align='center')
         
         # --- DATES ---
         y -= sp(48)
