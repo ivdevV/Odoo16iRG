@@ -154,7 +154,7 @@ class DiplomaReportPDF(models.AbstractModel):
             return max(min_size, value * scale_factor)
 
         side_margin = page_width * 0.080
-        gutter = page_width * 0.030
+        gutter = page_width * 0.045
         col_width = (page_width - (2 * side_margin) - gutter) / 2
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
