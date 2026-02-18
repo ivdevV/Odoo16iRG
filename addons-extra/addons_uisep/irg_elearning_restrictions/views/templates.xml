@@ -19,4 +19,19 @@
             </div>
         </t>
     </template>
+
+    <template id="slide_access_blocked" name="Slide Access Blocked by Debt Tag">
+        <t t-call="website.layout">
+            <div class="container mt-5">
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">Acceso restringido</h4>
+                    <p>
+                        Tu usuario tiene una restricción administrativa y no puede acceder a los materiales del campus en este momento.
+                    </p>
+                    <hr/>
+                    <p class="mb-0">Por favor, contacta con Atención al cliente para regularizar tu situación.</p>
+                </div>
+            </div>
+        </t>
+    </template>
 </odoo>

@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="irg_registration_template_financing_fix" inherit_id="irg_sale_order_extended.registration_order_template" priority="260">
+        <xpath expr="//table[1]" position="before">
+            <style type="text/css">
+                table td,
+                table th,
+                table tr {
+                    border: none !important;
+                    border-left: none !important;
+                    border-right: none !important;
+                    border-top: none !important;
+                    border-bottom: none !important;
+                }
+            </style>
+        </xpath>
+
         <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'movil')]]/td[2]" position="replace">
             <td>
                 <t t-if="o.student_id.mobile">

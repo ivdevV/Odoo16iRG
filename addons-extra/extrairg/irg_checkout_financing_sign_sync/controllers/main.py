@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import base64
 import logging
+from datetime import datetime
 
 from odoo import http
 from odoo.http import request
@@ -11,6 +12,87 @@ _logger = logging.getLogger(__name__)
 
 class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
     """Final controller layer to keep checkout totals/lines consistent."""
+
+    def _irg_parse_float(self, value):
+        if not value:
+            return 0.0
+        normalized = str(value).replace('€', '').replace(' ', '').replace('.', '').replace(',', '.')
+        try:
+            return float(normalized)
+        except Exception:
+            return 0.0
+
+    def _irg_parse_date(self, value):
+        if not value:
+            return False
+        for fmt in ('%Y-%m-%d', '%d/%m/%Y'):
+            try:
+                return datetime.strptime(value, fmt).date()
+            except Exception:
+                continue
+        return False
+
+    def _irg_save_address_extra_fields(self, order, post):
+        if not order or not post:
+            return
+
+        partner = order.partner_id.sudo()
+        partner_vals = {}
+
+        vat = (post.get('vat') or '').strip()
+        titulacion = (post.get('titulacion') or '').strip()
+        university = (post.get('university') or '').strip()
+        graduation_year = (post.get('graduation_year') or '').strip()
+        profession = (post.get('profession') or '').strip()
+
+        if vat:
+            partner_vals['vat'] = vat
+        if titulacion:
+            if 'x_studio_titulacion' in partner._fields:
+                partner_vals['x_studio_titulacion'] = titulacion
+            if 'titulacion' in partner._fields:
+                partner_vals['titulacion'] = titulacion
+        if university:
+            if 'x_studio_universidad' in partner._fields:
+                partner_vals['x_studio_universidad'] = university
+            if 'university' in partner._fields:
+                partner_vals['university'] = university
+        if graduation_year and 'x_studio_ano_de_graduacion' in partner._fields:
+            partner_vals['x_studio_ano_de_graduacion'] = graduation_year
+        if profession:
+            if 'profession' in partner._fields:
+                partner_vals['profession'] = profession
+            if 'function' in partner._fields:
+                partner_vals['function'] = profession
+
+        if partner_vals:
+            partner.write(partner_vals)
+
+        order_vals = {}
+        matricula_pago_inicial = self._irg_parse_float(post.get('matricula_pago_inicial'))
+        forma_pago = (post.get('forma_pago') or '').strip()
+        primer_vencimiento = self._irg_parse_date(post.get('primer_vencimiento'))
+
+        if matricula_pago_inicial > 0:
+            order_vals['irg_matricula_pago_inicial'] = matricula_pago_inicial
+        if forma_pago:
+            order_vals['irg_forma_pago'] = forma_pago
+        if primer_vencimiento:
+            order_vals['irg_primer_vencimiento'] = primer_vencimiento
+
+        if order_vals:
+            order.sudo().write(order_vals)
+
+    @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
+    def address(self, **kw):
+        res = super(IrgWebsiteSaleFinancingSync, self).address(**kw)
+
+        order = request.website.sale_get_order()
+        if order and request.httprequest.method == 'POST':
+            self._irg_save_address_extra_fields(order, kw)
+
+        self._irg_sync_checkout_order(recalculate=True)
+        return res
 
     def _irg_sync_checkout_order(self, recalculate=False):
         order = request.website.sale_get_order()
