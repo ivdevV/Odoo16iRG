@@ -23,6 +23,7 @@
             <xpath expr="//page[@name='options']/group/group[@name='group_order']" position="after">
                 <group string="Lotes de visibilidad">
                     <field name="visibility_batch_ids" widget="many2many_tags"/>
+                    <field name="visibility_course_ids" widget="many2many_tags"/>
                 </group>
             </xpath>
         </field>
