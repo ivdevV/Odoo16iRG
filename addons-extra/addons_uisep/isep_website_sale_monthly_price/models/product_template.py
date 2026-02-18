@@ -40,6 +40,51 @@ def _non_plan_ptav_ids(product):
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    def _isep_get_min_installment_data(self, pricelist=False, scoped_non_plan_ids=None):
+        self.ensure_one()
+
+        current_pricelist = pricelist
+        if not current_pricelist:
+            pricelist_id = self.env.context.get('pricelist')
+            if pricelist_id:
+                current_pricelist = self.env['product.pricelist'].browse(pricelist_id)
+        if not current_pricelist:
+            current_pricelist = self.env['website'].get_current_website().pricelist_id
+
+        variants = self.product_variant_ids
+        if scoped_non_plan_ids:
+            variants = variants.filtered(lambda variant: _non_plan_ptav_ids(variant) == scoped_non_plan_ids)
+
+        min_installment_price = False
+        min_installment_months = 1
+
+        for variant in variants:
+            months = _get_plan_months(variant)
+            if months <= 0:
+                continue
+
+            if self.recurring_invoice and hasattr(self, '_get_first_suitable_pricing_values'):
+                pricing_vals = self._get_first_suitable_pricing_values(current_pricelist, variant)
+                variant_price = pricing_vals.get('price')
+                recurrence_ok = pricing_vals.get('is_recurrence_possible', True)
+                if not recurrence_ok:
+                    continue
+            else:
+                variant_price = current_pricelist._get_product_price(variant, 1.0) if current_pricelist else variant.lst_price
+
+            if not variant_price or variant_price <= 0:
+                continue
+
+            installment = variant_price / months
+            if installment <= 0:
+                continue
+
+            if min_installment_price is False or installment < min_installment_price:
+                min_installment_price = installment
+                min_installment_months = months
+
+        return min_installment_price, min_installment_months
+
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False, parent_combination=False, only_template=False):
         combination_info = super(ProductTemplate, self)._get_combination_info(
             combination=combination, product_id=product_id, add_qty=add_qty, pricelist=pricelist,
@@ -64,21 +109,10 @@ class ProductTemplate(models.Model):
                 lambda variant: _non_plan_ptav_ids(variant) == selected_non_plan_ids
             )
 
-        min_installment_price = False
-        min_installment_months = 1
-        for variant in scoped_variants:
-            months = _get_plan_months(variant)
-            if months <= 0:
-                continue
-
-            variant_price = current_pricelist._get_product_price(variant, 1.0) if current_pricelist else variant.lst_price
-            installment = variant_price / months
-            if installment <= 0:
-                continue
-
-            if min_installment_price is False or installment < min_installment_price:
-                min_installment_price = installment
-                min_installment_months = months
+        min_installment_price, min_installment_months = self._isep_get_min_installment_data(
+            pricelist=current_pricelist,
+            scoped_non_plan_ids=selected_non_plan_ids,
+        )
 
         if min_installment_price is not False:
             combination_info['min_installment_price'] = min_installment_price
@@ -94,6 +128,27 @@ class ProductTemplate(models.Model):
         )
         
         return combination_info
+
+    def _search_render_results_prices(self, mapping, combination_info):
+        if not combination_info.get('is_subscription'):
+            return super()._search_render_results_prices(mapping, combination_info)
+
+        min_installment_price, min_installment_months = self._isep_get_min_installment_data(
+            pricelist=self.env['website'].get_current_website().get_current_pricelist(),
+        )
+
+        if not min_installment_price:
+            return super()._search_render_results_prices(mapping, combination_info)
+
+        return self.env['ir.ui.view']._render_template(
+            'website_sale_subscription.subscription_search_result_price',
+            values={
+                'currency': mapping['detail']['display_currency'],
+                'price': min_installment_price,
+                'duration': min_installment_months,
+                'unit': 'month',
+            }
+        ), 0
 
 class ProductProduct(models.Model):
     _inherit = 'product.product'
