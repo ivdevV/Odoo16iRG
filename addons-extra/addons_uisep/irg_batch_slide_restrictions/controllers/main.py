@@ -32,7 +32,7 @@ class WebsiteSlidesBatchRestrictions(WebsiteSlides):
                     'prerequisite': slide.restriction_slide_id,
                 })
 
-        if slide.allowed_batch_ids:
+        if slide.sudo().allowed_batch_ids:
             user = request.env.user
             if user._is_public():
                 return request.redirect('/web/login?redirect=/slides/slide/%s' % slide.id)

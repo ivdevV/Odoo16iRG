@@ -16,20 +16,22 @@ class Slide(models.Model):
     def is_user_allowed_by_batch(self, user):
         self.ensure_one()
 
-        if not self.allowed_batch_ids:
+        slide_sudo = self.sudo()
+
+        if not slide_sudo.allowed_batch_ids:
             return True
 
         if not user or user._is_public():
             return False
 
         partner = user.partner_id
-        if not partner or not self.channel_id:
+        if not partner or not slide_sudo.channel_id:
             return False
 
         domain = [
             ('partner_id', '=', partner.id),
-            ('channel_id', '=', self.channel_id.id),
+            ('channel_id', '=', slide_sudo.channel_id.id),
             ('active', '=', True),
-            ('batch_id', 'in', self.allowed_batch_ids.ids),
+            ('batch_id', 'in', slide_sudo.allowed_batch_ids.ids),
         ]
         return bool(self.env['slide.channel.partner'].sudo().search_count(domain))
