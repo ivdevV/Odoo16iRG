@@ -63,14 +63,7 @@ class ProductTemplate(models.Model):
             if months <= 0:
                 continue
 
-            if self.recurring_invoice and hasattr(self, '_get_first_suitable_pricing_values'):
-                pricing_vals = self._get_first_suitable_pricing_values(current_pricelist, variant)
-                variant_price = pricing_vals.get('price')
-                recurrence_ok = pricing_vals.get('is_recurrence_possible', True)
-                if not recurrence_ok:
-                    continue
-            else:
-                variant_price = current_pricelist._get_product_price(variant, 1.0) if current_pricelist else variant.lst_price
+            variant_price = current_pricelist._get_product_price(variant, 1.0) if current_pricelist else variant.lst_price
 
             if not variant_price or variant_price <= 0:
                 continue
