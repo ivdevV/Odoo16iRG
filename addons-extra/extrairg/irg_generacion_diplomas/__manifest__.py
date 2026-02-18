@@ -14,6 +14,7 @@
     'depends': [
         'openeducat_core',
         'web',
+        'website',
     ],
     'external_dependencies': {
         'python': ['qrcode', 'reportlab'],
@@ -23,6 +24,7 @@
         'data/ir_sequence_data.xml',
         'views/op_course_views.xml',
         'views/op_student_views.xml',
+        'views/diploma_verify_templates.xml',
         'wizard/diploma_wizard_views.xml',
     ],
     'installable': True,

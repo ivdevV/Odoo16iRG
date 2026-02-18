@@ -77,6 +77,17 @@ class DiplomaWizard(models.TransientModel):
             'res_id': self.student_id.id,
             'mimetype': 'application/pdf',
         })
+
+        self.env['irg.diploma.registry'].sudo().create({
+            'registry_number': registry_number,
+            'student_id': self.student_id.id,
+            'student_course_id': self.student_course_id.id,
+            'issue_date': self.date,
+            'diploma_type': self.diploma_type,
+            'qr_url': qr_url,
+            'attachment_id': attachment.id,
+            'state': 'valid',
+        })
         
         # Return download action
         return {
