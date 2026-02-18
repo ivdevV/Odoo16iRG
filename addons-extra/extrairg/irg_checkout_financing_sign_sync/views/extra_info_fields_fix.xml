@@ -9,67 +9,6 @@
                 </label>
                 <input type="text" name="vat" required="1" t-att-value="order and order.partner_id.vat or ''" class="form-control s_website_form_input"/>
             </div>
-
-            <div class="s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required" data-type="char" data-name="titulacion">
-                <label class="s_website_form_label" style="width: 200px">
-                    <span class="s_website_form_label_content">Estudios</span>
-                    <span class="s_website_form_mark"> *</span>
-                </label>
-                <input type="text" name="titulacion" required="1" t-att-value="order and (order.partner_id.x_studio_titulacion or order.partner_id.titulacion) or ''" class="form-control s_website_form_input"/>
-            </div>
-
-            <div class="s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required" data-type="char" data-name="university">
-                <label class="s_website_form_label" style="width: 200px">
-                    <span class="s_website_form_label_content">Universidad</span>
-                    <span class="s_website_form_mark"> *</span>
-                </label>
-                <input type="text" name="university" required="1" t-att-value="order and (order.partner_id.x_studio_universidad or order.partner_id.university) or ''" class="form-control s_website_form_input"/>
-            </div>
-
-            <div class="s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required" data-type="char" data-name="graduation_year">
-                <label class="s_website_form_label" style="width: 200px">
-                    <span class="s_website_form_label_content">Año graduación</span>
-                    <span class="s_website_form_mark"> *</span>
-                </label>
-                <input type="text" name="graduation_year" required="1" t-att-value="order and order.partner_id.x_studio_ano_de_graduacion or ''" class="form-control s_website_form_input" placeholder="Ej: 2018"/>
-            </div>
-
-            <div class="s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required" data-type="char" data-name="profession">
-                <label class="s_website_form_label" style="width: 200px">
-                    <span class="s_website_form_label_content">Profesión</span>
-                    <span class="s_website_form_mark"> *</span>
-                </label>
-                <input type="text" name="profession" required="1" t-att-value="order and (order.partner_id.profession or order.partner_id.function) or ''" class="form-control s_website_form_input"/>
-            </div>
-
-            <t t-set="first_schedule" t-value="order.subscription_schedule and order.subscription_schedule.sorted(key=lambda s: (s.date_schedule or s.date_due))[0] or False"/>
-            <t t-set="first_due" t-value="first_schedule and (first_schedule.date_schedule or first_schedule.date_due) or False"/>
-            <t t-set="default_installment" t-value="(order.term_number and round(order.amount_total / order.term_number, 2)) or 0.0"/>
-            <t t-set="first_amount" t-value="first_schedule and first_schedule.amount_recurring_taxinc or default_installment"/>
-
-            <div class="s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required" data-type="char" data-name="matricula_pago_inicial">
-                <label class="s_website_form_label" style="width: 200px">
-                    <span class="s_website_form_label_content">Matrícula/Pago Inicial</span>
-                    <span class="s_website_form_mark"> *</span>
-                </label>
-                <input type="text" name="matricula_pago_inicial" required="1" t-att-value="'{:.2f}'.format(first_amount)" class="form-control s_website_form_input"/>
-            </div>
-
-            <div class="s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required" data-type="char" data-name="forma_pago">
-                <label class="s_website_form_label" style="width: 200px">
-                    <span class="s_website_form_label_content">Forma de Pago</span>
-                    <span class="s_website_form_mark"> *</span>
-                </label>
-                <input type="text" name="forma_pago" required="1" t-att-value="order and (order.irg_forma_pago or (order.payment_mode_id and order.payment_mode_id.name) or 'Stripe') or 'Stripe'" class="form-control s_website_form_input"/>
-            </div>
-
-            <div class="s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required" data-type="date" data-name="primer_vencimiento">
-                <label class="s_website_form_label" style="width: 200px">
-                    <span class="s_website_form_label_content">Primer Vencimiento</span>
-                    <span class="s_website_form_mark"> *</span>
-                </label>
-                <input type="date" name="primer_vencimiento" required="1" t-att-value="first_due and first_due.strftime('%Y-%m-%d') or ''" class="form-control s_website_form_input"/>
-            </div>
         </xpath>
     </template>
 </odoo>
