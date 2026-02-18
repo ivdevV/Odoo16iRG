@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_batch_restriction" model="ir.ui.view">
+        <field name="name">slide.slide.form.batch.restriction</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='quiz']//group[@name='quiz_rewards']" position="before">
+                <group string="Restricción por Lote (iRG)">
+                    <field name="allowed_batch_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
