@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="irg_address_fields_move" inherit_id="isep_website_sale_custom.address_website_sale_custom" priority="270">
-        <xpath expr="//input[@name='vat']/ancestor::div[contains(@class, 'mb-3')][1]" position="after">
+    <template id="irg_address_fields_move" inherit_id="website_sale.address" priority="270">
+        <xpath expr="//input[@name='vat']/ancestor::div[1]" position="after">
             <t t-set="address_order" t-value="website_sale_order"/>
             <t t-set="first_schedule" t-value="address_order and address_order.subscription_schedule and address_order.subscription_schedule.sorted(key=lambda s: (s.date_schedule or s.date_due))[0] or False"/>
             <t t-set="first_due" t-value="first_schedule and (first_schedule.date_schedule or first_schedule.date_due) or False"/>
