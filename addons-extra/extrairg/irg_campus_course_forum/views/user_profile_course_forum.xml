@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="user_profile_content_details_forum" inherit_id="isep_website_custom.user_profile_content_details">
+        <xpath expr="//ul[@id='profile_extra_info_tablist']/li[last()]" position="after">
+            <li class="nav-item">
+                <a role="tab" aria-controls="Foro" href="#profile_tab_content_forum"
+                   t-attf-class="nav-link #{'active' if active_tab == 'forum' else ''}" data-bs-toggle="tab">
+                    Foro
+                </a>
+            </li>
+        </xpath>
+
+        <xpath expr="//div[@id='profile_tab_content_about']" position="after">
+            <div role="tabpanel" t-attf-class="tab-pane #{ 'show active' if active_tab == 'forum' else '' }"
+                 id="profile_tab_content_forum">
+                <div class="mb32">
+                    <h5 class="border-bottom pb-1">Foro del curso</h5>
+
+                    <t t-if="course_forum">
+                        <t t-foreach="course_forum_post_ids" t-as="question">
+                            <t t-call="website_forum.display_post_question_block">
+                                <ol>
+                                    <li>
+                                        <t t-set="forum" t-value="course_forum"/>
+                                        <t t-set="question" t-value="question"/>
+                                    </li>
+                                </ol>
+                            </t>
+                        </t>
+
+                        <div class="mt-3" t-if="course_forum_post_ids">
+                            <a type="button" class="btn btn-primary btn-sm"
+                               t-attf-href="/forum/#{slug(course_forum)}/ask?post_type=#{course_forum.mode}">
+                                Publicar en foro
+                            </a>
+                        </div>
+
+                        <div class="text-muted d-inline-block" t-if="not course_forum_post_ids">
+                            Aún no hay publicaciones en este foro.
+                        </div>
+                    </t>
+
+                    <div class="text-muted d-inline-block" t-if="not course_forum">
+                        Este curso no tiene foro configurado.
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
