@@ -68,20 +68,10 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
         if partner_vals:
             partner.write(partner_vals)
 
-        order_vals = {}
-        matricula_pago_inicial = self._irg_parse_float(post.get('matricula_pago_inicial'))
-        forma_pago = (post.get('forma_pago') or '').strip()
-        primer_vencimiento = self._irg_parse_date(post.get('primer_vencimiento'))
-
-        if matricula_pago_inicial > 0:
-            order_vals['irg_matricula_pago_inicial'] = matricula_pago_inicial
-        if forma_pago:
-            order_vals['irg_forma_pago'] = forma_pago
-        if primer_vencimiento:
-            order_vals['irg_primer_vencimiento'] = primer_vencimiento
-
-        if order_vals:
-            order.sudo().write(order_vals)
+        # Client POST must NOT overwrite computed order-level academic/payment values.
+        # Those values are server-computed (scheduled/order logic) and therefore
+        # should not be modifiable from the checkout address form to avoid
+        # tampering or accidental changes by the user.
 
     @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def address(self, **kw):

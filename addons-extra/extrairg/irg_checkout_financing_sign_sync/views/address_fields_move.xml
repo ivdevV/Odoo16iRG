@@ -30,17 +30,17 @@
 
             <div class="mb-3 col-lg-6">
                 <label class="col-form-label" for="matricula_pago_inicial">Matrícula/Pago Inicial</label>
-                <input type="text" name="matricula_pago_inicial" class="form-control" t-att-value="address_order and ('{:.2f}'.format(address_order.irg_matricula_pago_inicial or first_amount)) or ''"/>
+                <p class="form-control-plaintext mb-0" t-esc="address_order and ('{:.2f}'.format(address_order.irg_matricula_pago_inicial or first_amount)) or ''"/>
             </div>
 
             <div class="mb-3 col-lg-6">
                 <label class="col-form-label" for="forma_pago">Forma de Pago</label>
-                <input type="text" name="forma_pago" class="form-control" t-att-value="address_order and (address_order.irg_forma_pago or (address_order.payment_mode_id and address_order.payment_mode_id.name) or 'Stripe') or 'Stripe'"/>
+                <p class="form-control-plaintext mb-0" t-esc="address_order and (address_order.irg_forma_pago or (address_order.payment_mode_id and address_order.payment_mode_id.name) or 'Stripe') or 'Stripe'"/>
             </div>
 
             <div class="mb-3 col-lg-6">
                 <label class="col-form-label" for="primer_vencimiento">Primer Vencimiento</label>
-                <input type="date" name="primer_vencimiento" class="form-control" t-att-value="address_order and ((address_order.irg_primer_vencimiento and address_order.irg_primer_vencimiento.strftime('%Y-%m-%d')) or (first_due and first_due.strftime('%Y-%m-%d')) or '') or ''"/>
+                <p class="form-control-plaintext mb-0" t-esc="address_order and ((address_order.irg_primer_vencimiento and address_order.irg_primer_vencimiento.strftime('%Y-%m-%d')) or (first_due and first_due.strftime('%Y-%m-%d')) or '') or ''"/>
             </div>
         </xpath>
     </template>
