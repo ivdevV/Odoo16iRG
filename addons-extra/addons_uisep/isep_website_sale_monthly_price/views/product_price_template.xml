@@ -125,11 +125,6 @@
             </tbody>
         </xpath>
         
-        <!-- Remove standard subscription unit display to avoid duplication -->
-        <xpath expr="//td[hasclass('td-price')]/div[@t-if=&quot;line.temporal_type == 'subscription'&quot;]" position="replace">
-            <!-- Removed by isep_website_sale_monthly_price -->
-        </xpath>
-
         <xpath expr="//tr[hasclass('cart_total')]" position="after">
             <t t-set="summary_order" t-value="order or website_sale_order"/>
             <t t-set="matricula_total" t-value="sum(summary_order.order_line.filtered(lambda l: l.irg_line_type == 'matricula').mapped('price_subtotal'))"/>
