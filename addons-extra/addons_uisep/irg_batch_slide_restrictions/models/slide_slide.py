@@ -22,9 +22,6 @@ class Slide(models.Model):
         if not user or user._is_public():
             return False
 
-        if user.has_group('base.group_user'):
-            return True
-
         partner = user.partner_id
         if not partner or not self.channel_id:
             return False

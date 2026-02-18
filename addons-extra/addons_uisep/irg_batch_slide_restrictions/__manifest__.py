@@ -12,6 +12,8 @@
     'depends': [
         'website_slides',
         'isep_elearning_custom',
+        'irg_elearning_restrictions',
+        'irg_elearning_scheduled',
     ],
     'data': [
         'views/slide_slide_view.xml',
