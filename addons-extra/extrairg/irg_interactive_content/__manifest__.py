@@ -15,6 +15,9 @@
         'website',
         'web',
     ],
+    'external_dependencies': {
+        'python': ['requests'],
+    },
     'data': [
         'security/ir.model.access.csv',
         'views/slide_view.xml',

@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 
-from odoo import _, fields, models
+import requests
+
+from odoo import _, fields, models, api
 from odoo.exceptions import ValidationError
 from odoo.tools import html_sanitize
 
+_logger = logging.getLogger(__name__)
 
 class SlideSlide(models.Model):
     _inherit = 'slide.slide'
@@ -83,12 +87,43 @@ class SlideSlide(models.Model):
                     _('The field "Interactive JSON" must contain a valid JSON object.')
                 )
 
+    @api.model_create_multi
     def create(self, vals_list):
-        records = super().create(vals_list)
+        records = super(SlideSlide, self).create(vals_list)
         records._validate_interactive_json()
+
+        for record in records:
+            if record.slide_category == 'document' and not record.x_is_interactive:
+                record._trigger_n8n_webhook()
+
         return records
 
     def write(self, vals):
         result = super().write(vals)
         self._validate_interactive_json()
         return result
+
+    def _trigger_n8n_webhook(self):
+        self.ensure_one()
+
+        webhook_url = 'https://appn8n.institutoraimongaja.com/webhook/odoo-new-slide'
+
+        # Preparamos los datos
+        payload = {
+            'id': self.id,
+            'name': self.name,
+            'channel_id': self.channel_id.id if self.channel_id else False,
+        }
+
+        try:
+            response = requests.post(webhook_url, json=payload, timeout=2)
+            if response.status_code >= 400:
+                _logger.warning(
+                    'n8n webhook responded with status %s for slide ID %s',
+                    response.status_code,
+                    self.id,
+                )
+                return
+            _logger.info('Webhook enviado a n8n para slide ID: %s', self.id)
+        except requests.RequestException as error:
+            _logger.error('Fallo al enviar webhook a n8n para slide ID %s: %s', self.id, error)
