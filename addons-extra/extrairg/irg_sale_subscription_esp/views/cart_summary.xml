@@ -4,7 +4,7 @@
         <xpath expr="//table[hasclass('table')][1]/tbody[1]" position="replace">
             <tbody>
                 <t t-set="summary_order" t-value="order or website_sale_order"/>
-                <t t-set="lines" t-value="summary_order.order_line.filtered(lambda l: not l.display_type or l.irg_line_type == 'matricula')"/>
+                <t t-set="lines" t-value="summary_order.order_line.filtered(lambda l: not l.display_type or l.irg_line_type in ['matricula', 'matricula_discount'])"/>
 
                 <t t-foreach="lines.filtered(lambda l: l.irg_line_type == 'master')" t-as="line">
                     <tr>
@@ -27,6 +27,16 @@
                 </t>
 
                 <t t-foreach="lines.filtered(lambda l: l.irg_line_type == 'matricula')" t-as="line">
+                    <tr>
+                        <td class="td-product_name"><t t-esc="line.name"/></td>
+                        <td class="td-qty text-center"><t t-esc="line.display_type and 1.0 or line.product_uom_qty"/></td>
+                        <td class="td-price text-end">
+                            <span t-esc="line.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </td>
+                    </tr>
+                </t>
+
+                <t t-if="summary_order.term_number == 1" t-foreach="lines.filtered(lambda l: l.irg_line_type == 'matricula_discount')" t-as="line">
                     <tr>
                         <td class="td-product_name"><t t-esc="line.name"/></td>
                         <td class="td-qty text-center"><t t-esc="line.display_type and 1.0 or line.product_uom_qty"/></td>

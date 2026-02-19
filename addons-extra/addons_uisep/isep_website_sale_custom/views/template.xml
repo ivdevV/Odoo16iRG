@@ -28,7 +28,7 @@
 
 
         <xpath expr="//label[@for='vat']" position="replace">
-            <label class="col-form-label" for="vat">No. de Identificación (RFC, NIF, VAT, CURP)</label>
+            <label class="col-form-label" for="vat">No. de Identificación (DNI, RFC, NIF, VAT, CURP, NIE)</label>
         </xpath>
 
         <xpath expr="//input[@name='vat']" position="replace">
