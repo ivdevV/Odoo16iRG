@@ -10,7 +10,7 @@
                     <strong>Documentación académica</strong>
                     <p class="mb-2">Si lo deseas, puedes adjuntar aquí tu documentación académica para agilizar la validación.</p>
 
-                    <form action="/shop/academic_documents/upload" method="post" enctype="multipart/form-data" class="row g-2" novalidate>
+                    <form action="/shop/academic_documents/upload" method="post" enctype="multipart/form-data" class="row g-2" novalidate="novalidate">
                         <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                         <input type="hidden" name="order_id" t-att-value="last_order.id"/>
 
