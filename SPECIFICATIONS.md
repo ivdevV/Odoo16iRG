@@ -11,6 +11,7 @@ Todas las modificaciones del comportamiento nativo de Odoo se implementarán med
 - Nunca modificar módulos nativos de Odoo.
 - Cada cambio debe contar con una micro-spec aprobada antes de implementación.
 - Objetivo de versión: **Odoo 16** — seguir la documentación oficial v16.
+- Al finalizar cada trabajo, emitir un **changelog sencillo y claro** con los cambios realizados.
 
 ---
 
@@ -65,6 +66,7 @@ Formato recomendado: Markdown, ejemplo `doc/micro-specs/2026-02-12-irg_ejemplo.m
 - [ ] Tests añadidos y pasan localmente.
 - [ ] `ir.model.access.csv` incluido si procede.
 - [ ] Documentación y rollback plan presentes.
+- [ ] Changelog final sencillo y claro incluido en el PR o en la entrega.
 
 ---
 
