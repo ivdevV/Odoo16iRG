@@ -18,8 +18,13 @@
     'data': [
         'security/ir.model.access.csv',
         'views/slide_view.xml',
-        'views/assets.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'irg_interactive_content/static/src/js/interactive_loader.js',
+            'irg_interactive_content/static/src/css/interactive_content.css',
+        ],
+    },
     'installable': True,
     'application': False,
     'auto_install': False,
