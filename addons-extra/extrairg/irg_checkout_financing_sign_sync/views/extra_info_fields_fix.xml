@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_extra_info_fields_fix" inherit_id="isep_website_sale_custom.extra_info_website_sale_custom" priority="260">
+        <xpath expr="//input[@name='phone']/ancestor::div[contains(@class, 's_website_form_field')][1]" position="after">
+            <div class="s_website_form_field mb-3 col-12 col-lg-6 s_website_form_custom s_website_form_required" data-type="char" data-name="vat">
+                <label class="s_website_form_label" style="width: 200px">
+                    <span class="s_website_form_label_content">DNI/Pasaporte</span>
+                    <span class="s_website_form_mark"> *</span>
+                </label>
+                <input type="text" name="vat" required="1" t-att-value="order and order.partner_id.vat or ''" class="form-control s_website_form_input"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

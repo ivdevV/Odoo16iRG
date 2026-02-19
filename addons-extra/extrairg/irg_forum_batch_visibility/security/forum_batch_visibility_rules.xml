@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="forum_forum_visibility_rule_user" model="ir.rule">
+        <field name="name">Forum visibility by batch</field>
+        <field name="model_id" ref="website_forum.model_forum_forum"/>
+        <field name="groups" eval="[(4, ref('base.group_user')), (4, ref('base.group_portal')), (4, ref('base.group_public'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.op_batch_ids.ids)]</field>
+    </record>
+
+    <record id="forum_post_visibility_rule_user" model="ir.rule">
+        <field name="name">Forum post visibility by forum batch</field>
+        <field name="model_id" ref="website_forum.model_forum_post"/>
+        <field name="groups" eval="[(4, ref('base.group_user')), (4, ref('base.group_portal')), (4, ref('base.group_public'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">['&amp;', '|', ('forum_id.visibility_batch_ids', '=', False), ('forum_id.visibility_batch_ids', 'in', user.op_batch_ids.ids), '|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.op_batch_ids.ids)]</field>
+    </record>
+
+    <record id="forum_forum_visibility_rule_system" model="ir.rule">
+        <field name="name">Forum visibility by batch - system bypass</field>
+        <field name="model_id" ref="website_forum.model_forum_forum"/>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <record id="forum_post_visibility_rule_system" model="ir.rule">
+        <field name="name">Forum post visibility by batch - system bypass</field>
+        <field name="model_id" ref="website_forum.model_forum_post"/>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+</odoo>

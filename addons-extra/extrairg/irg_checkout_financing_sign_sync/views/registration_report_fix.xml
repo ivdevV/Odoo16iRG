@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_registration_template_financing_fix" inherit_id="irg_sale_order_extended.registration_order_template" priority="260">
+        <xpath expr="//table[1]" position="before">
+            <style type="text/css">
+                table td,
+                table th,
+                table tr {
+                    border: none !important;
+                    border-left: none !important;
+                    border-right: none !important;
+                    border-top: none !important;
+                    border-bottom: none !important;
+                }
+            </style>
+        </xpath>
+
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'movil')]]/td[2]" position="replace">
+            <td>
+                <t t-if="o.student_id.mobile">
+                    <t t-esc="o.student_id.mobile"/>
+                </t>
+                <t t-elif="o.student_id.phone">
+                    <t t-esc="o.student_id.phone"/>
+                </t>
+                <t t-elif="o.partner_id.mobile">
+                    <t t-esc="o.partner_id.mobile"/>
+                </t>
+                <t t-elif="o.partner_id.phone">
+                    <t t-esc="o.partner_id.phone"/>
+                </t>
+            </td>
+        </xpath>
+
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'estudios')]]/td[2]" position="replace">
+            <td>
+                <t t-if="o.student_id.x_studio_titulacion">
+                    <t t-esc="o.student_id.x_studio_titulacion"/>
+                </t>
+                <t t-elif="o.student_id.titulacion">
+                    <t t-esc="o.student_id.titulacion"/>
+                </t>
+                <t t-elif="o.partner_id.x_studio_titulacion">
+                    <t t-esc="o.partner_id.x_studio_titulacion"/>
+                </t>
+                <t t-elif="o.partner_id.titulacion">
+                    <t t-esc="o.partner_id.titulacion"/>
+                </t>
+            </td>
+        </xpath>
+
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'universidad')]]/td[2]" position="replace">
+            <td>
+                <t t-if="o.student_id.x_studio_universidad">
+                    <t t-esc="o.student_id.x_studio_universidad"/>
+                </t>
+                <t t-elif="o.student_id.university">
+                    <t t-esc="o.student_id.university"/>
+                </t>
+                <t t-elif="o.partner_id.x_studio_universidad">
+                    <t t-esc="o.partner_id.x_studio_universidad"/>
+                </t>
+                <t t-elif="o.partner_id.university">
+                    <t t-esc="o.partner_id.university"/>
+                </t>
+            </td>
+        </xpath>
+
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'graduacion')]]/td[2]" position="replace">
+            <td>
+                <t t-if="o.student_id.x_studio_ano_de_graduacion">
+                    <t t-esc="o.student_id.x_studio_ano_de_graduacion"/>
+                </t>
+                <t t-elif="o.student_id.finalizacionestudios">
+                    <t t-esc="o.student_id.finalizacionestudios.strftime('%Y')"/>
+                </t>
+                <t t-elif="o.partner_id.x_studio_ano_de_graduacion">
+                    <t t-esc="o.partner_id.x_studio_ano_de_graduacion"/>
+                </t>
+                <t t-elif="o.partner_id.finalizacionestudios">
+                    <t t-esc="o.partner_id.finalizacionestudios.strftime('%Y')"/>
+                </t>
+            </td>
+        </xpath>
+
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'profesion')]]/td[2]" position="replace">
+            <td>
+                <t t-if="o.student_id.function">
+                    <t t-esc="o.student_id.function"/>
+                </t>
+                <t t-elif="o.student_id.profession">
+                    <t t-esc="o.student_id.profession"/>
+                </t>
+                <t t-elif="o.partner_id.function">
+                    <t t-esc="o.partner_id.function"/>
+                </t>
+                <t t-elif="o.partner_id.profession">
+                    <t t-esc="o.partner_id.profession"/>
+                </t>
+            </td>
+        </xpath>
+
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'asesor')]]/td[2]" position="replace">
+            <td>
+                <t t-if="o.user_id and o.user_id.name">
+                    <t t-esc="o.user_id.name"/>
+                </t>
+                <t t-else="">-</t>
+            </td>
+        </xpath>
+
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'matricula/pago inicial')]]/td[2]" position="replace">
+            <td>
+                <t t-set="first_schedule" t-value="o.subscription_schedule and o.subscription_schedule.sorted(key=lambda s: (s.date_schedule or s.date_due))[0] or False"/>
+                <t t-set="first_installment" t-value="o.irg_matricula_pago_inicial or (first_schedule and first_schedule.amount_recurring_taxinc) or (o.term_number and (o.amount_total / o.term_number)) or o.initial_payment or 0.0"/>
+                <t t-esc="'{:.2f}'.format(first_installment)"/>
+                <t t-esc="o.currency_id.symbol"/>
+            </td>
+        </xpath>
+
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'forma de pago')]]/td[2]" position="replace">
+            <td>
+                <t t-if="o.irg_forma_pago">
+                    <t t-esc="o.irg_forma_pago"/>
+                </t>
+                <t t-elif="o.payment_mode_id and o.payment_mode_id.name">
+                    <t t-esc="o.payment_mode_id.name"/>
+                </t>
+                <t t-elif="o.transaction_ids and o.transaction_ids.filtered(lambda tx: tx.state == 'done')">
+                    <t t-set="done_tx" t-value="o.transaction_ids.filtered(lambda tx: tx.state == 'done')[0]"/>
+                    <t t-esc="done_tx.provider_id.name or done_tx.provider_code"/>
+                </t>
+                <t t-else="">-</t>
+            </td>
+        </xpath>
+
+        <xpath expr="//tr[td[1]//p[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚáéíóú', 'abcdefghijklmnopqrstuvwxyzaeiouaeiou'), 'primer vencimiento')]]/td[2]" position="replace">
+            <td>
+                <t t-set="month_names" t-value="{'January': 'enero', 'February': 'febrero', 'March': 'marzo', 'April': 'abril', 'May': 'mayo', 'June': 'junio', 'July': 'julio', 'August': 'agosto', 'September': 'septiembre', 'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'}"/>
+                <t t-set="first_schedule" t-value="o.subscription_schedule and o.subscription_schedule.sorted(key=lambda s: (s.date_schedule or s.date_due))[0] or False"/>
+                <t t-set="first_due_date" t-value="o.irg_primer_vencimiento or (first_schedule and (first_schedule.date_schedule or first_schedule.date_due)) or o.validity_date"/>
+                <t t-if="first_due_date">
+                    <t t-esc="first_due_date.strftime('%d de ')"/>
+                    <t t-esc="month_names.get(first_due_date.strftime('%B'), '')"/>
+                    <t t-esc="first_due_date.strftime(' de %Y')"/>
+                </t>
+            </td>
+        </xpath>
+    </template>
+</odoo>

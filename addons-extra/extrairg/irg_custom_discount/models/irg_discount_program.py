@@ -24,6 +24,40 @@ class IrgDiscountProgram(models.Model):
         string='Descripción',
         help='Descripción visible para el cliente en la línea de descuento.'
     )
+    table_id = fields.Many2one(
+        'irg.discount.table',
+        string='Tabla de tarifas',
+        help='Tabla de referencia para mantener tarifas/importes del Excel.'
+    )
+    target_product_id = fields.Many2one(
+        'product.product',
+        string='Producto objetivo',
+        help='Producto sobre el que se calcula la variable product_amount. Si está vacío, product_amount será 0.'
+    )
+    target_product_ids = fields.Many2many(
+        'product.product',
+        'irg_discount_program_product_rel',
+        'program_id',
+        'product_id',
+        string='Productos objetivo',
+        help='Productos sobre los que se calcula la variable product_amount. Si está vacío, product_amount será 0.'
+    )
+    product_1_ids = fields.Many2many(
+        'product.product',
+        'irg_discount_program_product1_rel',
+        'program_id',
+        'product_id',
+        string='Producto 1',
+        help='Producto(s) del bloque 1 para las variables product_1_amount y products_diff_amount.'
+    )
+    product_2_ids = fields.Many2many(
+        'product.product',
+        'irg_discount_program_product2_rel',
+        'program_id',
+        'product_id',
+        string='Producto 2',
+        help='Producto(s) del bloque 2 para las variables product_2_amount y products_diff_amount.'
+    )
     formula = fields.Text(
         string='Fórmula de Descuento',
         required=True,
@@ -33,10 +67,16 @@ Variables disponibles:
   - amount_total: Total con impuestos
   - qty_total: Cantidad total de productos
   - line_count: Número de líneas de producto
+    - product_amount: Subtotal sin impuestos de los productos objetivo en el pedido
+    - product_1_amount: Subtotal sin impuestos de Producto 1
+    - product_2_amount: Subtotal sin impuestos de Producto 2
+    - products_diff_amount: Diferencia (product_1_amount - product_2_amount)
   - order: El objeto sale.order completo
 
 Ejemplos:
   amount_untaxed * 0.10            → 10%% de descuento
+    product_amount * 0.20            → 20%% del importe de los productos objetivo
+    round(max(0, products_diff_amount), 2) → Diferencia positiva entre Producto 1 y 2
   min(amount_untaxed * 0.15, 500)  → 15%% con tope de 500€
   100 if amount_untaxed > 1000 else 50
   amount_untaxed * 0.05 if qty_total >= 2 else 0
@@ -81,6 +121,23 @@ Ejemplos:
         ('code_uniq', 'unique(code)', 'El código de descuento debe ser único.'),
     ]
 
+    def _table_exists(self, table_name):
+        self.env.cr.execute("SELECT to_regclass(%s)", (table_name,))
+        return bool(self.env.cr.fetchone()[0])
+
+    def _column_exists(self, table_name, column_name):
+        self.env.cr.execute(
+            """
+            SELECT 1
+              FROM information_schema.columns
+             WHERE table_name = %s
+               AND column_name = %s
+             LIMIT 1
+            """,
+            (table_name, column_name),
+        )
+        return bool(self.env.cr.fetchone())
+
     @api.constrains('formula')
     def _check_formula(self):
         """Valida que la fórmula sea sintácticamente correcta."""
@@ -93,6 +150,10 @@ Ejemplos:
                         'amount_total': 1210.0,
                         'qty_total': 2.0,
                         'line_count': 2,
+                        'product_amount': 300.0,
+                        'product_1_amount': 500.0,
+                        'product_2_amount': 300.0,
+                        'products_diff_amount': 200.0,
                         'min': min,
                         'max': max,
                         'abs': abs,
@@ -135,28 +196,79 @@ Ejemplos:
 
         return True, ''
 
-    def _compute_discount(self, order):
-        """Evalúa la fórmula y devuelve el importe de descuento."""
+    def _get_formula_context(self, order):
+        """Prepara las variables disponibles para la fórmula."""
         self.ensure_one()
 
-        # Calcular qty_total excluyendo líneas de descuento
         product_lines = order.order_line.filtered(
             lambda l: not l.display_type and l.price_unit >= 0
         )
         qty_total = sum(product_lines.mapped('product_uom_qty'))
         line_count = len(product_lines)
 
-        safe_vars = {
+        def _lines_amount_for_products(products):
+            if not products:
+                return 0.0
+            target_templates = products.mapped('product_tmpl_id')
+            target_lines = product_lines.filtered(
+                lambda l: l.product_id in products or l.product_id.product_tmpl_id in target_templates
+            )
+            return sum(target_lines.mapped('price_subtotal'))
+
+        target_products = self.env['product.product']
+        if self._table_exists('irg_discount_program_product_rel'):
+            target_products = self.target_product_ids
+        if not target_products and self._column_exists('irg_discount_program', 'target_product_id'):
+            target_products = self.target_product_id
+        product_amount = _lines_amount_for_products(target_products)
+
+        product_1_products = self.env['product.product']
+        if self._table_exists('irg_discount_program_product1_rel'):
+            product_1_products = self.product_1_ids
+        product_1_amount = _lines_amount_for_products(product_1_products)
+
+        product_2_products = self.env['product.product']
+        if self._table_exists('irg_discount_program_product2_rel'):
+            product_2_products = self.product_2_ids
+        product_2_amount = _lines_amount_for_products(product_2_products)
+
+        products_diff_amount = product_1_amount - product_2_amount
+
+        return {
             'amount_untaxed': order.amount_untaxed,
             'amount_total': order.amount_total,
             'qty_total': qty_total,
             'line_count': line_count,
+            'product_amount': product_amount,
+            'product_1_amount': product_1_amount,
+            'product_2_amount': product_2_amount,
+            'products_diff_amount': products_diff_amount,
             'order': order,
             'min': min,
             'max': max,
             'abs': abs,
             'round': round,
         }
+
+    def _compute_discount(self, order):
+        """Evalúa la fórmula y devuelve el importe de descuento."""
+        self.ensure_one()
+
+        safe_vars = self._get_formula_context(order)
+        _logger.info(
+            "IRG Discount debug [%s]: order=%s amount_untaxed=%s amount_total=%s qty_total=%s line_count=%s product_amount=%s product_1_amount=%s product_2_amount=%s products_diff_amount=%s formula=%s",
+            self.code,
+            order.name,
+            safe_vars['amount_untaxed'],
+            safe_vars['amount_total'],
+            safe_vars['qty_total'],
+            safe_vars['line_count'],
+            safe_vars['product_amount'],
+            safe_vars['product_1_amount'],
+            safe_vars['product_2_amount'],
+            safe_vars['products_diff_amount'],
+            self.formula,
+        )
 
         try:
             discount = eval(self.formula.strip(), {"__builtins__": {}}, safe_vars)

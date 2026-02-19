@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="user_profile_content_details_forum" inherit_id="isep_website_custom.user_profile_content_details">
+        <xpath expr="//ul[@id='profile_extra_info_tablist']/li[last()]" position="after">
+            <li class="nav-item">
+                <a role="tab" aria-controls="Foro" href="#profile_tab_content_forum"
+                   t-attf-class="nav-link #{'active' if active_tab == 'forum' else ''}" data-bs-toggle="tab">
+                    Foro
+                </a>
+            </li>
+        </xpath>
+
+        <xpath expr="//div[@id='profile_tab_content_about']" position="after">
+            <div role="tabpanel" t-attf-class="tab-pane #{ 'show active' if active_tab == 'forum' else '' }"
+                 id="profile_tab_content_forum">
+                <div class="mb32">
+                    <h5 class="border-bottom pb-1">Foros del curso</h5>
+
+                    <t t-if="course_forum_ids">
+                        <t t-foreach="course_forum_ids" t-as="forum">
+                            <div class="mt-3">
+                                <h6 class="mb-2">
+                                    <a t-attf-href="/forum/#{slug(forum)}" t-esc="forum.name"/>
+                                </h6>
+
+                                <t t-set="forum_post_ids" t-value="course_forum_posts_map.get(forum.id, env['forum.post'])"/>
+                                <t t-foreach="forum_post_ids" t-as="question">
+                                    <t t-call="website_forum.display_post_question_block">
+                                        <ol>
+                                            <li>
+                                                <t t-set="forum" t-value="forum"/>
+                                                <t t-set="question" t-value="question"/>
+                                            </li>
+                                        </ol>
+                                    </t>
+                                </t>
+
+                                <div class="mt-2" t-if="forum_post_ids">
+                                    <a type="button" class="btn btn-primary btn-sm"
+                                       t-attf-href="/forum/#{slug(forum)}/ask?post_type=#{forum.mode}">
+                                        Publicar en foro
+                                    </a>
+                                </div>
+
+                                <div class="text-muted d-inline-block" t-if="not forum_post_ids">
+                                    Aún no hay publicaciones en este foro.
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+
+                    <div class="text-muted d-inline-block" t-if="not course_forum_ids">
+                        Este curso no tiene foro configurado.
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

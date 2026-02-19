@@ -2,6 +2,7 @@
 from odoo import models, fields, api, _
 from babel.dates import format_date
 import base64
+from urllib.parse import urlencode
 
 
 class DiplomaWizard(models.TransientModel):
@@ -46,7 +47,25 @@ class DiplomaWizard(models.TransientModel):
         course_name_cat = getattr(self.student_course_id.course_id, 'name_cat', None) or course_name_es
 
         # QR URL
-        qr_url = "https://institutoraimongaja.com/verificar/?id={}".format(registry_number)
+        query_params = {'id': registry_number}
+        if 'op.sign_certificate' in self.env:
+            stamp_payload = {
+                'registry_number': registry_number,
+                'student_name': student_name,
+                'course_name_es': course_name_es,
+                'course_name_cat': course_name_cat,
+                'issue_date': str(self.date),
+                'diploma_type': self.diploma_type,
+            }
+            stamp_data = self.env['op.sign_certificate'].sudo().stamp_data(stamp_payload, student=self.student_id) or {}
+            if stamp_data.get('stamp') and stamp_data.get('data_str') and stamp_data.get('certificate_id'):
+                query_params.update({
+                    'stamp': stamp_data.get('stamp'),
+                    'data_str': stamp_data.get('data_str'),
+                    'certificate_id': stamp_data.get('certificate_id'),
+                })
+
+        qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
 
         # Prepare data
         data = {
@@ -76,6 +95,17 @@ class DiplomaWizard(models.TransientModel):
             'res_model': 'op.student',
             'res_id': self.student_id.id,
             'mimetype': 'application/pdf',
+        })
+
+        self.env['irg.diploma.registry'].sudo().create({
+            'registry_number': registry_number,
+            'student_id': self.student_id.id,
+            'student_course_id': self.student_course_id.id,
+            'issue_date': self.date,
+            'diploma_type': self.diploma_type,
+            'qr_url': qr_url,
+            'attachment_id': attachment.id,
+            'state': 'valid',
         })
         
         # Return download action

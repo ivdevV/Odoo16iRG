@@ -48,9 +48,17 @@ class SaleOrder(models.Model):
             self._irg_remove_discount_lines()
 
         # Calcular descuento
+        formula_ctx = program._get_formula_context(self)
         discount_amount = program._compute_discount(self)
         if discount_amount <= 0:
-            return False, _("El descuento no aplica para este pedido.")
+            _logger.info(
+                "IRG Discount not applied [%s] on %s: product_amount=%s, amount_untaxed=%s",
+                code,
+                self.name,
+                formula_ctx.get('product_amount', 0.0),
+                formula_ctx.get('amount_untaxed', 0.0),
+            )
+            return False, _("El descuento no aplica para este pedido. Revisa fórmula y productos objetivo (importe objetivo actual: %s).") % formula_ctx.get('product_amount', 0.0)
 
         # Obtener producto de descuento
         discount_product = self.env.ref(

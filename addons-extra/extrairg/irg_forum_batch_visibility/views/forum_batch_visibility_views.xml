@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_forum_batch_visibility" model="ir.ui.view">
+        <field name="name">res.users.form.forum.batch.visibility</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="forum_visibility" string="Forum Visibility">
+                    <group>
+                        <field name="op_batch_ids" widget="many2many_tags"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_forum_forum_form_batch_visibility" model="ir.ui.view">
+        <field name="name">forum.forum.form.batch.visibility</field>
+        <field name="model">forum.forum</field>
+        <field name="inherit_id" ref="website_forum.view_forum_forum_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='options']/group/group[@name='group_order']" position="after">
+                <group string="Lotes de visibilidad">
+                    <field name="visibility_batch_ids" widget="many2many_tags"/>
+                    <field name="visibility_course_ids" widget="many2many_tags"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_forum_post_list_batch_visibility" model="ir.ui.view">
+        <field name="name">forum.post.list.batch.visibility</field>
+        <field name="model">forum.post</field>
+        <field name="inherit_id" ref="website_forum.view_forum_post_list"/>
+        <field name="arch" type="xml">
+            <field name="forum_id" position="after">
+                <field name="visibility_batch_ids" widget="many2many_tags" optional="hide"/>
+            </field>
+        </field>
+    </record>
+</odoo>

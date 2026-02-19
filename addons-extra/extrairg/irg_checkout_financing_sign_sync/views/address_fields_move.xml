@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_address_fields_move" inherit_id="website_sale.address" priority="270">
+        <xpath expr="//input[@name='vat']/ancestor::div[1]" position="after">
+            <t t-set="address_order" t-value="website_sale_order"/>
+            <t t-set="first_schedule" t-value="address_order and address_order.subscription_schedule and address_order.subscription_schedule.sorted(key=lambda s: (s.date_schedule or s.date_due))[0] or False"/>
+            <t t-set="first_due" t-value="first_schedule and (first_schedule.date_schedule or first_schedule.date_due) or False"/>
+            <t t-set="default_installment" t-value="address_order and ((address_order.term_number and round(address_order.amount_total / address_order.term_number, 2)) or 0.0) or 0.0"/>
+            <t t-set="first_amount" t-value="address_order and ((first_schedule and first_schedule.amount_recurring_taxinc) or default_installment) or 0.0"/>
+
+            <div class="mb-3 col-lg-6">
+                <label class="col-form-label" for="titulacion">Estudios</label>
+                <input type="text" name="titulacion" class="form-control" t-att-value="address_order and (address_order.partner_id.x_studio_titulacion or address_order.partner_id.titulacion) or ''"/>
+            </div>
+
+            <div class="mb-3 col-lg-6">
+                <label class="col-form-label" for="university">Universidad</label>
+                <input type="text" name="university" class="form-control" t-att-value="address_order and (address_order.partner_id.x_studio_universidad or address_order.partner_id.university) or ''"/>
+            </div>
+
+            <div class="mb-3 col-lg-6">
+                <label class="col-form-label" for="graduation_year">Año graduación</label>
+                <input type="text" name="graduation_year" class="form-control" placeholder="Ej: 2018" t-att-value="address_order and address_order.partner_id.x_studio_ano_de_graduacion or ''"/>
+            </div>
+
+            <div class="mb-3 col-lg-6">
+                <label class="col-form-label" for="profession">Profesión</label>
+                <input type="text" name="profession" class="form-control" t-att-value="address_order and (address_order.partner_id.profession or address_order.partner_id.function) or ''"/>
+            </div>
+
+            <div class="mb-3 col-lg-6">
+                <label class="col-form-label" for="matricula_pago_inicial">Matrícula/Pago Inicial</label>
+                <p class="form-control-plaintext mb-0" t-esc="address_order and ('{:.2f}'.format(address_order.irg_matricula_pago_inicial or first_amount)) or ''"/>
+            </div>
+
+            <div class="mb-3 col-lg-6">
+                <label class="col-form-label" for="forma_pago">Forma de Pago</label>
+                <p class="form-control-plaintext mb-0" t-esc="address_order and (address_order.irg_forma_pago or (address_order.payment_mode_id and address_order.payment_mode_id.name) or 'Stripe') or 'Stripe'"/>
+            </div>
+
+            <div class="mb-3 col-lg-6">
+                <label class="col-form-label" for="primer_vencimiento">Primer Vencimiento</label>
+                <p class="form-control-plaintext mb-0" t-esc="address_order and ((address_order.irg_primer_vencimiento and address_order.irg_primer_vencimiento.strftime('%Y-%m-%d')) or (first_due and first_due.strftime('%Y-%m-%d')) or '') or ''"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

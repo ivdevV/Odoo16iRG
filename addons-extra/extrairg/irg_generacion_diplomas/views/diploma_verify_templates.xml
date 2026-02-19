@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_verify_diploma" name="Verificar Diploma iRG">
+        <t t-call="website.layout">
+            <div class="container my-5">
+                <h1 class="mb-4">Verificar</h1>
+
+                <t t-if="code and found">
+                    <div class="alert alert-success" role="alert" style="font-size: 1.05rem;">
+                        <strong>✓ ENCONTRADO</strong><br/>
+                        El código <strong t-esc="code"/> es válido.
+                    </div>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <p><strong>Código:</strong> <span t-esc="record.registry_number"/></p>
+                            <p><strong>Estudiante:</strong> <span t-esc="record.student_id.name"/></p>
+                            <p><strong>Curso:</strong> <span t-esc="record.student_course_id.course_id.name if record.student_course_id else ''"/></p>
+                            <p><strong>Fecha de expedición:</strong> <span t-field="record.issue_date"/></p>
+                            <p><strong>Tipo:</strong> <span t-esc="dict(record._fields['diploma_type'].selection).get(record.diploma_type)"/></p>
+                        </div>
+                    </div>
+                </t>
+
+                <t t-if="code and not found">
+                    <div class="alert alert-danger" role="alert" style="font-size: 1.05rem;">
+                        <strong>✗ NO ENCONTRADO</strong><br/>
+                        El código <strong t-esc="code"/> no existe en nuestra base de datos.
+                    </div>
+                </t>
+
+                <t t-if="not code">
+                    <div class="alert alert-info" role="alert">
+                        Debes proporcionar un código para verificar el diploma.
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -1,12 +1,58 @@
 # -*- coding: utf-8 -*-
 import logging
-from odoo import models
+from datetime import timedelta
+from odoo import models, fields
 
 _logger = logging.getLogger(__name__)
 
 
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
+
+    def write(self, vals):
+        old_states = {tx.id: tx.state for tx in self}
+        res = super().write(vals)
+
+        if 'state' not in vals:
+            return res
+
+        grace_days = int(
+            self.env['ir.config_parameter'].sudo().get_param('irg_stripe.overdue_grace_days', '15')
+        )
+        grace_until = fields.Date.today() + timedelta(days=grace_days)
+
+        for tx in self:
+            if tx.provider_code != 'stripe':
+                continue
+            if old_states.get(tx.id) == tx.state:
+                continue
+            if not tx.sale_order_ids:
+                continue
+
+            subscription_orders = tx.sale_order_ids.filtered(lambda so: so.is_subscription)
+            if not subscription_orders:
+                continue
+
+            if tx.state == 'done':
+                subscription_orders._irg_mark_stripe_event(
+                    event_name='invoice.payment_succeeded',
+                    state='active',
+                    clear_grace=True,
+                )
+            elif tx.state == 'error':
+                subscription_orders._irg_mark_stripe_event(
+                    event_name='invoice.payment_failed',
+                    state='past_due',
+                    grace_until=grace_until,
+                )
+            elif tx.state == 'cancel':
+                subscription_orders._irg_mark_stripe_event(
+                    event_name='customer.subscription.deleted',
+                    state='canceled',
+                    clear_grace=True,
+                )
+
+        return res
 
     def _reconcile_after_done(self):
         """
@@ -56,6 +102,9 @@ class PaymentTransaction(models.Model):
 
                 order.sudo().write({
                     'payment_token_id': tx.token_id.id,
+                })
+                order.sudo().write({
+                    'stripe_subscription_ref': tx.token_id.provider_ref or tx.reference,
                 })
                 _logger.info(
                     "IRG Stripe: Token %s (provider=%s) asignado a "

@@ -9,6 +9,44 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    stripe_subscription_state = fields.Selection(
+        [
+            ('draft', 'Draft'),
+            ('active', 'Active'),
+            ('past_due', 'Past Due'),
+            ('paused', 'Paused'),
+            ('canceled', 'Canceled'),
+        ],
+        string='Stripe Subscription State',
+        default='draft',
+        tracking=True,
+        copy=False,
+    )
+    stripe_subscription_ref = fields.Char(
+        string='Stripe Subscription Ref',
+        copy=False,
+    )
+    stripe_last_event = fields.Char(
+        string='Stripe Last Event',
+        copy=False,
+    )
+    stripe_last_event_at = fields.Datetime(
+        string='Stripe Last Event At',
+        copy=False,
+    )
+    stripe_grace_until = fields.Date(
+        string='Stripe Grace Until',
+        copy=False,
+    )
+    stripe_coupon_code = fields.Char(
+        string='Stripe Coupon Code',
+        copy=False,
+    )
+    stripe_trial_end = fields.Date(
+        string='Stripe Trial End',
+        copy=False,
+    )
+
     subscription_suspended = fields.Boolean(
         string="Suscripción suspendida por impago",
         default=False,
@@ -20,6 +58,93 @@ class SaleOrder(models.Model):
             "todas las cuotas vencidas están pagadas."
         ),
     )
+
+    def _irg_mark_stripe_event(self, event_name, state=None, grace_until=False, clear_grace=False):
+        now = fields.Datetime.now()
+        for order in self:
+            vals = {
+                'stripe_last_event': event_name,
+                'stripe_last_event_at': now,
+            }
+            if state:
+                vals['stripe_subscription_state'] = state
+            if clear_grace:
+                vals['stripe_grace_until'] = False
+            elif grace_until:
+                vals['stripe_grace_until'] = grace_until
+            order.sudo().write(vals)
+
+    def action_irg_pause_subscription(self):
+        for order in self.filtered(lambda so: so.is_subscription):
+            order.sudo().write({
+                'stripe_subscription_state': 'paused',
+                'subscription_suspended': True,
+            })
+            order.message_post(
+                body="⏸️ <b>Suscripción pausada manualmente.</b>",
+                message_type='notification',
+                subtype_xmlid='mail.mt_note',
+            )
+        return True
+
+    def action_irg_resume_subscription(self):
+        for order in self.filtered(lambda so: so.is_subscription):
+            order.sudo().write({
+                'stripe_subscription_state': 'active',
+                'subscription_suspended': False,
+                'stripe_grace_until': False,
+            })
+            order.message_post(
+                body="▶️ <b>Suscripción reactivada manualmente.</b>",
+                message_type='notification',
+                subtype_xmlid='mail.mt_note',
+            )
+        return True
+
+    def action_irg_cancel_subscription(self):
+        for order in self.filtered(lambda so: so.is_subscription):
+            order.sudo().write({
+                'stripe_subscription_state': 'canceled',
+                'subscription_suspended': True,
+                'to_renew': False,
+            })
+            order.message_post(
+                body="🛑 <b>Suscripción cancelada manualmente.</b>",
+                message_type='notification',
+                subtype_xmlid='mail.mt_note',
+            )
+        return True
+
+    @api.model
+    def _cron_apply_stripe_grace_period(self):
+        today = fields.Date.today()
+        stage_suspend = self.env['sale.order.stage'].sudo().search(
+            [('name', 'ilike', 'Suspendida')], limit=1
+        )
+        candidates = self.sudo().search([
+            ('is_subscription', '=', True),
+            ('stripe_subscription_state', '=', 'past_due'),
+            ('subscription_suspended', '=', False),
+            ('stripe_grace_until', '!=', False),
+            ('stripe_grace_until', '<', today),
+        ])
+
+        for order in candidates:
+            vals = {
+                'subscription_suspended': True,
+                'stripe_subscription_state': 'paused',
+            }
+            if stage_suspend:
+                vals['stage_id'] = stage_suspend.id
+            order.write(vals)
+            order.message_post(
+                body=(
+                    "⚠️ <b>Suscripción pausada por fin de período de gracia Stripe.</b><br/>"
+                    "Fecha límite de gracia: <b>%s</b>" % order.stripe_grace_until
+                ),
+                message_type='notification',
+                subtype_xmlid='mail.mt_note',
+            )
 
     # ------------------------------------------------------------------
     #  CRON: Suspender suscripciones con cuotas vencidas
@@ -73,6 +198,8 @@ class SaleOrder(models.Model):
             vals = {'subscription_suspended': True}
             if suspension_stage:
                 vals['stage_id'] = suspension_stage.id
+            if order.stripe_subscription_state not in ('paused', 'canceled'):
+                vals['stripe_subscription_state'] = 'past_due'
             order.write(vals)
 
             # Notificación interna en el chatter
@@ -145,6 +272,9 @@ class SaleOrder(models.Model):
             vals = {'subscription_suspended': False}
             if progress_stage:
                 vals['stage_id'] = progress_stage.id
+            if order.stripe_subscription_state != 'canceled':
+                vals['stripe_subscription_state'] = 'active'
+                vals['stripe_grace_until'] = False
             order.write(vals)
 
             order.message_post(

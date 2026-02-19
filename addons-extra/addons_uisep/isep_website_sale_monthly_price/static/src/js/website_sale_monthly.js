@@ -13,32 +13,28 @@ odoo.define('isep_website_sale_monthly_price.website_sale_monthly', function (re
             
             console.log('ISEP Monthly Price Debug: _onChangeCombination called', combination);
             
-            var months = combination.months || 1;
-            
-            // Fallback: try to parse months from display_name if not provided
-            if (months === 1 && combination.display_name) {
-                var match = combination.display_name.match(/(\d+)\s*mes/i);
-                if (match) {
-                    months = parseInt(match[1]);
-                    console.log('ISEP Monthly Price Debug: Parsed months from name', months);
-                }
-            }
+            var minInstallmentPrice = combination.min_installment_price;
+            var minInstallmentMonths = combination.min_installment_months || 1;
 
-            if (months > 1) {
-                var monthlyPrice = combination.price / months;
-                console.log('ISEP Monthly Price Debug: Calculating monthly price', monthlyPrice);
-                var formattedPrice = this._priceToStr(monthlyPrice);
+            if (minInstallmentPrice && minInstallmentPrice > 0) {
+                var formattedPrice = this._priceToStr(minInstallmentPrice);
                 
                 var $price = $parent.find('.oe_price .oe_currency_value');
                 $price.text(formattedPrice);
                 
-                // Add "/ mes" if not present
+                // Add or update installment suffix
                 var $suffix = $parent.find('.oe_price .isep_month_suffix');
-                if ($suffix.length === 0) {
-                    $parent.find('.oe_price').append('<span class="text-muted isep_month_suffix" style="font-size: 0.8rem;"> / mes</span>');
+                var suffixText = minInstallmentMonths > 1 ? (' / ' + minInstallmentMonths + ' meses') : '';
+                if (suffixText) {
+                    if ($suffix.length === 0) {
+                        $parent.find('.oe_price').append('<span class="text-muted isep_month_suffix" style="font-size: 0.8rem;"></span>');
+                        $suffix = $parent.find('.oe_price .isep_month_suffix');
+                    }
+                    $suffix.text(suffixText);
+                } else if ($suffix.length) {
+                    $suffix.remove();
                 }
             } else {
-                // Remove suffix if present
                 $parent.find('.oe_price .isep_month_suffix').remove();
             }
         }

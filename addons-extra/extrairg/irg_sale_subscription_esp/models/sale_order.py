@@ -8,6 +8,87 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    def _irg_get_variant_order_price(self, product, recurrence=None, pricelist=None):
+        """Return unit price for a product variant in current order context.
+
+        Priority:
+        1) product.pricing with same variant + pricelist + recurrence
+        2) product.pricing variant + no pricelist + recurrence
+        3) fallback product.lst_price of that exact variant
+        """
+        self.ensure_one()
+        if not product:
+            return 0.0
+
+        recurrence = recurrence or self.recurrence_id
+        pricelist = pricelist or self.pricelist_id
+
+        pricing_domain = [
+            ('product_template_id', '=', product.product_tmpl_id.id),
+        ]
+        if recurrence:
+            pricing_domain.append(('recurrence_id', '=', recurrence.id))
+
+        pricing_rules = self.env['product.pricing'].search(pricing_domain)
+        if not pricing_rules:
+            return product.lst_price
+
+        variant_rules = pricing_rules.filtered(lambda rule: product in rule.product_variant_ids)
+        def _pick(rules):
+            if not rules:
+                return False
+            if pricelist:
+                with_pricelist = rules.filtered(lambda r: r.pricelist_id == pricelist)
+                if with_pricelist:
+                    return with_pricelist[0]
+            no_pricelist = rules.filtered(lambda r: not r.pricelist_id)
+            if no_pricelist:
+                return no_pricelist[0]
+            return rules[0]
+
+        selected_rule = _pick(variant_rules)
+        return selected_rule.price if selected_rule else product.lst_price
+
+    def _irg_get_sibling_contado(self, product):
+        """Find the exact contado sibling variant for a financed variant."""
+        self.ensure_one()
+        if not product:
+            return self.env['product.product']
+
+        plan_ptav = product.product_template_attribute_value_ids.filtered(
+            lambda x: x.attribute_id.name == 'Planes'
+        )
+        if not plan_ptav:
+            return self.env['product.product']
+
+        plan_ptav = plan_ptav[0]
+        contado_values = plan_ptav.attribute_id.value_ids.filtered(
+            lambda x: 'contado' in (x.name or '').lower()
+        )
+        if not contado_values:
+            return self.env['product.product']
+
+        other_ptav_ids = set(
+            product.product_template_attribute_value_ids.filtered(
+                lambda x: x.attribute_id.name != 'Planes'
+            ).ids
+        )
+
+        candidates = self.env['product.product'].search([
+            ('product_tmpl_id', '=', product.product_tmpl_id.id),
+            ('product_template_attribute_value_ids.product_attribute_value_id', 'in', contado_values.ids),
+        ])
+        for candidate in candidates:
+            candidate_other_ids = set(
+                candidate.product_template_attribute_value_ids.filtered(
+                    lambda x: x.attribute_id.name != 'Planes'
+                ).ids
+            )
+            if candidate_other_ids == other_ptav_ids:
+                return candidate
+
+        return self.env['product.product']
+
     def _auto_scheduled_order(self):
         """
         Sobrescribe la lógica de programación automática para incluir el cálculo
@@ -64,57 +145,25 @@ class SaleOrder(models.Model):
                     if 'contado' not in plan_value.name.lower():
                         _logger.info("Producto financiado detectado: %s - Plan: %s", ol.product_id.name, plan_value.name)
                         
-                        # 1. Buscar la variante "Contado" hermana
-                        # Debe tener el mismo template y los MISMOS otros atributos (excepto Planes)
-                        other_attributes = ol.product_id.product_template_attribute_value_ids.filtered(lambda x: x.attribute_id.name != 'Planes')
-                        
-                        # Buscamos el valor "Contado" para el atributo Planes
-                        # Primero obtenemos todos los valores posibles para ese atributo en este template
-                        contado_value = plan_value.attribute_id.value_ids.filtered(lambda x: 'contado' in x.name.lower())
-                        
-                        if contado_value:
-                            # Ahora buscamos el product.product que sea hermano
-                            # Domain: Mismo Template + Atributo Contado + Otros Atributos
-                            domain = [
-                                ('product_tmpl_id', '=', ol.product_id.product_tmpl_id.id),
-                                ('product_template_attribute_value_ids.product_attribute_value_id', 'in', contado_value.ids)
-                            ]
-                            
-                            # Añadimos los otros atributos al dominio
-                            for attr in other_attributes:
-                                domain.append(('product_template_attribute_value_ids', 'in', attr.ids))
-                                
-                            sibling_contado = self.env['product.product'].search(domain, limit=1)
-                            
-                            if sibling_contado:
+                        # 1. Buscar la variante "Contado" hermana exacta
+                        sibling_contado = self._irg_get_sibling_contado(ol.product_id)
+
+                        if sibling_contado:
                                 # Mark the main line so we can order the summary consistently
                                 if ol.irg_line_type != 'master':
                                     ol.write({'irg_line_type': 'master'})
-                                # === CÁLCULO DE FEE EN 3 NIVELES ===
-                                # If the line is forced to contado, do not reuse it for the financed price.
+                                # === CÁLCULO DE FEE ===
+                                # Financiado: usar el precio real actual de la línea (si no está forzado)
+                                # Contado: usar SIEMPRE el precio de la variante contado (lst_price)
                                 use_line_price = not (ol.irg_force_price_unit_set or (ol.irg_force_price_unit and ol.irg_force_price_unit > 0))
-                                # Nivel 1: Precios raw (use line price only when not forced)
-                                # otherwise fall back to variant lst_price = template.list_price + variant.price_extra)
-                                raw_variant = ol.price_unit if use_line_price else ol.product_id.lst_price
-                                raw_contado = sibling_contado.lst_price
-                                _logger.info("IRG Financiación [RAW lst_price]: variant=%s, contado=%s, diff=%s",
-                                             raw_variant, raw_contado, raw_variant - raw_contado)
-
-                                # Nivel 2: Precios con pricelist
-                                # Prefer line price only when not forced; otherwise use pricelist first.
-                                pl_variant = ol.price_unit if (use_line_price and ol.price_unit and ol.price_unit > 0) else raw_variant
-                                pl_contado = raw_contado
-                                if self.pricelist_id:
-                                    qty = ol.product_uom_qty or 1.0
-                                    pv = self.pricelist_id._get_product_price(ol.product_id, qty)
-                                    pc = self.pricelist_id._get_product_price(sibling_contado, qty)
-                                    # If the line price isn't used, allow pricelist to set variant price
-                                    if (not (use_line_price and ol.price_unit and ol.price_unit > 0)) and pv and pv > 0:
-                                        pl_variant = pv
-                                    if pc and pc > 0:
-                                        pl_contado = pc
-                                    _logger.info("IRG Financiación [PRICELIST '%s']: variant=%s, contado=%s, diff=%s",
-                                                 self.pricelist_id.name, pl_variant, pl_contado, pl_variant - pl_contado)
+                                financed_price = ol.price_unit if (use_line_price and ol.price_unit and ol.price_unit > 0) else ol.product_id.lst_price
+                                contado_price = self._irg_get_variant_order_price(
+                                    sibling_contado,
+                                    recurrence=self.recurrence_id,
+                                    pricelist=self.pricelist_id,
+                                )
+                                _logger.info("IRG Financiación [BASE]: financed=%s, contado=%s, diff=%s",
+                                             financed_price, contado_price, financed_price - contado_price)
 
                                 # Nivel 3: price_extra directos del atributo Planes
                                 plan_extra = ptav_plan[0].price_extra or 0.0
@@ -128,12 +177,9 @@ class SaleOrder(models.Model):
                                 _logger.info("IRG Financiación [PRICE_EXTRA]: plan_extra=%s, contado_extra=%s, diff=%s",
                                              plan_extra, contado_extra, plan_extra - contado_extra)
 
-                                # === DECIDIR FEE: primer nivel que dé diferencia > 0 ===
-                                financing_fee_unit = pl_variant - pl_contado
-                                fee_source = "PRICELIST"
-                                if financing_fee_unit <= 0:
-                                    financing_fee_unit = raw_variant - raw_contado
-                                    fee_source = "RAW lst_price"
+                                # === DECIDIR FEE ===
+                                financing_fee_unit = financed_price - contado_price
+                                fee_source = "LINE vs CONTADO"
                                 if financing_fee_unit <= 0:
                                     financing_fee_unit = plan_extra - contado_extra
                                     fee_source = "PRICE_EXTRA"
@@ -144,21 +190,14 @@ class SaleOrder(models.Model):
                                 if financing_fee_unit > 0:
                                     _logger.info("IRG Aplicando financiación. Diferencia unitaria: %s", financing_fee_unit)
 
-                                    # Precio de contado para la línea del curso
-                                    # Preferimos pricelist si da diferencia, sino raw
-                                    if pl_variant - pl_contado > 0:
-                                        contado_price = pl_contado
-                                    elif raw_variant - raw_contado > 0:
-                                        contado_price = raw_contado
-                                    else:
-                                        # Fee viene de price_extra: contado_price = precio actual - fee
-                                        contado_price = pl_variant - financing_fee_unit
+                                    # Precio contado fijo tomado de la variante contado
+                                    line_contado_price = contado_price
 
                                     # 2. Actualizar línea actual al precio de contado
                                     # y fijarlo para evitar que la pricelist lo sobrescriba después.
                                     ol.write({
-                                        'price_unit': contado_price,
-                                        'irg_force_price_unit': contado_price,
+                                        'price_unit': line_contado_price,
+                                        'irg_force_price_unit': line_contado_price,
                                         'irg_force_price_unit_set': True,
                                     })
 
@@ -217,8 +256,8 @@ class SaleOrder(models.Model):
                                         })
 
                                     self.env['sale.order.line'].sudo().create(matricula_vals)
-                            else:
-                                _logger.warning("No se encontró variante Contado para %s", ol.product_id.name)
+                        else:
+                            _logger.warning("No se encontró variante Contado para %s", ol.product_id.name)
 
                 # --- FIN LÓGICA FINANCIACIÓN ---
 

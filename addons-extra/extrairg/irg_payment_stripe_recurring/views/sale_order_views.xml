@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="irg_payment_stripe_recurring_sale_order_form" model="ir.ui.view">
+        <field name="name">sale.order.form.irg.stripe.recurring</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/notebook" position="inside">
+                <page string="Stripe Sub" name="irg_stripe_subscription">
+                    <group>
+                        <group>
+                            <field name="stripe_subscription_state"/>
+                            <field name="stripe_subscription_ref"/>
+                            <field name="stripe_grace_until"/>
+                            <field name="subscription_suspended"/>
+                        </group>
+                        <group>
+                            <field name="stripe_last_event"/>
+                            <field name="stripe_last_event_at"/>
+                            <field name="stripe_coupon_code"/>
+                            <field name="stripe_trial_end"/>
+                        </group>
+                    </group>
+                    <group>
+                        <button name="action_irg_pause_subscription" type="object" string="Pausar" class="btn-secondary" attrs="{'invisible': [('is_subscription', '=', False)]}"/>
+                        <button name="action_irg_resume_subscription" type="object" string="Reactivar" class="btn-secondary" attrs="{'invisible': [('is_subscription', '=', False)]}"/>
+                        <button name="action_irg_cancel_subscription" type="object" string="Cancelar" class="btn-danger" attrs="{'invisible': [('is_subscription', '=', False)]}"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

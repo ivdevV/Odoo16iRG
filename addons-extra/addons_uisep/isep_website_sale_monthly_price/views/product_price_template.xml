@@ -3,42 +3,19 @@
     <!-- Override product price to show monthly installment -->
     <template id="product_price_monthly" inherit_id="website_sale.product_price" priority="100">
         <xpath expr="//span[hasclass('oe_price')]" position="replace">
-            <t t-set="product_variant_id" t-value="combination_info.get('product_id')"/>
-            <t t-set="months" t-value="combination_info.get('months', 1)"/>
-            
-            <!-- Fallback calculation if months not in combination_info (e.g. if model override not loaded yet) -->
-            <t t-if="months == 1 and product_variant_id">
-                <t t-set="product_obj" t-value="request.env['product.product'].browse(product_variant_id)"/>
-                <t t-foreach="product_obj.product_template_attribute_value_ids" t-as="ptav">
-                    <t t-if="ptav.attribute_id.name == 'Planes'">
-                        <t t-if="ptav.plazo > 0">
-                            <t t-set="months" t-value="ptav.plazo"/>
-                        </t>
-                        <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
-                             <!-- Simple parsing for XML fallback - ORDER MATTERS (Longer first) -->
-                             <t t-if="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
-                             <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
-                             <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
-                             <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
-                             <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
-                             <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
-                             <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
-                             <t t-elif="'7' in ptav.name"><t t-set="months" t-value="7"/></t>
-                             <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
-                             <t t-elif="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
-                        </t>
-                    </t>
-                </t>
-            </t>
-            
-            <t t-if="months > 1">
-                <span class="oe_price" style="white-space: nowrap;" t-esc="combination_info['price'] / months" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                <span class="text-muted isep_month_suffix" style="font-size: 0.8rem;"> / mes</span>
-                <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="months">Active-Monthly</span>
+            <t t-set="min_installment_price" t-value="combination_info.get('min_installment_price')"/>
+            <t t-set="min_installment_months" t-value="combination_info.get('min_installment_months', 1)"/>
+
+            <t t-if="min_installment_price">
+                <span class="oe_price" style="white-space: nowrap;" t-esc="min_installment_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                <span class="text-muted isep_month_suffix" style="font-size: 0.8rem;" t-if="min_installment_months > 1">
+                    <t t-esc="' / %s meses' % min_installment_months"/>
+                </span>
+                <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="min_installment_months">Active-Min-Installment</span>
             </t>
             <t t-else="">
                 <span class="oe_price" style="white-space: nowrap;" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="months">Active-Single</span>
+                <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="combination_info.get('months', 1)">Active-Single</span>
             </t>
         </xpath>
     </template>
@@ -148,27 +125,26 @@
             </tbody>
         </xpath>
         
-        <!-- Remove standard subscription unit display to avoid duplication -->
-        <xpath expr="//td[hasclass('td-price')]/div[@t-if=&quot;line.temporal_type == 'subscription'&quot;]" position="replace">
-            <!-- Removed by isep_website_sale_monthly_price -->
-        </xpath>
-
-        <xpath expr="//tr[hasclass('cart_total')]" position="after">
+        <xpath expr="//table[hasclass('table')][1]" position="after">
             <t t-set="summary_order" t-value="order or website_sale_order"/>
             <t t-set="matricula_total" t-value="sum(summary_order.order_line.filtered(lambda l: l.irg_line_type == 'matricula').mapped('price_subtotal'))"/>
             <t t-set="monthly_amount" t-value="summary_order.subscription_schedule and summary_order.subscription_schedule[0].amount_recurring_taxinc or 0.0"/>
-            <tr>
-                <td colspan="2" class="text-start">1ra Cuota + Matricula:</td>
-                <td class="text-end">
-                    <span t-esc="monthly_amount + matricula_total" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" class="text-start">Cuotas restantes:</td>
-                <td class="text-end">
-                    <span t-esc="monthly_amount" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                </td>
-            </tr>
+            <table class="table table-sm">
+                <tbody>
+                    <tr>
+                        <td colspan="2" class="text-start">1ra Cuota + Matricula:</td>
+                        <td class="text-end">
+                            <span t-esc="monthly_amount + matricula_total" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="text-start">Cuotas restantes:</td>
+                        <td class="text-end">
+                            <span t-esc="monthly_amount" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </xpath>
     </template>
 

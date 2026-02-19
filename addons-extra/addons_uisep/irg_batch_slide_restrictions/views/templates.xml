@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="slide_batch_restriction_error" name="Slide Batch Restriction Error">
+        <t t-call="website.layout">
+            <div class="container mt-5">
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Contenido Bloqueado</h4>
+                    <p>
+                        El contenido <strong><t t-esc="slide.name"/></strong> no está habilitado
+                        para tu lote actual.
+                    </p>
+                    <hr/>
+                    <p class="mb-0">
+                        <a t-att-href="slide.channel_id.website_url" class="btn btn-primary">
+                            Volver a la asignatura
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
