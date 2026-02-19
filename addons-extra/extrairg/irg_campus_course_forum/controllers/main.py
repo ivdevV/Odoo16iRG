@@ -10,13 +10,13 @@ class DashboardPortalCampusForum(DashboardPortal):
     def view_user_profile_course(self, course_id, **post):
         response = super().view_user_profile_course(course_id, **post)
 
-        course = request.env['op.course'].browse(course_id)
-        forum_ids = request.env['forum.forum']
-        post_ids = request.env['forum.post']
+        course = request.env['op.course'].sudo().browse(course_id)
+        forum_ids = request.env['forum.forum'].sudo()
+        post_ids = request.env['forum.post'].sudo()
         posts_by_forum_id = {}
 
         if course.exists():
-            forum_ids = request.env['forum.forum'].search([
+            forum_ids = request.env['forum.forum'].sudo().search([
                 ('visibility_course_ids', 'in', course.id),
             ], order='name asc')
 
@@ -25,7 +25,7 @@ class DashboardPortalCampusForum(DashboardPortal):
                 forum_ids = forum_ids.sorted(key=lambda forum: forum.name or '')
 
             if forum_ids:
-                post_ids = request.env['forum.post'].search([
+                post_ids = request.env['forum.post'].sudo().search([
                     ('forum_id', 'in', forum_ids.ids),
                     ('parent_id', '=', False),
                 ], order='create_date desc')
