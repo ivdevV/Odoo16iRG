@@ -95,21 +95,34 @@ class ProductTemplate(models.Model):
         if not current_pricelist:
             current_pricelist = self.env['website'].get_current_website().pricelist_id
 
+        # Compute the global "menor cuota posible" for the whole template (across all variants)
+        # — we show the absolute minimum installment available for any valid variant/pricing,
+        # not only the variants that match the currently selected non-plan attributes.
         selected_non_plan_ids = _non_plan_ptav_ids(selected_product)
-        scoped_variants = self.product_variant_ids
-        if selected_non_plan_ids:
-            scoped_variants = scoped_variants.filtered(
-                lambda variant: _non_plan_ptav_ids(variant) == selected_non_plan_ids
-            )
 
-        min_installment_price, min_installment_months = self._isep_get_min_installment_data(
+        # Global minimum across all template variants (ignores selected_non_plan_ids)
+        global_min_installment_price, global_min_installment_months = self._isep_get_min_installment_data(
             pricelist=current_pricelist,
-            scoped_non_plan_ids=selected_non_plan_ids,
+            scoped_non_plan_ids=None,
         )
 
-        if min_installment_price is not False:
-            combination_info['min_installment_price'] = min_installment_price
-            combination_info['min_installment_months'] = min_installment_months
+        # Keep a scoped minimum for backwards compatibility if needed (not used for UI)
+        scoped_min_installment_price, scoped_min_installment_months = (False, 1)
+        if selected_non_plan_ids:
+            scoped_min_installment_price, scoped_min_installment_months = self._isep_get_min_installment_data(
+                pricelist=current_pricelist,
+                scoped_non_plan_ids=selected_non_plan_ids,
+            )
+
+        # Use the global minimum as the canonical 'min_installment' exposed to the UI
+        if global_min_installment_price is not False:
+            combination_info['min_installment_price'] = global_min_installment_price
+            combination_info['min_installment_months'] = global_min_installment_months
+        else:
+            # fallback to scoped if global unavailable
+            if scoped_min_installment_price is not False:
+                combination_info['min_installment_price'] = scoped_min_installment_price
+                combination_info['min_installment_months'] = scoped_min_installment_months
 
         _logger.info(
             "ISEP Monthly Price Debug: Product=%s selected_months=%s selected_price=%s min_installment=%s min_months=%s",
@@ -173,22 +186,12 @@ class ProductProduct(models.Model):
                     lambda variant: _non_plan_ptav_ids(variant) == selected_non_plan_ids
                 )
 
-            min_installment_price = False
-            min_installment_months = 1
-            for variant in scoped_variants:
-                variant_months = _get_plan_months(variant)
-                if variant_months <= 0:
-                    continue
-
-                variant_price = current_pricelist._get_product_price(variant, 1.0) if current_pricelist else variant.lst_price
-                installment = variant_price / variant_months
-                if installment <= 0:
-                    continue
-
-                if min_installment_price is False or installment < min_installment_price:
-                    min_installment_price = installment
-                    min_installment_months = variant_months
-
+            # Delegate to template-level helper to compute the global minimum across all
+            # variants of the product (ensures product page always shows the absolute
+            # "menor cuota posible" available for the product).
+            min_installment_price, min_installment_months = self.product_tmpl_id._isep_get_min_installment_data(
+                pricelist=current_pricelist
+            )
             if min_installment_price is not False:
                 combination_info['min_installment_price'] = min_installment_price
                 combination_info['min_installment_months'] = min_installment_months
