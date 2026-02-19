@@ -19,7 +19,6 @@
                 <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="combination_info.get('months', 1)">Active-Single</span>
             </t>
         </xpath>
-        <xpath expr="//span[hasclass('mb-3') and hasclass('o_website_sale_subscription_pricing_id')]" position="replace"/>
     </template>
 
     <!-- Cart Lines Override -->
