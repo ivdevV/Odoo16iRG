@@ -126,7 +126,7 @@
 
     <!-- Product listing: prefer server-calculated canonical min_installment when available -->
     <template id="products_item_min_installment" inherit_id="website_sale.products_item" priority="120">
-        <xpath expr="//div[hasclass('product_price')]//span[hasclass('oe_price')]" position="replace">
+        <xpath expr="//div[hasclass('product_price')]/*[1]" position="replace">
             <t t-set="min_data" t-value="product.product_tmpl_id._isep_get_min_installment_data(website.get_current_website().get_current_pricelist())"/>
             <t t-set="min_installment_price" t-value="min_data and min_data[0] or False"/>
             <t t-set="min_installment_months" t-value="min_data and min_data[1] or 1"/>
