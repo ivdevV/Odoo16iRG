@@ -47,6 +47,7 @@
 
                     <!-- Inline JS: dedupe placeholders, implement drag&drop preview and modal trigger -->
                     <script type="text/javascript">
+                    //<![CDATA[
                         (function () {
                             // Remove duplicate placeholders (keep first)
                             document.querySelectorAll('div#irg-academic-upload').forEach(function (el, idx) {
@@ -96,8 +97,7 @@
                             });
 
                             // Show modal if academic_upload param present
-                            var academicParam = "";
-                            academicParam = "" + ( (request.params.get('academic_upload') and request.params.get('academic_upload')) or '' );
+                            var academicParam = new URLSearchParams(window.location.search).get('academic_upload') || '';
                             if (academicParam) {
                                 var message = '';
                                 if (academicParam === 'ok') { message = 'Documentación subida correctamente.'; }
@@ -117,6 +117,7 @@
                                 }
                             }
                         })();
+                    //]]>
                     </script>
                 </div>
             </t>
