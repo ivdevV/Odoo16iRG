@@ -3,21 +3,23 @@
     <!-- Override product price to show monthly installment -->
     <template id="product_price_monthly" inherit_id="website_sale.product_price" priority="100">
         <xpath expr="//span[hasclass('oe_price')]" position="replace">
-            <t t-set="min_installment_price" t-value="combination_info.get('min_installment_price')"/>
-            <t t-set="min_installment_months" t-value="combination_info.get('min_installment_months', 1)"/>
+            <t t-set="selected_months" t-value="combination_info.get('months', 1)"/>
+            <t t-set="selected_price" t-value="combination_info.get('price', 0.0)"/>
+            <t t-set="display_price" t-value="selected_price / selected_months if selected_months &gt; 1 else selected_price"/>
 
-            <t t-if="min_installment_price">
-                <span class="oe_price" style="white-space: nowrap;" t-esc="min_installment_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                <span class="text-muted isep_month_suffix" style="font-size: 0.8rem;" t-if="min_installment_months > 1">
-                    <t t-esc="' / %s meses' % min_installment_months"/>
+            <t t-if="display_price">
+                <span class="oe_price" style="white-space: nowrap;" t-esc="display_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                <span class="text-muted isep_month_suffix" style="font-size: 0.8rem;" t-if="selected_months > 1">
+                    <t t-esc="' / %s meses' % selected_months"/>
                 </span>
-                <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="min_installment_months">Active-Min-Installment</span>
+                <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="selected_months">Active-Selected-Installment</span>
             </t>
             <t t-else="">
                 <span class="oe_price" style="white-space: nowrap;" t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
                 <span id="isep_monthly_price_active" style="display:none;" t-att-data-months="combination_info.get('months', 1)">Active-Single</span>
             </t>
         </xpath>
+        <xpath expr="//span[hasclass('mb-3') and hasclass('o_website_sale_subscription_pricing_id')]" position="replace"/>
     </template>
 
     <!-- Cart Lines Override -->
@@ -126,7 +128,8 @@
 
     <!-- Product listing: prefer server-calculated canonical min_installment when available -->
     <template id="products_item_min_installment" inherit_id="website_sale.products_item" priority="120">
-        <xpath expr="//div[hasclass('product_price')]/*[1]" position="replace">
+        <xpath expr="//div[hasclass('product_price')]" position="replace">
+            <div class="product_price">
             <t t-set="product_tmpl" t-value="product if product._name == 'product.template' else product.product_tmpl_id"/>
             <t t-set="min_data" t-value="product_tmpl._isep_get_min_installment_data(website.get_current_website().get_current_pricelist())"/>
             <t t-set="min_installment_price" t-value="min_data and min_data[0] or False"/>
@@ -142,6 +145,7 @@
             <t t-else="">
                 <span class="oe_price" style="white-space: nowrap;" t-esc="template_price_vals['price']" t-options="{'widget': 'monetary', 'display_currency': display_currency}"/>
             </t>
+            </div>
         </xpath>
     </template>
 </odoo>

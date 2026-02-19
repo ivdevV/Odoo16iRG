@@ -139,8 +139,15 @@ class ProductTemplate(models.Model):
         if not combination_info.get('is_subscription'):
             return super()._search_render_results_prices(mapping, combination_info)
 
-        min_installment_price, min_installment_months = self._isep_get_min_installment_data(
-            pricelist=self.env['website'].get_current_website().get_current_pricelist(),
+        if not combination_info.get('is_recurrence_possible'):
+            return '', 0
+
+        min_installment_price = combination_info.get('min_installment_price') or combination_info.get('price')
+        min_installment_months = (
+            combination_info.get('min_installment_months')
+            or combination_info.get('subscription_duration')
+            or combination_info.get('months')
+            or 1
         )
 
         if not min_installment_price:

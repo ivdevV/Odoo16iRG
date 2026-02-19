@@ -39,18 +39,22 @@
             <script type="text/javascript">
                 (function () {
                     if (window.location.pathname.indexOf('/shop/address') === -1) { return; }
-                    var waitingForToast = false;
-                    // Mark when the user clicks the address "Siguiente" button (several possible selectors)
-                    $(document).on('click', 'form#checkout_address_form button[type=submit], form[action*="/shop/checkout"] button[type=submit], button.o_wsale_checkout_next', function () {
-                        waitingForToast = true;
-                    });
-                    // When an ajax call finishes after that click, show the toast once
-                    $(document).ajaxSuccess(function (event, xhr, settings) {
-                        if (!waitingForToast) { return; }
-                        waitingForToast = false;
+                    var toastShown = false;
+
+                    function showToast() {
+                        if (toastShown) { return; }
+                        toastShown = true;
                         var $toast = $('<div class="alert alert-info position-fixed" style="z-index: 2000; right: 1rem; top: 1rem; min-width: 320px;">Aguarda un momento mientras cargamos los datos de matriculación. ¡Gracias!</div>');
                         $('body').append($toast);
                         setTimeout(function () { $toast.fadeOut(300, function () { $(this).remove(); }); }, 5000);
+                    }
+
+                    // Show toast immediately on submit (works for full-page post and ajax flows)
+                    $(document).on('submit', 'form', function () {
+                        showToast();
+                    });
+                    $(document).on('click', 'button[type=submit], input[type=submit], .o_wsale_checkout_next', function () {
+                        showToast();
                     });
                 })();
             </script>
