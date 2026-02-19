@@ -12,6 +12,7 @@
     'website': '',
     'depends': [
         'website_slides',
+        'website',
         'web',
     ],
     'data': [

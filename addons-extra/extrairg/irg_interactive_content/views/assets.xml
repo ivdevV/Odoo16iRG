@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <template id="assets_frontend_irg_interactive_content" inherit_id="web.assets_frontend" name="IRG Interactive Content Assets">
+    <template id="assets_frontend_irg_interactive_content" inherit_id="website.assets_frontend" name="IRG Interactive Content Assets">
         <xpath expr="." position="inside">
             <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer="defer"/>
             <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" defer="defer"/>
