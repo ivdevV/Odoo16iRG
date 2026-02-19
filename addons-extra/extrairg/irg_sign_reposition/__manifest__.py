@@ -12,9 +12,12 @@
     'version': '16.0.1.0.0',
     'depends': [
         'isep_sign_sale',
+        'isep_sign_sale_ext',
         'irg_sale_order_extended',
     ],
-    'data': [],
+    'data': [
+        'views/sheet_prematricula_restyle.xml',
+    ],
     'installable': True,
     'auto_install': False,
 }

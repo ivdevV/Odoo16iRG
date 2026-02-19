@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_prematricula_base_restyle" inherit_id="isep_sign_sale.prematricula_isep_international">
+        <xpath expr="//hr[contains(@style, 'border:1px solid #002d5f') and contains(@style, 'margin-top:-20px')]" position="replace">
+            <div style="height: 6px;"/>
+        </xpath>
+        <xpath expr="//hr[contains(@style, 'border:2px solid #002d5f') and contains(@style, 'margin-top:5px')]" position="replace">
+            <div style="height: 6px;"/>
+        </xpath>
+        <xpath expr="//hr[contains(@style, 'border:1px solid #002d5f') and contains(@style, 'margin-top:-30px')]" position="replace">
+            <div style="height: 6px;"/>
+        </xpath>
+    </template>
+
+    <template id="irg_prematricula_ext_restyle" inherit_id="isep_sign_sale_ext.prematricula_isep_international_inherit">
+        <xpath expr="//hr[contains(@style, 'border:1px solid #002d5f') and contains(@style, 'margin-top:-20px')]" position="replace">
+            <div style="height: 6px;"/>
+        </xpath>
+        <xpath expr="//hr[contains(@style, 'border:2px solid #002d5f') and contains(@style, 'margin-top:5px')]" position="replace">
+            <div style="height: 6px;"/>
+        </xpath>
+        <xpath expr="//hr[contains(@style, 'border:1px solid #002d5f') and contains(@style, 'margin-top:-30px')]" position="replace">
+            <div style="height: 6px;"/>
+        </xpath>
+    </template>
+</odoo>
