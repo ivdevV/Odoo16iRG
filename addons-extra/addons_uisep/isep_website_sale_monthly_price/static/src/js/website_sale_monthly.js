@@ -42,6 +42,91 @@ odoo.define('isep_website_sale_monthly_price.website_sale_monthly', function (re
     });
 
     $(document).ready(function () {
+        function preselectPlanAndModality() {
+            if (window.location.pathname.indexOf('/shop/') === -1) {
+                return;
+            }
+
+            var $variantsRoot = $('.js_add_cart_variants').first();
+            if (!$variantsRoot.length) {
+                return;
+            }
+
+            var $variantBlocks = $variantsRoot.find('.variant_attribute');
+            if (!$variantBlocks.length) {
+                return;
+            }
+
+            function blockByName(regex) {
+                return $variantBlocks.filter(function () {
+                    var txt = ($(this).text() || '').toLowerCase();
+                    return regex.test(txt);
+                }).first();
+            }
+
+            function inputLabelText($input) {
+                var inputId = $input.attr('id');
+                if (inputId) {
+                    var $forLabel = $('label[for="' + inputId + '"]');
+                    if ($forLabel.length) {
+                        return ($forLabel.text() || '').trim();
+                    }
+                }
+                var $closestLabel = $input.closest('label');
+                if ($closestLabel.length) {
+                    return ($closestLabel.text() || '').trim();
+                }
+                return ($input.parent().text() || '').trim();
+            }
+
+            var $plansBlock = blockByName(/plan/);
+            var $modalityBlock = blockByName(/modalidad/);
+            var $triggerInput = $();
+
+            if ($plansBlock.length) {
+                var $planInputs = $plansBlock.find('input[type="radio"], input.js_variant_change');
+                var bestMonths = -1;
+                var $bestInput = $();
+
+                $planInputs.each(function () {
+                    var $input = $(this);
+                    var labelText = inputLabelText($input).toLowerCase();
+                    var monthsMatch = labelText.match(/(\d+)\s*mes/);
+                    var months = monthsMatch ? parseInt(monthsMatch[1], 10) : (labelText.indexOf('contado') !== -1 ? 1 : 0);
+                    if (months > bestMonths) {
+                        bestMonths = months;
+                        $bestInput = $input;
+                    }
+                });
+
+                if ($bestInput.length && !$bestInput.is(':checked')) {
+                    $bestInput.prop('checked', true);
+                    $triggerInput = $bestInput;
+                }
+            }
+
+            if ($modalityBlock.length) {
+                var $modalityInputs = $modalityBlock.find('input[type="radio"], input.js_variant_change');
+                var $homeClass = $();
+                $modalityInputs.each(function () {
+                    var $input = $(this);
+                    var labelText = inputLabelText($input).toLowerCase();
+                    if (labelText.indexOf('homeclass') !== -1) {
+                        $homeClass = $input;
+                    }
+                });
+
+                if ($homeClass.length && !$homeClass.is(':checked')) {
+                    $homeClass.prop('checked', true);
+                    $triggerInput = $homeClass;
+                }
+            }
+
+            if ($triggerInput.length) {
+                $triggerInput.trigger('change');
+            }
+        }
+
         function hidePaymentWarning() {
             var warningPhrases = [
                 "importe pagado es diferente",
@@ -98,6 +183,8 @@ odoo.define('isep_website_sale_monthly_price.website_sale_monthly', function (re
         }
 
         hidePaymentWarning();
+        preselectPlanAndModality();
+        setTimeout(preselectPlanAndModality, 250);
         
         // Observer for dynamic changes
         var observer = new MutationObserver(function(mutations) {
