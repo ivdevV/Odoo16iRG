@@ -9,9 +9,10 @@ odoo.define('isep_website_sale_custom.address_toast', function (require) {
         start: function () {
             this._super.apply(this, arguments);
 
-            if (window.location.pathname.indexOf('/shop/address') === -1) {
-                return;
-            }
+            var toastStorageKey = 'irg_checkout_address_toast';
+            var path = window.location.pathname || '';
+            var isShopAddress = path.indexOf('/shop/address') === 0;
+            var isShopFlow = path.indexOf('/shop/') === 0;
 
             var toastShown = false;
             var showToast = function () {
@@ -26,8 +27,24 @@ odoo.define('isep_website_sale_custom.address_toast', function (require) {
                 }, 5000);
             };
 
-            $(document).on('submit', 'form[action*="/shop/address"], form#checkout_form, form[name="checkout"]', function () {
+            if (isShopFlow && window.sessionStorage && sessionStorage.getItem(toastStorageKey) === '1') {
+                sessionStorage.removeItem(toastStorageKey);
                 showToast();
+            }
+
+            if (!isShopAddress) {
+                return;
+            }
+
+            var markAndShowToast = function () {
+                if (window.sessionStorage) {
+                    sessionStorage.setItem(toastStorageKey, '1');
+                }
+                showToast();
+            };
+
+            $(document).on('submit', 'form[action*="/shop/address"], form#checkout_form, form[name="checkout"]', function () {
+                markAndShowToast();
             });
 
             $(document).on('click', [
@@ -38,7 +55,7 @@ odoo.define('isep_website_sale_custom.address_toast', function (require) {
                 '.a-submit',
                 '.btn-primary'
             ].join(', '), function () {
-                showToast();
+                markAndShowToast();
             });
         },
     });
