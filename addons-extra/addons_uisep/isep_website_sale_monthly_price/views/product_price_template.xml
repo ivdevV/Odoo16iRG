@@ -76,126 +76,70 @@
         </xpath>
     </template>
 
-    <!-- Cart Summary Override (Checkout) -->
-    <template id="cart_summary_monthly" inherit_id="website_sale.cart_summary" priority="100">
-        <xpath expr="//table[hasclass('table')][1]/tbody[1]" position="replace">
-            <tbody>
-                <t t-set="summary_order" t-value="order or website_sale_order"/>
-                <t t-set="lines" t-value="summary_order.order_line.filtered(lambda l: not l.display_type)"/>
-
-                <t t-foreach="lines.filtered(lambda l: l.irg_line_type == 'master')" t-as="line">
-                    <tr>
-                        <td class="td-product_name"><t t-esc="line.name"/></td>
-                        <td class="td-qty text-center"><t t-esc="line.product_uom_qty"/></td>
-                        <td class="td-price text-end">
-                            <span t-esc="line.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </td>
-                    </tr>
-                </t>
-
-                <t t-foreach="lines.filtered(lambda l: l.irg_line_type == 'financing')" t-as="line">
-                    <tr>
-                        <td class="td-product_name"><t t-esc="line.name"/></td>
-                        <td class="td-qty text-center"><t t-esc="line.product_uom_qty"/></td>
-                        <td class="td-price text-end">
-                            <span t-esc="line.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </td>
-                    </tr>
-                </t>
-
-                <t t-foreach="lines.filtered(lambda l: l.irg_line_type == 'matricula')" t-as="line">
-                    <tr>
-                        <td class="td-product_name"><t t-esc="line.name"/></td>
-                        <td class="td-qty text-center"><t t-esc="line.product_uom_qty"/></td>
-                        <td class="td-price text-end">
-                            <span t-esc="line.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </td>
-                    </tr>
-                </t>
-
-                <t t-foreach="lines.filtered(lambda l: l.irg_line_type not in ['master', 'financing', 'matricula', 'matricula_discount'])" t-as="line">
-                    <tr>
-                        <td class="td-product_name"><t t-esc="line.name"/></td>
-                        <td class="td-qty text-center"><t t-esc="line.product_uom_qty"/></td>
-                        <td class="td-price text-end">
-                            <span t-esc="line.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </td>
-                    </tr>
-                </t>
-            </tbody>
-        </xpath>
-        
-        <xpath expr="//table[hasclass('table')][1]" position="after">
-            <t t-set="summary_order" t-value="order or website_sale_order"/>
-            <t t-set="matricula_total" t-value="sum(summary_order.order_line.filtered(lambda l: l.irg_line_type == 'matricula').mapped('price_subtotal'))"/>
-            <t t-set="monthly_amount" t-value="summary_order.subscription_schedule and summary_order.subscription_schedule[0].amount_recurring_taxinc or 0.0"/>
-            <table class="table table-sm">
-                <tbody>
-                    <tr>
-                        <td colspan="2" class="text-start">1ra Cuota + Matricula:</td>
-                        <td class="text-end">
-                            <span t-esc="monthly_amount + matricula_total" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" class="text-start">Cuotas restantes:</td>
-                        <td class="text-end">
-                            <span t-esc="monthly_amount" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </xpath>
-    </template>
 
     <!-- Cart Popover Override -->
     <template id="cart_popover_monthly" inherit_id="website_sale.cart_popover" priority="100">
         <xpath expr="//div[hasclass('col-9')]" position="inside">
             <div class="mt-1">
-                <t t-set="months" t-value="1"/>
-                <t t-foreach="line.product_id.product_template_attribute_value_ids" t-as="ptav">
-                    <t t-if="ptav.attribute_id.name.lower() == 'planes'">
-                        <t t-if="ptav.plazo > 0">
-                            <t t-set="months" t-value="ptav.plazo"/>
-                        </t>
-                        <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
-                             <!-- Simple parsing for XML fallback - ORDER MATTERS (Longer first) -->
-                             <t t-if="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
-                             <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
-                             <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
-                             <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
-                             <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
-                             <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
-                             <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
-                             <t t-elif="'7' in ptav.name"><t t-set="months" t-value="7"/></t>
-                             <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
-                             <t t-elif="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
-                        </t>
-                    </t>
-                </t>
-                
-                <!-- Fallback: Parse line name if attributes failed -->
-                <t t-if="months == 1 and line.name_short and 'mes' in line.name_short.lower()">
-                     <t t-if="'25' in line.name_short"><t t-set="months" t-value="25"/></t>
-                     <t t-elif="'24' in line.name_short"><t t-set="months" t-value="24"/></t>
-                     <t t-elif="'19' in line.name_short"><t t-set="months" t-value="19"/></t>
-                     <t t-elif="'18' in line.name_short"><t t-set="months" t-value="18"/></t>
-                     <t t-elif="'13' in line.name_short"><t t-set="months" t-value="13"/></t>
-                     <t t-elif="'12' in line.name_short"><t t-set="months" t-value="12"/></t>
-                     <t t-elif="'9' in line.name_short"><t t-set="months" t-value="9"/></t>
-                     <t t-elif="'7' in line.name_short"><t t-set="months" t-value="7"/></t>
-                     <t t-elif="'6' in line.name_short"><t t-set="months" t-value="6"/></t>
-                     <t t-elif="'3' in line.name_short"><t t-set="months" t-value="3"/></t>
-                </t>
-                
-                <t t-if="months > 1">
-                    <span t-esc="line.price_reduce_taxexcl / months" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                    <span class="text-muted" style="font-size: 0.8rem;"> / mes</span>
+                <!-- Prefer server-canonical minimum installment if available for this product template -->
+                <t t-set="min_data" t-value="line.product_id.product_tmpl_id._isep_get_min_installment_data(website.get_current_website().get_current_pricelist())"/>
+                <t t-set="min_installment_price" t-value="min_data and min_data[0] or False"/>
+                <t t-set="min_installment_months" t-value="min_data and min_data[1] or 1"/>
+
+                <t t-if="min_installment_price">
+                    <span class="oe_price" t-esc="min_installment_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span class="text-muted" style="font-size: 0.8rem;" t-if="min_installment_months &gt; 1"> / <t t-esc="min_installment_months"/> meses</span>
                 </t>
                 <t t-else="">
-                    <span t-field="line.price_reduce_taxexcl" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <!-- Fallback to legacy per-line parsing when canonical value unavailable -->
+                    <t t-set="months" t-value="1"/>
+                    <t t-foreach="line.product_id.product_template_attribute_value_ids" t-as="ptav">
+                        <t t-if="ptav.attribute_id.name.lower() == 'planes'">
+                            <t t-if="ptav.plazo > 0">
+                                <t t-set="months" t-value="ptav.plazo"/>
+                            </t>
+                            <t t-elif="ptav.name and 'mes' in ptav.name.lower()">
+                                 <t t-if="'25' in ptav.name"><t t-set="months" t-value="25"/></t>
+                                 <t t-elif="'24' in ptav.name"><t t-set="months" t-value="24"/></t>
+                                 <t t-elif="'19' in ptav.name"><t t-set="months" t-value="19"/></t>
+                                 <t t-elif="'18' in ptav.name"><t t-set="months" t-value="18"/></t>
+                                 <t t-elif="'13' in ptav.name"><t t-set="months" t-value="13"/></t>
+                                 <t t-elif="'12' in ptav.name"><t t-set="months" t-value="12"/></t>
+                                 <t t-elif="'9' in ptav.name"><t t-set="months" t-value="9"/></t>
+                                 <t t-elif="'7' in ptav.name"><t t-set="months" t-value="7"/></t>
+                                 <t t-elif="'6' in ptav.name"><t t-set="months" t-value="6"/></t>
+                                 <t t-elif="'3' in ptav.name"><t t-set="months" t-value="3"/></t>
+                            </t>
+                        </t>
+                    </t>
+                    <t t-if="months &gt; 1">
+                        <span t-esc="line.price_reduce_taxexcl / months" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <span class="text-muted" style="font-size: 0.8rem;"> / mes</span>
+                    </t>
+                    <t t-else="">
+                        <span t-field="line.price_reduce_taxexcl" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    </t>
                 </t>
             </div>
+        </xpath>
+    </template>
+
+    <!-- Product listing: prefer server-calculated canonical min_installment when available -->
+    <template id="products_item_min_installment" inherit_id="website_sale.products_item" priority="120">
+        <xpath expr="//div[hasclass('product_price')]//span[hasclass('oe_price')]" position="replace">
+            <t t-set="min_data" t-value="product.product_tmpl_id._isep_get_min_installment_data(website.get_current_website().get_current_pricelist())"/>
+            <t t-set="min_installment_price" t-value="min_data and min_data[0] or False"/>
+            <t t-set="min_installment_months" t-value="min_data and min_data[1] or 1"/>
+
+            <t t-if="min_installment_price">
+                <span class="oe_price" style="white-space: nowrap;" t-esc="min_installment_price" t-options="{'widget': 'monetary', 'display_currency': template_price_vals['display_currency']}"/>
+                <span class="text-muted isep_month_suffix" style="font-size: 0.8rem;" t-if="min_installment_months > 1">
+                    <t t-esc="' / %s meses' % min_installment_months"/>
+                </span>
+            </t>
+            <t t-else="">
+                <span class="oe_price" style="white-space: nowrap;" t-esc="template_price_vals['price']" t-options="{'widget': 'monetary', 'display_currency': template_price_vals['display_currency']}"/>
+            </t>
         </xpath>
     </template>
 </odoo>

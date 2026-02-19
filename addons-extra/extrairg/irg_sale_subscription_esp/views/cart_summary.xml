@@ -50,24 +50,26 @@
 
         <xpath expr="//table[hasclass('table')][1]" position="after">
             <t t-set="summary_order" t-value="order or website_sale_order"/>
-            <t t-set="matricula_total" t-value="sum(summary_order.order_line.filtered(lambda l: l.irg_line_type == 'matricula').mapped('price_subtotal'))"/>
-            <t t-set="monthly_amount" t-value="summary_order.subscription_schedule and summary_order.subscription_schedule[0].amount_recurring_taxinc or 0.0"/>
-            <table class="table table-sm">
-                <tbody>
-                    <tr>
-                        <td colspan="2" class="text-start">1ra Cuota + Matricula:</td>
-                        <td class="text-end">
-                            <span t-esc="monthly_amount + matricula_total" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" class="text-start">Cuotas restantes:</td>
-                        <td class="text-end">
-                            <span t-esc="monthly_amount" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <t t-if="summary_order.term_number and summary_order.term_number &gt; 1">
+                <t t-set="matricula_total" t-value="sum(summary_order.order_line.filtered(lambda l: l.irg_line_type == 'matricula').mapped('price_subtotal'))"/>
+                <t t-set="monthly_amount" t-value="summary_order.subscription_schedule and summary_order.subscription_schedule[0].amount_recurring_taxinc or 0.0"/>
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <td colspan="2" class="text-start">1ra Cuota + Matricula:</td>
+                            <td class="text-end">
+                                <span t-esc="monthly_amount + matricula_total" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-start">Cuotas restantes:</td>
+                            <td class="text-end">
+                                <span t-esc="monthly_amount" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </t>
         </xpath>
     </template>
 </odoo>
