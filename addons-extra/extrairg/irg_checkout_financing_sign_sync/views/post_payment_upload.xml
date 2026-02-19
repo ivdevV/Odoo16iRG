@@ -5,28 +5,120 @@
             <t t-set="last_order_id" t-value="request.session.get('sale_last_order_id')"/>
             <t t-set="last_order" t-value="last_order_id and request.env['sale.order'].sudo().browse(last_order_id) or False"/>
             <t t-if="last_order and last_order.exists() and last_order.state in ('sale', 'done')">
-                <div class="alert alert-info mt-3 mb-3" role="alert">
+                <!-- Single dropzone + modal feedback. If template is rendered twice, JS will remove duplicates and keep the first. -->
+                <div id="irg-academic-upload" class="alert alert-info mt-3 mb-3" role="alert">
                     <strong>Documentación académica</strong>
                     <p class="mb-2">Si lo deseas, puedes adjuntar aquí tu documentación académica para agilizar la validación.</p>
-                    <form action="/shop/academic_documents/upload" method="post" enctype="multipart/form-data" class="row g-2">
+
+                    <form action="/shop/academic_documents/upload" method="post" enctype="multipart/form-data" class="row g-2" novalidate="novalidate">
                         <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                         <input type="hidden" name="order_id" t-att-value="last_order.id"/>
-                        <div class="col-12 col-md-8">
-                            <input type="file" name="academic_documents" class="form-control" multiple="multiple" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"/>
+
+                        <div class="col-12">
+                            <div class="irg-dropzone p-3 rounded bg-light" style="border:2px dashed #cfeefc; min-height:72px; cursor:pointer; display:flex; flex-direction:column; justify-content:center;" tabindex="0">
+                                <input type="file" name="academic_documents" class="form-control irg-file-input o_hidden" multiple="multiple" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"/>
+                                <div class="irg-drop-instructions text-muted">Arrastra y suelta tus archivos aquí o haz click para seleccionar (PDF/JPG/PNG/DOC).</div>
+                                <div class="irg-file-list small mt-2" aria-live="polite"></div>
+                            </div>
                         </div>
-                        <div class="col-12 col-md-4 text-md-end">
+
+                        <div class="col-12 col-md-4 text-md-end mt-2">
                             <button type="submit" class="btn btn-primary">Adjuntar documentación</button>
                         </div>
                     </form>
-                    <t t-if="request.params.get('academic_upload') == 'ok'">
-                        <p class="mt-2 mb-0 text-success">Documentación subida correctamente.</p>
-                    </t>
-                    <t t-if="request.params.get('academic_upload') == 'empty'">
-                        <p class="mt-2 mb-0 text-warning">No se recibió ningún archivo.</p>
-                    </t>
-                    <t t-if="request.params.get('academic_upload') == 'forbidden'">
-                        <p class="mt-2 mb-0 text-danger">No se pudo validar el pedido para adjuntar archivos.</p>
-                    </t>
+
+                    <!-- Modal (will be shown when academic_upload param is present) -->
+                    <div class="modal fade" id="irgAcademicUploadModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Documentación</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p id="irgAcademicUploadMessage" class="mb-0"></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Ok, cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inline JS: dedupe placeholders, implement drag&drop preview and modal trigger -->
+                    <script type="text/javascript">
+                    //<![CDATA[
+                        (function () {
+                            // Remove duplicate placeholders (keep first)
+                            document.querySelectorAll('div#irg-academic-upload').forEach(function (el, idx) {
+                                if (idx > 0) { el.parentNode.removeChild(el); }
+                            });
+
+                            var wrapper = document.getElementById('irg-academic-upload');
+                            if (!wrapper) { return; }
+                            var dropzone = wrapper.querySelector('.irg-dropzone');
+                            var fileInput = wrapper.querySelector('input.irg-file-input');
+                            var fileList = wrapper.querySelector('.irg-file-list');
+
+                            function renderFileList(files) {
+                                fileList.innerHTML = '';
+                                if (!files || files.length === 0) { return; }
+                                for (var i = 0; i < files.length; i++) {
+                                    var f = files[i];
+                                    var item = document.createElement('div');
+                                    item.textContent = f.name + ' (' + Math.round(f.size/1024) + ' KB)';
+                                    fileList.appendChild(item);
+                                }
+                            }
+
+                            // Click on dropzone opens file selector
+                            dropzone.addEventListener('click', function () { fileInput.click(); });
+
+                            // File input change
+                            fileInput.addEventListener('change', function (ev) { renderFileList(this.files); });
+
+                            // DnD handlers
+                            ['dragenter','dragover'].forEach(function (evt) {
+                                dropzone.addEventListener(evt, function (e) { e.preventDefault(); e.stopPropagation(); dropzone.style.borderColor = '#0d6efd'; dropzone.style.background = '#fff'; });
+                            });
+                            ['dragleave','drop'].forEach(function (evt) {
+                                dropzone.addEventListener(evt, function (e) { e.preventDefault(); e.stopPropagation(); dropzone.style.borderColor = '#cfeefc'; dropzone.style.background = ''; });
+                            });
+                            dropzone.addEventListener('drop', function (e) {
+                                var dt = e.dataTransfer;
+                                if (!dt || !dt.files || dt.files.length === 0) { return; }
+                                // Replace file input files (DataTransfer available in modern browsers)
+                                try {
+                                    fileInput.files = dt.files;
+                                } catch (err) {
+                                    // Fallback: nothing to do — some browsers block programmatic assignment
+                                }
+                                renderFileList(dt.files);
+                            });
+
+                            // Show modal if academic_upload param present
+                            var academicParam = new URLSearchParams(window.location.search).get('academic_upload') || '';
+                            if (academicParam) {
+                                var message = '';
+                                if (academicParam === 'ok') { message = 'Documentación subida correctamente.'; }
+                                else if (academicParam === 'empty') { message = 'No se recibió ningún archivo.'; }
+                                else if (academicParam === 'forbidden') { message = 'No se pudo validar el pedido para adjuntar archivos.'; }
+                                else if (academicParam === 'missing_order') { message = 'Pedido no encontrado.'; }
+                                if (message) {
+                                    var msgEl = document.getElementById('irgAcademicUploadMessage');
+                                    if (msgEl) { msgEl.textContent = message; }
+                                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                                        var modalEl = document.getElementById('irgAcademicUploadModal');
+                                        var modal = new bootstrap.Modal(modalEl);
+                                        modal.show();
+                                    } else {
+                                        alert(message);
+                                    }
+                                }
+                            }
+                        })();
+                    //]]>
+                    </script>
                 </div>
             </t>
         </xpath>

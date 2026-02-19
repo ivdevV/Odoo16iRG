@@ -25,6 +25,11 @@
         "data/automated_actions.xml",
         "data/mail_template.xml",
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'isep_website_sale_custom/static/src/js/address_toast.js',
+        ],
+    },
     'application': True,
     'installable': True,
     'auto_install': False,

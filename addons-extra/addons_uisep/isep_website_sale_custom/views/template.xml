@@ -28,13 +28,14 @@
 
 
         <xpath expr="//label[@for='vat']" position="replace">
-            <label class="col-form-label" for="vat">No. de Identificación (RFC, NIF, VAT, CURP)</label>
+            <label class="col-form-label" for="vat">No. de Identificación (DNI, RFC, NIF, VAT, CURP, NIE)</label>
         </xpath>
 
         <xpath expr="//input[@name='vat']" position="replace">
             <input type="text" name="vat" t-attf-class="form-control #{error.get('vat') and 'is-invalid' or ''}" t-att-value="'vat' in checkout and checkout['vat']" t-att-readonly="'1' if vat_warning else None"/>
 
         </xpath>
+        
 
 
         

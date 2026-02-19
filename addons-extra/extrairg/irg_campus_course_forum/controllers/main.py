@@ -10,25 +10,48 @@ class DashboardPortalCampusForum(DashboardPortal):
     def view_user_profile_course(self, course_id, **post):
         response = super().view_user_profile_course(course_id, **post)
 
-        course = request.env['op.course'].browse(course_id)
-        forum_ids = request.env['forum.forum']
-        post_ids = request.env['forum.post']
+        course = request.env['op.course'].sudo().browse(course_id)
+        forum_ids = request.env['forum.forum'].sudo()
+        post_ids = request.env['forum.post'].sudo()
         posts_by_forum_id = {}
+        user = request.env.user
 
         if course.exists():
-            forum_ids = request.env['forum.forum'].search([
+            user_batch_ids = set(user.op_batch_ids.ids)
+            admission_batch_ids = request.env['op.admission'].sudo().search([
+                ('partner_id', '=', user.partner_id.id),
+                ('course_id', '=', course.id),
+                ('batch_id', '!=', False),
+            ]).mapped('batch_id').ids
+            user_batch_ids.update(admission_batch_ids)
+
+            forum_ids = request.env['forum.forum'].sudo().search([
                 ('visibility_course_ids', 'in', course.id),
             ], order='name asc')
+
+            if user_batch_ids:
+                forum_ids |= request.env['forum.forum'].sudo().search([
+                    ('visibility_batch_ids', 'in', list(user_batch_ids)),
+                    '|',
+                    ('visibility_course_ids', '=', False),
+                    ('visibility_course_ids', 'in', course.id),
+                ], order='name asc')
 
             if course.forum_id:
                 forum_ids |= course.forum_id
                 forum_ids = forum_ids.sorted(key=lambda forum: forum.name or '')
 
             if forum_ids:
-                post_ids = request.env['forum.post'].search([
+                post_domain = [
                     ('forum_id', 'in', forum_ids.ids),
                     ('parent_id', '=', False),
-                ], order='create_date desc')
+                ]
+                if user_batch_ids:
+                    post_domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
+                else:
+                    post_domain += [('visibility_batch_ids', '=', False)]
+
+                post_ids = request.env['forum.post'].sudo().search(post_domain, order='create_date desc')
                 posts_by_forum_id = {
                     forum.id: post_ids.filtered(lambda forum_post: forum_post.forum_id == forum)
                     for forum in forum_ids
