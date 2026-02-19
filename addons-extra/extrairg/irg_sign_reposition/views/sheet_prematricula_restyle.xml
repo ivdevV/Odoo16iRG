@@ -1,26 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="irg_prematricula_base_restyle" inherit_id="isep_sign_sale.prematricula_isep_international">
-        <xpath expr="//p[contains(., 'Recibida previamente')]/ancestor::div[1]/preceding-sibling::hr[1]" position="replace">
-            <div style="height: 6px;"/>
-        </xpath>
-        <xpath expr="//strong[contains(., 'CONDICIONES')]/ancestor::div[1]/preceding-sibling::hr[1]" position="replace">
-            <div style="height: 6px;"/>
-        </xpath>
-        <xpath expr="//p[contains(., 'Leído y conforme')]/ancestor::div[1]/preceding-sibling::hr[1]" position="replace">
-            <div style="height: 6px;"/>
+        <xpath expr="//t[@t-call='web.basic_layout']" position="inside">
+            <style>
+                hr[style*="margin-top:-20px"][style*="#002d5f"],
+                hr[style*="margin-top:5px"][style*="#002d5f"],
+                hr[style*="margin-top:-30px"][style*="#002d5f"] {
+                    border: 0 !important;
+                    height: 6px !important;
+                    margin-top: 0 !important;
+                    margin-bottom: 0 !important;
+                }
+            </style>
         </xpath>
     </template>
 
     <template id="irg_prematricula_ext_restyle" inherit_id="isep_sign_sale_ext.prematricula_isep_international_inherit">
-        <xpath expr="//p[contains(., 'Recibida previamente')]/ancestor::div[1]/preceding-sibling::hr[1]" position="replace">
-            <div style="height: 6px;"/>
-        </xpath>
-        <xpath expr="//strong[contains(., 'CONDICIONES')]/ancestor::div[1]/preceding-sibling::hr[1]" position="replace">
-            <div style="height: 6px;"/>
-        </xpath>
-        <xpath expr="//div[contains(., 'DETALLE DE PAGOS')]/preceding-sibling::hr[1]" position="replace">
-            <div style="height: 6px;"/>
+        <xpath expr="//t[@t-call='web.basic_layout']" position="inside">
+            <style>
+                hr[style*="margin-top:-20px"][style*="#002d5f"],
+                hr[style*="margin-top:5px"][style*="#002d5f"],
+                hr[style*="margin-top:-30px"][style*="#002d5f"] {
+                    border: 0 !important;
+                    height: 6px !important;
+                    margin-top: 0 !important;
+                    margin-bottom: 0 !important;
+                }
+            </style>
         </xpath>
     </template>
 </odoo>
