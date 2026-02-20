@@ -10,6 +10,7 @@
             </xpath>
 
             <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']//tree//field[@name='name']" position="after">
+                <field name="channel_id" invisible="1"/>
                 <field name="is_category" optional="show"/>
                 <field name="category_id" optional="show"/>
                 <field name="parent_slide_id" optional="show"/>
