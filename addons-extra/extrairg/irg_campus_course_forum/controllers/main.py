@@ -6,13 +6,25 @@ from odoo.addons.isep_website_custom_inh.controllers.main import DashboardPortal
 
 class DashboardPortalCampusForum(DashboardPortalInh):
 
+    def _forum_visibility_domain_for_user(self, course, user_batch_ids):
+        domain = [
+            '|',
+            ('visibility_course_ids', '=', False),
+            ('visibility_course_ids', 'in', course.id),
+        ]
+        if user_batch_ids:
+            domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
+        else:
+            domain += [('visibility_batch_ids', '=', False)]
+        return domain
+
     @http.route(['/campus/course/<int:course_id>'], type='http', auth="user", website=True)
     def view_user_profile_course(self, course_id, **post):
         response = super().view_user_profile_course(course_id, **post)
 
-        course = request.env['op.course'].sudo().browse(course_id)
-        forum_ids = request.env['forum.forum'].sudo()
-        post_ids = request.env['forum.post'].sudo()
+        course = request.env['op.course'].browse(course_id)
+        forum_ids = request.env['forum.forum']
+        post_ids = request.env['forum.post']
         posts_by_forum_id = {}
         user = request.env.user
 
@@ -25,21 +37,13 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             ]).mapped('batch_id').ids
             user_batch_ids.update(admission_batch_ids)
 
-            forum_ids = request.env['forum.forum'].sudo().search([
-                ('visibility_course_ids', 'in', course.id),
-            ], order='name asc')
+            forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
+            forum_ids = request.env['forum.forum'].search(forum_domain, order='name asc')
 
-            if user_batch_ids:
-                forum_ids |= request.env['forum.forum'].sudo().search([
-                    ('visibility_batch_ids', 'in', list(user_batch_ids)),
-                    '|',
-                    ('visibility_course_ids', '=', False),
-                    ('visibility_course_ids', 'in', course.id),
-                ], order='name asc')
-
-            if course.forum_id:
+            if course.forum_id and course.forum_id in request.env['forum.forum'].search(forum_domain):
                 forum_ids |= course.forum_id
-                forum_ids = forum_ids.sorted(key=lambda forum: forum.name or '')
+
+            forum_ids = forum_ids.sorted(key=lambda forum: forum.name or '')
 
             if forum_ids:
                 post_domain = [
@@ -51,7 +55,7 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                 else:
                     post_domain += [('visibility_batch_ids', '=', False)]
 
-                post_ids = request.env['forum.post'].sudo().search(post_domain, order='create_date desc')
+                post_ids = request.env['forum.post'].search(post_domain, order='create_date desc')
                 posts_by_forum_id = {
                     forum.id: post_ids.filtered(lambda forum_post: forum_post.forum_id == forum)
                     for forum in forum_ids

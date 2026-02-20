@@ -13,6 +13,7 @@
     'data': [
         'security/forum_batch_visibility_rules.xml',
         'views/forum_batch_visibility_views.xml',
+        'views/forum_publish_feedback_templates.xml',
     ],
     'installable': True,
     'auto_install': False,

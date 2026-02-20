@@ -17,32 +17,6 @@
                     <h5 class="border-bottom pb-1">Foros del curso</h5>
 
                     <t t-set="resolved_course_forum_ids" t-value="course_forum_ids"/>
-                    <t t-if="not resolved_course_forum_ids">
-                        <t t-set="course_id" t-value="env['op.course'].sudo().browse(op_course_id)"/>
-                        <t t-set="website_user" t-value="request.env.user"/>
-                        <t t-set="admission_batch_ids" t-value="env['op.admission'].sudo().search([
-                            ('partner_id', '=', website_user.partner_id.id),
-                            ('course_id', '=', op_course_id),
-                            ('batch_id', '!=', False),
-                        ]).mapped('batch_id')"/>
-                        <t t-set="resolved_batch_ids" t-value="website_user.op_batch_ids | admission_batch_ids"/>
-                        <t t-set="fallback_forum_ids" t-value="env['forum.forum'].sudo().search([('visibility_course_ids', 'in', op_course_id)], order='name asc')"/>
-
-                        <t t-if="resolved_batch_ids">
-                            <t t-set="fallback_forum_ids" t-value="fallback_forum_ids | env['forum.forum'].sudo().search([
-                                ('visibility_batch_ids', 'in', resolved_batch_ids.ids),
-                                '|',
-                                ('visibility_course_ids', '=', False),
-                                ('visibility_course_ids', 'in', op_course_id),
-                            ], order='name asc')"/>
-                        </t>
-
-                        <t t-if="course_id.forum_id">
-                            <t t-set="fallback_forum_ids" t-value="fallback_forum_ids | course_id.forum_id"/>
-                        </t>
-
-                        <t t-set="resolved_course_forum_ids" t-value="fallback_forum_ids.sorted(key=lambda forum: forum.name or '')"/>
-                    </t>
 
                     <t t-if="resolved_course_forum_ids">
                         <t t-foreach="resolved_course_forum_ids" t-as="forum">
