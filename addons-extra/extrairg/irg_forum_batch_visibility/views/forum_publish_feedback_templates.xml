@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <template id="assets_frontend_forum_publish_feedback" inherit_id="web.assets_frontend" name="IRG forum publish feedback assets">
-        <xpath expr="." position="inside">
-            <script type="module" src="/irg_forum_batch_visibility/static/src/js/forum_publish_feedback.js"/>
-        </xpath>
-    </template>
-</odoo>
