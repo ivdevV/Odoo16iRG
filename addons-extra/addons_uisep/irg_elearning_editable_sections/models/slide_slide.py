@@ -26,8 +26,21 @@ class SlideSlide(models.Model):
 
     @api.onchange('parent_slide_id', 'inherit_limitations_from_parent')
     def _onchange_parent_slide_apply_limitations(self):
-        self._apply_parent_hierarchy()
-        self._apply_parent_limitations(only_empty=True)
+        for slide in self:
+            parent_slide = slide.parent_slide_id
+            if not parent_slide:
+                continue
+
+            if parent_slide.is_category:
+                slide.category_id = parent_slide
+            elif parent_slide.category_id:
+                slide.category_id = parent_slide.category_id
+
+            if slide.inherit_limitations_from_parent:
+                if not slide.allowed_batch_ids and parent_slide.allowed_batch_ids:
+                    slide.allowed_batch_ids = [(6, 0, parent_slide.allowed_batch_ids.ids)]
+                if not slide.scheduled_date and parent_slide.scheduled_date:
+                    slide.scheduled_date = parent_slide.scheduled_date
 
     @api.onchange('category_id')
     def _onchange_category_id_set_parent(self):
