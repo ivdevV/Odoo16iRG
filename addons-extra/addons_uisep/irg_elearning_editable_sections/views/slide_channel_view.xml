@@ -7,16 +7,11 @@
         <field name="arch" type="xml">
             <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']" position="attributes">
                 <attribute name="readonly">0</attribute>
+                <attribute name="context">{'default_channel_id': active_id}</attribute>
             </xpath>
 
-            <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']//tree//field[@name='name']" position="after">
-                <field name="channel_id" invisible="1"/>
-                <field name="is_category"/>
-                <field name="category_id"/>
-                <field name="parent_slide_id"/>
-                <field name="inherit_limitations_from_parent"/>
-                <field name="scheduled_date"/>
-                <field name="allowed_batch_ids" widget="many2many_tags"/>
+            <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']//tree" position="attributes">
+                <attribute name="editable"/>
             </xpath>
         </field>
     </record>
