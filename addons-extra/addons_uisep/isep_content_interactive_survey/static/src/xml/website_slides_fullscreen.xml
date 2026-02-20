@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="website.slides.fullscreen.certification">
+        <div class="d-flex flex-column" style="width: 100%; height: 100vh; background: #f9f9f9; margin: 0;">            
+            <t t-if="widget.get('slide').category === 'certification'">
+                <header class="bg-primary text-white text-center">
+                    <h6 class="mb-0">
+                        <t t-esc="widget.get('slide').name"/>
+                    </h6>
+                </header>
+                
+                <div class="flex-grow-1 overflow-auto px-3">
+                    <!-- <div class="slide-description"> -->
+                    <p>
+                        <t t-raw="slide_description"/>
+                    </p>
+                    <!-- </div> -->
+                    
+                    <!-- Contenedor para el HTML embebido -->
+                    <t t-if="widget.get('slide').use_html_embed">
+                        <div class="survey-description-wrapper" style="position: relative; width: 100%;">
+                            <iframe 
+                                id="survey-iframe" 
+                                style="width: 100%; min-height: 500px; border: none; background: white;"
+                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                                t-att-srcdoc="survey_description">
+                            </iframe>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <p>
+                            <t t-raw="survey_description"/>
+                        </p>
+                    </t>
+                </div>
+                <t t-if="!widget.get('slide').use_html_embed">
+                    <footer class="text-white text-center py-3" style="background: #1e2229;margin-bottom: 50px;">
+                        <a class="btn btn-primary" 
+                        t-att-href="'/slides_survey/slide/get_certification_url?slide_id=' + widget.get('slide').id" 
+                        target="_blank">
+                            <i class="fa fa-graduation-cap"></i>
+                            <span t-if="widget.get('slide').isMember">Comenzar</span>
+                            <span t-else="">Test (Unscored)</span>
+                        </a>
+                    </footer>
+                </t>
+            </t>
+        </div>
+    </t>
+</templates>
