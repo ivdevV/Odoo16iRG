@@ -6,6 +6,35 @@ from odoo.addons.isep_website_custom_inh.controllers.main import DashboardPortal
 
 class DashboardPortalCampusForum(DashboardPortalInh):
 
+    def _get_user_batch_ids_for_course(self, user, course):
+        batch_ids = set(user.forum_effective_batch_ids.ids)
+        batch_ids.update(user.op_batch_ids.ids)
+
+        student_ids = request.env['op.student'].sudo().search([
+            '|',
+            ('user_id', '=', user.id),
+            ('partner_id', '=', user.partner_id.id),
+        ])
+
+        admission_batch_ids = request.env['op.admission'].sudo().search([
+            ('course_id', '=', course.id),
+            ('batch_id', '!=', False),
+            '|',
+            ('partner_id', '=', user.partner_id.id),
+            ('student_id', 'in', student_ids.ids),
+        ]).mapped('batch_id').ids
+        batch_ids.update(admission_batch_ids)
+
+        student_course_batch_ids = request.env['op.student.course'].sudo().search([
+            ('course_id', '=', course.id),
+            ('batch_id', '!=', False),
+            ('state', '!=', 'finished'),
+            ('student_id', 'in', student_ids.ids),
+        ]).mapped('batch_id').ids
+        batch_ids.update(student_course_batch_ids)
+
+        return batch_ids
+
     def _forum_visibility_domain_for_user(self, course, user_batch_ids):
         domain = [
             '|',
@@ -29,12 +58,17 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         user = request.env.user
 
         if course.exists():
-            user_batch_ids = set(user.forum_effective_batch_ids.ids)
+            user_batch_ids = self._get_user_batch_ids_for_course(user, course)
 
             forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
             forum_ids = request.env['forum.forum'].search(forum_domain, order='name asc')
 
-            if course.forum_id and course.forum_id in request.env['forum.forum'].search(forum_domain):
+            if not forum_ids and user_batch_ids:
+                forum_ids = request.env['forum.forum'].search([
+                    ('visibility_batch_ids', 'in', list(user_batch_ids)),
+                ], order='name asc')
+
+            if course.forum_id and course.forum_id in request.env['forum.forum'].search(forum_domain + [('id', '=', course.forum_id.id)]):
                 forum_ids |= course.forum_id
 
             forum_ids = forum_ids.sorted(key=lambda forum: forum.name or '')
