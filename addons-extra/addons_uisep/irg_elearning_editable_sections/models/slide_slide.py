@@ -26,19 +26,43 @@ class SlideSlide(models.Model):
 
     @api.onchange('parent_slide_id', 'inherit_limitations_from_parent')
     def _onchange_parent_slide_apply_limitations(self):
+        self._apply_parent_hierarchy()
         self._apply_parent_limitations(only_empty=True)
+
+    @api.onchange('category_id')
+    def _onchange_category_id_set_parent(self):
+        for slide in self:
+            if slide.category_id:
+                slide.parent_slide_id = slide.category_id
 
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
+        records._apply_parent_hierarchy()
         records._apply_parent_limitations(only_empty=True)
         return records
 
     def write(self, vals):
         res = super().write(vals)
-        if {'parent_slide_id', 'inherit_limitations_from_parent'} & set(vals):
+        if {'parent_slide_id', 'category_id', 'inherit_limitations_from_parent'} & set(vals):
+            self._apply_parent_hierarchy()
             self._apply_parent_limitations(only_empty=True)
         return res
+
+    def _apply_parent_hierarchy(self):
+        for slide in self.filtered(lambda s: s.parent_slide_id):
+            updates = {}
+            parent_slide = slide.parent_slide_id.sudo()
+
+            if parent_slide.is_category:
+                updates['category_id'] = parent_slide.id
+            elif parent_slide.category_id:
+                updates['category_id'] = parent_slide.category_id.id
+
+            if updates and (
+                ('category_id' in updates and slide.category_id.id != updates['category_id'])
+            ):
+                super(SlideSlide, slide).write(updates)
 
     def _apply_parent_limitations(self, only_empty=True):
         for slide in self.filtered(lambda s: s.parent_slide_id and s.inherit_limitations_from_parent):
