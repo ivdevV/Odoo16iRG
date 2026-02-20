@@ -1,10 +1,10 @@
 from odoo import http
 from odoo.http import request
 
-from odoo.addons.isep_website_custom.controllers.main import DashboardPortal
+from odoo.addons.isep_website_custom_inh.controllers.main import DashboardPortalInh
 
 
-class DashboardPortalCampusForum(DashboardPortal):
+class DashboardPortalCampusForum(DashboardPortalInh):
 
     @http.route(['/campus/course/<int:course_id>'], type='http', auth="user", website=True)
     def view_user_profile_course(self, course_id, **post):
