@@ -29,13 +29,7 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         user = request.env.user
 
         if course.exists():
-            user_batch_ids = set(user.op_batch_ids.ids)
-            admission_batch_ids = request.env['op.admission'].sudo().search([
-                ('partner_id', '=', user.partner_id.id),
-                ('course_id', '=', course.id),
-                ('batch_id', '!=', False),
-            ]).mapped('batch_id').ids
-            user_batch_ids.update(admission_batch_ids)
+            user_batch_ids = set(user.forum_effective_batch_ids.ids)
 
             forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
             forum_ids = request.env['forum.forum'].search(forum_domain, order='name asc')
