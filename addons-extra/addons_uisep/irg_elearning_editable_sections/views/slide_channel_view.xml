@@ -11,7 +11,14 @@
             </xpath>
 
             <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']//tree" position="attributes">
-                <attribute name="editable"/>
+                <attribute name="editable">false</attribute>
+            </xpath>
+
+            <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']//tree" position="inside">
+                <control>
+                    <create string="Añadir contenido"/>
+                    <create string="Añadir sección" context="{'default_is_category': True, 'default_slide_category': 'article', 'default_name': 'Nueva sección'}"/>
+                </control>
             </xpath>
         </field>
     </record>
