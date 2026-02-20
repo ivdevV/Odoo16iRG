@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_child_elements" model="ir.ui.view">
+        <field name="name">slide.slide.form.child.elements.irg</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="priority" eval="100"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='total_views']" position="after">
+                <group string="Jerarquía de Contenido (iRG)">
+                    <field name="parent_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
+                    <field name="inherit_limitations_from_parent"/>
+                </group>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Elementos Hijos" name="child_elements">
+                    <field name="child_slide_ids" context="{'default_channel_id': channel_id, 'default_parent_slide_id': id, 'default_inherit_limitations_from_parent': True}">
+                        <tree editable="bottom">
+                            <field name="name"/>
+                            <field name="is_category"/>
+                            <field name="category_id"/>
+                            <field name="scheduled_date"/>
+                            <field name="allowed_batch_ids" widget="many2many_tags"/>
+                            <field name="inherit_limitations_from_parent"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,55 @@
+from odoo import api, fields, models
+
+
+class SlideSlide(models.Model):
+    _inherit = 'slide.slide'
+
+    parent_slide_id = fields.Many2one(
+        'slide.slide',
+        string='Elemento padre',
+        domain="[('channel_id', '=', channel_id), ('id', '!=', id)]",
+        ondelete='set null',
+        help='Permite organizar contenidos como elementos hijos dentro del mismo curso.'
+    )
+
+    child_slide_ids = fields.One2many(
+        'slide.slide',
+        'parent_slide_id',
+        string='Elementos hijos'
+    )
+
+    inherit_limitations_from_parent = fields.Boolean(
+        string='Heredar límites del padre',
+        default=True,
+        help='Si está activo, copiará automáticamente lote permitido y fecha programada del elemento padre cuando estén vacíos.'
+    )
+
+    @api.onchange('parent_slide_id', 'inherit_limitations_from_parent')
+    def _onchange_parent_slide_apply_limitations(self):
+        self._apply_parent_limitations(only_empty=True)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._apply_parent_limitations(only_empty=True)
+        return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        if {'parent_slide_id', 'inherit_limitations_from_parent'} & set(vals):
+            self._apply_parent_limitations(only_empty=True)
+        return res
+
+    def _apply_parent_limitations(self, only_empty=True):
+        for slide in self.filtered(lambda s: s.parent_slide_id and s.inherit_limitations_from_parent):
+            updates = {}
+            parent_slide = slide.parent_slide_id.sudo()
+
+            if parent_slide.allowed_batch_ids and (not only_empty or not slide.allowed_batch_ids):
+                updates['allowed_batch_ids'] = [(6, 0, parent_slide.allowed_batch_ids.ids)]
+
+            if parent_slide.scheduled_date and (not only_empty or not slide.scheduled_date):
+                updates['scheduled_date'] = parent_slide.scheduled_date
+
+            if updates:
+                super(SlideSlide, slide).write(updates)
