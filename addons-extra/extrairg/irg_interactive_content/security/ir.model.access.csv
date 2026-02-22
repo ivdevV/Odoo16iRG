@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_slide_slide_irg_interactive_user,slide.slide irg interactive user,website_slides.model_slide_slide,base.group_user,1,1,1,1

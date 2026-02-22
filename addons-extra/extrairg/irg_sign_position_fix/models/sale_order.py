@@ -34,7 +34,7 @@ class SaleOrderSignFix(models.Model):
             if sign:
                 # Solo firmas en páginas 1 y 3 con posiciones alineadas a la firma IRG
                 sign_pages = {
-                    1: 0.800,  # posY en página 1 (alineado con firma IRG)
+                    1: 0.700,  # posY en página 1 (alineado con firma IRG)
                     3: 0.650,  # posY en página 3 (alineado con firma IRG)
                 }
                 if self.partner_id.id != self.partner_invoice_id.id:
@@ -46,7 +46,7 @@ class SaleOrderSignFix(models.Model):
                                 'required': True,
                                 'responsible_id': 1,
                                 'page': page,
-                                'posX': 0.420,
+                                'posX': 0.700,
                                 'posY': pos_y,
                                 'width': 0.165,
                                 'height': 0.040,
@@ -60,7 +60,7 @@ class SaleOrderSignFix(models.Model):
                                 'required': True,
                                 'responsible_id': 4,
                                 'page': page,
-                                'posX': 0.120,
+                                'posX': 0.700,
                                 'posY': pos_y,
                                 'width': 0.165,
                                 'height': 0.040,

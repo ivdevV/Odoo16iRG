@@ -8,6 +8,7 @@
     'license': 'LGPL-3',
     'depends': [
         'isep_website_custom',
+        'isep_website_custom_inh',
         'openeducat_lms_forum',
         'irg_forum_batch_visibility',
     ],

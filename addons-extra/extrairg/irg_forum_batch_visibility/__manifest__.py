@@ -14,6 +14,11 @@
         'security/forum_batch_visibility_rules.xml',
         'views/forum_batch_visibility_views.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'irg_forum_batch_visibility/static/src/js/forum_publish_feedback.js',
+        ],
+    },
     'installable': True,
     'auto_install': False,
 }

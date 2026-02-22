@@ -2,7 +2,7 @@
 {
     'name': 'ISEP Auth Signup Email Custom',
     'version': '16.0.1.0.0',
-    'summary': """ Customization of the Auth Signup Welcome Email """,
+    'summary': """ Customization of the Auth Signup Welcome Email. """,
     'author': 'ISEP',
     'website': '',
     'category': 'Authentication',

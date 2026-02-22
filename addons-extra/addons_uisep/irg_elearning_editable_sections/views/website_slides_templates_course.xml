@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="course_slides_list_slide_irg_section_badge" inherit_id="website_slides.course_slides_list_slide">
+        <xpath expr="//div[@class='text-truncate me-auto']" position="inside">
+            <div t-if="slide.irg_section_id" class="small text-muted">
+                <span>Sección iRG:</span>
+                <span t-esc="slide.irg_section_id.name"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>
