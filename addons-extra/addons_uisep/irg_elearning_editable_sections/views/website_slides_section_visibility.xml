@@ -1,23 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="course_slides_list_hide_restricted_sections" inherit_id="website_slides.course_slides_list">
-        <xpath expr="//t[@t-foreach='category_data']/t[@t-set='category_id']" position="after">
-            <t t-set="category_visible_slides" t-value="category['slides'].filtered(lambda s: not s.category_id or not s.category_id.allowed_batch_ids or s.category_id.is_user_allowed_by_batch(request.env.user))"/>
-        </xpath>
-
-        <xpath expr="//li[contains(@class, 'o_wslides_slide_list_category')]" position="attributes">
+        <xpath expr="//t[@t-foreach='category_data']" position="attributes">
             <attribute name="t-if">
-                (category_visible_slides or channel.can_publish)
-                and (
-                    not category_id
-                    or not category['category'].allowed_batch_ids
-                    or category['category'].is_user_allowed_by_batch(request.env.user)
-                )
+                not category['id']
+                or not category['category'].allowed_batch_ids
+                or category['category'].is_user_allowed_by_batch(request.env.user)
             </attribute>
-        </xpath>
-
-        <xpath expr="//t[@t-foreach=&quot;category['slides']&quot;]" position="attributes">
-            <attribute name="t-foreach">category_visible_slides</attribute>
         </xpath>
     </template>
 
