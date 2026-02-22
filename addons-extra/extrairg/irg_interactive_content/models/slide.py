@@ -92,8 +92,8 @@ class SlideSlide(models.Model):
         records = super(SlideSlide, self).create(vals_list)
         records._validate_interactive_json()
 
-        for record in records:
-            if record.slide_category == 'document' and not record.x_is_interactive:
+        for record, vals in zip(records, vals_list):
+            if record._should_trigger_n8n_webhook(vals):
                 record._trigger_n8n_webhook()
 
         return records
@@ -127,3 +127,20 @@ class SlideSlide(models.Model):
             _logger.info('Webhook enviado a n8n para slide ID: %s', self.id)
         except requests.RequestException as error:
             _logger.error('Fallo al enviar webhook a n8n para slide ID %s: %s', self.id, error)
+
+    def _should_trigger_n8n_webhook(self, vals):
+        self.ensure_one()
+
+        if self.x_is_interactive or self.x_original_slide_id:
+            return False
+
+        if self.slide_category != 'document':
+            return False
+
+        binary_from_vals = bool(vals.get('document_binary_content') or vals.get('datas'))
+        binary_from_record = bool(self.document_binary_content)
+
+        if not binary_from_vals and not binary_from_record:
+            return False
+
+        return True
