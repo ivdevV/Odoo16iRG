@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_search_irg_sections" model="ir.ui.view">
+        <field name="name">slide.slide.search.irg.sections</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="irg_section_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

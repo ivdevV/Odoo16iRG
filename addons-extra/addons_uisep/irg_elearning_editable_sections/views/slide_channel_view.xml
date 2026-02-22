@@ -14,11 +14,41 @@
                 <attribute name="editable">false</attribute>
             </xpath>
 
-            <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']//tree" position="inside">
+            <xpath expr="//notebook/page[@name='content']//field[@name='slide_ids']//tree/control" position="replace">
                 <control>
-                    <create string="Añadir contenido"/>
-                    <create string="Añadir sección" context="{'default_is_category': True, 'default_slide_category': 'article', 'default_name': 'Nueva sección'}"/>
+                    <create name="add_slide_lesson" string="Añadir contenido"/>
+                    <create name="add_slide_section" string="Añadir sección" context="{'default_is_category': True, 'default_slide_category': 'article', 'default_name': 'Nueva sección'}"/>
                 </control>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Secciones iRG" name="irg_sections">
+                    <group>
+                        <field name="irg_native_section_ids" context="{'default_channel_id': active_id, 'default_is_category': True, 'default_slide_category': 'article'}">
+                            <tree>
+                                <control>
+                                    <create string="Añadir sección"/>
+                                </control>
+                                <field name="sequence" widget="handle"/>
+                                <field name="name"/>
+                                <field name="allowed_batch_ids" widget="many2many_tags"/>
+                                <field name="scheduled_date"/>
+                                <field name="is_published"/>
+                                <field name="active" optional="hide"/>
+                            </tree>
+                            <form>
+                                <group>
+                                    <field name="name"/>
+                                    <field name="channel_id" readonly="1"/>
+                                    <field name="is_category" readonly="1"/>
+                                    <field name="allowed_batch_ids" widget="many2many_tags"/>
+                                    <field name="scheduled_date"/>
+                                    <field name="is_published"/>
+                                </group>
+                            </form>
+                        </field>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>

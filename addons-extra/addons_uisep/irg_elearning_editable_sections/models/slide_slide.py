@@ -1,8 +1,16 @@
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class SlideSlide(models.Model):
     _inherit = 'slide.slide'
+
+    irg_section_id = fields.Many2one(
+        'irg.slide.section',
+        string='Sección iRG',
+        ondelete='set null',
+        help='Sección personalizada iRG para organizar contenidos sin depender de secciones nativas.',
+    )
 
     parent_slide_id = fields.Many2one(
         'slide.slide',
@@ -47,6 +55,12 @@ class SlideSlide(models.Model):
         for slide in self:
             if slide.category_id:
                 slide.parent_slide_id = slide.category_id
+
+    @api.constrains('irg_section_id', 'channel_id')
+    def _check_irg_section_channel(self):
+        for slide in self:
+            if slide.irg_section_id and slide.channel_id and slide.irg_section_id.channel_id != slide.channel_id:
+                raise ValidationError('La sección iRG debe pertenecer al mismo curso que el contenido.')
 
     @api.model_create_multi
     def create(self, vals_list):

@@ -10,8 +10,10 @@
         'irg_elearning_scheduled',
     ],
     'data': [
+        'security/ir.model.access.csv',
         'views/slide_channel_view.xml',
         'views/slide_slide_view.xml',
+        'views/slide_slide_search_view.xml',
     ],
     'installable': True,
     'application': False,
