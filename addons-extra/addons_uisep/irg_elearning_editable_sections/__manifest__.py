@@ -14,6 +14,7 @@
         'views/slide_channel_view.xml',
         'views/slide_slide_view.xml',
         'views/slide_slide_search_view.xml',
+        'views/website_slides_section_visibility.xml',
     ],
     'installable': True,
     'application': False,

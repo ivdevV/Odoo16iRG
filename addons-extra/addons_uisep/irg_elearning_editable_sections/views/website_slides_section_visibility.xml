@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="course_slides_list_hide_restricted_sections" inherit_id="website_slides.course_slides_list">
+        <xpath expr="//li[contains(@class, 'o_wslides_slide_list_category') and @t-att-data-category-id='category_id']" position="attributes">
+            <attribute name="t-if">
+                (category['total_slides'] or channel.can_publish)
+                and (
+                    not category_id
+                    or not category['category'].allowed_batch_ids
+                    or category['category'].is_user_allowed_by_batch(request.env.user)
+                )
+            </attribute>
+        </xpath>
+    </template>
+
+    <template id="fullscreen_sidebar_hide_restricted_sections" inherit_id="website_slides.slide_fullscreen_sidebar_category">
+        <xpath expr="//li[contains(@class, 'o_wslides_fs_sidebar_section')]" position="attributes">
+            <attribute name="t-if">
+                not category
+                or not category.allowed_batch_ids
+                or category.is_user_allowed_by_batch(request.env.user)
+            </attribute>
+        </xpath>
+    </template>
+</odoo>
