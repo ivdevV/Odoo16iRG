@@ -16,7 +16,7 @@
             </attribute>
         </xpath>
 
-        <xpath expr="//t[@t-foreach=\"category['slides']\"]" position="attributes">
+        <xpath expr="//t[@t-foreach=&quot;category['slides']&quot;]" position="attributes">
             <attribute name="t-foreach">category_visible_slides</attribute>
         </xpath>
     </template>
