@@ -56,7 +56,6 @@
                                 </div>
                             </div>
                         </t>
-                    </t>
 
                     <div class="text-muted d-inline-block" t-if="not resolved_course_forum_ids">
                         Este curso no tiene foro configurado.
