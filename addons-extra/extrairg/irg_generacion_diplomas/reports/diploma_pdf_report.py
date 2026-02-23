@@ -153,6 +153,9 @@ class DiplomaReportPDF(models.AbstractModel):
         def sf(value, min_size=7):
             return max(min_size, value * scale_factor)
 
+        # small upward shift to lift most of the text slightly nearer the top edge
+        y_shift = sp(10)
+
         logo_width_base = 145
         side_margin = page_width * 0.080
         gutter = sp(logo_width_base)
@@ -181,7 +184,8 @@ class DiplomaReportPDF(models.AbstractModel):
                 c.drawImage(logo_path, logo_x, logo_y, width=logo_width, height=logo_height, preserveAspectRatio=True, mask='auto')
         
         # --- CONTENT POSITIONING ---
-        start_y = page_height - sp(188)
+        # move the starting Y a bit higher overall (y_shift)
+        start_y = page_height - sp(188) + y_shift
         
         # Colors
         c.setFillColorRGB(0, 0, 0)  # Black text
@@ -197,12 +201,34 @@ class DiplomaReportPDF(models.AbstractModel):
         y -= sp(28)
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
+
+        # force a break in the master name so it prints in two lines if desired
+        def split_master(name, lang='es'):
+            # split on the last conjunction so that the conjunction remains on the first line
+            if not name:
+                return name, None
+            sep = ' y ' if lang == 'es' else ' i '
+            if sep in name:
+                parts = name.rsplit(sep, 1)
+                return parts[0] + sep.strip(), parts[1]
+            return name, None
+
+        cat_top, cat_bottom = split_master(course_cat, lang='cat')
+        es_top, es_bottom = split_master(course_es, lang='es')
         
         course_font_size = sf(21)
         
-        # Draw wrapped text and get new Y
-        y_next_cat = self._draw_wrapped_text_in_column(c, course_cat, left_col_x, y, col_width, font_bold, course_font_size, align='right')
-        y_next_es = self._draw_wrapped_text_in_column(c, course_es, right_col_x, y, col_width, font_bold, course_font_size, align='left')
+        # Draw top lines and capture the lowest y position
+        y_next_cat = self._draw_wrapped_text_in_column(c, cat_top, left_col_x, y, col_width, font_bold, course_font_size, align='right')
+        y_next_es = self._draw_wrapped_text_in_column(c, es_top, right_col_x, y, col_width, font_bold, course_font_size, align='left')
+        
+        # if we split into two lines, draw the bottom part a little lower
+        if cat_bottom:
+            y_temp = y_next_cat - sp(2)
+            y_next_cat = self._draw_wrapped_text_in_column(c, cat_bottom, left_col_x, y_temp, col_width, font_bold, course_font_size, align='right')
+        if es_bottom:
+            y_temp = y_next_es - sp(2)
+            y_next_es = self._draw_wrapped_text_in_column(c, es_bottom, right_col_x, y_temp, col_width, font_bold, course_font_size, align='left')
         
         # Update Y to the lowest point from both columns
         y = min(y_next_cat, y_next_es)
@@ -269,36 +295,47 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # Store Y for images (top of signature area)
         y_images = y
-        
-        # Signature Raimon (left)
-        sign_raimon_path = self._get_image_path('firma_raimon.png')
-        if sign_raimon_path and os.path.exists(sign_raimon_path):
+
+        if diploma_type == 'digital':
+            # Signature Raimon (left)
+            sign_raimon_path = self._get_image_path('firma_raimon.png')
+            if sign_raimon_path and os.path.exists(sign_raimon_path):
+                sig_width = sp(95)
+                sig_height = sp(47)
+                sig_x = left_col_x + (col_width - sig_width) / 2
+                c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
+            
+            # Signature Grecia (right)
+            sign_grecia_path = self._get_image_path('firma_grecia.png')
             sig_width = sp(95)
             sig_height = sp(47)
-            sig_x = left_col_x + (col_width - sig_width) / 2
-            c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
-        
-        # Signature Grecia (right)
-        sign_grecia_path = self._get_image_path('firma_grecia.png')
-        sig_width = sp(95)
-        sig_height = sp(47)
-        if sign_grecia_path and os.path.exists(sign_grecia_path):
-            sig_x = right_col_x + (col_width - sig_width) / 2
-            c.drawImage(sign_grecia_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
+            if sign_grecia_path and os.path.exists(sign_grecia_path):
+                sig_x = right_col_x + (col_width - sig_width) / 2
+                c.drawImage(sign_grecia_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
 
-        # Text Names (Aligned)
-        y -= sp(8)
-        self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width, font_bold, sf(13), align='center')
-        self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width, font_bold, sf(13), align='center')
-        
-        y -= sp(14)
-        self._draw_text_in_column(c, "Director", left_col_x, y, col_width, font_regular, sf(10), align='center')
-        self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width, font_regular, sf(10), align='center')
-        
-        y -= sp(12)
-        self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width, font_regular, sf(10), align='center')
-        self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width, font_regular, sf(10), align='center')
-        
+            # Text Names (Aligned)
+            y -= sp(8)
+            self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width, font_bold, sf(13), align='center')
+            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width, font_bold, sf(13), align='center')
+            
+            y -= sp(14)
+            self._draw_text_in_column(c, "Director", left_col_x, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width, font_regular, sf(10), align='center')
+            
+            y -= sp(12)
+            self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width, font_regular, sf(10), align='center')
+        else:
+            # physical diploma: leave space for handwritten signatures and show single centered block
+            y_text = y
+            # Director info centered across page
+            self._draw_centered_text(c, "Raimon Gaja Director Fundador", y_text, font_bold, sf(13), page_width)
+            y_text -= sp(14)
+            student_name = data.get('student_name', '')
+            self._draw_centered_text(c, student_name, y_text, font_regular, sf(10), page_width)
+            y_text -= sp(12)
+            self._draw_centered_text(c, "Interesado/a, Interessat/da", y_text, font_regular, sf(10), page_width)
+
         # --- QR CODE & REGISTRY ---
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
         registry = data.get('registry_number', 'DRAFT')
@@ -310,7 +347,11 @@ class DiplomaReportPDF(models.AbstractModel):
         c.drawImage(qr_image, qr_x, qr_y, width=qr_size, height=qr_size)
         
         c.setFont(font_bold, sf(8))
-        c.drawString(qr_x, qr_y - sp(10), f"Nº Registro: {registry}")
+        # centre registry text under QR
+        reg_text = f"Nº Registro: {registry}"
+        text_width = c.stringWidth(reg_text, font_bold, sf(8))
+        text_x = qr_x + (qr_size - text_width) / 2
+        c.drawString(text_x, qr_y - sp(10), reg_text)
         
         # Finalize
         c.showPage()

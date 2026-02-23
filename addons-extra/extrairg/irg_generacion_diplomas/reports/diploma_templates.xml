@@ -64,8 +64,7 @@
     <template id="diploma_content">
         <div style="padding: 0 60px;">
             <!-- Intro -->
-            <div class="row" style="margin-top: 10px;">
-                <div class="col-6" style="text-align: center; font-size: 15px; padding: 0 10px;">
+            <div class="row" style="margin-top: 2px;">
                     L'Institut Raimon Gaja atorga el present diploma de
                 </div>
                 <div class="col-6" style="text-align: center; font-size: 15px; padding: 0 10px;">
@@ -74,12 +73,12 @@
             </div>
 
             <!-- Course Name -->
-            <div class="row" style="margin-top: 25px;">
+            <div class="row" style="margin-top: 20px;">
                 <div class="col-6" style="text-align: center; font-weight: 700; font-size: 24px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
-                    <t t-esc="data.get('course_name_cat')"/>
+                    <t t-raw="data.get('course_name_cat_html') or data.get('course_name_cat')"/>
                 </div>
                 <div class="col-6" style="text-align: center; font-weight: 700; font-size: 24px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
-                    <t t-esc="data.get('course_name_es')"/>
+                    <t t-raw="data.get('course_name_es_html') or data.get('course_name_es')"/>
                 </div>
             </div>
             
@@ -144,10 +143,10 @@
         </div>
 
         <!-- Footer: QR & Registry -->
-        <div style="position: absolute; bottom: 40px; left: 60px;">
-            <img t-att-src="'/report/barcode/?type=QR&amp;value=' + data.get('qr_url') + '&amp;width=100&amp;height=100'" style="width: 90px; height: 90px;"/>
+        <div style="position: absolute; bottom: 40px; left: 60px; text-align: center; width: 110px;">
+            <img t-att-src="'/report/barcode/?type=QR&amp;value=' + data.get('qr_url') + '&amp;width=100&amp;height=100'" style="width: 90px; height: 90px; display: block; margin: 0 auto;"/>
             <div style="margin-top: 5px; font-size: 11px; font-weight: 700;">
-                No Registro: <t t-esc="data.get('registry_number')"/>
+                Nº Registro: <t t-esc="data.get('registry_number')"/>
             </div>
         </div>
     </template>

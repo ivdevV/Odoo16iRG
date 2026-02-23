@@ -36,10 +36,15 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         return batch_ids
 
     def _forum_visibility_domain_for_user(self, course, user_batch_ids):
+        # build a domain restricting forums to those either not bound to any course or
+        # explicitly linked to the given course
+        # NOTE: always supply a list for "in" operations – passing a bare integer leads
+        # to iterating its digits, which fails to match properly and resulted in empty
+        # results for visible forums.
         domain = [
             '|',
             ('visibility_course_ids', '=', False),
-            ('visibility_course_ids', 'in', course.id),
+            ('visibility_course_ids', 'in', [course.id] if course and course.id else []),
         ]
         if user_batch_ids:
             domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
@@ -61,6 +66,22 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             user_batch_ids = self._get_user_batch_ids_for_course(user, course)
 
             forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
+            # debug log – helps troubleshooting missing forums for specific users
+            _logger = request.env['ir.logging'].sudo()
+            try:
+                _logger.create({
+                    'name': 'campus_forum_debug',
+                    'type': 'server',
+                    'level': 'debug',
+                    'dbname': request.env.cr.dbname,
+                    'message': f"forum_domain={forum_domain} user_batch_ids={list(user_batch_ids)} course={course.id}",
+                    'path': 'irg_campus_course_forum.controllers.main',
+                    'func': '_forum_debug',
+                    'line': '0',
+                })
+            except Exception:
+                pass
+
             forum_ids = request.env['forum.forum'].search(forum_domain, order='name asc')
 
             if not forum_ids and user_batch_ids:

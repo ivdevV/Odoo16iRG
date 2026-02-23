@@ -68,10 +68,22 @@ class DiplomaWizard(models.TransientModel):
         qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
 
         # Prepare data
+        # also construct HTML-friendly versions with potential breaks, used by qweb templates
+        def html_split(name, lang='es'):
+            if not name:
+                return name
+            sep = ' y ' if lang == 'es' else ' i '
+            if sep in name:
+                parts = name.rsplit(sep, 1)
+                return parts[0] + sep.strip() + '<br/>' + parts[1]
+            return name
+
         data = {
             'student_name': student_name,
             'course_name_es': course_name_es,
             'course_name_cat': course_name_cat,
+            'course_name_es_html': html_split(course_name_es, lang='es'),
+            'course_name_cat_html': html_split(course_name_cat, lang='cat'),
             'date_es': date_es,
             'date_cat': date_cat,
             'registry_number': registry_number,
