@@ -219,13 +219,18 @@ class DiplomaReportPDF(models.AbstractModel):
         # modify sep or preprocess the course name accordingly before calling this
         # function – e.g. insert an extra space or replace 'y' with ' y '.
         def split_master(name, lang='es'):
-            # split on the last conjunction so that the conjunction remains on the first line
+            # split on the last language-specific conjunction so that the
+            # conjunction stays at the end of the first line, including the
+            # trailing space.  previously we used sep.strip() which removed the
+            # surrounding spaces, producing "Clínicay" or "Clínicae" if the
+            # conjunction was " y " or " i ". adding a final space fixes this.
             if not name:
                 return name, None
             sep = ' y ' if lang == 'es' else ' i '
             if sep in name:
                 parts = name.rsplit(sep, 1)
-                return parts[0] + sep.strip(), parts[1]
+                # keep conjunction plus one space after it
+                return parts[0] + sep.strip() + ' ', parts[1]
             return name, None
 
         cat_top, cat_bottom = split_master(course_cat, lang='cat')
@@ -283,13 +288,13 @@ class DiplomaReportPDF(models.AbstractModel):
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, sf(10), align='right')
         y -= sp(15)
-        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, sf(10), align='right')
         y -= sp(25)
-        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, sf(10), align='right')
         y -= sp(15)
-        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, sf(10), align='right')
         
         # --- BODY TEXT SPANISH ---
         y_es = y + sp(55)
@@ -311,8 +316,8 @@ class DiplomaReportPDF(models.AbstractModel):
         date_cat = data.get('date_cat', '')
         date_es = data.get('date_es', '')
         
-        self._draw_text_in_column(c, f"Barcelona, a {date_cat}", left_col_x, y, col_width, font_regular, sf(11), align='center')
-        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width, font_regular, sf(11), align='center')
+        self._draw_text_in_column(c, f"Barcelona, a {date_cat}", left_col_x, y, col_width, font_regular, sf(11), align='right')
+        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width, font_regular, sf(11), align='left')
         
         
         # --- SIGNATURES ---
@@ -348,7 +353,7 @@ class DiplomaReportPDF(models.AbstractModel):
                 sig_x = right_col_x + (col_width - sig_width) / 2
                 c.drawImage(sign_grecia_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
 
-            # Text Names (Aligned)
+            # Text Names (Aligned) – original layout for digital diplomas
             y -= sp(8)
             self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width, font_bold, sf(13), align='center')
             self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width, font_bold, sf(13), align='center')
@@ -367,24 +372,22 @@ class DiplomaReportPDF(models.AbstractModel):
             # removed per customer request. the remaining code simply leaves room
             # and prints the labels.
 
-            y -= sp(8)
-            # student name left (still in left column)
-            student_name = data.get('student_name', '')
-            self._draw_text_in_column(c, student_name, left_col_x, y, col_width, font_bold, sf(10), align='center')
-            # director middle: centre on the full page instead of the column
-            self._draw_centered_text(c, "Raimon Gaja", y, font_bold, sf(10), page_width)
-            # academic director right
-            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width, font_bold, sf(10), align='center')
+            # lower all signature texts to align with the QR code vertically
+            sign_text_y = qr_y + sp(10)
+            self._draw_text_in_column(c, "Raimon Gaja", left_col_x, sign_text_y, col_width, font_bold, sf(13), align='center')
+            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, sign_text_y, col_width, font_bold, sf(13), align='center')
 
-            y -= sp(14)
-            self._draw_text_in_column(c, "Interesado/a, Interessat/da", left_col_x, y, col_width, font_regular, sf(9), align='center')
-            self._draw_centered_text(c, "Director", y, font_regular, sf(9), page_width)
-            self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width, font_regular, sf(9), align='center')
+            # second row: roles titles/labels (left = interested, centre=Director, right=Acad.)
+            role_y = sign_text_y - sp(14)
+            self._draw_text_in_column(c, "Interesado/a, Interessat/da", left_col_x, role_y, col_width, font_regular, sf(9), align='center')
+            self._draw_centered_text(c, "Director", role_y, font_regular, sf(9), page_width)
+            self._draw_text_in_column(c, "Directora Académica", right_col_x, role_y, col_width, font_regular, sf(9), align='center')
 
-            y -= sp(12)
-            self._draw_text_in_column(c, "", left_col_x, y, col_width, font_regular, sf(9), align='center')
-            self._draw_centered_text(c, "Fundador", y, font_regular, sf(9), page_width)
-            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width, font_regular, sf(9), align='center')
+            # third row: footer names
+            footer_y = role_y - sp(12)
+            self._draw_text_in_column(c, "Fundador", left_col_x, footer_y, col_width, font_regular, sf(9), align='center')
+            self._draw_centered_text(c, "Fundador", footer_y, font_regular, sf(9), page_width)
+            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, footer_y, col_width, font_regular, sf(9), align='center')
 
         # --- QR CODE & REGISTRY ---
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
