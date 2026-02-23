@@ -44,6 +44,12 @@ class TestForumVisibility(TransactionCase):
         shown2 = self.Forum.forums_visible_for(self.user)
         self.assertIn(private, shown2)
 
+        # also make the user a portal user and check the helper still works
+        portal_group = self.env.ref('base.group_portal')
+        self.user.write({'groups_id': [(4, portal_group.id)]})
+        shown3 = self.Forum.forums_visible_for(self.user)
+        self.assertIn(private, shown3)
+
     def test_empty_batch_domain(self):
         # if a forum has no visibility_batch_ids it should be visible to everyone
         f = self.Forum.create({'name': 'everyone'})

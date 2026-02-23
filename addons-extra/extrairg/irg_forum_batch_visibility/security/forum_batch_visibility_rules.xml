@@ -33,6 +33,25 @@
         <field name="domain_force">[(1, '=', 1)]</field>
     </record>
 
+    <!--
+        Portal users need to be able to read the batches that they are a member
+        of; otherwise the forum visibility rule (which refers to
+        ``user.forum_effective_batch_ids``) will evaluate that list as empty
+        and hide all restricted forums.  Granting read access on the
+        ``op.batch`` model for batches linked via the user field ensures the
+        domain in the rule can be computed correctly.
+    -->
+    <record id="op_batch_portal_read_rule" model="ir.rule">
+        <field name="name">Portal: can read own training batches</field>
+        <field name="model_id" ref="openeducat_core.model_op_batch"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[('id','in', user.op_batch_ids.ids)]</field>
+    </record>
+
     <record id="forum_post_visibility_rule_system" model="ir.rule">
         <field name="name">Forum post visibility by batch - system bypass</field>
         <field name="model_id" ref="website_forum.model_forum_post"/>

@@ -73,12 +73,39 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             except Exception:
                 pass
 
-            forum_ids = request.env['forum.forum'].search(forum_domain, order='name asc')
+            # perform the search with sudo so that the portal record rule
+            # (which also references ``user.forum_effective_batch_ids``) cannot
+            # further restrict the result.  if we used the plain env the
+            # rule might evaluate the batch list as empty and return only
+            # forums without any restriction, which is exactly the behaviour
+            # we have seen in production.
+            forum_ids = request.env['forum.forum'].sudo().search(forum_domain, order='name asc')
 
             if not forum_ids and user_batch_ids:
-                forum_ids = request.env['forum.forum'].search([
+                # fallback: if the previous search returned nothing, try a
+                # simpler query so we can log what batches we think we have.
+                forum_ids = request.env['forum.forum'].sudo().search([
                     ('visibility_batch_ids', 'in', list(user_batch_ids)),
                 ], order='name asc')
+
+            # debug : record what forums we managed to find after sudo
+            try:
+                _logger.create({
+                    'name': 'campus_forum_debug',
+                    'type': 'server',
+                    'level': 'debug',
+                    'dbname': request.env.cr.dbname,
+                    'message': (
+                        f"forums_found={[f.name for f in forum_ids]} "
+                        f"forum_domain={forum_domain} "
+                        f"user_batch_ids={list(user_batch_ids)} "
+                        f"course={course.id}"),
+                    'path': 'irg_campus_course_forum.controllers.main',
+                    'func': '_forum_debug',
+                    'line': '0',
+                })
+            except Exception:
+                pass
 
             if course.forum_id and course.forum_id in request.env['forum.forum'].search(forum_domain + [('id', '=', course.forum_id.id)]):
                 forum_ids |= course.forum_id
