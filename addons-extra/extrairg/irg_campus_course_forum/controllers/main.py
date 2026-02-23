@@ -36,21 +36,12 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         return batch_ids
 
     def _forum_visibility_domain_for_user(self, course, user_batch_ids):
-        # build a domain restricting forums to those either not bound to any course or
-        # explicitly linked to the given course
-        # NOTE: always supply a list for "in" operations – passing a bare integer leads
-        # to iterating its digits, which fails to match properly and resulted in empty
-        # results for visible forums.
-        domain = [
-            '|',
-            ('visibility_course_ids', '=', False),
-            ('visibility_course_ids', 'in', [course.id] if course and course.id else []),
-        ]
+        # Only batches determine visibility; course restrictions are dropped because
+        # students cannot access masters they are not enrolled in, so checking
+        # course is redundant and may hide forums when a batch already grants access.
         if user_batch_ids:
-            domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
-        else:
-            domain += [('visibility_batch_ids', '=', False)]
-        return domain
+            return ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
+        return [('visibility_batch_ids', '=', False)]
 
     @http.route(['/campus/course/<int:course_id>'], type='http', auth="user", website=True)
     def view_user_profile_course(self, course_id, **post):
