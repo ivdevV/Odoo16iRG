@@ -389,7 +389,17 @@ class DiplomaReportPDF(models.AbstractModel):
             # left column should show the student/interested name rather than
             # the director's name; original variable defined above.
             self._draw_text_in_column(c, student_name, left_col_x, sign_text_y, col_width, font_bold, sf(11), align='center')
-            self._draw_text_in_column(c, "Raimon Gaja", sign_text_y, col_width, font_bold, sf(11), align='center')
+            # centre column uses middle anchor (left_col_x + col_width + gutter/2)
+            self._draw_text_in_column(
+                c,
+                "Raimon Gaja",
+                left_col_x + col_width + gutter/2,
+                sign_text_y,
+                col_width,
+                font_bold,
+                sf(11),
+                align='center',
+            )
             self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, sign_text_y, col_width, font_bold, sf(11), align='center')
 
             # second row: roles titles/labels (left = interested, centre=Director, right=Acad.)
