@@ -336,6 +336,13 @@ class DiplomaReportPDF(models.AbstractModel):
         # Store Y for images (top of signature area)
         y_images = y
 
+        # compute QR coordinates now so that later branches can reference qr_y
+        qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
+        registry = data.get('registry_number', 'DRAFT')
+        qr_size = sp(46)
+        qr_x = side_margin - sp(10)
+        qr_y = sp(26)
+
         if diploma_type == 'digital':
             # Signature Raimon (left)
             sign_raimon_path = self._get_image_path('firma_raimon.png')
@@ -390,13 +397,7 @@ class DiplomaReportPDF(models.AbstractModel):
             self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, footer_y, col_width, font_regular, sf(9), align='center')
 
         # --- QR CODE & REGISTRY ---
-        qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
-        registry = data.get('registry_number', 'DRAFT')
-        
         qr_image = self._generate_qr(qr_url)
-        qr_size = sp(46)
-        qr_x = side_margin - sp(10)
-        qr_y = sp(26)
         c.drawImage(qr_image, qr_x, qr_y, width=qr_size, height=qr_size)
         
         c.setFont(font_bold, sf(8))
