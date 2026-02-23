@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="email_op_admission_confirm_online" model="mail.template">
+    <field name="name">Confirmación de admisión Elearning (Online)</field>
+    <field name="subject">¡Bienvenido! {{ object.name or '' }}</field>
+    <field name="email_from">{{ user.email or '' }}</field>
+    <field name="email_to">{{ object.email }}</field>
+    <field name="model_id" ref="openeducat_admission.model_op_admission"/>
+    <field name="auto_delete" eval="True"/>
+    <field name="body_html" type="html">
+<p style="margin:0px 0 12px 0;box-sizing:border-box;"><br/></p><table cellpadding="0" cellspacing="0" border="0" role="presentation" bgcolor="#ffffff" width="100%" style="caption-side:bottom;box-sizing: border-box; border-collapse: collapse; border-radius: 20px; background-color: #ffffff; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; color: #333333; font-size: 16px; line-height: 1.6;">
+    <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+            <td align="center" valign="top" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding: 60px 20px;">
+                <table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="box-sizing: border-box; caption-side: bottom; max-width: 600px; border-collapse: collapse; color: #333333; font-size: 16px; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">
+                    <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                        
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td align="center" style="border-style:solid;padding:0 0 30px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 30px;">
+                                <p style="box-sizing:border-box;font-size: 24px; font-weight: bold; color: #333333; margin: 0;">
+                                    Estimad@ <span style="color: #4CB0E4;"><t t-out="object.partner_id.name or 'Estudiante'"></t></span>,
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td style="border-style:solid;padding:0 0 20px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 20px; text-align: justify;">
+                                <p style="box-sizing:border-box;margin: 0;">
+                                    Es un placer darte la más cordial bienvenida al <strong style="box-sizing:border-box;color: #4CB0E4; font-weight: bold;"><t t-out="object.batch_id.course_id.name or 'Nombre del Máster'"></t></strong> del Instituto Raimon Gaja (iRG). Nos emociona acompañarte en esta nueva etapa de crecimiento académico y profesional.
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td style="border-style:solid;padding:0 0 30px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 30px; text-align: justify;">
+                                <p style="box-sizing:border-box;margin: 0;">
+                                    Tu máster dará inicio el <strong style="box-sizing:border-box;color: #4CB0E4; font-weight: bold;"><t t-out="format_date(object.batch_id.date_start_class) or 'Fecha'"></t></strong>. Al tratarse de una modalidad online, tendrás la flexibilidad de acceder a los contenidos y organizar tu tiempo de estudio a tu propio ritmo.</p>
+                                <p style="box-sizing:border-box;margin: 0;"><br/></p>
+                                <p style="box-sizing:border-box;margin: 0;">A continuación, te proporcionamos tus datos de acceso al campus virtual:</p>
+                                <br/>
+                                <div style="padding: 15px; background-color: #f8f9fa; border-left: 6px solid #4CB0E4; border-radius: 5px; text-align: center; box-sizing: border-box;">
+                                    <p style="box-sizing:border-box; margin: 0 0 10px 0; font-size: 16px; color: #333333;">
+                                        <strong style="box-sizing:border-box; font-weight: bold;">Usuario:</strong> 
+                                        <a style="box-sizing:border-box; text-decoration: none; color: #4CB0E4; font-weight: bold;" t-attf-href="/web/login?login={{ object.partner_id.email or object.email }}" target="_blank" t-out="object.partner_id.email or object.email or ''">usuario@ejemplo.com</a>
+                                    </p>
+                                    <p style="box-sizing:border-box; margin: 0 0 15px 0; font-size: 16px; color: #333333;">
+                                        <t t-set="email" t-value="object.partner_id.email or object.email"/>
+                                        <t t-set="user" t-value="env['res.users'].sudo().search([('login', '=', email)], limit=1, order='create_date desc, id desc')"/>
+                                        <strong style="box-sizing:border-box; font-weight: bold;">Contraseña:</strong> <t t-esc="user.new_password_user"/>
+                                    </p>
+                                    <div style="margin: 0;" box-sizing="border-box">
+                                        <a t-attf-href="/campus" style="box-sizing:border-box; background-color: #4CB0E4; padding: 10px 20px; text-decoration: none; color: #ffffff; border-radius: 5px; font-size: 14px; font-weight: bold; display: inline-block;" target="_blank">
+                                            Acceder al Campus Virtual
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td style="border-style:solid;padding:0 0 20px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 20px; text-align: justify;">En iRG, nuestro compromiso es proporcionarte todos los recursos y el apoyo necesario para que tu esfuerzo y dedicación se reflejen en el logro de tus objetivos. Confiamos en que esta experiencia no solo fortalecerá tus conocimientos, sino que también te dotará de las habilidades esenciales para afrontar con éxito los retos actuales y futuros.
+                                </td>
+                        </tr>
+
+                        
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                           <td style="border-style:solid;padding:0 0 30px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 30px; text-align: justify;">
+                               <p style="box-sizing:border-box;margin: 0;">
+                                   El Departamento Académico y todo nuestro equipo están a tu disposición para resolver cualquier duda o inquietud durante tu formación. No dudes en contactarnos a través de nuestros canales de comunicación:
+                               </p>
+                           </td>
+                        </tr>
+                        
+                        
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td style="border-style:solid;padding:0 0 15px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 15px;">
+                                <table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="box-sizing: border-box; caption-side: bottom; border-collapse: collapse; color: #333333; font-size: 16px; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">
+                                    <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;"><tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                                        <td valign="middle" width="36" style="border-style:solid;padding:0 12px 0 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-right: 12px;">
+                                            <img src="https://img.icons8.com/material-rounded/48/4cb0e4/new-post.png" width="30" alt="Email Icon" style="box-sizing: border-box; vertical-align: middle; display: block; width: 30px; height: 30px;" height="30"/>
+                                        </td>
+                                        <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                                            <p style="box-sizing:border-box;margin: 0; font-size: 16px;">
+                                                <strong style="box-sizing:border-box;font-weight:bolder;color: #333333;">Atención al Alumno:</strong> academica@institutoraimongaja.com
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody></table>
+                            </td>
+                        </tr>
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td style="border-style:solid;padding:0 0 15px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 15px;">
+                                <table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="box-sizing: border-box; caption-side: bottom; border-collapse: collapse; color: #333333; font-size: 16px; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">
+                                    <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;"><tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                                        <td valign="middle" width="36" style="border-style:solid;padding:0 12px 0 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-right: 12px;">
+                                            <img src="https://img.icons8.com/material-rounded/48/4cb0e4/phone.png" width="30" alt="Phone Icon" style="box-sizing: border-box; vertical-align: middle; display: block; width: 30px; height: 30px;" height="30"/>
+                                        </td>
+                                        <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                                            <p style="box-sizing:border-box;margin: 0; font-size: 16px;">
+                                                <strong style="box-sizing:border-box;font-weight:bolder;color: #333333;">Teléfonos de contacto:</strong> +34 623 55 17 40 | +34 930 46 05 54
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody></table>
+                            </td>
+                        </tr>
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td style="border-style:solid;padding:0 0 15px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 15px;">
+                                <table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="box-sizing: border-box; caption-side: bottom; border-collapse: collapse; color: #333333; font-size: 16px; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">
+                                    <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;"><tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                                        <td valign="middle" width="36" style="border-style:solid;padding:0 12px 0 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-right: 12px;">
+                                            <img src="https://img.icons8.com/material-rounded/48/4cb0e4/new-post.png" width="30" alt="Email Icon" style="box-sizing: border-box; vertical-align: middle; display: block; width: 30px; height: 30px;" height="30"/>
+                                        </td>
+                                        <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                                            <p style="box-sizing:border-box;margin: 0; font-size: 16px;">
+                                                <strong style="box-sizing:border-box;font-weight:bolder;color: #333333;">Área de Prácticas:</strong> practicas@institutoraimongaja.com</p></td>
+                                    </tr>
+                                </tbody></table>
+                            </td>
+                        </tr>
+                         <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td style="border-style:solid;padding:0 0 40px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 40px;">
+                                <table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="box-sizing: border-box; caption-side: bottom; border-collapse: collapse; color: #333333; font-size: 16px; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">
+                                    <tbody style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;"><tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                                        <td valign="middle" width="36" style="border-style:solid;padding:0 12px 0 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-right: 12px;">
+                                            <img src="https://img.icons8.com/material-rounded/48/4cb0e4/headset.png" width="30" alt="Support Icon" style="box-sizing: border-box; vertical-align: middle; display: block; width: 30px; height: 30px;" height="30"/>
+                                        </td>
+                                        <td valign="middle" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                                            <p style="box-sizing:border-box;margin: 0; font-size: 16px;">
+                                                <strong style="box-sizing:border-box;font-weight:bolder;color: #333333;">Soporte Técnico:</strong> soporte@institutoraimongaja.com
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody></table>
+                            </td>
+                        </tr>
+
+                        
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td align="center" style="border-style:solid;padding:0 0 20px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 20px; text-align: justify;">
+                                <p style="box-sizing:border-box;margin: 0;">
+                                    Estamos encantados de que formes parte de nuestra comunidad educativa y esperamos que este sea un año lleno de aprendizajes y éxitos.
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td align="center" style="border-style:solid;padding:0 0 40px 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;padding-bottom: 40px;">
+                                <p style="box-sizing:border-box;font-size: 22px; font-weight: bold; color: #4CB0E4; margin: 0;">
+                                    ¡Bienvenido/a al Instituto Raimon Gaja!
+                                </p>
+                            </td>
+                        </tr>
+                        
+                        
+                        <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                            <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;">
+                                <p style="box-sizing:border-box;margin: 0; line-height: 1.5;">
+                                    Atentamente,<br/>
+                                    <strong style="box-sizing:border-box;font-weight:bolder;">Departamento Académico</strong><br/>
+                                    <strong style="box-sizing:border-box;font-weight:bolder;">Instituto Raimon Gaja</strong>
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </tbody>
+</table>
+    </field>
+  </record>
+</odoo>
