@@ -1,0 +1,9 @@
+{
+    "summary": "Odoo 16 custom module development rules based on SPECIFICATIONS.md, including a 2026-02-23 analysis confirming no overrides to standard email templates.",
+    "timestamps": {
+        "created": "2026-02-23T19:41:00+01:00"
+    },
+    "references": [
+        "/home/ivrogo/workspace/odoo_local/Odoo16iRG/SPECIFICATIONS.md"
+    ]
+}

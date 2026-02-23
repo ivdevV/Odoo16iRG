@@ -52,3 +52,11 @@ htmlcov/
 reports/
 
 
+# Ignorar archivos temporales o sensibles del agente
+.agents/knowledge/*_secrets.md
+.agents/knowledge/datos_reales_produccion.json
+.agents/temp/
+.github/knowledge/*_secrets.md
+.github/knowledge/datos_reales_produccion.json
+.github/temp/
+
