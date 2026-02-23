@@ -63,7 +63,7 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                 _logger.create({
                     'name': 'campus_forum_debug',
                     'type': 'server',
-                    'level': 'debug',
+                    'level': 'info',  # was debug; info ensures it appears in logs
                     'dbname': request.env.cr.dbname,
                     'message': f"forum_domain={forum_domain} user_batch_ids={list(user_batch_ids)} course={course.id}",
                     'path': 'irg_campus_course_forum.controllers.main',
@@ -93,7 +93,7 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                 _logger.create({
                     'name': 'campus_forum_debug',
                     'type': 'server',
-                    'level': 'debug',
+                    'level': 'info',  # log as info so file captures it
                     'dbname': request.env.cr.dbname,
                     'message': (
                         f"forums_found={[f.name for f in forum_ids]} "
@@ -129,11 +129,17 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                 }
 
         if hasattr(response, 'qcontext'):
+            # also expose debugging information in the template so that a
+            # portal user can inspect what the domain and batches were; this
+            # avoids having to look at log files.
             response.qcontext.update({
                 'course_forum': forum_ids[:1],
                 'course_forum_ids': forum_ids,
                 'course_forum_post_ids': post_ids,
                 'course_forum_posts_map': posts_by_forum_id,
+                'debug_forum_domain': forum_domain,
+                'debug_user_batch_ids': list(user_batch_ids),
+                'debug_forums_found': [(f.id, f.name) for f in forum_ids],
             })
 
         return response
