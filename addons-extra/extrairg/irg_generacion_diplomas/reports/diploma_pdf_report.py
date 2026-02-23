@@ -391,19 +391,16 @@ class DiplomaReportPDF(models.AbstractModel):
             # slightly right to balance the QR code on the far left.
             left_student_x = left_col_x + sp(12)
             self._draw_text_in_column(c, student_name, left_student_x, sign_text_y, col_width, font_bold, sf(11), align='center')
-            # centre column: place Raimon exactly at page centre rather than
-            # halfway between the two col anchors.  this keeps him visually
-            # centred above the Director label.
-            center_x = page_width / 2
-            self._draw_text_in_column(
+            # place Raimon exactly at page centre rather than using a
+            # column width; draw_centered_text does the job directly and
+            # avoids the extra horizontal offset caused by col_width.
+            self._draw_centered_text(
                 c,
                 "Raimon Gaja",
-                center_x,
                 sign_text_y,
-                col_width,
                 font_bold,
                 sf(11),
-                align='center',
+                page_width,
             )
             self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, sign_text_y, col_width, font_bold, sf(11), align='center')
 
