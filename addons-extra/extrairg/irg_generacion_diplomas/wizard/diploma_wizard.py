@@ -45,6 +45,10 @@ class DiplomaWizard(models.TransientModel):
         student_name = self.student_id.name or ""
         course_name_es = self.student_course_id.course_id.name
         course_name_cat = getattr(self.student_course_id.course_id, 'name_cat', None) or course_name_es
+        # apply the same Catalan normalization used by the PDF generator so that
+        # the 'y' becomes 'i' and accents are fixed
+        normer = self.env['report.irg_generacion_diplomas.diploma_pdf']
+        course_name_cat = normer._normalize_catalan_course_name(course_name_cat)
 
         # QR URL
         query_params = {'id': registry_number}

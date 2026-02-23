@@ -111,7 +111,12 @@ class DiplomaReportPDF(models.AbstractModel):
         return max(font_size, min_font_size)
 
     def _normalize_catalan_course_name(self, course_name):
-        """Normalize common accent differences for Catalan rendering."""
+        """Normalize common accent differences for Catalan rendering.
+
+        Also convert the Spanish conjunction " y " to Catalan " i " when it appears
+        in the course title, since source data may be entered in Spanish but the
+        Catalan version should use the correct word.
+        """
         if not course_name:
             return course_name
 
@@ -122,6 +127,9 @@ class DiplomaReportPDF(models.AbstractModel):
         normalized = normalized.replace("master", "màster")
         normalized = normalized.replace("Salud", "Salut")
         normalized = normalized.replace("salud", "salut")
+        # convert Spanish conjunction y to Catalan i when surrounded by spaces
+        normalized = normalized.replace(" y ", " i ")
+        normalized = normalized.replace(" Y ", " I ")
         return normalized
 
     @api.model
@@ -154,7 +162,9 @@ class DiplomaReportPDF(models.AbstractModel):
             return max(min_size, value * scale_factor)
 
         # small upward shift to lift most of the text slightly nearer the top edge
-        y_shift = sp(10)
+        # bumped up a bit after review; diplomas were sitting too low
+        # increased again based on latest feedback
+        y_shift = sp(25)
 
         logo_width_base = 145
         side_margin = page_width * 0.080
@@ -217,6 +227,10 @@ class DiplomaReportPDF(models.AbstractModel):
         es_top, es_bottom = split_master(course_es, lang='es')
         
         course_font_size = sf(21)
+        # if either language has been split into two lines, reduce the font to
+        # avoid overflow and give the whole title a bit more breathing room
+        if cat_bottom or es_bottom:
+            course_font_size = sf(18)
         
         # Draw top lines and capture the lowest y position
         y_next_cat = self._draw_wrapped_text_in_column(c, cat_top, left_col_x, y, col_width, font_bold, course_font_size, align='right')
@@ -234,6 +248,7 @@ class DiplomaReportPDF(models.AbstractModel):
         y = min(y_next_cat, y_next_es)
         
         # --- "a" ---
+        # lift the "a" a bit when we've moved elements upward earlier
         y -= sp(24)
         self._draw_centered_text(c, "a", y, font_regular, sf(13), page_width)
         
@@ -326,15 +341,40 @@ class DiplomaReportPDF(models.AbstractModel):
             self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width, font_regular, sf(10), align='center')
             self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width, font_regular, sf(10), align='center')
         else:
-            # physical diploma: leave space for handwritten signatures and show single centered block
-            y_text = y
-            # Director info centered across page
-            self._draw_centered_text(c, "Raimon Gaja Director Fundador", y_text, font_bold, sf(13), page_width)
-            y_text -= sp(14)
+            # physical diploma: reserve three signature zones for handwritten
+            # users will sign above these labels, so we don't draw images.
+            # leave a bit of vertical space for signatures
+            y_sig = y + sp(10)
+            # optionally draw faint horizontal line for each signature area
+            line_y = y_sig + sp(15)
+            c.setLineWidth(0.5)
+            # left column student line
+            c.line(left_col_x + sp(10), line_y, left_col_x + col_width - sp(10), line_y)
+            # center column Raimon line
+            c.line(left_col_x + col_width + gutter/2 + sp(10), line_y,
+                   left_col_x + col_width + gutter/2 + col_width - sp(10), line_y)
+            # right column Grecia line
+            c.line(right_col_x + sp(10), line_y, right_col_x + col_width - sp(10), line_y)
+
+            # now put the names and roles beneath lines
+            y -= sp(8)
+            # student name left
             student_name = data.get('student_name', '')
-            self._draw_centered_text(c, student_name, y_text, font_regular, sf(10), page_width)
-            y_text -= sp(12)
-            self._draw_centered_text(c, "Interesado/a, Interessat/da", y_text, font_regular, sf(10), page_width)
+            self._draw_text_in_column(c, student_name, left_col_x, y, col_width, font_bold, sf(13), align='center')
+            # director middle
+            self._draw_text_in_column(c, "Raimon Gaja", left_col_x + col_width + gutter/2, y, col_width, font_bold, sf(13), align='center')
+            # academic director right
+            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width, font_bold, sf(13), align='center')
+
+            y -= sp(14)
+            self._draw_text_in_column(c, "Interesado/a, Interessat/da", left_col_x, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Director", left_col_x + col_width + gutter/2, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width, font_regular, sf(10), align='center')
+
+            y -= sp(12)
+            self._draw_text_in_column(c, "", left_col_x, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Fundador", left_col_x + col_width + gutter/2, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width, font_regular, sf(10), align='center')
 
         # --- QR CODE & REGISTRY ---
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
