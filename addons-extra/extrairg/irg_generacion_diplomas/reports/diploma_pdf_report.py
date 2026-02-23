@@ -387,13 +387,18 @@ class DiplomaReportPDF(models.AbstractModel):
             # the labels sit just above the graphic.
             sign_text_y = qr_y + qr_size
             # left column should show the student/interested name rather than
-            # the director's name; original variable defined above.
-            self._draw_text_in_column(c, student_name, left_col_x, sign_text_y, col_width, font_bold, sf(11), align='center')
-            # centre column uses middle anchor (left_col_x + col_width + gutter/2)
+            # the director's name; original variable defined above.  shift it
+            # slightly right to balance the QR code on the far left.
+            left_student_x = left_col_x + sp(12)
+            self._draw_text_in_column(c, student_name, left_student_x, sign_text_y, col_width, font_bold, sf(11), align='center')
+            # centre column: place Raimon exactly at page centre rather than
+            # halfway between the two col anchors.  this keeps him visually
+            # centred above the Director label.
+            center_x = page_width / 2
             self._draw_text_in_column(
                 c,
                 "Raimon Gaja",
-                left_col_x + col_width + gutter/2,
+                center_x,
                 sign_text_y,
                 col_width,
                 font_bold,
@@ -404,7 +409,9 @@ class DiplomaReportPDF(models.AbstractModel):
 
             # second row: roles titles/labels (left = interested, centre=Director, right=Acad.)
             role_y = sign_text_y - sp(14)
-            self._draw_text_in_column(c, "Interesado/a, Interessat/da", left_col_x, role_y, col_width, font_regular, sf(9), align='center')
+            # shift left label right as well to match student name shift
+            self._draw_text_in_column(c, "Interesado/a, Interessat/da", left_student_x, role_y, col_width, font_regular, sf(9), align='center')
+            # keep Director centered on page
             self._draw_centered_text(c, "Director", role_y, font_regular, sf(9), page_width)
             self._draw_text_in_column(c, "Directora Académica", right_col_x, role_y, col_width, font_regular, sf(9), align='center')
 
