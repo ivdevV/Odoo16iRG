@@ -107,8 +107,13 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             except Exception:
                 pass
 
-            if course.forum_id and course.forum_id in request.env['forum.forum'].sudo().search(forum_domain + [('id', '=', course.forum_id.id)]):
-                forum_ids |= course.forum_id
+            # if the course has an explicit forum, make sure it passes the
+            # same visibility domain; perform the lookup with sudo() as well.
+            if course.forum_id:
+                forum = request.env['forum.forum'].sudo().search(
+                    forum_domain + [('id', '=', course.forum_id.id)])
+                if forum:
+                    forum_ids |= forum
 
             forum_ids = forum_ids.sorted(key=lambda forum: forum.name or '')
 
