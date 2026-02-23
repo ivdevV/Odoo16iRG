@@ -221,16 +221,17 @@ class DiplomaReportPDF(models.AbstractModel):
         def split_master(name, lang='es'):
             # split on the last language-specific conjunction so that the
             # conjunction stays at the end of the first line, including the
-            # trailing space.  previously we used sep.strip() which removed the
-            # surrounding spaces, producing "Clínicay" or "Clínicae" if the
-            # conjunction was " y " or " i ". adding a final space fixes this.
+            # spaces around it.  the separator strings already include a leading
+            # and trailing blank, so simply concatenating sep preserves both.
+            # the previous implementation erroneously stripped the front space
+            # which merged "Clínica" and "y" into "Clínicay".
             if not name:
                 return name, None
             sep = ' y ' if lang == 'es' else ' i '
             if sep in name:
                 parts = name.rsplit(sep, 1)
-                # keep conjunction plus one space after it
-                return parts[0] + sep.strip() + ' ', parts[1]
+                # include sep verbatim so that there is a space before and after
+                return parts[0] + sep, parts[1]
             return name, None
 
         cat_top, cat_bottom = split_master(course_cat, lang='cat')
@@ -381,8 +382,15 @@ class DiplomaReportPDF(models.AbstractModel):
 
             # lower all signature texts to align with the QR code vertically
             sign_text_y = qr_y + sp(10)
-            self._draw_text_in_column(c, "Raimon Gaja", left_col_x, sign_text_y, col_width, font_bold, sf(13), align='center')
-            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, sign_text_y, col_width, font_bold, sf(13), align='center')
+                        # position signature text roughly at the top edge of the QR code
+            # (QR occupies [qr_y, qr_y+qr_size]); placing at qr_y+qr_size ensures
+            # the labels sit just above the graphic.
+            sign_text_y = qr_y + qr_size
+            # left column should show the student/interested name rather than
+            # the director's name; original variable defined above.
+            self._draw_text_in_column(c, student_name, left_col_x, sign_text_y, col_width, font_bold, sf(11), align='center')
+            self._draw_text_in_column(c, "Raimon Gaja", sign_text_y, col_width, font_bold, sf(11), align='center')
+            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, sign_text_y, col_width, font_bold, sf(11), align='center')
 
             # second row: roles titles/labels (left = interested, centre=Director, right=Acad.)
             role_y = sign_text_y - sp(14)
@@ -392,7 +400,6 @@ class DiplomaReportPDF(models.AbstractModel):
 
             # third row: footer names
             footer_y = role_y - sp(12)
-            self._draw_text_in_column(c, "Fundador", left_col_x, footer_y, col_width, font_regular, sf(9), align='center')
             self._draw_centered_text(c, "Fundador", footer_y, font_regular, sf(9), page_width)
             self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, footer_y, col_width, font_regular, sf(9), align='center')
 
