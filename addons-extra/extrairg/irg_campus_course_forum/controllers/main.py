@@ -81,9 +81,14 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             except Exception:
                 pass
 
-            forum_ids = request.env['forum.forum'].search(forum_domain, order='name asc')
+            # bypass portal record rules by searching with sudo().  the
+            # visibility computation already takes the user into account, and
+            # performing the search as superuser avoids the rule evaluating
+            # ``user.forum_effective_batch_ids`` under the portal user (which
+            # may not be allowed to read all relevant batches).
+            forum_ids = request.env['forum.forum'].sudo().search(forum_domain, order='name asc')
 
-            # debug : record what forums were found with the final domain
+            # debug : record what forums were found after the sudo search
             try:
                 _logger.create({
                     'name': 'campus_forum_debug',
