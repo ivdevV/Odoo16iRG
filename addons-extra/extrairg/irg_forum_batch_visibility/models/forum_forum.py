@@ -25,27 +25,38 @@ class ForumForum(models.Model):
     def _visibility_domain_for_user(self, user, course=None):
         """Return the domain that must be applied on forum.forum for *user*.
 
-        The logic mirrors what the portal controller uses.  ``course`` is
-        currently ignored (batch-only visibility) but kept in the signature so
-        it can be extended later without breaking callers.
+        The logic mirrors what the portal controller uses and enforces both
+        batch and course visibility when those restrictions are configured.
 
         We always evaluate the user with ``sudo()`` to avoid problems where the
         portal user is not allowed to read ``op.batch`` records.  If the
         many2many is not accessible, ``user.forum_effective_batch_ids`` may
         appear empty and a security rule would then hide all restricted
         forums.  Computing the domain with a sudo'ed user ensures the correct
-        batch ids are returned regardless of access rights.  The caller can
-        still search with or without ``sudo()`` depending on context; tests
-        and the website controller now use ``sudo()`` explicitly too.
+        effective batch/course ids are returned regardless of access rights.
         """
-        # ``user`` may be a browse record from an unprivileged environment;
-        # make sure we use sudo() so that the computed relation is visible.
+        if not user or user._is_public():
+            return [('id', '=', 0)]
+
         user = user.sudo()
         batch_ids = set(user.forum_effective_batch_ids.ids)
+        course_ids = set(user.forum_effective_course_ids.ids)
+        if course:
+            course_ids.add(course.id)
+
+        batch_clause = ['|', ('visibility_batch_ids', '=', False)]
         if batch_ids:
-            return ['|', ('visibility_batch_ids', '=', False),
-                    ('visibility_batch_ids', 'in', list(batch_ids))]
-        return [('visibility_batch_ids', '=', False)]
+            batch_clause.append(('visibility_batch_ids', 'in', list(batch_ids)))
+        else:
+            batch_clause.append(('visibility_batch_ids', '=', False))
+
+        course_clause = ['|', ('visibility_course_ids', '=', False)]
+        if course_ids:
+            course_clause.append(('visibility_course_ids', 'in', list(course_ids)))
+        else:
+            course_clause.append(('visibility_course_ids', '=', False))
+
+        return ['&', batch_clause, course_clause]
 
     @api.model
     def forums_visible_for(self, user, course=None):
