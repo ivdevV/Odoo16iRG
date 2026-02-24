@@ -53,16 +53,20 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         # bogus.  we also initialise debug variables here to avoid later
         # None-values confusing the template.
         debug_domain = None
-        debug_batches = None
         debug_forums = None
         debug_course = None
 
+        # we intentionally drop the course-specific filter: the requirement
+        # is to show **all forums the current user can participate in**,
+        # mirroring the behaviour of the standalone /forum page.  this means
+        # that even if the course has no related forum the user will still
+        # see global forums such as a general help forum.
         if course.exists():
-            user_batch_ids = self._get_user_batch_ids_for_course(user, course)
-
-            forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
+            # compute the domain directly using the forum model helper; the
+            # helper already takes the current user into account and will not
+            # restrict results by course when we omit the `course` argument.
+            forum_domain = request.env['forum.forum']._visibility_domain_for_user(user)
             debug_domain = forum_domain
-            debug_batches = list(user_batch_ids)
             debug_course = course.id
 
             # debug log – helps troubleshooting missing forums for specific users
@@ -73,7 +77,7 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                     'type': 'server',
                     'level': 'info',  # was debug; info ensures it appears in logs
                     'dbname': request.env.cr.dbname,
-                    'message': f"forum_domain={forum_domain} user_batch_ids={list(user_batch_ids)} course={course.id}",
+                    'message': f"forum_domain={forum_domain} course={course.id}",
                     'path': 'irg_campus_course_forum.controllers.main',
                     'func': '_forum_debug',
                     'line': '0',
@@ -82,10 +86,7 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                 pass
 
             # bypass portal record rules by searching with sudo().  the
-            # visibility computation already takes the user into account, and
-            # performing the search as superuser avoids the rule evaluating
-            # ``user.forum_effective_batch_ids`` under the portal user (which
-            # may not be allowed to read all relevant batches).
+            # visibility computation already takes the user into account.
             forum_ids = request.env['forum.forum'].sudo().search(forum_domain, order='name asc')
 
             # debug : record what forums were found after the sudo search
@@ -98,7 +99,6 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                     'message': (
                         f"forums_found={[f.name for f in forum_ids]} "
                         f"forum_domain={forum_domain} "
-                        f"user_batch_ids={list(user_batch_ids)} "
                         f"course={course.id}"),
                     'path': 'irg_campus_course_forum.controllers.main',
                     'func': '_forum_debug',
@@ -107,12 +107,11 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             except Exception:
                 pass
 
-            if course.forum_id:
-                forum = request.env['forum.forum'].search(
-                    forum_domain + [('id', '=', course.forum_id.id)])
-                if forum:
-                    forum_ids |= forum
-
+            # we no longer need to special–case the course.forum_id field
+            # because the visibility helper will already include it even when
+            # the forum has no course restrictions.  keeping the original
+            # extra search would potentially duplicate the forum in the
+            # results.
             forum_ids = forum_ids.sorted(key=lambda forum: forum.name or '')
 
             if forum_ids:
@@ -127,17 +126,14 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                 }
 
         if hasattr(response, 'qcontext'):
-            # also expose debugging information in the template so that a
-            # portal user can inspect what the domain and batches were; this
-            # avoids having to look at log files.  use the local debug_* vars
-            # which are guaranteed to exist even if course.exists() was False.
+            # expose debugging info so a portal user can inspect what domain
+            # was generated; this avoids needing to check server logs.
             response.qcontext.update({
                 'course_forum': forum_ids[:1],
                 'course_forum_ids': forum_ids,
                 'course_forum_post_ids': post_ids,
                 'course_forum_posts_map': posts_by_forum_id,
                 'debug_forum_domain': debug_domain,
-                'debug_user_batch_ids': debug_batches,
                 'debug_course_id': debug_course,
                 'debug_forums_found': debug_forums or [(f.id, f.name) for f in forum_ids],
             })

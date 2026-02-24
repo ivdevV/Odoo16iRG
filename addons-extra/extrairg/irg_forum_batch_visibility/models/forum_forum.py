@@ -25,8 +25,9 @@ class ForumForum(models.Model):
     def _visibility_domain_for_user(self, user, course=None):
         """Return the domain that must be applied on forum.forum for *user*.
 
-        The logic mirrors what the portal controller uses and enforces both
-        batch and course visibility when those restrictions are configured.
+        The logic mirrors what the portal controller uses and enforces a
+        logical ``OR`` between batch and course visibility.  A forum is
+        visible when the user meets *either* restriction.
 
         We always evaluate the user with ``sudo()`` to avoid problems where the
         portal user is not allowed to read ``op.batch`` records.  If the
@@ -56,7 +57,11 @@ class ForumForum(models.Model):
         else:
             course_clause.append(('visibility_course_ids', '=', False))
 
-        return ['&', batch_clause, course_clause]
+        # allow forums that satisfy either the batch condition or the course
+        # condition.  this mirrors the campus controller domain and ensures a
+        # forum linked only to the course remains visible even if the user is
+        # not in any of its batches.
+        return ['|', batch_clause, course_clause]
 
     @api.model
     def forums_visible_for(self, user, course=None):
