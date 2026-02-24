@@ -5,7 +5,7 @@
         <field name="name">Auto-verificar usuarios</field>
         <field name="model_id" ref="base.model_res_users"/>
         <field name="binding_model_id" ref="base.model_res_users"/>
-        <field name="binding_view_types">list</field>
+        <field name="binding_view_types">list,form</field>
         <field name="state">code</field>
         <field name="code">
 if records:
