@@ -47,16 +47,31 @@ class DashboardPortalCampusForum(DashboardPortalInh):
     def view_user_profile_course(self, course_id, **post):
         response = super().view_user_profile_course(course_id, **post)
 
-        course = request.env['op.course'].browse(course_id)
+        # use sudo() to bypass any portal restrictions on reading courses;
+        # if we don't, ``course.exists()`` may be False and the logic below
+        # will be skipped entirely, which is what caused the debug variables to
+        # remain unset on production.
+        course = request.env['op.course'].sudo().browse(course_id)
         forum_ids = request.env['forum.forum']
         post_ids = request.env['forum.post']
         posts_by_forum_id = {}
         user = request.env.user
 
+        # ``course`` is obtained in sudo mode, so exists() should normally
+        # be True.  nevertheless we still guard in case the course id is
+        # bogus.  we also initialise debug variables here to avoid later
+        # None-values confusing the template.
+        debug_domain = None
+        debug_batches = None
+        debug_forums = None
+
         if course.exists():
             user_batch_ids = self._get_user_batch_ids_for_course(user, course)
 
             forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
+            debug_domain = forum_domain
+            debug_batches = list(user_batch_ids)
+
             # debug log – helps troubleshooting missing forums for specific users
             _logger = request.env['ir.logging'].sudo()
             try:
@@ -136,15 +151,16 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         if hasattr(response, 'qcontext'):
             # also expose debugging information in the template so that a
             # portal user can inspect what the domain and batches were; this
-            # avoids having to look at log files.
+            # avoids having to look at log files.  use the local debug_* vars
+            # which are guaranteed to exist even if course.exists() was False.
             response.qcontext.update({
                 'course_forum': forum_ids[:1],
                 'course_forum_ids': forum_ids,
                 'course_forum_post_ids': post_ids,
                 'course_forum_posts_map': posts_by_forum_id,
-                'debug_forum_domain': forum_domain,
-                'debug_user_batch_ids': list(user_batch_ids),
-                'debug_forums_found': [(f.id, f.name) for f in forum_ids],
+                'debug_forum_domain': debug_domain,
+                'debug_user_batch_ids': debug_batches,
+                'debug_forums_found': debug_forums or [(f.id, f.name) for f in forum_ids],
             })
 
         return response
