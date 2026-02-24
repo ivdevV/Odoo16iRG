@@ -16,15 +16,8 @@
                 <div class="mb32">
                     <h5 class="border-bottom pb-1">Foros del curso</h5>
 
-                    <!-- debug info injected by controller (always shown for troubleshooting) -->
-                    <div class="alert alert-info small">
-                        <strong>DEBUG:</strong>
-                        dominio=<t t-esc="debug_forum_domain or '??'"/>,
-                        lotes=<t t-esc="debug_user_batch_ids or '??'"/>,
-                        foros=<t t-esc="debug_forums_found or '??'"/>
-                    </div>
 
-                        <t t-foreach="resolved_course_forum_ids" t-as="forum">
+                        <t t-foreach="course_forum_ids" t-as="forum">
                             <div class="mt-3">
                                 <h6 class="mb-2">
                                     <a t-attf-href="/forum/#{slug(forum)}" t-esc="forum.name"/>
@@ -55,7 +48,7 @@
                             </div>
                         </t>
 
-                    <div class="text-muted d-inline-block" t-if="not resolved_course_forum_ids">
+                    <div class="text-muted d-inline-block" t-if="not course_forum_ids">
                         Este curso no tiene foro configurado.
                     </div>
                 </div>
