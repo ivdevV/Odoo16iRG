@@ -57,11 +57,12 @@ class ForumForum(models.Model):
         else:
             course_clause.append(('visibility_course_ids', '=', False))
 
-        # allow forums that satisfy either the batch condition or the course
-        # condition.  this mirrors the campus controller domain and ensures a
-        # forum linked only to the course remains visible even if the user is
-        # not in any of its batches.
-        return ['|', batch_clause, course_clause]
+        # enforce **both** batch AND course conditions.  the previous OR logic
+        # allowed a forum with an unrelated batch to be visible simply because
+        # it wasn't assigned to any course; this is why portal users were
+        # seeing forums that didn't belong to their batches.  requiring an AND
+        # fixes that while still permitting forums with no restrictions.
+        return ['&', batch_clause, course_clause]
 
     @api.model
     def forums_visible_for(self, user, course=None):
