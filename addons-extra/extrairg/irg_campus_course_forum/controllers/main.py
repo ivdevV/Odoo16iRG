@@ -57,31 +57,32 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         debug_course = None
 
         if course.exists():
-            # compute the batches that the current user has **for this course**
-            # (not all their batches across the portal).  this is used below to
-            # enforce the requirement that a forum with batch restrictions is
-            # only shown if the user shares at least one of those batches.
+            # determine which batches the user has **for this course** only;
+            # the portal-wide `forum_effective_batch_ids` may include batches
+            # from unrelated courses, which caused the user to see forums from
+            # other subjects.  restricting here fixes that.
             user_batch_ids = self._get_user_batch_ids_for_course(user, course)
 
-            # build a domain which enforces *both* course membership and the
-            # batch condition.  we include the course.forum_id as a fallback
-            # in case the forum is linked by the course record rather than by
-            # visibility_course_ids.
-            course_clause = ['|',
-                ('visibility_course_ids', 'in', [course.id])
-            ]
+            # start by selecting only the forums that are *associated with this
+            # course*.  we deliberately exclude forums with no course link so
+            # that globals/other-course forums don’t show up in the panel.
+            course_domain = ['|', ('visibility_course_ids', 'in', [course.id])]
             if course.forum_id:
-                course_clause = ['|', course_clause, ('id', '=', course.forum_id.id)]
+                # the course record may hold a direct pointer to the forum.
+                course_domain = ['|', course_domain, ('id', '=', course.forum_id.id)]
 
-            batch_clause = ['|', ('visibility_batch_ids', '=', False)]
+            # next build the batch condition: either the forum has no batch
+            # restriction, or the user shares at least one of the allowed
+            # batches for this course.  if the user has no batches (e.g. a
+            # teacher), we fall back to requiring no restriction at all.
+            batch_domain = ['|', ('visibility_batch_ids', '=', False)]
             if user_batch_ids:
-                batch_clause.append(('visibility_batch_ids', 'in', list(user_batch_ids)))
+                batch_domain.append(('visibility_batch_ids', 'in', list(user_batch_ids)))
             else:
-                # if the user has no batches for this course they should only
-                # see forums without any batch restriction
-                batch_clause.append(('visibility_batch_ids', '=', False))
+                batch_domain.append(('visibility_batch_ids', '=', False))
 
-            forum_domain = ['&', course_clause, batch_clause]
+            # final domain requires both conditions simultaneously
+            forum_domain = ['&'] + course_domain + batch_domain
             debug_domain = forum_domain
             debug_course = course.id
 
