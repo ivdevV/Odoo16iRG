@@ -3,8 +3,8 @@
     <template id="user_profile_content_details_forum" inherit_id="isep_website_custom.user_profile_content_details">
         <xpath expr="//ul[@id='profile_extra_info_tablist']/li[last()]" position="after">
             <li class="nav-item">
-                <a role="tab" aria-controls="Foro" href="#profile_tab_content_forum"
-                   t-attf-class="nav-link #{'active' if active_tab == 'forum' else ''}" data-bs-toggle="tab">
+                <!-- Clicking this tab should just go to the main /forum page -->
+                <a href="/forum" class="nav-link">
                     Foro
                 </a>
             </li>
