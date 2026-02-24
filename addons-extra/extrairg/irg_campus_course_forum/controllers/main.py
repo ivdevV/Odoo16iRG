@@ -56,16 +56,32 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         debug_forums = None
         debug_course = None
 
-        # we intentionally drop the course-specific filter: the requirement
-        # is to show **all forums the current user can participate in**,
-        # mirroring the behaviour of the standalone /forum page.  this means
-        # that even if the course has no related forum the user will still
-        # see global forums such as a general help forum.
         if course.exists():
-            # compute the domain directly using the forum model helper; the
-            # helper already takes the current user into account and will not
-            # restrict results by course when we omit the `course` argument.
-            forum_domain = request.env['forum.forum']._visibility_domain_for_user(user)
+            # compute the batches that the current user has **for this course**
+            # (not all their batches across the portal).  this is used below to
+            # enforce the requirement that a forum with batch restrictions is
+            # only shown if the user shares at least one of those batches.
+            user_batch_ids = self._get_user_batch_ids_for_course(user, course)
+
+            # build a domain which enforces *both* course membership and the
+            # batch condition.  we include the course.forum_id as a fallback
+            # in case the forum is linked by the course record rather than by
+            # visibility_course_ids.
+            course_clause = ['|',
+                ('visibility_course_ids', 'in', [course.id])
+            ]
+            if course.forum_id:
+                course_clause = ['|', course_clause, ('id', '=', course.forum_id.id)]
+
+            batch_clause = ['|', ('visibility_batch_ids', '=', False)]
+            if user_batch_ids:
+                batch_clause.append(('visibility_batch_ids', 'in', list(user_batch_ids)))
+            else:
+                # if the user has no batches for this course they should only
+                # see forums without any batch restriction
+                batch_clause.append(('visibility_batch_ids', '=', False))
+
+            forum_domain = ['&', course_clause, batch_clause]
             debug_domain = forum_domain
             debug_course = course.id
 
@@ -75,7 +91,7 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                 _logger.create({
                     'name': 'campus_forum_debug',
                     'type': 'server',
-                    'level': 'info',  # was debug; info ensures it appears in logs
+                    'level': 'info',
                     'dbname': request.env.cr.dbname,
                     'message': f"forum_domain={forum_domain} course={course.id}",
                     'path': 'irg_campus_course_forum.controllers.main',
@@ -85,8 +101,8 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             except Exception:
                 pass
 
-            # bypass portal record rules by searching with sudo().  the
-            # visibility computation already takes the user into account.
+            # search as superuser to avoid portal record rules blocking
+            # the batch lookup for the guest user
             forum_ids = request.env['forum.forum'].sudo().search(forum_domain, order='name asc')
 
             # debug : record what forums were found after the sudo search
@@ -94,7 +110,7 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                 _logger.create({
                     'name': 'campus_forum_debug',
                     'type': 'server',
-                    'level': 'info',  # log as info so file captures it
+                    'level': 'info',
                     'dbname': request.env.cr.dbname,
                     'message': (
                         f"forums_found={[f.name for f in forum_ids]} "
@@ -107,11 +123,6 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             except Exception:
                 pass
 
-            # we no longer need to special–case the course.forum_id field
-            # because the visibility helper will already include it even when
-            # the forum has no course restrictions.  keeping the original
-            # extra search would potentially duplicate the forum in the
-            # results.
             forum_ids = forum_ids.sorted(key=lambda forum: forum.name or '')
 
             if forum_ids:
