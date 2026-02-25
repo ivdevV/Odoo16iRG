@@ -105,4 +105,7 @@ class ForumForum(models.Model):
         # is loaded; this guarantees the UI button will not be disabled
         # retrospectively.
         super().init()
-        self.search([('moderation', '=', True)]).write({'moderation': False})
+        # ``moderation`` is not a core field in some installations; guard so
+        # the init hook does not crash when the column is absent.
+        if 'moderation' in self._fields:
+            self.search([('moderation', '=', True)]).write({'moderation': False})
