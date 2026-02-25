@@ -210,13 +210,6 @@ class DiplomaReportPDF(models.AbstractModel):
         # Colors
         c.setFillColorRGB(0, 0, 0)  # Black text
         
-        # --- INTRO TEXT ---
-        y = start_y
-        self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de", 
-                                   left_col_x, y, col_width, font_regular, sf(11), align='right')
-        self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de", 
-                                   right_col_x, y, col_width, font_regular, sf(11), align='left')
-        
         # --- COURSE NAME ---
         y -= sp(28)
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
@@ -244,6 +237,15 @@ class DiplomaReportPDF(models.AbstractModel):
         title_left_x = left_col_x + (col_width - left_title_width) / 2
         title_right_x = right_col_x + (col_width - right_title_width) / 2
 
+        # --- INTRO TEXT ---
+        # Draw the intro lines inside the same narrower blocks as the titles
+        y_intro = start_y
+        self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de",
+                       title_left_x, y_intro, left_title_width, font_regular, sf(11), align='right')
+        self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de",
+                       title_right_x, y_intro, right_title_width, font_regular, sf(11), align='left')
+
+        # --- COURSE NAME ---
         # Draw full title text and let wrapping be controlled only by width.
         y_next_cat = self._draw_wrapped_text_in_column(
             c,
