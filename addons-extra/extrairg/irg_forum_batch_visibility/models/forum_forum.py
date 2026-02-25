@@ -1,6 +1,12 @@
 from odoo import api, fields, models
 
 
+# ensure moderation is never enabled: it causes front-end JS to prevent
+# further posts while a draft is awaiting approval.  we want an entirely
+# unmoderated experience for all forums, so clear the flag on create/write
+
+
+
 class ForumForum(models.Model):
     _inherit = 'forum.forum'
 
@@ -64,6 +70,18 @@ class ForumForum(models.Model):
         # fixes that while still permitting forums with no restrictions.
         return ['&', batch_clause, course_clause]
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        # never create a forum with moderation enabled
+        for vals in vals_list:
+            vals['moderation'] = False
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if 'moderation' in vals:
+            vals = dict(vals, moderation=False)
+        return super().write(vals)
+
     @api.model
     def forums_visible_for(self, user, course=None):
         """Convenience wrapper: search the forums this user can see.
@@ -81,3 +99,11 @@ class ForumForum(models.Model):
         """
         domain = self._visibility_domain_for_user(user, course)
         return self.sudo().search(domain)
+
+    @api.model_cr
+    def init(self):
+        # turn off moderation for any existing forum records when the module
+        # is loaded; this guarantees the UI button will not be disabled
+        # retrospectively.
+        super().init()
+        self.search([('moderation', '=', True)]).write({'moderation': False})
