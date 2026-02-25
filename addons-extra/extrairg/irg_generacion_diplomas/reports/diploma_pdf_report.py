@@ -366,8 +366,8 @@ class DiplomaReportPDF(models.AbstractModel):
             if sign_raimon_path and os.path.exists(sign_raimon_path):
                 sig_width = sp(95)
                 sig_height = sp(47)
-                # nudge signatures slightly towards the centre for digital diplomas
-                sig_shift = sp(12)
+                # nudge signatures noticeably towards the centre for digital diplomas
+                sig_shift = sp(22)
                 sig_x = left_col_x + (col_width - sig_width) / 2 + sig_shift
                 c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
             

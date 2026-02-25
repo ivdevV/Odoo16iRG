@@ -133,9 +133,9 @@
             
             <!-- Signatures -->
             <div class="row" style="margin-top: 40px; justify-content: center;">
-                <!-- shift inward a bit on digital diplomas -->
-                <t t-set="left_shift" t-value="'transform: translateX(12px);' if is_digital else ''"/>
-                <t t-set="right_shift" t-value="'transform: translateX(-12px);' if is_digital else ''"/>
+                <!-- shift inward more on digital diplomas -->
+                <t t-set="left_shift" t-value="'transform: translateX(22px);' if is_digital else ''"/>
+                <t t-set="right_shift" t-value="'transform: translateX(-22px);' if is_digital else ''"/>
 
                 <div class="col-6" t-att-style="'text-align: center; %s' % left_shift">
                     <div style="height: 70px; margin-bottom: 5px;">
