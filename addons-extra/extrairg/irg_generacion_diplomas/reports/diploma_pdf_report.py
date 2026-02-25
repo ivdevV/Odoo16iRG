@@ -159,7 +159,8 @@ class DiplomaReportPDF(models.AbstractModel):
             return value * scale_factor
 
         def sf(value, min_size=7):
-            return max(min_size, value * scale_factor)
+            # global reduction to make all typographies a little smaller
+            return max(min_size, value * scale_factor * 0.95)
 
         # small upward shift to lift most of the text slightly nearer the top edge
         # bumped up a bit after review; diplomas were sitting too low
@@ -167,8 +168,9 @@ class DiplomaReportPDF(models.AbstractModel):
         y_shift = sp(25)
 
         logo_width_base = 150
-        side_margin = page_width * 0.070
-        gutter = sp(logo_width_base)
+        # reduce margins/gutter slightly to widen side columns
+        side_margin = page_width * 0.060  # was 0.070
+        gutter = sp(logo_width_base) * 0.90  # tightened
         col_width = (page_width - (2 * side_margin) - gutter) / 2
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
@@ -317,7 +319,9 @@ class DiplomaReportPDF(models.AbstractModel):
         date_cat = data.get('date_cat', '')
         date_es = data.get('date_es', '')
         
-        self._draw_text_in_column(c, f"Barcelona, a {date_cat}", left_col_x, y, col_width, font_regular, sf(11), align='right')
+        # avoid double "de de" in the left date
+        clean_cat = date_cat.replace(' de de ', ' de ')
+        self._draw_text_in_column(c, f"Barcelona, a {clean_cat}", left_col_x, y, col_width, font_regular, sf(11), align='right')
         self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width, font_regular, sf(11), align='left')
         
         
@@ -380,17 +384,14 @@ class DiplomaReportPDF(models.AbstractModel):
             # removed per customer request. the remaining code simply leaves room
             # and prints the labels.
 
-            # lower all signature texts to align with the QR code vertically
-            sign_text_y = qr_y + sp(10)
-                        # position signature text roughly at the top edge of the QR code
-            # (QR occupies [qr_y, qr_y+qr_size]); placing at qr_y+qr_size ensures
-            # the labels sit just above the graphic.
-            sign_text_y = qr_y + qr_size
+            # position signatures slightly lower to reduce bottom margin
+            base_offset = -sp(8)  # shift everything down
+            sign_text_y = qr_y + qr_size + base_offset
             # left column should show the student/interested name rather than
             # the director's name; original variable defined above.  shift it
             # slightly right to balance the QR code on the far left.
             left_student_x = left_col_x + sp(12)
-            self._draw_text_in_column(c, student_name, left_student_x, sign_text_y, col_width, font_bold, sf(11), align='center')
+            self._draw_text_in_column(c, student_name, left_student_x, sign_text_y, col_width, font_bold, sf(10), align='center')
             # place Raimon exactly at page centre rather than using a
             # column width; draw_centered_text does the job directly and
             # avoids the extra horizontal offset caused by col_width.
@@ -399,10 +400,10 @@ class DiplomaReportPDF(models.AbstractModel):
                 "Raimon Gaja",
                 sign_text_y,
                 font_bold,
-                sf(11),
+                sf(10),
                 page_width,
             )
-            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, sign_text_y, col_width, font_bold, sf(11), align='center')
+            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, sign_text_y, col_width, font_bold, sf(10), align='center')
 
             # second row: roles titles/labels (left = interested, centre=Director, right=Acad.)
             role_y = sign_text_y - sp(14)
@@ -426,6 +427,23 @@ class DiplomaReportPDF(models.AbstractModel):
         reg_text = f"Nº Registro: {registry}"
         text_width = c.stringWidth(reg_text, font_bold, sf(8))
         text_x = qr_x + (qr_size - text_width) / 2
+        # replace final two-digit year in registry text with the year
+        # taken from the diploma date (prefer Spanish version). if date isn't
+        # parseable we leave the text untouched.
+        try:
+            import re
+            year = None
+            for dfield in ('date_es', 'date_cat'):
+                dval = data.get(dfield)
+                if dval:
+                    m = re.search(r"(\d{4})$", dval)
+                    if m:
+                        year = m.group(1)
+                        break
+            if year and re.search(r"\d{2}$", reg_text):
+                reg_text = re.sub(r"\d{2}$", year, reg_text)
+        except Exception:
+            pass
         c.drawString(text_x, qr_y - sp(10), reg_text)
         
         # Finalize
