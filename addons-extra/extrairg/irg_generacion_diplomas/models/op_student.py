@@ -8,10 +8,10 @@ class OpStudent(models.Model):
     can_generate_diploma = fields.Boolean(
         string='Puede generar diploma',
         compute='_compute_can_generate_diploma',
-        store=True,
+        store=False,
     )
 
-    @api.depends('course_detail_ids.state', 'course_detail_ids.grade', 'course_detail_ids.final_grade')
+    @api.depends('course_detail_ids.state')
     def _compute_can_generate_diploma(self):
         """
         The button to launch the diploma wizard should only be visible when
@@ -28,10 +28,10 @@ class OpStudent(models.Model):
                     ok = True
                     break
                 # grade-based rules (if those fields exist and are truthy)
-                if hasattr(sc, 'grade') and sc.grade:
+                if hasattr(sc, 'grade') and getattr(sc, 'grade'):
                     ok = True
                     break
-                if hasattr(sc, 'final_grade') and sc.final_grade:
+                if hasattr(sc, 'final_grade') and getattr(sc, 'final_grade'):
                     ok = True
                     break
             student.can_generate_diploma = ok
