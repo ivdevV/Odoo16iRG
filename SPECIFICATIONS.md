@@ -57,7 +57,7 @@ Formato recomendado: Markdown, ejemplo `doc/micro-specs/2026-02-12-irg_ejemplo.m
 - Tests obligatorios para lógica crítica y migraciones.
 - Registrar cambios en `README` o changelog del módulo.
 
----
+---odoo -u irg_forum_batch_visibility,irg_campus_course_forum -d <yourdb> --stop-after-init
 
 ## Checklist de PR (obligatorio)
 - [ ] Micro-spec aprobada y referenciada en el PR.

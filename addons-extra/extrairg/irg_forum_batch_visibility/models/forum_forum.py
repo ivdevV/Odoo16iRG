@@ -100,7 +100,6 @@ class ForumForum(models.Model):
         domain = self._visibility_domain_for_user(user, course)
         return self.sudo().search(domain)
 
-    @api.model_cr
     def init(self):
         # turn off moderation for any existing forum records when the module
         # is loaded; this guarantees the UI button will not be disabled
