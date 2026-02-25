@@ -10,6 +10,7 @@ Todas las modificaciones del comportamiento nativo de Odoo se implementarán med
 - Prefijo obligatorio en el nombre del módulo: `irg_` (ej.: `irg_sale_order_override`).
 - Nunca modificar módulos nativos de Odoo.
 - Cada cambio debe contar con una micro-spec aprobada antes de implementación.
+- Revisar detenidamente el código de los módulos modificados para asegurarse de que no introducen errores o dependencias que puedan romper el despliegue.
 - Objetivo de versión: **Odoo 16** — seguir la documentación oficial v16.
 - Al finalizar cada trabajo, emitir un **changelog sencillo y claro** con los cambios realizados.
 
