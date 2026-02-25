@@ -168,9 +168,9 @@ class DiplomaReportPDF(models.AbstractModel):
         y_shift = sp(25)
 
         logo_width_base = 150
-        # reduce margins/gutter slightly to widen side columns
-        side_margin = page_width * 0.060  # was 0.070
-        gutter = sp(logo_width_base) * 0.90  # tightened
+        # aggressively reduce margins/gutter to widen side columns as requested
+        side_margin = page_width * 0.050  # narrower than before
+        gutter = sp(logo_width_base) * 0.80  # even tighter
         col_width = (page_width - (2 * side_margin) - gutter) / 2
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
@@ -392,6 +392,8 @@ class DiplomaReportPDF(models.AbstractModel):
             # slightly right to balance the QR code on the far left.
             left_student_x = left_col_x + sp(12)
             self._draw_text_in_column(c, student_name, left_student_x, sign_text_y, col_width, font_bold, sf(10), align='center')
+            # draw Catalan translation immediately below student name
+            self._draw_text_in_column(c, "Interessat/da", left_student_x, sign_text_y - sp(12), col_width, font_regular, sf(8), align='center')
             # place Raimon exactly at page centre rather than using a
             # column width; draw_centered_text does the job directly and
             # avoids the extra horizontal offset caused by col_width.
@@ -432,6 +434,7 @@ class DiplomaReportPDF(models.AbstractModel):
         # parseable we leave the text untouched.
         try:
             import re
+            # get year from diploma date as before
             year = None
             for dfield in ('date_es', 'date_cat'):
                 dval = data.get(dfield)
@@ -440,8 +443,9 @@ class DiplomaReportPDF(models.AbstractModel):
                     if m:
                         year = m.group(1)
                         break
-            if year and re.search(r"\d{2}$", reg_text):
-                reg_text = re.sub(r"\d{2}$", year, reg_text)
+            if year:
+                # replace any two-digit year between dashes with full year
+                reg_text = re.sub(r"-(\d{2})-", f"-{year}-", reg_text)
         except Exception:
             pass
         c.drawString(text_x, qr_y - sp(10), reg_text)
