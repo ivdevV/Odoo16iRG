@@ -175,6 +175,19 @@ class DiplomaReportPDF(models.AbstractModel):
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
         
+        # ------------------------------------------------------------------
+        # the course title tends to be the longest single piece of text and
+        # customers have asked for more horizontal breathing room just for the
+        # "Máster…" line without changing the rest of the layout.  we compute a
+        # slightly larger width that borrows a little space from the gutter.  the
+        # drawing calls further down use these variables instead of the normal
+        # column values.
+        title_extra = gutter * 0.25        # tweak this to taste
+        title_col_width = col_width + title_extra
+        title_left_x = left_col_x - title_extra / 2
+        title_right_x = right_col_x - title_extra / 2
+        # ------------------------------------------------------------------
+        
         # Create PDF buffer
         buffer = io.BytesIO()
         c = canvas.Canvas(buffer, pagesize=page_size)
@@ -245,9 +258,10 @@ class DiplomaReportPDF(models.AbstractModel):
         if cat_bottom or es_bottom:
             course_font_size = sf(18)
         
-        # Draw top lines and capture the lowest y position
-        y_next_cat = self._draw_wrapped_text_in_column(c, cat_top, left_col_x, y, col_width, font_bold, course_font_size, align='right')
-        y_next_es = self._draw_wrapped_text_in_column(c, es_top, right_col_x, y, col_width, font_bold, course_font_size, align='left')
+        # Draw top lines and capture the lowest y position.  use the expanded
+        # title width so the master name has extra room before wrapping occurs.
+        y_next_cat = self._draw_wrapped_text_in_column(c, cat_top, title_left_x, y, title_col_width, font_bold, course_font_size, align='right')
+        y_next_es = self._draw_wrapped_text_in_column(c, es_top, title_right_x, y, title_col_width, font_bold, course_font_size, align='left')
         
         # if we split into two lines, draw the bottom part a little lower
         if cat_bottom:
@@ -392,8 +406,9 @@ class DiplomaReportPDF(models.AbstractModel):
             # slightly right to balance the QR code on the far left.
             left_student_x = left_col_x + sp(12)
             self._draw_text_in_column(c, student_name, left_student_x, sign_text_y, col_width, font_bold, sf(10), align='center')
-            # draw Catalan translation immediately below student name
-            self._draw_text_in_column(c, "Interessat/da", left_student_x, sign_text_y - sp(12), col_width, font_regular, sf(8), align='center')
+            # draw Catalan translation immediately below student name. push it down
+            # a little further so it doesn't collide with the roles below.
+            self._draw_text_in_column(c, "Interessat/da", left_student_x, sign_text_y - sp(14), col_width, font_regular, sf(8), align='center')
             # place Raimon exactly at page centre rather than using a
             # column width; draw_centered_text does the job directly and
             # avoids the extra horizontal offset caused by col_width.
@@ -408,9 +423,10 @@ class DiplomaReportPDF(models.AbstractModel):
             self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, sign_text_y, col_width, font_bold, sf(10), align='center')
 
             # second row: roles titles/labels (left = interested, centre=Director, right=Acad.)
-            role_y = sign_text_y - sp(14)
-            # shift left label right as well to match student name shift
-            self._draw_text_in_column(c, "Interesado/a, Interessat/da", left_student_x, role_y, col_width, font_regular, sf(9), align='center')
+            role_y = sign_text_y - sp(18)
+            # split Spanish / Catalan onto two lines instead of one long string
+            self._draw_text_in_column(c, "Interesado/a", left_student_x, role_y, col_width, font_regular, sf(9), align='center')
+            self._draw_text_in_column(c, "Interessat/da", left_student_x, role_y - sp(10), col_width, font_regular, sf(9), align='center')
             # keep Director centered on page
             self._draw_centered_text(c, "Director", role_y, font_regular, sf(9), page_width)
             self._draw_text_in_column(c, "Directora Académica", right_col_x, role_y, col_width, font_regular, sf(9), align='center')
