@@ -175,18 +175,12 @@ class DiplomaReportPDF(models.AbstractModel):
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
         
-        # ------------------------------------------------------------------
-        # the course title tends to be the longest single piece of text and
-        # customers have asked for more horizontal breathing room just for the
-        # "Máster…" line without changing the rest of the layout.  we compute a
-        # slightly larger width that borrows a little space from the gutter.  the
-        # drawing calls further down use these variables instead of the normal
-        # column values.
-        title_extra = gutter * 0.25        # tweak this to taste
+        # Keep a very small width boost for title only; previous value was too
+        # wide and produced undesirable wrapping balance.
+        title_extra = gutter * 0.1
         title_col_width = col_width + title_extra
         title_left_x = left_col_x - title_extra / 2
         title_right_x = right_col_x - title_extra / 2
-        # ------------------------------------------------------------------
         
         # Create PDF buffer
         buffer = io.BytesIO()
@@ -227,49 +221,30 @@ class DiplomaReportPDF(models.AbstractModel):
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
 
-        # force a break in the master name so it prints in two lines if desired
-        # note: the separators ' y ' and ' i ' include spaces on both sides; this
-        # ensures the conjunction is not glued to the previous word. if you need
-        # to treat them as separate tokens (for styling or further processing),
-        # modify sep or preprocess the course name accordingly before calling this
-        # function – e.g. insert an extra space or replace 'y' with ' y '.
-        def split_master(name, lang='es'):
-            # split on the last language-specific conjunction so that the
-            # conjunction stays at the end of the first line, including the
-            # spaces around it.  the separator strings already include a leading
-            # and trailing blank, so simply concatenating sep preserves both.
-            # the previous implementation erroneously stripped the front space
-            # which merged "Clínica" and "y" into "Clínicay".
-            if not name:
-                return name, None
-            sep = ' y ' if lang == 'es' else ' i '
-            if sep in name:
-                parts = name.rsplit(sep, 1)
-                # include sep verbatim so that there is a space before and after
-                return parts[0] + sep, parts[1]
-            return name, None
+        course_font_size = sf(19)
 
-        cat_top, cat_bottom = split_master(course_cat, lang='cat')
-        es_top, es_bottom = split_master(course_es, lang='es')
-        
-        course_font_size = sf(21)
-        # if either language has been split into two lines, reduce the font to
-        # avoid overflow and give the whole title a bit more breathing room
-        if cat_bottom or es_bottom:
-            course_font_size = sf(18)
-        
-        # Draw top lines and capture the lowest y position.  use the expanded
-        # title width so the master name has extra room before wrapping occurs.
-        y_next_cat = self._draw_wrapped_text_in_column(c, cat_top, title_left_x, y, title_col_width, font_bold, course_font_size, align='right')
-        y_next_es = self._draw_wrapped_text_in_column(c, es_top, title_right_x, y, title_col_width, font_bold, course_font_size, align='left')
-        
-        # if we split into two lines, draw the bottom part a little lower
-        if cat_bottom:
-            y_temp = y_next_cat - sp(2)
-            y_next_cat = self._draw_wrapped_text_in_column(c, cat_bottom, left_col_x, y_temp, col_width, font_bold, course_font_size, align='right')
-        if es_bottom:
-            y_temp = y_next_es - sp(2)
-            y_next_es = self._draw_wrapped_text_in_column(c, es_bottom, right_col_x, y_temp, col_width, font_bold, course_font_size, align='left')
+        # Draw full title text and let wrapping be controlled only by width.
+        # No special break on conjunctions ('y'/'i') to avoid orphan lines.
+        y_next_cat = self._draw_wrapped_text_in_column(
+            c,
+            course_cat,
+            title_left_x,
+            y,
+            title_col_width,
+            font_bold,
+            course_font_size,
+            align='right',
+        )
+        y_next_es = self._draw_wrapped_text_in_column(
+            c,
+            course_es,
+            title_right_x,
+            y,
+            title_col_width,
+            font_bold,
+            course_font_size,
+            align='left',
+        )
         
         # Update Y to the lowest point from both columns
         y = min(y_next_cat, y_next_es)
@@ -406,9 +381,6 @@ class DiplomaReportPDF(models.AbstractModel):
             # slightly right to balance the QR code on the far left.
             left_student_x = left_col_x + sp(12)
             self._draw_text_in_column(c, student_name, left_student_x, sign_text_y, col_width, font_bold, sf(10), align='center')
-            # draw Catalan translation immediately below student name. push it down
-            # a little further so it doesn't collide with the roles below.
-            self._draw_text_in_column(c, "Interessat/da", left_student_x, sign_text_y - sp(14), col_width, font_regular, sf(8), align='center')
             # place Raimon exactly at page centre rather than using a
             # column width; draw_centered_text does the job directly and
             # avoids the extra horizontal offset caused by col_width.
