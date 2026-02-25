@@ -175,12 +175,6 @@ class DiplomaReportPDF(models.AbstractModel):
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
         
-        # Keep a very small width boost for title only; previous value was too
-        # wide and produced undesirable wrapping balance.
-        title_extra = gutter * 0.1
-        title_col_width = col_width + title_extra
-        title_left_x = left_col_x - title_extra / 2
-        title_right_x = right_col_x - title_extra / 2
         
         # Create PDF buffer
         buffer = io.BytesIO()
@@ -220,6 +214,19 @@ class DiplomaReportPDF(models.AbstractModel):
         y -= sp(28)
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
+
+        # decide how wide the title columns should be; if the longest of the
+        # two language strings is short we narrow the block (subtract from
+        # col_width), otherwise add a slight boost to help long names wrap more
+        # gracefully. 45 characters is the threshold requested by the user.
+        longest = max(len(course_cat or ''), len(course_es or ''))
+        if longest and longest < 45:
+            title_extra = -gutter * 0.20
+        else:
+            title_extra = gutter * 0.08
+        title_col_width = col_width + title_extra
+        title_left_x = left_col_x - title_extra / 2
+        title_right_x = right_col_x - title_extra / 2
 
         course_font_size = sf(19)
 
@@ -343,7 +350,9 @@ class DiplomaReportPDF(models.AbstractModel):
             if sign_raimon_path and os.path.exists(sign_raimon_path):
                 sig_width = sp(95)
                 sig_height = sp(47)
-                sig_x = left_col_x + (col_width - sig_width) / 2
+                # move the image a little towards the centre of the page
+                offset = sp(20)
+                sig_x = left_col_x + (col_width - sig_width) / 2 + offset
                 c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
             
             # Signature Grecia (right)
@@ -351,7 +360,8 @@ class DiplomaReportPDF(models.AbstractModel):
             sig_width = sp(95)
             sig_height = sp(47)
             if sign_grecia_path and os.path.exists(sign_grecia_path):
-                sig_x = right_col_x + (col_width - sig_width) / 2
+                offset = sp(20)
+                sig_x = right_col_x + (col_width - sig_width) / 2 - offset
                 c.drawImage(sign_grecia_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
 
             # Text Names (Aligned) – original layout for digital diplomas
