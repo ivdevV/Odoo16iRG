@@ -61,6 +61,30 @@
         gap: 0.45rem;
     }
 
+    .irg-oh-tools {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    .irg-oh-tools-label {
+        margin: 0;
+        font-size: 0.78rem;
+        color: var(--irg-muted);
+        font-weight: 700;
+    }
+
+    .irg-oh-timezone-select {
+        border: 1px solid var(--irg-border);
+        background: var(--irg-surface-2);
+        color: var(--irg-text);
+        border-radius: 10px;
+        padding: 0.3rem 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        min-width: 190px;
+    }
+
     .irg-oh-btn {
         border: 1px solid var(--irg-border);
         background: var(--irg-surface-2);
@@ -220,6 +244,12 @@
         overflow: auto;
     }
 
+    .irg-oh-timezone-note {
+        font-size: 0.73rem;
+        color: var(--irg-muted);
+        margin-bottom: 0.45rem;
+    }
+
     .irg-oh-agenda-item {
         border: 1px solid var(--irg-border);
         background: var(--irg-surface-2);
@@ -330,6 +360,15 @@
 
         .irg-oh-title {
             text-align: center;
+        }
+
+        .irg-oh-tools {
+            justify-content: center;
+        }
+
+        .irg-oh-timezone-select {
+            min-width: 0;
+            width: 100%;
         }
     }
 }

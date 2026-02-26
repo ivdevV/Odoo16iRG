@@ -42,6 +42,56 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
         return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    function formatTimeInZone(dateObj, timeZone) {
+        if (!dateObj) {
+            return '';
+        }
+        return new Intl.DateTimeFormat('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: timeZone,
+        }).format(dateObj);
+    }
+
+    function formatDateInZone(dateObj, timeZone) {
+        if (!dateObj) {
+            return '';
+        }
+        return new Intl.DateTimeFormat('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            timeZone: timeZone,
+        }).format(dateObj);
+    }
+
+    function formatDayNameInZone(dateObj, timeZone) {
+        if (!dateObj) {
+            return '-';
+        }
+        return new Intl.DateTimeFormat('en-US', {
+            weekday: 'long',
+            timeZone: timeZone,
+        }).format(dateObj);
+    }
+
+    function buildTimezoneOptions(browserTimezone) {
+        var options = [
+            { value: browserTimezone || 'UTC', label: 'Mi zona (' + (browserTimezone || 'UTC') + ')' },
+            { value: 'Europe/Madrid', label: 'Campus (Europe/Madrid)' },
+            { value: 'UTC', label: 'UTC' },
+        ];
+        var seen = {};
+        return options.filter(function (item) {
+            if (seen[item.value]) {
+                return false;
+            }
+            seen[item.value] = true;
+            return true;
+        });
+    }
+
     function sameDay(a, b) {
         return a && b &&
             a.getFullYear() === b.getFullYear() &&
@@ -110,6 +160,8 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
                 selectedEvent: null,
             };
 
+            var browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+            var timezoneOptions = buildTimezoneOptions(browserTimezone);
             var monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
             var dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
@@ -131,7 +183,7 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
                     });
             };
 
-            var buildCell = function (date, currentMonth) {
+            var buildCell = function (date, currentMonth, activeTimezone) {
                 var inMonth = date.getMonth() === currentMonth;
                 var isToday = sameDay(date, new Date());
                 var isSelected = sameDay(date, state.selectedDate);
@@ -143,7 +195,7 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
 
                 var eventHtml = shown.map(function (ev) {
                     return '<button class="irg-oh-event" data-event-id="' + ev.id + '">' +
-                        '<span class="irg-oh-event-time">' + formatTime(ev.start) + '</span>' +
+                        '<span class="irg-oh-event-time">' + formatTimeInZone(ev.start, activeTimezone) + '</span>' +
                         '<span class="irg-oh-event-title">' + escapeHtml(ev.title) + '</span>' +
                         '</button>';
                 }).join('');
@@ -163,20 +215,21 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
             };
 
             var render = function () {
+                var activeTimezone = state.displayTimezone || browserTimezone || 'UTC';
                 var monthStart = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth(), 1);
                 var gridStart = getWeekStart(monthStart);
                 var cursor = new Date(gridStart);
 
                 var cells = '';
                 for (var i = 0; i < 42; i++) {
-                    cells += buildCell(cursor, state.currentDate.getMonth());
+                    cells += buildCell(cursor, state.currentDate.getMonth(), activeTimezone);
                     cursor.setDate(cursor.getDate() + 1);
                 }
 
                 var selectedEvents = getEventsByDate(state.selectedDate);
                 var agendaHtml = selectedEvents.length ? selectedEvents.map(function (ev) {
                     return '<button class="irg-oh-agenda-item" data-event-id="' + ev.id + '">' +
-                        '<div class="irg-oh-agenda-time">' + formatTime(ev.start) + ' - ' + formatTime(ev.end) + '</div>' +
+                        '<div class="irg-oh-agenda-time">' + formatTimeInZone(ev.start, activeTimezone) + ' - ' + formatTimeInZone(ev.end, activeTimezone) + '</div>' +
                         '<div class="irg-oh-agenda-title">' + escapeHtml(ev.title) + '</div>' +
                         '<div class="irg-oh-agenda-meta">' + escapeHtml(ev.course) + ' · ' + escapeHtml(ev.faculty) + '</div>' +
                     '</button>';
@@ -186,11 +239,12 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
                 var detailHtml = selected ?
                     '<div class="irg-oh-detail-card">' +
                         '<h4>' + escapeHtml(selected.title) + '</h4>' +
-                        '<p><strong>Hora:</strong> ' + formatTime(selected.start) + ' - ' + formatTime(selected.end) + '</p>' +
+                        '<p><strong>Hora:</strong> ' + formatTimeInZone(selected.start, activeTimezone) + ' - ' + formatTimeInZone(selected.end, activeTimezone) + '</p>' +
                         '<p><strong>Docente:</strong> ' + escapeHtml(selected.faculty) + '</p>' +
                         '<p><strong>Curso:</strong> ' + escapeHtml(selected.course) + '</p>' +
                         '<p><strong>Lote:</strong> ' + escapeHtml(selected.batch) + '</p>' +
-                        '<p><strong>Día:</strong> ' + escapeHtml(selected.day) + '</p>' +
+                        '<p><strong>Día:</strong> ' + escapeHtml(formatDayNameInZone(selected.start, activeTimezone)) + '</p>' +
+                        '<p><strong>Zona horaria:</strong> ' + escapeHtml(activeTimezone) + '</p>' +
                         '<div class="irg-oh-detail-notes">' + escapeHtml(selected.lesson || '-') + '</div>' +
                         (selected.time_url_metting ? '<a class="irg-oh-link" target="_blank" href="' + escapeHtml(selected.time_url_metting) + '">Acceso en vivo</a>' : '') +
                         (selected.time_url_recoding ? '<a class="irg-oh-link" target="_blank" href="' + escapeHtml(selected.time_url_recoding) + '">Grabación</a>' : '') +
@@ -205,6 +259,14 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
                                 '<button class="irg-oh-btn" data-action="today">Hoy</button>' +
                                 '<button class="irg-oh-btn" data-action="next">▶</button>' +
                             '</div>' +
+                            '<div class="irg-oh-tools">' +
+                                '<label for="irg-oh-tz-select" class="irg-oh-tools-label">Hora en:</label>' +
+                                '<select id="irg-oh-tz-select" class="irg-oh-timezone-select">' +
+                                    timezoneOptions.map(function (option) {
+                                        return '<option value="' + escapeHtml(option.value) + '"' + (option.value === activeTimezone ? ' selected="selected"' : '') + '>' + escapeHtml(option.label) + '</option>';
+                                    }).join('') +
+                                '</select>' +
+                            '</div>' +
                             '<div class="irg-oh-title">' + monthNames[state.currentDate.getMonth()] + ' ' + state.currentDate.getFullYear() + '</div>' +
                         '</div>' +
                         '<div class="irg-oh-layout">' +
@@ -214,7 +276,8 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
                             '</div>' +
                             '<aside class="irg-oh-sidebar">' +
                                 '<div class="irg-oh-sidebar-card">' +
-                                    '<h3>Agenda · ' + state.selectedDate.toLocaleDateString() + '</h3>' +
+                                    '<h3>Agenda · ' + formatDateInZone(state.selectedDate, activeTimezone) + '</h3>' +
+                                    '<div class="irg-oh-timezone-note">Zona: ' + escapeHtml(activeTimezone) + '</div>' +
                                     '<div class="irg-oh-agenda">' + agendaHtml + '</div>' +
                                 '</div>' +
                                 '<div class="irg-oh-sidebar-card">' +
@@ -244,6 +307,14 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
                     });
                 });
 
+                var timezoneSelect = root.querySelector('.irg-oh-timezone-select');
+                if (timezoneSelect) {
+                    timezoneSelect.addEventListener('change', function () {
+                        state.displayTimezone = timezoneSelect.value || browserTimezone || 'UTC';
+                        render();
+                    });
+                }
+
                 root.querySelectorAll('.irg-oh-cell').forEach(function (cell) {
                     cell.addEventListener('click', function () {
                         var raw = cell.getAttribute('data-date');
@@ -269,6 +340,7 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
             };
 
             state.selectedEvent = events.length ? events[0] : null;
+            state.displayTimezone = browserTimezone;
             if (state.selectedEvent) {
                 state.selectedDate = new Date(state.selectedEvent.start);
                 state.currentDate = new Date(state.selectedEvent.start);

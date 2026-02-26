@@ -1,6 +1,4 @@
-from pytz import timezone
-
-from odoo import http
+from odoo import http, fields
 from odoo.http import request
 
 
@@ -31,14 +29,21 @@ class IrgTimeTableSessionTitleEndpoint(http.Controller):
         ])
 
         user_tz = request.env.user.tz or current_timezone or 'UTC'
-        tz = timezone(user_tz)
 
         for session in session_model:
             lesson_text = '\n'.join(session.lesson_ids.mapped('lesson_topic'))
+            localized_start = fields.Datetime.context_timestamp(
+                request.env.user.with_context(tz=user_tz),
+                session.start_datetime,
+            ) if session.start_datetime else False
+            localized_end = fields.Datetime.context_timestamp(
+                request.env.user.with_context(tz=user_tz),
+                session.end_datetime,
+            ) if session.end_datetime else False
             row = {
                 'title': session.class_title or session.name or session.subject_id.display_name or session.subject_id.name,
-                'start': session.start_datetime.astimezone(tz),
-                'end': session.end_datetime.astimezone(tz),
+                'start': localized_start.isoformat() if localized_start else False,
+                'end': localized_end.isoformat() if localized_end else False,
                 'faculty': session.faculty_id.name,
                 'batch': session.batch_id.name,
                 'course': session.course_id.name,
