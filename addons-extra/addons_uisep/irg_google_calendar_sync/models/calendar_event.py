@@ -2,7 +2,7 @@ import re
 import logging
 import random
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from odoo import models, api, fields, _
 
 _logger = logging.getLogger(__name__)
@@ -194,18 +194,25 @@ class CalendarEvent(models.Model):
 
     def _parse_google_datetime(self, dt_str):
         """Parse Google Calendar datetime format"""
-        # Remove timezone info for simplicity (Google returns ISO 8601)
-        # Example: 2026-02-05T16:00:00+01:00
-        if '+' in dt_str:
-            dt_str = dt_str.rsplit('+', 1)[0]
-        elif dt_str.endswith('Z'):
-            dt_str = dt_str[:-1]
-        
-        # Handle milliseconds if present
-        if '.' in dt_str:
-            dt_str = dt_str.split('.')[0]
-        
-        return datetime.strptime(dt_str, '%Y-%m-%dT%H:%M:%S')
+        # Google returns ISO 8601 with timezone (e.g. +01:00 or Z).
+        # Odoo stores datetime as naive UTC, so we must preserve tz and convert.
+        raw_value = (dt_str or '').strip()
+
+        # Python's fromisoformat doesn't always accept trailing Z in all versions.
+        if raw_value.endswith('Z'):
+            raw_value = f"{raw_value[:-1]}+00:00"
+
+        try:
+            parsed_dt = datetime.fromisoformat(raw_value)
+        except ValueError:
+            # Fallback for uncommon payloads without timezone.
+            if '.' in raw_value:
+                raw_value = raw_value.split('.')[0]
+            parsed_dt = datetime.strptime(raw_value, '%Y-%m-%dT%H:%M:%S')
+
+        if parsed_dt.tzinfo:
+            return parsed_dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return parsed_dt
 
     @api.model_create_multi
     def create(self, vals_list):
