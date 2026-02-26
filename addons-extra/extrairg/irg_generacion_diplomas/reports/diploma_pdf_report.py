@@ -267,7 +267,7 @@ class DiplomaReportPDF(models.AbstractModel):
             y,
             left_title_width,
             font_bold,
-            course_font_size,
+            course_font_size_cat,
             align='right',
         )
         y_next_es = self._draw_wrapped_text_in_column(
@@ -277,7 +277,7 @@ class DiplomaReportPDF(models.AbstractModel):
             y,
             right_title_width,
             font_bold,
-            course_font_size,
+            course_font_size_es,
             align='left',
         )
         
