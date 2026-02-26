@@ -216,3 +216,215 @@
         }
     }
 }
+
+.timetable_schedule_portal.irg-timetable-overhaul {
+    .irg-event-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        min-width: 0;
+    }
+
+    .irg-event-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba($white, 0.92);
+        flex: 0 0 auto;
+    }
+
+    .irg-event-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+        max-width: 100%;
+    }
+
+    .irg-agenda-card {
+        border-radius: 10px;
+        background: linear-gradient(135deg, rgba($primary, 0.14) 0%, rgba($white, 0.92) 100%);
+        border: 1px solid rgba($primary, 0.2);
+        padding: 0.45rem 0.65rem;
+    }
+
+    .irg-agenda-card__title {
+        font-weight: 700;
+        color: $gray-900;
+        margin-bottom: 0.15rem;
+    }
+
+    .irg-agenda-card__meta,
+    .irg-agenda-card__time {
+        font-size: 0.86rem;
+        color: $gray-700;
+    }
+
+    .irg-popup {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba($primary, 0.16);
+        background: $white;
+    }
+
+    .irg-popup__header {
+        padding: 0.8rem 0.95rem;
+        background: linear-gradient(180deg, rgba($primary, 0.95) 0%, rgba($primary, 0.82) 100%);
+        color: $white;
+
+        h3 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 0.2rem 0 0;
+            opacity: 0.9;
+            font-size: 0.82rem;
+        }
+    }
+
+    .irg-popup__body {
+        padding: 0.85rem 0.95rem;
+    }
+
+    .irg-popup__row {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 0.6rem;
+        padding: 0.35rem 0;
+        border-bottom: 1px dashed rgba($border-color, 0.8);
+    }
+
+    .irg-popup__label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: rgba($gray-700, 0.95);
+    }
+
+    .irg-popup__value {
+        font-weight: 600;
+        color: $gray-900;
+        word-break: break-word;
+    }
+
+    .irg-popup__notes {
+        padding-top: 0.5rem;
+    }
+
+    .irg-popup__lesson {
+        margin-top: 0.35rem;
+        border-radius: 10px;
+        border: 1px solid rgba($primary, 0.16);
+        background: rgba($gray-100, 0.65);
+        padding: 0.55rem 0.65rem;
+        white-space: pre-wrap;
+        color: $gray-800;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .timetable_schedule_portal.irg-timetable-overhaul {
+        .irg-popup__row {
+            grid-template-columns: 1fr;
+            gap: 0.2rem;
+        }
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .timetable_schedule_portal.irg-timetable-overhaul {
+        border-color: rgba($white, 0.14);
+        background: #101622;
+        box-shadow: 0 16px 40px rgba($black, 0.45);
+
+        &:before {
+            background: linear-gradient(180deg, rgba($white, 0) 0%, rgba($black, 0.25) 100%);
+        }
+
+        .k-toolbar.k-scheduler-toolbar {
+            border-bottom-color: rgba($white, 0.14);
+            background: linear-gradient(180deg, rgba($primary, 0.38) 0%, rgba(#0f172a, 0.75) 100%);
+        }
+
+        .k-scheduler,
+        .k-scheduler-content,
+        .k-scheduler-layout,
+        .k-scheduler-header-wrap,
+        .k-scheduler-table,
+        .k-scheduler-table td,
+        .k-scheduler-table th {
+            background: #111a28;
+            color: rgba($white, 0.9);
+            border-color: rgba($white, 0.12);
+        }
+
+        .k-scheduler-navigation .k-nav-current,
+        .k-scheduler-navigation .k-nav-prev,
+        .k-scheduler-navigation .k-nav-next,
+        .k-scheduler-navigation .k-nav-today,
+        .k-scheduler-views .k-current-view,
+        .k-scheduler-views li > a,
+        .k-scheduler-toolbar .k-textbox {
+            background: rgba($white, 0.08);
+            color: rgba($white, 0.92);
+            border-color: rgba($white, 0.2);
+        }
+
+        .k-scheduler-views .k-state-selected,
+        .k-scheduler-views .k-current-view {
+            background: linear-gradient(180deg, rgba($primary, 0.98) 0%, rgba($primary, 0.78) 100%);
+            color: $white;
+        }
+
+        .k-today {
+            background: linear-gradient(180deg, rgba($primary, 0.32) 0%, rgba($primary, 0.18) 100%);
+        }
+
+        .k-more-events {
+            background: rgba($primary, 0.24);
+            color: rgba($white, 0.92);
+        }
+
+        .irg-agenda-card {
+            background: linear-gradient(135deg, rgba($primary, 0.26) 0%, rgba($white, 0.06) 100%);
+            border-color: rgba($primary, 0.45);
+        }
+
+        .irg-agenda-card__title,
+        .irg-agenda-card__meta,
+        .irg-agenda-card__time {
+            color: rgba($white, 0.92);
+        }
+
+        .irg-popup {
+            border-color: rgba($primary, 0.45);
+            background: #0f172a;
+        }
+
+        .irg-popup__header {
+            background: linear-gradient(180deg, rgba($primary, 0.96) 0%, rgba($primary, 0.7) 100%);
+        }
+
+        .irg-popup__row {
+            border-bottom-color: rgba($white, 0.12);
+        }
+
+        .irg-popup__label {
+            color: rgba($white, 0.72);
+        }
+
+        .irg-popup__value,
+        .irg-popup__lesson {
+            color: rgba($white, 0.92);
+        }
+
+        .irg-popup__lesson {
+            background: rgba($white, 0.06);
+            border-color: rgba($primary, 0.35);
+        }
+    }
+}

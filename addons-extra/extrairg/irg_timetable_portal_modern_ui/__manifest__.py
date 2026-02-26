@@ -8,7 +8,9 @@
     'depends': [
         'openeducat_timetable_enterprise',
     ],
-    'data': [],
+    'data': [
+        'views/timetable_portal_overhaul.xml',
+    ],
     'assets': {
         'web.assets_frontend': [
             'irg_timetable_portal_modern_ui/static/src/scss/portal_timetable_modern.scss',
