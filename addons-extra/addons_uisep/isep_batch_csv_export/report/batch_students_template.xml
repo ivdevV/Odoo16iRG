@@ -111,13 +111,31 @@
                                         <!-- Estudios (Titulación) -->
                                         <td style="vertical-align: middle;">
                                             <t t-if="admission.student_id and admission.student_id.partner_id">
-                                                <span t-esc="admission.student_id.partner_id.titulacion or ''"/>
+                                                <t t-set="partner" t-value="admission.student_id.partner_id"/>
+                                                <t t-if="'study_type_id' in partner._fields and partner.study_type_id">
+                                                    <span t-esc="partner.study_type_id.name or ''"/>
+                                                </t>
+                                                <t t-elif="'titulacion' in partner._fields and partner.titulacion">
+                                                    <span t-esc="partner.titulacion"/>
+                                                </t>
+                                                <t t-elif="'x_studio_titulacion' in partner._fields and partner.x_studio_titulacion">
+                                                    <span t-esc="partner.x_studio_titulacion"/>
+                                                </t>
                                             </t>
                                         </td>
                                         <!-- Profesión -->
                                         <td style="vertical-align: middle;">
                                             <t t-if="admission.student_id and admission.student_id.partner_id">
-                                                <span t-esc="admission.student_id.partner_id.profession or ''"/>
+                                                <t t-set="partner" t-value="admission.student_id.partner_id"/>
+                                                <t t-if="'profession_id' in partner._fields and partner.profession_id">
+                                                    <span t-esc="partner.profession_id.name or ''"/>
+                                                </t>
+                                                <t t-elif="'profession' in partner._fields and partner.profession">
+                                                    <span t-esc="partner.profession"/>
+                                                </t>
+                                                <t t-elif="'function' in partner._fields and partner.function">
+                                                    <span t-esc="partner.function"/>
+                                                </t>
                                             </t>
                                         </td>
                                         <!-- Fecha Matrícula -->

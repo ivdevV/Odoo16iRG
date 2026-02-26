@@ -6,27 +6,30 @@
         <field name="name">batch.csv.export.wizard.form</field>
         <field name="model">batch.csv.export.wizard</field>
         <field name="arch" type="xml">
-            <form string="Exportar Estudiantes a CSV">
+            <form string="Exportar Estudiantes">
                 <group attrs="{'invisible': [('state', '=', 'done')]}">
                     <group>
                         <field name="batch_id" readonly="1"/>
                     </group>
                     <group>
-                        <p>Se exportarán todos los estudiantes del lote seleccionado a un archivo CSV.</p>
+                        <p>Se exportarán todos los estudiantes del lote seleccionado a CSV o Excel.</p>
                     </group>
                 </group>
                 <group attrs="{'invisible': [('state', '=', 'choose')]}">
                     <group>
                         <field name="csv_file" filename="csv_filename" readonly="1"/>
                         <field name="csv_filename" invisible="1"/>
+                        <field name="excel_file" filename="excel_filename" readonly="1"/>
+                        <field name="excel_filename" invisible="1"/>
                     </group>
                     <group>
-                        <p>El archivo CSV ha sido generado correctamente. Haga clic en el enlace para descargarlo.</p>
+                        <p>El archivo ha sido generado correctamente. Haga clic en el enlace para descargarlo.</p>
                     </group>
                 </group>
                 <field name="state" invisible="1"/>
                 <footer>
                     <button name="action_export_csv" string="Exportar CSV" type="object" class="btn-primary" attrs="{'invisible': [('state', '=', 'done')]}"/>
+                    <button name="action_export_excel" string="Exportar Excel" type="object" class="btn-secondary" attrs="{'invisible': [('state', '=', 'done')]}"/>
                     <button string="Cerrar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
@@ -35,7 +38,7 @@
     
     <!-- Action to open wizard from op.batch -->
     <record id="action_batch_csv_export_wizard" model="ir.actions.act_window">
-        <field name="name">Exportar Estudiantes a CSV</field>
+        <field name="name">Exportar Estudiantes (CSV/Excel)</field>
         <field name="res_model">batch.csv.export.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
