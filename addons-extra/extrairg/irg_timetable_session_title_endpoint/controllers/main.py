@@ -1,8 +1,18 @@
+import re
+
 from odoo import http, fields
 from odoo.http import request
 
 
 class IrgTimeTableSessionTitleEndpoint(http.Controller):
+
+    def _clean_session_title(self, title):
+        text = (title or '').strip()
+        if not text:
+            return text
+        text = text.replace('［', '[').replace('］', ']')
+        cleaned = re.sub(r'^\[[^\]]+\]\s*', '', text).strip()
+        return cleaned or text
 
     @http.route('/get-timetable/data', type='json', auth='user', website=True)
     def get_timetable_data_portal(self, stud_id=None, current_timezone=None):
@@ -32,6 +42,7 @@ class IrgTimeTableSessionTitleEndpoint(http.Controller):
 
         for session in session_model:
             lesson_text = '\n'.join(session.lesson_ids.mapped('lesson_topic'))
+            raw_title = session.class_title or session.name or session.subject_id.display_name or session.subject_id.name
             localized_start = fields.Datetime.context_timestamp(
                 request.env.user.with_context(tz=user_tz),
                 session.start_datetime,
@@ -41,7 +52,7 @@ class IrgTimeTableSessionTitleEndpoint(http.Controller):
                 session.end_datetime,
             ) if session.end_datetime else False
             row = {
-                'title': session.class_title or session.name or session.subject_id.display_name or session.subject_id.name,
+                'title': self._clean_session_title(raw_title),
                 'start': localized_start.isoformat() if localized_start else False,
                 'end': localized_end.isoformat() if localized_end else False,
                 'faculty': session.faculty_id.name,
