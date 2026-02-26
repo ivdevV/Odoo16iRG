@@ -482,6 +482,10 @@ class DiplomaReportPDF(models.AbstractModel):
             # text aligns vertically with the 'Interessat/da' label by
             # placing it at the same baseline.
             reg_baseline_y = role_y - sp(10)
+            # place the QR so its bottom sits a few points above the
+            # registry text baseline, ensuring the image is directly
+            # above "Nº Registro:" for physical diplomas.
+            qr_y = reg_baseline_y + sp(10)
 
         # --- QR CODE & REGISTRY ---
         qr_image = self._generate_qr(qr_url)
