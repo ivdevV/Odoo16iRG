@@ -348,17 +348,20 @@ class DiplomaReportPDF(models.AbstractModel):
         # for example, the centre signature zone is positioned by
         #   left_col_x + col_width + gutter/2
         # changing that expression will move only the middle column.
+        # move further down to make space and lower the signature area
         y -= sp(54)
-        
-        # Store Y for images (top of signature area)
-        y_images = y
+
+        # Store Y for images (bottom of signature area). push signatures
+        # a bit further down so they sit below the date.
+        y_images = y - sp(18)
 
         # compute QR coordinates now so that later branches can reference qr_y
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
         registry = data.get('registry_number', 'DRAFT')
         qr_size = sp(46)
         qr_x = side_margin - sp(10)
-        qr_y = sp(26)
+        # Align QR bottom with signature bottom so they sit at same height
+        qr_y = y_images
 
         if diploma_type == 'digital':
             # Signature Raimon (left)
@@ -366,9 +369,11 @@ class DiplomaReportPDF(models.AbstractModel):
             if sign_raimon_path and os.path.exists(sign_raimon_path):
                 sig_width = sp(95)
                 sig_height = sp(47)
-                # nudge signatures noticeably towards the centre for digital diplomas
+                # nudge signatures noticeably towards the centre for digital
+                # diplomas and center them under the date (column centre).
                 sig_shift = sp(22)
-                sig_x = left_col_x + (col_width - sig_width) / 2 + sig_shift
+                left_center = left_col_x + col_width / 2
+                sig_x = left_center + sig_shift - (sig_width / 2)
                 c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
             
             # Signature Grecia (right)
@@ -376,13 +381,14 @@ class DiplomaReportPDF(models.AbstractModel):
             sig_width = sp(95)
             sig_height = sp(47)
             if sign_grecia_path and os.path.exists(sign_grecia_path):
-                sig_x = right_col_x + (col_width - sig_width) / 2 - sig_shift
+                right_center = right_col_x + col_width / 2
+                sig_x = right_center - sig_shift - (sig_width / 2)
                 c.drawImage(sign_grecia_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
 
             # Text Names (Aligned) – original layout for digital diplomas
             y -= sp(8)
             # apply same horizontal nudge to text labels so they line up with
-            # the nudged signature images
+            # the nudged signature images (use column-centred anchors)
             self._draw_text_in_column(c, "Raimon Gaja", left_col_x + sig_shift, y, col_width, font_bold, sf(13), align='center')
             self._draw_text_in_column(c, "Grecia Malcotti", right_col_x - sig_shift, y, col_width, font_bold, sf(13), align='center')
             
