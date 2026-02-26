@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import ajax from 'web.ajax';
+import { jsonrpc } from '@web/core/network/rpc_service';
 
 function getCourseIdFromPath() {
     const match = window.location.pathname.match(/\/campus\/course\/(\d+)/);
@@ -76,19 +76,26 @@ function renderPopup(courseId, notice) {
 async function initForumNoticePopup() {
     const courseId = getCourseIdFromPath() || getFirstCourseIdFromPage();
     if (!courseId) {
+        if (window.location.pathname.startsWith('/campus')) {
+            console.info('[irg_forum_notice_popup] No course id found in page');
+        }
         return;
     }
 
     try {
-        const result = await ajax.jsonRpc(`/campus/course/${courseId}/forum_notice_popup`, 'call', {});
+        const result = await jsonrpc(`/campus/course/${courseId}/forum_notice_popup`, {});
         const notice = result && result.notice;
         if (!notice || !notice.id || alreadySeen(courseId, notice.id)) {
             return;
         }
         renderPopup(courseId, notice);
     } catch (error) {
-        // noop
+        console.warn('[irg_forum_notice_popup] Failed to load popup notice', error);
     }
 }
 
-document.addEventListener('DOMContentLoaded', initForumNoticePopup);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initForumNoticePopup);
+} else {
+    initForumNoticePopup();
+}

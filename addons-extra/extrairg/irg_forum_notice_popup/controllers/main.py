@@ -69,6 +69,8 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
 
         posts = post_model.search(post_domain, order='create_date desc', limit=40)
         notice_post = next((post for post in posts if self._is_notice_post(post)), False)
+        if not notice_post and posts:
+            notice_post = posts[0]
 
         if not notice_post:
             return {'notice': False}
