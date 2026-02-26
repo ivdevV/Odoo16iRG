@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import { jsonrpc } from '@web/core/network/rpc_service';
+import ajax from 'web.ajax';
 
 function getCourseIdFromPath() {
     const match = window.location.pathname.match(/\/campus\/course\/(\d+)/);
@@ -83,7 +83,7 @@ async function initForumNoticePopup() {
     }
 
     try {
-        const result = await jsonrpc(`/campus/course/${courseId}/forum_notice_popup`, {});
+        const result = await ajax.jsonRpc(`/campus/course/${courseId}/forum_notice_popup`, 'call', {});
         const notice = result && result.notice;
         if (!notice || !notice.id || alreadySeen(courseId, notice.id)) {
             return;
