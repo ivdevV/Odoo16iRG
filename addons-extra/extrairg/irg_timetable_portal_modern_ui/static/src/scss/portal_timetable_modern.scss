@@ -1,10 +1,25 @@
 .timetable_schedule_portal {
     margin-top: 0.75rem;
-    border-radius: 14px;
+    border-radius: 16px;
     overflow: hidden;
     border: 1px solid $border-color;
     background: $white;
-    box-shadow: 0 8px 24px rgba($black, 0.08);
+    box-shadow: 0 14px 34px rgba($black, 0.1);
+    position: relative;
+
+    &:before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(180deg, rgba($white, 0) 0%, rgba($gray-100, 0.35) 100%);
+        z-index: 0;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
 
     .k-scheduler {
         border: 0;
@@ -12,30 +27,67 @@
     }
 
     .k-toolbar.k-scheduler-toolbar {
-        padding: 0.75rem;
+        padding: 0.85rem;
         border-bottom: 1px solid $border-color;
-        background: linear-gradient(180deg, rgba($gray-100, 0.85) 0%, rgba($white, 1) 100%);
+        background: linear-gradient(180deg, rgba($primary, 0.18) 0%, rgba($primary, 0.06) 100%);
+        backdrop-filter: blur(4px);
+
+        .k-button,
+        .k-link,
+        .k-nav-current {
+            transition: all 0.2s ease;
+        }
+
+        .k-button:hover,
+        .k-link:hover {
+            transform: translateY(-1px);
+        }
     }
 
     .k-scheduler-navigation {
         .k-nav-current {
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border: 1px solid rgba($primary, 0.28);
+            background: rgba($white, 0.9);
+            color: $gray-900;
         }
 
         .k-nav-prev,
         .k-nav-next,
         .k-nav-today {
-            border-radius: 8px;
+            border-radius: 10px;
+            border: 1px solid rgba($primary, 0.26);
+            background: rgba($white, 0.92);
+
+            &:hover {
+                background: rgba($primary, 0.12);
+            }
         }
     }
 
     .k-scheduler-views {
         .k-current-view,
         li > a {
-            border-radius: 8px;
+            border-radius: 999px;
             font-weight: 500;
+            padding-left: 0.85rem;
+            padding-right: 0.85rem;
+            border: 1px solid rgba($primary, 0.18);
+            background: rgba($white, 0.9);
         }
+
+        .k-state-selected,
+        .k-current-view {
+            background: linear-gradient(180deg, rgba($primary, 0.95) 0%, rgba($primary, 0.75) 100%);
+            color: $white;
+            border-color: transparent;
+        }
+    }
+
+    .k-scheduler-layout .k-scheduler-content {
+        background: rgba($white, 0.95);
     }
 
     .k-scheduler-monthview {
@@ -47,30 +99,120 @@
         .k-scheduler-datecolumn,
         .k-scheduler-weekview .k-today,
         .k-today {
-            background: rgba($primary, 0.06);
+            background: linear-gradient(180deg, rgba($primary, 0.16) 0%, rgba($primary, 0.06) 100%);
+        }
+
+        .k-scheduler-header-wrap {
+            background: rgba($gray-100, 0.88);
+
+            th {
+                font-weight: 700;
+                color: $gray-800;
+            }
+        }
+
+        .k-scheduler-table td {
+            transition: background 0.2s ease;
+
+            &:hover {
+                background: rgba($primary, 0.06);
+            }
         }
 
         .k-event {
             border: 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba($black, 0.1);
-            padding: 2px 8px;
+            border-radius: 10px;
+            box-shadow: 0 4px 14px rgba($black, 0.14);
+            background: linear-gradient(90deg, rgba($orange, 0.95) 0%, rgba($warning, 0.9) 100%);
+            color: $white;
+            padding: 3px 10px;
             font-weight: 600;
+
+            .k-event-template,
+            .project-template {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 8px 18px rgba($black, 0.18);
+            }
         }
 
         .k-more-events {
             border-radius: 999px;
             font-weight: 600;
-            padding: 0 8px;
+            padding: 0 10px;
+            background: rgba($primary, 0.12);
+            color: $primary;
+        }
+    }
+
+    .k-scheduler-agendaview {
+        .k-scheduler-table tr {
+            transition: background 0.2s ease;
+
+            &:hover {
+                background: rgba($primary, 0.05);
+            }
+        }
+
+        .k-scheduler-table td {
+            border-color: rgba($border-color, 0.65);
         }
     }
 
     .k-window,
     .k-popup-edit-form {
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 16px 36px rgba($black, 0.22);
+
+        .k-window-titlebar,
+        .k-edit-form-container .k-header {
+            background: linear-gradient(180deg, rgba($primary, 0.95) 0%, rgba($primary, 0.78) 100%);
+            color: $white;
+            border-bottom: 0;
+        }
+
+        .k-edit-form-container {
+            padding: 0.7rem 0.9rem;
+            background: rgba($gray-100, 0.52);
+        }
+
         .k-edit-label,
         .k-edit-field {
             padding-top: 0.35rem;
             padding-bottom: 0.35rem;
+        }
+
+        a {
+            color: $primary;
+            font-weight: 600;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .k-scheduler-footer,
+    .k-scheduler-toolbar .k-textbox,
+    .k-scheduler-toolbar .k-input {
+        border-radius: 10px;
+    }
+
+    .k-scheduler-toolbar .k-textbox {
+        border-color: rgba($primary, 0.25);
+        background: rgba($white, 0.92);
+
+        &:focus,
+        &:focus-within {
+            box-shadow: 0 0 0 0.18rem rgba($primary, 0.2);
+            border-color: rgba($primary, 0.55);
         }
     }
 }
