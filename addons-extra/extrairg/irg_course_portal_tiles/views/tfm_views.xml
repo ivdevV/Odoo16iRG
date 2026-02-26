@@ -39,7 +39,7 @@
                             </div>
                             <h5>Subir TFM</h5>
                             <p class="text-muted">Funcionalidad de subida pendiente. Actualmente puede adjuntar archivos en la sección de documentos del curso.</p>
-                            <a class="btn btn-primary" t-att-href="'/web#id=%s&model=op.course&view_type=form' % (course.id)">Ir al curso</a>
+                            <a class="btn btn-primary" t-att-href="'/web#id=%s&amp;model=op.course&amp;view_type=form' % (course.id)">Ir al curso</a>
                         </div>
                     </div>
                 </div>
