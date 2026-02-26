@@ -216,7 +216,19 @@ class DiplomaReportPDF(models.AbstractModel):
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
 
-        course_font_size = sf(19)
+        # Base course title sizes for each language; reduce if very long
+        course_font_size_cat = sf(19)
+        course_font_size_es = sf(19)
+        try:
+            if course_cat and len(course_cat.strip()) > 62:
+                course_font_size_cat = max(sf(8), course_font_size_cat - 2)
+        except Exception:
+            pass
+        try:
+            if course_es and len(course_es.strip()) > 62:
+                course_font_size_es = max(sf(8), course_font_size_es - 2)
+        except Exception:
+            pass
 
         # If a title is short we make its block more narrow so it visually
         # sits closer to the centre; otherwise use the default wider block.
@@ -354,17 +366,17 @@ class DiplomaReportPDF(models.AbstractModel):
         # Store Y for images (bottom of signature area). push signatures
         # a bit further down so they sit below the date. increase the
         # offset slightly for digital diplomas so labels won't overlap.
-        y_images = y - sp(28)
+        y_images = y - sp(12)
 
         # compute QR coordinates now so that later branches can reference qr_y
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
         registry = data.get('registry_number', 'DRAFT')
         qr_size = sp(46)
         qr_x = side_margin + sp(36)
-        # For physical diplomas we want the QR closer to the left margin
-        # so override the X anchor when appropriate.
+        # For physical diplomas move the QR slightly towards the centre
+        # (away from the left margin).
         if diploma_type == 'physical':
-            qr_x = left_col_x - sp(10)
+            qr_x = left_col_x + sp(1)
         # Initial QR bottom aligned to signature images baseline; may be
         # adjusted below for digital diplomas so it doesn't overlap labels
         qr_y = y_images
@@ -419,9 +431,9 @@ class DiplomaReportPDF(models.AbstractModel):
 
             # position signatures labels much lower so there is room above
             # for a handwritten signature to be placed without overlapping
-            # the printed text. We place the labels below the QR by a
-            # comfortable margin.
-            sign_text_y = qr_y - sp(36)
+            # the printed text. Reduce the downward offset so the labels
+            # (and signing area) sit a bit higher on the page.
+            sign_text_y = qr_y - sp(28)
             # left column should show the student/interested name rather than
             # the director's name; original variable defined above.  shift it
             # slightly right to balance the QR code on the far left.
