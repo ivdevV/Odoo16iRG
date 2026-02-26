@@ -14,7 +14,8 @@
     position: absolute;
     right: 24px;
     bottom: 24px;
-    width: min(420px, calc(100vw - 32px));
+    width: 420px;
+    max-width: calc(100vw - 32px);
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: 14px;
