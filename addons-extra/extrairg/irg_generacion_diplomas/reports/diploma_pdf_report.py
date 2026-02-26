@@ -383,7 +383,7 @@ class DiplomaReportPDF(models.AbstractModel):
         # For physical diplomas move the QR slightly towards the centre
         # (away from the left margin).
         if diploma_type == 'physical':
-            qr_x = left_col_x + sp(1)
+            qr_x = left_col_x + sp(5)
         # Initial QR bottom aligned to signature images baseline; may be
         # adjusted below for digital diplomas so it doesn't overlap labels
         qr_y = y_images
@@ -437,9 +437,10 @@ class DiplomaReportPDF(models.AbstractModel):
             # and prints the labels.
 
             # Lower the QR a bit so the registry text can be aligned with
-            # the signature labels below. This moves the QR visually down
-            # on the page for physical diplomas.
-            qr_y = y_images - sp(20)
+            # the signature labels below. Move it further down so the QR
+            # sits closer to its registry text baseline and shift slightly
+            # right to better center under its text.
+            qr_y = y_images - sp(30)
 
             # position signatures labels much lower so there is room above
             # for a handwritten signature to be placed without overlapping
