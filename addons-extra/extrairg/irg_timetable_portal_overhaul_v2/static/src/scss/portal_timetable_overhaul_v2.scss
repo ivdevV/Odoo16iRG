@@ -1,0 +1,335 @@
+.timetable_schedule_portal.irg-overhaul-v2 {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+
+    .irg-overhaul-root {
+        --irg-bg: #f4f7fb;
+        --irg-surface: #ffffff;
+        --irg-surface-2: #f8fafc;
+        --irg-text: #1f2937;
+        --irg-muted: #6b7280;
+        --irg-border: #e5e7eb;
+        --irg-primary: #2563eb;
+        --irg-primary-soft: #dbeafe;
+        --irg-success: #0f766e;
+        --irg-shadow: 0 14px 35px rgba(2, 6, 23, 0.1);
+
+        background: radial-gradient(circle at top left, #eff6ff 0%, var(--irg-bg) 60%);
+        border: 1px solid var(--irg-border);
+        border-radius: 20px;
+        padding: 1rem;
+        color: var(--irg-text);
+        box-shadow: var(--irg-shadow);
+        min-height: 640px;
+    }
+
+    .irg-oh-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 320px;
+        color: var(--irg-muted);
+        font-weight: 600;
+    }
+
+    .irg-oh-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+    }
+
+    .irg-oh-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--irg-surface);
+        border: 1px solid var(--irg-border);
+        border-radius: 14px;
+        padding: 0.6rem 0.75rem;
+    }
+
+    .irg-oh-title {
+        font-weight: 800;
+        font-size: 1.05rem;
+        text-transform: capitalize;
+        letter-spacing: 0.01em;
+    }
+
+    .irg-oh-nav {
+        display: flex;
+        gap: 0.45rem;
+    }
+
+    .irg-oh-btn {
+        border: 1px solid var(--irg-border);
+        background: var(--irg-surface-2);
+        color: var(--irg-text);
+        border-radius: 10px;
+        padding: 0.35rem 0.65rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: var(--irg-primary-soft);
+            border-color: rgba(37, 99, 235, 0.35);
+            transform: translateY(-1px);
+        }
+    }
+
+    .irg-oh-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 330px;
+        gap: 0.9rem;
+    }
+
+    .irg-oh-main,
+    .irg-oh-sidebar-card {
+        background: var(--irg-surface);
+        border: 1px solid var(--irg-border);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .irg-oh-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        background: var(--irg-surface-2);
+        border-bottom: 1px solid var(--irg-border);
+
+        > div {
+            padding: 0.6rem 0.45rem;
+            text-align: center;
+            font-weight: 700;
+            color: var(--irg-muted);
+            font-size: 0.84rem;
+        }
+    }
+
+    .irg-oh-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        grid-auto-rows: 110px;
+    }
+
+    .irg-oh-cell {
+        border-right: 1px solid var(--irg-border);
+        border-bottom: 1px solid var(--irg-border);
+        padding: 0.35rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+
+        &:hover {
+            background: #f8fbff;
+        }
+
+        &.is-muted {
+            background: #fafbfc;
+
+            .irg-oh-cell-head {
+                color: #9ca3af;
+            }
+        }
+
+        &.is-today {
+            background: #edf6ff;
+
+            .irg-oh-cell-head {
+                color: #1d4ed8;
+                font-weight: 800;
+            }
+        }
+
+        &.is-selected {
+            outline: 2px solid rgba(37, 99, 235, 0.45);
+            outline-offset: -2px;
+        }
+    }
+
+    .irg-oh-cell-head {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #4b5563;
+    }
+
+    .irg-oh-cell-events {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        overflow: hidden;
+    }
+
+    .irg-oh-event {
+        border: 0;
+        border-radius: 8px;
+        background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+        color: #fff;
+        padding: 0.2rem 0.4rem;
+        text-align: left;
+        display: flex;
+        gap: 0.35rem;
+        align-items: center;
+        font-size: 0.73rem;
+        cursor: pointer;
+        min-width: 0;
+
+        .irg-oh-event-time {
+            opacity: 0.88;
+            flex: 0 0 auto;
+        }
+
+        .irg-oh-event-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    .irg-oh-more {
+        font-size: 0.72rem;
+        color: var(--irg-primary);
+        font-weight: 700;
+        padding-left: 0.1rem;
+    }
+
+    .irg-oh-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+    }
+
+    .irg-oh-sidebar-card {
+        padding: 0.75rem;
+
+        h3 {
+            margin: 0 0 0.65rem;
+            font-size: 0.92rem;
+            font-weight: 800;
+        }
+    }
+
+    .irg-oh-agenda {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        max-height: 260px;
+        overflow: auto;
+    }
+
+    .irg-oh-agenda-item {
+        border: 1px solid var(--irg-border);
+        background: var(--irg-surface-2);
+        border-radius: 10px;
+        padding: 0.45rem 0.55rem;
+        text-align: left;
+        cursor: pointer;
+
+        .irg-oh-agenda-time {
+            font-size: 0.74rem;
+            color: var(--irg-muted);
+            font-weight: 700;
+        }
+
+        .irg-oh-agenda-title {
+            font-weight: 800;
+            font-size: 0.86rem;
+            margin-top: 0.1rem;
+        }
+
+        .irg-oh-agenda-meta {
+            font-size: 0.73rem;
+            color: var(--irg-muted);
+            margin-top: 0.12rem;
+        }
+
+        &:hover {
+            border-color: rgba(37, 99, 235, 0.35);
+            background: #eef5ff;
+        }
+    }
+
+    .irg-oh-detail-card {
+        border: 1px solid var(--irg-border);
+        border-radius: 12px;
+        background: var(--irg-surface-2);
+        padding: 0.6rem 0.7rem;
+
+        h4 {
+            margin: 0 0 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        p {
+            margin: 0.3rem 0;
+            font-size: 0.8rem;
+            color: #374151;
+        }
+    }
+
+    .irg-oh-detail-notes {
+        margin-top: 0.55rem;
+        border: 1px dashed #cbd5e1;
+        background: #fff;
+        border-radius: 8px;
+        padding: 0.5rem;
+        font-size: 0.79rem;
+        color: #374151;
+        white-space: pre-wrap;
+    }
+
+    .irg-oh-link {
+        margin-top: 0.55rem;
+        display: inline-flex;
+        font-size: 0.78rem;
+        text-decoration: none;
+        color: var(--irg-success);
+        font-weight: 700;
+
+        + .irg-oh-link {
+            margin-left: 0.65rem;
+        }
+    }
+
+    .irg-oh-empty {
+        font-size: 0.8rem;
+        color: var(--irg-muted);
+        border: 1px dashed var(--irg-border);
+        border-radius: 10px;
+        padding: 0.55rem;
+        background: var(--irg-surface-2);
+    }
+}
+
+@media (max-width: 1200px) {
+    .timetable_schedule_portal.irg-overhaul-v2 .irg-oh-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .timetable_schedule_portal.irg-overhaul-v2 {
+        .irg-overhaul-root {
+            padding: 0.6rem;
+            border-radius: 14px;
+        }
+
+        .irg-oh-grid {
+            grid-auto-rows: 96px;
+        }
+
+        .irg-oh-topbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+
+        .irg-oh-title {
+            text-align: center;
+        }
+    }
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_timetable_portal_overhaul_v2" inherit_id="openeducat_timetable_enterprise.openeducat_timetable_portal" name="IRG Timetable Overhaul V2">
+        <xpath expr="//div[contains(@class, 'timetable_schedule_portal')]" position="attributes">
+            <attribute name="class" add=" irg-overhaul-v2" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='timetable_portal_kendo']" position="replace">
+            <div id="irg_timetable_overhaul_root" class="irg-overhaul-root">
+                <div class="irg-oh-loading">Cargando calendario...</div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
