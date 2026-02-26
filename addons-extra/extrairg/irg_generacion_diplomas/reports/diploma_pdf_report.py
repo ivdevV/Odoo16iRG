@@ -229,6 +229,13 @@ class DiplomaReportPDF(models.AbstractModel):
                 course_font_size_es = max(sf(8), course_font_size_es - 2)
         except Exception:
             pass
+        # Apply an additional 1pt reduction for physical diplomas
+        try:
+            if diploma_type == 'physical':
+                course_font_size_cat = max(sf(8), course_font_size_cat - 1)
+                course_font_size_es = max(sf(8), course_font_size_es - 1)
+        except Exception:
+            pass
 
         # If a title is short we make its block more narrow so it visually
         # sits closer to the centre; otherwise use the default wider block.
@@ -429,6 +436,11 @@ class DiplomaReportPDF(models.AbstractModel):
             # removed per customer request. the remaining code simply leaves room
             # and prints the labels.
 
+            # Lower the QR a bit so the registry text can be aligned with
+            # the signature labels below. This moves the QR visually down
+            # on the page for physical diplomas.
+            qr_y = y_images - sp(20)
+
             # position signatures labels much lower so there is room above
             # for a handwritten signature to be placed without overlapping
             # the printed text. Reduce the downward offset so the labels
@@ -466,11 +478,9 @@ class DiplomaReportPDF(models.AbstractModel):
             self._draw_centered_text(c, "Fundador", footer_y, font_regular, sf(9), page_width)
             self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, footer_y, col_width, font_regular, sf(9), align='center')
             # set registry baseline for physical diplomas so the registry
-            # text aligns vertically with the footer labels
-            try:
-                reg_baseline_y
-            except NameError:
-                reg_baseline_y = qr_y - sp(12)
+            # text aligns vertically with the 'Interessat/da' label by
+            # placing it at the same baseline.
+            reg_baseline_y = role_y - sp(10)
 
         # --- QR CODE & REGISTRY ---
         qr_image = self._generate_qr(qr_url)
