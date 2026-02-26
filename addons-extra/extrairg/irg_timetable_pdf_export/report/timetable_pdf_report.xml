@@ -39,7 +39,8 @@
                             <thead>
                                 <tr>
                                     <th style="width:14%; text-align:center;">Fecha</th>
-                                    <th style="width:61%; text-align:center;">Nombre Asignatura</th>
+                                    <th style="width:16%; text-align:center;">Horario (España)</th>
+                                    <th style="width:45%; text-align:center;">Nombre Asignatura</th>
                                     <th style="width:25%; text-align:center;">Docente</th>
                                 </tr>
                             </thead>
@@ -49,6 +50,10 @@
                                         <tr>
                                             <td style="text-align:center; white-space:nowrap;">
                                                 <t t-esc="context_timestamp(session.start_datetime).strftime('%d/%m/%Y')"/>
+                                            </td>
+                                            <td style="text-align:center; white-space:nowrap;">
+                                                <t t-esc="context_timestamp(session.start_datetime).strftime('%H:%M')"/> -
+                                                <t t-esc="context_timestamp(session.end_datetime).strftime('%H:%M')"/>
                                             </td>
                                             <td>
                                                 <t t-esc="session.class_title or session.name or session.subject_id.name"/>
@@ -61,11 +66,15 @@
                                 </t>
                                 <t t-else="">
                                     <tr>
-                                        <td colspan="3" style="text-align:center;">Sin sesiones disponibles para este estudiante.</td>
+                                        <td colspan="4" style="text-align:center;">Sin sesiones disponibles para este estudiante.</td>
                                     </tr>
                                 </t>
                             </tbody>
                         </table>
+
+                        <p style="text-align:right; font-size:10px; margin-top: 5px; margin-bottom: 0; color: #374151;">
+                            Horarios expresados en hora española (Europe/Madrid).
+                        </p>
 
                         <p style="text-align:center; font-size:10px; margin-top: 8px; margin-bottom: 0;">
                             * Calendario sujeto a posibles cambios por razones de fuerza mayor.

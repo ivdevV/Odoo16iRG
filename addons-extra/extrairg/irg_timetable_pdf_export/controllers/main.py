@@ -25,7 +25,7 @@ class IrgTimetablePdfController(http.Controller):
         if not student:
             return request.not_found()
 
-        report_service = request.env['ir.actions.report'].sudo()
+        report_service = request.env['ir.actions.report'].sudo().with_context(tz='Europe/Madrid')
         pdf_content, _ = report_service._render_qweb_pdf(
             'irg_timetable_pdf_export.report_student_timetable_pdf',
             student.ids,
