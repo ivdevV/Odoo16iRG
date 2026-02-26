@@ -1,0 +1,76 @@
+.timetable_schedule_portal {
+    margin-top: 0.75rem;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid $border-color;
+    background: $white;
+    box-shadow: 0 8px 24px rgba($black, 0.08);
+
+    .k-scheduler {
+        border: 0;
+        background: transparent;
+    }
+
+    .k-toolbar.k-scheduler-toolbar {
+        padding: 0.75rem;
+        border-bottom: 1px solid $border-color;
+        background: linear-gradient(180deg, rgba($gray-100, 0.85) 0%, rgba($white, 1) 100%);
+    }
+
+    .k-scheduler-navigation {
+        .k-nav-current {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .k-nav-prev,
+        .k-nav-next,
+        .k-nav-today {
+            border-radius: 8px;
+        }
+    }
+
+    .k-scheduler-views {
+        .k-current-view,
+        li > a {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+    }
+
+    .k-scheduler-monthview {
+        .k-scheduler-table td,
+        .k-scheduler-table th {
+            border-color: rgba($border-color, 0.7);
+        }
+
+        .k-scheduler-datecolumn,
+        .k-scheduler-weekview .k-today,
+        .k-today {
+            background: rgba($primary, 0.06);
+        }
+
+        .k-event {
+            border: 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba($black, 0.1);
+            padding: 2px 8px;
+            font-weight: 600;
+        }
+
+        .k-more-events {
+            border-radius: 999px;
+            font-weight: 600;
+            padding: 0 8px;
+        }
+    }
+
+    .k-window,
+    .k-popup-edit-form {
+        .k-edit-label,
+        .k-edit-field {
+            padding-top: 0.35rem;
+            padding-bottom: 0.35rem;
+        }
+    }
+}
