@@ -360,7 +360,7 @@ class DiplomaReportPDF(models.AbstractModel):
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
         registry = data.get('registry_number', 'DRAFT')
         qr_size = sp(46)
-        qr_x = side_margin - sp(10)
+        qr_x = side_margin + sp(20)
         # Align QR bottom with signature bottom so they sit at same height
         qr_y = y_images
 
@@ -372,7 +372,7 @@ class DiplomaReportPDF(models.AbstractModel):
                 sig_height = sp(47)
                 # nudge signatures noticeably towards the centre for digital
                 # diplomas and center them under the date (column centre).
-                sig_shift = sp(22)
+                sig_shift = sp(36)
                 left_center = left_col_x + col_width / 2
                 sig_x = left_center + sig_shift - (sig_width / 2)
                 c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
@@ -474,9 +474,9 @@ class DiplomaReportPDF(models.AbstractModel):
                 reg_text = re.sub(r"-(\d{2})-", f"-{year}-", reg_text)
         except Exception:
             pass
-        # place registry text so the lower edge of the QR/registry area aligns
-        # approximately with the bottom of the signature labels
-        c.drawString(text_x, qr_y - sp(10), reg_text)
+        # place registry text so its baseline aligns with the signature
+        # footer baseline (draw at qr_y, since qr_y was set to footer_y above)
+        c.drawString(text_x, qr_y, reg_text)
         
         # Finalize
         c.showPage()
