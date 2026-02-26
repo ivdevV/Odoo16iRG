@@ -4,6 +4,20 @@ certbot/
 nginx/
 etc/
 
+# Docker-compose and runtime artifacts
+docker-compose.yml
+docker-compose.*.yml
+docker-compose.override.yml
+docker/
+.docker/
+
+# Project runtime dirs produced by compose
+db/
+log/
+certbot/
+nginx/
+etc/
+
 # Python / Odoo
 *.py[cod]
 __pycache__/

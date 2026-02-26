@@ -352,8 +352,9 @@ class DiplomaReportPDF(models.AbstractModel):
         y -= sp(54)
 
         # Store Y for images (bottom of signature area). push signatures
-        # a bit further down so they sit below the date.
-        y_images = y - sp(18)
+        # a bit further down so they sit below the date. increase the
+        # offset slightly for digital diplomas so labels won't overlap.
+        y_images = y - sp(28)
 
         # compute QR coordinates now so that later branches can reference qr_y
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
@@ -385,20 +386,24 @@ class DiplomaReportPDF(models.AbstractModel):
                 sig_x = right_center - sig_shift - (sig_width / 2)
                 c.drawImage(sign_grecia_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
 
-            # Text Names (Aligned) – original layout for digital diplomas
-            y -= sp(8)
+            # Text Names (Aligned) – place labels below the signature images
+            # so they do not overlap; compute an explicit label start Y
+            label_start_y = y_images - sp(6)
             # apply same horizontal nudge to text labels so they line up with
             # the nudged signature images (use column-centred anchors)
-            self._draw_text_in_column(c, "Raimon Gaja", left_col_x + sig_shift, y, col_width, font_bold, sf(13), align='center')
-            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x - sig_shift, y, col_width, font_bold, sf(13), align='center')
-            
-            y -= sp(14)
-            self._draw_text_in_column(c, "Director", left_col_x + sig_shift, y, col_width, font_regular, sf(10), align='center')
-            self._draw_text_in_column(c, "Directora Académica", right_col_x - sig_shift, y, col_width, font_regular, sf(10), align='center')
-            
-            y -= sp(12)
-            self._draw_text_in_column(c, "Fundador", left_col_x + sig_shift, y, col_width, font_regular, sf(10), align='center')
-            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x - sig_shift, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Raimon Gaja", left_col_x + sig_shift, label_start_y, col_width, font_bold, sf(13), align='center')
+            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x - sig_shift, label_start_y, col_width, font_bold, sf(13), align='center')
+
+            role_y = label_start_y - sp(16)
+            self._draw_text_in_column(c, "Director", left_col_x + sig_shift, role_y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Directora Académica", right_col_x - sig_shift, role_y, col_width, font_regular, sf(10), align='center')
+
+            footer_y = role_y - sp(14)
+            self._draw_text_in_column(c, "Fundador", left_col_x + sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x - sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
+            # adjust QR baseline to approximately match the bottom of the
+            # signature label area so the QR + registry block feels aligned
+            qr_y = footer_y
         else:
             # physical diploma: reserve three signature zones for handwritten
             # users will sign above these labels, so we don't draw images.
@@ -444,7 +449,7 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- QR CODE & REGISTRY ---
         qr_image = self._generate_qr(qr_url)
         c.drawImage(qr_image, qr_x, qr_y, width=qr_size, height=qr_size)
-        
+
         c.setFont(font_bold, sf(8))
         # centre registry text under QR
         reg_text = f"Nº Registro: {registry}"
@@ -469,6 +474,8 @@ class DiplomaReportPDF(models.AbstractModel):
                 reg_text = re.sub(r"-(\d{2})-", f"-{year}-", reg_text)
         except Exception:
             pass
+        # place registry text so the lower edge of the QR/registry area aligns
+        # approximately with the bottom of the signature labels
         c.drawString(text_x, qr_y - sp(10), reg_text)
         
         # Finalize

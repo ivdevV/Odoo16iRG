@@ -132,26 +132,30 @@
             </div>
             
             <!-- Signatures -->
-            <div class="row" style="margin-top: 40px; justify-content: center;">
-                <!-- shift inward more on digital diplomas -->
-                <t t-set="left_shift" t-value="'transform: translateX(22px);' if is_digital else ''"/>
-                <t t-set="right_shift" t-value="'transform: translateX(-22px);' if is_digital else ''"/>
+            <!-- increase top spacing for digital diplomas and enlarge image container so
+                 the label text doesn't overlap the signature image -->
+            <t t-set="sig_margin_top" t-value="'60px' if is_digital else '40px'"/>
+            <t t-set="sig_img_height" t-value="'90px' if is_digital else '70px'"/>
+            <t t-set="sig_img_margin_bottom" t-value="'12px' if is_digital else '5px'"/>
+            <t t-set="left_shift" t-value="'transform: translateX(22px);' if is_digital else ''"/>
+            <t t-set="right_shift" t-value="'transform: translateX(-22px);' if is_digital else ''"/>
 
+            <div class="row" t-att-style="'margin-top: %s; justify-content: center;' % sig_margin_top">
                 <div class="col-6" t-att-style="'text-align: center; %s' % left_shift">
-                    <div style="height: 70px; margin-bottom: 5px;">
+                    <div t-att-style="'height: %s; margin-bottom: %s;' % (sig_img_height, sig_img_margin_bottom)">
                         <img t-if="data.get('sign_raimon')" t-att-src="'data:image/png;base64,' + data.get('sign_raimon')" style="height: 100%;"/>
                     </div>
-                    <div style="font-weight: 700; font-size: 16px;">Raimon Gaja</div>
-                    <div style="font-size: 13px;">Director</div>
-                    <div style="font-size: 13px;">Fundador</div>
+                    <div t-att-style="'font-weight: 700; font-size: 16px; margin-top: 4px;'">Raimon Gaja</div>
+                    <div t-att-style="'font-size: 13px; margin-top: 2px;'">Director</div>
+                    <div t-att-style="'font-size: 13px; margin-top: 2px;'">Fundador</div>
                 </div>
                 <div class="col-6" t-att-style="'text-align: center; %s' % right_shift">
-                    <div style="height: 70px; margin-bottom: 5px;">
+                    <div t-att-style="'height: %s; margin-bottom: %s;' % (sig_img_height, sig_img_margin_bottom)">
                         <img t-if="data.get('sign_grecia')" t-att-src="'data:image/png;base64,' + data.get('sign_grecia')" style="height: 100%;"/>
                     </div>
-                    <div style="font-weight: 700; font-size: 16px;">Grecia Malcotti</div>
-                    <div style="font-size: 13px;">Directora Academica</div>
-                    <div style="font-size: 13px;">Directora Academica</div>
+                    <div t-att-style="'font-weight: 700; font-size: 16px; margin-top: 4px;'">Grecia Malcotti</div>
+                    <div t-att-style="'font-size: 13px; margin-top: 2px;'">Directora Academica</div>
+                    <div t-att-style="'font-size: 13px; margin-top: 2px;'">Directora Academica</div>
                 </div>
             </div>
         </div>
