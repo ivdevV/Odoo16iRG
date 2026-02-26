@@ -8,6 +8,7 @@
     "depends": ["isep_website_custom"],
     "data": [
         "views/irg_course_portal_tiles_views.xml",
+        "views/tfm_views.xml",
     ],
     "installable": True,
     "application": False,
