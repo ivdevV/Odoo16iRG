@@ -81,6 +81,27 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
             { value: browserTimezone || 'UTC', label: 'Mi zona (' + (browserTimezone || 'UTC') + ')' },
             { value: 'Europe/Madrid', label: 'Campus (Europe/Madrid)' },
             { value: 'UTC', label: 'UTC' },
+
+            { value: 'America/Mexico_City', label: 'México (CDMX)' },
+            { value: 'America/Guatemala', label: 'Guatemala' },
+            { value: 'America/El_Salvador', label: 'El Salvador' },
+            { value: 'America/Tegucigalpa', label: 'Honduras' },
+            { value: 'America/Managua', label: 'Nicaragua' },
+            { value: 'America/Costa_Rica', label: 'Costa Rica' },
+            { value: 'America/Panama', label: 'Panamá' },
+            { value: 'America/Havana', label: 'Cuba (La Habana)' },
+            { value: 'America/Santo_Domingo', label: 'República Dominicana' },
+            { value: 'America/Puerto_Rico', label: 'Puerto Rico' },
+
+            { value: 'America/Bogota', label: 'Colombia' },
+            { value: 'America/Lima', label: 'Perú' },
+            { value: 'America/Guayaquil', label: 'Ecuador (Guayaquil)' },
+            { value: 'America/La_Paz', label: 'Bolivia' },
+            { value: 'America/Caracas', label: 'Venezuela' },
+            { value: 'America/Asuncion', label: 'Paraguay' },
+            { value: 'America/Santiago', label: 'Chile (Santiago)' },
+            { value: 'America/Argentina/Buenos_Aires', label: 'Argentina (Buenos Aires)' },
+            { value: 'America/Montevideo', label: 'Uruguay (Montevideo)' },
         ];
         var seen = {};
         return options.filter(function (item) {
