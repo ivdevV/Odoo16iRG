@@ -361,6 +361,10 @@ class DiplomaReportPDF(models.AbstractModel):
         registry = data.get('registry_number', 'DRAFT')
         qr_size = sp(46)
         qr_x = side_margin + sp(36)
+        # For physical diplomas we want the QR closer to the left margin
+        # so override the X anchor when appropriate.
+        if diploma_type == 'physical':
+            qr_x = left_col_x - sp(10)
         # Initial QR bottom aligned to signature images baseline; may be
         # adjusted below for digital diplomas so it doesn't overlap labels
         qr_y = y_images
@@ -413,9 +417,11 @@ class DiplomaReportPDF(models.AbstractModel):
             # removed per customer request. the remaining code simply leaves room
             # and prints the labels.
 
-            # position signatures slightly lower to reduce bottom margin
-            base_offset = -sp(8)  # shift everything down
-            sign_text_y = qr_y + qr_size + base_offset
+            # position signatures labels much lower so there is room above
+            # for a handwritten signature to be placed without overlapping
+            # the printed text. We place the labels below the QR by a
+            # comfortable margin.
+            sign_text_y = qr_y - sp(36)
             # left column should show the student/interested name rather than
             # the director's name; original variable defined above.  shift it
             # slightly right to balance the QR code on the far left.
@@ -443,10 +449,16 @@ class DiplomaReportPDF(models.AbstractModel):
             self._draw_centered_text(c, "Director", role_y, font_regular, sf(9), page_width)
             self._draw_text_in_column(c, "Directora Académica", right_col_x, role_y, col_width, font_regular, sf(9), align='center')
 
-            # third row: footer names
+            # third row: footer names (keep them lower to allow signing above)
             footer_y = role_y - sp(12)
             self._draw_centered_text(c, "Fundador", footer_y, font_regular, sf(9), page_width)
             self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, footer_y, col_width, font_regular, sf(9), align='center')
+            # set registry baseline for physical diplomas so the registry
+            # text aligns vertically with the footer labels
+            try:
+                reg_baseline_y
+            except NameError:
+                reg_baseline_y = qr_y - sp(12)
 
         # --- QR CODE & REGISTRY ---
         qr_image = self._generate_qr(qr_url)
