@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="irg_user_profile_content_details_inherit" inherit_id="isep_website_custom.user_profile_content_details">
+        <xpath expr="//h5[t-out='course_id.name']/.." position="after">
+            <div class="mb32">
+                <h5 class="border-bottom pb-1">Herramientas del curso</h5>
+                <div class="row">
+                    <t t-set="menu_calendar" t-value="env['openeducat.portal.menu'].sudo().search([('name','ilike','Calendar')], limit=1)"/>
+                    <t t-set="menu_practicas" t-value="env['openeducat.portal.menu'].sudo().search([('name','ilike','Practica')], limit=1)"/>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 p-2 student_tile_portal">
+                        <t t-if="menu_calendar">
+                            <a class="row ms-0 me-0 w-auto p-3 dashboard_element_main_body d-flex align-items-center justify-content-between" t-att-href="menu_calendar.link">
+                                <div class="col-lg-12 text-center hover_effect">
+                                    <img class="image oe_portal_img mt16 mb16" t-att-src="image_data_uri(menu_calendar.icon_image)" style="width: 74px;"/>
+                                    <br/>
+                                    <span style="color: #fff;font-weight: bold;font-size: 16px;"><t t-esc="menu_calendar.name"/></span>
+                                </div>
+                            </a>
+                        </t>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 p-2 student_tile_portal">
+                        <t t-if="menu_practicas">
+                            <a class="row ms-0 me-0 w-auto p-3 dashboard_element_main_body d-flex align-items-center justify-content-between" t-att-href="menu_practicas.link">
+                                <div class="col-lg-12 text-center hover_effect">
+                                    <img class="image oe_portal_img mt16 mb16" t-att-src="image_data_uri(menu_practicas.icon_image)" style="width: 74px;"/>
+                                    <br/>
+                                    <span style="color: #fff;font-weight: bold;font-size: 16px;"><t t-esc="menu_practicas.name"/></span>
+                                </div>
+                            </a>
+                        </t>
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 p-2 student_tile_portal">
+                        <a class="row ms-0 me-0 w-auto p-3 dashboard_element_main_body d-flex align-items-center justify-content-between" t-attf-href="/campus/course/#{op_course_id}/tfm">
+                            <div class="col-lg-12 text-center hover_effect">
+                                <img class="image oe_portal_img mt16 mb16" src="/isep_website_custom/static/src/img/icon-docs.png" style="width: 74px;"/>
+                                <br/>
+                                <span style="color: #fff;font-weight: bold;font-size: 16px;">TFM</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>
