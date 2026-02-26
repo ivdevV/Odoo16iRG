@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_timetable_portal_pdf_button" inherit_id="openeducat_timetable_enterprise.openeducat_timetable_portal" name="IRG Timetable Portal PDF Button">
+        <xpath expr="//div[contains(@class, 'timetable_schedule_portal')]" position="before">
+            <div class="mb-3 text-right">
+                <a t-att-href="('/student/timetable/%s/pdf' % stud_id) if stud_id else '/student/timetable/pdf'" class="btn btn-primary">
+                    <i class="fa fa-file-pdf-o mr-1"/> Descargar calendario PDF
+                </a>
+            </div>
+        </xpath>
+    </template>
+</odoo>
