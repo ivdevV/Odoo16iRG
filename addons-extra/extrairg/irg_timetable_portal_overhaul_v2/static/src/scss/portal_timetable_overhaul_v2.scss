@@ -83,12 +83,18 @@
         font-size: 0.78rem;
         font-weight: 700;
         min-width: 190px;
+
+        &:focus {
+            outline: none;
+            border-color: rgba(0, 72, 136, 0.45);
+            box-shadow: 0 0 0 2px rgba(129, 180, 225, 0.35);
+        }
     }
 
     .irg-oh-btn {
-        border: 1px solid var(--irg-border);
-        background: var(--irg-surface-2);
-        color: var(--irg-text);
+        border: 1px solid rgba(0, 72, 136, 0.25);
+        background: var(--irg-primary-soft);
+        color: var(--irg-primary);
         border-radius: 10px;
         padding: 0.35rem 0.65rem;
         font-weight: 700;
@@ -96,8 +102,9 @@
         transition: all 0.2s ease;
 
         &:hover {
-            background: var(--irg-primary-soft);
-            border-color: rgba(0, 72, 136, 0.35);
+            background: var(--irg-success);
+            color: #fff;
+            border-color: rgba(53, 146, 191, 0.5);
             transform: translateY(-1px);
         }
     }
@@ -190,7 +197,7 @@
     .irg-oh-event {
         border: 0;
         border-radius: 8px;
-        background: linear-gradient(90deg, #004888 0%, #3592bf 100%);
+        background: var(--irg-primary);
         color: #fff;
         padding: 0.2rem 0.4rem;
         text-align: left;
@@ -200,6 +207,11 @@
         font-size: 0.73rem;
         cursor: pointer;
         min-width: 0;
+        transition: background 0.2s ease;
+
+        &:hover {
+            background: var(--irg-success);
+        }
 
         .irg-oh-event-time {
             opacity: 0.88;
@@ -321,7 +333,7 @@
         text-decoration: none;
         color: #fff;
         font-weight: 700;
-        background: linear-gradient(90deg, #004888 0%, #3592bf 100%);
+        background: var(--irg-primary);
         border: 1px solid rgba(0, 72, 136, 0.2);
         border-radius: 8px;
         padding: 0.38rem 0.7rem;
@@ -329,7 +341,7 @@
 
         &:hover {
             color: #fff;
-            background: linear-gradient(90deg, #003a6d 0%, #2d7ea6 100%);
+            background: var(--irg-success);
             text-decoration: none;
             transform: translateY(-1px);
         }
