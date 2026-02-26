@@ -175,6 +175,13 @@ class DiplomaReportPDF(models.AbstractModel):
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
         
+        # Keep a very small width boost for title only; previous value was too
+        # wide and produced undesirable wrapping balance. The final per-column
+        # width will be adjusted later based on title length so short titles
+        # can use a noticeably narrower block.
+        title_extra = gutter * 0.1
+        default_title_width = col_width + title_extra
+        # title_left_x/_right_x will be computed after we know the title text
         
         # Create PDF buffer
         buffer = io.BytesIO()
@@ -203,41 +210,50 @@ class DiplomaReportPDF(models.AbstractModel):
         # Colors
         c.setFillColorRGB(0, 0, 0)  # Black text
         
-        # --- INTRO TEXT ---
-        y = start_y
-        self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de", 
-                                   left_col_x, y, col_width, font_regular, sf(11), align='right')
-        self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de", 
-                                   right_col_x, y, col_width, font_regular, sf(11), align='left')
-        
         # --- COURSE NAME ---
+        y = start_y
         y -= sp(28)
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
 
-        # decide how wide the title columns should be; if the longest of the
-        # two language strings is short we narrow the block (subtract from
-        # col_width), otherwise add a slight boost to help long names wrap more
-        # gracefully. 45 characters is the threshold requested by the user.
-        longest = max(len(course_cat or ''), len(course_es or ''))
-        if longest and longest < 45:
-            title_extra = -gutter * 0.20
-        else:
-            title_extra = gutter * 0.08
-        title_col_width = col_width + title_extra
-        title_left_x = left_col_x - title_extra / 2
-        title_right_x = right_col_x - title_extra / 2
-
         course_font_size = sf(19)
 
+        # If a title is short we make its block more narrow so it visually
+        # sits closer to the centre; otherwise use the default wider block.
+        left_title_width = default_title_width
+        right_title_width = default_title_width
+        try:
+            if course_cat and len(course_cat.strip()) < 45:
+                left_title_width = col_width * 0.8
+        except Exception:
+            pass
+        try:
+            if course_es and len(course_es.strip()) < 45:
+                right_title_width = col_width * 0.8
+        except Exception:
+            pass
+
+        # compute X anchors so that the narrower title block is centred inside
+        # its original column area
+        title_left_x = left_col_x + (col_width - left_title_width) / 2
+        title_right_x = right_col_x + (col_width - right_title_width) / 2
+
+        # --- INTRO TEXT ---
+        # Draw the intro lines inside the same narrower blocks as the titles
+        y_intro = start_y
+        self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de",
+                       title_left_x, y_intro, left_title_width, font_regular, sf(11), align='right')
+        self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de",
+                       title_right_x, y_intro, right_title_width, font_regular, sf(11), align='left')
+
+        # --- COURSE NAME ---
         # Draw full title text and let wrapping be controlled only by width.
-        # No special break on conjunctions ('y'/'i') to avoid orphan lines.
         y_next_cat = self._draw_wrapped_text_in_column(
             c,
             course_cat,
             title_left_x,
             y,
-            title_col_width,
+            left_title_width,
             font_bold,
             course_font_size,
             align='right',
@@ -247,7 +263,7 @@ class DiplomaReportPDF(models.AbstractModel):
             course_es,
             title_right_x,
             y,
-            title_col_width,
+            right_title_width,
             font_bold,
             course_font_size,
             align='left',
@@ -350,9 +366,9 @@ class DiplomaReportPDF(models.AbstractModel):
             if sign_raimon_path and os.path.exists(sign_raimon_path):
                 sig_width = sp(95)
                 sig_height = sp(47)
-                # move the image a little towards the centre of the page
-                offset = sp(20)
-                sig_x = left_col_x + (col_width - sig_width) / 2 + offset
+                # nudge signatures noticeably towards the centre for digital diplomas
+                sig_shift = sp(22)
+                sig_x = left_col_x + (col_width - sig_width) / 2 + sig_shift
                 c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
             
             # Signature Grecia (right)
@@ -360,22 +376,23 @@ class DiplomaReportPDF(models.AbstractModel):
             sig_width = sp(95)
             sig_height = sp(47)
             if sign_grecia_path and os.path.exists(sign_grecia_path):
-                offset = sp(20)
-                sig_x = right_col_x + (col_width - sig_width) / 2 - offset
+                sig_x = right_col_x + (col_width - sig_width) / 2 - sig_shift
                 c.drawImage(sign_grecia_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
 
             # Text Names (Aligned) – original layout for digital diplomas
             y -= sp(8)
-            self._draw_text_in_column(c, "Raimon Gaja", left_col_x, y, col_width, font_bold, sf(13), align='center')
-            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, y, col_width, font_bold, sf(13), align='center')
+            # apply same horizontal nudge to text labels so they line up with
+            # the nudged signature images
+            self._draw_text_in_column(c, "Raimon Gaja", left_col_x + sig_shift, y, col_width, font_bold, sf(13), align='center')
+            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x - sig_shift, y, col_width, font_bold, sf(13), align='center')
             
             y -= sp(14)
-            self._draw_text_in_column(c, "Director", left_col_x, y, col_width, font_regular, sf(10), align='center')
-            self._draw_text_in_column(c, "Directora Académica", right_col_x, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Director", left_col_x + sig_shift, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Directora Académica", right_col_x - sig_shift, y, col_width, font_regular, sf(10), align='center')
             
             y -= sp(12)
-            self._draw_text_in_column(c, "Fundador", left_col_x, y, col_width, font_regular, sf(10), align='center')
-            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Fundador", left_col_x + sig_shift, y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x - sig_shift, y, col_width, font_regular, sf(10), align='center')
         else:
             # physical diploma: reserve three signature zones for handwritten
             # users will sign above these labels, so we don't draw images.

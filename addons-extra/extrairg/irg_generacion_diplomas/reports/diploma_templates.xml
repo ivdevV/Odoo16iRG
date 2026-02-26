@@ -63,21 +63,31 @@
     <!-- SHARED CONTENT -->
     <template id="diploma_content">
         <div style="padding: 0 60px;">
+            <!-- compute helpers -->
+            <t t-set="course_cat_text" t-value="(data.get('course_name_cat') or '').strip()"/>
+            <t t-set="course_es_text" t-value="(data.get('course_name_es') or '').strip()"/>
+            <t t-set="cat_short" t-value="len(course_cat_text) &lt; 45"/>
+            <t t-set="es_short" t-value="len(course_es_text) &lt; 45"/>
+            <!-- use background presence as a proxy for digital diplomas -->
+            <t t-set="is_digital" t-value="bool(data.get('bg_image'))"/>
             <!-- Intro -->
+            <t t-set="cat_width" t-value="'40%' if cat_short else '50%'"/>
+            <t t-set="es_width" t-value="'40%' if es_short else '50%'"/>
             <div class="row" style="margin-top: 2px;">
+                <div t-att-style="'width: %s; text-align: center; font-size: 15px; padding: 0 10px;' % cat_width">
                     L'Institut Raimon Gaja atorga el present diploma de
                 </div>
-                <div class="col-6" style="text-align: center; font-size: 15px; padding: 0 10px;">
+                <div t-att-style="'width: %s; text-align: center; font-size: 15px; padding: 0 10px;' % es_width">
                     El Instituto Raimon Gaja otorga el presente diploma de
                 </div>
             </div>
 
             <!-- Course Name -->
             <div class="row" style="margin-top: 15px;">
-                <div class="col-6" style="text-align: center; font-weight: 700; font-size: 22px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
+                <div t-att-style="'width: %s; text-align: center; font-weight: 700; font-size: 22px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;' % cat_width">
                     <t t-raw="data.get('course_name_cat_html') or data.get('course_name_cat')"/>
                 </div>
-                <div class="col-6" style="text-align: center; font-weight: 700; font-size: 22px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
+                <div t-att-style="'width: %s; text-align: center; font-weight: 700; font-size: 22px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;' % es_width">
                     <t t-raw="data.get('course_name_es_html') or data.get('course_name_es')"/>
                 </div>
             </div>
@@ -122,8 +132,12 @@
             </div>
             
             <!-- Signatures -->
-            <div class="row" style="margin-top: 40px;">
-                <div class="col-6" style="text-align: center;">
+            <div class="row" style="margin-top: 40px; justify-content: center;">
+                <!-- shift inward more on digital diplomas -->
+                <t t-set="left_shift" t-value="'transform: translateX(22px);' if is_digital else ''"/>
+                <t t-set="right_shift" t-value="'transform: translateX(-22px);' if is_digital else ''"/>
+
+                <div class="col-6" t-att-style="'text-align: center; %s' % left_shift">
                     <div style="height: 70px; margin-bottom: 5px;">
                         <img t-if="data.get('sign_raimon')" t-att-src="'data:image/png;base64,' + data.get('sign_raimon')" style="height: 100%;"/>
                     </div>
@@ -131,7 +145,7 @@
                     <div style="font-size: 13px;">Director</div>
                     <div style="font-size: 13px;">Fundador</div>
                 </div>
-                <div class="col-6" style="text-align: center;">
+                <div class="col-6" t-att-style="'text-align: center; %s' % right_shift">
                     <div style="height: 70px; margin-bottom: 5px;">
                         <img t-if="data.get('sign_grecia')" t-att-src="'data:image/png;base64,' + data.get('sign_grecia')" style="height: 100%;"/>
                     </div>
