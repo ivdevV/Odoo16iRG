@@ -10,9 +10,9 @@
         --irg-text: #1f2937;
         --irg-muted: #6b7280;
         --irg-border: #e5e7eb;
-        --irg-primary: #2563eb;
-        --irg-primary-soft: #dbeafe;
-        --irg-success: #0f766e;
+        --irg-primary: #004888;
+        --irg-primary-soft: #81b4e1;
+        --irg-success: #3592bf;
         --irg-shadow: 0 14px 35px rgba(2, 6, 23, 0.1);
 
         background: radial-gradient(circle at top left, #eff6ff 0%, var(--irg-bg) 60%);
@@ -97,7 +97,7 @@
 
         &:hover {
             background: var(--irg-primary-soft);
-            border-color: rgba(37, 99, 235, 0.35);
+            border-color: rgba(0, 72, 136, 0.35);
             transform: translateY(-1px);
         }
     }
@@ -163,13 +163,13 @@
             background: #edf6ff;
 
             .irg-oh-cell-head {
-                color: #1d4ed8;
+                color: var(--irg-primary);
                 font-weight: 800;
             }
         }
 
         &.is-selected {
-            outline: 2px solid rgba(37, 99, 235, 0.45);
+            outline: 2px solid rgba(0, 72, 136, 0.45);
             outline-offset: -2px;
         }
     }
@@ -190,7 +190,7 @@
     .irg-oh-event {
         border: 0;
         border-radius: 8px;
-        background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+        background: linear-gradient(90deg, #004888 0%, #3592bf 100%);
         color: #fff;
         padding: 0.2rem 0.4rem;
         text-align: left;
@@ -277,7 +277,7 @@
         }
 
         &:hover {
-            border-color: rgba(37, 99, 235, 0.35);
+            border-color: rgba(0, 72, 136, 0.35);
             background: #eef5ff;
         }
     }
@@ -315,10 +315,24 @@
     .irg-oh-link {
         margin-top: 0.55rem;
         display: inline-flex;
+        align-items: center;
+        justify-content: center;
         font-size: 0.78rem;
         text-decoration: none;
-        color: var(--irg-success);
+        color: #fff;
         font-weight: 700;
+        background: linear-gradient(90deg, #004888 0%, #3592bf 100%);
+        border: 1px solid rgba(0, 72, 136, 0.2);
+        border-radius: 8px;
+        padding: 0.38rem 0.7rem;
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: #fff;
+            background: linear-gradient(90deg, #003a6d 0%, #2d7ea6 100%);
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
 
         + .irg-oh-link {
             margin-left: 0.65rem;

@@ -267,7 +267,7 @@ odoo.define('irg_timetable_portal_overhaul_v2.portal_timetable_overhaul_v2', fun
                         '<p><strong>Día:</strong> ' + escapeHtml(formatDayNameInZone(selected.start, activeTimezone)) + '</p>' +
                         '<p><strong>Zona horaria:</strong> ' + escapeHtml(activeTimezone) + '</p>' +
                         '<div class="irg-oh-detail-notes">' + escapeHtml(selected.lesson || '-') + '</div>' +
-                        (selected.time_url_metting ? '<a class="irg-oh-link" target="_blank" href="' + escapeHtml(selected.time_url_metting) + '">Acceso en vivo</a>' : '') +
+                        (selected.time_url_metting ? '<a class="irg-oh-link" target="_blank" href="' + escapeHtml(selected.time_url_metting) + '">Ver la clase en vivo</a>' : '') +
                         (selected.time_url_recoding ? '<a class="irg-oh-link" target="_blank" href="' + escapeHtml(selected.time_url_recoding) + '">Grabación</a>' : '') +
                     '</div>' :
                     '<div class="irg-oh-empty">Selecciona una clase para ver detalle</div>';
