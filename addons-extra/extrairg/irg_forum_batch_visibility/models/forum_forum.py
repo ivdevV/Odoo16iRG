@@ -73,12 +73,13 @@ class ForumForum(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         # never create a forum with moderation enabled
-        for vals in vals_list:
-            vals['moderation'] = False
+        if 'moderation' in self._fields:
+            for vals in vals_list:
+                vals['moderation'] = False
         return super().create(vals_list)
 
     def write(self, vals):
-        if 'moderation' in vals:
+        if 'moderation' in self._fields and 'moderation' in vals:
             vals = dict(vals, moderation=False)
         return super().write(vals)
 

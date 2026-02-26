@@ -7,6 +7,18 @@ function getCourseIdFromPath() {
     return match ? parseInt(match[1], 10) : null;
 }
 
+function getFirstCourseIdFromPage() {
+    const links = document.querySelectorAll('a[href*="/campus/course/"]');
+    for (const link of links) {
+        const href = (link.getAttribute('href') || '').trim();
+        const match = href.match(/\/campus\/course\/(\d+)/);
+        if (match) {
+            return parseInt(match[1], 10);
+        }
+    }
+    return null;
+}
+
 function markSeen(courseId, noticeId) {
     window.localStorage.setItem(`irg_forum_notice_seen_${courseId}`, String(noticeId));
 }
@@ -62,7 +74,7 @@ function renderPopup(courseId, notice) {
 }
 
 async function initForumNoticePopup() {
-    const courseId = getCourseIdFromPath();
+    const courseId = getCourseIdFromPath() || getFirstCourseIdFromPage();
     if (!courseId) {
         return;
     }
