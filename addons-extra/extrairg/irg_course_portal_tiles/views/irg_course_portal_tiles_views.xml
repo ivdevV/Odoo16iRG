@@ -2,7 +2,7 @@
 <odoo>
 
     <template id="irg_user_profile_content_details_inherit" inherit_id="isep_website_custom.user_profile_content_details">
-        <xpath expr="//h5[t-out='course_id.name']/.." position="after">
+        <xpath expr="//div[h5/t[@t-out='course_id.name']]" position="after">
             <div class="mb32">
                 <h5 class="border-bottom pb-1">Herramientas del curso</h5>
                 <div class="row">
