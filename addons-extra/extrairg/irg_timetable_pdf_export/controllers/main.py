@@ -25,8 +25,11 @@ class IrgTimetablePdfController(http.Controller):
         if not student:
             return request.not_found()
 
-        report = request.env.ref('irg_timetable_pdf_export.action_report_student_timetable_pdf').sudo()
-        pdf_content, _ = report._render_qweb_pdf(student.ids)
+        report_service = request.env['ir.actions.report'].sudo()
+        pdf_content, _ = report_service._render_qweb_pdf(
+            'irg_timetable_pdf_export.report_student_timetable_pdf',
+            student.ids,
+        )
 
         filename = f"Calendario_{(student.name or 'estudiante').replace(' ', '_')}.pdf"
         headers = [
