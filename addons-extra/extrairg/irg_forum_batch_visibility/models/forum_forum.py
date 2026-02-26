@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.osv import expression
 
 
 # ensure moderation is never enabled: it causes front-end JS to prevent
@@ -63,12 +64,10 @@ class ForumForum(models.Model):
         else:
             course_clause.append(('visibility_course_ids', '=', False))
 
-        # enforce **both** batch AND course conditions.  the previous OR logic
-        # allowed a forum with an unrelated batch to be visible simply because
-        # it wasn't assigned to any course; this is why portal users were
-        # seeing forums that didn't belong to their batches.  requiring an AND
-        # fixes that while still permitting forums with no restrictions.
-        return ['&', batch_clause, course_clause]
+        # enforce **both** batch AND course conditions.  use expression.AND to
+        # build a normalized/flat domain (avoid nested list tokens that break
+        # expression normalization with "unhashable type: 'list'").
+        return expression.AND([batch_clause, course_clause])
 
     @api.model_create_multi
     def create(self, vals_list):
