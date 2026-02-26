@@ -360,8 +360,9 @@ class DiplomaReportPDF(models.AbstractModel):
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
         registry = data.get('registry_number', 'DRAFT')
         qr_size = sp(46)
-        qr_x = side_margin + sp(20)
-        # Align QR bottom with signature bottom so they sit at same height
+        qr_x = side_margin + sp(36)
+        # Initial QR bottom aligned to signature images baseline; may be
+        # adjusted below for digital diplomas so it doesn't overlap labels
         qr_y = y_images
 
         if diploma_type == 'digital':
@@ -372,7 +373,7 @@ class DiplomaReportPDF(models.AbstractModel):
                 sig_height = sp(47)
                 # nudge signatures noticeably towards the centre for digital
                 # diplomas and center them under the date (column centre).
-                sig_shift = sp(36)
+                sig_shift = sp(48)
                 left_center = left_col_x + col_width / 2
                 sig_x = left_center + sig_shift - (sig_width / 2)
                 c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
@@ -401,9 +402,10 @@ class DiplomaReportPDF(models.AbstractModel):
             footer_y = role_y - sp(14)
             self._draw_text_in_column(c, "Fundador", left_col_x + sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
             self._draw_text_in_column(c, "Directora Acadèmica", right_col_x - sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
-            # adjust QR baseline to approximately match the bottom of the
-            # signature label area so the QR + registry block feels aligned
-            qr_y = footer_y
+            # place the QR a bit above the footer baseline so it does not
+            # overlap the registry text; keep registry baseline at footer_y
+            qr_y = footer_y + sp(12)
+            reg_baseline_y = footer_y
         else:
             # physical diploma: reserve three signature zones for handwritten
             # users will sign above these labels, so we don't draw images.
@@ -475,8 +477,13 @@ class DiplomaReportPDF(models.AbstractModel):
         except Exception:
             pass
         # place registry text so its baseline aligns with the signature
-        # footer baseline (draw at qr_y, since qr_y was set to footer_y above)
-        c.drawString(text_x, qr_y, reg_text)
+        # footer baseline (use reg_baseline_y when available to align with
+        # 'Fundador'); otherwise fall back slightly below the QR to avoid
+        # overlap for non-digital diplomas.
+        try:
+            c.drawString(text_x, reg_baseline_y, reg_text)
+        except NameError:
+            c.drawString(text_x, qr_y - sp(10), reg_text)
         
         # Finalize
         c.showPage()
