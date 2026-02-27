@@ -5,7 +5,7 @@
     "category": "Website",
     "author": "iRG",
     "license": "LGPL-3",
-    "depends": ["isep_website_custom"],
+    "depends": ["isep_website_custom", "openeducat_web"],
     "data": [
         "views/irg_course_portal_tiles_views.xml",
         "views/tfm_views.xml",
