@@ -24,7 +24,7 @@ class CalendarEvent(models.Model):
         
         api_key = ICP.get_param('irg_google_calendar_sync.api_key', '')
         calendar_id = ICP.get_param('irg_google_calendar_sync.calendar_id', '')
-        sync_days = int(ICP.get_param('irg_google_calendar_sync.sync_days', '30'))
+        sync_days = int(ICP.get_param('irg_google_calendar_sync.sync_days', '730'))
         
         if not api_key or not calendar_id:
             _logger.warning("Google Calendar sync: API Key or Calendar ID not configured")
@@ -48,7 +48,7 @@ class CalendarEvent(models.Model):
         # Google Calendar API endpoint
         url = f"https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events"
         
-        params = {
+        base_params = {
             'key': api_key,
             'timeMin': time_min,
             'timeMax': time_max,
@@ -56,17 +56,32 @@ class CalendarEvent(models.Model):
             'orderBy': 'startTime',
             'maxResults': 250,
         }
-        
-        response = requests.get(url, params=params, timeout=30)
-        
-        if response.status_code != 200:
-            _logger.error(f"Google Calendar API error: {response.status_code} - {response.text}")
-            return
-        
-        data = response.json()
-        events = data.get('items', [])
-        
-        _logger.info(f"Fetched {len(events)} events from Google Calendar")
+
+        events = []
+        next_page_token = None
+        page_count = 0
+
+        while True:
+            params = dict(base_params)
+            if next_page_token:
+                params['pageToken'] = next_page_token
+
+            response = requests.get(url, params=params, timeout=30)
+
+            if response.status_code != 200:
+                _logger.error(f"Google Calendar API error: {response.status_code} - {response.text}")
+                return
+
+            data = response.json()
+            page_events = data.get('items', [])
+            events.extend(page_events)
+            page_count += 1
+
+            next_page_token = data.get('nextPageToken')
+            if not next_page_token:
+                break
+
+        _logger.info(f"Fetched {len(events)} events from Google Calendar in {page_count} page(s)")
         
         created_count = 0
         updated_count = 0
