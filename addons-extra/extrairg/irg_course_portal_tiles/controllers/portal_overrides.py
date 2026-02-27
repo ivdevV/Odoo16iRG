@@ -30,7 +30,15 @@ class IrgCoursePortalOverrides(WebsiteProfile):
                     return True
             return False
 
-        menu_list = menu_list.filtered(lambda m: not _is_course_tool(m))
+        def _is_hidden_global(menu):
+            # hide certain global tiles from the /campus dashboard
+            name = (menu.name or '').lower()
+            for kw in ('curso', 'certific', 'normativ', 'normativa'):
+                if kw in name:
+                    return True
+            return False
+
+        menu_list = menu_list.filtered(lambda m: not (_is_course_tool(m) or _is_hidden_global(m)))
         values.update({'menu_list': menu_list})
 
         return request.render("website_profile.user_profile_main", values)
