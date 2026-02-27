@@ -1,5 +1,6 @@
 from odoo import http
 from odoo.http import request
+from odoo.osv import expression
 
 from odoo.addons.isep_website_custom_inh.controllers.main import DashboardPortalInh
 
@@ -66,23 +67,25 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             # start by selecting only the forums that are *associated with this
             # course*.  we deliberately exclude forums with no course link so
             # that globals/other-course forums don’t show up in the panel.
-            course_domain = ['|', ('visibility_course_ids', 'in', [course.id])]
+            course_domain = [('visibility_course_ids', 'in', [course.id])]
             if course.forum_id:
                 # the course record may hold a direct pointer to the forum.
-                course_domain = ['|', course_domain, ('id', '=', course.forum_id.id)]
+                course_domain = expression.OR([
+                    course_domain,
+                    [('id', '=', course.forum_id.id)],
+                ])
 
             # next build the batch condition: either the forum has no batch
             # restriction, or the user shares at least one of the allowed
             # batches for this course.  if the user has no batches (e.g. a
             # teacher), we fall back to requiring no restriction at all.
-            batch_domain = ['|', ('visibility_batch_ids', '=', False)]
             if user_batch_ids:
-                batch_domain.append(('visibility_batch_ids', 'in', list(user_batch_ids)))
+                batch_domain = ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
             else:
-                batch_domain.append(('visibility_batch_ids', '=', False))
+                batch_domain = [('visibility_batch_ids', '=', False)]
 
             # final domain requires both conditions simultaneously
-            forum_domain = ['&'] + course_domain + batch_domain
+            forum_domain = expression.AND([course_domain, batch_domain])
             debug_domain = forum_domain
             debug_course = course.id
 
