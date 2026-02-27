@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="assets_frontend" inherit_id="web.assets_frontend" name="irg_course_portal_tiles assets">
+    <xpath expr="." position="inside">
+      <link rel="stylesheet" type="text/scss" href="/irg_course_portal_tiles/static/src/scss/irg_tiles.scss"/>
+      <script type="text/javascript" src="/irg_course_portal_tiles/static/src/js/help_chatbot.js"></script>
+    </xpath>
+  </template>
+</odoo>

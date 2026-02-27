@@ -1,0 +1,23 @@
+// Provisional tile styles to match campus tiles (pic1)
+.student_tile_portal .dashboard_element_main_body{
+  background-color: #50bfe6; // cyan-like
+  color: #fff;
+  border-radius: 6px;
+  min-height: 140px;
+}
+.student_tile_portal .dashboard_element_main_body .hover_effect img{
+  filter: brightness(1) saturate(0.9);
+}
+.student_tile_portal .dashboard_element_main_body:hover{
+  background-color: darken(#50bfe6, 6%);
+}
+
+/* Hide badges area provisionally */
+.badge-list, .badges, .o_badges, .user-badges, #badges{
+  display: none !important;
+}
+
+/* Replace 'Atención al cliente' label via CSS if present */
+.menu-helpdesk:after{
+  /* used as fallback label replacement if element has no direct text change */
+}

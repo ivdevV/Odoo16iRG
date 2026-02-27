@@ -9,6 +9,8 @@
     "data": [
         "views/irg_course_portal_tiles_views.xml",
         "views/tfm_views.xml",
+        "views/tfm_page_fallback.xml",
+        "views/assets.xml",
     ],
     "installable": True,
     "application": False,
