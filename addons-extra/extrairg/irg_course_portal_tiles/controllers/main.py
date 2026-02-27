@@ -1,5 +1,8 @@
+import logging
 from odoo import http
 from odoo.http import request
+
+_logger = logging.getLogger(__name__)
 
 
 class IrgTFMController(http.Controller):
@@ -35,6 +38,10 @@ class IrgTFMController(http.Controller):
     @http.route(['/help'], type='http', auth='public', website=True)
     def help_page(self, **kwargs):
         return request.render('irg_course_portal_tiles.help_page', {})
+
+    @http.route(['/helpdesk/atencion-al-cliente-1'], type='http', auth='public', website=True)
+    def helpdesk_custom(self, **kwargs):
+        return request.render('irg_course_portal_tiles.helpdesk_page', {})
 
     @http.route(['/help/chat'], type='json', auth='public', methods=['POST'])
     def help_chat(self, **kwargs):

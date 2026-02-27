@@ -12,8 +12,8 @@
                 <div class="row mt-3">
                     <div class="col-md-8">
                         <h4>Descripción</h4>
-                        <div t-if="getattr(course, 'description', False)"><t t-raw="getattr(course, 'description', False)"/></div>
-                        <div t-if="not getattr(course, 'description', False)" class="text-muted">No hay descripción disponible.</div>
+                        <div t-if="course.description"><t t-raw="course.description"/></div>
+                        <div t-if="not course.description" class="text-muted">No hay descripción disponible.</div>
 
                         <h4 class="mt-4">Supervisores</h4>
                         <ul>
