@@ -83,6 +83,10 @@ Formato recomendado: Markdown, ejemplo `doc/micro-specs/2026-02-12-irg_ejemplo.m
 - Tests de integración (instalación del módulo + workflows críticos).
 - QA: staging -> monitor logs -> producción.
 
+- CI/CD: el push al repositorio dispara el pipeline de Jenkins que despliega
+	y repone los servicios (incluido el reinicio de Odoo) en los entornos
+	configurados; por tanto no es necesario un reinicio manual tras el push.
+
 ---
 
 ## Referencias
