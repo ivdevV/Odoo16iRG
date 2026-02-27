@@ -33,7 +33,7 @@ class IrgCoursePortalOverrides(WebsiteProfile):
         def _is_hidden_global(menu):
             # hide certain global tiles from the /campus dashboard
             name = (menu.name or '').lower()
-            for kw in ('curso', 'certific', 'normativ', 'normativa'):
+            for kw in ('curso', 'certific', 'normativ', 'normativa', 'badge', 'insign', 'insignia', 'insignias'):
                 if kw in name:
                     return True
             return False
@@ -67,7 +67,14 @@ class IrgCoursePortalOverrides(WebsiteProfile):
                     return True
             return False
 
-        values['menu_list'] = menu_list.filtered(lambda m: _is_course_tool_local(m))
+        def _is_hidden_badge(menu):
+            name = (menu.name or '').lower()
+            for kw in ('badge', 'insign', 'insignia', 'insignias'):
+                if kw in name:
+                    return True
+            return False
+
+        values['menu_list'] = menu_list.filtered(lambda m: _is_course_tool_local(m) and not _is_hidden_badge(m))
 
         _logger.info('IRG OVERRIDE values: %s', pprint.pformat(values))
         return request.render("isep_website_custom.user_profile_course", values)
