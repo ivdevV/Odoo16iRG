@@ -70,7 +70,7 @@ msgstr "% de SLA exitosa"
 #: code:addons/helpdesk/models/helpdesk.py:0
 #, python-format
 msgid "Customer Care"
-msgstr "Atención al cliente"
+msgstr "Atención al Alumno"
 msgid "%s (copy)"
 msgstr "%s (copia)"
 
@@ -4187,7 +4187,7 @@ msgstr "p. ej. cierre los tickets urgentes dentro de 36 horas"
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_team_view_form
 msgid "e.g. Customer Care"
-msgstr "p. ej. Atención al cliente"
+msgstr "p. ej. Atención al Alumno"
 
 #. module: helpdesk
 #: model_terms:ir.ui.view,arch_db:helpdesk.helpdesk_ticket_view_form

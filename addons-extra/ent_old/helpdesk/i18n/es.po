@@ -75,7 +75,7 @@ msgstr "% de SLA Exitosa"
 #: code:addons/helpdesk/models/helpdesk.py:0
 #, python-format
 msgid "Customer Care"
-msgstr "Atención al cliente"
+msgstr "Atención al Alumno"
 msgid "%s (copy)"
 msgstr "%s (copia)"
 
