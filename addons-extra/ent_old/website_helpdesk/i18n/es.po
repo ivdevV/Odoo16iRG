@@ -160,7 +160,7 @@ msgstr "Contáctenos"
 #: code:addons/website_helpdesk/__init__.py:0
 #, python-format
 msgid "Customer Care"
-msgstr "Atención al Alumno"
+msgstr "Atención al cliente"
 
 #. module: website_helpdesk
 #: model_terms:ir.ui.view,arch_db:website_helpdesk.snippet_options

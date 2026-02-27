@@ -1,0 +1,10 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: IRG Course Portal Tiles\n"
+"POT-Creation-Date: 2026-02-27 00:00+0000\n"
+"PO-Revision-Date: 2026-02-27 00:00+0000\n"
+"Language: es\n"
+
+# Spanish translations for irg_course_portal_tiles
+msgid "Customer Care"
+msgstr "Atención al Alumno"
