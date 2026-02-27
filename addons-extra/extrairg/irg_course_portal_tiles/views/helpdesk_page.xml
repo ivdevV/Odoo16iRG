@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="helpdesk_page" name="Helpdesk - Atención al alumno">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-10">
+                        <section class="text-center mb-4" style="background:transparent;">
+                            <h1 class="fw-bold" style="color: #fff;">Consulta tu historial de tickets.</h1>
+                            <p class="mb-0" style="color: #fff; font-size: 0.95rem;">Sube aquí toda la documentación que te requiera el Área Académica.</p>
+                        </section>
+                        <section class="o_helpdesk_form">
+                            <t t-call="website_helpdesk.ticket_submit_form"/>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>
