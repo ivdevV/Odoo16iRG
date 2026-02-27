@@ -1,5 +1,6 @@
 from odoo import http
 from odoo.http import request
+from odoo.osv import expression
 
 from odoo.addons.isep_website_custom_inh.controllers.main import DashboardPortalInh
 
@@ -36,40 +37,95 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         return batch_ids
 
     def _forum_visibility_domain_for_user(self, course, user_batch_ids):
-        domain = [
-            '|',
-            ('visibility_course_ids', '=', False),
-            ('visibility_course_ids', 'in', course.id),
-        ]
-        if user_batch_ids:
-            domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
-        else:
-            domain += [('visibility_batch_ids', '=', False)]
-        return domain
+        return request.env['forum.forum']._visibility_domain_for_user(request.env.user, course=course)
 
     @http.route(['/campus/course/<int:course_id>'], type='http', auth="user", website=True)
     def view_user_profile_course(self, course_id, **post):
         response = super().view_user_profile_course(course_id, **post)
 
-        course = request.env['op.course'].browse(course_id)
+        course = request.env['op.course'].sudo().browse(course_id)
         forum_ids = request.env['forum.forum']
         post_ids = request.env['forum.post']
         posts_by_forum_id = {}
         user = request.env.user
 
+        # ``course`` is obtained in sudo mode, so exists() should normally
+        # be True.  nevertheless we still guard in case the course id is
+        # bogus.  we also initialise debug variables here to avoid later
+        # None-values confusing the template.
+        debug_domain = None
+        debug_forums = None
+        debug_course = None
+
         if course.exists():
+            # determine which batches the user has **for this course** only;
+            # the portal-wide `forum_effective_batch_ids` may include batches
+            # from unrelated courses, which caused the user to see forums from
+            # other subjects.  restricting here fixes that.
             user_batch_ids = self._get_user_batch_ids_for_course(user, course)
 
-            forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
-            forum_ids = request.env['forum.forum'].search(forum_domain, order='name asc')
+            # start by selecting only the forums that are *associated with this
+            # course*.  we deliberately exclude forums with no course link so
+            # that globals/other-course forums don’t show up in the panel.
+            course_domain = [('visibility_course_ids', 'in', [course.id])]
+            if course.forum_id:
+                # the course record may hold a direct pointer to the forum.
+                course_domain = expression.OR([
+                    course_domain,
+                    [('id', '=', course.forum_id.id)],
+                ])
 
-            if not forum_ids and user_batch_ids:
-                forum_ids = request.env['forum.forum'].search([
-                    ('visibility_batch_ids', 'in', list(user_batch_ids)),
-                ], order='name asc')
+            # next build the batch condition: either the forum has no batch
+            # restriction, or the user shares at least one of the allowed
+            # batches for this course.  if the user has no batches (e.g. a
+            # teacher), we fall back to requiring no restriction at all.
+            if user_batch_ids:
+                batch_domain = ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
+            else:
+                batch_domain = [('visibility_batch_ids', '=', False)]
 
-            if course.forum_id and course.forum_id in request.env['forum.forum'].search(forum_domain + [('id', '=', course.forum_id.id)]):
-                forum_ids |= course.forum_id
+            # final domain requires both conditions simultaneously
+            forum_domain = expression.AND([course_domain, batch_domain])
+            debug_domain = forum_domain
+            debug_course = course.id
+
+            # debug log – helps troubleshooting missing forums for specific users
+            _logger = request.env['ir.logging'].sudo()
+            try:
+                _logger.create({
+                    'name': 'campus_forum_debug',
+                    'type': 'server',
+                    'level': 'info',
+                    'dbname': request.env.cr.dbname,
+                    'message': f"forum_domain={forum_domain} course={course.id}",
+                    'path': 'irg_campus_course_forum.controllers.main',
+                    'func': '_forum_debug',
+                    'line': '0',
+                })
+            except Exception:
+                pass
+
+            # search as superuser to avoid portal record rules blocking
+            # the batch lookup for the guest user
+            forum_ids = request.env['forum.forum'].sudo().search(forum_domain, order='name asc')
+
+            # debug : record what forums were found after the sudo search
+            try:
+                _logger.create({
+                    'name': 'campus_forum_debug',
+                    'type': 'server',
+                    'level': 'info',
+                    'dbname': request.env.cr.dbname,
+                    'message': (
+                        f"forums_found={[f.name for f in forum_ids]} "
+                        f"forum_domain={forum_domain} "
+                        f"course={course.id}"),
+                    'path': 'irg_campus_course_forum.controllers.main',
+                    'func': '_forum_debug',
+                    'line': '0',
+                })
+            except Exception:
+                pass
 
             forum_ids = forum_ids.sorted(key=lambda forum: forum.name or '')
 
@@ -78,11 +134,6 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                     ('forum_id', 'in', forum_ids.ids),
                     ('parent_id', '=', False),
                 ]
-                if user_batch_ids:
-                    post_domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
-                else:
-                    post_domain += [('visibility_batch_ids', '=', False)]
-
                 post_ids = request.env['forum.post'].search(post_domain, order='create_date desc')
                 posts_by_forum_id = {
                     forum.id: post_ids.filtered(lambda forum_post: forum_post.forum_id == forum)
@@ -90,11 +141,16 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                 }
 
         if hasattr(response, 'qcontext'):
+            # expose debugging info so a portal user can inspect what domain
+            # was generated; this avoids needing to check server logs.
             response.qcontext.update({
                 'course_forum': forum_ids[:1],
                 'course_forum_ids': forum_ids,
                 'course_forum_post_ids': post_ids,
                 'course_forum_posts_map': posts_by_forum_id,
+                'debug_forum_domain': debug_domain,
+                'debug_course_id': debug_course,
+                'debug_forums_found': debug_forums or [(f.id, f.name) for f in forum_ids],
             })
 
         return response

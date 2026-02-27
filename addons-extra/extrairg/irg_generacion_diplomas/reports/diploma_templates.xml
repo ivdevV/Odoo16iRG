@@ -63,23 +63,32 @@
     <!-- SHARED CONTENT -->
     <template id="diploma_content">
         <div style="padding: 0 60px;">
+            <!-- compute helpers -->
+            <t t-set="course_cat_text" t-value="(data.get('course_name_cat') or '').strip()"/>
+            <t t-set="course_es_text" t-value="(data.get('course_name_es') or '').strip()"/>
+            <t t-set="cat_short" t-value="len(course_cat_text) &lt; 45"/>
+            <t t-set="es_short" t-value="len(course_es_text) &lt; 45"/>
+            <!-- use background presence as a proxy for digital diplomas -->
+            <t t-set="is_digital" t-value="bool(data.get('bg_image'))"/>
             <!-- Intro -->
-            <div class="row" style="margin-top: 10px;">
-                <div class="col-6" style="text-align: center; font-size: 15px; padding: 0 10px;">
+            <t t-set="cat_width" t-value="'40%' if cat_short else '50%'"/>
+            <t t-set="es_width" t-value="'40%' if es_short else '50%'"/>
+            <div class="row" style="margin-top: 2px;">
+                <div t-att-style="'width: %s; text-align: center; font-size: 15px; padding: 0 10px;' % cat_width">
                     L'Institut Raimon Gaja atorga el present diploma de
                 </div>
-                <div class="col-6" style="text-align: center; font-size: 15px; padding: 0 10px;">
+                <div t-att-style="'width: %s; text-align: center; font-size: 15px; padding: 0 10px;' % es_width">
                     El Instituto Raimon Gaja otorga el presente diploma de
                 </div>
             </div>
 
             <!-- Course Name -->
-            <div class="row" style="margin-top: 25px;">
-                <div class="col-6" style="text-align: center; font-weight: 700; font-size: 24px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
-                    <t t-esc="data.get('course_name_cat')"/>
+            <div class="row" style="margin-top: 15px;">
+                <div t-att-style="'width: %s; text-align: center; font-weight: 700; font-size: 22px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;' % cat_width">
+                    <t t-raw="data.get('course_name_cat_html') or data.get('course_name_cat')"/>
                 </div>
-                <div class="col-6" style="text-align: center; font-weight: 700; font-size: 24px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;">
-                    <t t-esc="data.get('course_name_es')"/>
+                <div t-att-style="'width: %s; text-align: center; font-weight: 700; font-size: 22px; text-transform: uppercase; padding: 0 10px; line-height: 1.2;' % es_width">
+                    <t t-raw="data.get('course_name_es_html') or data.get('course_name_es')"/>
                 </div>
             </div>
             
@@ -123,31 +132,41 @@
             </div>
             
             <!-- Signatures -->
-            <div class="row" style="margin-top: 40px;">
-                <div class="col-6" style="text-align: center;">
-                    <div style="height: 70px; margin-bottom: 5px;">
+            <!-- increase top spacing for digital diplomas and enlarge image container so
+                 the label text doesn't overlap the signature image -->
+            <t t-set="sig_margin_top" t-value="'60px' if is_digital else '40px'"/>
+            <t t-set="sig_img_height" t-value="'90px' if is_digital else '70px'"/>
+            <t t-set="sig_img_margin_bottom" t-value="'12px' if is_digital else '5px'"/>
+            <t t-set="left_shift" t-value="'transform: translateX(46px);' if is_digital else ''"/>
+            <t t-set="right_shift" t-value="'transform: translateX(-46px);' if is_digital else ''"/>
+
+            <div class="row" t-att-style="'margin-top: %s; justify-content: center;' % sig_margin_top">
+                <div class="col-6" t-att-style="'text-align: center; %s' % left_shift">
+                    <div t-att-style="'height: %s; margin-bottom: %s;' % (sig_img_height, sig_img_margin_bottom)">
                         <img t-if="data.get('sign_raimon')" t-att-src="'data:image/png;base64,' + data.get('sign_raimon')" style="height: 100%;"/>
                     </div>
-                    <div style="font-weight: 700; font-size: 16px;">Raimon Gaja</div>
-                    <div style="font-size: 13px;">Director</div>
-                    <div style="font-size: 13px;">Fundador</div>
+                    <div t-att-style="'font-weight: 700; font-size: 16px; margin-top: 4px;'">Raimon Gaja</div>
+                    <div t-att-style="'font-size: 13px; margin-top: 2px;'">Director</div>
+                    <div t-att-style="'font-size: 13px; margin-top: 2px;'">Fundador</div>
                 </div>
-                <div class="col-6" style="text-align: center;">
-                    <div style="height: 70px; margin-bottom: 5px;">
+                <div class="col-6" t-att-style="'text-align: center; %s' % right_shift">
+                    <div t-att-style="'height: %s; margin-bottom: %s;' % (sig_img_height, sig_img_margin_bottom)">
                         <img t-if="data.get('sign_grecia')" t-att-src="'data:image/png;base64,' + data.get('sign_grecia')" style="height: 100%;"/>
                     </div>
-                    <div style="font-weight: 700; font-size: 16px;">Grecia Malcotti</div>
-                    <div style="font-size: 13px;">Directora Academica</div>
-                    <div style="font-size: 13px;">Directora Academica</div>
+                    <div t-att-style="'font-weight: 700; font-size: 16px; margin-top: 4px;'">Grecia Malcotti</div>
+                    <div t-att-style="'font-size: 13px; margin-top: 2px;'">Directora Academica</div>
+                    <div t-att-style="'font-size: 13px; margin-top: 2px;'">Directora Academica</div>
                 </div>
             </div>
         </div>
 
         <!-- Footer: QR & Registry -->
-        <div style="position: absolute; bottom: 40px; left: 60px;">
-            <img t-att-src="'/report/barcode/?type=QR&amp;value=' + data.get('qr_url') + '&amp;width=100&amp;height=100'" style="width: 90px; height: 90px;"/>
+        <t t-set="qr_left" t-value="'90px' if is_digital else '60px'"/>
+        <t t-set="qr_bottom" t-value="'95px' if is_digital else '40px'"/>
+        <div t-att-style="'position: absolute; bottom: %s; left: %s; text-align: center; width: 110px;' % (qr_bottom, qr_left)">
+            <img t-att-src="'/report/barcode/?type=QR&amp;value=' + data.get('qr_url') + '&amp;width=100&amp;height=100'" style="width: 90px; height: 90px; display: block; margin: 0 auto;"/>
             <div style="margin-top: 5px; font-size: 11px; font-weight: 700;">
-                No Registro: <t t-esc="data.get('registry_number')"/>
+                Nº Registro: <t t-esc="data.get('registry_number')"/>
             </div>
         </div>
     </template>

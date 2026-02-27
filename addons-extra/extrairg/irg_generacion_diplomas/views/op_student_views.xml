@@ -6,11 +6,14 @@
         <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
+                <!-- ensure the field used in attrs is present in the view -->
+                <field name="can_generate_diploma" invisible="1"/>
                 <button name="%(action_irg_diploma_wizard)d" 
                         type="action" 
                         string="Generar Diploma" 
                         class="oe_highlight"
-                        context="{'default_student_id': active_id}"/>
+                        context="{'default_student_id': active_id}"
+                        attrs="{'invisible': [('can_generate_diploma','=',False)]}"/>
             </xpath>
         </field>
     </record>

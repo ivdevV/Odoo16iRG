@@ -1,0 +1,75 @@
+.irg-forum-popup-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+}
+
+.irg-forum-popup-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.irg-forum-popup-card {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 14px;
+    box-shadow: var(--box-shadow);
+    padding: 14px;
+}
+
+.irg-forum-popup-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    border: 0;
+    background: transparent;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--bs-secondary-color);
+}
+
+.irg-forum-popup-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--bs-secondary-bg-subtle);
+    color: var(--bs-emphasis-color);
+    border-radius: 999px;
+    padding: 4px 10px;
+    margin-bottom: 8px;
+}
+
+.irg-forum-popup-title {
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    color: var(--bs-emphasis-color);
+    font-weight: 800;
+}
+
+.irg-forum-popup-meta {
+    font-size: 12px;
+    color: var(--bs-secondary-color);
+    margin-bottom: 8px;
+}
+
+.irg-forum-popup-preview {
+    font-size: 14px;
+    color: var(--bs-body-color);
+    margin-bottom: 12px;
+}
+
+.irg-forum-popup-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.irg-forum-popup-open.btn.btn-primary {
+    white-space: nowrap;
+}

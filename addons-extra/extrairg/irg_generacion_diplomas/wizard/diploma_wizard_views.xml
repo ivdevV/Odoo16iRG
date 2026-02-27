@@ -9,7 +9,8 @@
                 <group>
                     <group>
                         <field name="student_id" invisible="1"/>
-                        <field name="student_course_id" options="{'no_create': True, 'no_open': True}"/>
+                           <field name="student_course_id" options="{'no_create': True, 'no_open': True}"
+                               domain="[('student_id','=',student_id)]"/>
                         <field name="date"/>
                     </group>
                     <group>

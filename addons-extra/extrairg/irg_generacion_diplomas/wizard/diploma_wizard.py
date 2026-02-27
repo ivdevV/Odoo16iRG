@@ -45,6 +45,10 @@ class DiplomaWizard(models.TransientModel):
         student_name = self.student_id.name or ""
         course_name_es = self.student_course_id.course_id.name
         course_name_cat = getattr(self.student_course_id.course_id, 'name_cat', None) or course_name_es
+        # apply the same Catalan normalization used by the PDF generator so that
+        # the 'y' becomes 'i' and accents are fixed
+        normer = self.env['report.irg_generacion_diplomas.diploma_pdf']
+        course_name_cat = normer._normalize_catalan_course_name(course_name_cat)
 
         # QR URL
         query_params = {'id': registry_number}
@@ -68,10 +72,22 @@ class DiplomaWizard(models.TransientModel):
         qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
 
         # Prepare data
+        # also construct HTML-friendly versions with potential breaks, used by qweb templates
+        def html_split(name, lang='es'):
+            if not name:
+                return name
+            sep = ' y ' if lang == 'es' else ' i '
+            if sep in name:
+                parts = name.rsplit(sep, 1)
+                return parts[0] + sep.strip() + '<br/>' + parts[1]
+            return name
+
         data = {
             'student_name': student_name,
             'course_name_es': course_name_es,
             'course_name_cat': course_name_cat,
+            'course_name_es_html': html_split(course_name_es, lang='es'),
+            'course_name_cat_html': html_split(course_name_cat, lang='cat'),
             'date_es': date_es,
             'date_cat': date_cat,
             'registry_number': registry_number,

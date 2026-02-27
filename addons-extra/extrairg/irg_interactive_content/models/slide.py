@@ -87,13 +87,35 @@ class SlideSlide(models.Model):
                     _('The field "Interactive JSON" must contain a valid JSON object.')
                 )
 
+    @api.onchange('x_is_interactive')
+    def _onchange_interactive(self):
+        # when a slide is marked interactive, ensure its category is article
+        if self.x_is_interactive and self.slide_category != 'article':
+            self.slide_category = 'article'
+
+    @api.constrains('x_is_interactive', 'slide_category')
+    def _check_interactive_category(self):
+        for slide in self:
+            if slide.x_is_interactive and slide.slide_category != 'article':
+                raise ValidationError(
+                    _('Interactive slides must have category "article".')
+                )
+
+    @api.constrains('x_original_slide_id', 'x_is_interactive')
+    def _check_original_interactive(self):
+        for slide in self:
+            if slide.x_original_slide_id and not slide.x_is_interactive:
+                raise ValidationError(
+                    _('A slide linked to an original must be marked as interactive.')
+                )
+
     @api.model_create_multi
     def create(self, vals_list):
         records = super(SlideSlide, self).create(vals_list)
         records._validate_interactive_json()
 
-        for record in records:
-            if record.slide_category == 'document' and not record.x_is_interactive:
+        for record, vals in zip(records, vals_list):
+            if record._should_trigger_n8n_webhook(vals):
                 record._trigger_n8n_webhook()
 
         return records
@@ -127,3 +149,20 @@ class SlideSlide(models.Model):
             _logger.info('Webhook enviado a n8n para slide ID: %s', self.id)
         except requests.RequestException as error:
             _logger.error('Fallo al enviar webhook a n8n para slide ID %s: %s', self.id, error)
+
+    def _should_trigger_n8n_webhook(self, vals):
+        self.ensure_one()
+
+        if self.x_is_interactive or self.x_original_slide_id:
+            return False
+
+        if self.slide_category != 'document':
+            return False
+
+        binary_from_vals = bool(vals.get('document_binary_content') or vals.get('datas'))
+        binary_from_record = bool(self.document_binary_content)
+
+        if not binary_from_vals and not binary_from_record:
+            return False
+
+        return True

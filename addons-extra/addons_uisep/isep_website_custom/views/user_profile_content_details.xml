@@ -67,6 +67,7 @@
                                 <div t-if="not subject_ids" class="text-muted d-inline-block">En proceso</div>
                             </div>
                         </div>
+                        <!-- Course-level quick links moved to irg_course_portal_tiles module -->
                     </t>
 
 

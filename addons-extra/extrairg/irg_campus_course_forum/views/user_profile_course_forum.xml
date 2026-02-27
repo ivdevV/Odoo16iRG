@@ -3,8 +3,8 @@
     <template id="user_profile_content_details_forum" inherit_id="isep_website_custom.user_profile_content_details">
         <xpath expr="//ul[@id='profile_extra_info_tablist']/li[last()]" position="after">
             <li class="nav-item">
-                <a role="tab" aria-controls="Foro" href="#profile_tab_content_forum"
-                   t-attf-class="nav-link #{'active' if active_tab == 'forum' else ''}" data-bs-toggle="tab">
+                <!-- Clicking this tab should just go to the main /forum page -->
+                <a href="/forum" class="nav-link">
                     Foro
                 </a>
             </li>
@@ -16,10 +16,8 @@
                 <div class="mb32">
                     <h5 class="border-bottom pb-1">Foros del curso</h5>
 
-                    <t t-set="resolved_course_forum_ids" t-value="course_forum_ids"/>
 
-                    <t t-if="resolved_course_forum_ids">
-                        <t t-foreach="resolved_course_forum_ids" t-as="forum">
+                        <t t-foreach="course_forum_ids" t-as="forum">
                             <div class="mt-3">
                                 <h6 class="mb-2">
                                     <a t-attf-href="/forum/#{slug(forum)}" t-esc="forum.name"/>
@@ -49,9 +47,8 @@
                                 </div>
                             </div>
                         </t>
-                    </t>
 
-                    <div class="text-muted d-inline-block" t-if="not resolved_course_forum_ids">
+                    <div class="text-muted d-inline-block" t-if="not course_forum_ids">
                         Este curso no tiene foro configurado.
                     </div>
                 </div>

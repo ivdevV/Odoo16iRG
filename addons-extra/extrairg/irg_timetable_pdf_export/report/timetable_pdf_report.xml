@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_student_timetable_pdf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="student">
+                <t t-call="web.external_layout">
+                    <t t-set="first_course" t-value="student.course_detail_ids[:1].course_id"/>
+                    <t t-set="first_batch" t-value="student.course_detail_ids[:1].batch_id"/>
+                    <t t-set="course_ids" t-value="student.course_detail_ids.mapped('course_id').ids"/>
+                    <t t-set="batch_ids" t-value="student.course_detail_ids.mapped('batch_id').ids"/>
+                    <t t-set="sessions" t-value="env['op.session'].sudo().search([('course_id', 'in', course_ids), ('batch_id', 'in', batch_ids)], order='start_datetime asc')"/>
+
+                    <div class="page">
+                        <div style="margin-bottom: 12px; text-align: center;">
+                            <h2 style="margin: 0; font-size: 20px; font-weight: 700;">Calendario Académico</h2>
+                            <h3 style="margin: 4px 0 0 0; font-size: 14px; font-weight: 600;">
+                                <t t-esc="first_course.name if first_course else 'Curso no definido'"/>
+                            </h3>
+                        </div>
+
+                        <table class="table table-sm table-bordered" style="width:100%; font-size:11px; margin-bottom: 10px;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 18%;"><strong>Estudiante</strong></td>
+                                    <td style="width: 32%;"><t t-esc="student.name"/></td>
+                                    <td style="width: 18%;"><strong>Lote</strong></td>
+                                    <td style="width: 32%;"><t t-esc="first_batch.name if first_batch else '-'"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Generado</strong></td>
+                                    <td><t t-esc="context_timestamp(student.write_date or student.create_date).strftime('%d/%m/%Y %H:%M')"/></td>
+                                    <td><strong>Total clases</strong></td>
+                                    <td><t t-esc="len(sessions)"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="table table-sm table-bordered" style="width:100%; font-size:11px; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="width:14%; text-align:center;">Fecha</th>
+                                    <th style="width:16%; text-align:center;">Horario (España)</th>
+                                    <th style="width:45%; text-align:center;">Nombre Asignatura</th>
+                                    <th style="width:25%; text-align:center;">Docente</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="sessions">
+                                    <t t-foreach="sessions" t-as="session">
+                                        <tr>
+                                            <td style="text-align:center; white-space:nowrap;">
+                                                <t t-esc="context_timestamp(session.start_datetime).strftime('%d/%m/%Y')"/>
+                                            </td>
+                                            <td style="text-align:center; white-space:nowrap;">
+                                                <t t-esc="context_timestamp(session.start_datetime).strftime('%H:%M')"/> -
+                                                <t t-esc="context_timestamp(session.end_datetime).strftime('%H:%M')"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="session.class_title or session.name or session.subject_id.name"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="session.faculty_id.name"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <tr>
+                                        <td colspan="4" style="text-align:center;">Sin sesiones disponibles para este estudiante.</td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <p style="text-align:right; font-size:10px; margin-top: 5px; margin-bottom: 0; color: #374151;">
+                            Horarios expresados en hora española (Europe/Madrid).
+                        </p>
+
+                        <p style="text-align:center; font-size:10px; margin-top: 8px; margin-bottom: 0;">
+                            * Calendario sujeto a posibles cambios por razones de fuerza mayor.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_student_timetable_pdf" model="ir.actions.report">
+        <field name="name">Calendario del Estudiante (PDF)</field>
+        <field name="model">op.student</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">irg_timetable_pdf_export.report_student_timetable_pdf</field>
+        <field name="report_file">irg_timetable_pdf_export.report_student_timetable_pdf</field>
+        <field name="print_report_name">'Calendario_%s' % (object.name or 'estudiante')</field>
+    </record>
+</odoo>

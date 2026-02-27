@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_timetable_portal_overhaul" inherit_id="openeducat_timetable_enterprise.openeducat_timetable_portal" name="IRG Timetable Portal Overhaul">
+        <xpath expr="//div[contains(@class, 'timetable_schedule_portal')]" position="attributes">
+            <attribute name="class" add=" irg-timetable-overhaul" separator=" "/>
+        </xpath>
+
+        <xpath expr="//script[@id='event-template']" position="replace">
+            <script id="event-template" type="text/x-kendo-template">
+                <div class="irg-event-chip">
+                    <span class="irg-event-dot"></span>
+                    <span class="irg-event-title">#: title #</span>
+                </div>
+            </script>
+        </xpath>
+
+        <xpath expr="//script[@id='day-event-template']" position="replace">
+            <script id="day-event-template" type="text/x-kendo-template">
+                <div class="irg-agenda-card">
+                    <div class="irg-agenda-card__title">#: title #</div>
+                    <div class="irg-agenda-card__meta">#: faculty #</div>
+                    <div class="irg-agenda-card__time">#: kendo.toString(start, "dd/MM") # · #: kendo.toString(start, "HH:mm") # - #: kendo.toString(end, "HH:mm") #</div>
+                </div>
+            </script>
+        </xpath>
+
+        <xpath expr="//script[@id='editor']" position="replace">
+            <script id="editor" type="text/x-kendo-template">
+                <div class="irg-popup">
+                    <div class="irg-popup__header">
+                        <h3>Detalle de clase</h3>
+                        <p>Información de la sesión académica</p>
+                    </div>
+                    <div class="irg-popup__body">
+                        <div class="irg-popup__row">
+                            <span class="irg-popup__label">Asignatura</span>
+                            <span class="irg-popup__value" data-bind="text: title"></span>
+                        </div>
+                        <div class="irg-popup__row">
+                            <span class="irg-popup__label">Docente</span>
+                            <span class="irg-popup__value" data-bind="text: faculty"></span>
+                        </div>
+                        <div class="irg-popup__row">
+                            <span class="irg-popup__label">Curso</span>
+                            <span class="irg-popup__value" data-bind="text: course"></span>
+                        </div>
+                        <div class="irg-popup__row">
+                            <span class="irg-popup__label">Lote</span>
+                            <span class="irg-popup__value" data-bind="text: batch"></span>
+                        </div>
+                        <div class="irg-popup__row">
+                            <span class="irg-popup__label">Día</span>
+                            <span class="irg-popup__value" data-bind="text: day"></span>
+                        </div>
+                        <div class="irg-popup__notes">
+                            <span class="irg-popup__label">Detalle</span>
+                            <div class="irg-popup__lesson" data-bind="text: lesson"></div>
+                        </div>
+                    </div>
+                </div>
+            </script>
+        </xpath>
+    </template>
+</odoo>
