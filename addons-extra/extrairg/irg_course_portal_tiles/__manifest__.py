@@ -5,11 +5,10 @@
     "category": "Website",
     "author": "iRG",
     "license": "LGPL-3",
-    "depends": ["isep_website_custom", "irg_elearning_restrictions"],
+    "depends": ["isep_website_custom"],
     "data": [
         "views/irg_course_portal_tiles_views.xml",
         "views/tfm_views.xml",
-        "views/override_elearning_templates.xml",
     ],
     "installable": True,
     "application": False,
