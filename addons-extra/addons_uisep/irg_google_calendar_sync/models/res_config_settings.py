@@ -25,7 +25,7 @@ class ResConfigSettings(models.TransientModel):
     google_calendar_sync_days = fields.Integer(
         string='Sync Days Ahead',
         config_parameter='irg_google_calendar_sync.sync_days',
-        default=30,
+        default=730,
         help='Number of days ahead to sync events'
     )
 
@@ -38,7 +38,7 @@ class ResConfigSettings(models.TransientModel):
         api_key = ICP.get_param('irg_google_calendar_sync.api_key', '')
         calendar_id = ICP.get_param('irg_google_calendar_sync.calendar_id', '')
         enabled = ICP.get_param('irg_google_calendar_sync.enabled', '')
-        sync_days = int(ICP.get_param('irg_google_calendar_sync.sync_days', '30'))
+        sync_days = int(ICP.get_param('irg_google_calendar_sync.sync_days', '730'))
         
         _logger.info(f"Config - API Key: {'SET' if api_key else 'NOT SET'}, Calendar ID: {calendar_id}, Enabled: {enabled}, Days: {sync_days}")
         
