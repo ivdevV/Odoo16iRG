@@ -488,33 +488,41 @@ class CalendarEvent(models.Model):
 
         if faculty_name:
             Faculty = self.env['op.faculty']
-            
-            # Search loosely
-            domain = ['|', '|', ('first_name', 'ilike', faculty_name), ('last_name', 'ilike', faculty_name), ('name', 'ilike', faculty_name)]
-            
-            # Let's search on partner_id.name via 'name' (inherits)
-            faculty = Faculty.search([('name', 'ilike', faculty_name)], limit=1)
-            
-            if not faculty:
-                parts = faculty_name.split()
-                first_name = parts[0]
-                last_name = ' '.join(parts[1:]) if len(parts) > 1 else 'Professor'
-                
-                # Check for "Prof." prefix
-                if first_name.lower().replace('.', '') in ['prof', 'dr', 'mr', 'ms', 'mrs']:
-                     if len(parts) > 1:
-                        first_name = parts[1]
-                        last_name = ' '.join(parts[2:]) if len(parts) > 2 else 'Professor'
+            faculty_name = re.sub(r'\s+', ' ', faculty_name).strip(' ,;:-')
 
-                # Ensure we have a valid name to avoid constraint errors
+            parts = faculty_name.split()
+            while parts and parts[0].lower().replace('.', '') in ['prof', 'dr', 'mr', 'ms', 'mrs', 'profesor', 'profesora', 'docente']:
+                parts = parts[1:]
+            if not parts:
+                return None
+
+            normalized_name = ' '.join(parts)
+            first_name = parts[0]
+            last_name = ' '.join(parts[1:]) if len(parts) > 1 else 'Professor'
+
+            # 1) Prefer exact/full-name style matches on inherited partner name
+            faculty = Faculty.search([('name', '=ilike', normalized_name)], limit=1)
+
+            # 2) Then try split-name match
+            if not faculty and last_name:
+                faculty = Faculty.search([
+                    ('first_name', '=ilike', first_name),
+                    ('last_name', '=ilike', last_name),
+                ], limit=1)
+
+            # 3) Fallback to loose name contains checks
+            if not faculty:
+                faculty = Faculty.search(['|', ('name', 'ilike', normalized_name), ('name', 'ilike', faculty_name)], limit=1)
+
+            if not faculty:
                 full_name = f"{first_name} {last_name}"
-                
+
                 faculty = Faculty.create({
                     'name': full_name,
                     'first_name': first_name,
                     'last_name': last_name,
-                    'birth_date': '1980-01-01', 
-                    'gender': 'male', 
+                    'birth_date': '1980-01-01',
+                    'gender': 'male',
                 })
                 _logger.info(f"Created new Faculty: {faculty.name}")
             return faculty
