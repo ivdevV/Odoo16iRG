@@ -56,7 +56,11 @@
                                                 <t t-esc="context_timestamp(session.end_datetime).strftime('%H:%M')"/>
                                             </td>
                                             <td>
-                                                <t t-esc="session.class_title or session.name or session.subject_id.name"/>
+                                                <t t-set="subject_display" t-value="(session.class_title or session.name or session.subject_id.name or '').strip()"/>
+                                                <t t-if="subject_display.startswith('[') and ']' in subject_display">
+                                                    <t t-set="subject_display" t-value="subject_display.split(']', 1)[1].strip()"/>
+                                                </t>
+                                                <t t-esc="subject_display"/>
                                             </td>
                                             <td>
                                                 <t t-esc="session.faculty_id.name"/>

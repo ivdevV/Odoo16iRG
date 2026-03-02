@@ -5,11 +5,21 @@
     "category": "Website",
     "author": "iRG",
     "license": "LGPL-3",
-    "depends": ["isep_website_custom"],
+    "depends": ["isep_website_custom", "openeducat_web", "website_helpdesk"],
     "data": [
         "views/irg_course_portal_tiles_views.xml",
         "views/tfm_views.xml",
+        "views/tfm_page_fallback.xml",
+        "views/helpdesk_page.xml",
+        "views/helpdesk_overrides.xml",
     ],
+    "assets": {
+        "web.assets_frontend": [
+            "irg_course_portal_tiles/static/src/scss/irg_tiles.scss",
+            "irg_course_portal_tiles/static/src/js/help_chatbot.js",
+            "irg_course_portal_tiles/static/src/js/menu_patch.js"
+        ]
+    },
     "installable": True,
     "application": False,
 }

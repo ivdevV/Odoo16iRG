@@ -43,15 +43,6 @@ class DashboardPortal(WebsiteProfile):
 
         menu_list = request.env['openeducat.portal.menu'].sudo().search(
             [('is_visible_to_student', '=', True)])
-        # Exclude course-level items (Calendar / Practicas) from the global /campus view
-        def _is_course_tool(menu):
-            name = (menu.name or '').lower()
-            for kw in ('calendar', 'calendario', 'practic', 'práctic', 'prácticas', 'practica'):
-                if kw in name:
-                    return True
-            return False
-
-        menu_list = menu_list.filtered(lambda m: not _is_course_tool(m))
         values.update({'menu_list': menu_list})
 
 
@@ -83,18 +74,6 @@ class DashboardPortal(WebsiteProfile):
 
         # values['op_subject_ids'] = subject_ids
         values['op_course_id'] = course_id
-
-        # For the course view, show the course-level tools (Calendar / Practicas)
-        menu_list = request.env['openeducat.portal.menu'].sudo().search([
-            ('is_visible_to_student', '=', True)
-        ])
-        def _is_course_tool_local(menu):
-            name = (menu.name or '').lower()
-            for kw in ('calendar', 'calendario', 'practic', 'práctic', 'prácticas', 'practica'):
-                if kw in name:
-                    return True
-            return False
-        values['menu_list'] = menu_list.filtered(lambda m: _is_course_tool_local(m))
 
         _logger.info('********** values: %s' % pprint.pformat(values))
 

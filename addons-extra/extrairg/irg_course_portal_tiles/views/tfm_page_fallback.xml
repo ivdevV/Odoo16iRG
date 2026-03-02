@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="tfm_page_fallback" name="TFM Page - Fallback" t-name="irg_course_portal_tiles.tfm_page_fallback">
+        <t t-call="website.layout">
+            <div class="container mt16 mb16">
+                <div class="row">
+                    <div class="col-12">
+                        <h1>500: Internal Server Error</h1>
+                        <p class="text-danger">Ocurrió un error al visualizar la plantilla <strong>irg_course_portal_tiles.tfm_page</strong>.</p>
+                        <div class="alert alert-warning">Se ha registrado el error y se ha servido esta página alternativa. Por favor, intenta de nuevo más tarde o contacta con soporte.</div>
+                        <p>Detalles (resumen): <t t-esc="error or 'N/A'"/></p>
+                        <a class="btn btn-primary" href="/campus">Volver a Campus</a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>
