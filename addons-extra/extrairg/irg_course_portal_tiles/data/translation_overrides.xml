@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="irg_translation_atencion_al_cliente_es" model="ir.translation">
+            <field name="name">website.menu,name</field>
+            <field name="lang">es_ES</field>
+            <field name="type">model</field>
+            <field name="src">Atención al cliente</field>
+            <field name="value">Atención al Alumno</field>
+            <field name="module">irg_course_portal_tiles</field>
+            <field name="state">translated</field>
+        </record>
+
+        <record id="irg_translation_cliente_es" model="ir.translation">
+            <field name="name">openeducat.portal.menu,name</field>
+            <field name="lang">es_ES</field>
+            <field name="type">model</field>
+            <field name="src">Cliente</field>
+            <field name="value">Alumno</field>
+            <field name="module">irg_course_portal_tiles</field>
+            <field name="state">translated</field>
+        </record>
+
+        <record id="irg_translation_clientes_es" model="ir.translation">
+            <field name="name">openeducat.portal.menu,name</field>
+            <field name="lang">es_ES</field>
+            <field name="type">model</field>
+            <field name="src">Clientes</field>
+            <field name="value">Alumnos</field>
+            <field name="module">irg_course_portal_tiles</field>
+            <field name="state">translated</field>
+        </record>
+    </data>
+</odoo>
