@@ -9,6 +9,9 @@
         'website',
         'irg_campus_course_forum',
     ],
+    'data': [
+        'security/ir.model.access.csv',
+    ],
     'assets': {
         'web.assets_frontend': [
             'irg_forum_notice_popup/static/src/js/forum_notice_popup.js',

@@ -6,8 +6,14 @@
       <xpath expr="//t[@t-set='additional_title']" position="replace">
         <t t-set="additional_title">Atención al Alumno</t>
       </xpath>
+      <xpath expr="//h1[contains(., 'Ingresar un tíquet')]" position="replace">
+        <h1>Ingresar un tíquet - Atención al Alumno</h1>
+      </xpath>
       <xpath expr="//h2[contains(@class,'text-muted')]" position="replace">
         <h2 class="text-muted">Atención al Alumno</h2>
+      </xpath>
+      <xpath expr="//*[contains(text(), 'Más de 50,000 clientes confían en nosotros')]" position="replace">
+        <h2>Miles de Alumnos confían en iRG para potenciar su carrera.</h2>
       </xpath>
     </template>
   </data>

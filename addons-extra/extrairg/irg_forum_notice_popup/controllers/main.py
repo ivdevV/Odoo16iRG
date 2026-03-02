@@ -1,7 +1,13 @@
-from odoo import http
+import logging
+
+from psycopg2 import IntegrityError
+
+from odoo import fields, http
 from odoo.http import request
 
 from odoo.addons.irg_campus_course_forum.controllers.main import DashboardPortalCampusForum
+
+_logger = logging.getLogger(__name__)
 
 
 class ForumNoticePopupController(DashboardPortalCampusForum):
@@ -39,6 +45,36 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
 
         return False
 
+    def _seen_model(self):
+        return request.env['irg.forum.notice.seen'].sudo()
+
+    def _is_seen(self, user_id, course_id, post_id):
+        return bool(self._seen_model().search_count([
+            ('user_id', '=', user_id),
+            ('course_id', '=', course_id),
+            ('post_id', '=', post_id),
+        ]))
+
+    def _mark_seen(self, user_id, course_id, post_id):
+        seen_model = self._seen_model()
+        seen = seen_model.search([
+            ('user_id', '=', user_id),
+            ('course_id', '=', course_id),
+            ('post_id', '=', post_id),
+        ], limit=1)
+        if seen:
+            seen.write({'seen_at': fields.Datetime.now()})
+        else:
+            try:
+                with seen_model.env.cr.savepoint():
+                    seen_model.create({
+                        'user_id': user_id,
+                        'course_id': course_id,
+                        'post_id': post_id,
+                    })
+            except IntegrityError:
+                _logger.debug('forum_notice_seen: duplicate record (race condition), ignoring.')
+
     @http.route('/campus/course/<int:course_id>/forum_notice_popup', type='json', auth='user', website=True)
     def forum_notice_popup(self, course_id, **kwargs):
         user = request.env.user
@@ -75,6 +111,9 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
         if not notice_post:
             return {'notice': False}
 
+        if self._is_seen(user.id, course_id, notice_post.id):
+            return {'notice': False}
+
         website_url = ''
         if 'website_url' in notice_post._fields and notice_post.website_url:
             website_url = notice_post.website_url
@@ -90,3 +129,21 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
                 'url': website_url,
             }
         }
+
+    @http.route('/campus/course/<int:course_id>/forum_notice_popup_seen', type='json', auth='user', website=True)
+    def forum_notice_popup_seen(self, course_id, notice_id=None, **kwargs):
+        user = request.env.user
+        if not user or user._is_public() or not notice_id:
+            return {'ok': False}
+
+        try:
+            notice_id = int(notice_id)
+        except Exception:
+            return {'ok': False}
+
+        post = request.env['forum.post'].sudo().browse(notice_id)
+        if not post.exists():
+            return {'ok': False}
+
+        self._mark_seen(user.id, course_id, notice_id)
+        return {'ok': True}

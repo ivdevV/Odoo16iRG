@@ -26,6 +26,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 if(a) a.setAttribute('href', 'https://institutoraimongaja.com/articulos/');
             }
         });
+
+        // Replace in Aplicaciones tile cards (hover_effect spans inside portal tiles)
+        var tileLabels = document.querySelectorAll('.hover_effect span, .card_new span, .card-ext span');
+        tileLabels.forEach(function(s){
+            var t = (s.textContent || '').trim();
+            if(t === 'Atención al cliente' || t === 'Atención al Cliente'){
+                s.textContent = 'Atención al Alumno';
+            }
+        });
     } catch (err) {
         console && console.warn && console.warn('menu_patch error', err);
     }
