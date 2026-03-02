@@ -1,43 +1,55 @@
 /** @odoo-module **/
 
 /**
- * Override the standard website_forum "Thanks for posting!" social-share
- * modal so it only shows a simple confirmation message without the
- * social-media statistics text or share icons.
+ * Simplify the standard website_forum "Thanks for posting!" social-share
+ * modal so it only shows a confirmation message, without social-network
+ * statistics or share icons.
  */
 
-import { qweb } from 'web.core';
+function simplifyForumShareModal(modal) {
+    if (!modal || modal.id !== 'oe_social_share_modal') {
+        return;
+    }
 
-// ── Override the three sub-templates that carry the social-media copy ──
+    const title = modal.querySelector('.modal-title');
+    if (title) {
+        title.textContent = '¡Tu mensaje ha sido publicado!';
+    }
 
-qweb.add_templates(`
-<templates>
-    <t t-name="website.social_modal" t-extend="website.social_modal">
-        <t t-jquery=".modal-title" t-operation="inner">
-            ¡Tu mensaje ha sido publicado!
-        </t>
-    </t>
+    const body = modal.querySelector('.modal-body');
+    if (body) {
+        body.querySelectorAll('p').forEach((node) => node.remove());
+        const message = document.createElement('p');
+        message.textContent = 'Tu mensaje se ha publicado correctamente.';
+        body.prepend(message);
+    }
 
-    <t t-name="website_forum.social_message_question">
-        <p>Tu pregunta se ha publicado correctamente.</p>
-    </t>
+    const icons = modal.querySelector('.share-icons');
+    if (icons) {
+        icons.remove();
+    }
+}
 
-    <t t-name="website_forum.social_message_answer">
-        <p>Tu respuesta se ha publicado correctamente.</p>
-    </t>
+document.addEventListener('shown.bs.modal', function (event) {
+    simplifyForumShareModal(event.target);
+});
 
-    <t t-name="website_forum.social_message_default">
-        <p>Tu publicación se ha registrado correctamente.</p>
-    </t>
-</templates>
-`);
-
-// Hide the share icons via DOM after the modal is shown
-document.addEventListener('shown.bs.modal', function (ev) {
-    if (ev.target && ev.target.id === 'oe_social_share_modal') {
-        const icons = ev.target.querySelector('.share-icons');
-        if (icons) {
-            icons.style.display = 'none';
+const observer = new MutationObserver(function (mutations) {
+    for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+            if (!(node instanceof HTMLElement)) {
+                continue;
+            }
+            if (node.id === 'oe_social_share_modal') {
+                simplifyForumShareModal(node);
+            } else {
+                const modal = node.querySelector && node.querySelector('#oe_social_share_modal');
+                if (modal) {
+                    simplifyForumShareModal(modal);
+                }
+            }
         }
     }
 });
+
+observer.observe(document.documentElement, { childList: true, subtree: true });
