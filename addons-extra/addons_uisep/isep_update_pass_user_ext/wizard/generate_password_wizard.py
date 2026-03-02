@@ -8,4 +8,5 @@ class GeneratePasswordWizard(models.TransientModel):
     _description = 'Generated Password Wizard'
 
     user_id = fields.Many2one('res.users', string='Usuario', readonly=True)
+    user_login = fields.Char(string='Usuario', related='user_id.login', readonly=True)
     generated_password = fields.Char(string='Nueva contraseña', readonly=True)
