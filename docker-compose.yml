@@ -1,9 +1,7 @@
 services:
     odoo_latest:
         container_name: odoo_latest
-          #1image: odoo16ised
-        image: 6bea8fb7223c
-          #odoo:16.0-20240924
+        image: odoo:16
         restart: unless-stopped
         volumes:
             - ./addons-extra:/mnt/extra-addons
@@ -24,8 +22,7 @@ services:
         extra_hosts:
           - "services.openerp.com:127.0.0.1" #host and ip
           - "odoo.com:127.0.0.1"
-        build:
-          context: ./odoo
+
 
 
     pgodoo_latest:
@@ -38,7 +35,7 @@ services:
             - POSTGRES_USER=odoo
             - PGDATA=/var/lib/postgresql/data/pgdata
         volumes:
-            - /mnt/dbfilestore/database/_data:/var/lib/postgresql/data/pgdata
+          - ./db/pgdata:/var/lib/postgresql/data/pgdata
             - ./db/backups:/backups
         ports:
             - "58432:5432"
