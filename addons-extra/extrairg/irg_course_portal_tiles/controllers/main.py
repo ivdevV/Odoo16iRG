@@ -21,7 +21,7 @@ class IrgTFMController(http.Controller):
             ('res_id', '=', course_id),
         ], order='create_date desc')
         try:
-            return request.render('irg_course_portal_tiles.tfm_page', {
+            return request.render('irg_course_portal_tiles.tfm_page_v2', {
                 'course': course,
                 'supervisors': supervisors,
                 'documents': documents,
@@ -37,7 +37,7 @@ class IrgTFMController(http.Controller):
 
     @http.route(['/help'], type='http', auth='public', website=True)
     def help_page(self, **kwargs):
-        return request.render('irg_course_portal_tiles.help_page', {})
+        return request.render('irg_course_portal_tiles.helpdesk_page', {})
 
     @http.route(['/helpdesk/atencion-al-cliente-1'], type='http', auth='public', website=True)
     def helpdesk_custom(self, **kwargs):

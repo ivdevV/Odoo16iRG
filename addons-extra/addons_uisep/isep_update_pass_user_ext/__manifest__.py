@@ -9,7 +9,9 @@
     'depends': ['base','isep_update_pass_user', ],
     "data": [
         'security/res_groups.xml',
+        'security/ir.model.access.csv',
         'views/res_users_views.xml',
+        'views/generate_password_wizard_views.xml',
     ],
     
     'application': True,

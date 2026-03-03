@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <data>
-    <!-- Override the ticket form title and header to use 'Atención al Alumno' -->
+    <!-- Override the ticket form title/header using stable structural xpaths -->
     <template id="ticket_submit_form_override" inherit_id="website_helpdesk.ticket_submit_form">
       <xpath expr="//t[@t-set='additional_title']" position="replace">
         <t t-set="additional_title">Atención al Alumno</t>
       </xpath>
-      <xpath expr="//h2[contains(@class,'text-muted')]" position="replace">
+      <xpath expr="//div[contains(@class,'container')]/h2[contains(@class,'text-muted')]" position="replace">
         <h2 class="text-muted">Atención al Alumno</h2>
       </xpath>
     </template>

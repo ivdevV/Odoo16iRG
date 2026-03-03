@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_isep_generate_password_wizard_group,access.isep.generate.password.wizard.group,model_isep_generate_password_wizard,isep_update_pass_user_ext.group_generate_password,1,1,1,1
+access_isep_generate_password_wizard_system,access.isep.generate.password.wizard.system,model_isep_generate_password_wizard,base.group_system,1,1,1,1

@@ -8,7 +8,7 @@
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
-                <page string="Reset Password" groups="isep_update_pass_user_ext.group_generate_password">
+                <page string="Reset Password" groups="isep_update_pass_user_ext.group_generate_password,base.group_system">
                     <button 
                         name="action_generate_password" 
                         string="Generar Nueva Contraseña" 
