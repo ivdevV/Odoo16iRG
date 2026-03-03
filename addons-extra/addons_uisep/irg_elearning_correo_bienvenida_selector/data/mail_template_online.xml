@@ -81,8 +81,7 @@
                                                   </span>
                                                   <br/>
                                                   <span style="font-size: 14px; font-weight: normal;color: #371C82;">                                                      
-                                                      <t t-set="student_user" t-value="object.student_id.user_id.sudo()"/>
-                                                      Contraseña:<t t-esc="student_user.new_password_user or ''"/>
+                                                      Contraseña:<t t-esc="object.new_password_user or ''"/>
                                                     </span>
                                                   <div style="margin: 16px 0px 16px 0px;" bis_skin_checked="1">
                                                       <a t-attf-href="/campus" style="box-sizing:border-box;background-color: #7848FF; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;" target="_blank">
