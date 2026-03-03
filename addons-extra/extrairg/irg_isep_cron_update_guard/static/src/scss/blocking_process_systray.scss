@@ -1,0 +1,22 @@
+.o_irg_blocking_status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 8px;
+}
+
+.o_irg_blocking_dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.o_irg_blocking_dot.is-red {
+    background-color: var(--danger);
+}
+
+.o_irg_blocking_dot.is-green {
+    background-color: var(--success);
+}
