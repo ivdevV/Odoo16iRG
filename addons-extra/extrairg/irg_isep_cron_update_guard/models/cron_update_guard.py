@@ -5,18 +5,13 @@ from odoo import models
 _logger = logging.getLogger(__name__)
 
 
-class IrgModuleOperationGuardMixin(models.AbstractModel):
-    _name = "irg.module.operation.guard.mixin"
-    _description = "IRG Guard for module operations"
+class CalendarEvent(models.Model):
+    _inherit = "calendar.event"
 
     def _irg_module_operation_in_progress(self):
         return bool(self.env["ir.module.module"].sudo().search_count([
             ("state", "in", ("to install", "to upgrade", "to remove")),
         ]))
-
-
-class CalendarEvent(models.Model):
-    _inherit = ["calendar.event", "irg.module.operation.guard.mixin"]
 
     def _create_penalization(self):
         if self._irg_module_operation_in_progress():
@@ -26,7 +21,12 @@ class CalendarEvent(models.Model):
 
 
 class PaymentTransaction(models.Model):
-    _inherit = ["payment.transaction", "irg.module.operation.guard.mixin"]
+    _inherit = "payment.transaction"
+
+    def _irg_module_operation_in_progress(self):
+        return bool(self.env["ir.module.module"].sudo().search_count([
+            ("state", "in", ("to install", "to upgrade", "to remove")),
+        ]))
 
     def _cron_recurring_payment_sale_order(self, meses=None, previsualizar=False, pendiente=False, conpany_all=False):
         if self._irg_module_operation_in_progress():
