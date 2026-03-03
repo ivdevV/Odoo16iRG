@@ -14,6 +14,9 @@ from werkzeug.urls import url_parse
 class SaleOrder(models.Model):
     _inherit = 'sale.order'    
 
+    website_send_mail = fields.Boolean('Correo enviado')
+    is_from_website_origin = fields.Boolean('Venta desde ecommerce')
+
     
     admission_register_id = fields.Many2one('op.admission.register', string="Registro de Admisión" , copy=False )
     admission_id = fields.Many2one('op.admission', string="Admisión" , copy=False )

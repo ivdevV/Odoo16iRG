@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="irg_isep_cron_update_guard.BlockingProcessSystray" owl="1">
+        <div class="o_irg_blocking_status" t-att-title="state.title" aria-label="Blocking process status">
+            <span t-att-class="dotClass"/>
+        </div>
+    </t>
+</templates>
