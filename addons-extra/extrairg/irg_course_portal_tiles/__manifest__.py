@@ -8,6 +8,7 @@
     "depends": ["isep_website_custom", "openeducat_web", "website_helpdesk"],
     "data": [
         "views/irg_course_portal_tiles_views.xml",
+        "views/user_profile_openeducat_label_override.xml",
         "views/tfm_views.xml",
         "views/tfm_page_fallback.xml",
         "views/helpdesk_page.xml",

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="user_profile_openeducat_label_override" inherit_id="isep_website_custom.user_profile_openeducat">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' hover_effect ')]//span/t[@t-esc='menu.name']" position="replace">
+            <t t-esc="'Atención al Alumno' if menu.name in ('Atención al cliente', 'Atención al Cliente') else menu.name"/>
+        </xpath>
+    </template>
+
+</odoo>
