@@ -13,6 +13,41 @@
                         <section class="o_helpdesk_form">
                             <t t-call="website_helpdesk.ticket_submit_form"/>
                         </section>
+                        <section class="mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h3 class="fw-bold mb-0" style="color: #fff;">Tus tickets abiertos</h3>
+                                <a t-if="has_more_open_tickets" href="/my/tickets" class="btn btn-outline-light btn-sm">Ver todos</a>
+                            </div>
+                            <t t-if="open_tickets">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Referencia</th>
+                                                <th>Asunto</th>
+                                                <th>Estado</th>
+                                                <th>Creado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="open_tickets" t-as="ticket" t-key="ticket.id">
+                                                <td>
+                                                    <a t-attf-href="/helpdesk/ticket/#{ticket.id}" class="text-decoration-none">
+                                                        #<t t-esc="ticket.ticket_ref or ticket.id"/>
+                                                    </a>
+                                                </td>
+                                                <td><t t-esc="ticket.name"/></td>
+                                                <td><t t-esc="ticket.stage_id.name"/></td>
+                                                <td><t t-esc="ticket.create_date"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <p style="color: #fff;">No tienes tickets abiertos.</p>
+                            </t>
+                        </section>
                     </div>
                 </div>
             </div>
