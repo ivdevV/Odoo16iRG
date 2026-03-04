@@ -459,3 +459,87 @@ ol.breadcrumb.bg-transparent.mb-0.ps-0.py-0.overflow-hidden.irg-elearning-breadc
         transform: translateY(-1px);
     }
 }
+
+.o_wslides_slides_list.irg-elearning-materials-modern {
+    background: linear-gradient(180deg, rgba($gray-100, 0.55) 0%, rgba($white, 0.96) 100%);
+    border: 1px solid rgba($border-color, 0.72);
+    border-radius: 1rem;
+    padding: 0.8rem;
+    box-shadow: 0 14px 28px rgba($black, 0.09);
+
+    .o_wslides_slide_list_category {
+        margin-bottom: 0.75rem !important;
+    }
+
+    .o_wslides_slide_list_category_header {
+        border: 1px solid rgba($border-color, 0.68) !important;
+        border-radius: 0.8rem 0.8rem 0 0;
+        background: linear-gradient(180deg, rgba($primary, 0.14) 0%, rgba($primary, 0.05) 100%) !important;
+        box-shadow: 0 6px 14px rgba($black, 0.06);
+
+        span,
+        a,
+        .o_text_link {
+            font-weight: 700;
+            color: $gray-800 !important;
+        }
+
+        .o_wslides_js_slide_upload {
+            background: rgba($primary, 0.1);
+        }
+    }
+
+    ul.list-unstyled.pb-1.border-top {
+        border: 1px solid rgba($border-color, 0.68);
+        border-top: 0 !important;
+        border-radius: 0 0 0.8rem 0.8rem;
+        background: $white;
+        overflow: hidden;
+    }
+
+    .o_wslides_slides_list_slide {
+        border-top: 1px solid rgba($border-color, 0.56) !important;
+        background: $white !important;
+        min-height: 46px;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+
+        &:hover {
+            background: rgba($primary, 0.08) !important;
+            transform: translateX(2px);
+        }
+
+        .o_wslides_js_slides_list_slide_link,
+        .text-truncate > span {
+            color: $gray-800;
+            font-weight: 600;
+        }
+
+        .badge {
+            border-radius: 999px;
+            padding: 0.3rem 0.55rem;
+        }
+    }
+
+    .o_wslides_content_actions {
+        margin-top: 0.95rem;
+
+        .btn {
+            border-radius: 0.75rem !important;
+            font-weight: 700;
+            box-shadow: 0 8px 16px rgba($black, 0.1);
+        }
+
+        .btn.btn-primary {
+            background: linear-gradient(180deg, rgba($primary, 0.96) 0%, rgba($primary, 0.8) 100%) !important;
+            border-color: transparent !important;
+            color: $white !important;
+        }
+
+        .btn.btn-light,
+        .btn.bg-white {
+            background: rgba($white, 0.98) !important;
+            border: 1px solid rgba($border-color, 0.75) !important;
+            color: $gray-800 !important;
+        }
+    }
+}
