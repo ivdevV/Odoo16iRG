@@ -12,9 +12,4 @@
         </xpath>
     </template>
 
-    <template id="course_slides_list_irg_rework" inherit_id="website_slides.course_slides_list" name="IRG eLearning - Slides List Rework" priority="90">
-        <xpath expr="//div[@id='accordion']" position="attributes">
-            <attribute name="class" add=" irg-elearning-accordion-modern" separator=" "/>
-        </xpath>
-    </template>
 </odoo>
