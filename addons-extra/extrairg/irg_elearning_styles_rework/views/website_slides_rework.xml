@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="course_nav_irg_rework" inherit_id="website_slides.course_nav" name="IRG eLearning - Course Nav Rework" priority="90">
+        <xpath expr="//ol[hasclass('breadcrumb')]" position="attributes">
+            <attribute name="class" add=" irg-elearning-breadcrumb-modern" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="course_sidebar_irg_rework" inherit_id="website_slides.course_sidebar" name="IRG eLearning - Sidebar Rework" priority="90">
+        <xpath expr="//div[hasclass('o_wslides_course_sidebar')]" position="attributes">
+            <attribute name="class" add=" irg-elearning-sidebar-modern" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="course_slides_list_irg_rework" inherit_id="website_slides.course_slides_list" name="IRG eLearning - Slides List Rework" priority="90">
+        <xpath expr="//div[@id='accordion']" position="attributes">
+            <attribute name="class" add=" irg-elearning-accordion-modern" separator=" "/>
+        </xpath>
+    </template>
+</odoo>

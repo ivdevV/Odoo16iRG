@@ -1,0 +1,204 @@
+.o_wslides_course_main {
+    .o_wslides_course_header {
+        position: relative;
+        border-radius: 1.1rem;
+        overflow: hidden;
+        border: 1px solid rgba($border-color, 0.6);
+        background: linear-gradient(135deg, rgba($primary, 0.86) 0%, rgba($primary, 0.7) 55%, rgba($info, 0.7) 100%);
+        box-shadow: 0 20px 42px rgba($black, 0.16);
+
+        &:before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba($white, 0.16) 0%, rgba($black, 0.1) 100%);
+        }
+
+        > .container,
+        > .row,
+        > .o_container {
+            position: relative;
+            z-index: 1;
+        }
+
+        h1,
+        h2,
+        .h1,
+        .h2 {
+            color: $white;
+            letter-spacing: -0.01em;
+            text-shadow: 0 2px 12px rgba($black, 0.28);
+        }
+
+        p,
+        .lead,
+        .small {
+            color: rgba($white, 0.95);
+        }
+
+        .nav,
+        .nav-tabs {
+            border: 0;
+
+            .nav-link {
+                border: 0;
+                border-radius: 999px;
+                color: rgba($white, 0.9);
+                background: rgba($white, 0.08);
+                margin-right: 0.4rem;
+                transition: all 0.2s ease;
+
+                &:hover,
+                &:focus {
+                    background: rgba($white, 0.2);
+                    color: $white;
+                    transform: translateY(-1px);
+                }
+
+                &.active {
+                    background: $white;
+                    color: $primary;
+                    box-shadow: 0 8px 18px rgba($black, 0.16);
+                }
+            }
+        }
+    }
+
+    .irg-elearning-breadcrumb-modern {
+        background: rgba($primary, 0.08) !important;
+        border: 1px solid rgba($primary, 0.2);
+        border-radius: 999px;
+        padding: 0.35rem 0.85rem !important;
+        gap: 0.2rem;
+
+        .breadcrumb-item,
+        .breadcrumb-item a {
+            color: $gray-700;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            color: rgba($gray-700, 0.45);
+        }
+
+        .breadcrumb-item.fw-bold,
+        .breadcrumb-item.fw-bold a {
+            color: $primary;
+        }
+    }
+
+    .irg-elearning-sidebar-modern {
+        border: 1px solid rgba($border-color, 0.7);
+        border-radius: 1rem;
+        background: linear-gradient(180deg, rgba($white, 0.98) 0%, rgba($gray-100, 0.96) 100%);
+        box-shadow: 0 12px 28px rgba($black, 0.08);
+
+        table {
+            margin-bottom: 0;
+        }
+
+        tr {
+            transition: background-color 0.2s ease;
+
+            &:hover {
+                background: rgba($primary, 0.06);
+            }
+        }
+
+        th {
+            color: $gray-700;
+            font-weight: 600;
+            width: 42%;
+        }
+
+        td {
+            color: $gray-900;
+            font-weight: 500;
+        }
+
+        .btn {
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+
+            &:hover {
+                transform: translateY(-1px);
+            }
+        }
+    }
+
+    .irg-elearning-accordion-modern,
+    #accordion.irg-elearning-accordion-modern {
+        .card,
+        .accordion-item,
+        .o_wslides_slides_list_item {
+            border: 1px solid rgba($border-color, 0.72);
+            border-radius: 0.9rem;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba($black, 0.06);
+            margin-bottom: 0.8rem;
+            background: $white;
+        }
+
+        .card-header,
+        .accordion-header,
+        .o_wslides_section_header {
+            background: linear-gradient(180deg, rgba($primary, 0.1) 0%, rgba($primary, 0.04) 100%);
+            border-bottom: 1px solid rgba($border-color, 0.7);
+        }
+
+        .card-body,
+        .accordion-body {
+            background: rgba($white, 0.98);
+        }
+
+        .list-group-item,
+        .o_wslides_slide_link {
+            border: 0;
+            border-bottom: 1px solid rgba($border-color, 0.55);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+
+            &:hover,
+            &:focus {
+                background: rgba($primary, 0.07);
+                transform: translateX(2px);
+            }
+
+            &.active {
+                background: linear-gradient(90deg, rgba($primary, 0.15) 0%, rgba($primary, 0.06) 100%);
+                color: $gray-900;
+                border-left: 3px solid $primary;
+            }
+        }
+    }
+
+    .o_wslides_lesson_content_type {
+        .badge,
+        .o_tag {
+            border-radius: 999px;
+            padding: 0.35rem 0.65rem;
+            font-weight: 600;
+            background: rgba($primary, 0.12);
+            color: $primary;
+            border: 1px solid rgba($primary, 0.2);
+        }
+    }
+}
+
+@media (max-width: 991.98px) {
+    .o_wslides_course_main {
+        .o_wslides_course_header {
+            border-radius: 0.9rem;
+            box-shadow: 0 12px 24px rgba($black, 0.14);
+        }
+
+        .irg-elearning-breadcrumb-modern {
+            border-radius: 0.7rem;
+        }
+
+        .irg-elearning-sidebar-modern {
+            margin-top: 0.75rem;
+        }
+    }
+}
