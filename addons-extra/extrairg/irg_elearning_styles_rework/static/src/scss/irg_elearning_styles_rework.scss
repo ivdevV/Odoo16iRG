@@ -580,3 +580,115 @@ ol.breadcrumb.bg-transparent.mb-0.ps-0.py-0.overflow-hidden.irg-elearning-breadc
         }
     }
 }
+
+.o_wslides_course_header,
+.irg-lms-hero-modern {
+    position: relative;
+    isolation: isolate;
+
+    &:after {
+        content: '';
+        position: absolute;
+        right: -120px;
+        top: -90px;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba($white, 0.2) 0%, rgba($white, 0) 68%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    h1,
+    .course_name {
+        font-size: clamp(2rem, 4vw, 3.1rem);
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+    }
+}
+
+.o_wslides_nav_tabs,
+.irg-lms-tabs-modern .nav.nav-pills {
+    .nav-link,
+    > li > a {
+        position: relative;
+        overflow: hidden;
+
+        &:before {
+            content: '';
+            position: absolute;
+            left: 16%;
+            right: 16%;
+            bottom: 0;
+            height: 2px;
+            background: currentColor;
+            opacity: 0;
+            transform: scaleX(0.5);
+            transition: all 0.22s ease;
+        }
+
+        &:hover:before,
+        &.active:before {
+            opacity: 0.9;
+            transform: scaleX(1);
+        }
+    }
+}
+
+.o_wslides_tabs_content,
+.irg-lms-tabs-modern .tab-content {
+    border: 1px solid rgba($border-color, 0.68);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba($white, 0.99) 0%, rgba($gray-100, 0.96) 100%);
+    box-shadow: 0 12px 30px rgba($black, 0.08);
+    padding: 1rem;
+}
+
+.o_wslides_slides_list.irg-elearning-materials-modern {
+    .o_wslides_slides_list_drag i,
+    .fa-bars,
+    .fa-sort {
+        color: rgba($primary, 0.7);
+    }
+
+    .o_wslides_slides_list_slide_controls {
+        border-left-color: rgba($primary, 0.2) !important;
+        background: linear-gradient(180deg, rgba($primary, 0.04) 0%, rgba($primary, 0.01) 100%);
+    }
+
+    .text-bg-warning,
+    .text-bg-info,
+    .text-bg-success,
+    .text-bg-danger {
+        box-shadow: 0 4px 10px rgba($black, 0.08);
+    }
+}
+
+.o_wslides_course_sidebar {
+    th {
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-size: 0.76rem;
+    }
+
+    td {
+        font-size: 0.94rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .o_wslides_tabs_content,
+    .irg-lms-tabs-modern .tab-content {
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .o_wslides_slides_list.irg-elearning-materials-modern {
+        border-radius: 0.8rem;
+        padding: 0.65rem;
+
+        .o_wslides_slide_list_category_header {
+            border-radius: 0.65rem 0.65rem 0 0;
+        }
+    }
+}

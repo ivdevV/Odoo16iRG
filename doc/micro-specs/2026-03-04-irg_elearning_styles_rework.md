@@ -39,6 +39,8 @@ Compatible con Odoo 16. No requiere migración de datos ni scripts de upgrade.
 3. El sidebar de curso se visualiza como tarjeta moderna.
 4. El listado de secciones/contenidos presenta estilo de cards con hover y estado activo.
 5. No se altera la funcionalidad de navegación, inscripción o progreso.
+6. Las pestañas y contenedores de contenido muestran jerarquía visual reforzada (bordes, profundidad y acentos) sin afectar interacción.
+7. En móvil, la visual se mantiene coherente (radio, paddings y legibilidad).
 
 ## 9) Rollback plan
 - Desinstalar `irg_elearning_styles_rework` o revertir commit.
