@@ -367,3 +367,95 @@
         }
     }
 }
+
+ol.breadcrumb.bg-transparent.mb-0.ps-0.py-0.overflow-hidden.irg-elearning-breadcrumb-modern {
+    background: rgba($white, 0.12) !important;
+    border: 1px solid rgba($white, 0.26) !important;
+    border-radius: 999px !important;
+    padding: 0.3rem 0.7rem !important;
+
+    .breadcrumb-item,
+    .breadcrumb-item a {
+        color: $white !important;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba($white, 0.7) !important;
+    }
+}
+
+.o_wslides_course_sidebar,
+.o_wslides_course_sidebar.bg-white.px-3.py-2.py-md-3.mb-3.mb-md-5 {
+    border-radius: 1rem !important;
+    border: 1px solid rgba($border-color, 0.75) !important;
+    background: linear-gradient(180deg, rgba($white, 0.99) 0%, rgba($gray-100, 0.98) 100%) !important;
+    box-shadow: 0 14px 30px rgba($black, 0.1) !important;
+
+    table.table {
+        margin-bottom: 0;
+    }
+
+    tr:hover {
+        background: rgba($primary, 0.06);
+    }
+}
+
+#course-curriculum {
+    border: 1px solid rgba($border-color, 0.72) !important;
+    border-radius: 0.95rem;
+    overflow: hidden;
+    box-shadow: 0 12px 26px rgba($black, 0.07);
+}
+
+#accordion {
+    padding: 0.55rem;
+    background: rgba($gray-100, 0.42);
+
+    .card {
+        border: 1px solid rgba($border-color, 0.68) !important;
+        border-radius: 0.8rem !important;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba($black, 0.06);
+        margin-bottom: 0.65rem;
+    }
+
+    .card-header {
+        background: linear-gradient(180deg, rgba($primary, 0.13) 0%, rgba($primary, 0.04) 100%) !important;
+        border-bottom: 1px solid rgba($border-color, 0.7) !important;
+
+        a {
+            color: $gray-800 !important;
+            font-weight: 700 !important;
+        }
+    }
+
+    .card-body {
+        background: $white;
+
+        tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tr:hover {
+            background: rgba($primary, 0.07);
+        }
+    }
+}
+
+.o_wslides_content_actions.btn-group {
+    .btn {
+        border-radius: 0.75rem !important;
+        border-color: rgba($primary, 0.26) !important;
+        background: rgba($primary, 0.06) !important;
+        color: $primary !important;
+        font-weight: 700;
+    }
+
+    .btn:hover {
+        background: $primary !important;
+        color: $white !important;
+        transform: translateY(-1px);
+    }
+}

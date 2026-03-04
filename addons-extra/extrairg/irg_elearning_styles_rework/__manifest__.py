@@ -11,6 +11,7 @@
         'website',
         'openeducat_lms',
         'openeducat_lms_website',
+        'isep_website_custom',
     ],
     'data': [
         'security/ir.model.access.csv',

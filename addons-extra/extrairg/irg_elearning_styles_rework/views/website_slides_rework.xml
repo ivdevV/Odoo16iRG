@@ -12,6 +12,12 @@
         </xpath>
     </template>
 
+    <template id="course_nav_isep_inherit_irg_rework" inherit_id="isep_website_custom.course_nav_inherit" name="IRG eLearning - Course Nav Rework (ISEP)" priority="110">
+        <xpath expr="//ol[hasclass('breadcrumb')]" position="attributes">
+            <attribute name="class" add=" irg-elearning-breadcrumb-modern" separator=" "/>
+        </xpath>
+    </template>
+
     <template id="openeducat_course_detail_irg_rework" inherit_id="openeducat_lms.course_detail" name="IRG eLearning - OpenEduCat Course Detail Rework" priority="95">
         <xpath expr="//div[@id='course_detail']" position="attributes">
             <attribute name="class" add=" irg-lms-course-modern" separator=" "/>
