@@ -203,3 +203,167 @@
         }
     }
 }
+
+.irg-lms-course-modern {
+    .irg-lms-breadcrumb-modern {
+        background: linear-gradient(90deg, rgba($primary, 0.95) 0%, rgba($info, 0.82) 100%);
+        border-bottom: 1px solid rgba($white, 0.18);
+
+        .breadcrumb {
+            margin-bottom: 0;
+            padding: 0.45rem 0.7rem;
+            border-radius: 0.7rem;
+            background: rgba($white, 0.13);
+            backdrop-filter: blur(2px);
+        }
+
+        .breadcrumb li,
+        .breadcrumb a {
+            color: rgba($white, 0.96) !important;
+            font-weight: 500;
+        }
+
+        .o_lms_course_nav_search {
+            border-radius: 0.7rem;
+            background: rgba($white, 0.16);
+        }
+    }
+
+    .irg-lms-hero-modern {
+        padding-top: 2.4rem !important;
+        padding-bottom: 1.3rem !important;
+        background: linear-gradient(180deg, rgba($primary, 0.08) 0%, rgba($white, 1) 45%);
+
+        .learndash_course_border {
+            border-radius: 1rem;
+            border: 1px solid rgba($border-color, 0.68);
+            background: $white;
+            box-shadow: 0 16px 34px rgba($black, 0.11);
+            padding: 1.1rem;
+        }
+
+        .course_name,
+        .course-detail-h2 {
+            color: $gray-900;
+            letter-spacing: -0.01em;
+            font-weight: 700;
+        }
+
+        .lead__headline {
+            color: $gray-700;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .learndash_course_abt {
+            .course-thumbnail {
+                border-radius: 1rem;
+                overflow: hidden;
+                border: 1px solid rgba($border-color, 0.7);
+                box-shadow: 0 14px 30px rgba($black, 0.14);
+            }
+
+            .nbt-date-price {
+                margin-top: 0.8rem;
+                border: 1px solid rgba($border-color, 0.7);
+                border-radius: 0.8rem;
+                background: linear-gradient(180deg, rgba($white, 0.98) 0%, rgba($gray-100, 0.98) 100%);
+            }
+        }
+    }
+
+    .irg-lms-tabs-modern {
+        .tab-info {
+            border: 1px solid rgba($border-color, 0.72);
+            border-radius: 1rem;
+            background: $white;
+            box-shadow: 0 12px 28px rgba($black, 0.08);
+            padding: 0.85rem;
+        }
+
+        .nav.nav-pills {
+            gap: 0.45rem;
+            margin-bottom: 1rem;
+
+            > li > a {
+                border-radius: 999px;
+                padding: 0.45rem 0.95rem;
+                border: 1px solid rgba($primary, 0.22);
+                color: $primary;
+                font-weight: 600;
+                background: rgba($primary, 0.05);
+                transition: all 0.2s ease;
+            }
+
+            > li > a.active,
+            > li > a:hover {
+                background: linear-gradient(180deg, rgba($primary, 0.95) 0%, rgba($primary, 0.78) 100%);
+                color: $white;
+                border-color: transparent;
+                box-shadow: 0 8px 16px rgba($black, 0.14);
+            }
+        }
+    }
+
+    .irg-lms-curriculum-modern,
+    #course-curriculum {
+        border: 1px solid rgba($border-color, 0.72) !important;
+        border-radius: 0.95rem;
+        overflow: hidden;
+        background: rgba($white, 0.98);
+
+        #accordion {
+            padding: 0.45rem;
+            background: rgba($gray-100, 0.35);
+        }
+
+        .card {
+            border: 1px solid rgba($border-color, 0.7);
+            border-radius: 0.8rem;
+            overflow: hidden;
+            margin-bottom: 0.6rem;
+            box-shadow: 0 6px 18px rgba($black, 0.06);
+        }
+
+        .card-header {
+            background: linear-gradient(180deg, rgba($primary, 0.12) 0%, rgba($primary, 0.05) 100%);
+            border-bottom: 1px solid rgba($border-color, 0.7);
+
+            a {
+                color: $gray-800 !important;
+                font-weight: 700;
+            }
+        }
+
+        .card-body {
+            background: $white;
+
+            tr {
+                transition: background-color 0.2s ease;
+            }
+
+            tr:hover {
+                background: rgba($primary, 0.06);
+            }
+        }
+    }
+
+    .o_wslides_content_actions {
+        margin-top: 0.85rem;
+
+        .btn {
+            border-radius: 0.75rem;
+            border-color: rgba($primary, 0.22) !important;
+            color: $primary;
+            font-weight: 600;
+            background: rgba($primary, 0.06);
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: $primary;
+            color: $white;
+            transform: translateY(-1px);
+        }
+    }
+}

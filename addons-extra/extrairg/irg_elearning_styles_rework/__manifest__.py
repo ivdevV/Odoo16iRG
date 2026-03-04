@@ -9,6 +9,8 @@
     'depends': [
         'website_slides',
         'website',
+        'openeducat_lms',
+        'openeducat_lms_website',
     ],
     'data': [
         'security/ir.model.access.csv',

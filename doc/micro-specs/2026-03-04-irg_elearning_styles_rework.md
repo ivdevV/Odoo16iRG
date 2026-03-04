@@ -15,18 +15,20 @@ La interfaz actual funciona correctamente, pero necesita una estética más mode
 - Herencias QWeb sobre:
   - `website_slides.course_nav`
   - `website_slides.course_sidebar`
-  - `website_slides.course_slides_list`
+  - `openeducat_lms.course_detail`
 - Estilos SCSS en `web.assets_frontend` enfocados a curso eLearning.
 - Sin cambios en modelos Python ni lógica de negocio.
 
 ## 5) Diseño técnico
-- Añadir clases de enganche (`irg-elearning-*`) vía `xpath` para aplicar estilos con bajo acoplamiento.
+- Añadir clases de enganche (`irg-elearning-*`, `irg-lms-*`) vía `xpath` para aplicar estilos con bajo acoplamiento.
 - SCSS basado en variables de tema/Bootstrap de Odoo (`$primary`, `$border-color`, `$white`, `$black`, etc.).
 - Mantener responsividad en breakpoints principales.
 
 ## 6) Dependencias
 - `website_slides`
 - `website`
+- `openeducat_lms`
+- `openeducat_lms_website`
 
 ## 7) Backwards-compatibility / migración
 Compatible con Odoo 16. No requiere migración de datos ni scripts de upgrade.

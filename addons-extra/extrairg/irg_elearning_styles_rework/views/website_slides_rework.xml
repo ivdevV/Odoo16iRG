@@ -12,4 +12,26 @@
         </xpath>
     </template>
 
+    <template id="openeducat_course_detail_irg_rework" inherit_id="openeducat_lms.course_detail" name="IRG eLearning - OpenEduCat Course Detail Rework" priority="95">
+        <xpath expr="//div[@id='course_detail']" position="attributes">
+            <attribute name="class" add=" irg-lms-course-modern" separator=" "/>
+        </xpath>
+
+        <xpath expr="//section[@id='breadcrumbs']" position="attributes">
+            <attribute name="class" add=" irg-lms-breadcrumb-modern" separator=" "/>
+        </xpath>
+
+        <xpath expr="//section[hasclass('course_top_detail')]" position="attributes">
+            <attribute name="class" add=" irg-lms-hero-modern" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='course-details-tab-aria']" position="attributes">
+            <attribute name="class" add=" irg-lms-tabs-modern" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='course-curriculum']" position="attributes">
+            <attribute name="class" add=" irg-lms-curriculum-modern" separator=" "/>
+        </xpath>
+    </template>
+
 </odoo>
