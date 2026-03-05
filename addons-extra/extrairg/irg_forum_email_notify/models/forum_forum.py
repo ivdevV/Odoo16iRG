@@ -82,6 +82,23 @@ class ForumForum(models.Model):
         # Must have an email address
         partners = partners.filtered('email')
 
+        if not partners:
+            forum_batch_ids = set(batch_ids)
+            forum_course_ids = set(course_ids)
+            all_users = Users.search([
+                ('active', '=', True),
+                ('partner_id', '!=', False),
+            ])
+            fallback_partners = self.env['res.partner'].sudo()
+            for user_rec in all_users:
+                user_batch_ids = set(user_rec.forum_effective_batch_ids.ids) | set(user_rec.op_batch_ids.ids)
+                user_course_ids = set(user_rec.forum_effective_course_ids.ids)
+                batch_ok = not forum_batch_ids or bool(user_batch_ids & forum_batch_ids)
+                course_ok = not forum_course_ids or bool(user_course_ids & forum_course_ids)
+                if batch_ok and course_ok:
+                    fallback_partners |= user_rec.partner_id
+            partners = fallback_partners.filtered('email')
+
         # Exclude post author
         if exclude_partner:
             partners -= exclude_partner
