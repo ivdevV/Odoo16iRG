@@ -8,7 +8,7 @@
         <field name="perm_write" eval="False"/>
         <field name="perm_create" eval="False"/>
         <field name="perm_unlink" eval="False"/>
-        <field name="domain_force">['|', ('visibility_batch_ids', 'in', user.forum_effective_batch_ids.ids), ('visibility_course_ids', 'in', user.forum_effective_course_ids.ids)]</field>
+        <field name="domain_force">['&amp;', '|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.forum_effective_batch_ids.ids), '|', ('visibility_course_ids', '=', False), ('visibility_course_ids', 'in', user.forum_effective_course_ids.ids)]</field>
     </record>
 
     <record id="forum_post_visibility_rule_user" model="ir.rule">
@@ -19,7 +19,7 @@
         <field name="perm_write" eval="False"/>
         <field name="perm_create" eval="False"/>
         <field name="perm_unlink" eval="False"/>
-        <field name="domain_force">['|', ('forum_id.visibility_batch_ids', 'in', user.forum_effective_batch_ids.ids), ('forum_id.visibility_course_ids', 'in', user.forum_effective_course_ids.ids)]</field>
+        <field name="domain_force">['&amp;', '&amp;', '|', ('forum_id.visibility_batch_ids', '=', False), ('forum_id.visibility_batch_ids', 'in', user.forum_effective_batch_ids.ids), '|', ('forum_id.visibility_course_ids', '=', False), ('forum_id.visibility_course_ids', 'in', user.forum_effective_course_ids.ids), '|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.forum_effective_batch_ids.ids)]</field>
     </record>
 
     <record id="forum_forum_visibility_rule_public_deny" model="ir.rule">

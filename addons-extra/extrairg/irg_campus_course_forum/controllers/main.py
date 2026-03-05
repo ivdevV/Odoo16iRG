@@ -8,8 +8,7 @@ from odoo.addons.isep_website_custom_inh.controllers.main import DashboardPortal
 class DashboardPortalCampusForum(DashboardPortalInh):
 
     def _get_user_batch_ids_for_course(self, user, course):
-        batch_ids = set(user.forum_effective_batch_ids.ids)
-        batch_ids.update(user.op_batch_ids.ids)
+        batch_ids = set(user.op_batch_ids.ids)
 
         student_ids = request.env['op.student'].sudo().search([
             '|',
@@ -58,40 +57,8 @@ class DashboardPortalCampusForum(DashboardPortalInh):
         debug_course = None
 
         if course.exists():
-            # determine which batches the user has **for this course** only;
-            # the portal-wide `forum_effective_batch_ids` may include batches
-            # from unrelated courses, which caused the user to see forums from
-            # other subjects.  restricting here fixes that.
             user_batch_ids = self._get_user_batch_ids_for_course(user, course)
-
-            # start by selecting only the forums that are *associated with this
-            # course*.  we deliberately exclude forums with no course link so
-            # that globals/other-course forums don’t show up in the panel.
-            course_domain = [('visibility_course_ids', 'in', [course.id])]
-            if course.forum_id:
-                # the course record may hold a direct pointer to the forum.
-                course_domain = expression.OR([
-                    course_domain,
-                    [('id', '=', course.forum_id.id)],
-                ])
-
-            if request.env.user.has_group('base.group_user'):
-                # Internal users can see all forums for this course
-                forum_domain = course_domain
-            elif request.env.user.has_group('base.group_public'):
-                # Public users cannot see any forum
-                forum_domain = [('id', '=', False)]
-            else:
-                # Portal users
-                if user_batch_ids:
-                    batch_domain = [('visibility_batch_ids', 'in', list(user_batch_ids))]
-                else:
-                    batch_domain = [('id', '=', False)]  # Needs to match at least one batch
-                
-                # They should match the course AND the batch (if applicable to their enrolement)
-                # But notice the reqs: "SOLO pueden ver los foros que tengan la visibilidad establecida para los cursos o lotes en los que están matriculados"
-                # so if they are enrolled in the course, they can see the course forums. AND they can see batch forums if they are enrolled in the batch.
-                forum_domain = expression.OR([course_domain, batch_domain])
+            forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
 
             debug_domain = forum_domain
             debug_course = course.id
@@ -112,9 +79,7 @@ class DashboardPortalCampusForum(DashboardPortalInh):
             except Exception:
                 pass
 
-            # search as superuser to avoid portal record rules blocking
-            # the batch lookup for the guest user
-            forum_ids = request.env['forum.forum'].sudo().search(forum_domain, order='name asc')
+            forum_ids = request.env['forum.forum'].search(forum_domain, order='name asc')
 
             # debug : record what forums were found after the sudo search
             try:

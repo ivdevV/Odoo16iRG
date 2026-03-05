@@ -52,15 +52,29 @@ class ForumForum(models.Model):
         user = user.sudo()
         batch_ids = set(user.forum_effective_batch_ids.ids)
         course_ids = set(user.forum_effective_course_ids.ids)
-        if course:
-            course_ids.add(course.id)
+        if course and course.id:
+            course_ids = {course.id}
 
-        # Portal users ONLY see explicit assignments
-        batch_clause = [('visibility_batch_ids', 'in', list(batch_ids))] if batch_ids else [('id', '=', 0)]
-        course_clause = [('visibility_course_ids', 'in', list(course_ids))] if course_ids else [('id', '=', 0)]
+        # A forum is visible when BOTH restrictions are satisfied:
+        # - Batch: unrestricted OR user belongs to one of the forum batches
+        # - Course: unrestricted OR user belongs to one of the forum courses
+        #
+        # This naturally supports:
+        # - global forums (no batch, no course) => visible to everyone
+        # - course-only forums => visible to course users
+        # - batch-only forums => visible to batch users
+        # - course+batch forums => both must match
+        if batch_ids:
+            batch_clause = ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(batch_ids))]
+        else:
+            batch_clause = [('visibility_batch_ids', '=', False)]
 
-        # user can see the forum if it is explicitly shared to their batch OR explicitly to their course
-        return expression.OR([batch_clause, course_clause])
+        if course_ids:
+            course_clause = ['|', ('visibility_course_ids', '=', False), ('visibility_course_ids', 'in', list(course_ids))]
+        else:
+            course_clause = [('visibility_course_ids', '=', False)]
+
+        return expression.AND([batch_clause, course_clause])
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -82,16 +96,12 @@ class ForumForum(models.Model):
         Used for automated tests and manual debugging.  Having it on the model
         makes it easier to exercise from shell or server actions.
 
-        The search is performed with ``sudo()`` so that portal users aren't
-        accidentally blocked by the security rule that references
-        ``user.forum_effective_batch_ids`` (which may not be readable without
-        additional batch permissions).  The caller can still pass an ordinary
-        ``user`` record; the method handles the privilege escalation
-        internally.  Tests that previously inspected the results without
-        ``sudo()`` continue to work.
+        The search runs without ``sudo()`` and therefore respects record rules.
+        The domain itself is still computed from a sudo'ed user to avoid
+        false negatives when reading computed enrollment relations.
         """
         domain = self._visibility_domain_for_user(user, course)
-        return self.sudo().search(domain)
+        return self.search(domain)
 
     def init(self):
         # turn off moderation for any existing forum records when the module

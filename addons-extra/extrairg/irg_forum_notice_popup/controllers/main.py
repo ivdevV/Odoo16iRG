@@ -84,11 +84,11 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
 
         user_batch_ids = self._get_user_batch_ids_for_course(user, course)
         forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
-        forums = request.env['forum.forum'].sudo().search(forum_domain)
+        forums = request.env['forum.forum'].search(forum_domain)
         if not forums:
             return {'notice': False}
 
-        post_model = request.env['forum.post'].sudo()
+        post_model = request.env['forum.post']
         post_domain = [
             ('forum_id', 'in', forums.ids),
             ('parent_id', '=', False),
