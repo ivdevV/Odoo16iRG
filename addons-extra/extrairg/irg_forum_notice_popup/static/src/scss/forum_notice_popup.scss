@@ -16,11 +16,40 @@
     bottom: 24px;
     width: 420px;
     max-width: calc(100vw - 32px);
-    background: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
+    background: #00AEEF;
+    border: 1px solid #005596;
     border-radius: 14px;
     box-shadow: var(--box-shadow);
     padding: 14px;
+    animation:
+        irg-popup-slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) 1 both,
+        irg-popup-bg-pulse 2.2s ease-in-out 0.45s infinite alternate;
+}
+
+@keyframes irg-popup-slide-up {
+    0% {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes irg-popup-bg-pulse {
+    0% {
+        background-color: #00AEEF;
+    }
+    100% {
+        background-color: #005596;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .irg-forum-popup-card {
+        animation: none;
+    }
 }
 
 .irg-forum-popup-close {
@@ -31,15 +60,15 @@
     background: transparent;
     font-size: 22px;
     line-height: 1;
-    color: var(--bs-secondary-color);
+    color: #ffffff;
 }
 
 .irg-forum-popup-badge {
     display: inline-block;
     font-size: 12px;
     font-weight: 700;
-    background: var(--bs-secondary-bg-subtle);
-    color: var(--bs-emphasis-color);
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
     border-radius: 999px;
     padding: 4px 10px;
     margin-bottom: 8px;
@@ -48,19 +77,19 @@
 .irg-forum-popup-title {
     margin: 0 0 6px 0;
     font-size: 18px;
-    color: var(--bs-emphasis-color);
+    color: #ffffff;
     font-weight: 800;
 }
 
 .irg-forum-popup-meta {
     font-size: 12px;
-    color: var(--bs-secondary-color);
+    color: rgba(255, 255, 255, 0.9);
     margin-bottom: 8px;
 }
 
 .irg-forum-popup-preview {
     font-size: 14px;
-    color: var(--bs-body-color);
+    color: #ffffff;
     margin-bottom: 12px;
 }
 

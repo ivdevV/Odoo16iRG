@@ -10,7 +10,7 @@
         <field name="inherit_id"
                ref="irg_forum_batch_visibility.view_forum_forum_form_batch_visibility"/>
         <field name="arch" type="xml">
-            <xpath expr="//group[@string='Lotes de visibilidad']" position="after">
+            <xpath expr="//field[@name='visibility_course_ids']" position="after">
                 <group string="Notificaciones por email">
                     <field name="email_notify_enabled"/>
                 </group>
