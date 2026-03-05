@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Add "Email Notifications" checkbox to the forum settings form.
+         Placed right after the batch-visibility group that
+         irg_forum_batch_visibility adds. -->
+    <record id="view_forum_forum_form_email_notify" model="ir.ui.view">
+        <field name="name">forum.forum.form.email.notify</field>
+        <field name="model">forum.forum</field>
+        <field name="inherit_id"
+               ref="irg_forum_batch_visibility.view_forum_forum_form_batch_visibility"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@string='Lotes de visibilidad']" position="after">
+                <group string="Notificaciones por email">
+                    <field name="email_notify_enabled"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

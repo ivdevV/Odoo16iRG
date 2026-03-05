@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         QWeb template: email body for forum post notifications
+         ============================================================ -->
+    <template id="email_forum_post_notification"
+              name="Forum Post Email Notification">
+        <div style="margin:0; padding:0; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; background-color:#f4f4f4;">
+            <table width="600" align="center" cellpadding="0" cellspacing="0"
+                   style="background-color:#ffffff; border:1px solid #e0e0e0; margin:20px auto;">
+
+                <!-- Header -->
+                <tr>
+                    <td style="background-color:#875A7B; padding:20px 30px;">
+                        <h2 style="color:#ffffff; margin:0; font-size:20px;">
+                            <t t-if="is_reply">Nueva respuesta en el foro</t>
+                            <t t-else="">Nuevo tema en el foro</t>
+                        </h2>
+                        <p style="color:#e8d5e4; margin:5px 0 0 0; font-size:14px;">
+                            <t t-esc="forum.name"/>
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Topic / thread title -->
+                <tr>
+                    <td style="padding:20px 30px 10px 30px;">
+                        <h3 style="margin:0; color:#333333; font-size:18px;">
+                            <t t-if="is_reply">Re: </t><t t-esc="thread_name"/>
+                        </h3>
+                        <p style="margin:5px 0 0 0; color:#888888; font-size:13px;">
+                            Publicado por <strong><t t-esc="author_name"/></strong>
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Separator -->
+                <tr>
+                    <td style="padding:0 30px;">
+                        <hr style="border:none; border-top:1px solid #e0e0e0; margin:10px 0;"/>
+                    </td>
+                </tr>
+
+                <!-- Full post content -->
+                <tr>
+                    <td style="padding:10px 30px 20px 30px; color:#333333; font-size:14px; line-height:1.6;">
+                        <t t-out="post_content"/>
+                    </td>
+                </tr>
+
+                <!-- CTA button -->
+                <tr>
+                    <td style="padding:10px 30px 30px 30px; text-align:center;">
+                        <a t-att-href="thread_url"
+                           style="display:inline-block; background-color:#875A7B; color:#ffffff; text-decoration:none; padding:12px 30px; border-radius:4px; font-size:14px; font-weight:bold;">
+                            Ver hilo completo
+                        </a>
+                    </td>
+                </tr>
+
+                <!-- Footer / unsubscribe -->
+                <tr>
+                    <td style="background-color:#f8f8f8; padding:15px 30px; border-top:1px solid #e0e0e0;">
+                        <p style="margin:0; font-size:11px; color:#999999; text-align:center;">
+                            Recibes este correo porque participas en el foro
+                            «<t t-esc="forum.name"/>».
+                            <br/>
+                            <a t-att-href="unsubscribe_url"
+                               style="color:#875A7B; text-decoration:underline;">
+                                Cancelar suscripción a las notificaciones de este foro
+                            </a>
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </template>
+
+    <!-- ============================================================
+         Website pages: unsubscribe / resubscribe confirmations
+         ============================================================ -->
+    <template id="forum_unsubscribe_done"
+              name="Forum Unsubscribe Confirmation">
+        <t t-call="website.layout">
+            <div class="container py-5 text-center">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <i class="fa fa-check-circle fa-3x text-success mb-3"/>
+                        <h2>Suscripción cancelada</h2>
+                        <p class="lead mt-3">
+                            Ya no recibirás notificaciones por correo del foro
+                            «<strong><t t-esc="forum_name"/></strong>».
+                        </p>
+                        <p class="mt-4">
+                            <a t-att-href="resubscribe_url"
+                               class="btn btn-primary">
+                                Volver a suscribirme
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="forum_resubscribe_done"
+              name="Forum Resubscribe Confirmation">
+        <t t-call="website.layout">
+            <div class="container py-5 text-center">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <i class="fa fa-envelope fa-3x text-primary mb-3"/>
+                        <h2>Suscripción reactivada</h2>
+                        <p class="lead mt-3">
+                            Volverás a recibir notificaciones del foro
+                            «<strong><t t-esc="forum_name"/></strong>».
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="forum_unsubscribe_error"
+              name="Forum Unsubscribe Error">
+        <t t-call="website.layout">
+            <div class="container py-5 text-center">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <i class="fa fa-exclamation-triangle fa-3x text-danger mb-3"/>
+                        <h2>Enlace inválido</h2>
+                        <p class="lead mt-3 text-danger">
+                            El enlace de cancelación de suscripción no es
+                            válido o ha expirado.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>
