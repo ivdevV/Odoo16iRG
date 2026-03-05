@@ -17,6 +17,7 @@
     'assets': {
         'web.assets_frontend': [
             'irg_forum_batch_visibility/static/src/js/forum_publish_feedback.js',
+            'irg_forum_batch_visibility/static/src/scss/forum_editor_focus.scss',
         ],
     },
     'installable': True,

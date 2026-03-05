@@ -46,14 +46,23 @@ class ForumForum(models.Model):
         if not user or user._is_public() or user.has_group('base.group_public'):
             return [('id', '=', 0)]
 
-        if user.has_group('base.group_user'):
-            return []  # Internal users can see all forums
+        is_internal = user.has_group('base.group_user')
+        is_portal = user.has_group('base.group_portal')
+
+        # Keep unrestricted access only for true internal users.
+        # If a user has both internal + portal groups, enforce portal
+        # visibility rules to avoid overexposure.
+        if is_internal and not is_portal:
+            return []
 
         user = user.sudo()
         batch_ids = set(user.forum_effective_batch_ids.ids)
         course_ids = set(user.forum_effective_course_ids.ids)
         if course and course.id:
-            course_ids = {course.id}
+            # In a course context, only keep that course if the user is
+            # effectively enrolled in it. Otherwise, keep course_ids empty so
+            # only unrestricted (global) forums can pass the course clause.
+            course_ids = {course.id} if course.id in course_ids else set()
 
         # A forum is visible when BOTH restrictions are satisfied:
         # - Batch: unrestricted OR user belongs to one of the forum batches

@@ -79,10 +79,12 @@
                                                           <a style="box-sizing:border-box;text-decoration: none;color: #371C82; font-weight: bold;" t-attf-href="/web/login?login={{ object.email }}" target="_blank" t-out="object.email or ''">mark.brown23@ejemplo.com</a>
                                                       </b>
                                                   </span>
-                                                  <br/>
-                                                  <span style="font-size: 14px; font-weight: normal;color: #371C82;">                                                      
-                                                      Contraseña:<t t-esc="object.new_password_user or ''"/>
+                                                    <t t-if="ctx.get('welcome_show_password')">
+                                                    <br/>
+                                                    <span style="font-size: 14px; font-weight: normal;color: #371C82;">                                                      
+                                                      Contraseña: <t t-esc="ctx.get('welcome_password_value') or object.new_password_user or ''"/>
                                                     </span>
+                                                    </t>
                                                   <div style="margin: 16px 0px 16px 0px;" bis_skin_checked="1">
                                                       <a t-attf-href="/campus" style="box-sizing:border-box;background-color: #7848FF; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;" target="_blank">
                                                            Ingresa aquí

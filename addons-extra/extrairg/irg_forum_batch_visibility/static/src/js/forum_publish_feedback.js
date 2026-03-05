@@ -3,6 +3,42 @@
 const FORUM_POST_PUBLISHED_KEY = 'irg_forum_post_published';
 const SUCCESS_MESSAGE = '¡Post Publicado!';
 
+function isForumEditorPage() {
+    const path = window.location.pathname || '';
+    if (!path.includes('/forum/')) {
+        return false;
+    }
+    return path.includes('/new') || path.includes('/edit');
+}
+
+function findForumEditorTargets() {
+    const selectors = [
+        'form[action*="/forum/"] .note-editor .note-editable',
+        'form[action*="/forum/"] [contenteditable="true"].note-editable',
+        'form[action*="/forum/"] textarea[name="content"]',
+        'form[action*="/forum/"] textarea[name="description"]',
+        'form[action*="/forum/"] textarea',
+    ];
+    for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+            return element;
+        }
+    }
+    return null;
+}
+
+function focusForumEditor() {
+    if (!isForumEditorPage()) {
+        return;
+    }
+    const target = findForumEditorTargets();
+    if (!target) {
+        return;
+    }
+    target.focus({ preventScroll: true });
+}
+
 function markPendingToastOnSubmit(event) {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) {
@@ -50,3 +86,7 @@ function showPublishToastIfNeeded() {
 
 document.addEventListener('submit', markPendingToastOnSubmit, true);
 document.addEventListener('DOMContentLoaded', showPublishToastIfNeeded);
+document.addEventListener('DOMContentLoaded', () => {
+    // Give the WYSIWYG a brief time to initialize before setting focus.
+    window.setTimeout(focusForumEditor, 250);
+});

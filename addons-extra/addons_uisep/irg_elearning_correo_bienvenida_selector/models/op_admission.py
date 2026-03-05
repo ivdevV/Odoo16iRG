@@ -5,6 +5,48 @@ from odoo.exceptions import UserError
 class OpAdmission(models.Model):
     _inherit = 'op.admission'
 
+    def _welcome_password_context(self):
+        """Return context flags for password rendering in welcome templates.
+
+        Rule:
+        - First welcome mail for a student/user: show password as usual.
+        - If a welcome mail was already sent before: only show password when
+          we still have the same stored clear-text value; otherwise hide it.
+        """
+        self.ensure_one()
+
+        user = self.student_id.user_id.sudo() if self.student_id and self.student_id.user_id else self.env['res.users']
+
+        user_password_value = ''
+        if user and user.exists() and 'new_password_user' in user._fields:
+            user_password_value = user.new_password_user or ''
+
+        prior_domain = [
+            ('id', '!=', self.id),
+            ('email_send_ok', '=', True),
+        ]
+
+        if user and user.exists():
+            prior_domain.extend([
+                '|',
+                ('student_id.user_id', '=', user.id),
+                ('email', '=', self.email),
+            ])
+        else:
+            prior_domain.append(('email', '=', self.email))
+
+        already_sent_before = bool(self.sudo().search_count(prior_domain))
+
+        # First send => include password block.
+        # Re-send/re-enrollment => include only if we can reuse same password.
+        show_password = (not already_sent_before) or bool(user_password_value)
+
+        return {
+            'welcome_show_password': show_password,
+            'welcome_password_value': user_password_value,
+            'welcome_already_sent_before': already_sent_before,
+        }
+
     def _fix_welcome_password_placeholder(self, template):
         body_html = template.body_html or ''
         replacements = (
@@ -38,6 +80,10 @@ class OpAdmission(models.Model):
 
             template = self.env['mail.template'].sudo().browse(template_id)
             self._fix_welcome_password_placeholder(template)
-            
-            self.with_context(force_send=force).message_post_with_template(template_id, email_layout_xmlid=False)
+
+            welcome_ctx = self._welcome_password_context()
+            self.with_context(
+                force_send=force,
+                **welcome_ctx,
+            ).message_post_with_template(template_id, email_layout_xmlid=False)
             self.email_send_ok = True
