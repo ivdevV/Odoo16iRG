@@ -19,3 +19,15 @@ class ForumPost(models.Model):
                 if parent_post.exists() and not parent_post.allow_comments:
                     raise UserError(_("Comments/replies are disabled for this post."))
         return super().create(vals_list)
+
+    def _compute_can_answer(self):
+        super()._compute_can_answer()
+        for post in self:
+            if not post.allow_comments:
+                post.can_answer = False
+
+    def _compute_can_comment(self):
+        super()._compute_can_comment()
+        for post in self:
+            if not post.allow_comments:
+                post.can_comment = False
