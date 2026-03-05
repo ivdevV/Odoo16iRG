@@ -99,6 +99,9 @@ class ForumForum(models.Model):
                     fallback_partners |= user_rec.partner_id
             partners = fallback_partners.filtered('email')
 
+        if not partners:
+            partners = forum.message_partner_ids.filtered('email')
+
         # Exclude post author
         if exclude_partner:
             partners -= exclude_partner

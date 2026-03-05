@@ -141,6 +141,39 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
             'course_id': course_id,
         }
 
+    def _find_notice_for_user_global(self, user):
+        forums = request.env['forum.forum'].search([])
+        if not forums:
+            return False, False
+
+        post_model = request.env['forum.post']
+        post_domain = [
+            ('forum_id', 'in', forums.ids),
+        ]
+        if 'state' in post_model._fields:
+            post_domain.append(('state', '=', 'active'))
+        if 'active' in post_model._fields:
+            post_domain.append(('active', '=', True))
+
+        posts = post_model.search(post_domain, order='create_date desc', limit=40)
+        if not posts:
+            return False, False
+
+        notice_post = next((post for post in posts if self._is_notice_post(post)), False)
+        if not notice_post:
+            notice_post = posts[0]
+
+        forum_course = notice_post.forum_id.visibility_course_ids[:1]
+        course_id = forum_course.id if forum_course else False
+        if not course_id:
+            user_courses = user.sudo().forum_effective_course_ids[:1]
+            course_id = user_courses.id if user_courses else False
+
+        if course_id and self._is_seen(user.id, course_id, notice_post.id):
+            return False, False
+
+        return notice_post, course_id
+
     def _mark_seen(self, user_id, course_id, post_id):
         seen_model = self._seen_model()
         seen = seen_model.search([
@@ -185,6 +218,10 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
             notice_post = self._find_notice_for_course(user, course)
             if notice_post:
                 return {'notice': self._notice_payload(notice_post, course.id)}
+
+        notice_post, course_id = self._find_notice_for_user_global(user)
+        if notice_post:
+            return {'notice': self._notice_payload(notice_post, course_id)}
 
         return {'notice': False}
 
