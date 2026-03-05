@@ -1,8 +1,16 @@
 form[action*='/forum/'] {
+    .note-editor .note-editing-area,
+    .note-editor .note-editing-area .note-codable,
+    .note-editor .note-placeholder,
+    [contenteditable='true'] {
+        background-color: #ffffff !important;
+    }
+
     .note-editor,
     .note-editor.note-frame,
     .note-editor.note-airframe {
-        background-color: #fdfefe;
+        background-color: #ffffff;
+        border-color: #d8dde6;
     }
 
     .note-editor .note-editable,
@@ -19,5 +27,16 @@ form[action*='/forum/'] {
     textarea[name='description']:focus,
     textarea:focus {
         background-color: #ffffff !important;
+    }
+}
+
+body {
+    &[class*='forum'],
+    &[data-path*='/forum/'] {
+        .note-editor,
+        .note-editor .note-editable,
+        [contenteditable='true'] {
+            background-color: #ffffff !important;
+        }
     }
 }

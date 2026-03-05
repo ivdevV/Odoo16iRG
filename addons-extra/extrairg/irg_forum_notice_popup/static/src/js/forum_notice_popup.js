@@ -23,7 +23,8 @@ async function markSeen(courseId, noticeId) {
     if (!courseId || !noticeId) {
         return;
     }
-    await ajax.jsonRpc(`/campus/course/${courseId}/forum_notice_popup_seen`, 'call', {
+    await ajax.jsonRpc('/campus/forum_notice_popup_seen', 'call', {
+        course_id: courseId,
         notice_id: noticeId,
     });
 }
@@ -76,21 +77,32 @@ function renderPopup(courseId, notice) {
 }
 
 async function initForumNoticePopup() {
-    const courseId = getCourseIdFromPath() || getFirstCourseIdFromPage();
-    if (!courseId) {
-        if (window.location.pathname.startsWith('/campus')) {
-            console.info('[irg_forum_notice_popup] No course id found in page');
-        }
+    const path = window.location.pathname || '';
+
+    // Run on all website pages (/shop, /campus, /forum, /slides, ...)
+    // but skip backend pages.
+    if (path.startsWith('/web')) {
+        return;
+    }
+
+    if (document.querySelector('.irg-forum-popup-wrap')) {
         return;
     }
 
     try {
-        const result = await ajax.jsonRpc(`/campus/course/${courseId}/forum_notice_popup`, 'call', {});
+        let result = await ajax.jsonRpc('/campus/forum_notice_popup', 'call', {});
+
+        const fallbackCourseId = getCourseIdFromPath() || getFirstCourseIdFromPage();
+        if ((!result || !result.notice) && fallbackCourseId) {
+            result = await ajax.jsonRpc(`/campus/course/${fallbackCourseId}/forum_notice_popup`, 'call', {});
+        }
+
         const notice = result && result.notice;
         if (!notice || !notice.id) {
             return;
         }
-        renderPopup(courseId, notice);
+        const noticeCourseId = notice.course_id || fallbackCourseId;
+        renderPopup(noticeCourseId, notice);
     } catch (error) {
         console.warn('[irg_forum_notice_popup] Failed to load popup notice', error);
     }

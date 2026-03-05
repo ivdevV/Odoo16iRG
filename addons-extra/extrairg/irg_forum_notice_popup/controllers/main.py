@@ -55,6 +55,59 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
             ('post_id', '=', post_id),
         ]))
 
+    def _candidate_courses_for_user(self, user):
+        return user.sudo().forum_effective_course_ids
+
+    def _find_notice_for_course(self, user, course):
+        user_batch_ids = self._get_user_batch_ids_for_course(user, course)
+        forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
+        forums = request.env['forum.forum'].search(forum_domain)
+        if not forums:
+            return False
+
+        post_model = request.env['forum.post']
+        post_domain = [
+            ('forum_id', 'in', forums.ids),
+            ('parent_id', '=', False),
+        ]
+        if 'state' in post_model._fields:
+            post_domain.append(('state', '=', 'active'))
+        if 'active' in post_model._fields:
+            post_domain.append(('active', '=', True))
+        if 'visibility_batch_ids' in post_model._fields:
+            if user_batch_ids:
+                post_domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
+            else:
+                post_domain += [('visibility_batch_ids', '=', False)]
+
+        posts = post_model.search(post_domain, order='create_date desc', limit=40)
+        notice_post = next((post for post in posts if self._is_notice_post(post)), False)
+        if not notice_post and posts:
+            notice_post = posts[0]
+        if not notice_post:
+            return False
+
+        if self._is_seen(user.id, course.id, notice_post.id):
+            return False
+
+        return notice_post
+
+    def _notice_payload(self, notice_post, course_id):
+        website_url = ''
+        if 'website_url' in notice_post._fields and notice_post.website_url:
+            website_url = notice_post.website_url
+        elif notice_post.forum_id:
+            website_url = f'/forum/{notice_post.forum_id.id}'
+
+        return {
+            'id': notice_post.id,
+            'title': self._post_title(notice_post),
+            'preview': self._post_content_preview(notice_post),
+            'forum_name': notice_post.forum_id.name if notice_post.forum_id else '',
+            'url': website_url,
+            'course_id': course_id,
+        }
+
     def _mark_seen(self, user_id, course_id, post_id):
         seen_model = self._seen_model()
         seen = seen_model.search([
@@ -82,53 +135,25 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
         if not course.exists() or not user or user._is_public():
             return {'notice': False}
 
-        user_batch_ids = self._get_user_batch_ids_for_course(user, course)
-        forum_domain = self._forum_visibility_domain_for_user(course, user_batch_ids)
-        forums = request.env['forum.forum'].search(forum_domain)
-        if not forums:
-            return {'notice': False}
-
-        post_model = request.env['forum.post']
-        post_domain = [
-            ('forum_id', 'in', forums.ids),
-            ('parent_id', '=', False),
-        ]
-        if 'state' in post_model._fields:
-            post_domain.append(('state', '=', 'active'))
-        if 'active' in post_model._fields:
-            post_domain.append(('active', '=', True))
-        if 'visibility_batch_ids' in post_model._fields:
-            if user_batch_ids:
-                post_domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
-            else:
-                post_domain += [('visibility_batch_ids', '=', False)]
-
-        posts = post_model.search(post_domain, order='create_date desc', limit=40)
-        notice_post = next((post for post in posts if self._is_notice_post(post)), False)
-        if not notice_post and posts:
-            notice_post = posts[0]
-
+        notice_post = self._find_notice_for_course(user, course)
         if not notice_post:
             return {'notice': False}
 
-        if self._is_seen(user.id, course_id, notice_post.id):
+        return {'notice': self._notice_payload(notice_post, course.id)}
+
+    @http.route('/campus/forum_notice_popup', type='json', auth='user', website=True)
+    def forum_notice_popup_any_campus(self, **kwargs):
+        user = request.env.user
+        if not user or user._is_public():
             return {'notice': False}
 
-        website_url = ''
-        if 'website_url' in notice_post._fields and notice_post.website_url:
-            website_url = notice_post.website_url
-        elif notice_post.forum_id:
-            website_url = f'/forum/{notice_post.forum_id.id}'
+        courses = self._candidate_courses_for_user(user)
+        for course in courses:
+            notice_post = self._find_notice_for_course(user, course)
+            if notice_post:
+                return {'notice': self._notice_payload(notice_post, course.id)}
 
-        return {
-            'notice': {
-                'id': notice_post.id,
-                'title': self._post_title(notice_post),
-                'preview': self._post_content_preview(notice_post),
-                'forum_name': notice_post.forum_id.name if notice_post.forum_id else '',
-                'url': website_url,
-            }
-        }
+        return {'notice': False}
 
     @http.route('/campus/course/<int:course_id>/forum_notice_popup_seen', type='json', auth='user', website=True)
     def forum_notice_popup_seen(self, course_id, notice_id=None, **kwargs):
@@ -143,6 +168,26 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
 
         post = request.env['forum.post'].sudo().browse(notice_id)
         if not post.exists():
+            return {'ok': False}
+
+        self._mark_seen(user.id, course_id, notice_id)
+        return {'ok': True}
+
+    @http.route('/campus/forum_notice_popup_seen', type='json', auth='user', website=True)
+    def forum_notice_popup_seen_any_campus(self, course_id=None, notice_id=None, **kwargs):
+        user = request.env.user
+        if not user or user._is_public() or not notice_id or not course_id:
+            return {'ok': False}
+
+        try:
+            notice_id = int(notice_id)
+            course_id = int(course_id)
+        except Exception:
+            return {'ok': False}
+
+        post = request.env['forum.post'].sudo().browse(notice_id)
+        course = request.env['op.course'].sudo().browse(course_id)
+        if not post.exists() or not course.exists():
             return {'ok': False}
 
         self._mark_seen(user.id, course_id, notice_id)
