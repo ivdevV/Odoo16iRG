@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="post_description_full_inherit_allow_comments" inherit_id="website_forum.post_description_full">
+        <xpath expr="//a[hasclass('o_wforum_reply_btn')]" position="attributes">
+            <attribute name="t-if">question.allow_comments</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_wforum_post_comments')]" position="attributes">
+            <attribute name="t-if">question.allow_comments or answer.allow_comments</attribute>
+        </xpath>
+    </template>
+</odoo>
