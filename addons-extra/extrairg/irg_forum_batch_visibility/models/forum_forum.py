@@ -43,8 +43,11 @@ class ForumForum(models.Model):
         forums.  Computing the domain with a sudo'ed user ensures the correct
         effective batch/course ids are returned regardless of access rights.
         """
-        if not user or user._is_public():
+        if not user or user._is_public() or user.has_group('base.group_public'):
             return [('id', '=', 0)]
+
+        if user.has_group('base.group_user'):
+            return []  # Internal users can see all forums
 
         user = user.sudo()
         batch_ids = set(user.forum_effective_batch_ids.ids)
@@ -52,22 +55,12 @@ class ForumForum(models.Model):
         if course:
             course_ids.add(course.id)
 
-        batch_clause = ['|', ('visibility_batch_ids', '=', False)]
-        if batch_ids:
-            batch_clause.append(('visibility_batch_ids', 'in', list(batch_ids)))
-        else:
-            batch_clause.append(('visibility_batch_ids', '=', False))
+        # Portal users ONLY see explicit assignments
+        batch_clause = [('visibility_batch_ids', 'in', list(batch_ids))] if batch_ids else [('id', '=', 0)]
+        course_clause = [('visibility_course_ids', 'in', list(course_ids))] if course_ids else [('id', '=', 0)]
 
-        course_clause = ['|', ('visibility_course_ids', '=', False)]
-        if course_ids:
-            course_clause.append(('visibility_course_ids', 'in', list(course_ids)))
-        else:
-            course_clause.append(('visibility_course_ids', '=', False))
-
-        # enforce **both** batch AND course conditions.  use expression.AND to
-        # build a normalized/flat domain (avoid nested list tokens that break
-        # expression normalization with "unhashable type: 'list'").
-        return expression.AND([batch_clause, course_clause])
+        # user can see the forum if it is explicitly shared to their batch OR explicitly to their course
+        return expression.OR([batch_clause, course_clause])
 
     @api.model_create_multi
     def create(self, vals_list):

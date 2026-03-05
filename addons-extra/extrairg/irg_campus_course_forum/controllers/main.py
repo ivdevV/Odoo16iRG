@@ -75,17 +75,24 @@ class DashboardPortalCampusForum(DashboardPortalInh):
                     [('id', '=', course.forum_id.id)],
                 ])
 
-            # next build the batch condition: either the forum has no batch
-            # restriction, or the user shares at least one of the allowed
-            # batches for this course.  if the user has no batches (e.g. a
-            # teacher), we fall back to requiring no restriction at all.
-            if user_batch_ids:
-                batch_domain = ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
+            if request.env.user.has_group('base.group_user'):
+                # Internal users can see all forums for this course
+                forum_domain = course_domain
+            elif request.env.user.has_group('base.group_public'):
+                # Public users cannot see any forum
+                forum_domain = [('id', '=', False)]
             else:
-                batch_domain = [('visibility_batch_ids', '=', False)]
+                # Portal users
+                if user_batch_ids:
+                    batch_domain = [('visibility_batch_ids', 'in', list(user_batch_ids))]
+                else:
+                    batch_domain = [('id', '=', False)]  # Needs to match at least one batch
+                
+                # They should match the course AND the batch (if applicable to their enrolement)
+                # But notice the reqs: "SOLO pueden ver los foros que tengan la visibilidad establecida para los cursos o lotes en los que están matriculados"
+                # so if they are enrolled in the course, they can see the course forums. AND they can see batch forums if they are enrolled in the batch.
+                forum_domain = expression.OR([course_domain, batch_domain])
 
-            # final domain requires both conditions simultaneously
-            forum_domain = expression.AND([course_domain, batch_domain])
             debug_domain = forum_domain
             debug_course = course.id
 
