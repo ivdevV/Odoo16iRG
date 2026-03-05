@@ -27,6 +27,8 @@ class ForumPost(models.Model):
         forum = self.forum_id.sudo()
         if not forum:
             return
+        if "email_notify_enabled" in forum._fields and not forum.email_notify_enabled:
+            return
         if "notify_students_email" in forum._fields and not forum.notify_students_email:
             return
 
