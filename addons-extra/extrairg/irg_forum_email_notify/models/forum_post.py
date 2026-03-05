@@ -95,7 +95,6 @@ class ForumPost(models.Model):
             subject = 'Nuevo tema en %s: %s' % (forum.name, self.name)
 
         MailMail = self.env['mail.mail'].sudo()
-        mails_to_send = MailMail.browse()
         created = 0
 
         for partner in partners:
@@ -130,24 +129,25 @@ class ForumPost(models.Model):
                 },
             )
 
-            mail = MailMail.create({
+            MailMail.create({
                 'subject': subject,
                 'body_html': str(body_html),
                 'email_from': company_email,
                 'email_to': partner.email,
                 'auto_delete': True,
             })
-            mails_to_send |= mail
             created += 1
 
-        if mails_to_send:
+        if created:
             try:
-                mails_to_send.send(auto_commit=False)
-            except TypeError:
-                mails_to_send.send()
+                mail_cron = self.env.ref('mail.ir_cron_mail_scheduler_action', raise_if_not_found=False)
+                if mail_cron:
+                    mail_cron._trigger()
+            except Exception:
+                _logger.exception('Failed to trigger mail scheduler cron for forum post %s', self.id)
 
         _logger.info(
-            'Created and sent %d forum email notifications for post %s in forum "%s"',
+            'Queued %d forum email notifications for post %s in forum "%s"',
             created, self.id, forum.name,
         )
 
