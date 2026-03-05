@@ -46,18 +46,21 @@ class ForumForum(models.Model):
         if not user or user._is_public() or user.has_group('base.group_public'):
             return [('id', '=', 0)]
 
-        is_internal = user.has_group('base.group_user')
-        is_portal = user.has_group('base.group_portal')
-
-        # Keep unrestricted access only for true internal users.
-        # If a user has both internal + portal groups, enforce portal
-        # visibility rules to avoid overexposure.
-        if is_internal and not is_portal:
+        # Only system administrators can bypass forum visibility restrictions.
+        if user.has_group('base.group_system'):
             return []
 
         user = user.sudo()
         batch_ids = set(user.forum_effective_batch_ids.ids)
         course_ids = set(user.forum_effective_course_ids.ids)
+
+        student_link = self.env['op.student'].sudo().search([
+            '|',
+            ('user_id', '=', user.id),
+            ('partner_id', '=', user.partner_id.id),
+        ], limit=1)
+        is_campus_student = bool(student_link or batch_ids or course_ids)
+
         if course and course.id:
             # In a course context, only keep that course if the user is
             # effectively enrolled in it. Otherwise, keep course_ids empty so
@@ -74,14 +77,14 @@ class ForumForum(models.Model):
         # - batch-only forums => visible to batch users
         # - course+batch forums => both must match
         if batch_ids:
-            batch_clause = ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(batch_ids))]
+            batch_clause = ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(batch_ids))] if is_campus_student else [('visibility_batch_ids', 'in', list(batch_ids))]
         else:
-            batch_clause = [('visibility_batch_ids', '=', False)]
+            batch_clause = [('visibility_batch_ids', '=', False)] if is_campus_student else [('id', '=', 0)]
 
         if course_ids:
-            course_clause = ['|', ('visibility_course_ids', '=', False), ('visibility_course_ids', 'in', list(course_ids))]
+            course_clause = ['|', ('visibility_course_ids', '=', False), ('visibility_course_ids', 'in', list(course_ids))] if is_campus_student else [('visibility_course_ids', 'in', list(course_ids))]
         else:
-            course_clause = [('visibility_course_ids', '=', False)]
+            course_clause = [('visibility_course_ids', '=', False)] if is_campus_student else [('id', '=', 0)]
 
         return expression.AND([batch_clause, course_clause])
 
