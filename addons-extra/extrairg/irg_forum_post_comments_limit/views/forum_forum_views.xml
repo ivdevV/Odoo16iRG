@@ -3,7 +3,7 @@
     <record id="forum_forum_view_form_inherit_notify_students_email" model="ir.ui.view">
         <field name="name">forum.forum.form.inherit.notify.students.email</field>
         <field name="model">forum.forum</field>
-        <field name="inherit_id" ref="website_forum.forum_forum_view_form"/>
+        <field name="inherit_id" ref="website_forum.view_forum_forum_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='allow_share']" position="after">
                 <field name="notify_students_email"/>
