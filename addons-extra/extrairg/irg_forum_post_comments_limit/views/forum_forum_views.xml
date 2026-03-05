@@ -5,7 +5,7 @@
         <field name="model">forum.forum</field>
         <field name="inherit_id" ref="website_forum.view_forum_forum_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='allow_share']" position="after">
+            <xpath expr="//field[@name='privacy']" position="after">
                 <field name="notify_students_email"/>
             </xpath>
         </field>
