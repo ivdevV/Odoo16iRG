@@ -2,6 +2,12 @@
 
 import ajax from 'web.ajax';
 
+const POPUP_POLL_INTERVAL_MS = 10000;
+const POPUP_INITIAL_DELAY_MS = 1200;
+
+let popupPollTimer = null;
+let isCheckingPopup = false;
+
 function getCourseIdFromPath() {
     const match = window.location.pathname.match(/\/campus\/course\/(\d+)/);
     return match ? parseInt(match[1], 10) : null;
@@ -27,6 +33,31 @@ async function markSeen(courseId, noticeId) {
         course_id: courseId,
         notice_id: noticeId,
     });
+}
+
+function shouldRunPopupCheck() {
+    const path = window.location.pathname || '';
+    return !path.startsWith('/web');
+}
+
+async function fetchNoticePayload() {
+    let result = await ajax.jsonRpc('/campus/forum_notice_popup', 'call', {});
+
+    const fallbackCourseId = getCourseIdFromPath() || getFirstCourseIdFromPage();
+    if ((!result || !result.notice) && fallbackCourseId) {
+        result = await ajax.jsonRpc(`/campus/course/${fallbackCourseId}/forum_notice_popup`, 'call', {});
+    }
+
+    const notice = result && result.notice;
+    if (!notice || !notice.id) {
+        return null;
+    }
+
+    const noticeCourseId = notice.course_id || fallbackCourseId;
+    return {
+        notice,
+        courseId: noticeCourseId,
+    };
 }
 
 function closePopup(wrapper, courseId, noticeId) {
@@ -77,11 +108,7 @@ function renderPopup(courseId, notice) {
 }
 
 async function initForumNoticePopup() {
-    const path = window.location.pathname || '';
-
-    // Run on all website pages (/shop, /campus, /forum, /slides, ...)
-    // but skip backend pages.
-    if (path.startsWith('/web')) {
+    if (!shouldRunPopupCheck()) {
         return;
     }
 
@@ -89,27 +116,53 @@ async function initForumNoticePopup() {
         return;
     }
 
+    if (isCheckingPopup) {
+        return;
+    }
+
+    isCheckingPopup = true;
+
     try {
-        let result = await ajax.jsonRpc('/campus/forum_notice_popup', 'call', {});
-
-        const fallbackCourseId = getCourseIdFromPath() || getFirstCourseIdFromPage();
-        if ((!result || !result.notice) && fallbackCourseId) {
-            result = await ajax.jsonRpc(`/campus/course/${fallbackCourseId}/forum_notice_popup`, 'call', {});
-        }
-
-        const notice = result && result.notice;
-        if (!notice || !notice.id) {
+        const payload = await fetchNoticePayload();
+        if (!payload) {
             return;
         }
-        const noticeCourseId = notice.course_id || fallbackCourseId;
-        renderPopup(noticeCourseId, notice);
+        renderPopup(payload.courseId, payload.notice);
     } catch (error) {
         console.warn('[irg_forum_notice_popup] Failed to load popup notice', error);
+    } finally {
+        isCheckingPopup = false;
     }
 }
 
+function startForumNoticePolling() {
+    if (!shouldRunPopupCheck() || popupPollTimer) {
+        return;
+    }
+
+    window.setTimeout(() => {
+        initForumNoticePopup();
+    }, POPUP_INITIAL_DELAY_MS);
+
+    popupPollTimer = window.setInterval(() => {
+        initForumNoticePopup();
+    }, POPUP_POLL_INTERVAL_MS);
+}
+
+function attachVisibilityRefresh() {
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            initForumNoticePopup();
+        }
+    });
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initForumNoticePopup);
+    document.addEventListener('DOMContentLoaded', () => {
+        startForumNoticePolling();
+        attachVisibilityRefresh();
+    });
 } else {
-    initForumNoticePopup();
+    startForumNoticePolling();
+    attachVisibilityRefresh();
 }
