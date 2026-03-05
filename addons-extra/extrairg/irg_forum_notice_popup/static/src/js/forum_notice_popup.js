@@ -2,7 +2,7 @@
 
 import ajax from 'web.ajax';
 
-const POPUP_POLL_INTERVAL_MS = 10000;
+const POPUP_POLL_INTERVAL_MS = 3000;
 const POPUP_INITIAL_DELAY_MS = 1200;
 
 let popupPollTimer = null;

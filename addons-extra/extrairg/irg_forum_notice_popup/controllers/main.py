@@ -56,7 +56,38 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
         ]))
 
     def _candidate_courses_for_user(self, user):
-        return user.sudo().forum_effective_course_ids
+        user = user.sudo()
+        course_ids = set(user.forum_effective_course_ids.ids)
+
+        student_model = request.env['op.student'].sudo()
+        student_course_model = request.env['op.student.course'].sudo()
+        admission_model = request.env['op.admission'].sudo()
+
+        students = student_model.search([
+            '|',
+            ('user_id', '=', user.id),
+            ('partner_id', '=', user.partner_id.id),
+        ])
+
+        if students:
+            sc_courses = student_course_model.search([
+                ('student_id', 'in', students.ids),
+                ('course_id', '!=', False),
+                ('state', '!=', 'finished'),
+            ]).mapped('course_id').ids
+            course_ids.update(sc_courses)
+
+        adm_courses = admission_model.search([
+            ('course_id', '!=', False),
+            '|',
+            ('partner_id', '=', user.partner_id.id),
+            ('student_id', 'in', students.ids or [0]),
+        ]).mapped('course_id').ids
+        course_ids.update(adm_courses)
+
+        if not course_ids:
+            return request.env['op.course']
+        return request.env['op.course'].sudo().browse(list(course_ids)).exists()
 
     def _find_notice_for_course(self, user, course):
         user_batch_ids = self._get_user_batch_ids_for_course(user, course)
@@ -68,7 +99,6 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
         post_model = request.env['forum.post']
         post_domain = [
             ('forum_id', 'in', forums.ids),
-            ('parent_id', '=', False),
         ]
         if 'state' in post_model._fields:
             post_domain.append(('state', '=', 'active'))
