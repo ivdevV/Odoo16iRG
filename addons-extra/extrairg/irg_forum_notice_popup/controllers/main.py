@@ -77,6 +77,9 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
             ]).mapped('course_id').ids
             course_ids.update(sc_courses)
 
+        if 'op_batch_ids' in user._fields and 'course_id' in request.env['op.batch']._fields:
+            course_ids.update(user.op_batch_ids.mapped('course_id').ids)
+
         adm_courses = admission_model.search([
             ('course_id', '!=', False),
             '|',

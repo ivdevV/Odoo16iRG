@@ -31,6 +31,7 @@ class ResUsers(models.Model):
         Admission = self.env['op.admission'].sudo()
         Student = self.env['op.student'].sudo()
         StudentCourse = self.env['op.student.course'].sudo()
+        Batch = self.env['op.batch'].sudo()
         for user in self:
             student_ids = Student.search([
                 '|',
@@ -64,5 +65,9 @@ class ResUsers(models.Model):
                 ('state', '!=', 'finished'),
             ]).mapped('course_id')
 
+            batch_course_ids = Batch.browse()
+            if 'course_id' in Batch._fields:
+                batch_course_ids = user.op_batch_ids.mapped('course_id')
+
             user.forum_effective_batch_ids = user.op_batch_ids | admission_batch_ids | student_course_batch_ids
-            user.forum_effective_course_ids = admission_course_ids | student_course_ids
+            user.forum_effective_course_ids = admission_course_ids | student_course_ids | batch_course_ids

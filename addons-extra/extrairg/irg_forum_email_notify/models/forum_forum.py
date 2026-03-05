@@ -68,7 +68,7 @@ class ForumForum(models.Model):
 
             if course_ids:
                 course_partners = self._partners_for_courses(
-                    course_ids, Student, SC, Adm,
+                    course_ids, Student, SC, Adm, Users,
                 )
 
             # Combine: AND when both are set, single set otherwise
@@ -134,7 +134,7 @@ class ForumForum(models.Model):
         )
 
     @staticmethod
-    def _partners_for_courses(course_ids, Student, SC, Adm):
+    def _partners_for_courses(course_ids, Student, SC, Adm, Users):
         """Collect partners linked to the given course IDs."""
         sc_students = SC.search([
             ('course_id', 'in', course_ids),
@@ -157,4 +157,8 @@ class ForumForum(models.Model):
             if domain:
                 adm_students = Student.search(domain)
 
-        return (sc_students | adm_students).mapped('partner_id')
+        direct_users = Users.browse()
+        if 'op_batch_ids' in Users._fields and 'course_id' in Users.env['op.batch']._fields:
+            direct_users = Users.search([('op_batch_ids.course_id', 'in', course_ids)])
+
+        return (sc_students | adm_students).mapped('partner_id') | direct_users.mapped('partner_id')
