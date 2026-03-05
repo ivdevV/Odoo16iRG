@@ -23,11 +23,13 @@ class ForumPost(models.Model):
     def _compute_can_answer(self):
         super()._compute_can_answer()
         for post in self:
-            if not post.allow_comments:
+            allow_comments = post.allow_comments and (not post.parent_id or post.parent_id.allow_comments)
+            if not allow_comments:
                 post.can_answer = False
 
     def _compute_can_comment(self):
         super()._compute_can_comment()
         for post in self:
-            if not post.allow_comments:
+            allow_comments = post.allow_comments and (not post.parent_id or post.parent_id.allow_comments)
+            if not allow_comments:
                 post.can_comment = False

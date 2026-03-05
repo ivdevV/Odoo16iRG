@@ -4,6 +4,9 @@
         <xpath expr="//a[contains(@data-bs-target, '.answer_collapse')]" position="attributes">
             <attribute name="t-if">question.allow_comments</attribute>
         </xpath>
+        <xpath expr="//a[@t-att-data-karma='question.karma_comment']" position="attributes">
+            <attribute name="t-if">question.allow_comments</attribute>
+        </xpath>
         <xpath expr="//div[@id='post_reply']" position="attributes">
             <attribute name="t-if">question.allow_comments and (not question.uid_has_answered or question.forum_id.mode == 'discussions')</attribute>
         </xpath>
