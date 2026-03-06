@@ -12,6 +12,7 @@ class CalendarEvent(models.Model):
 
     def _sync_to_openeducat(self):
         self.ensure_one()
+        strict_mode = self._is_strict_sync_enabled()
 
         if not self.google_event_id:
             return super()._sync_to_openeducat()
@@ -32,6 +33,8 @@ class CalendarEvent(models.Model):
         Course = self.env['op.course']
         course = self._resolve_course_for_sync(course_name)
         if not course:
+            if strict_mode:
+                return self._sync_skip(f"Curso no encontrado (match exacto): '{course_name}'")
             course = Course.create({
                 'name': course_name,
                 'code': self._get_unique_code('op.course', course_name, 16),
@@ -45,6 +48,8 @@ class CalendarEvent(models.Model):
         Subject = self.env['op.subject']
         subject = self._resolve_subject_for_sync(course, search_subject_name)
         if not subject:
+            if strict_mode:
+                return self._sync_skip(f"Asignatura no encontrada en el curso '{course.display_name}': '{search_subject_name}'")
             final_subject_name = bloque_name if bloque_name else subject_name
             subject = Subject.create({
                 'name': final_subject_name,
@@ -58,6 +63,10 @@ class CalendarEvent(models.Model):
 
         faculty = self._find_or_create_faculty_from_description()
         batch = self._find_or_create_batch(course)
+        if not batch:
+            if strict_mode:
+                return self._sync_skip(f"Lote no encontrado para el curso '{course.display_name}'")
+            return
 
         Session = self.env['op.session']
 

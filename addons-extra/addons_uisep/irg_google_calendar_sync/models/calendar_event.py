@@ -2,6 +2,7 @@ import re
 import logging
 import random
 import requests
+import unicodedata
 from datetime import datetime, timedelta, timezone
 from odoo import models, api, fields, _
 
@@ -251,8 +252,19 @@ class CalendarEvent(models.Model):
 
     def _normalize_sync_label(self, value):
         text = (value or '').strip().lower()
+        text = unicodedata.normalize('NFKD', text)
+        text = ''.join(char for char in text if not unicodedata.combining(char))
         text = re.sub(r'\s+', ' ', text)
         return text
+
+    def _is_strict_sync_enabled(self):
+        value = self.env['ir.config_parameter'].sudo().get_param('irg_google_calendar_sync.strict_matching', 'True')
+        return str(value).strip().lower() not in ('0', 'false', 'no')
+
+    def _sync_skip(self, reason):
+        _logger.warning("Google sync skipped event %s (%s): %s", self.name, self.google_event_id or 'no-google-id', reason)
+        if hasattr(self, 'message_post'):
+            self.message_post(body=f"Sincronización OpenEducat omitida: {reason}")
 
     def _tokenize_sync_label(self, value):
         normalized = self._normalize_sync_label(value)
@@ -276,16 +288,41 @@ class CalendarEvent(models.Model):
 
     def _resolve_course_for_sync(self, course_name):
         Course = self.env['op.course']
+        normalized_course = self._normalize_sync_label(course_name)
 
         if hasattr(self, 'course_ids') and self.course_ids:
-            selected = self.course_ids.filtered(lambda rec: self._normalize_sync_label(rec.name) == self._normalize_sync_label(course_name))
+            selected = self.course_ids.filtered(lambda rec: self._normalize_sync_label(rec.name) == normalized_course)
             if selected:
                 return selected[0]
+
+            selected_by_code = self.course_ids.filtered(lambda rec: self._normalize_sync_label(rec.code) == normalized_course)
+            if selected_by_code:
+                return selected_by_code[0]
+
+            # In strict mode avoid guessing from an unrelated selected course.
+            if self._is_strict_sync_enabled():
+                return False
             return self.course_ids[0]
+
+        exact_by_code = Course.search([('code', '=ilike', course_name)], limit=1)
+        if exact_by_code:
+            return exact_by_code
+
+        exact_candidates = Course.search([]).filtered(lambda rec: self._normalize_sync_label(rec.name) == normalized_course)
+        if len(exact_candidates) == 1:
+            return exact_candidates[0]
+        if len(exact_candidates) > 1:
+            # Ambiguous exact names are unsafe in strict mode.
+            if self._is_strict_sync_enabled():
+                return False
+            return exact_candidates[0]
+
+        if self._is_strict_sync_enabled():
+            return False
 
         candidates = Course.search([('name', '=ilike', course_name)])
         if len(candidates) == 1:
-            return candidates
+            return candidates[0]
         if len(candidates) > 1:
             return max(candidates, key=lambda rec: self._score_label_similarity(rec.name, course_name))
 
@@ -312,6 +349,15 @@ class CalendarEvent(models.Model):
             best_course_subject = max(course_subjects, key=lambda rec: self._score_label_similarity(rec.name, subject_name))
             if self._score_label_similarity(best_course_subject.name, subject_name) >= 0.55:
                 return best_course_subject
+
+        global_exact = Subject.search([]).filtered(lambda rec: self._normalize_sync_label(rec.name) == normalized_subject)
+        if len(global_exact) > 1 and self._is_strict_sync_enabled():
+            return False
+        if global_exact:
+            return global_exact[0]
+
+        if self._is_strict_sync_enabled():
+            return False
 
         global_exact = Subject.search([('name', '=ilike', subject_name)], limit=1)
         if global_exact:
@@ -345,11 +391,15 @@ class CalendarEvent(models.Model):
             _logger.warning(f"Event '{self.name}' (ID: {self.id}) skipped OpenEducat sync: Title format does not match '[Course]'")
             return
 
+        strict_mode = self._is_strict_sync_enabled()
+
         # Find or Create Course
         Course = self.env['op.course']
         course = self._resolve_course_for_sync(course_name)
 
         if not course:
+            if strict_mode:
+                return self._sync_skip(f"Curso no encontrado (match exacto): '{course_name}'")
             course_code = self._get_unique_code('op.course', course_name, 16)
             course = Course.create({
                 'name': course_name, 
@@ -369,6 +419,8 @@ class CalendarEvent(models.Model):
         subject = self._resolve_subject_for_sync(course, search_subject_name)
 
         if not subject:
+            if strict_mode:
+                return self._sync_skip(f"Asignatura no encontrada en el curso '{course.display_name}': '{search_subject_name}'")
             # Create new subject - use bloque_name if available, else subject_name
             final_subject_name = bloque_name if bloque_name else subject_name
             subject_code = self._get_unique_code('op.subject', final_subject_name, 256)
@@ -389,6 +441,10 @@ class CalendarEvent(models.Model):
         
         # Find or Create Batch
         batch = self._find_or_create_batch(course)
+        if not batch:
+            if strict_mode:
+                return self._sync_skip(f"Lote no encontrado para el curso '{course.display_name}'")
+            return
 
         # Create or Update Session
         Session = self.env['op.session']
@@ -633,6 +689,7 @@ class CalendarEvent(models.Model):
     def _find_or_create_batch(self, course):
         Batch = self.env['op.batch']
         event_date = self.start.date()
+        strict_mode = self._is_strict_sync_enabled()
         
         # 1. Try to parse "Grupo: XYZ" or "Lote: XYZ" from description
         batch_name_from_desc = None
@@ -662,6 +719,9 @@ class CalendarEvent(models.Model):
              ], limit=1)
              if batch:
                  return batch
+
+             if strict_mode:
+                 return False
 
              # If the same code/name exists in another course, never reuse it.
              global_batch = Batch.search([
@@ -703,6 +763,9 @@ class CalendarEvent(models.Model):
         
         if batches:
             return batches[0]
+
+        if strict_mode:
+            return False
             
         # Fallback: Create a batch for the current year
         year = event_date.year
