@@ -30,17 +30,7 @@ class CalendarEvent(models.Model):
             return
 
         Course = self.env['op.course']
-        course = False
-        if hasattr(self, 'course_ids') and self.course_ids:
-            course = self.course_ids[0]
-        if not course:
-            course = Course.search([('name', 'ilike', course_name)], limit=1)
-        if not course:
-            key_words = [word for word in course_name.split() if len(word) > 4]
-            for word in key_words[:3]:
-                course = Course.search([('name', 'ilike', word)], limit=1)
-                if course:
-                    break
+        course = self._resolve_course_for_sync(course_name)
         if not course:
             course = Course.create({
                 'name': course_name,
@@ -53,23 +43,7 @@ class CalendarEvent(models.Model):
         search_subject_name = bloque_name if bloque_name else subject_name
 
         Subject = self.env['op.subject']
-        subject = Subject.search([('name', '=', search_subject_name)], limit=1)
-        if not subject:
-            subject = Subject.search([('name', 'ilike', search_subject_name)], limit=1)
-        if not subject:
-            parts = re.split(r'[-,]', search_subject_name)
-            for part in parts:
-                part = part.strip()
-                if len(part) > 10:
-                    subject = Subject.search([('name', 'ilike', part)], limit=1)
-                    if subject:
-                        break
-        if not subject:
-            key_words = [word for word in search_subject_name.split() if len(word) > 5]
-            for word in key_words[:5]:
-                subject = Subject.search([('name', 'ilike', word)], limit=1)
-                if subject:
-                    break
+        subject = self._resolve_subject_for_sync(course, search_subject_name)
         if not subject:
             final_subject_name = bloque_name if bloque_name else subject_name
             subject = Subject.create({
