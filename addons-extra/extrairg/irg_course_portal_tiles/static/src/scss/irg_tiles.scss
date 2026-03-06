@@ -22,6 +22,6 @@
   /* used as fallback label replacement if element has no direct text change */
 }
 
-/* On the helpdesk page hide the colored marketing block and ensure our subtitle is white */
-.o_helpdesk_form .o_colored_level{ display: none !important; }
+/* On the helpdesk page keep the form visible and neutralize default colored background */
+.o_helpdesk_form .o_colored_level{ background: transparent !important; }
 .o_helpdesk_form h1, .o_helpdesk_form h2, .o_helpdesk_form p{ color: #fff !important; }

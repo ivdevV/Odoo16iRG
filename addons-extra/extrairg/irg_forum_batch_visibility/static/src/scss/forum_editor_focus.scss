@@ -1,0 +1,42 @@
+form[action*='/forum/'] {
+    .note-editor .note-editing-area,
+    .note-editor .note-editing-area .note-codable,
+    .note-editor .note-placeholder,
+    [contenteditable='true'] {
+        background-color: #ffffff !important;
+    }
+
+    .note-editor,
+    .note-editor.note-frame,
+    .note-editor.note-airframe {
+        background-color: #ffffff;
+        border-color: #d8dde6;
+    }
+
+    .note-editor .note-editable,
+    .note-editor .note-editable.panel-body,
+    .note-editor textarea,
+    textarea[name='content'],
+    textarea[name='description'],
+    textarea {
+        background-color: #fdfefe !important;
+    }
+
+    .note-editor .note-editable:focus,
+    textarea[name='content']:focus,
+    textarea[name='description']:focus,
+    textarea:focus {
+        background-color: #ffffff !important;
+    }
+}
+
+body {
+    &[class*='forum'],
+    &[data-path*='/forum/'] {
+        .note-editor,
+        .note-editor .note-editable,
+        [contenteditable='true'] {
+            background-color: #ffffff !important;
+        }
+    }
+}

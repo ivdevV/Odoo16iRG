@@ -35,13 +35,38 @@ class IrgTFMController(http.Controller):
                 'error': str(e),
             })
 
-    @http.route(['/help'], type='http', auth='public', website=True)
-    def help_page(self, **kwargs):
-        return request.render('irg_course_portal_tiles.helpdesk_page', {})
+    def _get_open_tickets_domain_for_current_user(self):
+        partner = request.env.user.partner_id
+        if not partner:
+            return [('id', '=', False)]
+        return [
+            ('partner_id', '=', partner.id),
+            ('stage_id.fold', '=', False),
+        ]
 
-    @http.route(['/helpdesk/atencion-al-cliente-1'], type='http', auth='public', website=True)
+    def _get_open_tickets_for_current_user(self, limit=10):
+        domain = self._get_open_tickets_domain_for_current_user()
+        return request.env['helpdesk.ticket'].search(domain, order='create_date desc', limit=limit)
+
+    @http.route(['/help'], type='http', auth='user', website=True)
+    def help_page(self, **kwargs):
+        domain = self._get_open_tickets_domain_for_current_user()
+        tickets = self._get_open_tickets_for_current_user(limit=10)
+        total_open_tickets = request.env['helpdesk.ticket'].search_count(domain)
+        return request.render('irg_course_portal_tiles.helpdesk_page', {
+            'open_tickets': tickets,
+            'has_more_open_tickets': total_open_tickets > len(tickets),
+        })
+
+    @http.route(['/helpdesk/atencion-al-cliente-1'], type='http', auth='user', website=True)
     def helpdesk_custom(self, **kwargs):
-        return request.render('irg_course_portal_tiles.helpdesk_page', {})
+        domain = self._get_open_tickets_domain_for_current_user()
+        tickets = self._get_open_tickets_for_current_user(limit=10)
+        total_open_tickets = request.env['helpdesk.ticket'].search_count(domain)
+        return request.render('irg_course_portal_tiles.helpdesk_page', {
+            'open_tickets': tickets,
+            'has_more_open_tickets': total_open_tickets > len(tickets),
+        })
 
     @http.route(['/help/chat'], type='json', auth='public', methods=['POST'])
     def help_chat(self, **kwargs):

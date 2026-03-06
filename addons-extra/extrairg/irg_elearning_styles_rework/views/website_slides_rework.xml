@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="course_nav_irg_rework" inherit_id="website_slides.course_nav" name="IRG eLearning - Course Nav Rework" priority="90">
+        <xpath expr="//ol[hasclass('breadcrumb')]" position="attributes">
+            <attribute name="class" add=" irg-elearning-breadcrumb-modern" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="course_sidebar_irg_rework" inherit_id="website_slides.course_sidebar" name="IRG eLearning - Sidebar Rework" priority="90">
+        <xpath expr="//div[hasclass('o_wslides_course_sidebar')]" position="attributes">
+            <attribute name="class" add=" irg-elearning-sidebar-modern" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="course_slides_list_irg_rework" inherit_id="website_slides.course_slides_list" name="IRG eLearning - Materials List Rework" priority="110">
+        <xpath expr="//div[hasclass('o_wslides_slides_list')]" position="attributes">
+            <attribute name="class" add=" irg-elearning-materials-modern" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="course_nav_isep_inherit_irg_rework" inherit_id="isep_website_custom.course_nav_inherit" name="IRG eLearning - Course Nav Rework (ISEP)" priority="110">
+        <xpath expr="//ol[hasclass('breadcrumb')]" position="attributes">
+            <attribute name="class" add=" irg-elearning-breadcrumb-modern" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="openeducat_course_detail_irg_rework" inherit_id="openeducat_lms.course_detail" name="IRG eLearning - OpenEduCat Course Detail Rework" priority="95">
+        <xpath expr="//div[@id='course_detail']" position="attributes">
+            <attribute name="class" add=" irg-lms-course-modern" separator=" "/>
+        </xpath>
+
+        <xpath expr="//section[@id='breadcrumbs']" position="attributes">
+            <attribute name="class" add=" irg-lms-breadcrumb-modern" separator=" "/>
+        </xpath>
+
+        <xpath expr="//section[hasclass('course_top_detail')]" position="attributes">
+            <attribute name="class" add=" irg-lms-hero-modern" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='course-details-tab-aria']" position="attributes">
+            <attribute name="class" add=" irg-lms-tabs-modern" separator=" "/>
+        </xpath>
+
+        <xpath expr="//div[@id='course-curriculum']" position="attributes">
+            <attribute name="class" add=" irg-lms-curriculum-modern" separator=" "/>
+        </xpath>
+    </template>
+
+</odoo>
