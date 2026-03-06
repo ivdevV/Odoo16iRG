@@ -446,20 +446,34 @@ class CalendarEvent(models.Model):
             })
             _logger.info(f"Created new Course: {course.name} ({course.code})")
 
-        # Parse "Bloque: ..." from description to use as subject name
+        # Parse "Bloque: ..." from description as optional fallback.
         bloque_name = self._parse_bloque_from_description()
-        search_subject_name = bloque_name if bloque_name else subject_name
+        subject_candidates = []
+        if subject_name:
+            subject_candidates.append(subject_name)
+        if bloque_name and self._normalize_sync_label(bloque_name) != self._normalize_sync_label(subject_name):
+            subject_candidates.append(bloque_name)
+        if not subject_candidates:
+            subject_candidates.append(bloque_name or subject_name)
         
         # Find or Create Subject (course-aware to avoid cross-master mismatches)
         Subject = self.env['op.subject']
-        _logger.info(f"Searching for subject using: {search_subject_name}")
-        subject = self._resolve_subject_for_sync(course, search_subject_name)
+        subject = False
+        search_subject_name = False
+        for candidate in subject_candidates:
+            search_subject_name = candidate
+            _logger.info(f"Searching for subject using: {search_subject_name}")
+            subject = self._resolve_subject_for_sync(course, search_subject_name)
+            if subject:
+                break
 
         if not subject:
             if strict_mode:
-                return self._sync_skip(f"Asignatura no encontrada en el curso '{course.display_name}': '{search_subject_name}'")
+                return self._sync_skip(
+                    f"Asignatura no encontrada en el curso '{course.display_name}'. Probadas: {subject_candidates}"
+                )
             # Create new subject - use bloque_name if available, else subject_name
-            final_subject_name = bloque_name if bloque_name else subject_name
+            final_subject_name = subject_name or bloque_name
             subject_code = self._get_unique_code('op.subject', final_subject_name, 256)
             subject = Subject.create({
                 'name': final_subject_name, 

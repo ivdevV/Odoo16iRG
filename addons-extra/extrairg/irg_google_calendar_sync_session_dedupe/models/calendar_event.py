@@ -43,14 +43,28 @@ class CalendarEvent(models.Model):
             })
 
         bloque_name = self._parse_bloque_from_description()
-        search_subject_name = bloque_name if bloque_name else subject_name
+        subject_candidates = []
+        if subject_name:
+            subject_candidates.append(subject_name)
+        if bloque_name and self._normalize_sync_label(bloque_name) != self._normalize_sync_label(subject_name):
+            subject_candidates.append(bloque_name)
+        if not subject_candidates:
+            subject_candidates.append(bloque_name or subject_name)
 
         Subject = self.env['op.subject']
-        subject = self._resolve_subject_for_sync(course, search_subject_name)
+        subject = False
+        search_subject_name = False
+        for candidate in subject_candidates:
+            search_subject_name = candidate
+            subject = self._resolve_subject_for_sync(course, search_subject_name)
+            if subject:
+                break
         if not subject:
             if strict_mode:
-                return self._sync_skip(f"Asignatura no encontrada en el curso '{course.display_name}': '{search_subject_name}'")
-            final_subject_name = bloque_name if bloque_name else subject_name
+                return self._sync_skip(
+                    f"Asignatura no encontrada en el curso '{course.display_name}'. Probadas: {subject_candidates}"
+                )
+            final_subject_name = subject_name or bloque_name
             subject = Subject.create({
                 'name': final_subject_name,
                 'code': self._get_unique_code('op.subject', final_subject_name, 256),
