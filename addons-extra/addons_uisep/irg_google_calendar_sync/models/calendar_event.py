@@ -290,6 +290,43 @@ class CalendarEvent(models.Model):
         Course = self.env['op.course']
         normalized_course = self._normalize_sync_label(course_name)
 
+        # Deterministic aliases for known calendar labels that may not match
+        # the exact record name in Odoo.
+        alias_by_code = {
+            'MPI': {
+                'master en psicologia clinica infantojuvenil',
+                'master en psicologia clinica infanto juvenil',
+                'psicologia clinica infantojuvenil',
+            },
+            'MNL': {
+                'master en neurologopedia',
+                'neurologopedia',
+            },
+            'MNC': {
+                'master en neuropsicologia clinica basado en la evidencia',
+                'master en neuropsicologia clinica basada en la evidencia',
+                'neuropsicologia clinica basado en la evidencia',
+                'neuropsicologia clinica basada en la evidencia',
+            },
+        }
+
+        mapped_code = False
+        for code, aliases in alias_by_code.items():
+            if normalized_course in aliases:
+                mapped_code = code
+                break
+
+        if not mapped_code:
+            for code, aliases in alias_by_code.items():
+                if any(alias in normalized_course for alias in aliases):
+                    mapped_code = code
+                    break
+
+        if mapped_code:
+            by_code = Course.search([('code', '=ilike', mapped_code)], limit=1)
+            if by_code:
+                return by_code
+
         if hasattr(self, 'course_ids') and self.course_ids:
             selected = self.course_ids.filtered(lambda rec: self._normalize_sync_label(rec.name) == normalized_course)
             if selected:
