@@ -5,7 +5,7 @@
         <record id="irg_quiz_form_view_inherit" model="ir.ui.view">
             <field name="name">op.quiz.form.inherit.irg_auto_scoring</field>
             <field name="model">op.quiz</field>
-            <field name="inherit_id" ref="openeducat_quiz.op_quiz_form"/>
+            <field name="inherit_id" ref="openeducat_quiz.view_op_quiz_form"/>
             <field name="arch" type="xml">
                 <!-- Buscar el nodo de botones y agregar nuestro botón -->
                 <xpath expr="//button[@name='action_open']" position="before">
