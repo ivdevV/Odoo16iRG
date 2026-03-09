@@ -1,25 +1,22 @@
 # iRG Quiz Auto-Scoring
 
 ## Descripción
-Módulo de extensión para Odoo 16 que automatiza el cálculo y asignación de puntajes en cuestionarios.
+Módulo de extensión para Odoo 16 que automatiza el cálculo y asignación de puntajes en surveys/cuestionarios de tipo Quiz o Examen.
 
 ## Funcionalidades
 
 ### 1. Distribución automática de puntajes
-Cuando un cuestionario se crea sin puntajes en sus preguntas, este módulo puede distribuir automáticamente 100 puntos de forma equitativa entre todas las preguntas.
+Cuando un survey de tipo Quiz/Examen se crea sin puntajes en sus preguntas, este módulo puede distribuir automáticamente 100 puntos de forma equitativa entre todas las preguntas.
 
 **Ejemplo:**
-- Cuestionario con 5 preguntas sin puntaje
+- Survey con 5 preguntas sin puntaje
 - Cada pregunta recibe automáticamente: 100 / 5 = **20 puntos**
 
-### 2. Recálculo de resultados de estudiantes
-Una vez distribuidos los puntajes, el módulo procesa todos los intentos (resultados) anteriores:
-- Si la respuesta fue **correcta**: asigna el puntaje completo de la pregunta
-- Si la respuesta fue **incorrecta**: asigna 0 puntos
-- Recalcula el total y porcentaje de cada intento
-
-### 3. Sincronización con boletín de calificaciones
-Si el módulo `openeducat_grading` está instalado, los puntajes se sincronizan automáticamente con el boletín de calificaciones de los estudiantes.
+### 2. Auditoría de cambios
+Todos los cambios realizados se registran en el chatter del survey para auditoría completa:
+- Fecha y hora de la acción
+- Usuario que ejecutó la acción
+- Número de preguntas configuradas
 
 ---
 
@@ -59,55 +56,44 @@ Cuestionario: "Examen de Matemáticas"
 
 ---
 
-## Modelos heredados
+## Modelo heredado
 
-### `op.quiz` (Cuestionario)
+### `survey.survey` (Survey/Cuestionario)
 - **Nuevo método:** `action_auto_score_quiz()`
-  - Distribuye puntajes
-  - Procesa resultados
-  - Sincroniza con gradebook
+  - Distribuye puntajes equitativamente entre preguntas
+  - Registra la acción en auditoría
+  - Compatible únicamente con surveys de tipo: `quiz`, `exam`, `cert`
   
 - **Métodos auxiliares:**
-  - `_process_quiz_result(result)`: Recalcula un intento específico
-  - `_sync_with_gradebook()`: Sincroniza con boletín
-  - `_is_grading_module_installed()`: Verifica disponibilidad de módulo
-  - `_log_auto_score_action(notes)`: Registra acciones en auditoría
-
-### `op.quiz.result` (Intento/Resultado)
-- **Nuevo método:** `recalculate_score()`
-  - Recalcula puntaje de un intento individual
+  - `_log_auto_score_action(notes)`: Registra acciones en auditoría (chatter)
 
 ---
 
 ## Seguridad y Permisos
 
-El módulo utiliza los permisos estándar de `openeducat_quiz`:
-- **Lectura**: Todos los usuarios con acceso a cuestionarios
-- **Escritura**: Solo gerentes y docentes
+El módulo utiliza los permisos estándar de `survey.survey`:
+- **Lectura**: Todos los usuarios con acceso a surveys
+- **Escritura**: Solo gerentes ERP
 - **Acción**: Solo gerentes ERP pueden ejecutar auto-scoring
 
 ---
 
 ## Casos de uso
 
-### Caso 1: Nueva plantilla de examen
-Un profesor crea un template de 20 preguntas sin puntajes. Al clic de un botón, recibe 5 puntos cada una (100/20).
+### Caso 1: Nueva encuesta/quiz de examen
+Un instructor crea un survey de tipo "Quiz" con 20 preguntas sin puntajes. Al clic de un botón, recibe 5 puntos cada una (100/20).
 
-### Caso 2: Corrección de exámenes previos
-Si los puntajes se asignan después de que estudiantes ya intentaron el cuestionario, el módulo re-evalúa todos los intentos automáticamente.
-
-### Caso 3: Integración con boletín
-Los puntajes actualizados se reflejan automáticamente en el boletín de calificaciones de cada estudiante.
+### Caso 2: Correcciones uniformes
+Si los puntajes se necesitan asignar de forma uniforme, el módulo distribuye 100 puntos proporcionalmente.
 
 ---
 
 ## Limitaciones y consideraciones
 
-- ✓ Solo afecta preguntas **SIN puntaje** (mark = 0 o NULL)
-- ✓ Requiere que el cuestionario esté en estado "Draft" o "In-Progress"
-- ✓ Si el cuestionario ya tiene puntajes en alguna pregunta, rechaza la acción
-- ✓ No afecta cuestionarios en estado "Done" o "Cancel"
-- ✓ La sincronización con gradebook es opcional (depende de openeducat_grading)
+- ✓ Solo afecta surveys de tipo `quiz`, `exam` o `cert`
+- ✓ Solo modifica preguntas **SIN puntaje** (points = 0 o NULL)
+- ✓ Si el survey ya tiene todos los puntajes asignados, rechaza la acción
+- ✓ No afecta encuestas de otros tipos (feedback, assessment, etc.)
 
 ---
 
@@ -132,19 +118,17 @@ Cada ejecución de auto-scoring registra:
 - Fecha y hora
 - Usuario que ejecutó la acción
 - Número de preguntas configuradas
-- Número de intentos procesados
 - Puntaje asignado por pregunta
 
 Los logs se almacenan en:
-- **Chatter del cuestionario** (Odoo UI)
+- **Chatter del survey** (Odoo UI)
 - **Logs de aplicación** (odoo.log)
 
 ---
 
 ## Dependencias
 
-- `openeducat_quiz` (requerido)
-- `openeducat_grading` (opcional, para sincronización de boletín)
+- `survey` (requerido, módulo estándar de Odoo)
 
 ---
 

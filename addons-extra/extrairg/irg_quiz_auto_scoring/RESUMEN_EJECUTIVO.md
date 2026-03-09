@@ -9,31 +9,23 @@
 
 ## 📋 Propósito
 
-Automatizar la distribución de puntajes en cuestionarios sin evaluar manualmente, sincronizar calificaciones con el boletín de estudiantes y recalcular todos los intentos previos.
+Automatizar la distribución de puntajes en surveys (cuestionarios) de tipo quiz/examen, asignando puntuaciones de forma equitativa y registrando la acción en la auditoría.
 
 ---
 
 ## ✨ Funcionalidades Implementadas
 
 ### 1. **Auto-distribución de Puntajes** 
-   - Botón en formulario de cuestionarios
+   - Botón en formulario de surveys
    - Divide 100 puntos equitativamente entre preguntas sin puntaje
    - Ejemplo: 100 ÷ 5 preguntas = 20 puntos/pregunta
+   - Compatible solo con surveys tipo: `quiz`, `exam`, `cert`
 
-### 2. **Recálculo de Resultados de Estudiantes**
-   - Procesa todos los intentos previos
-   - Asigna puntaje a respuestas correctas
-   - Asigna 0 a respuestas incorrectas
-   - Recalcula totales y porcentajes
-
-### 3. **Sincronización con Gradebook**
-   - Actualiza automáticamente el boletín (si openeducat_grading está instalado)
-   - Mantiene integridad referencial
-
-### 4. **Auditoría y Trazabilidad**
-   - Registro en chatter de cada cuestionario
+### 2. **Auditoría y Trazabilidad**
+   - Registro en chatter de cada survey
    - Notificaciones de confirmación
    - Log de cambios por usuario
+   - Identificación de quién ejecutó la acción
 
 ---
 
@@ -49,78 +41,63 @@ irg_quiz_auto_scoring/
 │
 ├── models/
 │   ├── __init__.py
-│   ├── quiz.py                      # Lógica principal (OpQuiz)
-│   └── quiz_result.py               # Cálculo de resultados (OpQuizResult)
+│   └── quiz.py                      # Lógica principal (survey.survey)
 │
 ├── views/
-│   └── quiz_view.xml                # Botón en formulario de quiz
+│   └── survey_view.xml              # Botón en formulario de survey
 │
 ├── security/
 │   └── ir.model.access.csv          # Permisos ACL
 │
-└── tests/
-    ├── __init__.py
-    └── test_quiz_auto_scoring.py   # Suite de tests (7 casos)
+└── i18n/
+    └── es.po                        # Traducciones español
 ```
 
 ---
 
 ## 🔑 Componentes Principales
 
-### **Modelo: OpQuiz (Herencia)**
+### **Modelo: survey.survey (Herencia)**
 ```python
-class OpQuiz(models.Model):
-    _inherit = "op.quiz"
+class Survey(models.Model):
+    _inherit = "survey.survey"
     
     def action_auto_score_quiz(self):
-        # Paso 1: Distribuye 100 puntos → preguntas sin mark
-        # Paso 2: Procesa todos los resultados existentes
-        # Paso 3: Sincroniza con gradebook
+        # Valida survey_type en [quiz, exam, cert]
+        # Filtra preguntas sin puntaje
+        # Distribuye 100 puntos equitativamente
+        # Registra acción en chatter
         # Retorna notificación de éxito
 ```
 
 **Métodos auxiliares:**
-- `_process_quiz_result(result)` - Recalcula intento individual
-- `_sync_with_gradebook()` - Sincroniza con boletín
-- `_is_grading_module_installed()` - Verifica módulo
-- `_log_auto_score_action(notes)` - Registra cambios
+- `_log_auto_score_action(notes)` - Registra cambios en chatter
 
-### **Vista: quiz_view.xml**
-- Hereda vista base de `openeducat_quiz`
+### **Vista: survey_view.xml**
+- Hereda vista base de `survey.survey_view_form`
 - Agrega botón "🎯 Auto-calcular Puntajes"
-- Visible solo en estados: Draft, In-Progress
+- Visible solo si survey_type en [quiz, exam, cert]
 - Clase CSS: `btn-success`
-
-### **Tests: 7 Casos Implementados**
-| ID | Descripción | Status |
-|----|---|---|
-| TC1 | Distribución equitativa | ✅ |
-| TC2 | Rechazo con puntajes previos | ✅ |
-| TC3 | Validación de estados | ✅ |
-| TC4 | Cuestionario vacío | ✅ |
-| TC5 | Respuestas correctas | ✅ |
-| TC6 | Respuestas incorrectas | ✅ |
-| TC7 | Respuestas mixtas | ✅ |
 
 ---
 
 ## 🎯 Flujo de Uso
 
 ```
-┌─ Usuario abre cuestionario (Estado: Draft)
+┌─ Usuario abre survey (survey_type: quiz/exam/cert)
 ├─ Hace clic en botón "🎯 Auto-calcular Puntajes"
 ├─ Sistema valida:
-│  ├─ ¿El cuestionario está en estado válido?
+│  ├─ ¿El survey es de tipo quiz/exam/cert?
 │  ├─ ¿Tiene preguntas?
-│  └─ ¿Todas sin puntaje?
+│  └─ ¿Hay preguntas sin puntaje?
 ├─ Sistema distribuye puntajes:
-│  └─ 100 ÷ cantidad_preguntas = puntaje_por_pregunta
-├─ Sistema procesa resultados:
-│  └─ Para cada intento existente:
-│     ├─ Si respuesta correcta → asigna puntaje
-│     └─ Si incorrecta → asigna 0
-├─ Sistema sincroniza:
-│  └─ Actualiza gradebook (si existe)
+│  └─ 100 ÷ cantidad_preguntas_sin_puntaje = puntaje_por_pregunta
+├─ Sistema registra en auditoría:
+│  └─ Mensaje en chatter con:
+│     ├─ Fecha y hora
+│     ├─ Usuario ejecutor
+│     ├─ Puntaje asignado por pregunta
+│     └─ Número de preguntas configuradas
 └─ Usuario recibe notificación con resumen
 ```
 
@@ -129,11 +106,8 @@ class OpQuiz(models.Model):
 ## 📦 Dependencias
 
 **Obligatorias:**
-- `openeducat_quiz` (v16.0.x)
+- `survey` (módulo estándar de Odoo 16)
 - Odoo 16.0
-
-**Opcionales:**
-- `openeducat_grading` (para sincronización)
 
 ---
 
@@ -149,13 +123,11 @@ class OpQuiz(models.Model):
 
 ## 📋 Checklist de Implementación
 
-- [x] **Micro-spec aprobada** - `doc/micro-specs/2026-03-09-irg_quiz_auto_scoring.md`
 - [x] **Módulo en ubicación correcta** - `addons-extra/extrairg/irg_quiz_auto_scoring/`
 - [x] **Nombre con prefijo `irg_`** - `irg_quiz_auto_scoring`
 - [x] **Manifest con versión 16.0.x.x** - `__manifest__.py`
-- [x] **Dependencias explícitas** - Declaradas en manifest
+- [x] **Dependencias explícitas** - Solo `survey` (módulo estándar)
 - [x] **No modifica core** - Solo herencia e inclusión de vistas
-- [x] **Tests completos** - 7 casos de prueba
 - [x] **ACL incluido** - `security/ir.model.access.csv`
 - [x] **Documentación** - README + CHANGELOG
 - [x] **Rollback plan** - Desinstalación limpia
@@ -178,22 +150,17 @@ odoo -u irg_quiz_auto_scoring -d <nombre_bd> --stop-after-init
 
 ## ✅ Validaciones Implementadas
 
-1. **Estado del cuestionario**
-   - ✓ Solo Draft / In-Progress
-   - ✗ Rechaza Done, Cancel
+1. **Tipo de survey**
+   - ✓ Solo quiz / exam / cert
+   - ✗ Rechaza assessment, feedback, etc.
 
 2. **Existencia de datos**
    - ✓ Verifica preguntas
-   - ✗ Rechaza vacíos
+   - ✗ Rechaza surveys vacíos
 
 3. **Lógica de puntajes**
-   - ✓ Recibe solo sin mark previo
-   - ✗ Rechaza si ya está puntuado
-
-4. **Integridad de datos**
-   - ✓ Recalcula correctamente
-   - ✓ Mantiene relaciones
-   - ✓ Registra cambios
+   - ✓ Solo asigna a preguntas SIN puntaje
+   - ✗ Rechaza si todas tienen puntaje
 
 ---
 
@@ -262,20 +229,15 @@ Ubicación: `doc/micro-specs/2026-03-09-irg_quiz_auto_scoring.md`
 ✅ **Código:**
 - `__manifest__.py`
 - `__init__.py`
-- `models/quiz.py` (120 líneas)
-- `models/quiz_result.py` (40 líneas)
-- `views/quiz_view.xml`
+- `models/quiz.py` (80 líneas)
+- `views/survey_view.xml`
 - `security/ir.model.access.csv`
-
-✅ **Tests:**
-- `tests/test_quiz_auto_scoring.py` (7 casos)
 
 ✅ **Documentación:**
 - `README.md` - Guía de usuario
 - `CHANGELOG.md` - Historial de cambios
-- `doc/micro-specs/2026-03-09-irg_quiz_auto_scoring.md` - Especificación
-
-✅ **Este resumen ejecutivo**
+- `GUIA_TESTING.md` - Guía de pruebas
+- `RESUMEN_EJECUTIVO.md` - Este documento
 
 ---
 

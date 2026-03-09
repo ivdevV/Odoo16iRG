@@ -4,7 +4,7 @@
 
 ✅ Módulo `irg_quiz_auto_scoring` instalado  
 ✅ Acceso como usuario con permisos de ERP Manager  
-✅ Módulo `openeducat_quiz` completamente instalado  
+✅ Módulo `survey` completamente instalado (estándar en Odoo 16)  
 ✅ Navegador con soporte para elementos interactivos
 
 ---
@@ -317,28 +317,6 @@ Verificar que los intentos se recalculan y se sincronizan con el boletín.
    Pregunta 3: 20.00 puntos (correcto)
    Pregunta 4: 0 puntos (incorrecto)
    Pregunta 5: 20.00 puntos (correcto)
-   
-   TOTAL: 60.00 puntos (60%)
-   ```
-
----
-
-## 🎯 PRUEBA 5: Verificar Sincronización con Gradebook (Si Installed)
-
-### Requisitos
-- Módulo `openeducat_grading` debe estar instalado
-
-### Pasos
-
-1. **Ejecutar auto-scoring** (prueba anterior)
-2. **Ir a Educación > Calificación > Boletín de Calificaciones** (Gradebook)
-3. **Buscar el estudiante** del intento anterior
-4. **Verificar que la calificación se actualizó** con el nuevo puntaje
-
-**Resultado esperado:**
-- Campo de Calificación = 60.00 (coincide con el intento)
-- Fecha de actualización = hoy
-
 ---
 
 ## ⚠️ CHECKLIST DE VERIFICACIÓN FINAL
@@ -346,8 +324,8 @@ Verificar que los intentos se recalculan y se sincronizan con el boletín.
 Cuando termines todas las pruebas, verifica estos puntos:
 
 ### ✅ Prueba 1 - Auto-Scoring Básico
-- [ ] Botón visible en estado Draft
-- [ ] Tooltip muestra 6 pasos explicando la acción
+- [ ] Botón visible en survey de tipo quiz/exam/cert
+- [ ] Tooltip muestra la descripción de acción
 - [ ] Click en botón crea notificación verde
 - [ ] Puntajes se asignan correctamente (100/5 = 20)
 - [ ] Chatter registra la acción
@@ -356,19 +334,9 @@ Cuando termines todas las pruebas, verifica estos puntos:
 - [ ] Notificación de error al intentar auto-calcular
 - [ ] Los puntajes NO cambian
 
-### ✅ Prueba 3 - Validación de Estado
-- [ ] Botón gris en estado Done/Cancel
-- [ ] Error al intentar ejecutar en estado inválido
-
-### ✅ Prueba 4 - Intentos de Estudiantes (Opcional)
-- [ ] Intentos se recalculan correctamente
-- [ ] Respuestas correctas = puntaje completo
-- [ ] Respuestas incorrectas = 0 puntos
-- [ ] Total se calcula correctamente
-
-### ✅ Prueba 5 - Sincronización Gradebook (Opcional)
-- [ ] Si openeducat_grading está instalado
-- [ ] Boletín se actualiza con nuevas calificaciones
+### ✅ Prueba 3 - Validación de Tipo Survey
+- [ ] Botón gris en surveys de tipo assessment/feedback
+- [ ] Error al intentar ejecutar en tipo inválido
 
 ---
 
@@ -448,14 +416,14 @@ odoo -u irg_quiz_auto_scoring -d <db> --stop-after-init
 2. El cuestionario ya está en estado "Done"
 
 **Solución:**
-- Cambiar estado a "Draft" manualmente
+- Cambiar survey_type a quiz/exam/cert
 
 ### Problema: Error al hacer clic
 
 **Causas posibles:**
 1. Las preguntas ya tienen puntajes
-2. No hay preguntas en el cuestionario
-3. Openeducat_quiz no está completamente instalado
+2. No hay preguntas en el survey
+3. El módulo survey no está disponible
 
 **Solución:**
 - Verificar los logs de Odoo: `tail -f /var/log/odoo/odoo.log`

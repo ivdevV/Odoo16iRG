@@ -5,37 +5,23 @@
 ### ✨ Nuevas Funcionalidades
 
 #### 1. Auto-distribución de puntajes
-- **Acción principal:** `OpQuiz.action_auto_score_quiz()`
+- **Acción principal:** `Survey.action_auto_score_quiz()`
 - Distribuye automáticamente 100 puntos entre preguntas sin puntaje
-- Solo actúa en cuestionarios en estado "Draft" o "In-Progress"
-- Valida que todas las preguntas estén sin puntaje (previene sobre-scoring)
+- Solo actúa en surveys de tipo `quiz`, `exam`, `cert`
+- Valida que haya preguntas sin puntaje (previene acciones innecesarias)
 
-#### 2. Recálculo automático de resultados de estudiantes
-- Procesa todos los intentos (resultados) existentes de un cuestionario
-- Para cada respuesta:
-  - **Correcta:** Asigna el puntaje completo de la pregunta
-  - **Incorrecta:** Asigna 0 puntos
-- Recalcula automáticamente:
-  - Puntaje total del intento
-  - Porcentaje obtenido
-
-#### 3. Sincronización con boletín de calificaciones
-- Integración automática con `openeducat_grading` (si está instalado)
-- Actualiza líneas de gradebook con nuevos puntajes
-- Preserva integridad referencial
-
-#### 4. Interfaz de Usuario
-- Botón "🎯 Auto-calcular Puntajes" en formulario de cuestionarios
-- Visible solo en estados "Draft" e "In-Progress"
+#### 2. Interfaz de Usuario
+- Botón "🎯 Auto-calcular Puntajes" en formulario de surveys
+- Visible solo si survey_type es quiz/exam/cert
 - Notificación clara con resumen de cambios realizados
 
-#### 5. Auditoría y Logs
-- Registro en chatter de cada cuestionario
+#### 3. Auditoría y Logs
+- Registro en chatter de cada survey
 - Información capturada:
   - Fecha y hora de ejecución
   - Usuario que ejecutó
   - Puntaje asignado por pregunta
-  - Número de intentos procesados
+  - Número de preguntas configuradas
 
 ---
 
@@ -48,15 +34,13 @@ irg_quiz_auto_scoring/
 ├── README.md
 ├── models/
 │   ├── __init__.py
-│   ├── quiz.py              # Herencia OpQuiz + acción principal
-│   └── quiz_result.py       # Herencia OpQuizResult + recálculo
+│   └── quiz.py              # Herencia survey.survey + acción principal
 ├── views/
-│   └── quiz_view.xml        # Vista heredada con botón
+│   └── survey_view.xml      # Vista heredada con botón
 ├── security/
 │   └── ir.model.access.csv
-└── tests/
-    ├── __init__.py
-    └── test_quiz_auto_scoring.py
+└── i18n/
+    └── es.po                # Traducciones español
 ```
 
 ---
@@ -64,43 +48,31 @@ irg_quiz_auto_scoring/
 ### 🔧 Detalles Técnicos
 
 #### Modelos Heredados
-- **`op.quiz`** (openeducat_quiz)
+- **`survey.survey`** (módulo estándar)
   - Nuevo método: `action_auto_score_quiz()`
-  - Métodos auxiliares para procesamiento y sincronización
+  - Métodos auxiliares para logging
   
-- **`op.quiz.result`** (openeducat_quiz)
-  - Nuevo método: `recalculate_score()`
-  - Nuevo campo: `obtain_mark` (puntaje obtenido)
-
 #### Vistas
-- **`quiz_view.xml`**: Herencia de vista de formulario
-  - Botón con estado condicional
+- **`survey_view.xml`**: Herencia de vista de formulario
+  - Botón con estado condicional basado en `survey_type`
   - Acción `action_auto_score_quiz`
   - Clase Bootstrap: `btn-success`
 
 #### Seguridad
 - ACL mínimo: permisos de ERP Manager
-- No requiere modelos nuevos con ACL compleja
+- Modelo: `survey.model_survey_survey`
 
 ---
 
 ### ✅ Validaciones Implementadas
 
-1. **Estado del cuestionario**
-   - Solo "Draft" o "In-Progress"
-   - Rechaza "Done", "Cancel"
+1. **Tipo de survey**
+   - Solo `quiz`, `exam`, `cert`
+   - Rechaza `assessment`, `feedback`
 
 2. **Existencia de preguntas**
    - Valida que haya al menos una pregunta
    - Ignora líneas con `display_type` (separadores)
-
-3. **Puntajes previos**
-   - Rechaza si alguna pregunta ya tiene puntaje > 0
-   - Previene sobre-escritura accidental
-
-4. **Disponibilidad de módulos**
-   - Detección automática de `openeducat_grading`
-   - Sincronización opcional (no falla sin él)
 
 ---
 
@@ -123,10 +95,7 @@ Tests implementados en `test_quiz_auto_scoring.py`:
 ### 📋 Dependencias
 
 **Requeridos:**
-- `openeducat_quiz` (v16.0.x)
-
-**Opcionales:**
-- `openeducat_grading` (para sincronización de boletín)
+- `survey` (módulo estándar de Odoo 16)
 
 ---
 
@@ -146,8 +115,8 @@ odoo -u irg_quiz_auto_scoring -d <db> --stop-after-init
 
 ### 🔄 Backwards Compatibility
 
-- ✅ No modifica modelos base de openeducat_quiz
-- ✅ No afecta cuestionarios existentes (es opt-in)
+- ✅ No modifica modelos base de survey
+- ✅ No afecta surveys existentes (es opt-in)
 - ✅ Reversible mediante desinstalación del módulo
 - ✅ No requiere migración de datos
 
@@ -155,10 +124,9 @@ odoo -u irg_quiz_auto_scoring -d <db> --stop-after-init
 
 ### 📝 Notas Importantes
 
-1. **Primer uso:** El botón solo actúa en estado "Draft"
-2. **Datos históricos:** No afecta intentos ya enviados antes de la ejecución
-3. **Sincronización:** Solo funciona si `openeducat_grading` está instalado
-4. **Auditoría:** Todos los cambios quedan registrados en el chatter
+1. **Primer uso:** El botón solo actúa en surveys de tipo quiz/exam/cert
+2. **Auditoría:** Todos los cambios quedan registrados en el chatter
+3. **Distribución:** Se asigna 100 puntos entre preguntas sin puntaje actual
 
 ---
 
