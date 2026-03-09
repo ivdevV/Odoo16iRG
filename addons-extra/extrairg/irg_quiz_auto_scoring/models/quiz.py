@@ -71,11 +71,25 @@ class Survey(models.Model):
             correct_answers.write({'answer_score': score_per_question})
         
         # Recalcular intentos existentes
-        user_inputs = self.env['survey.user_input'].search([('survey_id', '=', self.id)])
+        user_inputs = self.env['survey.user_input'].search([
+            ('survey_id', '=', self.id)
+        ])
+        
         for user_input in user_inputs:
-            # Recalcular el total de puntos del intento
+            # Recalcular cada línea de respuesta basándose en la opción seleccionada
+            for line in user_input.user_input_line_ids:
+                if line.answer_match_id:
+                    # Obtener el nuevo puntaje asignado a esa opción
+                    new_score = line.answer_match_id.answer_score or 0.0
+                    # Actualizar directamente el campo answer_score
+                    # Usar flush para asegurar que se persista inmediatamente
+                    line.answer_score = new_score
+                    line.flush()
+            
+            # Recalcular el total: suma de todos los answer_scores de las líneas
             total_score = sum(user_input.user_input_line_ids.mapped('answer_score'))
-            user_input.write({'answer_score_total': total_score})
+            user_input.answer_score_total = total_score
+            user_input.flush()
         
         # Registrar la acción
         self._log_auto_score_action(

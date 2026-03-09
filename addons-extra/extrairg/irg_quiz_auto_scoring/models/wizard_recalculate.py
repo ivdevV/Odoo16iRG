@@ -34,14 +34,26 @@ class SurveyAutoScoreWizard(models.TransientModel):
             ('survey_id', '=', survey.id)
         ])
         
+        recalculated_count = 0
         for user_input in user_inputs:
+            # Para cada línea de respuesta en el intento
+            for line in user_input.user_input_line_ids:
+                if line.answer_match_id:
+                    # Obtener el nuevo puntaje de esa opción
+                    new_score = line.answer_match_id.answer_score or 0.0
+                    # Actualizar el puntaje de la línea
+                    line.answer_score = new_score
+                    line.flush()
+            
             # Recalcular el total de puntos del intento
             total_score = sum(user_input.user_input_line_ids.mapped('answer_score'))
-            user_input.write({'answer_score_total': total_score})
+            user_input.answer_score_total = total_score
+            user_input.flush()
+            recalculated_count += 1
         
         # Registrar la acción
         survey._log_auto_score_action(
-            f"Recálculo de {len(user_inputs)} intentos existentes sin redistribuir puntajes."
+            f"Recálculo de {recalculated_count} intentos existentes sin redistribuir puntajes."
         )
         
         # Mensaje de confirmación
@@ -51,8 +63,8 @@ class SurveyAutoScoreWizard(models.TransientModel):
             'params': {
                 'title': _('Recálculo completado'),
                 'message': _(
-                    f"✓ Se recalcularon exitosamente {len(user_inputs)} intentos.\n"
-                    "Las calificaciones han sido actualizadas."
+                    f"✓ Se recalcularon exitosamente {recalculated_count} intentos.\n"
+                    "Las calificaciones han sido actualizadas con los nuevos puntajes."
                 ),
                 'type': 'success',
                 'sticky': True,
