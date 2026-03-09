@@ -38,9 +38,9 @@ class SurveyAutoScoreWizard(models.TransientModel):
         for user_input in user_inputs:
             # Para cada línea de respuesta en el intento
             for line in user_input.user_input_line_ids:
-                if line.answer_match_id:
+                if line.answer_id:
                     # Obtener el nuevo puntaje de esa opción
-                    new_score = line.answer_match_id.answer_score or 0.0
+                    new_score = line.answer_id.answer_score or 0.0
                     # Actualizar el puntaje de la línea
                     line.answer_score = new_score
                     line.flush()

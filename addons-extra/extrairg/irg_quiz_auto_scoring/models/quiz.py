@@ -78,9 +78,9 @@ class Survey(models.Model):
         for user_input in user_inputs:
             # Recalcular cada línea de respuesta basándose en la opción seleccionada
             for line in user_input.user_input_line_ids:
-                if line.answer_match_id:
+                if line.answer_id:
                     # Obtener el nuevo puntaje asignado a esa opción
-                    new_score = line.answer_match_id.answer_score or 0.0
+                    new_score = line.answer_id.answer_score or 0.0
                     # Actualizar directamente el campo answer_score
                     # Usar flush para asegurar que se persista inmediatamente
                     line.answer_score = new_score
