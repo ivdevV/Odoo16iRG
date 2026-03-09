@@ -37,7 +37,7 @@ class Survey(models.Model):
         
         # Distribuir puntajes entre preguntas sin puntaje
         questions_without_mark = questions.filtered(
-            lambda q: not q.points or q.points == 0
+            lambda q: not q.answer_score or q.answer_score == 0
         )
         
         if not questions_without_mark:
@@ -51,7 +51,7 @@ class Survey(models.Model):
         
         # Asignar puntaje a cada pregunta sin puntaje
         for question in questions_without_mark:
-            question.write({'points': score_per_question})
+            question.write({'answer_score': score_per_question})
         
         # Registrar la acción
         self._log_auto_score_action(
@@ -61,7 +61,7 @@ class Survey(models.Model):
         )
         
         # Mensaje de confirmación
-        total_marks = sum(q.points or 0 for q in questions)
+        total_marks = sum(q.answer_score or 0 for q in questions)
         message = _(
             "✓ Auto-scoring completado exitosamente.\n"
             f"- {len(questions_without_mark)} preguntas fueron configuradas\n"
