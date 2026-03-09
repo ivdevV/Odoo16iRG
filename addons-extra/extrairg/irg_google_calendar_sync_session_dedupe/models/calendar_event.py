@@ -12,6 +12,7 @@ class CalendarEvent(models.Model):
 
     def _sync_to_openeducat(self):
         self.ensure_one()
+        strict_mode = self._is_strict_sync_enabled()
 
         if not self.google_event_id:
             return super()._sync_to_openeducat()
@@ -30,18 +31,10 @@ class CalendarEvent(models.Model):
             return
 
         Course = self.env['op.course']
-        course = False
-        if hasattr(self, 'course_ids') and self.course_ids:
-            course = self.course_ids[0]
+        course = self._resolve_course_for_sync(course_name)
         if not course:
-            course = Course.search([('name', 'ilike', course_name)], limit=1)
-        if not course:
-            key_words = [word for word in course_name.split() if len(word) > 4]
-            for word in key_words[:3]:
-                course = Course.search([('name', 'ilike', word)], limit=1)
-                if course:
-                    break
-        if not course:
+            if strict_mode:
+                return self._sync_skip(f"Curso no encontrado (match exacto): '{course_name}'")
             course = Course.create({
                 'name': course_name,
                 'code': self._get_unique_code('op.course', course_name, 16),
@@ -50,28 +43,28 @@ class CalendarEvent(models.Model):
             })
 
         bloque_name = self._parse_bloque_from_description()
-        search_subject_name = bloque_name if bloque_name else subject_name
+        subject_candidates = []
+        if subject_name:
+            subject_candidates.append(subject_name)
+        if bloque_name and self._normalize_sync_label(bloque_name) != self._normalize_sync_label(subject_name):
+            subject_candidates.append(bloque_name)
+        if not subject_candidates:
+            subject_candidates.append(bloque_name or subject_name)
 
         Subject = self.env['op.subject']
-        subject = Subject.search([('name', '=', search_subject_name)], limit=1)
+        subject = False
+        search_subject_name = False
+        for candidate in subject_candidates:
+            search_subject_name = candidate
+            subject = self._resolve_subject_for_sync(course, search_subject_name)
+            if subject:
+                break
         if not subject:
-            subject = Subject.search([('name', 'ilike', search_subject_name)], limit=1)
-        if not subject:
-            parts = re.split(r'[-,]', search_subject_name)
-            for part in parts:
-                part = part.strip()
-                if len(part) > 10:
-                    subject = Subject.search([('name', 'ilike', part)], limit=1)
-                    if subject:
-                        break
-        if not subject:
-            key_words = [word for word in search_subject_name.split() if len(word) > 5]
-            for word in key_words[:5]:
-                subject = Subject.search([('name', 'ilike', word)], limit=1)
-                if subject:
-                    break
-        if not subject:
-            final_subject_name = bloque_name if bloque_name else subject_name
+            if strict_mode:
+                return self._sync_skip(
+                    f"Asignatura no encontrada en el curso '{course.display_name}'. Probadas: {subject_candidates}"
+                )
+            final_subject_name = subject_name or bloque_name
             subject = Subject.create({
                 'name': final_subject_name,
                 'code': self._get_unique_code('op.subject', final_subject_name, 256),
@@ -84,6 +77,10 @@ class CalendarEvent(models.Model):
 
         faculty = self._find_or_create_faculty_from_description()
         batch = self._find_or_create_batch(course)
+        if not batch:
+            if strict_mode:
+                return self._sync_skip(f"Lote no encontrado para el curso '{course.display_name}'")
+            return
 
         Session = self.env['op.session']
 
