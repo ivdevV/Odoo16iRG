@@ -35,6 +35,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/survey_view.xml',
+        'views/wizard_recalculate_view.xml',
     ],
     'demo': [],
     'installable': True,

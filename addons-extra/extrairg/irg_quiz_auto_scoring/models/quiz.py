@@ -45,10 +45,18 @@ class Survey(models.Model):
                 questions_without_mark.append(question)
         
         if not questions_without_mark:
-            raise ValidationError(
-                _("El survey ya tiene puntajes asignados en todas sus respuestas correctas. "
-                  "No se realizó ningún cambio.")
-            )
+            # Abrir wizard para permitir recalcular intentos
+            wizard = self.env['survey.auto_score.wizard'].create({
+                'survey_id': self.id,
+            })
+            return {
+                'name': _('Recalcular Calificaciones'),
+                'type': 'ir.actions.act_window',
+                'res_model': 'survey.auto_score.wizard',
+                'res_id': wizard.id,
+                'view_mode': 'form',
+                'target': 'new',
+            }
         
         # Calcular puntaje por pregunta
         score_per_question = 100.0 / len(questions)
