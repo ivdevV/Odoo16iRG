@@ -18,10 +18,10 @@ class Survey(models.Model):
         Acción para auto-calcular y asignar puntajes automáticamente a surveys.
         
         1. Valida que haya preguntas
-        2. Si NO todas las preguntas tienen puntaje:
-           - Divide 100 entre el número de preguntas
-           - Asigna ese puntaje a cada pregunta
-        3. Registra la acción en auditoría (chatter)
+        2. Distribuye 100 puntos equitativamente entre las preguntas
+        3. Asigna esos puntajes a las opciones de respuesta correctas
+        4. Recalcula los puntajes de todos los intentos existentes
+        5. Registra la acción en auditoría (chatter)
         """
         self.ensure_one()
         
@@ -35,38 +35,54 @@ class Survey(models.Model):
                 _("El survey no tiene preguntas válidas para calcular puntajes.")
             )
         
-        # Distribuir puntajes entre preguntas sin puntaje
-        questions_without_mark = questions.filtered(
-            lambda q: not q.answer_score or q.answer_score == 0
-        )
+        # Filtrar preguntas sin puntajes asignados en sus opciones de respuesta correctas
+        questions_without_mark = []
+        for question in questions:
+            correct_answers = question.suggested_answer_ids.filtered(
+                lambda a: a.is_correct and (not a.answer_score or a.answer_score == 0)
+            )
+            if correct_answers:
+                questions_without_mark.append(question)
         
         if not questions_without_mark:
             raise ValidationError(
-                _("El survey ya tiene puntajes asignados en todas sus preguntas. "
+                _("El survey ya tiene puntajes asignados en todas sus respuestas correctas. "
                   "No se realizó ningún cambio.")
             )
         
         # Calcular puntaje por pregunta
         score_per_question = 100.0 / len(questions)
         
-        # Asignar puntaje a cada pregunta sin puntaje
+        # Asignar puntaje a las respuestas correctas de cada pregunta sin puntaje
         for question in questions_without_mark:
-            question.write({'answer_score': score_per_question})
+            # Obtener todas las opciones de respuesta correctas
+            correct_answers = question.suggested_answer_ids.filtered(
+                lambda a: a.is_correct
+            )
+            # Asignar puntaje solo a respuestas correctas
+            correct_answers.write({'answer_score': score_per_question})
+        
+        # Recalcular intentos existentes
+        user_inputs = self.env['survey.user_input'].search([('survey_id', '=', self.id)])
+        for user_input in user_inputs:
+            # Recalcular el total de puntos del intento
+            total_score = sum(user_input.user_input_line_ids.mapped('answer_score'))
+            user_input.write({'answer_score_total': total_score})
         
         # Registrar la acción
         self._log_auto_score_action(
             f"Distribución de puntajes: {score_per_question:.2f} puntos "
             f"por pregunta ({len(questions_without_mark)} preguntas sin puntaje; "
-            f"{len(questions)} preguntas totales)"
+            f"{len(questions)} preguntas totales). "
+            f"Recalculados {len(user_inputs)} intentos existentes."
         )
         
         # Mensaje de confirmación
-        total_marks = sum(q.answer_score or 0 for q in questions)
         message = _(
             "✓ Auto-scoring completado exitosamente.\n"
             f"- {len(questions_without_mark)} preguntas fueron configuradas\n"
-            f"- {score_per_question:.2f} puntos por pregunta\n"
-            f"- Puntaje total del survey: {total_marks:.2f} puntos"
+            f"- {score_per_question:.2f} puntos por respuesta correcta\n"
+            f"- {len(user_inputs)} intentos fueron recalculados"
         )
         
         return {
