@@ -17,20 +17,13 @@ class Survey(models.Model):
         """
         Acción para auto-calcular y asignar puntajes automáticamente a surveys.
         
-        1. Valida que sea un survey de tipo Quiz/Examen
+        1. Valida que haya preguntas
         2. Si NO todas las preguntas tienen puntaje:
            - Divide 100 entre el número de preguntas
            - Asigna ese puntaje a cada pregunta
         3. Registra la acción en auditoría (chatter)
         """
         self.ensure_one()
-        
-        # Validar que sea un survey tipo quiz/examen
-        if self.survey_type not in ['quiz', 'exam', 'cert']:
-            raise ValidationError(
-                _("Este survey no es de tipo Quiz/Examen. "
-                  "Solo se pueden auto-calcular puntajes en surveys de tipo 'quiz', 'exam' o 'cert'.")
-            )
         
         # Validar que existan preguntas
         questions = self.question_ids.filtered(
@@ -62,7 +55,7 @@ class Survey(models.Model):
         
         # Registrar la acción
         self._log_auto_score_action(
-            f"Distribución de puntajes inicial: {score_per_question:.2f} puntos "
+            f"Distribución de puntajes: {score_per_question:.2f} puntos "
             f"por pregunta ({len(questions_without_mark)} preguntas sin puntaje; "
             f"{len(questions)} preguntas totales)"
         )

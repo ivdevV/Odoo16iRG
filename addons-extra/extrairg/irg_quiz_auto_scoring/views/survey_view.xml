@@ -7,11 +7,6 @@
             <field name="model">survey.survey</field>
             <field name="inherit_id" ref="survey.survey_survey_view_form"/>
             <field name="arch" type="xml">
-                <!-- Agregar campo survey_type como invisible para usar en attrs -->
-                <xpath expr="//sheet" position="before">
-                    <field name="survey_type" invisible="1"/>
-                </xpath>
-                
                 <!-- Insertar el botón en el header para auto-calcular puntajes -->
                 <xpath expr="//header" position="inside">
                     <button
@@ -19,7 +14,6 @@
                         type="object"
                         string="🎯 Auto-calcular Puntajes"
                         class="btn-success"
-                        attrs="{'invisible': [('survey_type', 'not in', ['quiz', 'exam', 'cert'])]}"
                         help="Distribuye automáticamente 100 puntos equitativamente entre las preguntas sin puntaje del survey, y registra la acción en auditoría."
                     />
                 </xpath>
