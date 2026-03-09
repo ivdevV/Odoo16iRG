@@ -13,6 +13,9 @@ from odoo.exceptions import ValidationError
 class OpQuiz(models.Model):
     _inherit = "op.quiz"
 
+    # Field to indicate LMS integration / visibility toggle
+    lms = fields.Boolean(string="LMS", default=False)
+
     def action_auto_score_quiz(self):
         """
         Acción para auto-calcular y asignar puntajes automáticamente.
