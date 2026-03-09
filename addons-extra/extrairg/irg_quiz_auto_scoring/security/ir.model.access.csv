@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_op_quiz_manager_irg,op.quiz manager IRG,openeducat_quiz.model_op_quiz,base.group_erp_manager,1,1,1,1
