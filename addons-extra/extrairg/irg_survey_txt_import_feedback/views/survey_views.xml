@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_survey_form_txt_import_feedback" model="ir.ui.view">
+        <field name="name">survey.survey.form.txt.import.feedback</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+        <field name="priority">195</field>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_open_txt_import_wizard"
+                        type="object"
+                        string="Importar TXT Test"
+                        class="btn-secondary"
+                        attrs="{'invisible': [('survey_type', 'not in', ['exam', 'cert'])]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_survey_question_form_feedback_generic" model="ir.ui.view">
+        <field name="name">survey.question.form.feedback.generic</field>
+        <field name="model">survey.question</field>
+        <field name="inherit_id" ref="survey.survey_question_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='description']" position="after">
+                <field name="x_feedback_generic"
+                       attrs="{'invisible': [('question_type', '!=', 'simple_choice')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
