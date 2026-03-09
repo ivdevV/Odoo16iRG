@@ -7,6 +7,11 @@
             <field name="model">survey.survey</field>
             <field name="inherit_id" ref="survey.survey_survey_view_form"/>
             <field name="arch" type="xml">
+                <!-- Agregar campo survey_type como invisible para usar en attrs -->
+                <xpath expr="//sheet" position="before">
+                    <field name="survey_type" invisible="1"/>
+                </xpath>
+                
                 <!-- Insertar el botón en el header para auto-calcular puntajes -->
                 <xpath expr="//header" position="inside">
                     <button
@@ -15,7 +20,7 @@
                         string="🎯 Auto-calcular Puntajes"
                         class="btn-success"
                         attrs="{'invisible': [('survey_type', 'not in', ['quiz', 'exam', 'cert'])]}"
-                        help="PASO A PASO de lo que hará este botón:&#10;&#10;1️⃣ VALIDAR TIPO: Verifica que el survey sea de tipo Quiz/Examen&#10;&#10;2️⃣ VERIFICAR PREGUNTAS: Confirma que existan preguntas en el survey&#10;&#10;3️⃣ DISTRIBUIR PUNTAJES: Si ninguna pregunta tiene puntaje:&#10;   • Divide 100 entre la cantidad total de preguntas&#10;   • Asigna ese resultado como puntaje a cada pregunta&#10;   • Ejemplo: 100 ÷ 5 preguntas = 20 puntos c/u&#10;&#10;4️⃣ PROCESAR INTENTOS: Para cada intento que hayan hecho usuarios:&#10;   • Si respuesta fue CORRECTA → asigna el puntaje de la pregunta&#10;   • Si respuesta fue INCORRECTA → asigna 0 puntos&#10;   • Recalcula el total y porcentaje del intento&#10;&#10;5️⃣ SINCRONIZAR: Si el módulo 'Calificaciones' está activo:&#10;   • Actualiza automáticamente el boletín de cada usuario&#10;   • Suma todos los puntajes para la calificación final&#10;&#10;6️⃣ REGISTRAR: Guarda un registro de auditoría con:&#10;   • Fecha y hora de ejecución&#10;   • Usuario que ejecutó la acción&#10;   • Número de preguntas y puntaje asignado&#10;   • Cantidad de intentos procesados"
+                        help="Distribuye automáticamente 100 puntos equitativamente entre las preguntas sin puntaje del survey, y registra la acción en auditoría."
                     />
                 </xpath>
             </field>
