@@ -21,20 +21,20 @@
     'version': '16.0.1.0',
     'category': 'Education',
     'sequence': 1,
-    'summary': 'Auto-calcular puntajes de cuestionarios y sincronizar con calificaciones',
+    'summary': 'Auto-calcular puntajes de surveys/cuestionarios y sincronizar con calificaciones',
     'complexity': 'medium',
     'author': 'iRG Inc',
     'website': 'https://www.irg.com.ar',
     'license': 'LGPL-3',
     'depends': [
-        'openeducat_quiz',
+        'survey',
     ],
     'external_dependencies': {
         'python': [],
     },
     'data': [
         'security/ir.model.access.csv',
-        'views/quiz_view.xml',
+        'views/survey_view.xml',
     ],
     'demo': [],
     'installable': True,
