@@ -17,7 +17,7 @@
                         <p>Por medio de la presente, le proporcionamos un enlace de pago.</p>
                         <p>Link de pago: <t t-out="object.link_payment"></t><br/></p>
                         <p>Si en el futuro desea registrar una tarjeta de crédito o débito, estaremos encantados de asistirle en el proceso. No dude en ponerse en contacto con nosotros a través de los siguientes medios:</p>
-                        <p>Correo electrónico: <a href="mailto:cobranza@universidadisep.com" target="_blank">cobranza@universidadisep.com</a></p>
+                        <p>Correo electrónico: <a href="mailto:admisiones13@institutoraimongaja.com" target="_blank">admisiones13@institutoraimongaja.com</a></p>
                         <p>Teléfono de oficina: +52 332101 3999</p>
                         <p>WhatsApp: +52 333400 8005</p>
                         <p>Le agradecemos nuevamente por su elección y quedamos a su disposición para atender cualquier consulta o brindarle asistencia.</p>
