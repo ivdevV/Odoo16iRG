@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_survey_survey_manager_irg,survey.survey manager IRG,survey.model_survey_survey,base.group_erp_manager,1,1,1,1
+access_survey_auto_score_wizard_manager_irg,survey.auto_score.wizard manager IRG,model_survey_auto_score_wizard,base.group_erp_manager,1,1,1,1

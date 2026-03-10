@@ -4,7 +4,7 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Component, onMounted, onWillStart, onWillUnmount, useState } from "@odoo/owl";
 
-const YELLOW_TRANSITION_MS = 10000;
+const YELLOW_TRANSITION_MS = 60000;
 
 class IrgBlockingProcessSystray extends Component {
     setup() {
@@ -56,7 +56,7 @@ class IrgBlockingProcessSystray extends Component {
 
         this.state.dotStatus = "yellow";
         this.state.blocking = false;
-        this.state.title = "Blocking process ended, waiting 10s before green status";
+        this.state.title = "Blocking process ended, waiting 60s before green status";
 
         this.yellowTimerId = setTimeout(() => {
             this.yellowTimerId = null;

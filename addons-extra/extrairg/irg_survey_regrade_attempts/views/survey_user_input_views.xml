@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_survey_user_input_form_regrade" model="ir.ui.view">
+        <field name="name">survey.user.input.form.regrade</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
+        <field name="priority">220</field>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_print_answers']" position="after">
+                <button name="action_regrade_attempt"
+                        type="object"
+                        string="Recalificar intento"
+                        class="btn-secondary"
+                        attrs="{'invisible': [('state', 'not in', ('done', 'skip'))]}"/>
+            </xpath>
+            <xpath expr="//field[@name='access_token']" position="after">
+                <field name="x_last_regraded_on" readonly="1"/>
+                <field name="x_last_regraded_by" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

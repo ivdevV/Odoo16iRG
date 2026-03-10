@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Heredar la vista de formulario de survey.survey para agregar botón -->
+        <record id="irg_survey_form_view_inherit" model="ir.ui.view">
+            <field name="name">survey.survey.form.inherit.irg_auto_scoring</field>
+            <field name="model">survey.survey</field>
+            <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+            <field name="arch" type="xml">
+                <!-- Insertar el botón en el header para auto-calcular puntajes -->
+                <xpath expr="//header" position="inside">
+                    <button
+                        name="action_auto_score_quiz"
+                        type="object"
+                        string="🎯 Auto-calcular Puntajes"
+                        class="btn-success"
+                        help="Distribuye automáticamente 100 puntos equitativamente entre las preguntas sin puntaje del survey, y registra la acción en auditoría."
+                    />
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
