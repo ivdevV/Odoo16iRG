@@ -38,9 +38,33 @@ class SurveyAutoScoreWizard(models.TransientModel):
         for user_input in user_inputs:
             # Para cada línea de respuesta en el intento
             for line in user_input.user_input_line_ids:
-                if line.answer_id:
+                # Obtener respuesta seleccionada usando método que maneja múltiples campos
+                ans = None
+                if hasattr(line, 'answer_id') and getattr(line, 'answer_id'):
+                    ans = line.answer_id
+                elif hasattr(line, 'suggested_answer_id') and getattr(line, 'suggested_answer_id'):
+                    ans = line.suggested_answer_id
+                elif hasattr(line, 'value_answer_id') and getattr(line, 'value_answer_id'):
+                    ans = line.value_answer_id
+                elif hasattr(line, 'value_answer_ids') and getattr(line, 'value_answer_ids'):
+                    # take first selected answer if multiple
+                    ans = line.value_answer_ids and line.value_answer_ids[0] or None
+                
+                # Fallback: intentar emparejar por texto de respuesta cuando no exista vínculo directo
+                if not ans:
+                    val_text = getattr(line, 'value_text', False) or getattr(line, 'value', False) or None
+                    if val_text:
+                        for a in (getattr(line, 'question_id', False) and line.question_id.suggested_answer_ids or []):
+                            try:
+                                if (a.name or '').strip() == (val_text or '').strip():
+                                    ans = a
+                                    break
+                            except Exception:
+                                continue
+                
+                if ans:
                     # Obtener el nuevo puntaje de esa opción
-                    new_score = line.answer_id.answer_score or 0.0
+                    new_score = ans.answer_score or 0.0
                     # Actualizar el puntaje de la línea
                     line.answer_score = new_score
                     line.flush()
