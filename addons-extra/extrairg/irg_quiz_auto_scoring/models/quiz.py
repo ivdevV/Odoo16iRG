@@ -35,39 +35,38 @@ class Survey(models.Model):
                 _("El survey no tiene preguntas válidas para calcular puntajes.")
             )
         
-        # Filtrar preguntas sin puntajes asignados en sus opciones de respuesta correctas
-        questions_without_mark = []
+        # Obtener todas las preguntas con respuestas correctas (sin restricción de puntaje previo)
+        questions_with_correct = []
         for question in questions:
             correct_answers = question.suggested_answer_ids.filtered(
-                lambda a: a.is_correct and (not a.answer_score or a.answer_score == 0)
+                lambda a: (
+                    getattr(a, 'is_correct', False)
+                    or getattr(a, 'answer_is_correct', False)
+                    or getattr(a, 'correct', False)
+                )
             )
             if correct_answers:
-                questions_without_mark.append(question)
+                questions_with_correct.append(question)
         
-        if not questions_without_mark:
-            # Abrir wizard para permitir recalcular intentos
-            wizard = self.env['survey.auto_score.wizard'].create({
-                'survey_id': self.id,
-            })
-            return {
-                'name': _('Recalcular Calificaciones'),
-                'type': 'ir.actions.act_window',
-                'res_model': 'survey.auto_score.wizard',
-                'res_id': wizard.id,
-                'view_mode': 'form',
-                'target': 'new',
-            }
+        if not questions_with_correct:
+            raise ValidationError(
+                _("El survey no tiene respuestas correctas definidas.")
+            )
         
         # Calcular puntaje por pregunta
-        score_per_question = 100.0 / len(questions)
+        score_per_question = 100.0 / len(questions_with_correct)
         
-        # Asignar puntaje a las respuestas correctas de cada pregunta sin puntaje
-        for question in questions_without_mark:
+        # Asignar puntaje a las respuestas correctas de cada pregunta
+        for question in questions_with_correct:
             # Obtener todas las opciones de respuesta correctas
             correct_answers = question.suggested_answer_ids.filtered(
-                lambda a: a.is_correct
+                lambda a: (
+                    getattr(a, 'is_correct', False)
+                    or getattr(a, 'answer_is_correct', False)
+                    or getattr(a, 'correct', False)
+                )
             )
-            # Asignar puntaje solo a respuestas correctas
+            # Asignar puntaje a respuestas correctas (se permite actualizar si ya existe puntaje)
             correct_answers.write({'answer_score': score_per_question})
         
         # Recalcular intentos existentes
@@ -76,33 +75,73 @@ class Survey(models.Model):
         ])
         
         for user_input in user_inputs:
-            # Recalcular cada línea de respuesta basándose en la opción seleccionada
+            # Recalcular cada línea de respuesta basándose en la opción seleccionada.
+            # Soportar distintos nombres de campo para la referencia a la respuesta seleccionada
             for line in user_input.user_input_line_ids:
-                if line.answer_id:
-                    # Obtener el nuevo puntaje asignado a esa opción
-                    new_score = line.answer_id.answer_score or 0.0
-                    # Actualizar directamente el campo answer_score
-                    # Usar flush para asegurar que se persista inmediatamente
+                ans = None
+                if hasattr(line, 'answer_id') and getattr(line, 'answer_id'):
+                    ans = line.answer_id
+                elif hasattr(line, 'suggested_answer_id') and getattr(line, 'suggested_answer_id'):
+                    ans = line.suggested_answer_id
+                elif hasattr(line, 'value_answer_id') and getattr(line, 'value_answer_id'):
+                    ans = line.value_answer_id
+                elif hasattr(line, 'value_answer_ids') and getattr(line, 'value_answer_ids'):
+                    # take first selected answer if multiple
+                    ans = line.value_answer_ids and line.value_answer_ids[0] or None
+
+                # Fallback: intentar emparejar por texto de respuesta cuando no exista vínculo directo
+                if not ans:
+                    val_text = getattr(line, 'value_text', False) or getattr(line, 'value', False) or None
+                    if val_text:
+                        for a in (getattr(line, 'question_id', False) and line.question_id.suggested_answer_ids or []):
+                            try:
+                                if (a.name or '').strip() == (val_text or '').strip():
+                                    ans = a
+                                    break
+                            except Exception:
+                                continue
+
+                if ans:
+                    new_score = getattr(ans, 'answer_score', 0.0) or 0.0
                     line.answer_score = new_score
                     line.flush()
-            
-            # Recalcular el total: suma de todos los answer_scores de las líneas
+
+            # Recalcular el total: preferir campo answer_score_total si existe, sino scoring_total
             total_score = sum(user_input.user_input_line_ids.mapped('answer_score'))
-            user_input.answer_score_total = total_score
+            if 'answer_score_total' in user_input._fields:
+                try:
+                    user_input.answer_score_total = total_score
+                except Exception:
+                    pass
+            if 'scoring_total' in user_input._fields:
+                try:
+                    user_input.scoring_total = total_score
+                except Exception:
+                    pass
+            # Ejecutar posibles recomputos adicionales de módulos extensores
+            if hasattr(user_input, '_compute_scoring_values'):
+                try:
+                    user_input._compute_scoring_values()
+                except Exception:
+                    pass
+            if hasattr(user_input, 'compute_answer_score_total'):
+                try:
+                    user_input.compute_answer_score_total()
+                except Exception:
+                    pass
             user_input.flush()
         
         # Registrar la acción
         self._log_auto_score_action(
-            f"Distribución de puntajes: {score_per_question:.2f} puntos "
-            f"por pregunta ({len(questions_without_mark)} preguntas sin puntaje; "
-            f"{len(questions)} preguntas totales). "
+            f"Distribución/actualización de puntajes: {score_per_question:.2f} puntos "
+            f"por pregunta ({len(questions_with_correct)} preguntas con respuestas correctas). "
             f"Recalculados {len(user_inputs)} intentos existentes."
         )
         
         # Mensaje de confirmación
         message = _(
             "✓ Auto-scoring completado exitosamente.\n"
-            f"- {len(questions_without_mark)} preguntas fueron configuradas\n"
+            f"- {len(questions_with_correct)} preguntas fueron configuradas\n"
             f"- {score_per_question:.2f} puntos por respuesta correcta\n"
             f"- {len(user_inputs)} intentos fueron recalculados"
         )
