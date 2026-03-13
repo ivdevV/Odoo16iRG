@@ -13,6 +13,11 @@
     'data': [
         'views/product_price_template.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'irg_website_sale_monthly_default_combo/static/src/js/default_online_combo.js',
+        ],
+    },
     'installable': True,
     'application': False,
 }

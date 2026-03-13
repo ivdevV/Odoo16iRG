@@ -32,7 +32,7 @@ class ProductTemplate(models.Model):
     def _isep_get_default_installment_data(self, pricelist=False):
         """Return installment for same default combination behavior as product page.
 
-        Product-page JS defaults to HomeClass modality (if any) and longest plan.
+        Default rule: Online modality (if any) + longest plan.
         """
         self.ensure_one()
 
@@ -48,16 +48,16 @@ class ProductTemplate(models.Model):
         if not variants:
             return False, 1
 
-        def _has_homeclass(variant):
+        def _has_online(variant):
             for ptav in variant.product_template_attribute_value_ids:
                 attr_name = (ptav.attribute_id.name or '').strip().lower()
                 val_name = (ptav.name or '').strip().lower()
-                if attr_name == 'modalidad' and 'homeclass' in val_name:
+                if attr_name == 'modalidad' and 'online' in val_name and 'convenio' not in val_name:
                     return True
             return False
 
-        homeclass_variants = variants.filtered(_has_homeclass)
-        candidate_variants = homeclass_variants or variants
+        online_variants = variants.filtered(_has_online)
+        candidate_variants = online_variants or variants
 
         best_installment = False
         best_months = 1
@@ -83,3 +83,43 @@ class ProductTemplate(models.Model):
                 best_months = months
 
         return best_installment, best_months
+
+    def _search_render_results_prices(self, mapping, combination_info):
+        """Align search preview price with product default combination logic.
+
+        For subscription products, show the installment computed from the same
+        default variant criteria used on product page and listing.
+        """
+        if not combination_info.get('is_subscription'):
+            return super()._search_render_results_prices(mapping, combination_info)
+
+        if not combination_info.get('is_recurrence_possible'):
+            return '', 0
+
+        current_pricelist = False
+        if mapping and mapping.get('detail') and mapping['detail'].get('pricelist'):
+            current_pricelist = mapping['detail']['pricelist']
+        if not current_pricelist:
+            pricelist_id = self.env.context.get('pricelist')
+            if pricelist_id:
+                current_pricelist = self.env['product.pricelist'].browse(pricelist_id)
+        if not current_pricelist:
+            current_pricelist = self.env['website'].get_current_website().pricelist_id
+
+        default_installment_price, default_installment_months = self._isep_get_default_installment_data(
+            pricelist=current_pricelist
+        )
+
+        if not default_installment_price:
+            return super()._search_render_results_prices(mapping, combination_info)
+
+        display_currency = mapping.get('detail', {}).get('display_currency')
+        return self.env['ir.ui.view']._render_template(
+            'website_sale_subscription.subscription_search_result_price',
+            values={
+                'currency': display_currency,
+                'price': default_installment_price,
+                'duration': default_installment_months,
+                'unit': 'month',
+            }
+        ), 0
