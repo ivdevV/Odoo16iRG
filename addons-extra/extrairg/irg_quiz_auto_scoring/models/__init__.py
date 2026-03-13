@@ -9,3 +9,4 @@
 from . import quiz
 from . import wizard_recalculate
 from . import survey_user_input_line
+from . import crm_lead
