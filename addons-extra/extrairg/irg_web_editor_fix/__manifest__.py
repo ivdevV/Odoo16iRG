@@ -13,11 +13,6 @@
     'data': [
         'views/assets.xml',
     ],
-    'assets': {
-        'web.assets_backend': [],
-        'web.assets_frontend': [],
-        'web_editor.assets_wysiwyg': [],
-    },
     'demo': [],
     'installable': True,
     'application': False,
