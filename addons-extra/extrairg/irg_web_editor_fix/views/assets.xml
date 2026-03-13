@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Extender los assets del editor WYSIWYG -->
+        <template id="assets_wysiwyg" inherit_id="web_editor.assets_wysiwyg" name="IRG Web Editor Fix Assets">
+            <xpath expr="." position="inside">
+                <script type="text/javascript" src="/irg_web_editor_fix/static/src/js/odoo_editor_patch.js"/>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>
