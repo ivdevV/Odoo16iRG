@@ -34,7 +34,9 @@ class ProductTemplate(models.Model):
 
         Default rule: Online modality (if any) + longest plan.
         """
-        self.ensure_one()
+        if not self:
+            return False, 1
+        template = self[:1]
 
         current_pricelist = pricelist
         if not current_pricelist:
@@ -44,7 +46,7 @@ class ProductTemplate(models.Model):
         if not current_pricelist:
             current_pricelist = self.env['website'].get_current_website().pricelist_id
 
-        variants = self.product_variant_ids
+        variants = template.product_variant_ids
         if not variants:
             return False, 1
 
@@ -106,7 +108,8 @@ class ProductTemplate(models.Model):
         if not current_pricelist:
             current_pricelist = self.env['website'].get_current_website().pricelist_id
 
-        default_installment_price, default_installment_months = self._isep_get_default_installment_data(
+        template = self[:1]
+        default_installment_price, default_installment_months = template._isep_get_default_installment_data(
             pricelist=current_pricelist
         )
 
