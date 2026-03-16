@@ -112,7 +112,7 @@ class SaleOrder(models.Model):
         self.ensure_one()
         strategy = "legacy_installments"
         stripe_mode = "tokenized_charge"
-        payment_link_fallback = True
+        payment_link_fallback = False
 
         for template in self._irg_subscription_runtime_lines().mapped("product_template_id"):
             if template.irg_subscription_billing_strategy == "single_invoice_schedule":
@@ -143,6 +143,24 @@ class SaleOrder(models.Model):
     def _irg_should_use_single_invoice_strategy(self):
         self.ensure_one()
         return self.irg_subscription_billing_strategy == "single_invoice_schedule"
+
+    def _irg_run_subscription_builder(self, ensure_schedule=True, ensure_invoice=True):
+        for order in self:
+            order._irg_sync_subscription_configuration_from_lines()
+            if not order._irg_should_use_single_invoice_strategy():
+                continue
+
+            if ensure_schedule and order.recurrence_id and not order.subscription_schedule:
+                order.with_context(irg_skip_single_invoice_builder=True).create_subscription_schedule()
+
+            if order.irg_single_invoice_move_id and order.irg_single_invoice_move_id.state == "posted":
+                order._irg_register_single_invoice(order.irg_single_invoice_move_id)
+                continue
+
+            if ensure_invoice and order.state in ("sale", "done"):
+                order._irg_ensure_single_invoice()
+            else:
+                order._irg_sync_stripe_bridge_state()
 
     def action_open_irg_single_invoice(self):
         self.ensure_one()
@@ -420,13 +438,14 @@ class SaleOrder(models.Model):
                 schedule.irg_original_amount_recurring_taxinc = schedule.amount_recurring_taxinc
             if order.irg_single_invoice_move_id and order.irg_single_invoice_move_id.state == "posted":
                 order._irg_register_single_invoice(order.irg_single_invoice_move_id)
+        if not self.env.context.get("irg_skip_single_invoice_builder"):
+            self._irg_run_subscription_builder(ensure_schedule=False)
         return result
 
     def action_confirm(self):
         self._irg_sync_subscription_configuration_from_lines()
         result = super().action_confirm()
-        self._irg_sync_subscription_configuration_from_lines()
-        self._irg_ensure_single_invoice()
+        self._irg_run_subscription_builder()
         return result
 
     def _recurring_invoice_domain_update(self, extra_domain=None):

@@ -35,12 +35,10 @@
                 Confirmo que ya firmé el documento de matrícula.
             </label>
             <div id="signature_warning" class="text-danger mt-1" style="display: none;"></div>
-            <t t-if="order.sign_id and order.sign_id.share_link_website">
-                <input type="hidden" id="sign_link_holder" t-att-value="order.sign_id.share_link_website"/>
-                <button type="button" id="sign_button" class="btn btn-primary btn-sm mt-2" style="display: none;">
-                    <i class="fa fa-edit"/> Firmar documento
-                </button>
-            </t>
+            <input type="hidden" id="sign_link_holder" t-att-value="order.sign_id and order.sign_id.share_link_website or ''"/>
+            <button type="button" id="sign_button" class="btn btn-primary btn-sm mt-2" style="display: none;">
+                <i class="fa fa-edit"/> Firmar documento
+            </button>
             
             <!-- Modal popup para firma -->
             <div id="sign_modal" class="modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">

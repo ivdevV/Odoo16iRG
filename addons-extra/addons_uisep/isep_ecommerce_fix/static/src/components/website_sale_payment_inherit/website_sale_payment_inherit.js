@@ -25,6 +25,7 @@ odoo.define('isep_ecommerce_fix.signature_check', function (require) {
                 route: '/signature_status',
                 params: { order_id: parseInt(orderId) },
             }).then(data => {
+                this._setSignLink(data.sign_link || '');
                 if (data.signed) {
                     this.$signatureCheckbox.prop('checked', true);
                     $('#signature_warning').hide();
@@ -51,6 +52,7 @@ odoo.define('isep_ecommerce_fix.signature_check', function (require) {
                 route: '/signature_status',
                 params: { order_id: parseInt(orderId) },
             }).then(data => {
+                this._setSignLink(data.sign_link || '');
                 if (data.signed) {
                     this.$signatureCheckbox.prop('checked', true);
                     $('#signature_warning').hide();
@@ -69,6 +71,29 @@ odoo.define('isep_ecommerce_fix.signature_check', function (require) {
                 this.$signatureCheckbox.prop('disabled', false);
                 alert("Ocurrió un error al verificar la firma.");
             });
+        },
+
+        _setSignLink: function (signLink) {
+            $('#sign_link_holder').val(signLink || '');
+        },
+
+        _openSignModal: function (signLink) {
+            if (!signLink) {
+                alert("No se pudo preparar el documento de matrícula para firma.");
+                return;
+            }
+
+            $('#sign_modal').show();
+            $('#loading_spinner').show();
+            $('#sign_iframe').hide();
+
+            const iframe = $('#sign_iframe')[0];
+            iframe.onload = function() {
+                $('#loading_spinner').hide();
+                $('#sign_iframe').show();
+            };
+
+            $('#sign_iframe').attr('src', signLink);
         },
 
         _getOrderId: function () {
@@ -102,18 +127,29 @@ odoo.define('isep_ecommerce_fix.signature_check', function (require) {
         _onClickSignButton: function () {
             const signLink = $('#sign_link_holder').val();
             if (signLink) {
-                $('#sign_modal').show();
-                $('#loading_spinner').show();
-                $('#sign_iframe').hide();
-                
-                const iframe = $('#sign_iframe')[0];
-                iframe.onload = function() {
-                    $('#loading_spinner').hide();
-                    $('#sign_iframe').show();
-                };
-                
-                $('#sign_iframe').attr('src', signLink);
+                this._openSignModal(signLink);
+                return;
             }
+
+            const orderId = this._getOrderId();
+            if (!orderId) {
+                alert("No se pudo localizar el pedido para preparar la firma.");
+                return;
+            }
+
+            rpc.query({
+                route: '/signature_prepare',
+                params: { order_id: parseInt(orderId) },
+            }).then(data => {
+                this._setSignLink(data.sign_link || '');
+                if (data.sign_link) {
+                    this._openSignModal(data.sign_link);
+                    return;
+                }
+                alert("No se pudo generar el documento de matrícula para firma.");
+            }).catch(() => {
+                alert("Ocurrió un error al preparar el documento de matrícula.");
+            });
         },
 
         _onCloseModal: function () {

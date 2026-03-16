@@ -21,6 +21,6 @@ class PaymentTransaction(models.Model):
                     payment_transaction=self.filtered(lambda tx: order in tx.sale_order_ids)[:1],
                     description="Payment transaction reconciled for a single-invoice subscription.",
                 )
-            single_invoice_orders.sudo()._irg_ensure_single_invoice()
+            single_invoice_orders.sudo()._irg_run_subscription_builder()
 
         return result
