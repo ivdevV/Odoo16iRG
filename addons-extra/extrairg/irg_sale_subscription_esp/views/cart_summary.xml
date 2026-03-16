@@ -75,13 +75,13 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="2" class="text-start">Cuotas restantes ({}):</td>
+                            <td colspan="2" class="text-start">Cuotas restantes (<t t-esc="term_count - 1"/>):</td>
                             <td class="text-end">
                                 <span t-esc="monthly_amount" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="2" class="text-start">Total en {} cuotas:</td>
+                            <td colspan="2" class="text-start">Total en <t t-esc="term_count"/> cuotas:</td>
                             <td class="text-end">
                                 <span t-esc="installment_total + matricula_total" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
                             </td>
