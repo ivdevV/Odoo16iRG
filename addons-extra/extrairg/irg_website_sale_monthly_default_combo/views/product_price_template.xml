@@ -24,12 +24,4 @@
         </xpath>
     </template>
 
-    <template id="irg_products_item_price_fallback_guard" inherit_id="website_sale.products_item" priority="999">
-        <xpath expr="//*[contains(@t-esc, &quot;template_price_vals['price']&quot;)]" position="replace">
-            <t t-set="safe_template_price_vals" t-value="template_price_vals or {}"/>
-            <t t-set="safe_display_currency" t-value="safe_template_price_vals.get('display_currency') or website.currency_id"/>
-            <t t-set="safe_product_tmpl" t-value="product if product._name == 'product.template' else product.product_tmpl_id"/>
-            <span class="oe_price" style="white-space: nowrap;" t-esc="safe_template_price_vals.get('price', safe_product_tmpl.list_price)" t-options="{'widget': 'monetary', 'display_currency': safe_display_currency}"/>
-        </xpath>
-    </template>
 </odoo>
