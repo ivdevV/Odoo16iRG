@@ -1,0 +1,21 @@
+<odoo>
+    <record id="view_irg_subscription_adjustment_wizard_form" model="ir.ui.view">
+        <field name="name">irg.subscription.adjustment.wizard.form</field>
+        <field name="model">irg.subscription.adjustment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Ajuste temporal de cuotas">
+                <group>
+                    <field name="sale_order_id" readonly="1"/>
+                    <field name="effective_date"/>
+                    <field name="percentage"/>
+                    <field name="installment_count"/>
+                    <field name="note"/>
+                </group>
+                <footer>
+                    <button name="action_apply" type="object" string="Aplicar" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

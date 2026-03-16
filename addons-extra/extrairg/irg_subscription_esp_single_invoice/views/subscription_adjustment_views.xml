@@ -1,0 +1,49 @@
+<odoo>
+    <record id="view_irg_subscription_adjustment_tree" model="ir.ui.view">
+        <field name="name">irg.subscription.adjustment.tree</field>
+        <field name="model">irg.subscription.adjustment</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="sale_order_id"/>
+                <field name="effective_date"/>
+                <field name="percentage"/>
+                <field name="installment_count"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_subscription_adjustment_form" model="ir.ui.view">
+        <field name="name">irg.subscription.adjustment.form</field>
+        <field name="model">irg.subscription.adjustment</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="sale_order_id" readonly="1"/>
+                            <field name="state" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="effective_date" readonly="1"/>
+                            <field name="percentage" readonly="1"/>
+                            <field name="installment_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note" readonly="1"/>
+                    </group>
+                    <field name="line_ids" readonly="1">
+                        <tree>
+                            <field name="schedule_id"/>
+                            <field name="original_amount"/>
+                            <field name="adjusted_amount"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

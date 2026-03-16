@@ -1,0 +1,53 @@
+<odoo>
+    <record id="sale_order_view_form_irg_subscription_strategy" model="ir.ui.view">
+        <field name="name">sale.order.form.irg.subscription.strategy</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="isep_sale_subscription_extension.isep_custom_sale_subscription_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='sale_schedule']/group[@string='Configuración de recurrencia']" position="after">
+                <group string="IRG Subscription Strategy" attrs="{'invisible': [('recurrence_id', '=', False)]}">
+                    <group>
+                        <field name="irg_subscription_billing_strategy" readonly="1"/>
+                        <field name="irg_subscription_stripe_mode" readonly="1"/>
+                        <field name="irg_payment_link_fallback_enabled" readonly="1"/>
+                        <field name="irg_stripe_bridge_state" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="irg_single_invoice_move_id" readonly="1"/>
+                        <field name="irg_single_invoice_state" readonly="1"/>
+                        <field name="irg_single_invoice_payment_state" readonly="1"/>
+                        <field name="irg_single_invoice_linked_count" readonly="1"/>
+                        <field name="irg_adjustment_count" readonly="1"/>
+                        <button
+                            name="action_open_irg_single_invoice"
+                            type="object"
+                            string="Abrir factura única"
+                            attrs="{'invisible': [('irg_single_invoice_move_id', '=', False)]}"
+                        />
+                        <button
+                            name="action_open_irg_adjustment_wizard"
+                            type="object"
+                            string="Ajuste temporal"
+                            class="btn-primary"
+                            attrs="{'invisible': [('irg_subscription_billing_strategy', '!=', 'single_invoice_schedule')]}"
+                        />
+                    </group>
+                </group>
+            </xpath>
+
+            <xpath expr="//page[@name='sale_schedule']" position="after">
+                <page string="IRG Ajustes" attrs="{'invisible': [('irg_adjustment_count', '=', 0)]}">
+                    <field name="irg_adjustment_ids" readonly="1">
+                        <tree>
+                            <field name="name"/>
+                            <field name="effective_date"/>
+                            <field name="percentage"/>
+                            <field name="installment_count"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
