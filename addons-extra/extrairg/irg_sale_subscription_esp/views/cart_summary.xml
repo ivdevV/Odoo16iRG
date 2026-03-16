@@ -4,7 +4,8 @@
         <xpath expr="//table[hasclass('table')][1]/tbody[1]" position="replace">
             <tbody>
                 <t t-set="summary_order" t-value="order or website_sale_order"/>
-                <t t-set="lines" t-value="summary_order.order_line.filtered(lambda l: not l.display_type or l.irg_line_type in ['matricula', 'matricula_discount'])"/>
+                <!-- Show ALL order lines for transparency -->
+                <t t-set="lines" t-value="summary_order.order_line.filtered(lambda l: not l.display_type)"/>
 
                 <t t-foreach="lines.filtered(lambda l: l.irg_line_type == 'master')" t-as="line">
                     <tr>
