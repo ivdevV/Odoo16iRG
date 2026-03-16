@@ -16,6 +16,7 @@
         "security/ir.model.access.csv",
         "views/product_template_views.xml",
         "views/sale_order_views.xml",
+        "views/stripe_event_views.xml",
         "views/subscription_adjustment_views.xml",
         "wizards/subscription_adjustment_wizard_views.xml"
     ],

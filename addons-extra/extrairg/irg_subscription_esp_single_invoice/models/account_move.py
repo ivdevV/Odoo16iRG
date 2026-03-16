@@ -24,5 +24,19 @@ class AccountMove(models.Model):
                     "order_subscription_id": order.id,
                 }
             )
+            if (
+                order.irg_payment_link_fallback_enabled
+                and order.irg_subscription_stripe_mode in ("payment_link_fallback", "tokenized_charge")
+                and "link_payment_static" in move._fields
+                and hasattr(move, "compute_link_payment_link")
+            ):
+                move.compute_link_payment_link()
+                if move.link_payment:
+                    move.link_payment_static = move.link_payment
+                    order._irg_log_bridge_event(
+                        event_type="payment_link_prepared",
+                        account_move=move,
+                        description="Fallback payment link prepared on the single invoice.",
+                    )
             order.sudo()._irg_register_single_invoice(move)
         return result

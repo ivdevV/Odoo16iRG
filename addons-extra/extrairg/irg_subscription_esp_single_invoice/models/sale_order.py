@@ -46,6 +46,15 @@ class SaleOrder(models.Model):
         string="IRG Adjustment Count",
         compute="_compute_irg_adjustment_count",
     )
+    irg_stripe_event_ids = fields.One2many(
+        "irg.subscription.stripe.event",
+        "sale_order_id",
+        string="IRG Stripe Events",
+    )
+    irg_stripe_event_count = fields.Integer(
+        string="IRG Stripe Event Count",
+        compute="_compute_irg_stripe_event_count",
+    )
     irg_single_invoice_move_id = fields.Many2one(
         "account.move",
         string="IRG Single Invoice",
@@ -82,6 +91,10 @@ class SaleOrder(models.Model):
     def _compute_irg_adjustment_count(self):
         for order in self:
             order.irg_adjustment_count = len(order.irg_adjustment_ids)
+
+    def _compute_irg_stripe_event_count(self):
+        for order in self:
+            order.irg_stripe_event_count = len(order.irg_stripe_event_ids)
 
     def _compute_irg_single_invoice_linked_count(self):
         for order in self:
@@ -201,10 +214,58 @@ class SaleOrder(models.Model):
                 if order.stripe_subscription_state == "draft":
                     values["stripe_subscription_state"] = "draft"
                 order.sudo().write(values)
+                order._irg_log_bridge_event(
+                    event_type="pending_real_subscription",
+                    description="Single-invoice subscription pending Stripe Subscription real bridge.",
+                )
             elif order.irg_subscription_stripe_mode == "payment_link_fallback":
                 order.irg_stripe_bridge_state = "payment_link_fallback"
+                order._irg_log_bridge_event(
+                    event_type="payment_link_fallback",
+                    description="Single-invoice subscription configured to use payment link fallback.",
+                )
             else:
                 order.irg_stripe_bridge_state = "tokenized_charge"
+                order._irg_log_bridge_event(
+                    event_type="tokenized_charge",
+                    description="Single-invoice subscription configured to use tokenized recurring charges.",
+                )
+
+    def _irg_log_bridge_event(
+        self,
+        event_type,
+        description,
+        state="done",
+        account_move=False,
+        payment_transaction=False,
+    ):
+        Event = self.env["irg.subscription.stripe.event"].sudo()
+        for order in self:
+            duplicate_domain = [
+                ("sale_order_id", "=", order.id),
+                ("event_type", "=", event_type),
+                ("description", "=", description),
+            ]
+            if account_move:
+                duplicate_domain.append(("account_move_id", "=", account_move.id))
+            if payment_transaction:
+                duplicate_domain.append(("payment_transaction_id", "=", payment_transaction.id))
+            if Event.search_count(duplicate_domain):
+                continue
+            Event.create(
+                {
+                    "sale_order_id": order.id,
+                    "event_type": event_type,
+                    "state": state,
+                    "account_move_id": account_move.id if account_move else False,
+                    "payment_transaction_id": payment_transaction.id if payment_transaction else False,
+                    "description": description,
+                }
+            )
+
+    def _irg_skip_legacy_installment_invoicing(self):
+        self.ensure_one()
+        return self._irg_should_use_single_invoice_strategy()
 
     def _irg_register_single_invoice(self, invoice):
         self.ensure_one()
@@ -218,6 +279,11 @@ class SaleOrder(models.Model):
             }
         )
         self.sudo().write({"irg_single_invoice_move_id": invoice.id})
+        self._irg_log_bridge_event(
+            event_type="single_invoice_created",
+            account_move=invoice,
+            description="Single invoice detected or created for the subscription strategy.",
+        )
 
         receivable_lines = self._irg_get_receivable_lines_from_invoice(invoice)
         schedules = self.subscription_schedule.sorted("date_due")
@@ -255,6 +321,12 @@ class SaleOrder(models.Model):
                 len(schedules),
                 len(receivable_lines),
             )
+        else:
+            self._irg_log_bridge_event(
+                event_type="single_invoice_linked",
+                account_move=invoice,
+                description="Installments linked to receivable lines of the single invoice.",
+            )
 
         self._irg_sync_stripe_bridge_state()
         return invoice
@@ -276,6 +348,46 @@ class SaleOrder(models.Model):
             if invoice.state == "draft":
                 invoice.sudo().action_post()
             order._irg_register_single_invoice(invoice)
+
+    @api.model
+    def cron_generate_subscription_schedule_invoices(self, batch=False, date_run=False):
+        legacy_orders = self.search([
+            ("irg_subscription_billing_strategy", "!=", "single_invoice_schedule"),
+        ])
+        return super(SaleOrder, legacy_orders).cron_generate_subscription_schedule_invoices(
+            batch=batch,
+            date_run=date_run,
+        )
+
+    def _prepare_invoice_from_schedule_line(self, schedule_line, remaining_amount):
+        self.ensure_one()
+        if self._irg_skip_legacy_installment_invoicing():
+            return None
+        return super()._prepare_invoice_from_schedule_line(schedule_line, remaining_amount)
+
+    def _create_recurring_invoice_update(self, automatic=False, batch_size=30):
+        single_invoice_orders = self.filtered(lambda order: order._irg_skip_legacy_installment_invoicing())
+        if single_invoice_orders:
+            single_invoice_orders.sudo()._irg_ensure_single_invoice()
+
+        legacy_orders = self - single_invoice_orders
+        if legacy_orders:
+            return super(SaleOrder, legacy_orders)._create_recurring_invoice_update(
+                automatic=automatic,
+                batch_size=batch_size,
+            )
+        return self.env["account.move"]
+
+    def _handle_automatic_invoices(self, auto_commit, invoices):
+        single_invoice_orders = self.filtered(lambda order: order._irg_skip_legacy_installment_invoicing())
+        for order in single_invoice_orders:
+            order.with_context(mail_notrack=True).write({"payment_exception": False})
+            order._irg_ensure_single_invoice()
+
+        legacy_orders = self - single_invoice_orders
+        if legacy_orders:
+            return super(SaleOrder, legacy_orders)._handle_automatic_invoices(auto_commit, invoices)
+        return invoices
 
     def action_open_irg_adjustment_wizard(self):
         self.ensure_one()

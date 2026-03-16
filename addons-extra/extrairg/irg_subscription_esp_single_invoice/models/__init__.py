@@ -3,4 +3,5 @@ from . import payment_transaction
 from . import product_template
 from . import sale_order
 from . import sale_subscription_schedule
+from . import stripe_event
 from . import subscription_adjustment
