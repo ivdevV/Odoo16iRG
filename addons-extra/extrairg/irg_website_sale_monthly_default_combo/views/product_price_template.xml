@@ -7,7 +7,9 @@
                 <t t-set="default_data" t-value="product_tmpl._isep_get_default_installment_data(website.get_current_website().get_current_pricelist())"/>
                 <t t-set="default_installment_price" t-value="default_data and default_data[0] or False"/>
                 <t t-set="default_installment_months" t-value="default_data and default_data[1] or 1"/>
-                <t t-set="display_currency" t-value="template_price_vals.get('display_currency') or website.currency_id"/>
+                <t t-set="safe_template_price_vals" t-value="template_price_vals or {}"/>
+                <t t-set="display_currency" t-value="safe_template_price_vals.get('display_currency') or website.currency_id"/>
+                <t t-set="fallback_price" t-value="safe_template_price_vals.get('price', product_tmpl.list_price)"/>
 
                 <t t-if="default_installment_price">
                     <span class="oe_price" style="white-space: nowrap;" t-esc="default_installment_price" t-options="{'widget': 'monetary', 'display_currency': display_currency}"/>
@@ -16,9 +18,18 @@
                     </span>
                 </t>
                 <t t-else="">
-                    <span class="oe_price" style="white-space: nowrap;" t-esc="template_price_vals['price']" t-options="{'widget': 'monetary', 'display_currency': display_currency}"/>
+                    <span class="oe_price" style="white-space: nowrap;" t-esc="fallback_price" t-options="{'widget': 'monetary', 'display_currency': display_currency}"/>
                 </t>
             </div>
+        </xpath>
+    </template>
+
+    <template id="irg_products_item_price_fallback_guard" inherit_id="website_sale.products_item" priority="999">
+        <xpath expr="//*[contains(@t-esc, &quot;template_price_vals['price']&quot;)]" position="replace">
+            <t t-set="safe_template_price_vals" t-value="template_price_vals or {}"/>
+            <t t-set="safe_display_currency" t-value="safe_template_price_vals.get('display_currency') or website.currency_id"/>
+            <t t-set="safe_product_tmpl" t-value="product if product._name == 'product.template' else product.product_tmpl_id"/>
+            <span class="oe_price" style="white-space: nowrap;" t-esc="safe_template_price_vals.get('price', safe_product_tmpl.list_price)" t-options="{'widget': 'monetary', 'display_currency': safe_display_currency}"/>
         </xpath>
     </template>
 </odoo>

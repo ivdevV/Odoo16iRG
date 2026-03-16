@@ -133,7 +133,9 @@
             <t t-set="min_data" t-value="product_tmpl._isep_get_min_installment_data(website.get_current_website().get_current_pricelist())"/>
             <t t-set="min_installment_price" t-value="min_data and min_data[0] or False"/>
             <t t-set="min_installment_months" t-value="min_data and min_data[1] or 1"/>
-            <t t-set="display_currency" t-value="template_price_vals.get('display_currency') or website.currency_id"/>
+            <t t-set="safe_template_price_vals" t-value="template_price_vals or {}"/>
+            <t t-set="display_currency" t-value="safe_template_price_vals.get('display_currency') or website.currency_id"/>
+            <t t-set="fallback_price" t-value="safe_template_price_vals.get('price', product_tmpl.list_price)"/>
 
             <t t-if="min_installment_price">
                 <span class="oe_price" style="white-space: nowrap;" t-esc="min_installment_price" t-options="{'widget': 'monetary', 'display_currency': display_currency}"/>
@@ -142,7 +144,7 @@
                 </span>
             </t>
             <t t-else="">
-                <span class="oe_price" style="white-space: nowrap;" t-esc="template_price_vals['price']" t-options="{'widget': 'monetary', 'display_currency': display_currency}"/>
+                <span class="oe_price" style="white-space: nowrap;" t-esc="fallback_price" t-options="{'widget': 'monetary', 'display_currency': display_currency}"/>
             </t>
             </div>
         </xpath>
