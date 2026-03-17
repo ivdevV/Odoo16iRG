@@ -19,7 +19,7 @@ class IrActionsReport(models.Model):
         compute the coordinates dynamically (e.g. using PyPDF2), but a simple
         shared-constant approach is sufficient and avoids extra dependencies.
         """
-        # By default we know raimon signature appears on page 1 and 3
+        # By defaault we know raimon signature appears on page 1 and 3
         # at these normalized vertical positions; tweak if report layout moves.
         return {
             1: 0.710,
