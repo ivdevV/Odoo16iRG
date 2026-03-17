@@ -123,8 +123,11 @@ class SaleOrder(models.Model):
                 if not sibling_contado:
                     continue
 
-                use_line_price = not (line.irg_force_price_unit_set or (line.irg_force_price_unit and line.irg_force_price_unit > 0))
-                financed_price = line.price_unit if (use_line_price and line.price_unit and line.price_unit > 0) else line.product_id.lst_price
+                financed_price = order._irg_get_variant_order_price(
+                    line.product_id,
+                    recurrence=order.recurrence_id,
+                    pricelist=order.pricelist_id,
+                )
                 contado_price = order._irg_get_variant_order_price(
                     sibling_contado,
                     recurrence=order.recurrence_id,

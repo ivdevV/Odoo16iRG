@@ -14,7 +14,10 @@ class SaleOrder(models.Model):
         Priority:
         1) product.pricing with same variant + pricelist + recurrence
         2) product.pricing variant + no pricelist + recurrence
-        3) fallback product.lst_price of that exact variant
+        3) product.pricing template-level (no variant restriction) + pricelist
+        4) product.pricing template-level (no variant restriction) + no pricelist
+        5) pricelist._get_product_price (includes price_extra from attributes)
+        6) fallback product.lst_price of that exact variant
         """
         self.ensure_one()
         if not product:
@@ -30,24 +33,40 @@ class SaleOrder(models.Model):
             pricing_domain.append(('recurrence_id', '=', recurrence.id))
 
         pricing_rules = self.env['product.pricing'].search(pricing_domain)
-        if not pricing_rules:
-            return product.lst_price
+        if pricing_rules:
+            # 1) Rules specific to this variant
+            variant_rules = pricing_rules.filtered(lambda rule: product in rule.product_variant_ids)
 
-        variant_rules = pricing_rules.filtered(lambda rule: product in rule.product_variant_ids)
-        def _pick(rules):
-            if not rules:
-                return False
-            if pricelist:
-                with_pricelist = rules.filtered(lambda r: r.pricelist_id == pricelist)
-                if with_pricelist:
-                    return with_pricelist[0]
-            no_pricelist = rules.filtered(lambda r: not r.pricelist_id)
-            if no_pricelist:
-                return no_pricelist[0]
-            return rules[0]
+            # 2) Fall back to rules without variant restriction (apply to all)
+            if not variant_rules:
+                variant_rules = pricing_rules.filtered(lambda rule: not rule.product_variant_ids)
 
-        selected_rule = _pick(variant_rules)
-        return selected_rule.price if selected_rule else product.lst_price
+            def _pick(rules):
+                if not rules:
+                    return False
+                if pricelist:
+                    with_pricelist = rules.filtered(lambda r: r.pricelist_id == pricelist)
+                    if with_pricelist:
+                        return with_pricelist[0]
+                no_pricelist = rules.filtered(lambda r: not r.pricelist_id)
+                if no_pricelist:
+                    return no_pricelist[0]
+                return rules[0]
+
+            selected_rule = _pick(variant_rules)
+            if selected_rule:
+                return selected_rule.price
+
+        # Fallback: pricelist computation (respects price_extra from attributes)
+        if pricelist:
+            try:
+                price = pricelist._get_product_price(product, 1.0)
+                if price and price > 0:
+                    return price
+            except Exception:
+                pass
+
+        return product.lst_price
 
     def _irg_get_sibling_contado(self, product):
         """Find the exact contado sibling variant for a financed variant."""
@@ -153,16 +172,19 @@ class SaleOrder(models.Model):
                                 if ol.irg_line_type != 'master':
                                     ol.write({'irg_line_type': 'master'})
                                 # === CÁLCULO DE FEE ===
-                                # Financiado: usar el precio real actual de la línea (si no está forzado)
-                                # Contado: usar SIEMPRE el precio de la variante contado (lst_price)
-                                use_line_price = not (ol.irg_force_price_unit_set or (ol.irg_force_price_unit and ol.irg_force_price_unit > 0))
-                                financed_price = ol.price_unit if (use_line_price and ol.price_unit and ol.price_unit > 0) else ol.product_id.lst_price
+                                # Financiado: obtener el precio real de la variante seleccionada
+                                # usando las mismas reglas de pricing que para contado
+                                financed_price = self._irg_get_variant_order_price(
+                                    ol.product_id,
+                                    recurrence=self.recurrence_id,
+                                    pricelist=self.pricelist_id,
+                                )
                                 contado_price = self._irg_get_variant_order_price(
                                     sibling_contado,
                                     recurrence=self.recurrence_id,
                                     pricelist=self.pricelist_id,
                                 )
-                                _logger.info("IRG Financiación [BASE]: financed=%s, contado=%s, diff=%s",
+                                _logger.info("IRG Financiación [PRICING RULES]: financed=%s, contado=%s, diff=%s",
                                              financed_price, contado_price, financed_price - contado_price)
 
                                 # Nivel 3: price_extra directos del atributo Planes
