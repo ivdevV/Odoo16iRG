@@ -10,7 +10,7 @@
                     </div>
                     <div class="col">
                         <p>
-                            ¡El documento para firmar la matrícula ha sido enviado a su correo! Recuerde que debe firmarla para continuar. Gracias por su paciencia.
+                            Para continuar con el pago, debes firmar el documento de matrícula usando el botón de abajo. Gracias por tu paciencia.
                         </p>
                     </div>
                 </div>
@@ -30,26 +30,28 @@
     <template id="payment_sale_note_sign" inherit_id="payment_footer_inherit" name="Validar firma" active="False">
         <xpath expr="//div[@name='o_checkbox_container_sign']" position="inside">
             <input type="hidden" id="order_id_holder" t-att-value="order.id"/>
-            <input type="checkbox" id="checkbox_signed" class="form-check-input"/>
-            <label for="checkbox_signed" class="form-check-label">
-                Confirmo que ya firmé el documento de matrícula.
-            </label>
-            <div id="signature_warning" class="text-danger mt-1" style="display: none;"></div>
             <input type="hidden" id="sign_link_holder" t-att-value="order.sign_id and order.sign_id.share_link_website or ''"/>
-            <button type="button" id="sign_button" class="btn btn-primary btn-sm mt-2" style="display: none;">
-                <i class="fa fa-edit"/> Firmar documento
-            </button>
-            
+            <input type="hidden" id="signature_signed" value="0"/>
+
+            <div id="sign_status_container" class="d-flex align-items-center mt-2">
+                <button type="button" id="sign_button" class="btn btn-primary">
+                    <i class="fa fa-pencil-square-o mr-1"/> Realizar firma de matrícula
+                </button>
+                <span id="sign_success_badge" class="badge badge-success text-success ml-3" style="display: none; font-size: 14px;">
+                    <i class="fa fa-check-circle mr-1"/> Documento firmado
+                </span>
+            </div>
+            <div id="signature_warning" class="text-danger mt-1" style="display: none;"></div>
+
             <!-- Modal popup para firma -->
             <div id="sign_modal" class="modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
                 <span id="close_modal" style="position: absolute; top: 20px; right: 30px; font-size: 32px; font-weight: bold; cursor: pointer; z-index: 10001; color: white; background-color: rgba(0,0,0,0.7); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">&amp;times;</span>
                 <div class="modal-content" style="position: relative; margin: 2% auto; width: 90%; height: 90%; background-color: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
                     <div style="position: absolute; top: 10px; left: 20px; z-index: 10001; background-color: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 4px; font-size: 12px;">
-                        Si la ventana no carga el documento a firmar has click <a href="#" id="fallback_link" style="color: #007bff; text-decoration: underline;">AQUÍ</a>.
+                        Si la ventana no carga el documento a firmar haz click <a href="#" id="fallback_link" style="color: #007bff; text-decoration: underline;">AQUÍ</a>.
                     </div>
                     <div id="loading_spinner" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000;">
                         <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
-                        <!-- <p class="mt-2 text-center">Cargando documento...</p> -->
                     </div>
                     <iframe id="sign_iframe" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>
                 </div>
