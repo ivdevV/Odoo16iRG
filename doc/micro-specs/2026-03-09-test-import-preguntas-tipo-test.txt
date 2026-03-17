@@ -1,0 +1,39 @@
+P: Que es Odoo?
+A: Un CRM solamente
+B: Un ERP modular
+C: Un editor de imagenes
+D: Un navegador
+RC: B
+FG: Odoo es una plataforma ERP modular; CRM es solo uno de sus modulos.
+
+P: Cuanto es 2+2?
+A: 3
+B: 5
+C: 4
+D: 6
+RC: C
+FG: La suma correcta es 4.
+
+P: Que protocolo se usa para navegar sitios web?
+A: HTTP
+B: SMTP
+C: FTP
+D: SSH
+RC: A
+FG: HTTP/HTTPS se usa para navegacion web.
+
+P: En Odoo, que representa un modulo?
+A: Un reporte PDF
+B: Un lenguaje de programacion
+C: Un paquete de funcionalidad instalable
+D: Un usuario del sistema
+RC: C
+FG: Un modulo agrega funcionalidades instalables al sistema.
+
+P: Cual opcion describe mejor una base de datos relacional?
+A: Guarda datos en tablas relacionadas
+B: Guarda solo imagenes
+C: No permite consultas
+D: No tiene indices
+RC: A
+FG: El modelo relacional usa tablas con relaciones y consultas estructuradas.
