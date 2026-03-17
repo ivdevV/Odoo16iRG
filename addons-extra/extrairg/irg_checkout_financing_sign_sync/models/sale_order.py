@@ -169,6 +169,8 @@ class SaleOrder(models.Model):
                         'name': fin_name,
                         'product_uom_qty': line.product_uom_qty,
                         'price_unit': financing_fee_unit,
+                        'irg_force_price_unit': financing_fee_unit,
+                        'irg_force_price_unit_set': True,
                         'tax_id': [(6, 0, financing_product.taxes_id.ids)],
                     })
                 else:
@@ -178,6 +180,8 @@ class SaleOrder(models.Model):
                         'name': fin_name,
                         'product_uom_qty': line.product_uom_qty,
                         'price_unit': financing_fee_unit,
+                        'irg_force_price_unit': financing_fee_unit,
+                        'irg_force_price_unit_set': True,
                         'tax_id': [(6, 0, financing_product.taxes_id.ids)],
                         'irg_line_type': 'financing',
                         'irg_parent_line_id': line.id,

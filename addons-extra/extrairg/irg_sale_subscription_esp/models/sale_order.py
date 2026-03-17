@@ -14,10 +14,9 @@ class SaleOrder(models.Model):
         Priority:
         1) product.pricing with same variant + pricelist + recurrence
         2) product.pricing variant + no pricelist + recurrence
-        3) product.pricing template-level (no variant restriction) + pricelist
-        4) product.pricing template-level (no variant restriction) + no pricelist
-        5) pricelist._get_product_price (includes price_extra from attributes)
-        6) fallback product.lst_price of that exact variant
+        3) product.pricing template-level + variant price_extra
+        4) pricelist._get_product_price (includes price_extra from attributes)
+        5) fallback product.lst_price of that exact variant
         """
         self.ensure_one()
         if not product:
@@ -37,10 +36,6 @@ class SaleOrder(models.Model):
             # 1) Rules specific to this variant
             variant_rules = pricing_rules.filtered(lambda rule: product in rule.product_variant_ids)
 
-            # 2) Fall back to rules without variant restriction (apply to all)
-            if not variant_rules:
-                variant_rules = pricing_rules.filtered(lambda rule: not rule.product_variant_ids)
-
             def _pick(rules):
                 if not rules:
                     return False
@@ -56,6 +51,16 @@ class SaleOrder(models.Model):
             selected_rule = _pick(variant_rules)
             if selected_rule:
                 return selected_rule.price
+
+            # 2) Template-level rules (no variant restriction): add variant
+            # price_extra so each variant gets a distinct price.
+            template_rules = pricing_rules.filtered(lambda rule: not rule.product_variant_ids)
+            selected_template_rule = _pick(template_rules)
+            if selected_template_rule:
+                variant_extra = sum(
+                    product.product_template_attribute_value_ids.mapped('price_extra')
+                )
+                return selected_template_rule.price + variant_extra
 
         # Fallback: pricelist computation (respects price_extra from attributes)
         if pricelist:
@@ -231,6 +236,8 @@ class SaleOrder(models.Model):
                                         'name': f"Gastos de Financiación ({plan_value.name}) - {ol.product_id.name}",
                                         'product_uom_qty': ol.product_uom_qty,
                                         'price_unit': financing_fee_unit,
+                                        'irg_force_price_unit': financing_fee_unit,
+                                        'irg_force_price_unit_set': True,
                                         'tax_id': [(6, 0, financing_product.taxes_id.ids)],
                                         'irg_line_type': 'financing',
                                         'irg_parent_line_id': ol.id,
