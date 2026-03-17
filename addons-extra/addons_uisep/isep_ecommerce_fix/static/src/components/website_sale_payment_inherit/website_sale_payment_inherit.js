@@ -58,7 +58,7 @@ odoo.define('isep_ecommerce_fix.signature_check', function (require) {
 
         _openSignModal: function (signLink) {
             if (!signLink) {
-                alert("No se pudo preparar el documento de matrícula para firma.");
+                this._showSignWarning("No se pudo preparar el documento de matrícula para firma.");
                 return;
             }
 
@@ -102,35 +102,51 @@ odoo.define('isep_ecommerce_fix.signature_check', function (require) {
             'click #fallback_link': '_onClickFallbackLink',
         }),
 
+        _resetSignButton: function () {
+            $('#sign_button').prop('disabled', false).html('<i class="fa fa-pencil-square-o mr-1"/> Realizar firma de matrícula');
+        },
+
+        _showSignWarning: function (msg) {
+            $('#signature_warning').text(msg).show();
+        },
+
         _onClickSignButton: function () {
-            const signLink = $('#sign_link_holder').val();
+            $('#signature_warning').hide();
+
+            var signLink = $('#sign_link_holder').val();
             if (signLink) {
                 this._openSignModal(signLink);
                 return;
             }
 
-            const orderId = this._getOrderId();
+            var orderId = this._getOrderId();
             if (!orderId) {
-                alert("No se pudo localizar el pedido para preparar la firma.");
+                this._showSignWarning("No se pudo localizar el pedido para preparar la firma.");
                 return;
             }
 
+            var self = this;
             $('#sign_button').prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"/> Preparando documento...');
 
             rpc.query({
                 route: '/signature_prepare',
                 params: { order_id: parseInt(orderId) },
-            }).then(data => {
-                $('#sign_button').prop('disabled', false).html('<i class="fa fa-pencil-square-o mr-1"/> Realizar firma de matrícula');
-                this._setSignLink(data.sign_link || '');
-                if (data.sign_link) {
-                    this._openSignModal(data.sign_link);
+            }).then(function (data) {
+                self._resetSignButton();
+                if (data.error) {
+                    console.warn('Error preparando firma:', data.error);
+                    self._showSignWarning("Hubo un problema al preparar el documento. Por favor, inténtalo de nuevo o contacta a soporte.");
                     return;
                 }
-                alert("No se pudo generar el documento de matrícula para firma.");
-            }).catch(() => {
-                $('#sign_button').prop('disabled', false).html('<i class="fa fa-pencil-square-o mr-1"/> Realizar firma de matrícula');
-                alert("Ocurrió un error al preparar el documento de matrícula.");
+                self._setSignLink(data.sign_link || '');
+                if (data.sign_link) {
+                    self._openSignModal(data.sign_link);
+                    return;
+                }
+                self._showSignWarning("El documento de matrícula aún se está generando. Inténtalo de nuevo en unos segundos.");
+            }).catch(function () {
+                self._resetSignButton();
+                self._showSignWarning("Hubo un problema al preparar el documento. Por favor, inténtalo de nuevo o contacta a soporte.");
             });
         },
 
