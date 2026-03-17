@@ -81,6 +81,7 @@ class SaleOrder(models.Model):
             ("tokenized_charge", "Tokenized charge"),
             ("payment_link_fallback", "Payment link fallback"),
             ("pending_real_subscription", "Pending Stripe subscription"),
+            ("active_real_subscription", "Active Stripe subscription"),
         ],
         string="IRG Stripe Bridge State",
         default="not_required",
@@ -226,6 +227,33 @@ class SaleOrder(models.Model):
                 continue
 
             if order.irg_subscription_stripe_mode == "stripe_subscription_real":
+                # If already created in Stripe, just mark as active
+                if order.stripe_subscription_id:
+                    order.sudo().write({
+                        "irg_stripe_bridge_state": "active_real_subscription",
+                    })
+                    continue
+
+                # Try to auto-create if we have the prerequisites
+                if order.payment_token_id and order.state in ("sale", "done"):
+                    sub_id = order._irg_create_stripe_subscription()
+                    if sub_id:
+                        order.sudo().write({
+                            "irg_stripe_bridge_state": "active_real_subscription",
+                        })
+                        order._irg_log_bridge_event(
+                            event_type="stripe_subscription_created",
+                            description="Stripe Subscription %s creada exitosamente." % sub_id,
+                        )
+                        continue
+                    else:
+                        order._irg_log_bridge_event(
+                            event_type="stripe_subscription_error",
+                            state="warning",
+                            description="Error al crear Stripe Subscription. Se reintentará.",
+                        )
+
+                # Fallback: mark as pending
                 values = {
                     "irg_stripe_bridge_state": "pending_real_subscription",
                 }

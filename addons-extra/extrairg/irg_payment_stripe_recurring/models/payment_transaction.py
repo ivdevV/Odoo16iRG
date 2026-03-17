@@ -106,6 +106,13 @@ class PaymentTransaction(models.Model):
                 order.sudo().write({
                     'stripe_subscription_ref': tx.token_id.provider_ref or tx.reference,
                 })
+
+                # Sync Stripe Customer ID to partner
+                if tx.token_id.provider_ref and not order.partner_id.irg_stripe_customer_id:
+                    order.partner_id.sudo().write({
+                        'irg_stripe_customer_id': tx.token_id.provider_ref,
+                    })
+
                 _logger.info(
                     "IRG Stripe: Token %s (provider=%s) asignado a "
                     "suscripción %s tras transacción %s",
