@@ -123,14 +123,15 @@ class SaleOrder(models.Model):
                 if not sibling_contado:
                     continue
 
+                # Usar recurrence=None para evitar inconsistencias entre re-ejecuciones
                 financed_price = order._irg_get_variant_order_price(
                     line.product_id,
-                    recurrence=order.recurrence_id,
+                    recurrence=None,
                     pricelist=order.pricelist_id,
                 )
                 contado_price = order._irg_get_variant_order_price(
                     sibling_contado,
-                    recurrence=order.recurrence_id,
+                    recurrence=None,
                     pricelist=order.pricelist_id,
                 )
 
@@ -142,10 +143,22 @@ class SaleOrder(models.Model):
                 )
                 contado_extra = contado_ptav[0].price_extra if contado_ptav else 0.0
 
+                # Nivel 3: lst_price de las variantes
+                lst_financed = line.product_id.lst_price
+                lst_contado = sibling_contado.lst_price
+
                 financing_fee_unit = financed_price - contado_price
                 if financing_fee_unit <= 0:
                     financing_fee_unit = plan_extra - contado_extra
                 if financing_fee_unit <= 0:
+                    financing_fee_unit = lst_financed - lst_contado
+                if financing_fee_unit <= 0:
+                    # Preservar línea existente si ya existe con fee > 0
+                    existing = order.order_line.filtered(
+                        lambda ln: ln.irg_line_type == 'financing' and ln.irg_parent_line_id == line
+                    )
+                    if existing and existing[0].price_unit > 0:
+                        _logger.info("IRG ensure_consistent: fee=0 but preserving existing financing line %s (price_unit=%s)", existing[0].id, existing[0].price_unit)
                     continue
 
                 line.write({
