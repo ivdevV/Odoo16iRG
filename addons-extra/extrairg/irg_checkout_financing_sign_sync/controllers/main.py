@@ -66,7 +66,14 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
                 partner_vals['function'] = profession
 
         if partner_vals:
-            partner.write(partner_vals)
+            changed_vals = {}
+            for field_name, new_value in partner_vals.items():
+                current_value = partner[field_name]
+                if str(current_value or '').strip() != str(new_value or '').strip():
+                    changed_vals[field_name] = new_value
+
+            if changed_vals:
+                partner.write(changed_vals)
 
         # Client POST must NOT overwrite computed order-level academic/payment values.
         # Those values are server-computed (scheduled/order logic) and therefore
@@ -80,8 +87,7 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
         order = request.website.sale_get_order()
         if order and request.httprequest.method == 'POST':
             self._irg_save_address_extra_fields(order, kw)
-
-        self._irg_sync_checkout_order(recalculate=True)
+            self._irg_sync_checkout_order(recalculate=False)
         return res
 
     def _irg_sync_checkout_order(self, recalculate=False):
@@ -89,15 +95,29 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
         if not order:
             return
         try:
+            recalc_marker = '_irg_auto_scheduled_order_done'
+            ensure_marker = '_irg_financing_lines_sync_done'
+
+            if recalculate:
+                if getattr(request, recalc_marker, False):
+                    recalculate = False
+                else:
+                    setattr(request, recalc_marker, True)
+
             if recalculate:
                 order.sudo()._auto_scheduled_order()
+
+            if getattr(request, ensure_marker, False):
+                return
             order.sudo()._irg_ensure_financing_lines_consistent()
+            setattr(request, ensure_marker, True)
         except Exception as exc:
             _logger.exception("IRG checkout sync failed for order %s: %s", order.name, exc)
 
     @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def extra_info(self, **post):
-        self._irg_sync_checkout_order(recalculate=True)
+        if request.httprequest.method == 'POST':
+            self._irg_sync_checkout_order(recalculate=False)
         return super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
 
     @http.route(['/shop/payment'], type='http', auth='public', website=True, sitemap=False)
