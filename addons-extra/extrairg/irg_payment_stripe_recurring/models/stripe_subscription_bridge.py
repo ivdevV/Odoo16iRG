@@ -280,7 +280,6 @@ class SaleOrderStripeBridge(models.Model):
             "items[0][price]": price_id,
             "items[0][quantity]": "1",
             "collection_method": "charge_automatically",
-            "payment_behavior": "default_incomplete",
             "payment_settings[payment_method_types][0]": "card",
             "payment_settings[save_default_payment_method]": "on_subscription",
             "metadata[odoo_order_id]": str(self.id),
@@ -309,11 +308,30 @@ class SaleOrderStripeBridge(models.Model):
         if self.stripe_coupon_code:
             payload["coupon"] = self.stripe_coupon_code
 
-        # Billing anchor — align with first schedule date if available
+        # Billing anchor — align with first schedule date if available.
+        # Stripe requires billing_cycle_anchor <= now + 1 interval.
+        # If the first schedule date is further in the future, skip the anchor
+        # and use trial_end instead so billing starts on that date.
         schedules = self.subscription_schedule.sorted("date_due")
         if schedules and schedules[0].date_due:
-            anchor_ts = int(time.mktime(schedules[0].date_due.timetuple()))
-            payload["billing_cycle_anchor"] = str(anchor_ts)
+            from datetime import date as dt_date
+            first_due = schedules[0].date_due
+            today = dt_date.today()
+            if first_due <= today:
+                # Date in the past or today — safe as anchor
+                anchor_ts = int(time.mktime(first_due.timetuple()))
+                payload["billing_cycle_anchor"] = str(anchor_ts)
+            else:
+                # Future date — use trial_end so first charge happens on that date
+                # (only if trial_end is not already set)
+                if "trial_end" not in payload:
+                    trial_ts = int(time.mktime(first_due.timetuple()))
+                    payload["trial_end"] = str(trial_ts)
+                    _logger.info(
+                        "IRG Stripe: Usando trial_end=%s para S01 %s "
+                        "(primera cuota %s está en el futuro).",
+                        trial_ts, self.name, first_due,
+                    )
 
         # 5. Call Stripe API
         try:
