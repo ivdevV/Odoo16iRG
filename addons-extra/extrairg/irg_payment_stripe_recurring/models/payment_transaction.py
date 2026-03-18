@@ -144,10 +144,13 @@ class PaymentTransaction(models.Model):
             return
 
         # Extract the Stripe PaymentMethod ID from the token
-        payment_method_id = tx.token_id.provider_ref  # pm_...
+        # In Odoo 16 payment_stripe:
+        #   token.provider_ref          = Stripe Customer (cus_xxx)
+        #   token.stripe_payment_method = Stripe PM       (pm_xxx)
+        payment_method_id = tx.token_id.stripe_payment_method
         if not payment_method_id:
             _logger.warning(
-                "IRG Stripe: token %s for order %s has no provider_ref, "
+                "IRG Stripe: token %s for order %s has no stripe_payment_method, "
                 "cannot create Stripe Subscription",
                 tx.token_id.id,
                 order.name,

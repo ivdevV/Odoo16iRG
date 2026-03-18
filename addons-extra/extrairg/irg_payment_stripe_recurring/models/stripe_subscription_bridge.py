@@ -191,43 +191,35 @@ class SaleOrderStripeBridge(models.Model):
             )
             return False
 
-        # provider_ref stores the Stripe PM id (pm_xxx) on payment.token
-        payment_method_id = token.provider_ref or False
+        # In Odoo 16 payment_stripe:
+        #   token.provider_ref          = Stripe Customer ID (cus_xxx)
+        #   token.stripe_payment_method = Stripe PaymentMethod ID (pm_xxx)
+        payment_method_id = token.stripe_payment_method or False
         if not payment_method_id:
             _logger.warning(
-                "IRG Stripe: Token %s no tiene provider_ref (PM), "
+                "IRG Stripe: Token %s no tiene stripe_payment_method (PM), "
                 "se intentará sin default_payment_method.",
                 token.id,
             )
 
-        # 2. Ensure Stripe Customer — ALWAYS prefer the one owning the PM
-        #    Stripe PMs from PaymentIntents are permanently bound to their
-        #    customer and cannot be detached/reattached.
+        # 2. Determine Stripe Customer
+        #    provider_ref on the token already holds the customer (cus_xxx).
+        #    If the partner also has irg_stripe_customer_id, prefer the one
+        #    that actually owns the PM (avoid attachment errors).
         partner = self.partner_id.sudo()
         customer_id = False
 
-        if payment_method_id:
-            # Retrieve the PM from Stripe to find its owning customer
-            try:
-                pm_data = provider._stripe_make_request(
-                    "payment_methods/%s" % payment_method_id,
-                    payload={},
-                    method="GET",
-                )
-                pm_customer = pm_data.get("customer")
-                if pm_customer:
-                    customer_id = pm_customer
-                    if partner.irg_stripe_customer_id != pm_customer:
-                        partner.write({"irg_stripe_customer_id": pm_customer})
-                    _logger.info(
-                        "IRG Stripe: Usando customer %s del PM %s para %s",
-                        customer_id, payment_method_id, partner.name,
-                    )
-            except Exception:
-                _logger.info(
-                    "IRG Stripe: No se pudo consultar PM %s.",
-                    payment_method_id,
-                )
+        # First try: customer stored on the token itself (provider_ref = cus_xxx)
+        token_customer = token.provider_ref or False
+        if token_customer and token_customer.startswith('cus_'):
+            customer_id = token_customer
+            # Keep partner's stored customer in sync
+            if partner.irg_stripe_customer_id != token_customer:
+                partner.write({"irg_stripe_customer_id": token_customer})
+            _logger.info(
+                "IRG Stripe: Usando customer %s del token %s para %s",
+                customer_id, token.id, partner.name,
+            )
 
         if not customer_id:
             customer_id = partner.irg_stripe_customer_id or False
