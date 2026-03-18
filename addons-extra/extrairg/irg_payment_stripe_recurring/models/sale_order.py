@@ -75,7 +75,11 @@ class SaleOrder(models.Model):
             order.sudo().write(vals)
 
     def action_irg_pause_subscription(self):
+        api = self.env['irg.stripe.api']
         for order in self.filtered(lambda so: so.is_subscription):
+            # Sync with Stripe if native subscription exists
+            if order.stripe_subscription_ref and order.stripe_subscription_ref.startswith('sub_'):
+                api._pause_stripe_subscription(order.stripe_subscription_ref)
             order.sudo().write({
                 'stripe_subscription_state': 'paused',
                 'subscription_suspended': True,
@@ -88,7 +92,11 @@ class SaleOrder(models.Model):
         return True
 
     def action_irg_resume_subscription(self):
+        api = self.env['irg.stripe.api']
         for order in self.filtered(lambda so: so.is_subscription):
+            # Sync with Stripe if native subscription exists
+            if order.stripe_subscription_ref and order.stripe_subscription_ref.startswith('sub_'):
+                api._resume_stripe_subscription(order.stripe_subscription_ref)
             order.sudo().write({
                 'stripe_subscription_state': 'active',
                 'subscription_suspended': False,
@@ -102,7 +110,11 @@ class SaleOrder(models.Model):
         return True
 
     def action_irg_cancel_subscription(self):
+        api = self.env['irg.stripe.api']
         for order in self.filtered(lambda so: so.is_subscription):
+            # Sync with Stripe if native subscription exists
+            if order.stripe_subscription_ref and order.stripe_subscription_ref.startswith('sub_'):
+                api._cancel_stripe_subscription(order.stripe_subscription_ref)
             order.sudo().write({
                 'stripe_subscription_state': 'canceled',
                 'subscription_suspended': True,

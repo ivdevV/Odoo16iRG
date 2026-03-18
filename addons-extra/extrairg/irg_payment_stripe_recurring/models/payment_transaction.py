@@ -103,9 +103,14 @@ class PaymentTransaction(models.Model):
                 order.sudo().write({
                     'payment_token_id': tx.token_id.id,
                 })
-                order.sudo().write({
-                    'stripe_subscription_ref': tx.token_id.provider_ref or tx.reference,
-                })
+
+                # Only set stripe_subscription_ref to token ref if NOT using native subscriptions
+                # (native mode will set it to the sub_... id later)
+                stripe_mode = getattr(order, 'irg_subscription_stripe_mode', False)
+                if stripe_mode != 'stripe_subscription_real':
+                    order.sudo().write({
+                        'stripe_subscription_ref': tx.token_id.provider_ref or tx.reference,
+                    })
                 _logger.info(
                     "IRG Stripe: Token %s (provider=%s) asignado a "
                     "suscripción %s tras transacción %s",
@@ -115,4 +120,56 @@ class PaymentTransaction(models.Model):
                     tx.reference,
                 )
 
+                # --- Crear suscripción nativa en Stripe si el modo lo requiere ---
+                self._irg_maybe_create_stripe_subscription(tx, order)
+
         return res
+
+    def _irg_maybe_create_stripe_subscription(self, tx, order):
+        """
+        If the order is configured for ``stripe_subscription_real`` mode,
+        create a native Stripe Subscription after the first successful payment.
+        """
+        stripe_mode = getattr(order, 'irg_subscription_stripe_mode', False)
+        if stripe_mode != 'stripe_subscription_real':
+            return
+
+        # Skip if a Stripe Subscription already exists (avoid duplicates)
+        if order.stripe_subscription_ref and order.stripe_subscription_ref.startswith('sub_'):
+            _logger.info(
+                "IRG Stripe: order %s already has Stripe subscription %s, skipping",
+                order.name,
+                order.stripe_subscription_ref,
+            )
+            return
+
+        # Extract the Stripe PaymentMethod ID from the token
+        payment_method_id = tx.token_id.provider_ref  # pm_...
+        if not payment_method_id:
+            _logger.warning(
+                "IRG Stripe: token %s for order %s has no provider_ref, "
+                "cannot create Stripe Subscription",
+                tx.token_id.id,
+                order.name,
+            )
+            return
+
+        api = self.env['irg.stripe.api']
+        result = api._create_stripe_subscription(order, payment_method_id=payment_method_id)
+        if result.get('id'):
+            _logger.info(
+                "IRG Stripe: native Subscription %s created for order %s",
+                result['id'],
+                order.name,
+            )
+            if hasattr(order, '_irg_log_bridge_event'):
+                order._irg_log_bridge_event(
+                    event_type='pending_real_subscription',
+                    description="Stripe Subscription %s created successfully." % result['id'],
+                )
+        else:
+            _logger.error(
+                "IRG Stripe: failed to create native Subscription for order %s: %s",
+                order.name,
+                result,
+            )
