@@ -182,17 +182,7 @@ class SaleOrderStripeBridge(models.Model):
             _logger.error("IRG Stripe: No active Stripe provider to create subscription.")
             return False
 
-        # 1. Ensure Stripe Customer
-        partner = self.partner_id
-        customer_id = partner._irg_ensure_stripe_customer(provider=provider)
-        if not customer_id:
-            _logger.error(
-                "IRG Stripe: No se pudo obtener/crear Stripe Customer para %s",
-                partner.display_name,
-            )
-            return False
-
-        # 2. Get payment method from token
+        # 1. Get payment method from token
         token = self.payment_token_id
         if not token:
             _logger.error(
@@ -209,27 +199,82 @@ class SaleOrderStripeBridge(models.Model):
                 token.id,
             )
 
-        # If the token's customer differs from ours, attach the PM to our customer
-        if token.provider_ref and token.provider_ref != customer_id and payment_method_id:
+        # 2. Ensure Stripe Customer — prefer the one already owning the PM
+        partner = self.partner_id.sudo()
+        customer_id = partner.irg_stripe_customer_id or False
+
+        if not customer_id and payment_method_id:
+            # Retrieve the PM from Stripe to find its existing customer
             try:
-                provider._stripe_make_request(
-                    "payment_methods/%s/attach" % payment_method_id,
-                    payload={"customer": customer_id},
+                pm_data = provider._stripe_make_request(
+                    "payment_methods/%s" % payment_method_id,
+                    payload={},
+                    method="GET",
                 )
+                pm_customer = pm_data.get("customer")
+                if pm_customer:
+                    customer_id = pm_customer
+                    partner.write({"irg_stripe_customer_id": customer_id})
+                    _logger.info(
+                        "IRG Stripe: Reutilizando customer %s del PM %s para %s",
+                        customer_id, payment_method_id, partner.name,
+                    )
             except Exception:
-                _logger.warning(
-                    "IRG Stripe: No se pudo adjuntar PM %s al customer %s "
-                    "(puede que ya esté adjuntado).",
+                _logger.info(
+                    "IRG Stripe: No se pudo consultar PM %s, se creará customer nuevo.",
                     payment_method_id,
-                    customer_id,
                 )
 
-        # 3. Ensure Stripe Price
+        if not customer_id:
+            customer_id = partner._irg_ensure_stripe_customer(provider=provider)
+
+        if not customer_id:
+            _logger.error(
+                "IRG Stripe: No se pudo obtener/crear Stripe Customer para %s",
+                partner.display_name,
+            )
+            return False
+
+        # 3. Ensure PM is attached to the customer we're going to use
+        if payment_method_id:
+            try:
+                pm_data = provider._stripe_make_request(
+                    "payment_methods/%s" % payment_method_id,
+                    payload={},
+                    method="GET",
+                )
+                pm_customer = pm_data.get("customer")
+                if pm_customer and pm_customer != customer_id:
+                    # PM belongs to a different customer — detach, then reattach
+                    provider._stripe_make_request(
+                        "payment_methods/%s/detach" % payment_method_id,
+                        payload={},
+                    )
+                    _logger.info(
+                        "IRG Stripe: PM %s desvinculado de customer %s",
+                        payment_method_id, pm_customer,
+                    )
+                if pm_customer != customer_id:
+                    provider._stripe_make_request(
+                        "payment_methods/%s/attach" % payment_method_id,
+                        payload={"customer": customer_id},
+                    )
+                    _logger.info(
+                        "IRG Stripe: PM %s vinculado a customer %s",
+                        payment_method_id, customer_id,
+                    )
+            except Exception:
+                _logger.warning(
+                    "IRG Stripe: No se pudo adjuntar PM %s al customer %s.",
+                    payment_method_id, customer_id,
+                )
+
+        # 4. Ensure Stripe Price
         price_id = self._irg_ensure_stripe_price(provider=provider)
         if not price_id:
             return False
 
-        # 4. Build subscription payload
+        # 5. Build subscription payload
         payload = {
             "customer": customer_id,
             "items[0][price]": price_id,
