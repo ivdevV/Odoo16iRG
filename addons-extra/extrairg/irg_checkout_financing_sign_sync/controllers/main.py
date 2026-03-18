@@ -73,7 +73,15 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
                     changed_vals[field_name] = new_value
 
             if changed_vals:
-                partner.write(changed_vals)
+                try:
+                    partner.write(changed_vals)
+                except Exception as exc:
+                    # Do not block checkout progression if partner extra fields fail.
+                    _logger.exception(
+                        "IRG checkout: failed to write extra partner fields for order %s: %s",
+                        order.name,
+                        exc,
+                    )
 
         # Client POST must NOT overwrite computed order-level academic/payment values.
         # Those values are server-computed (scheduled/order logic) and therefore
@@ -86,7 +94,14 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
 
         order = request.website.sale_get_order()
         if order and request.httprequest.method == 'POST':
-            self._irg_save_address_extra_fields(order, kw)
+            try:
+                self._irg_save_address_extra_fields(order, kw)
+            except Exception as exc:
+                _logger.exception(
+                    "IRG checkout: unexpected error in _irg_save_address_extra_fields for order %s: %s",
+                    order.name,
+                    exc,
+                )
             self._irg_sync_checkout_order(recalculate=False)
         return res
 
