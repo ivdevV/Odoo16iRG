@@ -59,6 +59,19 @@ class SaleOrder(models.Model):
         ),
     )
 
+    # --- Stripe mode ---
+    irg_subscription_stripe_mode = fields.Selection(
+        selection=[
+            ('tokenized_charge', 'Tokenized charge'),
+            ('payment_link_fallback', 'Payment link fallback'),
+            ('stripe_subscription_real', 'Stripe subscription real'),
+        ],
+        string='IRG Stripe Mode',
+        default='tokenized_charge',
+        copy=False,
+        tracking=True,
+    )
+
     # --- Payment link (send_invoice) fields ---
     stripe_hosted_invoice_url = fields.Char(
         string='Stripe Payment Link',
