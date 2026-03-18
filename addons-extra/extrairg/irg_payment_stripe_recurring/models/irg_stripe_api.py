@@ -193,15 +193,33 @@ class IrgStripeApi(models.AbstractModel):
             return {}
 
         # 4) Create Subscription
-        payload = {
-            "customer": customer_id,
-            "items[0][price]": stripe_price_id,
-            "default_payment_method": payment_method_id or "",
-            "metadata[odoo_order_id]": str(order.id),
-            "metadata[odoo_order_name]": order.name or "",
-            "payment_behavior": "default_incomplete",
-            "payment_settings[save_default_payment_method]": "on_subscription",
-        }
+        stripe_mode = getattr(order, 'irg_subscription_stripe_mode', False)
+        is_send_invoice = stripe_mode == 'payment_link_fallback'
+
+        if is_send_invoice:
+            days_until_due = int(
+                self.env['ir.config_parameter'].sudo().get_param(
+                    'irg_stripe.payment_link_days_until_due', '10'
+                )
+            )
+            payload = {
+                "customer": customer_id,
+                "items[0][price]": stripe_price_id,
+                "collection_method": "send_invoice",
+                "days_until_due": str(days_until_due),
+                "metadata[odoo_order_id]": str(order.id),
+                "metadata[odoo_order_name]": order.name or "",
+            }
+        else:
+            payload = {
+                "customer": customer_id,
+                "items[0][price]": stripe_price_id,
+                "default_payment_method": payment_method_id or "",
+                "metadata[odoo_order_id]": str(order.id),
+                "metadata[odoo_order_name]": order.name or "",
+                "payment_behavior": "default_incomplete",
+                "payment_settings[save_default_payment_method]": "on_subscription",
+            }
 
         # If the first payment was already captured, skip billing this cycle
         first_schedule = order.subscription_schedule.sorted("date_due")[:1]

@@ -182,25 +182,30 @@ class SaleOrderStripeBridge(models.Model):
             _logger.error("IRG Stripe: No active Stripe provider to create subscription.")
             return False
 
-        # 1. Get payment method from token
+        # 1. Get payment method from token (not required in payment_link_fallback mode)
+        stripe_mode = getattr(self, 'irg_subscription_stripe_mode', False)
+        is_send_invoice = stripe_mode == 'payment_link_fallback'
+
         token = self.payment_token_id
-        if not token:
+        payment_method_id = False
+
+        if token:
+            # In Odoo 16 payment_stripe:
+            #   token.provider_ref          = Stripe Customer ID (cus_xxx)
+            #   token.stripe_payment_method = Stripe PaymentMethod ID (pm_xxx)
+            payment_method_id = token.stripe_payment_method or False
+            if not payment_method_id and not is_send_invoice:
+                _logger.warning(
+                    "IRG Stripe: Token %s no tiene stripe_payment_method (PM), "
+                    "se intentará sin default_payment_method.",
+                    token.id,
+                )
+        elif not is_send_invoice:
             _logger.error(
                 "IRG Stripe: Suscripción %s no tiene payment_token_id asignado.",
                 self.name,
             )
             return False
-
-        # In Odoo 16 payment_stripe:
-        #   token.provider_ref          = Stripe Customer ID (cus_xxx)
-        #   token.stripe_payment_method = Stripe PaymentMethod ID (pm_xxx)
-        payment_method_id = token.stripe_payment_method or False
-        if not payment_method_id:
-            _logger.warning(
-                "IRG Stripe: Token %s no tiene stripe_payment_method (PM), "
-                "se intentará sin default_payment_method.",
-                token.id,
-            )
 
         # 2. Determine Stripe Customer
         #    provider_ref on the token already holds the customer (cus_xxx).
@@ -210,16 +215,17 @@ class SaleOrderStripeBridge(models.Model):
         customer_id = False
 
         # First try: customer stored on the token itself (provider_ref = cus_xxx)
-        token_customer = token.provider_ref or False
-        if token_customer and token_customer.startswith('cus_'):
-            customer_id = token_customer
-            # Keep partner's stored customer in sync
-            if partner.irg_stripe_customer_id != token_customer:
-                partner.write({"irg_stripe_customer_id": token_customer})
-            _logger.info(
-                "IRG Stripe: Usando customer %s del token %s para %s",
-                customer_id, token.id, partner.name,
-            )
+        if token:
+            token_customer = token.provider_ref or False
+            if token_customer and token_customer.startswith('cus_'):
+                customer_id = token_customer
+                # Keep partner's stored customer in sync
+                if partner.irg_stripe_customer_id != token_customer:
+                    partner.write({"irg_stripe_customer_id": token_customer})
+                _logger.info(
+                    "IRG Stripe: Usando customer %s del token %s para %s",
+                    customer_id, token.id, partner.name,
+                )
 
         if not customer_id:
             customer_id = partner.irg_stripe_customer_id or False
@@ -240,19 +246,36 @@ class SaleOrderStripeBridge(models.Model):
             return False
 
         # 5. Build subscription payload
-        payload = {
-            "customer": customer_id,
-            "items[0][price]": price_id,
-            "items[0][quantity]": "1",
-            "collection_method": "charge_automatically",
-            "payment_settings[payment_method_types][0]": "card",
-            "payment_settings[save_default_payment_method]": "on_subscription",
-            "metadata[odoo_order_id]": str(self.id),
-            "metadata[odoo_order_name]": self.name or "",
-            "off_session": "true",
-        }
 
-        if payment_method_id:
+        if is_send_invoice:
+            days_until_due = int(
+                self.env['ir.config_parameter'].sudo().get_param(
+                    'irg_stripe.payment_link_days_until_due', '10'
+                )
+            )
+            payload = {
+                "customer": customer_id,
+                "items[0][price]": price_id,
+                "items[0][quantity]": "1",
+                "collection_method": "send_invoice",
+                "days_until_due": str(days_until_due),
+                "metadata[odoo_order_id]": str(self.id),
+                "metadata[odoo_order_name]": self.name or "",
+            }
+        else:
+            payload = {
+                "customer": customer_id,
+                "items[0][price]": price_id,
+                "items[0][quantity]": "1",
+                "collection_method": "charge_automatically",
+                "payment_settings[payment_method_types][0]": "card",
+                "payment_settings[save_default_payment_method]": "on_subscription",
+                "metadata[odoo_order_id]": str(self.id),
+                "metadata[odoo_order_name]": self.name or "",
+                "off_session": "true",
+            }
+
+        if payment_method_id and not is_send_invoice:
             payload["default_payment_method"] = payment_method_id
 
         # Description
@@ -462,7 +485,9 @@ class SaleOrderStripeBridge(models.Model):
             )
         if not self.is_subscription:
             raise UserError(_("Este pedido no es una suscripción."))
-        if not self.payment_token_id:
+
+        stripe_mode = getattr(self, 'irg_subscription_stripe_mode', False)
+        if stripe_mode != 'payment_link_fallback' and not self.payment_token_id:
             raise UserError(
                 _("No hay token de pago asignado. El cliente debe completar "
                   "un primer pago con tarjeta antes de crear la suscripción en Stripe.")
@@ -518,13 +543,22 @@ class SaleOrderStripeBridge(models.Model):
         """Find subscriptions with ``irg_stripe_bridge_state = pending_real_subscription``
         that have a payment token, and attempt to create the Stripe Subscription.
         """
-        pending = self.sudo().search([
+        # stripe_subscription_real: requires token
+        pending_real = self.sudo().search([
             ("is_subscription", "=", True),
             ("irg_subscription_stripe_mode", "=", "stripe_subscription_real"),
             ("stripe_subscription_id", "=", False),
             ("payment_token_id", "!=", False),
             ("state", "in", ("sale", "done")),
         ])
+        # payment_link_fallback: no token required
+        pending_link = self.sudo().search([
+            ("is_subscription", "=", True),
+            ("irg_subscription_stripe_mode", "=", "payment_link_fallback"),
+            ("stripe_subscription_id", "=", False),
+            ("state", "in", ("sale", "done")),
+        ])
+        pending = pending_real | pending_link
 
         created = 0
         for order in pending:

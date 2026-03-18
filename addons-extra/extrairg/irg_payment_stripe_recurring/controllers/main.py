@@ -24,6 +24,8 @@ _SUBSCRIPTION_EVENTS = {
     'customer.subscription.pending_update_applied',
     'customer.subscription.pending_update_expired',
     'customer.subscription.trial_will_end',
+    'invoice.created',
+    'invoice.finalized',
     'invoice.paid',
     'invoice.payment_failed',
     'invoice.payment_action_required',
@@ -82,6 +84,8 @@ class IrgStripeWebhookController(StripeController):
             'customer.subscription.deleted': self._irg_on_subscription_deleted,
             'customer.subscription.paused': self._irg_on_subscription_paused,
             'customer.subscription.resumed': self._irg_on_subscription_resumed,
+            'invoice.created': self._irg_on_invoice_created_or_finalized,
+            'invoice.finalized': self._irg_on_invoice_created_or_finalized,
             'invoice.paid': self._irg_on_invoice_paid,
             'invoice.payment_failed': self._irg_on_invoice_payment_failed,
         }
@@ -170,6 +174,35 @@ class IrgStripeWebhookController(StripeController):
         )
         order.sudo().write({'subscription_suspended': False})
 
+    def _irg_on_invoice_created_or_finalized(self, obj):
+        """
+        Handle ``invoice.created`` / ``invoice.finalized`` for subscription invoices.
+        Captures the ``hosted_invoice_url`` so Odoo can send payment link reminders.
+        """
+        subscription_id = obj.get('subscription')
+        if not subscription_id:
+            return
+        order = self._irg_find_order_by_subscription(subscription_id)
+        if not order:
+            return
+
+        hosted_url = obj.get('hosted_invoice_url')
+        invoice_id = obj.get('id')
+        if not hosted_url:
+            return
+
+        order.sudo().write({
+            'stripe_hosted_invoice_url': hosted_url,
+            'stripe_invoice_id': invoice_id or False,
+            'stripe_last_reminder_sent': False,
+            'stripe_reminder_count': 0,
+        })
+        _logger.info(
+            "IRG Stripe webhook: stored hosted_invoice_url for order %s (invoice %s)",
+            order.name,
+            invoice_id,
+        )
+
     def _irg_on_invoice_paid(self, obj):
         """
         Handle ``invoice.paid`` for subscription invoices.
@@ -186,6 +219,13 @@ class IrgStripeWebhookController(StripeController):
             state='active',
             clear_grace=True,
         )
+        # Clear payment link fields — invoice is paid
+        order.sudo().write({
+            'stripe_hosted_invoice_url': False,
+            'stripe_invoice_id': False,
+            'stripe_last_reminder_sent': False,
+            'stripe_reminder_count': 0,
+        })
         # Mark the oldest unpaid schedule line as paid
         unpaid = order.subscription_schedule.filtered(
             lambda s: s.payment_state == 'not_paid'

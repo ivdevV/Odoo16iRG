@@ -6,5 +6,17 @@
             <field name="key">irg_stripe.overdue_grace_days</field>
             <field name="value">15</field>
         </record>
+
+        <!-- Días de vencimiento para invoices en modo send_invoice -->
+        <record id="config_payment_link_days_until_due" model="ir.config_parameter">
+            <field name="key">irg_stripe.payment_link_days_until_due</field>
+            <field name="value">10</field>
+        </record>
+
+        <!-- Intervalo en días entre recordatorios de pago -->
+        <record id="config_payment_link_reminder_interval" model="ir.config_parameter">
+            <field name="key">irg_stripe.payment_link_reminder_interval</field>
+            <field name="value">3</field>
+        </record>
     </data>
 </odoo>

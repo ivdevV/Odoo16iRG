@@ -53,5 +53,18 @@
             <field name="doall">False</field>
         </record>
 
+        <!-- Cron: Enviar recordatorios de pago con enlace Stripe -->
+        <record id="cron_send_payment_link_reminders" model="ir.cron">
+            <field name="name">IRG: Enviar recordatorios enlace de pago Stripe</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_send_payment_link_reminders()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">False</field>
+            <field name="doall">False</field>
+        </record>
+
     </data>
 </odoo>

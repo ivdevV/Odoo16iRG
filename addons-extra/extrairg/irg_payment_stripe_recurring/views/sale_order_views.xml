@@ -23,6 +23,16 @@
                             <field name="stripe_trial_end"/>
                         </group>
                     </group>
+                    <group string="Enlace de pago Stripe" attrs="{'invisible': [('irg_subscription_stripe_mode', '!=', 'payment_link_fallback')]}">
+                        <group>
+                            <field name="stripe_hosted_invoice_url" widget="url" readonly="1"/>
+                            <field name="stripe_invoice_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="stripe_reminder_count" readonly="1"/>
+                            <field name="stripe_last_reminder_sent" readonly="1"/>
+                        </group>
+                    </group>
                     <group>
                         <button name="action_irg_create_stripe_subscription"
                                 type="object"
@@ -30,6 +40,11 @@
                                 class="btn-primary"
                                 attrs="{'invisible': ['|', ('is_subscription', '=', False), ('stripe_subscription_id', '!=', False)]}"
                                 confirm="¿Crear una suscripción real en Stripe para este pedido?"/>
+                        <button name="action_irg_send_payment_reminder"
+                                type="object"
+                                string="Enviar recordatorio de pago"
+                                class="btn-secondary"
+                                attrs="{'invisible': ['|', ('irg_subscription_stripe_mode', '!=', 'payment_link_fallback'), ('stripe_hosted_invoice_url', '=', False)]}"/>
                         <button name="action_irg_pause_subscription" type="object" string="Pausar" class="btn-secondary" attrs="{'invisible': [('is_subscription', '=', False)]}"/>
                         <button name="action_irg_resume_subscription" type="object" string="Reactivar" class="btn-secondary" attrs="{'invisible': [('is_subscription', '=', False)]}"/>
                         <button name="action_irg_cancel_subscription" type="object" string="Cancelar" class="btn-danger" attrs="{'invisible': [('is_subscription', '=', False)]}"/>

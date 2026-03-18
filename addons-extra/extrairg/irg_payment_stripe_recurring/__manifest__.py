@@ -24,6 +24,7 @@
         'security/ir.model.access.csv',
         'data/config_data.xml',
         'data/cron_data.xml',
+        'data/mail_template_data.xml',
         'views/sale_order_views.xml',
         'views/res_partner_views.xml',
     ],

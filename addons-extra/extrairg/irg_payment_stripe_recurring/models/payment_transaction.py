@@ -127,11 +127,12 @@ class PaymentTransaction(models.Model):
 
     def _irg_maybe_create_stripe_subscription(self, tx, order):
         """
-        If the order is configured for ``stripe_subscription_real`` mode,
-        create a native Stripe Subscription after the first successful payment.
+        If the order is configured for ``stripe_subscription_real`` or
+        ``payment_link_fallback`` mode, create a native Stripe Subscription
+        after the first successful payment.
         """
         stripe_mode = getattr(order, 'irg_subscription_stripe_mode', False)
-        if stripe_mode != 'stripe_subscription_real':
+        if stripe_mode not in ('stripe_subscription_real', 'payment_link_fallback'):
             return
 
         # Skip if a Stripe Subscription already exists (avoid duplicates)
@@ -148,7 +149,7 @@ class PaymentTransaction(models.Model):
         #   token.provider_ref          = Stripe Customer (cus_xxx)
         #   token.stripe_payment_method = Stripe PM       (pm_xxx)
         payment_method_id = tx.token_id.stripe_payment_method
-        if not payment_method_id:
+        if not payment_method_id and stripe_mode != 'payment_link_fallback':
             _logger.warning(
                 "IRG Stripe: token %s for order %s has no stripe_payment_method, "
                 "cannot create Stripe Subscription",
@@ -158,7 +159,10 @@ class PaymentTransaction(models.Model):
             return
 
         api = self.env['irg.stripe.api']
-        result = api._create_stripe_subscription(order, payment_method_id=payment_method_id)
+        result = api._create_stripe_subscription(
+            order,
+            payment_method_id=payment_method_id if stripe_mode != 'payment_link_fallback' else None,
+        )
         if result.get('id'):
             _logger.info(
                 "IRG Stripe: native Subscription %s created for order %s",
