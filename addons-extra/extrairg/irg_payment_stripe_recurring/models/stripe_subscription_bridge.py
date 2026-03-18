@@ -199,12 +199,14 @@ class SaleOrderStripeBridge(models.Model):
                 token.id,
             )
 
-        # 2. Ensure Stripe Customer — prefer the one already owning the PM
+        # 2. Ensure Stripe Customer — ALWAYS prefer the one owning the PM
+        #    Stripe PMs from PaymentIntents are permanently bound to their
+        #    customer and cannot be detached/reattached.
         partner = self.partner_id.sudo()
-        customer_id = partner.irg_stripe_customer_id or False
+        customer_id = False
 
-        if not customer_id and payment_method_id:
-            # Retrieve the PM from Stripe to find its existing customer
+        if payment_method_id:
+            # Retrieve the PM from Stripe to find its owning customer
             try:
                 pm_data = provider._stripe_make_request(
                     "payment_methods/%s" % payment_method_id,
@@ -214,16 +216,20 @@ class SaleOrderStripeBridge(models.Model):
                 pm_customer = pm_data.get("customer")
                 if pm_customer:
                     customer_id = pm_customer
-                    partner.write({"irg_stripe_customer_id": customer_id})
+                    if partner.irg_stripe_customer_id != pm_customer:
+                        partner.write({"irg_stripe_customer_id": pm_customer})
                     _logger.info(
-                        "IRG Stripe: Reutilizando customer %s del PM %s para %s",
+                        "IRG Stripe: Usando customer %s del PM %s para %s",
                         customer_id, payment_method_id, partner.name,
                     )
             except Exception:
                 _logger.info(
-                    "IRG Stripe: No se pudo consultar PM %s, se creará customer nuevo.",
+                    "IRG Stripe: No se pudo consultar PM %s.",
                     payment_method_id,
                 )
+
+        if not customer_id:
+            customer_id = partner.irg_stripe_customer_id or False
 
         if not customer_id:
             customer_id = partner._irg_ensure_stripe_customer(provider=provider)
@@ -234,40 +240,6 @@ class SaleOrderStripeBridge(models.Model):
                 partner.display_name,
             )
             return False
-
-        # 3. Ensure PM is attached to the customer we're going to use
-        if payment_method_id:
-            try:
-                pm_data = provider._stripe_make_request(
-                    "payment_methods/%s" % payment_method_id,
-                    payload={},
-                    method="GET",
-                )
-                pm_customer = pm_data.get("customer")
-                if pm_customer and pm_customer != customer_id:
-                    # PM belongs to a different customer — detach, then reattach
-                    provider._stripe_make_request(
-                        "payment_methods/%s/detach" % payment_method_id,
-                        payload={},
-                    )
-                    _logger.info(
-                        "IRG Stripe: PM %s desvinculado de customer %s",
-                        payment_method_id, pm_customer,
-                    )
-                if pm_customer != customer_id:
-                    provider._stripe_make_request(
-                        "payment_methods/%s/attach" % payment_method_id,
-                        payload={"customer": customer_id},
-                    )
-                    _logger.info(
-                        "IRG Stripe: PM %s vinculado a customer %s",
-                        payment_method_id, customer_id,
-                    )
-            except Exception:
-                _logger.warning(
-                    "IRG Stripe: No se pudo adjuntar PM %s al customer %s.",
-                    payment_method_id, customer_id,
-                )
 
         # 4. Ensure Stripe Price
         price_id = self._irg_ensure_stripe_price(provider=provider)
