@@ -58,7 +58,7 @@ class PaymentTransaction(models.Model):
         """
         Extiende _reconcile_after_done para asignar el token Stripe
         a la suscripción (sale.order.payment_token_id) después de
-        que el pago se complete exitosamente.
+        que el pago se complete exitosamente.a
 
         CADENA DE HERENCIA (MRO):
         Este método se ejecuta DESPUÉS de:

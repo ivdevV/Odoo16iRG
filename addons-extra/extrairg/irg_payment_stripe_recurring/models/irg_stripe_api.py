@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Helper service for creating native Stripe Subscriptions via the REST API.
+Helper service for creating native Stripe Subscriptions via the REST API.a
 
 Uses ``payment.provider._stripe_make_request`` from Odoo 16's
 ``payment_stripe`` module so we automatically inherit credentials,
