@@ -162,7 +162,7 @@ class SaleOrderStripeBridge(models.Model):
 
         Prerequisites:
         - The order is a subscription in state ``sale`` or ``done``.
-        - A ``payment_token_id`` with ``stripe_payment_method`` is set.
+        - A ``payment_token_id`` with ``provider_ref`` (pm_xxx) is set.
         - ``irg_subscription_stripe_mode == 'stripe_subscription_real'``
 
         Returns the Stripe Subscription ID (``sub_xxx``) or *False*.
@@ -191,10 +191,11 @@ class SaleOrderStripeBridge(models.Model):
             )
             return False
 
-        payment_method_id = getattr(token, "stripe_payment_method", None)
+        # provider_ref stores the Stripe PM id (pm_xxx) on payment.token
+        payment_method_id = token.provider_ref or False
         if not payment_method_id:
             _logger.warning(
-                "IRG Stripe: Token %s no tiene stripe_payment_method, "
+                "IRG Stripe: Token %s no tiene provider_ref (PM), "
                 "se intentará sin default_payment_method.",
                 token.id,
             )
