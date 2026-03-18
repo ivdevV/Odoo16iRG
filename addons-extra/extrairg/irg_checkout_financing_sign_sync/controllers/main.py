@@ -102,7 +102,6 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
                     order.name,
                     exc,
                 )
-            self._irg_sync_checkout_order(recalculate=False)
         return res
 
     def _irg_sync_checkout_order(self, recalculate=False):
@@ -131,8 +130,6 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
 
     @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def extra_info(self, **post):
-        if request.httprequest.method == 'POST':
-            self._irg_sync_checkout_order(recalculate=False)
         return super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
 
     @http.route(['/shop/payment'], type='http', auth='public', website=True, sitemap=False)

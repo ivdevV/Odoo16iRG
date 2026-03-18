@@ -24,8 +24,9 @@ class IrgWebsiteSale(CustomWebsiteSale):
             _logger.debug("IRG %s: skipping duplicate _auto_scheduled_order for order %s", route_name, order.name)
             return
 
-        # Avoid running expensive scheduling on plain GET for intermediate checkout steps.
-        if request.httprequest.path in ('/shop/address', '/shop/extra_info') and request.httprequest.method != 'POST':
+        # Defer heavy scheduling during intermediate checkout screens.
+        # This keeps address -> extra_info navigation responsive.
+        if request.httprequest.path in ('/shop/address', '/shop/extra_info'):
             return
 
         if order.subscription_schedule:
