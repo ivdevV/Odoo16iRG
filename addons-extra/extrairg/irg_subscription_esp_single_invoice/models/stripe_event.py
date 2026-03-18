@@ -21,6 +21,8 @@ class IrgSubscriptionStripeEvent(models.Model):
             ("tokenized_charge", "Tokenized charge mode"),
             ("payment_link_fallback", "Payment link fallback mode"),
             ("pending_real_subscription", "Pending Stripe subscription"),
+            ("stripe_subscription_created", "Stripe subscription created"),
+            ("stripe_subscription_error", "Stripe subscription error"),
             ("payment_transaction_reconciled", "Payment transaction reconciled"),
         ],
         string="Event Type",

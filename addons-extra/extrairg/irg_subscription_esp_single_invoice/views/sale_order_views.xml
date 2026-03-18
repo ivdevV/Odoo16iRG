@@ -52,7 +52,9 @@
                         <group>
                             <field name="irg_stripe_bridge_state" readonly="1"/>
                             <field name="stripe_subscription_state" readonly="1"/>
+                            <field name="stripe_subscription_id" readonly="1"/>
                             <field name="stripe_subscription_ref" readonly="1"/>
+                            <field name="stripe_price_id" readonly="1"/>
                         </group>
                         <group>
                             <field name="irg_payment_link_fallback_enabled" readonly="1"/>
