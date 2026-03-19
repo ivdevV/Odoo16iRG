@@ -251,6 +251,7 @@ class IrgStripeApi(models.AbstractModel):
 
         # Persist on sale.order
         order.sudo().write({
+            "stripe_subscription_id": subscription_id,
             "stripe_subscription_ref": subscription_id,
             "stripe_subscription_state": "active",
             "stripe_last_event": "subscription.created",

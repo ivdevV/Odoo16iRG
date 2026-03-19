@@ -75,22 +75,36 @@ class PaymentTransaction(models.Model):
         # Primero ejecutar toda la cadena de herencia existente
         res = super()._reconcile_after_done()
 
-        # Post-procesamiento: asignar token Stripe a la suscripción
+        # Post-procesamiento: asignar token Stripe y crear suscripción nativa
         for tx in self:
-            # Solo procesar transacciones Stripe exitosas con token
             if tx.provider_code != 'stripe':
                 continue
             if tx.state != 'done':
                 continue
-            if not tx.token_id:
-                continue
 
             for order in tx.sale_order_ids:
-                # Solo suscripciones
                 if not order.is_subscription:
                     continue
-                # No sobreescribir un token ya asignado manualmente
-                if order.payment_token_id:
+
+                # --- 1) Asignar token (si aún no tiene uno) ---
+                if tx.token_id and not order.payment_token_id:
+                    order.sudo().write({
+                        'payment_token_id': tx.token_id.id,
+                    })
+                    stripe_mode = getattr(order, 'irg_subscription_stripe_mode', False)
+                    if stripe_mode not in ('stripe_subscription_real', 'payment_link_fallback'):
+                        order.sudo().write({
+                            'stripe_subscription_ref': tx.token_id.provider_ref or tx.reference,
+                        })
+                    _logger.info(
+                        "IRG Stripe: Token %s (provider=%s) asignado a "
+                        "suscripción %s tras transacción %s",
+                        tx.token_id.id,
+                        tx.token_id.provider_id.name,
+                        order.name,
+                        tx.reference,
+                    )
+                elif tx.token_id and order.payment_token_id:
                     _logger.info(
                         "IRG Stripe: Suscripción %s ya tiene token %s, "
                         "no se sobreescribe con %s",
@@ -98,29 +112,8 @@ class PaymentTransaction(models.Model):
                         order.payment_token_id.id,
                         tx.token_id.id,
                     )
-                    continue
 
-                order.sudo().write({
-                    'payment_token_id': tx.token_id.id,
-                })
-
-                # Only set stripe_subscription_ref to token ref if NOT using native subscriptions
-                # (native mode will set it to the sub_... id later)
-                stripe_mode = getattr(order, 'irg_subscription_stripe_mode', False)
-                if stripe_mode != 'stripe_subscription_real':
-                    order.sudo().write({
-                        'stripe_subscription_ref': tx.token_id.provider_ref or tx.reference,
-                    })
-                _logger.info(
-                    "IRG Stripe: Token %s (provider=%s) asignado a "
-                    "suscripción %s tras transacción %s",
-                    tx.token_id.id,
-                    tx.token_id.provider_id.name,
-                    order.name,
-                    tx.reference,
-                )
-
-                # --- Crear suscripción nativa en Stripe si el modo lo requiere ---
+                # --- 2) Crear suscripción nativa (siempre, independiente del token) ---
                 self._irg_maybe_create_stripe_subscription(tx, order)
 
         return res

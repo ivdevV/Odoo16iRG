@@ -265,6 +265,32 @@ class SaleOrder(models.Model):
                     description="Single-invoice subscription pending Stripe Subscription real bridge.",
                 )
             elif order.irg_subscription_stripe_mode == "payment_link_fallback":
+                # If already created in Stripe, just mark the bridge state
+                if order.stripe_subscription_id:
+                    order.sudo().write({
+                        "irg_stripe_bridge_state": "payment_link_fallback",
+                    })
+                    continue
+
+                # Try to auto-create (send_invoice mode does NOT need payment_token_id)
+                if order.state in ("sale", "done"):
+                    sub_id = order._irg_create_stripe_subscription()
+                    if sub_id:
+                        order.sudo().write({
+                            "irg_stripe_bridge_state": "payment_link_fallback",
+                        })
+                        order._irg_log_bridge_event(
+                            event_type="stripe_subscription_created",
+                            description="Stripe Subscription %s (send_invoice) creada exitosamente." % sub_id,
+                        )
+                        continue
+                    else:
+                        order._irg_log_bridge_event(
+                            event_type="stripe_subscription_error",
+                            state="warning",
+                            description="Error al crear Stripe Subscription (payment_link_fallback). Se reintentar\u00e1.",
+                        )
+
                 order.irg_stripe_bridge_state = "payment_link_fallback"
                 order._irg_log_bridge_event(
                     event_type="payment_link_fallback",
