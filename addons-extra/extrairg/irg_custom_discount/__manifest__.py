@@ -26,6 +26,7 @@
     'data': [
         'security/ir.model.access.csv',
         'data/product_data.xml',
+        'views/irg_discount_exception_views.xml',
         'views/irg_discount_program_views.xml',
         'views/irg_discount_table_views.xml',
         'views/website_cart_feedback.xml',

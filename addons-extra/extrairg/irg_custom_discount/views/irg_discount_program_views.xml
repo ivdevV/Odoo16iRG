@@ -21,6 +21,8 @@
                     <group>
                         <group string="Configuración">
                             <field name="code"/>
+                            <field name="oficiality_product_ids" widget="many2many_tags"/>
+                            <field name="exclude_oficiality"/>
                             <field name="sequence"/>
                             <field name="description"/>
                             <field name="table_id"/>
