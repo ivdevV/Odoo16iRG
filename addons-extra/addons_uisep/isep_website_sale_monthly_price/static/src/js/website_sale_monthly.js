@@ -15,7 +15,8 @@ odoo.define('isep_website_sale_monthly_price.website_sale_monthly', function (re
             
             var months = combination.months || 1;
             var selectedPrice = combination.price || 0;
-            var displayPrice = months > 1 ? (selectedPrice / months) : selectedPrice;
+            var displayPrice = combination.display_installment_price || (months > 1 ? (selectedPrice / months) : selectedPrice);
+            var displayMonths = combination.display_installment_months || months;
 
             if (displayPrice && displayPrice > 0) {
                 var formattedPrice = this._priceToStr(displayPrice);
@@ -25,7 +26,7 @@ odoo.define('isep_website_sale_monthly_price.website_sale_monthly', function (re
                 
                 // Add or update installment suffix
                 var $suffix = $parent.find('.oe_price .isep_month_suffix');
-                var suffixText = months > 1 ? (' / ' + months + ' meses') : '';
+                var suffixText = displayMonths > 1 ? (' / ' + displayMonths + ' meses') : '';
                 if (suffixText) {
                     if ($suffix.length === 0) {
                         $parent.find('.oe_price').append('<span class="text-muted isep_month_suffix" style="font-size: 0.8rem;"></span>');
@@ -85,6 +86,7 @@ odoo.define('isep_website_sale_monthly_price.website_sale_monthly', function (re
 
             if ($plansBlock.length) {
                 var $planInputs = $plansBlock.find('input[type="radio"], input.js_variant_change');
+                var minMonthsAttr = parseInt($('#isep_monthly_price_active').attr('data-min-months') || '', 10);
                 var bestMonths = -1;
                 var $bestInput = $();
 
@@ -93,7 +95,12 @@ odoo.define('isep_website_sale_monthly_price.website_sale_monthly', function (re
                     var labelText = inputLabelText($input).toLowerCase();
                     var monthsMatch = labelText.match(/(\d+)\s*mes/);
                     var months = monthsMatch ? parseInt(monthsMatch[1], 10) : (labelText.indexOf('contado') !== -1 ? 1 : 0);
-                    if (months > bestMonths) {
+                    if (minMonthsAttr > 1) {
+                        if (months === minMonthsAttr) {
+                            $bestInput = $input;
+                            return false;
+                        }
+                    } else if (months > bestMonths) {
                         bestMonths = months;
                         $bestInput = $input;
                     }

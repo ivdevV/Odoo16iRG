@@ -78,7 +78,8 @@ class ProductTemplate(models.Model):
             if installment <= 0:
                 continue
 
-            rank = (months, -installment)
+            # Prefer lower installment first; if tied, prefer longer duration.
+            rank = (-installment, months)
             if best_rank is None or rank > best_rank:
                 best_rank = rank
                 best_installment = installment

@@ -39,6 +39,7 @@ odoo.define('irg_website_sale_monthly_default_combo.default_online_combo', funct
         var $plansBlock = blockByName($variantsRoot, /plan/);
         if ($plansBlock.length) {
             var $planInputs = $plansBlock.find('input[type="radio"], input.js_variant_change');
+            var minMonthsAttr = parseInt($('#isep_monthly_price_active').attr('data-min-months') || '', 10);
             var bestMonths = -1;
             var $bestInput = $();
 
@@ -47,7 +48,12 @@ odoo.define('irg_website_sale_monthly_default_combo.default_online_combo', funct
                 var labelText = inputLabelText($input).toLowerCase();
                 var monthsMatch = labelText.match(/(\d+)\s*mes/);
                 var months = monthsMatch ? parseInt(monthsMatch[1], 10) : (labelText.indexOf('contado') !== -1 ? 1 : 0);
-                if (months > bestMonths) {
+                if (minMonthsAttr > 1) {
+                    if (months === minMonthsAttr) {
+                        $bestInput = $input;
+                        return false;
+                    }
+                } else if (months > bestMonths) {
                     bestMonths = months;
                     $bestInput = $input;
                 }

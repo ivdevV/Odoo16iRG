@@ -74,7 +74,11 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
 
             if changed_vals:
                 try:
-                    partner.write(changed_vals)
+                    partner.with_context(
+                        tracking_disable=True,
+                        mail_notrack=True,
+                        mail_create_nolog=True,
+                    ).write(changed_vals)
                 except Exception as exc:
                     # Do not block checkout progression if partner extra fields fail.
                     _logger.exception(
