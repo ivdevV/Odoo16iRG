@@ -299,8 +299,11 @@ class SaleOrderStripeBridge(models.Model):
             description = description[:497] + "..."
         payload["description"] = description
 
-        # Trial end (if set on the order)
-        if self.stripe_trial_end:
+        # Trial end (if set on the order).
+        # For send_invoice mode, trial_end must NOT be used because Stripe
+        # generates a useless $0 trial invoice.  The first real invoice with
+        # the actual amount + payment link should go out immediately.
+        if self.stripe_trial_end and not is_send_invoice:
             trial_ts = int(time.mktime(self.stripe_trial_end.timetuple()))
             payload["trial_end"] = str(trial_ts)
 
@@ -310,8 +313,7 @@ class SaleOrderStripeBridge(models.Model):
 
         # Billing anchor — align with first schedule date if available.
         # Stripe requires billing_cycle_anchor <= now + 1 interval.
-        # If the first schedule date is further in the future, skip the anchor
-        # and use trial_end instead so billing starts on that date.
+        # For send_invoice mode, never use trial_end — let the invoice go out now.
         schedules = self.subscription_schedule.sorted("date_due")
         if schedules and schedules[0].date_due:
             from datetime import date as dt_date
@@ -321,17 +323,23 @@ class SaleOrderStripeBridge(models.Model):
                 # Date in the past or today — safe as anchor
                 anchor_ts = int(time.mktime(first_due.timetuple()))
                 payload["billing_cycle_anchor"] = str(anchor_ts)
-            else:
-                # Future date — use trial_end so first charge happens on that date
-                # (only if trial_end is not already set)
+            elif not is_send_invoice:
+                # Future date + charge_automatically — use trial_end
+                # so first card charge happens on that date
                 if "trial_end" not in payload:
                     trial_ts = int(time.mktime(first_due.timetuple()))
                     payload["trial_end"] = str(trial_ts)
                     _logger.info(
-                        "IRG Stripe: Usando trial_end=%s para S01 %s "
+                        "IRG Stripe: Usando trial_end=%s para %s "
                         "(primera cuota %s está en el futuro).",
                         trial_ts, self.name, first_due,
                     )
+            else:
+                _logger.info(
+                    "IRG Stripe: send_invoice mode — skipping trial_end "
+                    "for %s (primera cuota %s). First invoice goes out now.",
+                    self.name, first_due,
+                )
 
         # 5. Call Stripe API
         try:
@@ -381,32 +389,6 @@ class SaleOrderStripeBridge(models.Model):
             stripe_status,
             self.name,
         )
-
-        # For send_invoice + trial, Stripe creates a $0 draft invoice for the
-        # trial period.  It is useless and confusing, so delete it right away.
-        if is_send_invoice and "trial_end" in payload:
-            latest_inv = response.get("latest_invoice")
-            trial_inv_id = (
-                latest_inv if isinstance(latest_inv, str)
-                else (latest_inv or {}).get("id")
-            )
-            if trial_inv_id:
-                try:
-                    provider._stripe_make_request(
-                        "invoices/%s" % trial_inv_id,
-                        method="DELETE",
-                    )
-                    _logger.info(
-                        "IRG Stripe: Deleted $0 trial invoice %s for %s",
-                        trial_inv_id, self.name,
-                    )
-                except Exception:
-                    _logger.warning(
-                        "IRG Stripe: Could not delete trial invoice %s for %s",
-                        trial_inv_id, self.name,
-                        exc_info=True,
-                    )
-
         return sub_id
 
     # ------------------------------------------------------------------

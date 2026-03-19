@@ -228,8 +228,8 @@ class IrgStripeApi(models.AbstractModel):
                 (first_schedule.date_due.month % 12) + 1
             )
 
-        # Trial or proration
-        if order.stripe_trial_end:
+        # Trial or proration — skip for send_invoice mode to avoid $0 invoice
+        if order.stripe_trial_end and not is_send_invoice:
             from datetime import datetime, timezone
 
             trial_dt = datetime.combine(order.stripe_trial_end, datetime.min.time()).replace(tzinfo=timezone.utc)
