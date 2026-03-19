@@ -20,17 +20,21 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
         scoped request context flag and let model hooks decide to defer external
         side effects (e.g. Moodle API sync) until later.
         """
-        previous = request.context
-        fast_ctx = dict(previous or {})
-        fast_ctx.update({
-            'irg_fast_checkout': True,
-            'skip_moodle_sync': True,
-        })
-        request.update_context(**fast_ctx)
+        previous_fast = request.context.get('irg_fast_checkout')
+        previous_skip = request.context.get('skip_moodle_sync')
+        request.update_context(
+            irg_fast_checkout=True,
+            skip_moodle_sync=True,
+        )
         try:
             return callback()
         finally:
-            request.context = previous
+            # Odoo 16 forbids direct assignment to request.context.
+            # Restore previous truthy/falsy state through update_context.
+            request.update_context(
+                irg_fast_checkout=previous_fast,
+                skip_moodle_sync=previous_skip,
+            )
 
     def _irg_parse_float(self, value):
         if not value:
