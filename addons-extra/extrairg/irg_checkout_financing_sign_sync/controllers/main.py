@@ -13,6 +13,25 @@ _logger = logging.getLogger(__name__)
 class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
     """Final controller layer to keep checkout totals/lines consistent."""
 
+    def _irg_with_fast_checkout_context(self, callback):
+        """Execute callback with context flags that skip heavy external sync hooks.
+
+        Address -> extra_info must remain responsive for the user. We set a
+        scoped request context flag and let model hooks decide to defer external
+        side effects (e.g. Moodle API sync) until later.
+        """
+        previous = request.context
+        fast_ctx = dict(previous or {})
+        fast_ctx.update({
+            'irg_fast_checkout': True,
+            'skip_moodle_sync': True,
+        })
+        request.update_context(**fast_ctx)
+        try:
+            return callback()
+        finally:
+            request.context = previous
+
     def _irg_parse_float(self, value):
         if not value:
             return 0.0
@@ -94,7 +113,9 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
 
     @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def address(self, **kw):
-        res = super(IrgWebsiteSaleFinancingSync, self).address(**kw)
+        res = self._irg_with_fast_checkout_context(
+            lambda: super(IrgWebsiteSaleFinancingSync, self).address(**kw)
+        )
 
         order = request.website.sale_get_order()
         if order and request.httprequest.method == 'POST':
@@ -134,7 +155,9 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
 
     @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def extra_info(self, **post):
-        return super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
+        return self._irg_with_fast_checkout_context(
+            lambda: super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
+        )
 
     @http.route(['/shop/payment'], type='http', auth='public', website=True, sitemap=False)
     def shop_payment(self, **post):
