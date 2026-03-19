@@ -101,6 +101,7 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
                         tracking_disable=True,
                         mail_notrack=True,
                         mail_create_nolog=True,
+                        skip_moodle_sync=True,
                     ).write(changed_vals)
                 except Exception as exc:
                     # Do not block checkout progression if partner extra fields fail.
