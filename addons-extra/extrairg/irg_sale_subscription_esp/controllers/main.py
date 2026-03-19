@@ -38,7 +38,7 @@ class IrgWebsiteSale(CustomWebsiteSale):
 
         # Defer heavy scheduling during intermediate checkout screens.
         # This keeps address -> extra_info navigation responsive.
-        if request.httprequest.path in ('/shop/address', '/shop/extra_info'):
+        if request.httprequest.path in ('/shop/address', '/shop/extra_info', '/shop/payment'):
             return
 
         if order.subscription_schedule:

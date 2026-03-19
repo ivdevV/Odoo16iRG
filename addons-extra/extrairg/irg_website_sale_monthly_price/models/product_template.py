@@ -235,19 +235,26 @@ class ProductTemplate(models.Model):
         if not combination_info.get('is_recurrence_possible'):
             return '', 0
 
-        # Show the cheapest installment across all variants: direct calculation
-        # variant_price / months for each variant, return the minimum.
-        # This is NOT normalization — it's finding the variant with the lowest real cuota.
-        min_price, min_months = self._isep_get_min_installment_data()
-        if not min_price:
+        # Search preview must reflect the selected/default combination itself,
+        # not the global minimum installment across other variants.
+        duration = (
+            combination_info.get('months')
+            or combination_info.get('subscription_duration')
+            or 1
+        )
+        total_price = combination_info.get('price') or 0.0
+
+        if not total_price or duration <= 1:
             return super()._search_render_results_prices(mapping, combination_info)
+
+        monthly_price = total_price / duration
 
         return self.env['ir.ui.view']._render_template(
             'website_sale_subscription.subscription_search_result_price',
             values={
                 'currency': mapping['detail']['display_currency'],
-                'price': min_price,
-                'duration': min_months,
+                'price': monthly_price,
+                'duration': duration,
                 'unit': 'month',
             }
         ), 0

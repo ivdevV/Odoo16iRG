@@ -135,6 +135,9 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
         return res
 
     def _irg_sync_checkout_order(self, recalculate=False):
+        if request.httprequest.path in ('/shop/address', '/shop/extra_info', '/shop/payment'):
+            return
+
         order = request.website.sale_get_order()
         if not order:
             return
@@ -166,8 +169,11 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
 
     @http.route(['/shop/payment'], type='http', auth='public', website=True, sitemap=False)
     def shop_payment(self, **post):
-        self._irg_sync_checkout_order(recalculate=True)
-        return super().shop_payment(**post)
+        # Keep page transition non-blocking: defer heavy recalculation/sync
+        # to later steps (confirm/payment processing background hooks).
+        return self._irg_with_fast_checkout_context(
+            lambda: super(IrgWebsiteSaleFinancingSync, self).shop_payment(**post)
+        )
 
     @http.route(['/shop/academic_documents/upload'], type='http', auth='public', website=True, methods=['POST'], csrf=True)
     def upload_academic_documents(self, **post):
