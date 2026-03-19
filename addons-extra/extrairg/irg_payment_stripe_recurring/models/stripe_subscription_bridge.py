@@ -389,7 +389,70 @@ class SaleOrderStripeBridge(models.Model):
             stripe_status,
             self.name,
         )
+
+        # For send_invoice mode: if the first installment was already paid at
+        # checkout, Stripe still generates a draft invoice for the first cycle.
+        # We must finalize it and mark it as paid out_of_band so the student
+        # doesn't receive a duplicate payment link.
+        if is_send_invoice:
+            self._irg_mark_first_stripe_invoice_paid(
+                response, provider, schedules,
+            )
+
         return sub_id
+
+    def _irg_mark_first_stripe_invoice_paid(self, sub_response, provider, schedules):
+        """Finalize + pay the first subscription invoice out_of_band
+        when the first Odoo schedule is already paid (checkout payment)."""
+        first_schedule = schedules[:1] if schedules else False
+        if not first_schedule or first_schedule.payment_state != 'paid':
+            _logger.info(
+                "IRG Stripe: first schedule for %s not yet paid — "
+                "leaving Stripe invoice open for payment link.",
+                self.name,
+            )
+            return
+
+        latest_inv = sub_response.get('latest_invoice')
+        inv_id = (
+            latest_inv if isinstance(latest_inv, str)
+            else (latest_inv or {}).get('id')
+        )
+        if not inv_id:
+            return
+
+        try:
+            # Retrieve invoice to check status
+            inv_data = provider._stripe_make_request(
+                'invoices/%s' % inv_id, method='GET',
+            )
+            inv_status = inv_data.get('status', '')
+
+            # Finalize if still draft
+            if inv_status == 'draft':
+                inv_data = provider._stripe_make_request(
+                    'invoices/%s/finalize' % inv_id, payload={},
+                )
+                _logger.info(
+                    "IRG Stripe: finalized first invoice %s for %s",
+                    inv_id, self.name,
+                )
+
+            # Mark as paid out of band (student already paid at checkout)
+            provider._stripe_make_request(
+                'invoices/%s/pay' % inv_id,
+                payload={'paid_out_of_band': 'true'},
+            )
+            _logger.info(
+                "IRG Stripe: marked first invoice %s as paid (out_of_band) "
+                "for %s — student already paid at checkout.",
+                inv_id, self.name,
+            )
+        except Exception:
+            _logger.warning(
+                "IRG Stripe: could not mark first invoice %s as paid "
+                "for %s", inv_id, self.name, exc_info=True,
+            )
 
     # ------------------------------------------------------------------
     #  Stripe Subscription lifecycle (cancel / pause / resume)

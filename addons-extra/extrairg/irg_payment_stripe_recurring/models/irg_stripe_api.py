@@ -265,7 +265,62 @@ class IrgStripeApi(models.AbstractModel):
             customer_id,
             stripe_price_id,
         )
+
+        # For send_invoice mode: if the first installment was already paid at
+        # checkout, mark the Stripe invoice as paid out_of_band.
+        if is_send_invoice:
+            self._irg_mark_first_invoice_paid_if_needed(
+                order, result,
+            )
+
         return result
+
+    def _irg_mark_first_invoice_paid_if_needed(self, order, sub_response):
+        """If the first Odoo schedule is already paid (checkout), finalize +
+        pay the first Stripe subscription invoice out_of_band."""
+        schedules = order.subscription_schedule.sorted('date_due')
+        first_schedule = schedules[:1]
+        if not first_schedule or first_schedule.payment_state != 'paid':
+            _logger.info(
+                "IRG Stripe API: first schedule for %s not yet paid — "
+                "leaving Stripe invoice open for payment link.",
+                order.name,
+            )
+            return
+
+        latest_inv = sub_response.get('latest_invoice')
+        inv_id = (
+            latest_inv if isinstance(latest_inv, str)
+            else (latest_inv or {}).get('id')
+        )
+        if not inv_id:
+            return
+
+        try:
+            inv_data = self._stripe_request('invoices/%s' % inv_id, method='GET')
+            if inv_data.get('status') == 'draft':
+                self._stripe_request(
+                    'invoices/%s/finalize' % inv_id, payload={},
+                )
+                _logger.info(
+                    "IRG Stripe API: finalized first invoice %s for %s",
+                    inv_id, order.name,
+                )
+
+            self._stripe_request(
+                'invoices/%s/pay' % inv_id,
+                payload={'paid_out_of_band': 'true'},
+            )
+            _logger.info(
+                "IRG Stripe API: marked first invoice %s as paid (out_of_band) "
+                "for %s — student already paid at checkout.",
+                inv_id, order.name,
+            )
+        except Exception:
+            _logger.warning(
+                "IRG Stripe API: could not mark first invoice %s as paid "
+                "for %s", inv_id, order.name, exc_info=True,
+            )
 
     # ------------------------------------------------------------------
     #  Helpers
