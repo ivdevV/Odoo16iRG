@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="irg_discount_exception_view_form" model="ir.ui.view">
+        <field name="name">irg.discount.exception.form</field>
+        <field name="model">irg.discount.exception</field>
+        <field name="arch" type="xml">
+            <form string="Excepción de Convenio">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="product_id"/>
+                        <field name="product_tmpl_id"/>
+                        <field name="price_exception"/>
+                        <field name="active"/>
+                    </group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="irg_discount_exception_view_tree" model="ir.ui.view">
+        <field name="name">irg.discount.exception.tree</field>
+        <field name="model">irg.discount.exception</field>
+        <field name="arch" type="xml">
+            <tree string="Excepciones de Convenio">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="product_tmpl_id"/>
+                <field name="price_exception"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="irg_discount_exception_action" model="ir.actions.act_window">
+        <field name="name">Excepciones de Convenio</field>
+        <field name="res_model">irg.discount.exception</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="irg_discount_menu_exceptions"
+              name="Excepciones Convenio"
+              parent="irg_discount_menu_root"
+              action="irg_discount_exception_action"
+              sequence="20"/>
+
+</odoo>
