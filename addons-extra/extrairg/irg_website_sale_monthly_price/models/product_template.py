@@ -2,7 +2,7 @@
 import logging
 import re
 
-from odoo import models
+from odoo import models, fields
 
 
 _logger = logging.getLogger(__name__)
@@ -38,11 +38,48 @@ def _non_plan_ptav_ids(product):
     ).ids)
 
 
+def _get_plan_temporal_price(pricelist, variant, months):
+    """Return the total temporal pricing price for the given variant and plan months.
+
+    Looks up product.pricing records filtered by:
+    - recurrence_id.unit == 'month'
+    - recurrence_id.duration == months  (e.g., 19 for the 19-month plan)
+    - pricelist_id matches the given pricelist (or is empty = applies to all)
+
+    Returns the price (currency-converted to pricelist.currency if needed),
+    or None if no matching temporal pricing record is found.
+    """
+    plan_pricings = variant.product_pricing_ids.filtered(
+        lambda p: p.recurrence_id.unit == 'month'
+        and int(round(p.recurrence_id.duration)) == months
+        and (not pricelist or not p.pricelist_id or p.pricelist_id == pricelist)
+    )[:1]
+    if not plan_pricings:
+        return None
+    price = plan_pricings[0].price
+    if pricelist and pricelist.currency_id != plan_pricings[0].currency_id:
+        price = plan_pricings[0].currency_id._convert(
+            price, pricelist.currency_id,
+            plan_pricings[0].company_id or variant.env.company,
+            fields.Date.today(),
+        )
+    return price
+
+
 def _variant_installment(pricelist, variant):
     months = _get_plan_months(variant)
-    if months <= 0:
+    if months <= 1:
+        # Contado or single payment — not a split installment plan
         return 0.0, months
-    price = pricelist._get_product_price(variant, 1.0) if pricelist else variant.lst_price
+
+    # Use the temporal pricing that precisely matches the plan months.
+    # This avoids picking up "Contado" pricing records (ordered first by price ASC)
+    # that apply to all variants due to empty product_variant_ids.
+    price = _get_plan_temporal_price(pricelist, variant, months)
+    if price is None:
+        # Fallback: use pricelist price (original behaviour)
+        price = pricelist._get_product_price(variant, 1.0) if pricelist else variant.lst_price
+
     if not price or price <= 0:
         return 0.0, months
     return (price / months), months
@@ -109,19 +146,9 @@ class ProductTemplate(models.Model):
         min_installment_months = 1
 
         for variant in variants:
-            months = _get_plan_months(variant)
-            if months <= 0:
+            installment, months = _variant_installment(current_pricelist, variant)
+            if installment <= 0 or months <= 1:
                 continue
-
-            variant_price = current_pricelist._get_product_price(variant, 1.0) if current_pricelist else variant.lst_price
-
-            if not variant_price or variant_price <= 0:
-                continue
-
-            installment = variant_price / months
-            if installment <= 0:
-                continue
-
             if min_installment_price is False or installment < min_installment_price:
                 min_installment_price = installment
                 min_installment_months = months
@@ -144,6 +171,17 @@ class ProductTemplate(models.Model):
                 current_pricelist = self.env['product.pricelist'].browse(pricelist_id)
         if not current_pricelist:
             current_pricelist = self.env['website'].get_current_website().pricelist_id
+
+        # Override combination_info['price'] with the correct temporal pricing total.
+        # Odoo's super() chain (website_sale_subscription) uses _get_first_suitable_pricing
+        # which picks the LOWEST priced record (ordered by price ASC). For multi-month
+        # plans this returns the "Contado" pricing (lower price, applies to all variants)
+        # instead of the "Mensual" temporal pricing that is the actual plan price.
+        # We look up the pricing by matching recurrence_id.duration == selected_months.
+        if selected_months > 1 and selected_product:
+            temporal_price = _get_plan_temporal_price(current_pricelist, selected_product, selected_months)
+            if temporal_price is not None and temporal_price > 0:
+                combination_info['price'] = temporal_price
 
         # Compute the global "menor cuota posible" for the whole template (across all variants)
         # — we show the absolute minimum installment available for any valid variant/pricing,
@@ -197,16 +235,19 @@ class ProductTemplate(models.Model):
         if not combination_info.get('is_recurrence_possible'):
             return '', 0
 
-        # Display cuota as variant price divided by months (direct calculation).
-        months = combination_info.get('months') or 1
-        price = combination_info.get('price') or 0.0
-        display_price = (price / months) if months and months > 1 else price
+        # Show the cheapest installment across all variants: direct calculation
+        # variant_price / months for each variant, return the minimum.
+        # This is NOT normalization — it's finding the variant with the lowest real cuota.
+        min_price, min_months = self._isep_get_min_installment_data()
+        if not min_price:
+            return super()._search_render_results_prices(mapping, combination_info)
+
         return self.env['ir.ui.view']._render_template(
             'website_sale_subscription.subscription_search_result_price',
             values={
                 'currency': mapping['detail']['display_currency'],
-                'price': display_price,
-                'duration': months,
+                'price': min_price,
+                'duration': min_months,
                 'unit': 'month',
             }
         ), 0
