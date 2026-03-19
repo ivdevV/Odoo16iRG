@@ -121,12 +121,24 @@ class SaleOrderStripeBridge(models.Model):
         interval, interval_count = self._irg_stripe_recurrence_to_interval()
         currency_code = (self.currency_id.name or "eur").lower()
 
+        # Use the real product/course name for the Stripe line-item
+        # description (shown on the invoice the student receives).
+        recurring_line = self.order_line.filtered(
+            lambda l: not l.display_type
+            and l.product_template_id.recurring_invoice
+        )[:1]
+        product_label = (
+            recurring_line.product_template_id.name
+            if recurring_line
+            else "Suscripción %s" % self.name
+        )
+
         payload = {
             "unit_amount": amount_cents,
             "currency": currency_code,
             "recurring[interval]": interval,
             "recurring[interval_count]": interval_count,
-            "product_data[name]": "Suscripción %s" % self.name,
+            "product_data[name]": product_label,
             "product_data[metadata][odoo_order_id]": str(self.id),
             "product_data[metadata][odoo_order_name]": self.name or "",
             "metadata[odoo_order_id]": str(self.id),
@@ -369,6 +381,32 @@ class SaleOrderStripeBridge(models.Model):
             stripe_status,
             self.name,
         )
+
+        # For send_invoice + trial, Stripe creates a $0 draft invoice for the
+        # trial period.  It is useless and confusing, so delete it right away.
+        if is_send_invoice and "trial_end" in payload:
+            latest_inv = response.get("latest_invoice")
+            trial_inv_id = (
+                latest_inv if isinstance(latest_inv, str)
+                else (latest_inv or {}).get("id")
+            )
+            if trial_inv_id:
+                try:
+                    provider._stripe_make_request(
+                        "invoices/%s" % trial_inv_id,
+                        method="DELETE",
+                    )
+                    _logger.info(
+                        "IRG Stripe: Deleted $0 trial invoice %s for %s",
+                        trial_inv_id, self.name,
+                    )
+                except Exception:
+                    _logger.warning(
+                        "IRG Stripe: Could not delete trial invoice %s for %s",
+                        trial_inv_id, self.name,
+                        exc_info=True,
+                    )
+
         return sub_id
 
     # ------------------------------------------------------------------

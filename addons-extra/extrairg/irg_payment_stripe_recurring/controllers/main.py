@@ -186,6 +186,15 @@ class IrgStripeWebhookController(StripeController):
         if not order:
             return
 
+        # Skip $0 trial invoices — they carry no useful payment link
+        amount_due = obj.get('amount_due', 0)
+        if not amount_due:
+            _logger.info(
+                "IRG Stripe webhook: skipping $0 invoice %s for order %s",
+                obj.get('id'), order.name,
+            )
+            return
+
         hosted_url = obj.get('hosted_invoice_url')
         invoice_id = obj.get('id')
         if not hosted_url:
