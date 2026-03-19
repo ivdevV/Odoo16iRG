@@ -14,6 +14,18 @@ class IrgWebsiteSale(CustomWebsiteSale):
     se crea una rama paralela y Odoo elige la de isep.
     """
 
+    def _irg_call_super_skip_custom_autoschedule(self, super_call):
+        key = 'irg_skip_custom_autoschedule'
+        previous = request.session.get(key)
+        request.session[key] = True
+        try:
+            return super_call()
+        finally:
+            if previous is None:
+                request.session.pop(key, None)
+            else:
+                request.session[key] = previous
+
     def _irg_recalculate_once(self, order, route_name):
         """Run expensive scheduling logic at most once per HTTP request."""
         if not order:
@@ -52,7 +64,9 @@ class IrgWebsiteSale(CustomWebsiteSale):
             _logger.exception("IRG confirm_order pre-super _auto_scheduled_order failed: %s", e)
 
         # Llamar al flujo original (que ahora encontrará la orden ya actualizada)
-        res = super(IrgWebsiteSale, self).confirm_order(**post)
+        res = self._irg_call_super_skip_custom_autoschedule(
+            lambda: super(IrgWebsiteSale, self).confirm_order(**post)
+        )
         return res
 
     @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
@@ -70,7 +84,9 @@ class IrgWebsiteSale(CustomWebsiteSale):
         except Exception as e:
             _logger.exception("IRG address pre-super _auto_scheduled_order failed: %s", e)
 
-        res = super(IrgWebsiteSale, self).address(**kw)
+        res = self._irg_call_super_skip_custom_autoschedule(
+            lambda: super(IrgWebsiteSale, self).address(**kw)
+        )
         return res
 
     @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)

@@ -55,6 +55,9 @@ class CustomWebsiteSaleForm(WebsiteSaleForm):
 
 class CustomWebsiteSale(WebsiteSale):  
 
+    def _irg_skip_custom_autoschedule(self):
+        return bool(request.session.get('irg_skip_custom_autoschedule'))
+
     # Haciendo requerido el Vat
     #def _get_mandatory_fields_billing(self, country_id=False):
     #    result = super()._get_mandatory_fields_billing(country_id)
@@ -67,7 +70,7 @@ class CustomWebsiteSale(WebsiteSale):
         res = super(CustomWebsiteSale, self).confirm_order(**post)
         try:       
             order = request.website.sale_get_order()
-            if not order.subscription_schedule and order.partner_id.id != 4:
+            if not self._irg_skip_custom_autoschedule() and not order.subscription_schedule and order.partner_id.id != 4:
                 order.sudo()._auto_scheduled_order()
         except:
             pass
@@ -80,7 +83,7 @@ class CustomWebsiteSale(WebsiteSale):
         res = super(CustomWebsiteSale, self).address(**kw)
         order = request.website.sale_get_order()
         try:            
-            if not order.subscription_schedule and order.partner_id.id != 4:
+            if not self._irg_skip_custom_autoschedule() and not order.subscription_schedule and order.partner_id.id != 4:
                 order.sudo()._auto_scheduled_order()
         except:
             pass        
