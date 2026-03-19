@@ -24,7 +24,7 @@ class IrgDiscountException(models.Model):
 
     def get_active_for_product(self, product):
         """Devuelve la excepción activa (si existe) para el producto dado."""
-        today = fields.Date.context_today(self.env)
+        today = fields.Date.context_today(self)
         # Buscar por producto o plantilla, luego validar fechas en Python para evitar dominios complejos
         domain = [
             ('active', '=', True),
