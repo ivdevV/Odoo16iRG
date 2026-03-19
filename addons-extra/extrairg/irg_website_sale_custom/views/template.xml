@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Minimal placeholder templates required by manifest -->
+    <template id="irg_website_sale_custom_placeholder">
+        <!-- placeholder -->
+    </template>
+</odoo>

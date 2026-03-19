@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- placeholder for sale_temporal_recurrence views -->
+    <record id="view_irg_sale_temporal_recurrence_tree" model="ir.ui.view">
+        <field name="name">irg.sale.temporal.recurrence.tree</field>
+        <field name="model">sale.temporal.recurrence</field>
+        <field name="arch" type="xml">
+            <tree string="Placeholder"/>
+        </field>
+    </record>
+</odoo>
