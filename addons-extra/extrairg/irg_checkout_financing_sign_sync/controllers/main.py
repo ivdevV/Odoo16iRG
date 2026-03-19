@@ -22,9 +22,11 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
         """
         previous_fast = request.context.get('irg_fast_checkout')
         previous_skip = request.context.get('skip_moodle_sync')
+        previous_skip_vat = request.context.get('skip_vat_vies_validation')
         request.update_context(
             irg_fast_checkout=True,
             skip_moodle_sync=True,
+            skip_vat_vies_validation=True,
         )
         try:
             return callback()
@@ -34,6 +36,7 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
             request.update_context(
                 irg_fast_checkout=previous_fast,
                 skip_moodle_sync=previous_skip,
+                skip_vat_vies_validation=previous_skip_vat,
             )
 
     def _irg_parse_float(self, value):

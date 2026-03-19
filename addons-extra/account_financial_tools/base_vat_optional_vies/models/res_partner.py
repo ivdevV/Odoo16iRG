@@ -41,6 +41,11 @@ class ResPartner(models.Model):
 
     @api.constrains("vat", "country_id")
     def check_vat(self):
+        # Keep website checkout responsive: avoid synchronous VIES calls in
+        # /shop/address intermediate step when fast-checkout context is active.
+        if self.env.context.get("skip_vat_vies_validation") or self.env.context.get("irg_fast_checkout"):
+            return True
+
         self.update({"vies_passed": False})
         for partner in self.sorted(lambda p: bool(p.commercial_partner_id)):
             partner = partner.with_context(vat_partner=partner)
