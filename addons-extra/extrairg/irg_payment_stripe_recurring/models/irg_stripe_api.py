@@ -280,7 +280,21 @@ class IrgStripeApi(models.AbstractModel):
         pay the first Stripe subscription invoice out_of_band."""
         schedules = order.subscription_schedule.sorted('date_due')
         first_schedule = schedules[:1]
-        if not first_schedule or first_schedule.payment_state != 'paid':
+
+        # The stored computed field payment_state may not have been updated
+        # yet (it depends on accounting reconciliation which runs later in
+        # _reconcile_after_done).  So we also check for a successful payment
+        # transaction on the order.
+        schedule_paid = first_schedule and first_schedule.payment_state == 'paid'
+        has_done_tx = bool(
+            self.env['payment.transaction'].sudo().search([
+                ('sale_order_ids', 'in', order.id),
+                ('state', '=', 'done'),
+                ('provider_code', '=', 'stripe'),
+            ], limit=1)
+        )
+
+        if not schedule_paid and not has_done_tx:
             _logger.info(
                 "IRG Stripe API: first schedule for %s not yet paid — "
                 "leaving Stripe invoice open for payment link.",

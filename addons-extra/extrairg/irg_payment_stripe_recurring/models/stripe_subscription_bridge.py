@@ -405,7 +405,21 @@ class SaleOrderStripeBridge(models.Model):
         """Finalize + pay the first subscription invoice out_of_band
         when the first Odoo schedule is already paid (checkout payment)."""
         first_schedule = schedules[:1] if schedules else False
-        if not first_schedule or first_schedule.payment_state != 'paid':
+
+        # The stored computed field payment_state may not have been updated
+        # yet (it depends on accounting reconciliation which runs later in
+        # _reconcile_after_done).  So we also check for a successful payment
+        # transaction on the order — if one exists, the student already paid.
+        schedule_paid = first_schedule and first_schedule.payment_state == 'paid'
+        has_done_tx = bool(
+            self.env['payment.transaction'].sudo().search([
+                ('sale_order_ids', 'in', self.id),
+                ('state', '=', 'done'),
+                ('provider_code', '=', 'stripe'),
+            ], limit=1)
+        )
+
+        if not schedule_paid and not has_done_tx:
             _logger.info(
                 "IRG Stripe: first schedule for %s not yet paid — "
                 "leaving Stripe invoice open for payment link.",
