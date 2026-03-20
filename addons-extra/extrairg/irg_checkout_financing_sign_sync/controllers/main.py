@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import base64
 import logging
+import time
+import uuid
 from datetime import datetime
 
 from odoo import http
@@ -12,6 +14,13 @@ _logger = logging.getLogger(__name__)
 
 class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
     """Final controller layer to keep checkout totals/lines consistent."""
+
+    def _irg_request_trace_id(self):
+        trace_id = request.context.get('irg_trace_id')
+        if not trace_id:
+            trace_id = uuid.uuid4().hex[:12]
+            request.update_context(irg_trace_id=trace_id)
+        return trace_id
 
     def _irg_with_fast_checkout_context(self, callback):
         """Execute callback with context flags that skip heavy external sync hooks.
@@ -121,28 +130,48 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
 
     @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def address(self, **kw):
+        trace_id = self._irg_request_trace_id()
+        total_start = time.perf_counter()
+        _logger.info("IRG[%s] /shop/address start method=%s", trace_id, request.httprequest.method)
+
+        super_start = time.perf_counter()
         res = self._irg_with_fast_checkout_context(
             lambda: super(IrgWebsiteSaleFinancingSync, self).address(**kw)
         )
+        _logger.info("IRG[%s] /shop/address super() finished in %.3fs", trace_id, time.perf_counter() - super_start)
 
         order = request.website.sale_get_order()
         if order and request.httprequest.method == 'POST':
+            save_start = time.perf_counter()
             try:
                 self._irg_save_address_extra_fields(order, kw)
             except Exception as exc:
                 _logger.exception(
-                    "IRG checkout: unexpected error in _irg_save_address_extra_fields for order %s: %s",
+                    "IRG[%s] checkout: unexpected error in _irg_save_address_extra_fields for order %s: %s",
+                    trace_id,
                     order.name,
                     exc,
                 )
+            finally:
+                _logger.info(
+                    "IRG[%s] /shop/address save extra fields finished in %.3fs (order=%s)",
+                    trace_id,
+                    time.perf_counter() - save_start,
+                    order.name,
+                )
+        _logger.info("IRG[%s] /shop/address total %.3fs", trace_id, time.perf_counter() - total_start)
         return res
 
     def _irg_sync_checkout_order(self, recalculate=False):
+        trace_id = self._irg_request_trace_id()
+        sync_start = time.perf_counter()
         if request.httprequest.path in ('/shop/address', '/shop/extra_info', '/shop/payment'):
+            _logger.info("IRG[%s] skip _irg_sync_checkout_order on %s", trace_id, request.httprequest.path)
             return
 
         order = request.website.sale_get_order()
         if not order:
+            _logger.info("IRG[%s] _irg_sync_checkout_order: no sale order", trace_id)
             return
         try:
             recalc_marker = '_irg_auto_scheduled_order_done'
@@ -155,28 +184,59 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
                     setattr(request, recalc_marker, True)
 
             if recalculate:
+                recalc_start = time.perf_counter()
                 order.sudo()._auto_scheduled_order()
+                _logger.info(
+                    "IRG[%s] _irg_sync_checkout_order: _auto_scheduled_order %.3fs (order=%s)",
+                    trace_id,
+                    time.perf_counter() - recalc_start,
+                    order.name,
+                )
 
             if getattr(request, ensure_marker, False):
                 return
+            ensure_start = time.perf_counter()
             order.sudo()._irg_ensure_financing_lines_consistent()
             setattr(request, ensure_marker, True)
+            _logger.info(
+                "IRG[%s] _irg_sync_checkout_order: _irg_ensure_financing_lines_consistent %.3fs (order=%s)",
+                trace_id,
+                time.perf_counter() - ensure_start,
+                order.name,
+            )
         except Exception as exc:
-            _logger.exception("IRG checkout sync failed for order %s: %s", order.name, exc)
+            _logger.exception("IRG[%s] checkout sync failed for order %s: %s", trace_id, order.name, exc)
+        finally:
+            _logger.info(
+                "IRG[%s] _irg_sync_checkout_order total %.3fs (recalculate=%s)",
+                trace_id,
+                time.perf_counter() - sync_start,
+                recalculate,
+            )
 
     @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def extra_info(self, **post):
-        return self._irg_with_fast_checkout_context(
+        trace_id = self._irg_request_trace_id()
+        start = time.perf_counter()
+        _logger.info("IRG[%s] /shop/extra_info start method=%s", trace_id, request.httprequest.method)
+        res = self._irg_with_fast_checkout_context(
             lambda: super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
         )
+        _logger.info("IRG[%s] /shop/extra_info total %.3fs", trace_id, time.perf_counter() - start)
+        return res
 
     @http.route(['/shop/payment'], type='http', auth='public', website=True, sitemap=False)
     def shop_payment(self, **post):
         # Keep page transition non-blocking: defer heavy recalculation/sync
         # to later steps (confirm/payment processing background hooks).
-        return self._irg_with_fast_checkout_context(
+        trace_id = self._irg_request_trace_id()
+        start = time.perf_counter()
+        _logger.info("IRG[%s] /shop/payment start", trace_id)
+        res = self._irg_with_fast_checkout_context(
             lambda: super(IrgWebsiteSaleFinancingSync, self).shop_payment(**post)
         )
+        _logger.info("IRG[%s] /shop/payment total %.3fs", trace_id, time.perf_counter() - start)
+        return res
 
     @http.route(['/shop/academic_documents/upload'], type='http', auth='public', website=True, methods=['POST'], csrf=True)
     def upload_academic_documents(self, **post):
