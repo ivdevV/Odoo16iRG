@@ -1,66 +1,112 @@
 # -*- coding: utf-8 -*-
-from odoo import models, api
+# IRG: Override phone formatting to preserve the Mexican "1" trunk prefix (+521...).
+#
+# Root cause:
+#   Google's phonenumbers library (libphonenumber) treats +521XXXXXXXXXX as the same
+#   number as +52XXXXXXXXXX. The "1" was historically a long-distance prefix inside
+#   Mexico, deprecated in 2020 by IFT. The library considers both representations
+#   equivalent and always normalises to the shorter form (E.164: +52XXXXXXXXXX).
+#
+#   Odoo's _phone_format() calls phone_validation.phone_format() on every onchange
+#   of phone/mobile/country_id, so any number entered as "+52 1 55 1234 5678" is
+#   silently saved as "+52 55 1234 5678". No error is raised; the digit just vanishes.
+#
+# Approach:
+#   Override _phone_format() in res.partner.
+#   If the user typed the +521 prefix, detect it from the raw input and restore it
+#   after the library normalises the number.
+#
+# About the "*****" asterisk problem:
+#   fields.Char never renders asterisks on its own. Asterisks appear ONLY when:
+#     a) A view XML has  password="True"  on the field tag, OR
+#     b) The field definition carries  groups="..."  restricting read access, OR
+#     c) An enterprise Privacy / Anonymization module hashes the value at DB level.
+#   Adding  widget="char"  in the view XML forces Odoo to render the raw stored
+#   string without any formatting or masking.
+#   This module also ships that view override (see views/res_partner_views.xml).
+
+import logging
+from odoo import api, models
+
+_logger = logging.getLogger(__name__)
+
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    def _phone_format(self, number, country=None, company=None):
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _irg_strip_phone(number):
+        """Return only digits from a phone string (drop +, spaces, dashes, parens)."""
+        return ''.join(c for c in (number or '') if c.isdigit())
+
+    @staticmethod
+    def _irg_user_typed_mx1(number):
         """
-        Sobreescribe el formateo para México para preservar el "+52 1" si el usuario lo introdujo.
+        Return True if the user explicitly typed the transitional '1' after +52.
+
+        Accepted: digits starting with 521 and total 13 digits (52+1+10subscriber).
+        We do NOT trigger on bare '1XXXXXXXXXX' without the 52 prefix, because a
+        Mexican contact might enter just the 10-digit local number.
         """
-        # Ejecutar validación estándar primero
-        res = super(ResPartner, self)._phone_format(number, country=country, company=company)
-        
+        digits = ''.join(c for c in (number or '') if c.isdigit())
+        return digits.startswith('521') and len(digits) == 13  # 52 + 1 + 10 digits
+
+    # ------------------------------------------------------------------
+    # Core override
+    # ------------------------------------------------------------------
+
+    def _phone_format(self, number, country=None, company=None, force_format='E164'):
+        """
+        Preserve the Mexican '+52 1' trunk prefix if the user typed it.
+
+        Strategy:
+          1. Remember whether the raw input had the trunk '1'.
+          2. Let Odoo/phonenumbers normalise as usual.
+          3. If the result starts with +52 (but not +521) and the original had the
+             '1', inject it back before returning.
+        """
         if not number or not isinstance(number, str):
-            return res
+            return super()._phone_format(
+                number, country=country, company=company, force_format=force_format
+            )
 
-        # Intentar resolver el país si no viene dado
-        if not country and self:
-            country = self.country_id
-        if not country and company:
-            country = company.country_id
-        if not country:
-            country = self.env.company.country_id
-            
-        # Detectar si estamos tratando con un número mexicano
-        # 1. Por el país explícito
-        is_mexico = country and country.code == 'MX'
-        
-        if not is_mexico and res and res.startswith('+52'):
-            # 2. Por el resultado formateado (que ya identificó el país)
-            is_mexico = True
-            
-        if is_mexico:
-            # Limpiar entradas para comparación segura (quitamos espacios, guiones, paréntesis y +)
-            # Objetivo: detectar si el usuario escribió la secuencia 521 al principio o +52 1
-            clean_input = number.replace(" ", "").replace("-", "").replace("(", "").replace(")", "").replace("+", "")
-            
-            # Limpiar resultado para verificar si se perdió el 1
-            if not res:
-                return res
-            clean_res = res.replace(" ", "").replace("-", "").replace("(", "").replace(")", "").replace("+", "")
+        user_typed_one = self._irg_user_typed_mx1(number)
 
-            # Si el input original tenía 521...
-            # OJO: clean_input podría no tener el 52 si el usuario puso solo "1 55..." y el país era MX.
-            # Pero si el usuario puso +52 1 ..., clean_input empieza por 521.
-            
-            user_typed_one = False
-            if clean_input.startswith("521"):
-                user_typed_one = True
-            elif country and country.code == 'MX' and clean_input.startswith("1"):
-                # Caso usuario escribe "1 55 1234 5678" asumiendo prefijo local
-                user_typed_one = True
+        result = super()._phone_format(
+            number, country=country, company=company, force_format=force_format
+        )
 
-            if user_typed_one:
-                # Y el resultado formateado empieza por 52 pero NO por 521 (el 1 fue eliminado)
-                # Ejemplo clean_res: 525512345678
-                if clean_res.startswith("52") and not clean_res.startswith("521"):
-                    # Reconstruir el número añadiendo el 1
-                    
-                    # Normalizamos res para trabajar más fácil, asegurando que empiece por +52
-                    temp_res = res.lstrip("+")
-                    if temp_res.startswith("52"):
-                        suffix = temp_res[2:].strip() # Lo que sigue al 52
-                        return "+52 1 " + suffix
-        
-        return res
+        if not result or not user_typed_one:
+            return result
+
+        result_digits = self._irg_strip_phone(result)
+
+        # The library dropped the '1': result is +52XXXXXXXXXX (12 digits total)
+        if result_digits.startswith('52') and not result_digits.startswith('521'):
+            suffix_digits = result_digits[2:]  # 10-digit subscriber number
+            if force_format == 'E164':
+                return '+521' + suffix_digits
+            # INTERNATIONAL / default: "+52 1 XX XXXX XXXX"
+            if result.startswith('+52 '):
+                return '+52 1 ' + result[4:]
+            return '+52 1 ' + suffix_digits
+
+        return result
+
+    # ------------------------------------------------------------------
+    # Guard the live-form onchanges so the UI shows the preserved number
+    # ------------------------------------------------------------------
+
+    @api.onchange('phone', 'country_id', 'company_id')
+    def _onchange_phone_validation(self):
+        if self.phone:
+            self.phone = self._phone_format(self.phone, force_format='INTERNATIONAL')
+
+    @api.onchange('mobile', 'country_id', 'company_id')
+    def _onchange_mobile_validation(self):
+        if self.mobile:
+            self.mobile = self._phone_format(self.mobile, force_format='INTERNATIONAL')
