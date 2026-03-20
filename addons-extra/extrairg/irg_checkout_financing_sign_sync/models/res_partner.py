@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import logging
 
 from odoo import api, models
+
+_logger = logging.getLogger(__name__)
 
 
 class ResPartner(models.Model):
@@ -8,7 +11,9 @@ class ResPartner(models.Model):
 
     @api.constrains('vat', 'country_id')
     def check_vat(self):
-        # Skip heavy VAT/VIES validation during intermediate checkout steps.
-        if self.env.context.get('skip_vat_vies_validation') or self.env.context.get('irg_fast_checkout'):
-            return True
-        return super().check_vat()
+        # IRG: This instance does not perform EU VIES network validation.
+        # Skipping unconditionally prevents external TCP timeouts (3+ minutes)
+        # that block checkout and any other partner write operation.
+        # context flags are irrelevant — the network call is never needed here.
+        _logger.debug("IRG check_vat: VIES validation unconditionally skipped for %s", self.mapped('name'))
+        return
