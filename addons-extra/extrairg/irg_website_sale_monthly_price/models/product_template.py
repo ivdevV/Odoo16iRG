@@ -235,24 +235,32 @@ class ProductTemplate(models.Model):
         if not combination_info.get('is_recurrence_possible'):
             return '', 0
 
-        # Search preview must reflect the selected/default combination itself,
-        # not the global minimum installment across other variants.
-        duration = (
-            combination_info.get('months')
-            or combination_info.get('subscription_duration')
-            or 1
-        )
-        total_price = combination_info.get('price') or 0.0
+        display_currency = mapping.get('detail', {}).get('display_currency')
 
-        if not total_price or duration <= 1:
-            return super()._search_render_results_prices(mapping, combination_info)
+        # Prefer the pre-computed global minimum installment (set in _get_combination_info
+        # via _isep_get_min_installment_data across all variants). This mirrors what the
+        # product page shows when it auto-selects the Online + longest-plan variant
+        # (= the lowest per-month installment), regardless of which default combination
+        # is passed to the search context (which is often Contado, months=1).
+        monthly_price = combination_info.get('min_installment_price')
+        duration = combination_info.get('min_installment_months', 1)
 
-        monthly_price = total_price / duration
+        if not monthly_price or duration <= 1:
+            # Fallback: compute from the selected combination's price and months.
+            duration = (
+                combination_info.get('months')
+                or combination_info.get('subscription_duration')
+                or 1
+            )
+            total_price = combination_info.get('price') or 0.0
+            if not total_price or duration <= 1:
+                return super()._search_render_results_prices(mapping, combination_info)
+            monthly_price = total_price / duration
 
         return self.env['ir.ui.view']._render_template(
             'website_sale_subscription.subscription_search_result_price',
             values={
-                'currency': mapping['detail']['display_currency'],
+                'currency': display_currency,
                 'price': monthly_price,
                 'duration': duration,
                 'unit': 'month',

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 
-from odoo import models
+from odoo import fields, models
 
 
 def _get_plan_months(product):
@@ -24,6 +24,29 @@ def _get_plan_months(product):
             return int(match.group(1))
 
     return months
+
+
+def _get_plan_temporal_price(pricelist, variant, months):
+    if not pricelist or not variant or months <= 1:
+        return None
+
+    plan_pricing = variant.product_pricing_ids.filtered(
+        lambda pricing: pricing.recurrence_id.unit == 'month'
+        and int(round(pricing.recurrence_id.duration)) == months
+        and (not pricing.pricelist_id or pricing.pricelist_id == pricelist)
+    )[:1]
+    if not plan_pricing:
+        return None
+
+    price = plan_pricing.price
+    if pricelist.currency_id != plan_pricing.currency_id:
+        price = plan_pricing.currency_id._convert(
+            price,
+            pricelist.currency_id,
+            plan_pricing.company_id or variant.env.company,
+            fields.Date.today(),
+        )
+    return price
 
 
 class ProductTemplate(models.Model):
@@ -70,7 +93,9 @@ class ProductTemplate(models.Model):
             if months <= 0:
                 continue
 
-            variant_price = current_pricelist._get_product_price(variant, 1.0) if current_pricelist else variant.lst_price
+            variant_price = _get_plan_temporal_price(current_pricelist, variant, months)
+            if variant_price is None:
+                variant_price = current_pricelist._get_product_price(variant, 1.0) if current_pricelist else variant.lst_price
             if not variant_price or variant_price <= 0:
                 continue
 

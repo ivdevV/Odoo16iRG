@@ -1,0 +1,12 @@
+﻿import phonenumbers
+n = phonenumbers.parse("+5215512345678", None)
+print("=== +5215512345678 ===")
+print("valid:", phonenumbers.is_valid_number(n))
+fmt_intl = phonenumbers.format_number(n, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+fmt_e164 = phonenumbers.format_number(n, phonenumbers.PhoneNumberFormat.E164)
+print("INTL:", fmt_intl)
+print("E164:", fmt_e164)
+n2 = phonenumbers.parse("+525512345678", None)
+print("=== +525512345678 (sin 1) ===")
+print("valid:", phonenumbers.is_valid_number(n2))
+print("E164:", phonenumbers.format_number(n2, phonenumbers.PhoneNumberFormat.E164))
