@@ -41,3 +41,4 @@ Sobre los asteriscos (*****):
     'auto_install': False,
     'license': 'LGPL-3',
 }
+# Trigger Jenkins redeploy: 2026-03-23 09:15 UTC
