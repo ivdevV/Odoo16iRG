@@ -23,7 +23,6 @@ class AppGradebookstudent(models.Model):
     batch_id = fields.Many2one('op.batch', string="Grupo", related="admission_id.batch_id",  store=True)
     
     gradebook_subject_ids = fields.One2many('app.gradebook.subject', 'gradebook_student_id', string="Asignaturas" , tracking=True )
-    gradebook_subject_ids_legacy = fields.One2many('app.gradebook.subject', 'gradebook_student_id', string="Asignaturas (Legacy)", readonly=True)
 
     gradebook_id = fields.Many2one('app.gradebook', string='Calificaciones template' , store=True, compute="compute_gradebook_id" , tracking=True )
 
