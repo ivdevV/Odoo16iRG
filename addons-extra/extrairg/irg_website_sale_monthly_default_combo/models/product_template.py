@@ -134,10 +134,16 @@ class ProductTemplate(models.Model):
         if not current_pricelist:
             current_pricelist = self.env['website'].get_current_website().pricelist_id
 
-        template = self[:1]
-        default_installment_price, default_installment_months = template._isep_get_default_installment_data(
-            pricelist=current_pricelist
-        )
+        # Prefer the pre-computed min_installment already set by _get_combination_info
+        # (same value shown in /shop listings). Only recompute if not available.
+        default_installment_price = combination_info.get('min_installment_price')
+        default_installment_months = combination_info.get('min_installment_months', 1)
+
+        if not default_installment_price or default_installment_months <= 1:
+            template = self[:1]
+            default_installment_price, default_installment_months = template._isep_get_default_installment_data(
+                pricelist=current_pricelist
+            )
 
         if not default_installment_price:
             return super()._search_render_results_prices(mapping, combination_info)
