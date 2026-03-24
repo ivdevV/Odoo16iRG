@@ -5,12 +5,20 @@
         <template id="report_certificate_document">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
-                    <t t-call="web.external_layout">
+                    <div class="article o_report_layout_standard"
+                         style="margin: 0; padding: 40px 50px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
                         <div class="page">
 
                             <!-- ============================================================
-                                 Title block
+                                 Logo centrado
                             ============================================================ -->
+                            <div class="text-center" style="margin-bottom: 30px;">
+                                <t t-if="o.env.company.logo">
+                                    <img t-att-src="image_data_uri(o.env.company.logo)"
+                                         style="max-height: 90px;"
+                                         alt="Logo"/>
+                                </t>
+                            </div>
                             <div class="text-center" style="margin-bottom: 24px;">
                                 <h2 style="letter-spacing: 2px; text-transform: uppercase;">
                                     CERTIFICADO DE CALIFICACIONES
@@ -136,7 +144,7 @@
                             </div>
 
                         </div><!-- .page -->
-                    </t><!-- web.external_layout -->
+                    </div><!-- .article -->
                 </t><!-- t-foreach -->
             </t><!-- web.html_container -->
         </template>
