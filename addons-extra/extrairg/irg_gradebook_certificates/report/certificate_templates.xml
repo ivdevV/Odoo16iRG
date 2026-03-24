@@ -6,23 +6,23 @@
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <div class="article o_report_layout_standard"
-                         style="margin: 0; padding: 40px 50px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                         style="margin: 0; padding: 20px 50px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
                         <div class="page">
 
                             <!-- ============================================================
-                                 Logo centrado
+                                 Logo centrado (pegado arriba)
                             ============================================================ -->
-                            <div class="text-center" style="margin-bottom: 30px;">
+                            <div class="text-center" style="margin-bottom: 20px; margin-top: 0;">
                                 <t t-if="o.env.company.logo">
                                     <img t-att-src="image_data_uri(o.env.company.logo)"
                                          style="max-height: 90px;"
                                          alt="Logo"/>
                                 </t>
                             </div>
-                            <div class="text-center" style="margin-bottom: 24px;">
-                                <h2 style="letter-spacing: 2px; text-transform: uppercase;">
+                            <div class="text-center" style="margin-bottom: 28px;">
+                                <h1 style="letter-spacing: 3px; text-transform: uppercase; font-weight: 700; font-size: 26px;">
                                     CERTIFICADO DE CALIFICACIONES
-                                </h2>
+                                </h1>
                                 <t t-if="o.certificate_type == 'physical_apostilled'">
                                     <p style="font-style: italic; color: #555;">
                                         (Sujeto a Apostilla de La Haya — <t t-out="o.env.company.name"/>)
@@ -33,19 +33,20 @@
                             <!-- ============================================================
                                  Body text
                             ============================================================ -->
-                            <p style="text-align: justify; margin-bottom: 16px;">
-                                La institución <strong><t t-out="o.env.company.name"/></strong>
-                                certifica que el/la alumno/a
+                            <!-- Resolve document type + number from op.student -->
+                            <t t-set="student" t-value="o.gradebook_student_id.student_id"/>
+                            <t t-set="doc_type" t-value="student.document_type_id.name if student and student.document_type_id else 'DNI/Pasaporte'"/>
+                            <t t-set="doc_number" t-value="student.document_number if student and student.document_number else (student.id_number if student and student.id_number else '')"/>
+
+                            <p style="text-align: justify; margin-bottom: 16px; font-size: 13px; line-height: 1.6;">
+                                El <strong>Instituto Raimon Gaja</strong> certifica que
                                 <strong><t t-out="o.partner_id.name or ''"/></strong>
-                                <t t-if="o.admission_id and o.admission_id.application_number">
-                                    con número de expediente
-                                    <strong><t t-out="o.admission_id.application_number"/></strong>
+                                <t t-if="doc_number">
+                                    con <t t-out="doc_type"/>
+                                    <strong><t t-out="doc_number"/></strong>
                                 </t>
                                 ha cursado el programa de estudios
                                 <strong><t t-out="o.course_id.name or ''"/></strong>
-                                <t t-if="o.batch_id">
-                                    , grupo <strong><t t-out="o.batch_id.name"/></strong>
-                                </t>,
                                 habiendo obtenido las siguientes calificaciones:
                             </p>
 
@@ -126,10 +127,6 @@
                                     <p style="margin: 0;">
                                         <strong>Fecha de expedición:</strong>
                                         <t t-out="o.request_date.strftime('%d/%m/%Y') if o.request_date else ''"/>
-                                    </p>
-                                    <p style="margin: 0;">
-                                        <strong>Nº de referencia:</strong>
-                                        <t t-out="o.name"/>
                                     </p>
                                 </div>
                                 <div style="display: table-cell; vertical-align: bottom; width: 50%; text-align: right;">
