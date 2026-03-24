@@ -12,8 +12,8 @@ _logger = logging.getLogger(__name__)
 # signature image appears in the prematrícula report.  Update these if the
 # report layout changes.
 RAIMON_SIGNATURE_POSITIONS = {
-    1: 0.710,
-    3: 0.650,
+    1: 0.700,
+    3: 0.820,
 }
 
 
@@ -51,7 +51,7 @@ class SaleOrderSignFix(models.Model):
                                 'required': True,
                                 'responsible_id': 1,
                                 'page': page,
-                                'posX': 0.070,
+                                'posX': 0.15,
                                 'posY': pos_y,
                                 'width': 0.165,
                                 'height': 0.040,
@@ -65,7 +65,7 @@ class SaleOrderSignFix(models.Model):
                                 'required': True,
                                 'responsible_id': 4,
                                 'page': page,
-                                'posX': 0.070,
+                                'posX': 0.15,
                                 'posY': pos_y,
                                 'width': 0.165,
                                 'height': 0.040,
