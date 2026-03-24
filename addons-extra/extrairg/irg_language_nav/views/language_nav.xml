@@ -30,7 +30,8 @@
 
     <!-- Replace the static LANGUAGE placeholder in theme header -->
     <template id="header_replace_language" inherit_id="theme_silon.header_1">
-        <xpath expr="//ul[contains(@class,'top-nav')]/li[3]" position="replace">
+        <!-- Match the LANGUAGE list item by its anchor text rather than by position. -->
+        <xpath expr="//ul[contains(@class,'top-nav')]/li[a[normalize-space() = 'LANGUAGE']]" position="replace">
             <t t-call="irg_language_nav.irg_language_selector"/>
         </xpath>
     </template>
