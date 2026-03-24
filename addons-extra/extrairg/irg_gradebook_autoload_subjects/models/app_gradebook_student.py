@@ -11,13 +11,18 @@ class AppGradebookStudent(models.Model):
         compulsory subjects of the linked course (op.course.subject_ids).
         Only adds subjects not already present — never removes existing ones,
         to avoid losing recorded evaluation results.
+
+        Note: course_id is a stored related of admission_id.course_id. We read
+        it via admission_id to avoid stale ORM cache right after create().
         """
         GradebookSubject = self.env['app.gradebook.subject']
         for rec in self:
-            if not rec.course_id:
+            # Read course through admission to bypass potential related-field cache lag
+            course = rec.admission_id.course_id
+            if not course:
                 continue
             existing_subject_ids = rec.gradebook_subject_ids.mapped('op_subject_id').ids
-            subjects_to_add = rec.course_id.subject_ids.filtered(
+            subjects_to_add = course.subject_ids.filtered(
                 lambda s: s.subject_type == 'compulsory'
                 and s.id not in existing_subject_ids
             )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
-from .irg_certificate_request import (
+from ..models.irg_certificate_request import (
     CERTIFICATE_TYPES,
     SHIPPING_TYPES,
     CUSTOM_OPTIONS,
