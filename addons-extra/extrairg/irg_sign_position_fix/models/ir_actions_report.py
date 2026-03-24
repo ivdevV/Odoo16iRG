@@ -22,6 +22,6 @@ class IrActionsReport(models.Model):
         # By defaault we know raimon signature appears on page 1 and 3
         # at these normalized vertical positions; tweak if report layout moves.
         return {
-            1: 0.700,
-            3: 0.650,
+            1: 0.730,
+            3: 0.420,
         }
