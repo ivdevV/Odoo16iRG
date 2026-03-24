@@ -36,7 +36,7 @@ class AppGradebookStudent(models.Model):
             'type': 'ir.actions.act_window',
             'name': _('Certificados de Notas'),
             'res_model': 'irg.certificate.request',
-            'view_mode': 'list,form',
+            'view_mode': 'tree,form',
             'domain': [('gradebook_student_id', '=', self.id)],
             'context': {'default_gradebook_student_id': self.id},
         }

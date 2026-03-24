@@ -117,7 +117,7 @@
             <field name="name">irg.certificate.request.list</field>
             <field name="model">irg.certificate.request</field>
             <field name="arch" type="xml">
-                <list string="Certificados de Notas" decoration-success="state == 'done'"
+                <tree string="Certificados de Notas" decoration-success="state == 'done'"
                       decoration-info="state in ('pending_payment', 'paid', 'in_process')"
                       decoration-muted="state == 'cancelled'"
                       decoration-warning="state == 'draft'">
@@ -134,7 +134,7 @@
                            decoration-success="state == 'done'"
                            decoration-info="state in ('pending_payment', 'paid', 'in_process', 'sent')"
                            decoration-danger="state == 'cancelled'"/>
-                </list>
+                </tree>
             </field>
         </record>
 
@@ -181,7 +181,7 @@
         <record id="action_irg_certificate_request" model="ir.actions.act_window">
             <field name="name">Certificados de Notas</field>
             <field name="res_model">irg.certificate.request</field>
-            <field name="view_mode">list,form</field>
+            <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_irg_certificate_request_search"/>
         </record>
 
