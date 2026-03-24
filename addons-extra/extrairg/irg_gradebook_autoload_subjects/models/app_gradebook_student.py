@@ -5,45 +5,22 @@ from odoo import models, api
 class AppGradebookStudent(models.Model):
     _inherit = 'app.gradebook.student'
 
-    def _autoload_subjects(self):
+    @api.onchange('admission_id')
+    def _onchange_admission_autoload_subjects(self):
         """
-        Auto-populates gradebook subjects (app.gradebook.subject) from the
-        compulsory subjects of the linked course (op.course.subject_ids).
-        Only adds subjects not already present — never removes existing ones,
-        to avoid losing recorded evaluation results.
-
-        Note: course_id is a stored related of admission_id.course_id. We read
-        it via admission_id to avoid stale ORM cache right after create().
+        Populates gradebook_subject_ids in the UI as soon as the user
+        selects an admission, before saving.
         """
+        if not self.admission_id or not self.admission_id.course_id:
+            return
+        course = self.admission_id.course_id
+        existing_subject_ids = self.gradebook_subject_ids.mapped('op_subject_id').ids
+        subjects_to_add = course.subject_ids.filtered(
+            lambda s: s.subject_type == 'compulsory'
+            and s.id not in existing_subject_ids
+        )
         GradebookSubject = self.env['app.gradebook.subject']
-        for rec in self:
-            # Read course through admission to bypass potential related-field cache lag
-            course = rec.admission_id.course_id
-            if not course:
-                continue
-            existing_subject_ids = rec.gradebook_subject_ids.mapped('op_subject_id').ids
-            subjects_to_add = course.subject_ids.filtered(
-                lambda s: s.subject_type == 'compulsory'
-                and s.id not in existing_subject_ids
-            )
-            if subjects_to_add:
-                GradebookSubject.create([
-                    {
-                        'op_subject_id': s.id,
-                        'gradebook_student_id': rec.id,
-                    }
-                    for s in subjects_to_add
-                ])
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        records = super().create(vals_list)
-        records._autoload_subjects()
-        return records
-
-    def write(self, vals):
-        result = super().write(vals)
-        # Re-sync subjects when admission changes (course_id is a related of admission_id)
-        if 'admission_id' in vals:
-            self._autoload_subjects()
-        return result
+        for s in subjects_to_add:
+            self.gradebook_subject_ids += GradebookSubject.new({
+                'op_subject_id': s.id,
+            })
