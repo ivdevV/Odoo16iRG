@@ -12,6 +12,7 @@
     'assets': {
         'web.assets_frontend': [
             'irg_website_sale_monthly_price/static/src/js/website_sale_monthly.js',
+            'irg_website_sale_monthly_price/static/src/css/form-visibility.css',
         ],
     },
     'installable': True,

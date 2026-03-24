@@ -253,9 +253,20 @@ class ProductTemplate(models.Model):
                 or 1
             )
             total_price = combination_info.get('price') or 0.0
-            if not total_price or duration <= 1:
-                return super()._search_render_results_prices(mapping, combination_info)
-            monthly_price = total_price / duration
+            # If min_installment is not available, try to compute a sensible default
+            # using the template default installment logic (same as product page).
+            if not monthly_price or duration <= 1:
+                template = self[:1]
+                default_installment_price, default_installment_months = template._isep_get_default_installment_data(
+                    pricelist=current_pricelist
+                )
+                if default_installment_price and default_installment_months > 1:
+                    monthly_price = default_installment_price
+                    duration = default_installment_months
+                else:
+                    if not total_price or duration <= 1:
+                        return super()._search_render_results_prices(mapping, combination_info)
+                    monthly_price = total_price / duration
 
         return self.env['ir.ui.view']._render_template(
             'website_sale_subscription.subscription_search_result_price',
