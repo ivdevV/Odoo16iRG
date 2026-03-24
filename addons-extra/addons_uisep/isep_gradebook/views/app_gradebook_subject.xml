@@ -11,10 +11,7 @@
                         <field name="state" widget="statusbar" statusbar_visible="in_progress,done"/>
                     </header>
 
-                    <field name="show_assignment" invisible="1"/>   
-                    <field name="show_exam" invisible="1"/>   
-                    <field name="show_interaction" invisible="1"/>   
-                    <field name="show_foro" invisible="1"/>   
+                    <field name="show_exam" invisible="1"/>
 
                     <field name="admission_id" invisible="1"/>       
                     <field name="course_id" invisible="1"/>
@@ -41,33 +38,7 @@
                                 </div>
                             </group>
                         </group>
-                        <group string="Legacy (cálculo ponderado original)">
-                            <group>
-                                <field name="final_subject_note_legacy"/>
-                            </group>
-                            <group>
-                                <label for="point_average_assignment" attrs="{'invisible': [('show_assignment','=', False )]}" />
-                                <div name="point_average_assignment_div" class="d-flex"  attrs="{'invisible': [('show_assignment','=', False )]}" >
-                                    <field name="point_average_assignment" class="oe_inline mx-3" />
-                                    <span class="oe_inline o_form_label mx-3">=> </span>
-                                    <field name="info_assignment" />
-                                </div>
 
-                                <label for="point_average_interaction" attrs="{'invisible': [('show_interaction','=', False )]}" />
-                                <div name="point_average_interaction_div" class="d-flex" attrs="{'invisible': [('show_interaction','=', False )]}" >
-                                    <field name="point_average_interaction" class="oe_inline mx-3" />
-                                    <span class="oe_inline o_form_label mx-3" >=> </span>
-                                    <field name="info_interaction" />
-                                </div>
-
-                                <label for="point_average_foro" attrs="{'invisible': [('show_foro','=', False )]}" />
-                                <div name="point_average_foro_div" class="d-flex"  attrs="{'invisible': [('show_foro','=', False )]}">
-                                    <field name="point_average_foro" class="oe_inline mx-3" />
-                                    <span class="oe_inline o_form_label mx-3" >=> </span>
-                                    <field name="info_foro" />
-                                </div>
-                            </group>
-                        </group>
                         <notebook>
                             <page string="Evaluaciones" name="exams">
                                 <field name="gradebook_result_ids"  attrs="{'readonly': [('state','=','done')]}"  context="{'default_admission_id': admission_id }" >
@@ -113,10 +84,7 @@
                     <field name="name"/>
                     <field name="point_average_exam"/>
                     <field name="final_subject_note"/>
-                    <field name="point_average_assignment" optional="hide"/>
-                    <field name="point_average_interaction" optional="hide"/>
-                    <field name="point_average_foro" optional="hide"/>
-                    <field name="final_subject_note_legacy" optional="hide"/>
+
                     <field name="op_subject_id" invisible="1" />
                     <field name="gradebook_student_id" invisible="1"  />
                 </tree>

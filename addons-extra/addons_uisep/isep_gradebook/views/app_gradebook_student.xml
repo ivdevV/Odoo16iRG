@@ -36,7 +36,6 @@
                         </group>
 
                         <notebook>
-                            <!-- === PESTAÑA CALIFICACIONES: solo AVG Exámenes === -->
                             <page string="Calificaciones" name="gradenotes">
                                 <field name="gradebook_subject_ids" mode="tree,form">
                                     <tree string="lines_gradebook" attrs="{'readonly': [('state','in',('done','in_progress'))]}" delete="0" create="1" edit="1">
@@ -52,7 +51,6 @@
                                         </header>
 
                                         <field name="show_exam" invisible="1"/>
-
                                         <field name="admission_id" invisible="1"/>
                                         <field name="course_id" invisible="1"/>
                                         <field name="gradebook_student_id" invisible="1"/>
@@ -116,92 +114,6 @@
                                     </group>
                                     <div class="oe_clear"/>
                                 </group>
-                            </page>
-
-                            <!-- === PESTAÑA CALIFICACIONES LEGACY: cálculo ponderado original (4 tipos) === -->
-                            <page string="Calificaciones Legacy" name="gradenotes_legacy">
-                                <field name="gradebook_subject_ids_legacy" mode="tree,form">
-                                    <tree string="lines_gradebook_legacy" delete="0" create="0" edit="0">
-                                        <field name="name"/>
-                                        <field name="point_average_assignment"/>
-                                        <field name="point_average_exam"/>
-                                        <field name="point_average_interaction"/>
-                                        <field name="point_average_foro"/>
-                                        <field name="final_subject_note_legacy"/>
-                                        <field name="state" invisible="1"/>
-                                    </tree>
-                                    <form create="0" edit="0" delete="0">
-                                        <header>
-                                            <field name="state" widget="statusbar" statusbar_visible="in_progress,done"/>
-                                        </header>
-
-                                        <field name="show_assignment" invisible="1"/>
-                                        <field name="show_exam" invisible="1"/>
-                                        <field name="show_interaction" invisible="1"/>
-                                        <field name="show_foro" invisible="1"/>
-
-                                        <field name="admission_id" invisible="1"/>
-                                        <field name="course_id" invisible="1"/>
-                                        <field name="gradebook_student_id" invisible="1"/>
-
-                                        <sheet>
-                                            <div class="oe_title">
-                                                <h2>
-                                                    <field name="name"/>
-                                                </h2>
-                                            </div>
-                                            <group>
-                                                <group>
-                                                    <field name="op_subject_id" readonly="1" options="{'no_open': True,'no_create':True}"/>
-                                                    <field name="final_subject_note_legacy"/>
-                                                </group>
-                                                <group>
-                                                    <label for="point_average_assignment" attrs="{'invisible': [('show_assignment','=', False)]}"/>
-                                                    <div name="point_average_assignment_div" class="d-flex" attrs="{'invisible': [('show_assignment','=', False)]}">
-                                                        <field name="point_average_assignment" class="oe_inline mx-3"/>
-                                                        <span class="oe_inline o_form_label mx-3">=> </span>
-                                                        <field name="info_assignment"/>
-                                                    </div>
-
-                                                    <label for="point_average_exam" attrs="{'invisible': [('show_exam','=', False)]}"/>
-                                                    <div name="point_average_exam_div" class="d-flex" attrs="{'invisible': [('show_exam','=', False)]}">
-                                                        <field name="point_average_exam" class="oe_inline mx-3"/>
-                                                        <span class="oe_inline o_form_label mx-3">=> </span>
-                                                        <field name="info_exam"/>
-                                                    </div>
-
-                                                    <label for="point_average_interaction" attrs="{'invisible': [('show_interaction','=', False)]}"/>
-                                                    <div name="point_average_interaction_div" class="d-flex" attrs="{'invisible': [('show_interaction','=', False)]}">
-                                                        <field name="point_average_interaction" class="oe_inline mx-3"/>
-                                                        <span class="oe_inline o_form_label mx-3">=> </span>
-                                                        <field name="info_interaction"/>
-                                                    </div>
-
-                                                    <label for="point_average_foro" attrs="{'invisible': [('show_foro','=', False)]}"/>
-                                                    <div name="point_average_foro_div" class="d-flex" attrs="{'invisible': [('show_foro','=', False)]}">
-                                                        <field name="point_average_foro" class="oe_inline mx-3"/>
-                                                        <span class="oe_inline o_form_label mx-3">=> </span>
-                                                        <field name="info_foro"/>
-                                                    </div>
-                                                </group>
-                                            </group>
-                                            <notebook>
-                                                <page string="Evaluaciones" name="exams_legacy">
-                                                    <field name="gradebook_result_ids" readonly="1" context="{'default_admission_id': admission_id}">
-                                                        <tree delete="0">
-                                                            <field name="survey_type" optional="show"/>
-                                                            <field name="description"/>
-                                                            <field name="name" optional="hide"/>
-                                                            <field name="scoring_total"/>
-                                                            <field name="post_qty" attrs="{'invisible':[('survey_type','!=','foro')]}"/>
-                                                            <field name="comment" optional="hide"/>
-                                                        </tree>
-                                                    </field>
-                                                </page>
-                                            </notebook>
-                                        </sheet>
-                                    </form>
-                                </field>
                             </page>
                         </notebook>
 
