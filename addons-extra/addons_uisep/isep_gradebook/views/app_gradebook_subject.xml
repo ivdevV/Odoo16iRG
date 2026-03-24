@@ -32,20 +32,25 @@
                                 <field name="op_subject_id"  attrs="{'readonly': [('state','=','done')]}"  required="1" options="{'no_open': True,'no_create':True}"/>
                                 <field name="final_subject_note"/>
                             </group>
-                            <group>   
-
-                                <label for="point_average_assignment" attrs="{'invisible': [('show_assignment','=', False )]}" />
-                                <div name="point_average_assignment_div" class="d-flex"  attrs="{'invisible': [('show_assignment','=', False )]}" >
-                                    <field name="point_average_assignment" class="oe_inline mx-3" />
-                                    <span class="oe_inline o_form_label mx-3">=> </span>
-                                    <field name="info_assignment" />
-                                </div>
-
+                            <group>
                                 <label for="point_average_exam"  attrs="{'invisible': [('show_exam','=', False )]}" />
                                 <div name="point_average_exam_div" class="d-flex"  attrs="{'invisible': [('show_exam','=', False )]}" >
                                     <field name="point_average_exam" class="oe_inline mx-3" />
                                     <span class="oe_inline o_form_label mx-3" >=> </span>
                                     <field name="info_exam" />
+                                </div>
+                            </group>
+                        </group>
+                        <group string="Legacy (cálculo ponderado original)">
+                            <group>
+                                <field name="final_subject_note_legacy"/>
+                            </group>
+                            <group>
+                                <label for="point_average_assignment" attrs="{'invisible': [('show_assignment','=', False )]}" />
+                                <div name="point_average_assignment_div" class="d-flex"  attrs="{'invisible': [('show_assignment','=', False )]}" >
+                                    <field name="point_average_assignment" class="oe_inline mx-3" />
+                                    <span class="oe_inline o_form_label mx-3">=> </span>
+                                    <field name="info_assignment" />
                                 </div>
 
                                 <label for="point_average_interaction" attrs="{'invisible': [('show_interaction','=', False )]}" />
@@ -61,9 +66,6 @@
                                     <span class="oe_inline o_form_label mx-3" >=> </span>
                                     <field name="info_foro" />
                                 </div>
-
-
-  
                             </group>
                         </group>
                         <notebook>
@@ -109,11 +111,12 @@
             <field name="arch" type="xml">
                 <tree create="1" edit="0" delete="0">
                     <field name="name"/>
-                    <field name="point_average_assignment"/>
                     <field name="point_average_exam"/>
-                    <field name="point_average_interaction"/>
-                    <field name="point_average_foro"/>
                     <field name="final_subject_note"/>
+                    <field name="point_average_assignment" optional="hide"/>
+                    <field name="point_average_interaction" optional="hide"/>
+                    <field name="point_average_foro" optional="hide"/>
+                    <field name="final_subject_note_legacy" optional="hide"/>
                     <field name="op_subject_id" invisible="1" />
                     <field name="gradebook_student_id" invisible="1"  />
                 </tree>

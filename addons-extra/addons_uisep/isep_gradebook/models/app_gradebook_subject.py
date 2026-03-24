@@ -42,6 +42,7 @@ class AppGradebookSubject(models.Model):
     show_foro = fields.Boolean(string='Visible Foro' , compute="compute_data_show" , store=True)
 
     final_subject_note = fields.Float(string='Calificación final' , compute="compute_final_subject_note" , store=True)
+    final_subject_note_legacy = fields.Float(string='Calificación final (Legacy)' , compute="compute_final_subject_note_legacy" , store=True)
     state = fields.Selection(
         string='Estado',
         selection=[('draft', 'Borrador'),('in_progress', 'En proceso'), ('done', 'Finalizado') ], compute="compute_state", store=True
@@ -80,34 +81,42 @@ class AppGradebookSubject(models.Model):
 
     @api.depends('point_average_assignment','point_average_exam','point_average_interaction','point_average_foro')
     def compute_final_subject_note(self):
+        # La calificación final se obtiene únicamente del promedio de exámenes.
+        # El depends mantiene los 4 campos para evitar recompute masivo en registros almacenados existentes.
+        for rec in self:
+            final_subject_note = rec.point_average_exam
+            gradebook_id = rec.gradebook_id or rec.gradebook_student_id.gradebook_id
+            round_subject_final = gradebook_id.round_subject_final
+            if gradebook_id and round_subject_final:
+                final_subject_note = self.round_custom(final_subject_note)
+            rec.final_subject_note = final_subject_note
+
+    @api.depends('point_average_assignment','point_average_exam','point_average_interaction','point_average_foro')
+    def compute_final_subject_note_legacy(self):
+        # Cálculo legacy: suma ponderada de los 4 tipos de evaluación según el template.
+        # Se conserva para consulta de alumnos con libretas ya finalizadas (state=done).
         for rec in self:
             gradebook = rec._get_gradebook_info(rec)
-            # Atento, existe una validacion en Gradebook (app.gradebook) que obliga a que la sumatoria de pesos sea igual al 100%
-            # vamos a obtener las reglas de los pesos de la variable gradebook teniendo garantizado que la suma de pesos es 100
-            assignment = exam = interaction = foro = 0
-            final_subject_note = 0
+            final_subject_note_legacy = 0
 
             if gradebook['assignment']['weight']:
-                final_subject_note += rec.point_average_assignment * (gradebook['assignment']['weight']/100)
+                final_subject_note_legacy += rec.point_average_assignment * (gradebook['assignment']['weight']/100)
 
             if gradebook['exam']['weight']:
-                final_subject_note += rec.point_average_exam * (gradebook['exam']['weight']/100)
-            
-            if gradebook['interaction']['weight']:
-                final_subject_note += rec.point_average_interaction * (gradebook['interaction']['weight']/100)
-            
-            if gradebook['foro']['weight']:
-                final_subject_note += rec.point_average_foro * (gradebook['foro']['weight']/100)
+                final_subject_note_legacy += rec.point_average_exam * (gradebook['exam']['weight']/100)
 
-            # rec.final_subject_note = final_subject_note
+            if gradebook['interaction']['weight']:
+                final_subject_note_legacy += rec.point_average_interaction * (gradebook['interaction']['weight']/100)
+
+            if gradebook['foro']['weight']:
+                final_subject_note_legacy += rec.point_average_foro * (gradebook['foro']['weight']/100)
 
             gradebook_id = rec.gradebook_id or rec.gradebook_student_id.gradebook_id
             round_subject_final = gradebook_id.round_subject_final
             if gradebook_id and round_subject_final:
-                final_subject_note = self.round_custom(final_subject_note)          
-            
-            rec.final_subject_note = final_subject_note
-            
+                final_subject_note_legacy = self.round_custom(final_subject_note_legacy)
+
+            rec.final_subject_note_legacy = final_subject_note_legacy
 
 
     @api.depends('gradebook_id','gradebook_id.gradebook_template_ids','gradebook_student_id.gradebook_id', 'gradebook_student_id.gradebook_id.gradebook_template_ids')
