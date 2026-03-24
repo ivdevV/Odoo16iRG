@@ -2,6 +2,24 @@
 <odoo>
     <data>
 
+        <!-- Custom paper format: A4 portrait, tight margins, left extra for vertical text -->
+        <record id="paperformat_certificate_irg" model="report.paperformat">
+            <field name="name">Certificado IRG A4 Vertical</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_left">18</field>
+            <field name="margin_right">10</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">90</field>
+            <field name="disable_shrinking" eval="True"/>
+        </record>
+
         <record id="action_report_certificate" model="ir.actions.report">
             <field name="name">Certificado de Notas</field>
             <field name="model">irg.certificate.request</field>
@@ -10,7 +28,7 @@
             <field name="report_file">irg_gradebook_certificates.report_certificate_document</field>
             <field name="binding_model_id" ref="model_irg_certificate_request"/>
             <field name="binding_type">report</field>
-            <field name="paperformat_id" ref="base.paperformat_euro"/>
+            <field name="paperformat_id" ref="paperformat_certificate_irg"/>
         </record>
 
     </data>
