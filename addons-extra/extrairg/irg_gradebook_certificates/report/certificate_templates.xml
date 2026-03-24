@@ -13,189 +13,99 @@
                            lambda s: s.op_subject_id.subject_type == 'compulsory'
                        )"/>
 
-                    <div class="article" style="font-family: 'Times New Roman', Times, Georgia, serif; color: #1a1a1a;">
+                    <div class="article"
+                         style="font-family: Calibri, 'Segoe UI', Arial, sans-serif;
+                                color: #000000; font-size: 11pt;">
                         <style>
-                            /* ---- Certificate global styles ---- */
                             .cert-page {
                                 position: relative;
-                                padding: 0 30px 0 30px;
-                                min-height: 100%;
+                                padding: 0;
                             }
-                            .cert-header {
-                                text-align: center;
-                                padding-top: 8px;
-                                margin-bottom: 6px;
-                            }
-                            .cert-header img {
-                                max-height: 80px;
-                            }
-                            .cert-title {
-                                text-align: center;
-                                margin: 18px 0 22px 0;
-                            }
-                            .cert-title h1 {
-                                font-size: 22px;
-                                font-weight: 700;
-                                letter-spacing: 4px;
-                                text-transform: uppercase;
-                                margin: 0;
-                                color: #1a1a1a;
-                            }
-                            .cert-title .cert-subtitle {
-                                font-size: 12px;
-                                font-style: italic;
-                                color: #555;
-                                margin-top: 4px;
-                            }
-                            .cert-body {
-                                text-align: justify;
-                                font-size: 12px;
-                                line-height: 1.7;
-                                margin-bottom: 14px;
-                                padding: 0 8px;
-                            }
-                            .cert-body strong {
-                                font-weight: 700;
+                            /* ---- Left marginal vertical text ---- */
+                            .cert-marginal {
+                                position: fixed;
+                                left: 2px;
+                                top: 80px;
+                                bottom: 60px;
+                                writing-mode: vertical-rl;
+                                transform: rotate(180deg);
+                                font-size: 7pt;
+                                color: #000000;
+                                line-height: 1.2;
                             }
                             /* ---- Grade table ---- */
                             .cert-table {
                                 width: 100%;
                                 border-collapse: collapse;
-                                margin-bottom: 14px;
-                                font-size: 11px;
+                                margin-bottom: 5pt;
+                                font-size: 7.5pt;
                             }
-                            .cert-table th {
-                                background-color: #2c3e50;
-                                color: #ffffff;
-                                padding: 6px 10px;
-                                text-align: left;
-                                font-weight: 600;
-                                border: 1px solid #2c3e50;
-                            }
-                            .cert-table th.text-center {
-                                text-align: center;
-                            }
+                            .cert-table th,
                             .cert-table td {
-                                padding: 5px 10px;
-                                border: 1px solid #ccc;
+                                border: 1px solid #000000;
+                                padding: 3px 6px;
+                                text-align: left;
                             }
-                            .cert-table td.text-center {
-                                text-align: center;
-                            }
-                            .cert-table tbody tr:nth-child(even) {
-                                background-color: #f7f7f7;
+                            .cert-table thead th {
+                                background-color: #E8E8E8;
+                                font-weight: bold;
+                                font-size: 7.5pt;
                             }
                             .cert-table tfoot td {
-                                background-color: #2c3e50;
-                                color: #ffffff;
-                                font-weight: 700;
-                                border: 1px solid #2c3e50;
-                            }
-                            /* ---- Custom / Apostille boxes ---- */
-                            .cert-custom-box {
-                                border: 1px solid #bbb;
-                                padding: 10px 14px;
-                                margin-bottom: 14px;
-                                font-size: 11px;
-                            }
-                            .cert-apostille-box {
-                                border-left: 3px solid #2c3e50;
-                                padding: 8px 14px;
-                                margin-bottom: 14px;
-                                font-size: 11px;
-                                color: #444;
-                            }
-                            /* ---- Footer ---- */
-                            .cert-footer {
-                                margin-top: 30px;
-                                font-size: 12px;
-                                line-height: 1.6;
-                            }
-                            .cert-footer .cert-date-line {
-                                margin-bottom: 28px;
-                            }
-                            .cert-footer .cert-signature-block {
-                                display: inline-block;
-                                text-align: center;
-                                min-width: 260px;
-                            }
-                            .cert-footer .cert-signature-block .cert-sig-line {
-                                border-top: 1px solid #1a1a1a;
-                                width: 220px;
-                                margin: 0 auto 6px auto;
-                            }
-                            .cert-footer .cert-signature-block img {
-                                max-height: 40px;
-                                margin-bottom: 4px;
-                            }
-                            .cert-footer .cert-signature-block .cert-dept {
-                                font-weight: 700;
-                                font-size: 11px;
-                            }
-                            .cert-footer .cert-signature-block .cert-inst {
-                                font-size: 11px;
-                                color: #333;
-                            }
-                            /* ---- Left marginal text ---- */
-                            .cert-marginal {
-                                position: fixed;
-                                left: 4px;
-                                top: 100px;
-                                bottom: 60px;
-                                writing-mode: vertical-rl;
-                                transform: rotate(180deg);
-                                font-size: 6.5px;
-                                color: #999;
-                                line-height: 1.2;
-                                letter-spacing: 0.3px;
+                                background-color: #E8E8E8;
+                                font-weight: bold;
+                                font-size: 7.5pt;
                             }
                         </style>
 
                         <div class="cert-page">
-                            <!-- Left marginal legal text -->
+
+                            <!-- Left marginal legal text (textbox in Word) -->
                             <div class="cert-marginal">
-                                Instituto Raimon Gaja, S.L. · NIF: B50588887 ·
-                                Inscrita en el Registro Mercantil de Barcelona,
-                                fecha 18/10/2023 · Folio 122 · Tomo 48.989
+                                Instituto Raimon Gaja, S.L con n&#250;m. CIF: B56488687.
+                                Inscrita en el Registro Mercantil de Barcelona con fecha 18/10/2023.
+                                Folio 122. Tomo 48.980. Inscripci&#243;n 1&#170; Hoja B-603323
                             </div>
 
-                            <!-- === Header: logo === -->
-                            <div class="cert-header">
+                            <!-- === Header: logo centrado === -->
+                            <div style="text-align: center; margin-bottom: 12pt;">
                                 <t t-if="o.env.company.logo">
-                                    <img t-att-src="image_data_uri(o.env.company.logo)" alt="Logo"/>
+                                    <img t-att-src="image_data_uri(o.env.company.logo)"
+                                         style="height: 2.0cm;"
+                                         alt="Logo"/>
                                 </t>
                             </div>
 
-                            <!-- === Title === -->
-                            <div class="cert-title">
-                                <h1>Certificado de Calificaciones</h1>
-                                <t t-if="o.certificate_type == 'physical_apostilled'">
-                                    <p class="cert-subtitle">
-                                        Sujeto a Apostilla de La Haya — <t t-out="o.env.company.name"/>
-                                    </p>
-                                </t>
-                            </div>
+                            <!-- === T&#237;tulo === -->
+                            <p style="text-align: center; margin-bottom: 12pt;">
+                                <strong style="font-size: 28pt;">CERTIFICADO DE CALIFICACIONES</strong>
+                            </p>
 
-                            <!-- === Body paragraph === -->
-                            <div class="cert-body">
-                                <p>
-                                    El <strong>Instituto Raimon Gaja</strong> certifica que
-                                    <strong><t t-out="o.partner_id.name or ''"/></strong>,
-                                    con <strong><t t-out="id_type_name or 'DNI/Pasaporte'"/></strong>
-                                    n.º <strong><t t-out="id_number"/></strong>,
-                                    ha cursado el programa de estudios
-                                    «<strong><t t-out="o.course_id.name or ''"/></strong>»
-                                    habiendo obtenido las siguientes calificaciones:
+                            <t t-if="o.certificate_type == 'physical_apostilled'">
+                                <p style="text-align: center; font-style: italic; color: #555555; font-size: 10pt; margin-bottom: 8pt;">
+                                    (Sujeto a Apostilla de La Haya &#8212; <t t-out="o.env.company.name"/>)
                                 </p>
-                            </div>
+                            </t>
 
-                            <!-- === Grade table === -->
+                            <!-- === Cuerpo === -->
+                            <p style="text-align: justify; margin-bottom: 0;">
+                                El <strong>Instituto Raimon Gaja</strong> certifica que
+                                <strong><t t-out="o.partner_id.name or ''"/></strong>
+                                con <strong><t t-out="id_type_name or 'DNI/Pasaporte'"/> <t t-out="id_number"/></strong>
+                                ha cursado el programa de estudios
+                                <strong><t t-out="o.course_id.name or ''"/></strong>
+                                habiendo obtenido las siguientes calificaciones:
+                            </p>
+
+                            <p style="margin-bottom: 0;">&#160;</p>
+
+                            <!-- === Tabla de calificaciones === -->
                             <table class="cert-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 12%;">Cód.</th>
-                                        <th>Asignatura</th>
-                                        <th class="text-center" style="width: 18%;">Calificación</th>
+                                        <th style="width: 8%;">C&#243;d.</th>
+                                        <th style="width: 74%;">Asignatura</th>
+                                        <th style="width: 18%;">Calificaci&#243;n</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -203,64 +113,81 @@
                                         <tr>
                                             <td><t t-out="subj.op_subject_id.code or ''"/></td>
                                             <td><t t-out="subj.op_subject_id.name or ''"/></td>
-                                            <td class="text-center">
-                                                <t t-out="'%.2f' % (subj.final_subject_note or 0.0)"/>
-                                            </td>
+                                            <td><t t-out="'%.2f' % (subj.final_subject_note or 0.0)"/></td>
                                         </tr>
                                     </t>
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <td colspan="2">Nota Media General</td>
-                                        <td class="text-center">
-                                            <t t-out="'%.2f' % (o.gradebook_student_id.total_final or 0.0)"/>
-                                        </td>
+                                        <td><t t-out="'%.2f' % (o.gradebook_student_id.total_final or 0.0)"/></td>
                                     </tr>
                                 </tfoot>
                             </table>
 
-                            <!-- === Custom description (only for type 'custom') === -->
+                            <!-- === Secci&#243;n personalizada (solo tipo custom) === -->
                             <t t-if="o.certificate_type == 'custom' and o.custom_description">
-                                <div class="cert-custom-box">
+                                <div style="border: 1px solid #999; padding: 8px 10px; margin-bottom: 10pt; font-size: 10pt;">
                                     <strong>Especificaciones adicionales:</strong><br/>
                                     <t t-out="o.custom_description"/>
                                 </div>
                             </t>
 
-                            <!-- === Apostille legal note === -->
+                            <!-- === Nota apostilla === -->
                             <t t-if="o.certificate_type == 'physical_apostilled'">
-                                <div class="cert-apostille-box">
+                                <div style="border-left: 3px solid #333; padding-left: 10px; margin-bottom: 10pt; font-size: 10pt; color: #444;">
                                     <strong>Nota legal:</strong>
-                                    Este certificado está sujeto al trámite de legalización mediante la
+                                    Este certificado est&#225; sujeto al tr&#225;mite de legalizaci&#243;n mediante la
                                     Apostilla de La Haya en virtud del Convenio de 5 de octubre de 1961.
                                     <t t-if="o.apostille_done">
-                                        <br/><em>Apostilla tramitada ✓</em>
+                                        <br/><em>Apostilla tramitada &#10003;</em>
                                     </t>
                                 </div>
                             </t>
 
-                            <!-- === Footer === -->
-                            <div class="cert-footer">
-                                <p class="cert-date-line">
-                                    Para que así conste, firmo la presente en Barcelona, a
-                                    <t t-out="o.request_date.strftime('%d') if o.request_date else '__'"/> de
-                                    <t t-out="{
-                                        1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
-                                        5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
-                                        9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
-                                    }.get(o.request_date.month, '') if o.request_date else '________'"/> de
-                                    <t t-out="o.request_date.strftime('%Y') if o.request_date else '____'"/>.
-                                </p>
+                            <!-- === "Para que as&#237; conste..." === -->
+                            <p style="margin-top: 6pt; margin-bottom: 0;">
+                                Para que as&#237; conste, firmo la presente en Barcelona a fecha
+                                <t t-out="o.request_date.strftime('%d/%m/%Y') if o.request_date else ''"/>
+                            </p>
 
-                                <div class="cert-signature-block">
-                                    <div class="cert-sig-line"> </div>
-                                    <t t-if="o.env.company.logo">
-                                        <img t-att-src="image_data_uri(o.env.company.logo)" alt="Logo"/>
-                                    </t>
-                                    <div class="cert-dept">Departamento Académico</div>
-                                    <div class="cert-inst">Instituto Raimon Gaja</div>
-                                </div>
+                            <p style="margin-bottom: 0;">&#160;</p>
+
+                            <!-- === "Firma y sello institucional" === -->
+                            <p style="margin-bottom: 0;">
+                                <span style="font-size: 7pt; color: #555555;">Firma y sello institucional</span>
+                            </p>
+
+                            <p style="margin-bottom: 0;">&#160;</p>
+
+                            <!-- === Logo peque&#241;o === -->
+                            <div style="margin-bottom: 0;">
+                                <t t-if="o.env.company.logo">
+                                    <img t-att-src="image_data_uri(o.env.company.logo)"
+                                         style="height: 2.5cm;"
+                                         alt="Logo"/>
+                                </t>
                             </div>
+
+                            <p style="margin-bottom: 0;">&#160;</p>
+                            <p style="margin-bottom: 0;">&#160;</p>
+                            <p style="margin-bottom: 0;">&#160;</p>
+                            <p style="margin-bottom: 0;">&#160;</p>
+                            <p style="margin-bottom: 0;">&#160;</p>
+                            <p style="margin-bottom: 0;">&#160;</p>
+                            <p style="margin-bottom: 0;">&#160;</p>
+                            <p style="margin-bottom: 0;">&#160;</p>
+
+                            <!-- === Departamento Acad&#233;mico === -->
+                            <p style="margin-bottom: 0.3pt;">
+                                <span style="font-size: 7pt; color: #555555;">&#160;</span>
+                                <span style="font-size: 12pt;">Departamento Acad&#233;mico</span>
+                            </p>
+
+                            <!-- === Instituto Raimon Gaja === -->
+                            <p style="margin-bottom: 0;">
+                                <span style="font-size: 12pt;">Instituto Raimon Gaja</span>
+                            </p>
 
                         </div><!-- .cert-page -->
                     </div><!-- .article -->
