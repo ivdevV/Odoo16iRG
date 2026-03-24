@@ -28,4 +28,16 @@
     </template>
 
     <!-- Cart/listing overrides removed to keep installation robust across themes/versions. -->
+
+    <!-- Override search autocomplete price to spanish format: "X € / Y meses" -->
+    <template id="irg_subscription_search_result_price_es"
+              inherit_id="website_sale_subscription.subscription_search_result_price"
+              priority="100">
+        <xpath expr="//small[not(@t-if) and not(@t-esc)]" position="replace">
+            <small> / </small>
+        </xpath>
+        <xpath expr="//small[@t-esc='unit']" position="replace">
+            <small>meses</small>
+        </xpath>
+    </template>
 </odoo>

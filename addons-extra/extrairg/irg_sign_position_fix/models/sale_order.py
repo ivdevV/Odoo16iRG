@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 # report layout changes.
 RAIMON_SIGNATURE_POSITIONS = {
     1: 0.700,
-    3: 0.820,
+    3: 0.650,
 }
 
 
