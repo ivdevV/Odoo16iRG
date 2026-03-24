@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 import base64
 import logging
+import os
+import subprocess
+import tempfile
+
+from docx import Document as DocxDocument
+from docx.oxml.ns import qn
+from copy import deepcopy
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -331,19 +339,222 @@ class IrgCertificateRequest(models.Model):
     # PDF generation
     # ------------------------------------------------------------------
 
-    def _generate_and_attach_pdf(self):
-        """Render the QWeb PDF and attach it as ir.attachment to this record."""
+    # ------------------------------------------------------------------
+    # Docx template helpers
+    # ------------------------------------------------------------------
+
+    def _get_template_path(self):
+        """Return the absolute path to the Word certificate template."""
+        module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(
+            module_path, 'static', 'src', 'templates',
+            'Plantilla-certificado-notas.docx',
+        )
+
+    @staticmethod
+    def _replace_in_paragraph(paragraph, old, new):
+        """Replace *old* with *new* across runs that Word may have split."""
+        full = ''.join(r.text for r in paragraph.runs)
+        if old not in full:
+            return
+        full = full.replace(old, new)
+        if paragraph.runs:
+            paragraph.runs[0].text = full
+            for r in paragraph.runs[1:]:
+                r.text = ''
+
+    def _fill_template(self):
+        """Open the .docx template, fill placeholders and table, return bytes."""
         self.ensure_one()
-        report_ref = 'irg_gradebook_certificates.action_report_certificate'
-        try:
-            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                report_ref, res_ids=[self.id]
+        tpl_path = self._get_template_path()
+        if not os.path.isfile(tpl_path):
+            raise UserError(
+                _('No se encuentra la plantilla Word en %s') % tpl_path
             )
+
+        doc = DocxDocument(tpl_path)
+
+        # --- Collect data ---------------------------------------------------
+        partner = self.partner_id
+        id_label = (
+            partner.l10n_latam_identification_type_id.name
+            if partner.l10n_latam_identification_type_id
+            else 'DNI/Pasaporte'
+        )
+        documento = '%s %s' % (id_label, partner.vat or '')
+
+        subjects = self.gradebook_student_id.gradebook_subject_ids.filtered(
+            lambda s: s.op_subject_id.subject_type == 'compulsory'
+        )
+        nota_media = '%.2f' % (self.gradebook_student_id.total_final or 0.0)
+        fecha = (
+            self.request_date.strftime('%d/%m/%Y') if self.request_date else ''
+        )
+
+        # --- Replace simple placeholders ------------------------------------
+        replacements = {
+            '<<nombreAlumno>>': partner.name or '',
+            '<<documento>>': documento,
+            '<<curso>>': self.course_id.name or '',
+            '<<fecha>>': fecha,
+        }
+        for para in doc.paragraphs:
+            for old, new in replacements.items():
+                self._replace_in_paragraph(para, old, new)
+        # Also check headers
+        for section in doc.sections:
+            for para in section.header.paragraphs:
+                for old, new in replacements.items():
+                    self._replace_in_paragraph(para, old, new)
+
+        # --- Fill the grades table (table index 0) --------------------------
+        table = doc.tables[0]
+        tbl_xml = table._tbl
+        all_rows = tbl_xml.findall(qn('w:tr'))
+        # Row 0 = header, rows 1‑12 = data slots, row 13 = Nota Media footer
+        header_row = all_rows[0]
+        data_rows = all_rows[1:-1]   # rows 1..12
+        footer_row = all_rows[-1]
+
+        # Fill data rows with subject info
+        for idx, row_xml in enumerate(data_rows):
+            cells = row_xml.findall(qn('w:tc'))
+            if idx < len(subjects):
+                subj = subjects[idx]
+                cell_values = [
+                    subj.op_subject_id.code or '',
+                    subj.op_subject_id.name or '',
+                    '%.2f' % (subj.final_subject_note or 0.0),
+                ]
+                for ci, val in enumerate(cell_values):
+                    if ci < len(cells):
+                        for p in cells[ci].findall(qn('w:p')):
+                            for r in p.findall(qn('w:r')):
+                                t = r.find(qn('w:t'))
+                                if t is not None:
+                                    t.text = val
+                                    break
+                            else:
+                                # No run exists — create one
+                                r_el = p.makeelement(qn('w:r'), {})
+                                rpr_src = data_rows[0].findall(qn('w:tc'))[0] \
+                                    .findall(qn('w:p'))[0].findall(qn('w:r'))
+                                if rpr_src:
+                                    rpr = rpr_src[0].find(qn('w:rPr'))
+                                    if rpr is not None:
+                                        r_el.append(deepcopy(rpr))
+                                t_el = r_el.makeelement(qn('w:t'), {})
+                                t_el.text = val
+                                r_el.append(t_el)
+                                p.append(r_el)
+                            break  # only first <w:p>
+            else:
+                # More rows than subjects → remove the excess row
+                tbl_xml.remove(row_xml)
+
+        # If there are more subjects than template rows (>12), clone rows
+        if len(subjects) > len(data_rows):
+            ref_row = data_rows[0]  # use first data row as formatting reference
+            for idx in range(len(data_rows), len(subjects)):
+                subj = subjects[idx]
+                new_row = deepcopy(ref_row)
+                cells = new_row.findall(qn('w:tc'))
+                cell_values = [
+                    subj.op_subject_id.code or '',
+                    subj.op_subject_id.name or '',
+                    '%.2f' % (subj.final_subject_note or 0.0),
+                ]
+                for ci, val in enumerate(cell_values):
+                    if ci < len(cells):
+                        for p in cells[ci].findall(qn('w:p')):
+                            for r in p.findall(qn('w:r')):
+                                t = r.find(qn('w:t'))
+                                if t is not None:
+                                    t.text = val
+                                    break
+                            break
+                footer_row.addprevious(new_row)
+
+        # Fill Nota Media in footer row
+        footer_cells = footer_row.findall(qn('w:tc'))
+        # Last cell of footer row gets the nota media
+        last_cell = footer_cells[-1]
+        for p in last_cell.findall(qn('w:p')):
+            for r in p.findall(qn('w:r')):
+                t = r.find(qn('w:t'))
+                if t is not None:
+                    t.text = nota_media
+                    break
+            break
+
+        # Save filled document to a temp file
+        tmp_docx = tempfile.NamedTemporaryFile(
+            suffix='.docx', delete=False, prefix='cert_'
+        )
+        doc.save(tmp_docx.name)
+        tmp_docx.close()
+        return tmp_docx.name
+
+    @staticmethod
+    def _convert_to_pdf(docx_path):
+        """Convert a .docx file to PDF using LibreOffice and return PDF bytes."""
+        out_dir = os.path.dirname(docx_path)
+        try:
+            subprocess.run(
+                [
+                    'libreoffice', '--headless', '--norestore',
+                    '--convert-to', 'pdf',
+                    '--outdir', out_dir,
+                    docx_path,
+                ],
+                check=True,
+                timeout=60,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except FileNotFoundError:
+            raise UserError(
+                _('LibreOffice no está instalado en el servidor. '
+                  'Ejecute: apt-get install -y libreoffice-writer')
+            )
+        except subprocess.CalledProcessError as exc:
+            _logger.error('LibreOffice conversion failed: %s', exc.stderr)
+            raise UserError(
+                _('Error al convertir el certificado a PDF. Revise el log.')
+            )
+
+        pdf_path = docx_path.rsplit('.', 1)[0] + '.pdf'
+        if not os.path.isfile(pdf_path):
+            raise UserError(_('No se generó el archivo PDF.'))
+
+        with open(pdf_path, 'rb') as f:
+            pdf_bytes = f.read()
+
+        # Cleanup temp files
+        for path in (docx_path, pdf_path):
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+
+        return pdf_bytes
+
+    def _generate_and_attach_pdf(self):
+        """Fill the Word template with real data and convert to PDF."""
+        self.ensure_one()
+        try:
+            docx_path = self._fill_template()
+            pdf_content = self._convert_to_pdf(docx_path)
+        except UserError:
+            raise
         except Exception as exc:
             _logger.error(
-                'Error generando PDF para certificado %s: %s', self.name, exc
+                'Error generando PDF para certificado %s: %s', self.name, exc,
+                exc_info=True,
             )
-            raise UserError(_('No se pudo generar el PDF del certificado. Revisa el log.'))
+            raise UserError(
+                _('No se pudo generar el PDF del certificado. Revise el log.')
+            )
 
         filename = 'Certificado_%s_%s.pdf' % (
             (self.partner_id.name or 'Alumno').replace(' ', '_'),

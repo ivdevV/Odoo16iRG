@@ -45,4 +45,7 @@
     'installable': True,
     'application': False,
     'license': 'AGPL-3',
+    'external_dependencies': {
+        'python': ['docx'],
+    },
 }
