@@ -237,13 +237,12 @@ class ProductTemplate(models.Model):
 
         display_currency = mapping.get('detail', {}).get('display_currency')
 
-        # Prefer the pre-computed global minimum installment (set in _get_combination_info
-        # via _isep_get_min_installment_data across all variants). This mirrors what the
-        # product page shows when it auto-selects the Online + longest-plan variant
-        # (= the lowest per-month installment), regardless of which default combination
-        # is passed to the search context (which is often Contado, months=1).
-        monthly_price = combination_info.get('min_installment_price')
-        duration = combination_info.get('min_installment_months', 1)
+        # Prefer explicit display installment (computed at product-product level when
+        # a capped installment exists), then the global min installment set in
+        # _get_combination_info. This order favors the actual per-product display
+        # installment when available.
+        monthly_price = combination_info.get('display_installment_price') or combination_info.get('min_installment_price')
+        duration = combination_info.get('display_installment_months') or combination_info.get('min_installment_months') or 1
 
         if not monthly_price or duration <= 1:
             # Fallback: compute from the selected combination's price and months.
@@ -253,20 +252,26 @@ class ProductTemplate(models.Model):
                 or 1
             )
             total_price = combination_info.get('price') or 0.0
-            # If min_installment is not available, try to compute a sensible default
-            # using the template default installment logic (same as product page).
-            if not monthly_price or duration <= 1:
-                template = self[:1]
-                default_installment_price, default_installment_months = template._isep_get_default_installment_data(
-                    pricelist=current_pricelist
+
+            # Try template-level global minimum as a sensible default (same helper
+            # used by product page). This avoids recomputing a wrong value when the
+            # incoming combination represents 'Contado' (months=1) but the product
+            # has temporal pricing elsewhere.
+            template = self[:1]
+            try:
+                default_installment_price, default_installment_months = template._isep_get_min_installment_data(
+                    pricelist=None
                 )
-                if default_installment_price and default_installment_months > 1:
-                    monthly_price = default_installment_price
-                    duration = default_installment_months
-                else:
-                    if not total_price or duration <= 1:
-                        return super()._search_render_results_prices(mapping, combination_info)
-                    monthly_price = total_price / duration
+            except Exception:
+                default_installment_price, default_installment_months = (False, 1)
+
+            if (not monthly_price or duration <= 1) and default_installment_price and default_installment_months > 1:
+                monthly_price = default_installment_price
+                duration = default_installment_months
+            else:
+                if not total_price or duration <= 1:
+                    return super()._search_render_results_prices(mapping, combination_info)
+                monthly_price = total_price / duration
 
         return self.env['ir.ui.view']._render_template(
             'website_sale_subscription.subscription_search_result_price',

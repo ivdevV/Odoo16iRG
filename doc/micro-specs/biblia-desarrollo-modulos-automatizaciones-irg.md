@@ -468,3 +468,15 @@ Nota: en este repo, el push dispara pipeline Jenkins de despliegue.
 Si una solucion propuesta no puede explicarse con este marco (reglas, ownership, pruebas, rollback), no esta lista para desplegarse.
 
 Primero consistencia y trazabilidad; despues velocidad.
+
+---
+
+## 16. Hallazgos recientes (2026-03-24)
+
+- **Visibilidad de forum en batches:** consultas sin `sudo()` y sin considerar relaciones `op_batch_ids`/`op.admission` pueden ocultar foros a usuarios portal. Fix aplicado: usar `sudo()` en el controlador y unir visibilidad por lote.
+- **Firma en prematrícula (posicionamiento):** se sincronizaron constantes canónicas y la creación de `sign.item` en `sale_order`. Valores finales tunados: `posX = 0.21`; `posY` página 1 = `0.730`, página 3 = `0.420`. Runbook: validar en staging y ajustar ±0.01 si es necesario.
+- **Cuota en buscador/auto-complete:** causa raíz: recomputado de cuota que ignoraba `combination_info['min_installment_price']`. Fix: priorizar `min_installment_price/min_installment_months` en `_search_render_results_prices` y usar el helper de plantilla como fallback; evita resultados erróneos (p.ej. 300€/19 meses).
+- **UX checkout (inputs):** añadido `form-visibility.css` y registrado en assets para mejorar contraste/legibilidad de campos en checkout sin cambiar comportamiento funcional.
+- **Operativa Git y despliegue:** algunas pushes fueron rechazadas por remoto adelantado; se resolvió con `git pull --rebase` y push final a `Dev_iRG`. Nota: actualizar módulos en staging: `-u irg_sign_position_fix,irg_website_sale_monthly_price,irg_website_sale_monthly_default_combo` y generar la prematrícula para validar.
+- **Pruebas y runbook:** añadir a la matriz de pruebas la verificación de paridad cuota (ficha ↔ buscador) y validación visual de la prematrícula (páginas 1 y 3) tras cada ajuste de posición.
+
