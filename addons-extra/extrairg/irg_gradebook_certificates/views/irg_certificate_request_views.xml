@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             Form view
+        ============================================================ -->
+        <record id="view_irg_certificate_request_form" model="ir.ui.view">
+            <field name="name">irg.certificate.request.form</field>
+            <field name="model">irg.certificate.request</field>
+            <field name="arch" type="xml">
+                <form string="Certificado de Notas">
+                    <header>
+                        <button name="action_mark_in_process"
+                                string="En Proceso"
+                                type="object"
+                                class="btn-primary"
+                                attrs="{'invisible': [('state', '!=', 'paid')]}"/>
+                        <button name="action_mark_sent"
+                                string="Marcar como Enviado"
+                                type="object"
+                                class="btn-primary"
+                                attrs="{'invisible': [('state', '!=', 'in_process')]}"/>
+                        <button name="action_mark_done"
+                                string="Finalizar"
+                                type="object"
+                                attrs="{'invisible': [('state', 'not in', ('sent', 'in_process'))]}"/>
+                        <button name="action_generate_pdf"
+                                string="Regenerar PDF"
+                                type="object"
+                                attrs="{'invisible': [('state', 'in', ('draft', 'pending_payment', 'cancelled'))]}"/>
+                        <button name="action_download_pdf"
+                                string="Descargar PDF"
+                                type="object"
+                                class="btn-secondary"
+                                attrs="{'invisible': [('attachment_id', '=', False)]}"/>
+                        <button name="action_cancel"
+                                string="Cancelar"
+                                type="object"
+                                class="btn-danger"
+                                attrs="{'invisible': [('state', 'in', ('done', 'sent', 'cancelled'))]}"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,pending_payment,paid,in_process,sent,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Datos del Alumno">
+                                <field name="gradebook_student_id"
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="partner_id" readonly="1"/>
+                                <field name="course_id" readonly="1"/>
+                                <field name="batch_id" readonly="1"/>
+                                <field name="admission_id" readonly="1"/>
+                            </group>
+                            <group string="Solicitud">
+                                <field name="origin" readonly="1"/>
+                                <field name="certificate_type"
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name="shipping_type"
+                                       attrs="{
+                                           'invisible': [('certificate_type', 'not in', ('physical', 'physical_apostilled'))],
+                                           'required': [('certificate_type', 'in', ('physical', 'physical_apostilled'))],
+                                           'readonly': [('state', '!=', 'draft')]
+                                       }"/>
+                                <field name="custom_options"
+                                       attrs="{'invisible': [('certificate_type', '!=', 'custom')]}"/>
+                                <field name="request_date" readonly="1"/>
+                                <field name="delivery_date"
+                                       attrs="{'invisible': [('state', 'not in', ('sent', 'done'))]}"/>
+                                <field name="tracking_number"
+                                       attrs="{'invisible': [('state', 'not in', ('in_process', 'sent', 'done'))]}"/>
+                            </group>
+                        </group>
+                        <group string="Precios">
+                            <field name="price_base" readonly="1"/>
+                            <field name="price_shipping" readonly="1"/>
+                            <field name="price_total" readonly="1"/>
+                        </group>
+                        <group string="Descripción a Medida"
+                               attrs="{'invisible': [('certificate_type', '!=', 'custom')]}">
+                            <field name="custom_description" nolabel="1"/>
+                        </group>
+                        <notebook>
+                            <page string="Documentos" name="page_documents">
+                                <group>
+                                    <field name="attachment_id" readonly="1"/>
+                                    <field name="sale_order_id" readonly="1"/>
+                                </group>
+                                <!-- Apostilla status for apostilled type -->
+                                <group attrs="{'invisible': [('certificate_type', '!=', 'physical_apostilled')]}">
+                                    <field name="apostille_done"/>
+                                </group>
+                            </page>
+                            <page string="Notas Internas" name="page_notes">
+                                <field name="internal_notes" nolabel="1"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             List view
+        ============================================================ -->
+        <record id="view_irg_certificate_request_list" model="ir.ui.view">
+            <field name="name">irg.certificate.request.list</field>
+            <field name="model">irg.certificate.request</field>
+            <field name="arch" type="xml">
+                <list string="Certificados de Notas" decoration-success="state == 'done'"
+                      decoration-info="state in ('pending_payment', 'paid', 'in_process')"
+                      decoration-muted="state == 'cancelled'"
+                      decoration-warning="state == 'draft'">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="course_id"/>
+                    <field name="certificate_type"/>
+                    <field name="shipping_type" optional="hide"/>
+                    <field name="price_total"/>
+                    <field name="origin" optional="hide"/>
+                    <field name="request_date"/>
+                    <field name="delivery_date" optional="hide"/>
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'done'"
+                           decoration-info="state in ('pending_payment', 'paid', 'in_process', 'sent')"
+                           decoration-danger="state == 'cancelled'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             Search view
+        ============================================================ -->
+        <record id="view_irg_certificate_request_search" model="ir.ui.view">
+            <field name="name">irg.certificate.request.search</field>
+            <field name="model">irg.certificate.request</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Certificados">
+                    <field name="name" string="Referencia"/>
+                    <field name="partner_id" string="Alumno"/>
+                    <field name="course_id" string="Programa"/>
+                    <separator/>
+                    <filter name="filter_digital" string="Digital"
+                            domain="[('certificate_type', '=', 'digital')]"/>
+                    <filter name="filter_physical" string="Físico"
+                            domain="[('certificate_type', 'in', ('physical', 'physical_apostilled'))]"/>
+                    <filter name="filter_pending" string="Pendiente de Pago"
+                            domain="[('state', '=', 'pending_payment')]"/>
+                    <filter name="filter_paid" string="Pagados"
+                            domain="[('state', 'in', ('paid', 'in_process'))]"/>
+                    <filter name="filter_done" string="Finalizados"
+                            domain="[('state', '=', 'done')]"/>
+                    <filter name="filter_portal" string="Solicitudes Portal"
+                            domain="[('origin', '=', 'portal')]"/>
+                    <separator/>
+                    <group expand="0" string="Agrupar por">
+                        <filter name="group_state" string="Estado"
+                                context="{'group_by': 'state'}"/>
+                        <filter name="group_type" string="Tipo"
+                                context="{'group_by': 'certificate_type'}"/>
+                        <filter name="group_course" string="Programa"
+                                context="{'group_by': 'course_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             Window action
+        ============================================================ -->
+        <record id="action_irg_certificate_request" model="ir.actions.act_window">
+            <field name="name">Certificados de Notas</field>
+            <field name="res_model">irg.certificate.request</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_irg_certificate_request_search"/>
+        </record>
+
+    </data>
+</odoo>

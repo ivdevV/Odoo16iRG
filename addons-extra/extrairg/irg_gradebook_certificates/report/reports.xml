@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="action_report_certificate" model="ir.actions.report">
+            <field name="name">Certificado de Notas</field>
+            <field name="model">irg.certificate.request</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">irg_gradebook_certificates.report_certificate_document</field>
+            <field name="report_file">irg_gradebook_certificates.report_certificate_document</field>
+            <field name="binding_model_id" ref="model_irg_certificate_request"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="base.paperformat_euro"/>
+        </record>
+
+    </data>
+</odoo>

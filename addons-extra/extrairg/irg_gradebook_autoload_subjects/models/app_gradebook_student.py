@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models
+from odoo import models, api
 
 
 class AppGradebookStudent(models.Model):
@@ -30,6 +30,7 @@ class AppGradebookStudent(models.Model):
                     for s in subjects_to_add
                 ])
 
+    @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
         records._autoload_subjects()

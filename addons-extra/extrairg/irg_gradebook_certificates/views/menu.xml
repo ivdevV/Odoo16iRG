@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Anchor under existing isep_gradebook top-level menu -->
+        <menuitem id="menu_irg_certificates_root"
+                  name="Certificados de Notas"
+                  parent="isep_gradebook.menu_app_gradebook_root"
+                  sequence="30"/>
+
+        <menuitem id="menu_irg_certificates_list"
+                  name="Todas las Solicitudes"
+                  parent="menu_irg_certificates_root"
+                  action="action_irg_certificate_request"
+                  sequence="10"/>
+
+    </data>
+</odoo>

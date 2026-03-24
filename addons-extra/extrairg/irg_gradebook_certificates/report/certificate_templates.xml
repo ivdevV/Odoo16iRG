@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="report_certificate_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+
+                            <!-- ============================================================
+                                 Title block
+                            ============================================================ -->
+                            <div class="text-center" style="margin-bottom: 24px;">
+                                <h2 style="letter-spacing: 2px; text-transform: uppercase;">
+                                    CERTIFICADO DE CALIFICACIONES
+                                </h2>
+                                <t t-if="o.certificate_type == 'physical_apostilled'">
+                                    <p style="font-style: italic; color: #555;">
+                                        (Sujeto a Apostilla de La Haya — <t t-out="o.env.company.name"/>)
+                                    </p>
+                                </t>
+                            </div>
+
+                            <!-- ============================================================
+                                 Body text
+                            ============================================================ -->
+                            <p style="text-align: justify; margin-bottom: 16px;">
+                                La institución <strong><t t-out="o.env.company.name"/></strong>
+                                certifica que el/la alumno/a
+                                <strong><t t-out="o.partner_id.name or ''"/></strong>
+                                <t t-if="o.admission_id and o.admission_id.application_number">
+                                    con número de expediente
+                                    <strong><t t-out="o.admission_id.application_number"/></strong>
+                                </t>
+                                ha cursado el programa de estudios
+                                <strong><t t-out="o.course_id.name or ''"/></strong>
+                                <t t-if="o.batch_id">
+                                    , grupo <strong><t t-out="o.batch_id.name"/></strong>
+                                </t>,
+                                habiendo obtenido las siguientes calificaciones:
+                            </p>
+
+                            <!-- ============================================================
+                                 Subject table
+                            ============================================================ -->
+                            <table class="table table-bordered"
+                                   style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px;">
+                                <thead>
+                                    <tr style="background-color: #E8E8E8;">
+                                        <th style="padding: 6px 8px; text-align: left;">Cód.</th>
+                                        <th style="padding: 6px 8px; text-align: left;">Asignatura</th>
+                                        <th style="padding: 6px 8px; text-align: center;">Calificación</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="subjects"
+                                       t-value="o.gradebook_student_id.gradebook_subject_ids.filtered(
+                                           lambda s: s.op_subject_id.subject_type == 'compulsory'
+                                       )"/>
+                                    <t t-foreach="subjects" t-as="subj">
+                                        <tr>
+                                            <td style="padding: 5px 8px;">
+                                                <t t-out="subj.op_subject_id.code or ''"/>
+                                            </td>
+                                            <td style="padding: 5px 8px;">
+                                                <t t-out="subj.op_subject_id.name or ''"/>
+                                            </td>
+                                            <td style="padding: 5px 8px; text-align: center;">
+                                                <t t-out="'%.2f' % (subj.final_subject_note or 0.0)"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background-color: #E8E8E8; font-weight: bold;">
+                                        <td colspan="2" style="padding: 6px 8px;">
+                                            Nota Media General
+                                        </td>
+                                        <td style="padding: 6px 8px; text-align: center;">
+                                            <t t-out="'%.2f' % (o.gradebook_student_id.total_final or 0.0)"/>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <!-- ============================================================
+                                 Custom section
+                            ============================================================ -->
+                            <t t-if="o.certificate_type == 'custom' and o.custom_description">
+                                <div style="border: 1px solid #ccc; padding: 12px; margin-bottom: 16px; border-radius: 4px;">
+                                    <strong>Especificaciones adicionales:</strong>
+                                    <p style="margin-top: 6px;">
+                                        <t t-out="o.custom_description"/>
+                                    </p>
+                                </div>
+                            </t>
+
+                            <!-- ============================================================
+                                 Apostille note
+                            ============================================================ -->
+                            <t t-if="o.certificate_type == 'physical_apostilled'">
+                                <div style="border-left: 3px solid #875A7B; padding-left: 12px; margin-bottom: 16px; color: #555;">
+                                    <strong>Nota legal:</strong>
+                                    Este certificado está sujeto al trámite de legalización mediante la
+                                    Apostilla de La Haya en virtud del Convenio de 5 de octubre de 1961.
+                                    <t t-if="o.apostille_done">
+                                        <br/><em>Apostilla tramitada: ✓</em>
+                                    </t>
+                                </div>
+                            </t>
+
+                            <!-- ============================================================
+                                 Footer: date, reference, signature
+                            ============================================================ -->
+                            <div style="margin-top: 40px; display: table; width: 100%;">
+                                <div style="display: table-cell; vertical-align: bottom; width: 50%;">
+                                    <p style="margin: 0;">
+                                        <strong>Fecha de expedición:</strong>
+                                        <t t-out="o.request_date.strftime('%d/%m/%Y') if o.request_date else ''"/>
+                                    </p>
+                                    <p style="margin: 0;">
+                                        <strong>Nº de referencia:</strong>
+                                        <t t-out="o.name"/>
+                                    </p>
+                                </div>
+                                <div style="display: table-cell; vertical-align: bottom; width: 50%; text-align: right;">
+                                    <div style="display: inline-block; text-align: center; width: 200px;">
+                                        <div style="border-top: 1px solid #333; padding-top: 4px;">
+                                            <span style="font-size: 11px; color: #555;">
+                                                Firma y sello institucional
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div><!-- .page -->
+                    </t><!-- web.external_layout -->
+                </t><!-- t-foreach -->
+            </t><!-- web.html_container -->
+        </template>
+
+    </data>
+</odoo>

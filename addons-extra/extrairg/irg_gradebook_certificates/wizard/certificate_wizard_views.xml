@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             Certificate generation wizard (backend / admin)
+        ============================================================ -->
+        <record id="view_irg_certificate_wizard_form" model="ir.ui.view">
+            <field name="name">irg.certificate.wizard.form</field>
+            <field name="model">irg.certificate.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Generar Certificado de Notas">
+                    <group string="Alumno">
+                        <field name="gradebook_student_id" readonly="1"/>
+                        <field name="partner_name" readonly="1" string="Nombre"/>
+                        <field name="course_name" readonly="1" string="Programa"/>
+                    </group>
+                    <group string="Tipo de Certificado">
+                        <field name="certificate_type"/>
+                        <field name="shipping_type"
+                               attrs="{
+                                   'invisible': [('certificate_type', 'not in', ('physical', 'physical_apostilled'))],
+                                   'required': [('certificate_type', 'in', ('physical', 'physical_apostilled'))]
+                               }"/>
+                        <field name="custom_options"
+                               attrs="{'invisible': [('certificate_type', '!=', 'custom')]}"/>
+                    </group>
+                    <group string="Descripción a Medida"
+                           attrs="{'invisible': [('certificate_type', '!=', 'custom')]}">
+                        <field name="custom_description" nolabel="1"/>
+                    </group>
+                    <group string="Precio">
+                        <field name="price_total" readonly="1"/>
+                    </group>
+                    <footer>
+                        <button name="action_generate"
+                                string="Generar y Descargar PDF"
+                                type="object"
+                                class="btn-primary"/>
+                        <button string="Cancelar"
+                                class="btn-secondary"
+                                special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- ============================================================
+             Sent wizard (admin — enter tracking number)
+        ============================================================ -->
+        <record id="view_irg_certificate_sent_wizard_form" model="ir.ui.view">
+            <field name="name">irg.certificate.sent.wizard.form</field>
+            <field name="model">irg.certificate.sent.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Marcar Certificado como Enviado">
+                    <group>
+                        <field name="certificate_id" readonly="1"/>
+                        <field name="delivery_date"/>
+                        <field name="tracking_number"/>
+                    </group>
+                    <footer>
+                        <button name="action_confirm"
+                                string="Confirmar Envío"
+                                type="object"
+                                class="btn-primary"/>
+                        <button string="Cancelar"
+                                class="btn-secondary"
+                                special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>
