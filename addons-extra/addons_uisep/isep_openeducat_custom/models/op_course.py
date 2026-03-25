@@ -10,8 +10,14 @@ class OpCourse(models.Model):
 
     def name_get(self):
         # Importante que la asignatura muestre su codigo para evitar confusiones
-        self.browse(self.ids).read(['name', 'code'])
-        return [(template.id, '%s%s' % (template.code and '%s - ' % template.code or '', template.name)) for template in self]
+        # Note: do NOT call self.read() here — in Odoo 16 the 'name' column may
+        # still be character varying (not jsonb), causing a PostgreSQL operator
+        # error when the ORM generates a translation query with the ->> operator.
+        # Accessing .name / .code directly works without triggering that query.
+        return [
+            (rec.id, '%s%s' % (rec.code and '%s - ' % rec.code or '', rec.name or ''))
+            for rec in self
+        ]
     
     
     @api.model
