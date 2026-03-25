@@ -453,9 +453,21 @@ class IrgCertificateRequest(models.Model):
             lambda s: s.op_subject_id.subject_type == 'compulsory'
         )
         nota_media = '%.2f' % (self.gradebook_student_id.total_final or 0.0)
+
+        # Fecha corta DD/MM/YYYY y fecha larga "25 de marzo de 2026"
         fecha = (
             self.request_date.strftime('%d/%m/%Y') if self.request_date else ''
         )
+        if self.request_date:
+            meses = {
+                1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+                5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+                9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre',
+            }
+            dt = self.request_date
+            fecha_larga = '%d de %s de %d' % (dt.day, meses[dt.month], dt.year)
+        else:
+            fecha_larga = ''
 
         # --- ECTS and duration (depend on whether course is MNC) ------------
         course_name = self.course_id.name or ''
@@ -464,11 +476,19 @@ class IrgCertificateRequest(models.Model):
         duracion_str = '2 años' if is_mnc else '1 año'
 
         # --- Replace simple placeholders ------------------------------------
+        # The Word templates use these exact placeholder names (case-sensitive):
         replacements = {
+            '<<NombreAlumno>>': partner.name or '',
+            '<<DocumentoIdentidad>>': documento,
+            '<<nombreCurso>>': course_name,
+            '<<añoCurso>>': duracion_str,
+            '<<Etcs>>': ects_str,
+            '<<fechaLarga>>': fecha_larga,
+            '<<fecha>>': fecha,
+            # Legacy names (keep for backward compatibility)
             '<<nombreAlumno>>': partner.name or '',
             '<<documento>>': documento,
             '<<curso>>': course_name,
-            '<<fecha>>': fecha,
             '<<ects>>': ects_str,
             '<<duracion>>': duracion_str,
         }
@@ -480,6 +500,13 @@ class IrgCertificateRequest(models.Model):
             for para in section.header.paragraphs:
                 for old, new in replacements.items():
                     self._replace_in_paragraph(para, old, new)
+        # Also check table cells (some placeholders may live inside tables)
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        for old, new in replacements.items():
+                            self._replace_in_paragraph(para, old, new)
 
         # --- Fill the grades table (table index 0) --------------------------
         table = doc.tables[0]
