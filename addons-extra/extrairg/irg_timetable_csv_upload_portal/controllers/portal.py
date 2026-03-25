@@ -140,10 +140,10 @@ class TimetableCSVUploadController(Controller):
                 f'Error al guardar el upload: {str(e)}'
             )
 
-        # ─── Copiar a watch_dir ────────────────────────────────────────
-        error = self._copy_to_watch_dir(safe_filename, text_content, upload_record)
-        if error:
-            return self._upload_error(error)
+        # ─── Procesar CSV directamente (sin watch_dir) ──────────────────
+        result = self._process_csv_directly(text_content, upload_record)
+        if result.get('error'):
+            return self._upload_error(result['error'])
 
         # ─── Redirigir con mensaje de éxito ─────────────────────────────
         return request.redirect(
@@ -202,6 +202,76 @@ class TimetableCSVUploadController(Controller):
 
         except Exception as e:
             return f'Error al validar el CSV: {str(e)}'
+
+    def _process_csv_directly(self, text_content, upload_record):
+        """Procesa el CSV directamente sin usar watch_dir.
+        
+        Llama a los métodos del módulo irg_timetable_csv_import para:
+        1. Parsear CSV
+        2. Crear/actualizar sesiones
+        3. Actualizar op.subject.to.batch
+        4. Crear log de importación
+        
+        Args:
+            text_content (str): contenido decodificado del CSV
+            upload_record (irg.timetable.csv.upload): registro creado
+            
+        Returns:
+            dict: {'error': None} si OK, {'error': mensaje} si error
+        """
+        try:
+            ImportLog = request.env['irg.timetable.import.log']
+            
+            # Parsear CSV usando el método del módulo base
+            parsed_rows = ImportLog._parse_csv(text_content)
+            
+            # Procesar sesiones
+            created, updated, skipped, errors = ImportLog._process_sessions(parsed_rows)
+            
+            # Actualizar fechas en op.subject.to.batch
+            dates_updated, dates_errors = ImportLog._update_subject_to_batch_dates(parsed_rows)
+            errors.extend(dates_errors)
+            
+            # Determinar estado
+            if errors and (created + updated) == 0:
+                state = 'error'
+            elif errors:
+                state = 'warning'
+            else:
+                state = 'ok'
+            
+            # Crear log de importación
+            import_log = ImportLog.sudo().create({
+                'name': upload_record.name,
+                'state': state,
+                'sessions_created': created,
+                'sessions_updated': updated,
+                'sessions_skipped': skipped,
+                'subject_dates_updated': dates_updated,
+                'error_details': '\n'.join(errors) if errors else False,
+            })
+            
+            # Actualizar upload_record con el log generado
+            upload_record.sudo().write({
+                'state': 'done' if state == 'ok' else state,
+                'import_log_id': import_log.id,
+            })
+            
+            _logger.info(
+                'irg_timetable_csv_upload_portal: CSV procesado [%d] — '
+                'creadas=%d actualizadas=%d omitidas=%d fechas=%d',
+                upload_record.id, created, updated, skipped, dates_updated,
+            )
+            
+            return {'error': None}
+            
+        except Exception as e:
+            _logger.exception('Error procesando CSV directamente')
+            upload_record.sudo().write({
+                'state': 'error',
+                'error_message': f'Error al procesar el archivo: {str(e)}',
+            })
+            return {'error': f'Error al procesar el archivo: {str(e)}'}
 
     def _copy_to_watch_dir(self, filename, text_content, upload_record):
         """Copia el archivo a watch_dir para procesamiento.

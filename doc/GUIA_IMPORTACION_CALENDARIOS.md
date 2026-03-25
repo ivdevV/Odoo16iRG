@@ -213,27 +213,7 @@ Deben aparecer como **Instalados** ✅
 
 ## 4. Configuración en Odoo {#configuración-en-odoo}
 
-### Paso 4.1: Configurar el Directorio de Vigilancia (`watch_dir`)
-
-1. En Odoo, ve a **Ajustes > Técnicos > Parámetros del sistema**
-2. **Busca o crea:** `irg_timetable_csv_import.watch_dir`
-3. **Establece el valor:** La ruta del directorio donde colocarás los CSV
-
-   **Ejemplo Windows:**
-   ```
-   C:\Calendarios\
-   ```
-   
-   **Ejemplo Linux/Docker:**
-   ```
-   /mnt/calendarios/
-   ```
-
-4. Guarda.
-
-> **Nota:** El directorio debe existir previamente. Si es dentro de Docker, copia o monta el directorio en el contenedor.
-
-### Paso 4.2: Crear Mapeos de Programas (Program Maps)
+### Paso 4.1: Crear Mapeos de Programas (Program Maps)
 
 El módulo necesita saber **qué Máster/Programa CSV** corresponde a **qué Curso** en Odoo.
 
@@ -281,6 +261,28 @@ Calendario HD 365           | HD     | —
 
 > **💡 Consejo:** Copia/pega los nombres exactos desde el CSV generado para evitar errores de coincidencia.
 
+### Paso 4.2: (Opcional) Configurar watch_dir — solo si usas Opción B
+
+Si planeas usar la **Opción B (Manual/Terminal)** para importar CSVs, configura el directorio:
+
+1. En Odoo, ve a **Ajustes > Técnicos > Parámetros del sistema**
+2. **Busca o crea:** `irg_timetable_csv_import.watch_dir`
+3. **Establece el valor:** La ruta del directorio donde colocarás los CSV
+
+   **Ejemplo Windows:**
+   ```
+   C:\Calendarios\
+   ```
+   
+   **Ejemplo Linux/Docker:**
+   ```
+   /mnt/calendarios/
+   ```
+
+4. Guarda.
+
+> **Nota:** Este paso es **OPCIONAL** si solo usas el portal web (Opción A). El directorio debe existir previamente si lo configuras.
+
 ---
 
 ## 5. Importación del CSV (Opción A: Portal Web) {#importación-portal-web}
@@ -305,34 +307,41 @@ Si instalaste `irg_timetable_csv_upload_portal`, es la forma más segura y cómo
    - Columnas requeridas: `Máster/Programa`, `Fecha`, `Nombre Asignatura`, `Docente`
 3. Haz clic en **"Subir y Procesar"**
 
-### Paso 5.3: Confirmación
+### Paso 5.3: Confirmación y Procesamiento Inmediato
 
 - Si todo es correcto, verás: **"✓ Excelente! El archivo se subió correctamente."**
-- El sistema copiará el archivo a `watch_dir` automáticamente
-- El cron procesará el CSV en la próxima ejecución (cada 6 horas)
+- **El sistema procesa el CSV INMEDIATAMENTE** (sin esperar cron)
+- Las sesiones se crean automáticamente en Odoo
+- El contenido se habilita 72 horas antes de cada clase (automático via cron existente)
 
 ### Historial
 
 En la misma página ves el **Historial de Uploads** (últimos 5 intentos) con estado:
-- 🟡 **Pendiente** — recientemente subido
-- 🔄 **Procesando** — en la cola del cron
-- ✅ **Completado** — importación exitosa
-- ❌ **Error** — revisa el mensaje de error
+- ✅ **Completado** — importación exitosa (inmediata)
+- ❌ **Error** — revisa el mensaje de error (faltan mapeos, cursos, etc.)
 
 ---
 
 ## 6. Importación del CSV (Opción B: Manual/Terminal) {#importación-del-csv}
 
-### Paso 6.1: Copiar el CSV al Directorio de Vigilancia
+### 🎯 Solo si NO usas Portal Web
+
+Este flujo requiere acceso a terminal/SSH y **requiere haber configurado watch_dir en Paso 4.2**.
+
+### Paso 6.1: Verificar que watch_dir está configurado
+
+Asegúrate de haber completado **Paso 4.2** (configuración de `irg_timetable_csv_import.watch_dir`).
+
+### Paso 6.2: Copiar el CSV al Directorio de Vigilancia
 
 1. Copia el archivo generado `Calendario_Global_iRG.csv` 
-2. Colócalo en el directorio configurado en **Paso 4.1**
+2. Colócalo en el directorio configurado en **Paso 4.2**
 
    **Windows:** `C:\Calendarios\Calendario_Global_iRG.csv`
    
    **Docker:** Copia al contenedor o monta el volumen
 
-### Paso 6.2: Disparar la Importación (Automática o Manual)
+### Paso 6.3: Disparar la Importación (Automática o Manual)
 
 #### **Opción A: Cron Automático (Recomendado)**
 
@@ -473,44 +482,72 @@ O revisa el archivo de log de Odoo (configurado en `odoo.conf`).
    - irg_timetable_csv_import
    - irg_timetable_csv_upload_portal  ← NUEVO
    ↓
-5. Configura watch_dir + Mapeos CSV en Odoo
+5. Crea Mapeos CSV en Odoo (Paso 4.1)
    ↓
 6. Entra a /campus > Tarjeta "Actualizar Calendarios"
    ↓
-7. Sube Calendario_Global_iRG.csv vía portal web (seguro, sin terminal)
+7. Sube Calendario_Global_iRG.csv vía portal web
    ↓
-8. Cron (cada 6h) procesa el CSV automáticamente
-   ↓
-9. Revisa estado en /campus/csv-upload > Historial
-   ↓
-10. ✅ Sesiones creadas + contenido habilitado automáticamente
+8. ✅ INMEDIATO: Sesiones creadas + contenido habilitado automáticamente
+   (sin esperar cron, sin necesidad de watch_dir)
 ```
 
 ### Flujo Alternativo (sin Portal Web — Manual)
 
 ```
-1-3. [igual]
-4. Instala solo: irg_timetable_csv_import
-5. [igual]
-6-7. Copia CSV manualmente a watch_dir (terminal/SSH)
-8-10. [igual]
+1-5. [igual a arriba]
    ↓
-10. ✅ Sesiones creadas + contenido habilitado automáticamente
-```
+6. (Opcional) Configura watch_dir en Parámetros del Sistema (Paso 4.2)
+   ↓
+7. Copia CSV manualmente a watch_dir (terminal/SSH)
+   ↓
+8. Cron (cada 6h) procesa el CSV automáticamente
+   ↓
+9. ✅ Sesiones creadas + contenido habilitado
+```� Seguridad y Permisos
 
+### Acceso al Portal Web
+
+**¿Quién puede subir CSVs?**
+- ✅ Administradores Odoo (`base.group_erp_manager`)
+- ✅ Gestores de sitio web (`website.group_website_publisher`)
+- ❌ Usuarios normales (estudiantes, profesores, etc.)
+
+### Control de Acceso
+
+Esta verificación ocurre en dos niveles:
+1. **HTTP:** La ruta `/campus/csv-upload` retorna 403 si no tienes permisos
+2. **Modelo:** Solo admins/gestores pueden crear/leer registros en `irg.timetable.csv.upload`
+
+### Validación del CSV
+
+Antes de procesar, el sistema valida:
+- ✓ Tamaño < 10 MB
+- ✓ Extensión = `.csv`
+- ✓ Encoding = UTF-8 válido
+- ✓ Columnas requeridas presentes
+- ✓ Contenido no vacío
+
+### Protección CSRF
+
+El formulario usa token CSRF — solo funciona con form legítimo (sin ataques XSS).
+
+---
+
+**Última actualización:** Marzo 2026 | **Versión:** 2
 ---
 
 ## 📞 Soporte
 
 Si encuentras un error:
 
-1. **Revisa la sección 6 (Monitoreo)**
-2. **Consulta la sección 7 (FAQ)**
+1. **Revisa la sección 7 (Monitoreo)**
+2. **Consulta la sección 8 (FAQ)**
 3. **Si persiste:** contacta al equipo de desarrollo y proporciona:
    - Archivo CSV problemático
    - Log de error completo (desde Odoo o docker logs)
-   - Versión del módulo (`irg_timetable_csv_import`)
+   - Versión de los módulos (`irg_timetable_csv_import` + `irg_timetable_csv_upload_portal`)
 
 ---
 
-**Última actualización:** Marzo 2026 | **Versión:** 1.0
+**Última actualización:** Marzo 2026 | **Versión:** 2.1
