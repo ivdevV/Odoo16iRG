@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Submenú bajo Horarios > Configuración -->
+        <menuitem id="menu_irg_timetable_csv_root"
+                  name="Importación CSV"
+                  parent="openeducat_timetable.menu_op_timetable_config"
+                  sequence="50"/>
+
+        <menuitem id="menu_irg_program_map"
+                  name="Mapeos CSV → Curso"
+                  parent="menu_irg_timetable_csv_root"
+                  action="action_irg_program_map"
+                  sequence="10"/>
+
+        <menuitem id="menu_irg_import_log"
+                  name="Logs de importación"
+                  parent="menu_irg_timetable_csv_root"
+                  action="action_irg_import_log"
+                  sequence="20"/>
+
+    </data>
+</odoo>
