@@ -8,6 +8,7 @@ from ..models.irg_certificate_request import (
     PRICE_MAP,
     SHIPPING_MAP,
     PHYSICAL_TYPES,
+    SIGNER_SELECTION,
 )
 
 
@@ -52,6 +53,11 @@ class IrgCertificateWizard(models.TransientModel):
         selection=CUSTOM_OPTIONS,
         string='Opción Adicional',
     )
+    signer = fields.Selection(
+        selection=SIGNER_SELECTION,
+        string='Persona que Firma',
+        default='raimon',
+    )
     price_total = fields.Float(
         string='Total (€)',
         compute='_compute_price',
@@ -86,6 +92,7 @@ class IrgCertificateWizard(models.TransientModel):
             'shipping_type': self.shipping_type or False,
             'custom_description': self.custom_description or False,
             'custom_options': self.custom_options or False,
+            'signer': self.signer,
             'state': 'done',
             'origin': 'backend',
         })

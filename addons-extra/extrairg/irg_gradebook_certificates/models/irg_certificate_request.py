@@ -61,6 +61,15 @@ SHIPPING_MAP = {
 
 PHYSICAL_TYPES = ('physical', 'physical_apostilled')
 
+SIGNER_SELECTION = [
+    ('raimon', 'Raimon'),
+    ('dpto_academico', 'Departamento Académico'),
+]
+
+# Keyword that identifies the MNC course (Máster en Neuropsicología Clínica
+# basada en la Evidencia) to apply its specific ECTS / duration values.
+_MNC_KEYWORD = 'Neuropsicología'
+
 
 class IrgCertificateRequest(models.Model):
     _name = 'irg.certificate.request'
@@ -143,6 +152,12 @@ class IrgCertificateRequest(models.Model):
     custom_options = fields.Selection(
         selection=CUSTOM_OPTIONS,
         string='Opción Adicional',
+    )
+    signer = fields.Selection(
+        selection=SIGNER_SELECTION,
+        string='Persona que Firma',
+        default='raimon',
+        tracking=True,
     )
 
     # ------------------------------------------------------------------
@@ -344,12 +359,19 @@ class IrgCertificateRequest(models.Model):
     # ------------------------------------------------------------------
 
     def _get_template_path(self):
-        """Return the absolute path to the Word certificate template."""
+        """Return the absolute path to the Word certificate template.
+
+        Template selection is based on the signer field:
+          - 'raimon'        → Plantilla-certificado-notas-raimon.docx
+          - 'dpto_academico' → Plantilla-certificado-notas-dpto.docx
+        """
         module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        return os.path.join(
-            module_path, 'static', 'src', 'templates',
-            'Plantilla-certificado-notas.docx',
-        )
+        tpl_dir = os.path.join(module_path, 'static', 'src', 'templates')
+        if self.signer == 'dpto_academico':
+            filename = 'Plantilla-certificado-notas-dpto.docx'
+        else:
+            filename = 'Plantilla-certificado-notas-raimon.docx'
+        return os.path.join(tpl_dir, filename)
 
     @staticmethod
     def _replace_in_paragraph(paragraph, old, new):
@@ -435,12 +457,20 @@ class IrgCertificateRequest(models.Model):
             self.request_date.strftime('%d/%m/%Y') if self.request_date else ''
         )
 
+        # --- ECTS and duration (depend on whether course is MNC) ------------
+        course_name = self.course_id.name or ''
+        is_mnc = _MNC_KEYWORD in course_name
+        ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
+        duracion_str = '2 años' if is_mnc else '1 año'
+
         # --- Replace simple placeholders ------------------------------------
         replacements = {
             '<<nombreAlumno>>': partner.name or '',
             '<<documento>>': documento,
-            '<<curso>>': self.course_id.name or '',
+            '<<curso>>': course_name,
             '<<fecha>>': fecha,
+            '<<ects>>': ects_str,
+            '<<duracion>>': duracion_str,
         }
         for para in doc.paragraphs:
             for old, new in replacements.items():

@@ -24,6 +24,11 @@
                                }"/>
                         <field name="custom_options"
                                attrs="{'invisible': [('certificate_type', '!=', 'custom')]}"/>
+                        <field name="signer"
+                               attrs="{
+                                   'invisible': [('certificate_type', '!=', 'digital')],
+                                   'required': [('certificate_type', '=', 'digital')]
+                               }"/>
                     </group>
                     <group string="Descripción a Medida"
                            attrs="{'invisible': [('certificate_type', '!=', 'custom')]}">
