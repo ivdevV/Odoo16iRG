@@ -480,3 +480,60 @@ Primero consistencia y trazabilidad; despues velocidad.
 - **Operativa Git y despliegue:** algunas pushes fueron rechazadas por remoto adelantado; se resolvió con `git pull --rebase` y push final a `Dev_iRG`. Nota: actualizar módulos en staging: `-u irg_sign_position_fix,irg_website_sale_monthly_price,irg_website_sale_monthly_default_combo` y generar la prematrícula para validar.
 - **Pruebas y runbook:** añadir a la matriz de pruebas la verificación de paridad cuota (ficha ↔ buscador) y validación visual de la prematrícula (páginas 1 y 3) tras cada ajuste de posición.
 
+---
+
+## 17. Incidente: KeyError en bus / greenlets (gevent/threading)
+
+Fecha: 2026-03-24
+
+Sintoma observado (extracto de logs):
+- Mensajes repetidos tipo:
+  - "KeyError: <ImDispatch(odoo.addons.bus.models.bus.Bus, stopped daemon ...)>"
+  - Greenlet failed with KeyError
+  - DeprecationWarning sobre `swigvarlink` en stdout
+
+Diagnóstico rápido (causa probable):
+- El error aparece en la reconciliación entre `gevent` (greenlets) y el módulo `threading` de Python: se intenta eliminar una entrada de `_limbo` que ya no existe, lo que suele indicar una condición de carrera o que un hilo/greenlet fue creado/terminado fuera del ciclo de vida esperado (p. ej. hilos nativos creados por una librería C o threads no 'monkeypatched' por gevent).
+- Frecuente tras desplegar código que crea hilos/daemons (timers, workers locales, conexiones nativas) o cuando las dependencias de gevent/c-extensions (SWIG/Cython) tienen incompatibilidades.
+
+Impacto inmediato:
+- Mensajes de error en logs del contenedor Odoo; posible inestabilidad del bus (notificaciones en tiempo real) y fugas de greenlets/threads si no se corrige.
+
+Pasos de mitigación rápida (runbook):
+1. Reiniciar el servicio Odoo (o el contenedor `odoo_latest`) para limpiar threads/greenlets en memoria:
+
+```bash
+docker restart odoo_latest
+```
+
+2. Revisar módulos desplegados recientemente que creen hilos/daemons (p. ej. servicios de traducción, workers asíncronos). Si hubo un deploy/rollback reciente, revertir los cambios que introdujeron threads nativos.
+
+3. Comprobar versiones de `gevent`, `greenlet` y cualquier extensión nativa (libxml/swig) en el entorno Python. Actualizar a versiones compatibles con Python 3.9 y Odoo 16 si es necesario.
+
+4. Si el problema persiste, aplicar captura de stack y reiniciar en modo debug para trazar la creación de threads y greenlets:
+
+```bash
+# dentro del contenedor
+python3 - <<'PY'
+import threading, sys
+print('Python threads:', threading.enumerate())
+PY
+```
+
+5. Revisar módulos que llaman a `threading.Thread(...)` o C-libraries que inician hilos sin coordinación con gevent. Replace por `gevent.spawn` / utilizar `gevent.monkey.patch_all()` lo antes posible durante el arranque si la app requiere gevent-cooperative threading.
+
+Prevención y buenas prácticas (para evitar regresiones):
+- Evitar en módulos Odoo crear hilos nativos directamente; preferir cron jobs (`ir.cron`), colas (RQ/Celery) o `gevent.spawn` si el entorno usa gevent.
+- Documentar cualquier uso de threads en el módulo (porqué, cleanup, `stop()`/join en `uninstall`).
+- Añadir en la checklist de PRs: "¿Este cambio crea hilos/daemons o depende de librerías nativas?" Si la respuesta es sí, exigir revisión de ingeniería y un plan de cleanup.
+- Añadir pruebas de carga/soak en staging que ejecuten el bus y simulen usuarios concurrentes para detectar fugas de threads antes de promover a Dev/Prod.
+
+Acciones tomadas en este incidente:
+- Se revirtió el despliegue que introdujo módulos nuevos (`irg_auto_translate`, `irg_language_nav`) que añadían workers/hilos; se confirmó push revertido a `Dev_iRG` para eliminar la causa probable.
+- Se añadió esta entrada en la Biblia y se recomendó el runbook de reinicio y verificación de dependencias.
+
+Indicadores de éxito:
+- Ausencia de los KeyError en los logs durante 24–48h tras el reinicio.
+- Bus opera con normalidad (notificaciones y longpolling funcionantes).
+
+

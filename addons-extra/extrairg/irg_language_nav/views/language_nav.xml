@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Language selector for the IRG website header.
+        Called by theme_silon.header_1 via:
+            <li class="irg-lang-nav"><t t-call="irg_language_nav.irg_language_selector"/></li>
+
+        Ordering: es* first, en* second, rest alphabetical.
+        Uses the native Odoo `js_language_selector` class so the website JS
+        handles language-aware URL redirection correctly (no custom JS needed).
+    -->
+    <template id="irg_language_selector" name="IRG Language Selector">
+        <t t-if="len(website.language_ids) &gt; 1">
+            <!-- Sort: es* → 0, en* → 1, rest → 2, then by name -->
+            <t t-set="sorted_langs" t-value="sorted(
+                website.language_ids,
+                key=lambda l: (
+                    0 if (l.code or '').startswith('es') else
+                    1 if (l.code or '').startswith('en') else
+                    2,
+                    l.name or ''
+                )
+            )"/>
+            <div class="irg-lang-selector js_language_selector dropdown">
+                <!-- Show the currently active language in the button -->
+                <a href="#"
+                   class="irg-lang-btn dropdown-toggle"
+                   data-bs-toggle="dropdown"
+                   role="button"
+                   aria-haspopup="true"
+                   aria-expanded="false"
+                   t-att-title="request.lang.name">
+                    <span class="irg-lang-name d-none d-md-inline">
+                        <t t-esc="request.lang.name"/>
+                    </span>
+                    <!-- Short code for narrow viewports -->
+                    <span class="irg-lang-code d-md-none">
+                        <t t-esc="(request.lang.code or 'ES')[:2].upper()"/>
+                    </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end irg-lang-menu">
+                    <t t-foreach="sorted_langs" t-as="lg">
+                        <li>
+                            <a t-att-class="'dropdown-item lang_switcher_js' + (' active' if lg.id == request.lang.id else '')"
+                               t-att-data-url-code="lg.url_code"
+                               t-att-href="'/web/set_lang?lang=%s&amp;url=/' % lg.code">
+                                <t t-esc="lg.name"/>
+                            </a>
+                        </li>
+                    </t>
+                </ul>
+            </div>
+        </t>
+        <!-- Single language: just show name, no dropdown -->
+        <t t-else="">
+            <span class="irg-lang-single">
+                <t t-esc="website.default_lang_id.name"/>
+            </span>
+        </t>
+    </template>
+</odoo>

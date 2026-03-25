@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+    Default system parameters for irg_auto_translate.
+    Administrators must:
+      1. Set irg.translate.api_key  — their DeepL or Google API key
+      2. Optionally set irg.translate.provider to 'google' (default: 'deepl')
+    -->
+    <data noupdate="1">
+
+        <record id="config_translate_provider" model="ir.config_parameter">
+            <field name="key">irg.translate.provider</field>
+            <!-- 'deepl' or 'google' -->
+            <field name="value">deepl</field>
+        </record>
+
+        <record id="config_translate_api_key" model="ir.config_parameter">
+            <field name="key">irg.translate.api_key</field>
+            <!-- Leave empty; set via Settings > Technical > System Parameters -->
+            <field name="value"></field>
+        </record>
+
+    </data>
+</odoo>
