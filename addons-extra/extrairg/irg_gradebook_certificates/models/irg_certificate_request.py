@@ -364,21 +364,47 @@ class IrgCertificateRequest(models.Model):
                 r.text = ''
 
     @staticmethod
-    def _scale_document_fonts(doc, percent=85):
-        """Scale all explicit font sizes in the Word XML by *percent*.
+    def _scale_document_fonts(doc, percent=75):
+        """Scale font sizes and paragraph spacing in the Word document.
 
-        Word stores font sizes in half-points (e.g. w:val="22" = 11 pt).
-        Both w:sz (display) and w:szCs (complex-script) are scaled.
-        Minimum enforced: 14 half-points (7 pt) to preserve legibility.
+        Covers both document.xml (runs) and styles.xml (named styles/defaults),
+        which is where most templates store font definitions.
+        Also reduces paragraph before/after spacing to compact the layout.
+
+        Word stores font sizes in half-points: w:val="22" = 11 pt.
+        Paragraph spacing is in twentieths of a point (twips).
+        Minimum font enforced: 14 half-points (7 pt).
         """
         NS_W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
         w_val = '{%s}val' % NS_W
-        for tag in ('{%s}sz' % NS_W, '{%s}szCs' % NS_W):
-            for el in doc.element.iter(tag):
-                raw = el.get(w_val)
-                if raw and raw.isdigit():
-                    new_val = max(14, int(round(int(raw) * percent / 100)))
-                    el.set(w_val, str(new_val))
+        sz_tags = ('{%s}sz' % NS_W, '{%s}szCs' % NS_W)
+        spacing_tag = '{%s}spacing' % NS_W
+        w_before = '{%s}before' % NS_W
+        w_after = '{%s}after' % NS_W
+
+        # Collect all XML roots: document body + styles (where fonts usually live)
+        roots = [doc.element]
+        try:
+            roots.append(doc.part.styles._element)
+        except Exception:
+            pass
+
+        for root in roots:
+            # Scale explicit font sizes
+            for tag in sz_tags:
+                for el in root.iter(tag):
+                    raw = el.get(w_val)
+                    if raw and raw.isdigit():
+                        new_val = max(14, int(round(int(raw) * percent / 100)))
+                        el.set(w_val, str(new_val))
+
+            # Compact paragraph spacing (before/after)
+            for el in root.iter(spacing_tag):
+                for attr in (w_before, w_after):
+                    raw = el.get(attr)
+                    if raw and raw.isdigit():
+                        new_val = max(0, int(round(int(raw) * percent / 100)))
+                        el.set(attr, str(new_val))
 
     def _fill_template(self):
         """Open the .docx template, fill placeholders and table, return bytes."""
@@ -390,7 +416,7 @@ class IrgCertificateRequest(models.Model):
             )
 
         doc = DocxDocument(tpl_path)
-        self._scale_document_fonts(doc, percent=85)
+        self._scale_document_fonts(doc, percent=75)
 
         # --- Collect data ---------------------------------------------------
         partner = self.partner_id
