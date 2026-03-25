@@ -537,3 +537,56 @@ Indicadores de éxito:
 - Bus opera con normalidad (notificaciones y longpolling funcionantes).
 
 
+---
+
+## 18. Prevención: checklist para evitar errores en installs/upgrades
+
+Resumen: muchos problemas reproducibles en despliegues provienen de dos clases
+de errores frecuentes: (A) creación duplicada de `ir.config_parameter` vía
+XML/data y (B) uso de hilos nativos o librerías que no respetan gevent en Odoo 16.
+
+Reglas concretas:
+- **No crear `ir.config_parameter` mediante `data/*.xml`** salvo excepciones
+  muy justificadas. En su lugar, inicializar parámetros en `post_init_hook`
+  usando `ir.config_parameter` y `set_param()` comprobando existencia previo.
+  Ejemplo seguro en `post_init_hook`:
+
+  ```py
+  cfg = env['ir.config_parameter'].sudo()
+  if cfg.get_param('mi.modulo.param', default=None) is None:
+      cfg.set_param('mi.modulo.param', 'valor_por_defecto')
+  ```
+
+- **Si se usan `data/*.xml` para parámetros, marcarlos `noupdate="1"`
+  y documentar la razón en el micro-spec.** Pero preferir el patrón del hook
+  para evitar `UniqueViolation` en upgrades.
+
+- **Nunca crear `threading.Thread`, `concurrent.futures` o `asyncio` tasks
+  sin justificar en Odoo 16.** Si se requiere concurrencia:
+  - Usar `ir.cron` para tareas periódicas (batch paginado).
+  - Usar `gevent.spawn` *sólo* si el entorno y dependencias lo permiten,
+    y documentar el comportamiento y cleanup en `uninstall()`.
+
+- **Documentar en el micro-spec** cualquier comportamiento fuera de lo común:
+  - Lista de `ir.config_parameter` creados/modificados
+  - Necesidad real de hilos/daemons y plan de cleanup
+  - Volumen estimado y límites (batch size, timeouts)
+
+Pull request checklist (obligatorio para PRs que tocan `data/` o añaden
+threads/workers):
+- [ ] ¿Este cambio crea/edita `ir.config_parameter`? Si sí, usar `post_init_hook`.
+- [ ] ¿Se añaden hilos/daemons? Si sí, justificar y documentar cleanup.
+- [ ] ¿Se probó `-u module` en staging tras rebase y reinicio del contenedor?
+- [ ] ¿Se agregó log y guardas para evitar ejecuciones durante upgrades?
+
+Acciones rápidas al detectar un error en staging/CI:
+- Reiniciar contenedor Odoo y revisar logs (KeyError en `ImDispatch` es signo
+  típico de mezcla de threads nativos con gevent).
+- Si el error aparece en `load_data` (`ParseError` por `ir.config_parameter`),
+  revertir el `data/*.xml` que crea claves y aplicar la inicialización desde
+  `post_init_hook` antes de reintentar la actualización.
+
+Incluir esto en la Biblia ayuda a que los desarrolladores y revisores tengan
+una regla clara para evitar regresiones críticas en despliegues.
+
+
