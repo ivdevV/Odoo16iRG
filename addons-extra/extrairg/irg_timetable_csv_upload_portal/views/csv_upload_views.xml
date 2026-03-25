@@ -77,35 +77,7 @@
             action="action_irg_timetable_csv_upload"
             groups="base.group_erp_manager"/>
 
-        <!-- ── Tarjeta en /campus ── -->
-
-        <!-- Heredar la página del portal /campus y agregar tarjeta de upload -->
-        <record id="view_portal_csv_upload_card" model="ir.ui.view">
-            <field name="name">Portal CSV Upload Card</field>
-            <field name="model">ir.ui.view</field>
-            <field name="inherit_id" ref="website.portal_my_home"/>
-            <field name="arch" type="xml">
-
-                <!-- Buscar el div con rol="main" y el contenedor de tarjetas
-                     e insertar la tarjeta de upload al final -->
-                <xpath expr="//div[@class='row' and parent::div[@role='main']]" position="inside">
-                    <t t-if="user.has_group('website.group_website_publisher') or user.has_group('base.group_erp_manager')">
-                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                            <a href="/campus/csv-upload" class="card h-100 text-decoration-none shadow-sm">
-                                <div class="card-body text-center">
-                                    <i class="fa fa-cloud-upload text-primary" style="font-size: 3rem; margin-bottom: 1rem;"/>
-                                    <h5 class="card-title">Actualizar Calendarios</h5>
-                                    <p class="card-text small text-muted">
-                                        Subir archivo CSV con fechas de sesiones académicas
-                                    </p>
-                                </div>
-                            </a>
-                        </div>
-                    </t>
-                </xpath>
-
-            </field>
-        </record>
+        <!-- Portal card removed for DBs without 'website' installed. -->
 
     </data>
 </odoo>
