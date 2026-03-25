@@ -473,7 +473,15 @@ class IrgCertificateRequest(models.Model):
         course_name = self.course_id.name or ''
         is_mnc = _MNC_KEYWORD in course_name
         ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
-        duracion_str = '2 años' if is_mnc else '1 año'
+
+        # Academic year range from batch start_date
+        batch = self.gradebook_student_id.batch_id
+        if batch and batch.start_date:
+            start_year = batch.start_date.year
+        else:
+            start_year = (self.request_date or fields.Datetime.now()).year - 1
+        end_year = start_year + (2 if is_mnc else 1)
+        periodo_str = '%d-%d' % (start_year, end_year)
 
         # --- Replace simple placeholders ------------------------------------
         # The Word templates use these exact placeholder names (case-sensitive):
@@ -481,16 +489,18 @@ class IrgCertificateRequest(models.Model):
             '<<NombreAlumno>>': partner.name or '',
             '<<DocumentoIdentidad>>': documento,
             '<<nombreCurso>>': course_name,
-            '<<añoCurso>>': duracion_str,
+            '<<añoCurso>>': periodo_str,
             '<<Etcs>>': ects_str,
             '<<fechaLarga>>': fecha_larga,
             '<<fecha>>': fecha,
+            # Remove "modalidad presencial" phrase from template text
+            'en la modalidad presencial ': '',
             # Legacy names (keep for backward compatibility)
             '<<nombreAlumno>>': partner.name or '',
             '<<documento>>': documento,
             '<<curso>>': course_name,
             '<<ects>>': ects_str,
-            '<<duracion>>': duracion_str,
+            '<<duracion>>': periodo_str,
         }
         for para in doc.paragraphs:
             for old, new in replacements.items():
@@ -576,17 +586,55 @@ class IrgCertificateRequest(models.Model):
                             break
                 footer_row.addprevious(new_row)
 
-        # Fill Nota Media in footer row
+        # Fill Nota Media in footer row.
+        # The footer row may have merged cells; we write the grade in the last
+        # <w:tc> element.  We also attempt to write into every cell that does
+        # NOT contain the label "Nota Media" to cover different merge layouts.
         footer_cells = footer_row.findall(qn('w:tc'))
-        # Last cell of footer row gets the nota media
-        last_cell = footer_cells[-1]
-        for p in last_cell.findall(qn('w:p')):
-            for r in p.findall(qn('w:r')):
-                t = r.find(qn('w:t'))
-                if t is not None:
-                    t.text = nota_media
-                    break
-            break
+        nota_written = False
+        for cell in reversed(footer_cells):
+            # Read existing text of this cell to decide if it's the label cell
+            cell_text = ''.join(
+                t.text or ''
+                for p in cell.findall(qn('w:p'))
+                for r in p.findall(qn('w:r'))
+                for t in r.findall(qn('w:t'))
+            ).strip()
+            if 'Nota Media' in cell_text or 'nota media' in cell_text.lower():
+                continue  # skip the label cell
+            # This is the value cell — fill it
+            for p in cell.findall(qn('w:p')):
+                runs = p.findall(qn('w:r'))
+                if runs:
+                    for r in runs:
+                        t = r.find(qn('w:t'))
+                        if t is not None:
+                            t.text = nota_media
+                            nota_written = True
+                            break
+                else:
+                    r_el = p.makeelement(qn('w:r'), {})
+                    t_el = r_el.makeelement(qn('w:t'), {})
+                    t_el.text = nota_media
+                    r_el.append(t_el)
+                    p.append(r_el)
+                    nota_written = True
+                break
+            if nota_written:
+                break
+
+        # Fallback: if the footer row has only one cell (fully merged), append
+        # the nota media after the label text.
+        if not nota_written and footer_cells:
+            last_cell = footer_cells[-1]
+            paras = last_cell.findall(qn('w:p'))
+            target_p = paras[-1] if paras else None
+            if target_p is not None:
+                r_el = target_p.makeelement(qn('w:r'), {})
+                t_el = r_el.makeelement(qn('w:t'), {})
+                t_el.text = '  ' + nota_media
+                r_el.append(t_el)
+                target_p.append(r_el)
 
         # Save filled document to a temp file
         tmp_docx = tempfile.NamedTemporaryFile(
