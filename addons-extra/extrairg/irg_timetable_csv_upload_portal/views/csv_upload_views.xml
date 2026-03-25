@@ -72,7 +72,7 @@
         <!-- Menu item (opcional — solo para admin/técnicos) -->
         <menuitem
             id="menu_irg_csv_upload"
-            parent="irg_timetable_csv_import.menu_irg_horarios"
+            parent="irg_timetable_csv_import.menu_irg_timetable_csv_root"
             name="Uploads Web"
             action="action_irg_timetable_csv_upload"
             groups="base.group_erp_manager"/>
