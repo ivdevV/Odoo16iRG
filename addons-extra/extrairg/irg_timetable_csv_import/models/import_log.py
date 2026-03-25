@@ -6,7 +6,7 @@ import os
 import re
 import shutil
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 
@@ -18,6 +18,7 @@ _logger = logging.getLogger(__name__)
 SPAIN_TZ = 'Europe/Madrid'
 SESSION_START_HOUR = 16   # 16:00 hora España
 SESSION_END_HOUR = 21     # 21:00 hora España
+SUBJECT_UNLOCK_HOURS = 72  # Horas antes de la primera sesión que se habilita el contenido
 
 # Regex to strip academic title prefixes from faculty names
 _FACULTY_PREFIX_RE = re.compile(
@@ -46,6 +47,9 @@ class IrgTimetableImportLog(models.Model):
     sessions_created = fields.Integer(string=_('Sesiones creadas'), readonly=True)
     sessions_updated = fields.Integer(string=_('Sesiones actualizadas'), readonly=True)
     sessions_skipped = fields.Integer(string=_('Omitidas / errores'), readonly=True)
+    subject_dates_updated = fields.Integer(
+        string=_('Fechas habilitación actualizadas'), readonly=True
+    )
     error_details = fields.Text(
         string=_('Detalle de errores / advertencias'), readonly=True
     )
@@ -107,6 +111,8 @@ class IrgTimetableImportLog(models.Model):
 
                 parsed = self._parse_csv(content)
                 created, updated, skipped, errors = self._process_sessions(parsed)
+                dates_updated, dates_errors = self._update_subject_to_batch_dates(parsed)
+                errors.extend(dates_errors)
 
                 if errors and (created + updated) == 0:
                     state = 'error'
@@ -121,6 +127,7 @@ class IrgTimetableImportLog(models.Model):
                     'sessions_created': created,
                     'sessions_updated': updated,
                     'sessions_skipped': skipped,
+                    'subject_dates_updated': dates_updated,
                     'error_details': '\n'.join(errors) if errors else False,
                 })
 
@@ -156,11 +163,16 @@ class IrgTimetableImportLog(models.Model):
     def _parse_csv(self, content):
         """Parsea el formato CSV de calendarios académicos IRG.
 
-        Formato esperado (separador ';'):
-            Row 0: cabecera global (Máster/Programa; Unnamed:0 ; …)
-            Row N: «Calendario XX 365;Fecha;Nombre Asignatura;Docente»  ← inicio sección
-            Row N+k: «Calendario XX 365;2026-02-06 00:00:00;Nombre asig;Docente»
-            Row N+m: «Calendario XX 365;* Calendario sujeto a…»  ← nota, ignorar
+        Formato esperado (5 columnas, separador ';' o ','):
+            Col 0: Máster/Programa  (ej: "Calendario NC 365")
+            Col 1: PestañaOrig      (ej: "feb-26") — se ignora
+            Col 2: Fecha            (ej: "06/02/2026 0:00" — DD/MM/YYYY)
+            Col 3: Nombre Asignatura
+            Col 4: Docente
+
+        La fila 0 es la cabecera global y se omite.
+        Filas con menos de 5 columnas, sin fecha válida o que empiecen
+        por '*' se ignoran silenciosamente.
 
         Returns:
             list[dict]: claves program_label, date, subject_name, faculty_name
@@ -170,48 +182,41 @@ class IrgTimetableImportLog(models.Model):
         rows = list(reader)
 
         sessions = []
-        current_program = None
 
         for i, row in enumerate(rows):
             if i == 0:
-                # Cabecera global del CSV exportado desde pandas/Excel — omitir
+                # Cabecera global exportada desde pandas/Excel — omitir
                 continue
 
-            if len(row) < 2:
+            if len(row) < 5:
                 continue
 
-            col0 = row[0].strip()
-            col1 = row[1].strip() if len(row) > 1 else ''
-            col2 = row[2].strip() if len(row) > 2 else ''
-            col3 = row[3].strip() if len(row) > 3 else ''
+            col0 = row[0].strip()  # Máster/Programa
+            # col1 = row[1]        # PestañaOrig — ignorar
+            col2 = row[2].strip()  # Fecha DD/MM/YYYY [HH:MM]
+            col3 = row[3].strip()  # Nombre Asignatura
+            col4 = row[4].strip()  # Docente
 
-            # Fila de cabecera de sección: «Calendario NC 365;Fecha;…»
-            if col1 == 'Fecha':
-                current_program = col0
+            if not col0 or col0.startswith('*'):
+                continue
+            if not col2 or not col3:
                 continue
 
-            # Ignorar si aún no hemos encontrado ninguna sección
-            if not current_program:
-                continue
-
-            # Notas o filas vacías
-            if not col1 or col1.startswith('*') or col1.lower().startswith('clases'):
-                continue
-
-            # Intentar parsear fecha (YYYY-MM-DD o YYYY-MM-DD HH:MM:SS)
+            # Parsear fecha DD/MM/YYYY — tomamos solo los primeros 10 chars
             try:
-                session_date = datetime.strptime(col1[:10], '%Y-%m-%d').date()
+                session_date = datetime.strptime(col2[:10], '%d/%m/%Y').date()
             except ValueError:
-                continue
-
-            if not col2:
-                continue
+                # Puede llegar en formato YYYY-MM-DD desde algunas exportaciones
+                try:
+                    session_date = datetime.strptime(col2[:10], '%Y-%m-%d').date()
+                except ValueError:
+                    continue
 
             sessions.append({
-                'program_label': col0 or current_program,
+                'program_label': col0,
                 'date': session_date,
-                'subject_name': col2,
-                'faculty_name': col3,
+                'subject_name': col3,
+                'faculty_name': col4,
             })
 
         return sessions
@@ -392,3 +397,108 @@ class IrgTimetableImportLog(models.Model):
                         created += 1
 
         return created, updated, skipped, errors
+
+    # ─── Subject-to-batch date updater ───────────────────────────────────────
+
+    @api.model
+    def _update_subject_to_batch_dates(self, parsed_rows):
+        """Calcula date_from/date_to en op.subject.to.batch desde las filas parseadas.
+
+        Lógica:
+          - date_from = fecha mínima de sesión de esa asignatura en el lote
+                        menos SUBJECT_UNLOCK_HOURS horas
+          - date_to   = batch.end_date  (permanece accesible hasta cierre del lote)
+
+        Solo actualiza registros existentes; no crea nuevos (los crea el flujo
+        de admisiones al matricular al alumno).
+
+        Returns:
+            list[str]: mensajes de advertencia/error ocurridos
+        """
+        ProgramMap = self.env['irg.timetable.program.map']
+        SubjectToBatch = self.env['op.subject.to.batch']
+        Subject = self.env['op.subject']
+        Batch = self.env['op.batch']
+        errors = []
+        count = 0
+
+        # Construir mapa: (program_label, subject_name) → min_date
+        min_dates = {}  # (prog_label, subject_name_lower) → date
+        for row in parsed_rows:
+            key = (row['program_label'], row['subject_name'].strip().lower())
+            if key not in min_dates or row['date'] < min_dates[key]:
+                min_dates[key] = row['date']
+
+        # Agrupar por programa
+        prog_subjects = defaultdict(set)
+        for (prog_label, subj_lower) in min_dates:
+            prog_subjects[prog_label].add(subj_lower)
+
+        for prog_label, subj_names_lower in sorted(prog_subjects.items()):
+
+            mapping = ProgramMap.search(
+                [('csv_label', '=', prog_label), ('active', '=', True)], limit=1
+            )
+            if not mapping:
+                continue  # ya reportado en _process_sessions
+
+            course = mapping.course_id
+            if mapping.batch_id:
+                batches = mapping.batch_id
+            else:
+                batches = Batch.search([
+                    ('course_id', '=', course.id),
+                    ('active', '=', True),
+                ])
+
+            if not batches:
+                continue
+
+            for subj_lower in subj_names_lower:
+                min_date = min_dates[(prog_label, subj_lower)]
+                # date_from = primera sesión - 72h (como date)
+                date_from = (datetime.combine(min_date, datetime.min.time())
+                             - timedelta(hours=SUBJECT_UNLOCK_HOURS)).date()
+
+                # Resolver asignatura
+                subject = course.subject_ids.filtered(
+                    lambda s, n=subj_lower: s.name.strip().lower() == n
+                )
+                if not subject:
+                    subject = Subject.search(
+                        [('name', '=ilike', subj_lower)], limit=1
+                    )
+                if not subject:
+                    continue  # ya reportado en _process_sessions
+                subject = subject[:1]
+
+                for batch in batches:
+                    date_to = batch.end_date
+
+                    stb = SubjectToBatch.search([
+                        ('batch_id', '=', batch.id),
+                        ('subject_id', '=', subject.id),
+                    ], limit=1)
+
+                    if stb:
+                        if stb.date_from != date_from or stb.date_to != date_to:
+                            stb.sudo().write({
+                                'date_from': date_from,
+                                'date_to': date_to,
+                            })
+                            count += 1
+                            _logger.info(
+                                'irg_timetable_csv_import: op.subject.to.batch[%d] '
+                                'actualizado date_from=%s date_to=%s',
+                                stb.id, date_from, date_to,
+                            )
+                    else:
+                        errors.append(
+                            'No existe op.subject.to.batch para asignatura "%s" '
+                            'en lote "%s" — crea la matrícula del alumno primero '
+                            'o añade la asignatura al lote manualmente.' % (
+                                subject.name, batch.name
+                            )
+                        )
+
+        return count, errors
