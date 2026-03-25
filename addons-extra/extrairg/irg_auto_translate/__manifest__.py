@@ -7,7 +7,6 @@
     "depends": ["base", "website", "openeducat_core"],
     "data": [
         "security/ir.model.access.csv",
-        "views/res_config_settings_views.xml",
         "data/ir_config_parameter.xml",
         "data/ir_cron.xml",
         "wizard/translate_wizard_views.xml",
