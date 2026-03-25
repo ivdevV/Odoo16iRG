@@ -7,9 +7,7 @@
     "website": "https://institutoraimongaja.example",
     "license": "OPL-1",
     "depends": [
-        "website",
-        "website_sale",
-        "theme_silon"
+        "website"
     ],
     "data": [
         "views/language_nav.xml",

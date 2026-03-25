@@ -30,7 +30,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['website', 'website_mass_mailing', 'website_sale_wishlist'],
+    'depends': ['website', 'website_mass_mailing', 'website_sale_wishlist', 'irg_language_nav'],
     'data': [
         'data/silon_configuration_data.xml',
         'security/ir.model.access.csv',

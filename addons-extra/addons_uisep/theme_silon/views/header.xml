@@ -25,8 +25,8 @@
                                     <li>
                                         <a href="#">TRACK ORDER</a>
                                     </li>
-                                    <li>
-                                        <a href="#">LANGUAGE</a>
+                                    <li class="irg-lang-nav">
+                                        <t t-call="irg_language_nav.irg_language_selector"/>
                                     </li>
                                 </ul>
                             </div>

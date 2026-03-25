@@ -28,11 +28,6 @@
         </div>
     </template>
 
-    <!-- Replace the static LANGUAGE placeholder in theme header -->
-    <template id="header_replace_language" inherit_id="theme_silon.header_1">
-        <!-- Match the LANGUAGE list item by its anchor text rather than by position. -->
-        <xpath expr="//ul[contains(@class,'top-nav')]/li[a[normalize-space() = 'LANGUAGE']]" position="replace">
-            <t t-call="irg_language_nav.irg_language_selector"/>
-        </xpath>
-    </template>
+    <!-- The language selector is called directly from theme_silon/views/header.xml.
+         No XPath inheritance needed here. -->
 </odoo>
