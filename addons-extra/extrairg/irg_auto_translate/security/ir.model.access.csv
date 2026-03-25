@@ -1,5 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_irg_auto_translate,access_irg_auto_translate,model_irg_auto_translate,base.group_user,1,0,0,0
-access_irg_translate_wizard,access_irg_translate_wizard,model_irg_translate_wizard,base.group_user,1,0,0,0
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_irg_auto_translate_admin,access_irg_auto_translate_admin,model_ir_cron,base.group_system,1,1,1,1
