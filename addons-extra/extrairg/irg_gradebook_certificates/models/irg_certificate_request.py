@@ -423,7 +423,7 @@ class IrgCertificateRequest(models.Model):
         id_label = (
             partner.l10n_latam_identification_type_id.name
             if partner.l10n_latam_identification_type_id
-            else 'DNI/Pasaporte'
+            else 'DNI/Pasaporte/Documento Identificativo'
         )
         documento = '%s %s' % (id_label, partner.vat or '')
 

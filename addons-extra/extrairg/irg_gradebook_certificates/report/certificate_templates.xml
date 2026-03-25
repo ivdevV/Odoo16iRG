@@ -6,7 +6,7 @@
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-set="id_type_name"
-                       t-value="o.partner_id.l10n_latam_identification_type_id.name if o.partner_id.l10n_latam_identification_type_id else False"/>
+                       t-value="o.partner_id.l10n_latam_identification_type_id.name if o.partner_id.l10n_latam_identification_type_id else 'DNI/Pasaporte/Documento Identificativo'"/>
                     <t t-set="id_number" t-value="o.partner_id.vat or ''"/>
                     <t t-set="subjects"
                        t-value="o.gradebook_student_id.gradebook_subject_ids.filtered(
@@ -47,7 +47,7 @@
                         <p style="text-align: justify; margin: 0 0 12pt 0;">
                             El <strong>Instituto Raimon Gaja</strong> certifica que
                             <strong><t t-out="o.partner_id.name or ''"/></strong>
-                            con <strong><t t-out="id_type_name or 'DNI/Pasaporte'"/> <t t-out="id_number"/></strong>
+                            con <strong><t t-out="id_type_name or 'DNI/Pasaporte/Documento Identificativo'"/> <t t-out="id_number"/></strong>
                             ha cursado el programa de estudios
                             <strong><t t-out="o.course_id.name or ''"/></strong>
                             habiendo obtenido las siguientes calificaciones:
