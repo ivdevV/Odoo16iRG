@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_irg_translate_wizard_form" model="ir.ui.view">
+        <field name="name">irg.translate.wizard.form</field>
+        <field name="model">irg.translate.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Translate Records">
+                <group>
+                    <field name="model_name"/>
+                    <field name="lang_to"/>
+                    <field name="batch_size"/>
+                    <field name="offset"/>
+                </group>
+                <footer>
+                    <button string="Run" type="object" name="action_run" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
