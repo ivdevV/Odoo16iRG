@@ -363,6 +363,23 @@ class IrgCertificateRequest(models.Model):
             for r in paragraph.runs[1:]:
                 r.text = ''
 
+    @staticmethod
+    def _scale_document_fonts(doc, percent=85):
+        """Scale all explicit font sizes in the Word XML by *percent*.
+
+        Word stores font sizes in half-points (e.g. w:val="22" = 11 pt).
+        Both w:sz (display) and w:szCs (complex-script) are scaled.
+        Minimum enforced: 14 half-points (7 pt) to preserve legibility.
+        """
+        NS_W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+        w_val = '{%s}val' % NS_W
+        for tag in ('{%s}sz' % NS_W, '{%s}szCs' % NS_W):
+            for el in doc.element.iter(tag):
+                raw = el.get(w_val)
+                if raw and raw.isdigit():
+                    new_val = max(14, int(round(int(raw) * percent / 100)))
+                    el.set(w_val, str(new_val))
+
     def _fill_template(self):
         """Open the .docx template, fill placeholders and table, return bytes."""
         self.ensure_one()
@@ -373,6 +390,7 @@ class IrgCertificateRequest(models.Model):
             )
 
         doc = DocxDocument(tpl_path)
+        self._scale_document_fonts(doc, percent=85)
 
         # --- Collect data ---------------------------------------------------
         partner = self.partner_id
