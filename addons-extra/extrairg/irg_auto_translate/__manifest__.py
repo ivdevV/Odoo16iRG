@@ -15,7 +15,6 @@
         'irg_language_nav',
     ],
     'data': [
-        'data/ir_config_parameter.xml',
         'data/ir_cron.xml',
     ],
     'installable': True,
