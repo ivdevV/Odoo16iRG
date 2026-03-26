@@ -27,7 +27,12 @@ class L10nLatamIdentificationType(models.Model):
 
     @api.model
     def _name_search(self, name='', args=None, operator='ilike', limit=100, name_get_uid=None):
-        """Restringe el desplegable del campo a los 3 tipos IRG."""
+        """Restringe el desplegable a los 3 tipos IRG.
+
+        Solo afecta a la selección interactiva; no toca el renderizado de
+        registros existentes, por lo que partners con un tipo legacy asignado
+        seguirán mostrando su valor actual sin perderlo.
+        """
         allowed = self._get_allowed_ids()
         args = list(args or []) + [('id', 'in', allowed)]
         return super()._name_search(
@@ -37,10 +42,3 @@ class L10nLatamIdentificationType(models.Model):
             limit=limit,
             name_get_uid=name_get_uid,
         )
-
-    @api.model
-    def search(self, args, offset=0, limit=None, order=None, count=False):
-        """Restringe cualquier búsqueda programática a los 3 tipos IRG."""
-        allowed = self._get_allowed_ids()
-        args = list(args or []) + [('id', 'in', allowed)]
-        return super().search(args, offset=offset, limit=limit, order=order, count=count)

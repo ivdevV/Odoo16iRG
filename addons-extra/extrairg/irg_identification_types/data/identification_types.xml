@@ -18,9 +18,9 @@
             <field name="active">True</field>
         </record>
 
-        <!-- Documento Identificativo (equivalente al tipo VAT genérico) -->
+        <!-- Documento de identificación personal (equivalente al tipo VAT genérico) -->
         <record id="it_documento_identificativo" model="l10n_latam.identification.type">
-            <field name="name">Documento Identificativo</field>
+            <field name="name">Documento de identificación personal</field>
             <field name="active">True</field>
         </record>
 
