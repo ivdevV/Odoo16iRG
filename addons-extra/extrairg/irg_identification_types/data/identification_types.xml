@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- DNI — Documento Nacional de Identidad (España) -->
+        <record id="it_dni" model="l10n_latam.identification.type">
+            <field name="name">DNI</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Pasaporte -->
+        <record id="it_pasaporte" model="l10n_latam.identification.type">
+            <field name="name">Pasaporte</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Documento Identificativo genérico (NIE, tarjeta de residencia, etc.) -->
+        <record id="it_documento_identificativo" model="l10n_latam.identification.type">
+            <field name="name">Documento Identificativo</field>
+            <field name="active">True</field>
+        </record>
+
+    </data>
+</odoo>
