@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <!--
+        noupdate="0": estos registros se recrean/actualizan en cada -u,
+        garantizando que siempre existan y estén activos.
+    -->
+    <data noupdate="0">
 
-        <!-- DNI — Documento Nacional de Identidad (España) -->
+        <!-- DNI — Documento Nacional de Identidad -->
         <record id="it_dni" model="l10n_latam.identification.type">
             <field name="name">DNI</field>
             <field name="active">True</field>
@@ -14,7 +18,7 @@
             <field name="active">True</field>
         </record>
 
-        <!-- Documento Identificativo genérico (NIE, tarjeta de residencia, etc.) -->
+        <!-- Documento Identificativo (equivalente al tipo VAT genérico) -->
         <record id="it_documento_identificativo" model="l10n_latam.identification.type">
             <field name="name">Documento Identificativo</field>
             <field name="active">True</field>
