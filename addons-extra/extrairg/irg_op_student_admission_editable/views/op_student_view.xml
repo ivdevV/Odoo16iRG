@@ -49,5 +49,23 @@
             </field>
         </record>
 
+        <!--
+            Override app.gradebook.subject form to allow editing scoring_total
+            even when the subject state is 'done' (FINALIZADO).
+            The original view makes gradebook_result_ids fully readonly in done state,
+            which prevents editing any evaluation score.
+        -->
+        <record id="view_gradebook_subject_scoring_editable" model="ir.ui.view">
+            <field name="name">view.gradebook.subject.scoring.editable</field>
+            <field name="model">app.gradebook.subject</field>
+            <field name="inherit_id" ref="isep_gradebook.app_gradebook_subject_form"/>
+            <field name="arch" type="xml">
+                <!-- Remove the done-state readonly lock from the evaluations tree -->
+                <xpath expr="//field[@name='gradebook_result_ids']" position="attributes">
+                    <attribute name="attrs">{}</attribute>
+                </xpath>
+            </field>
+        </record>
+
     </data>
 </odoo>
