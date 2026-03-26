@@ -26,8 +26,14 @@ class MoodleResPartner(models.Model):
 
     def write(self, values, addons=None):
         _logging = logging.getLogger(__name__)
-        
+
         res = super(MoodleResPartner, self).write(values)
+
+        # Checkout /shop/address and /shop/extra_info must stay responsive.
+        # When fast-checkout context is set, skip synchronous Moodle API calls.
+        if self.env.context.get('skip_moodle_sync') or self.env.context.get('irg_fast_checkout'):
+            return res
+
         credentials = utils.get_moodle_credentials(self_env=self.env)
         for rec in self:
             if not addons and credentials:

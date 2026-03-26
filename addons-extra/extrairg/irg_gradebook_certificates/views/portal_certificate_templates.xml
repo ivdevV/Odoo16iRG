@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             Breadcrumb helper
+        ============================================================ -->
+        <template id="portal_breadcrumb_certificates" name="Breadcrumb — Certificados">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/my/home">Mi cuenta</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/campus/certificates">Certificados</a>
+                </li>
+                <li t-if="page_title" class="breadcrumb-item active">
+                    <t t-out="page_title"/>
+                </li>
+            </ol>
+        </template>
+
+        <!-- ============================================================
+             Certificate list
+        ============================================================ -->
+        <template id="portal_certificate_list" name="Mis Certificados de Notas">
+            <t t-call="portal.portal_layout">
+                <t t-set="breadcrumbs_searchbar" t-value="True"/>
+                <t t-call="irg_gradebook_certificates.portal_breadcrumb_certificates"/>
+
+                <div class="o_portal_wrap">
+                    <div class="container py-4">
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="mb-0">Mis Certificados de Notas</h3>
+                            <a href="/campus/certificates/new" class="btn btn-primary">
+                                <i class="fa fa-plus me-1"/> Nueva Solicitud
+                            </a>
+                        </div>
+
+                        <t t-if="request.params.get('error') == 'no_pdf'">
+                            <div class="alert alert-warning">
+                                El PDF de este certificado aún no está disponible.
+                                Contacta con administración si crees que es un error.
+                            </div>
+                        </t>
+
+                        <t t-if="not certs">
+                            <div class="alert alert-info">
+                                No tienes solicitudes de certificado. ¡Haz tu primera solicitud!
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Referencia</th>
+                                            <th>Tipo</th>
+                                            <th>Fecha</th>
+                                            <th>Total</th>
+                                            <th>Estado</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="certs" t-as="cert">
+                                            <tr>
+                                                <td>
+                                                    <span class="fw-bold" t-out="cert.name"/>
+                                                </td>
+                                                <td>
+                                                    <t t-out="dict(cert.fields_get(['certificate_type'])['certificate_type']['selection']).get(cert.certificate_type, cert.certificate_type)"/>
+                                                </td>
+                                                <td>
+                                                    <t t-out="cert.request_date.strftime('%d/%m/%Y') if cert.request_date else ''"/>
+                                                </td>
+                                                <td>
+                                                    <t t-out="'%.2f €' % cert.price_total"/>
+                                                </td>
+                                                <td>
+                                                    <t t-set="badge_class" t-value="'bg-success' if cert.state == 'done' else ('bg-warning text-dark' if cert.state in ('pending_payment', 'paid', 'in_process', 'sent') else ('bg-danger' if cert.state == 'cancelled' else 'bg-secondary'))"/>
+                                                    <span t-attf-class="badge {{ badge_class }}">
+                                                        <t t-out="dict(cert.fields_get(['state'])['state']['selection']).get(cert.state, cert.state)"/>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <t t-if="cert.state == 'done' and cert.attachment_id">
+                                                        <a t-attf-href="/campus/certificates/download/{{ cert.id }}"
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="fa fa-download"/> Descargar PDF
+                                                        </a>
+                                                    </t>
+                                                    <t t-elif="cert.state == 'pending_payment' and cert.sale_order_id">
+                                                        <a t-attf-href="/web#id={{ cert.sale_order_id.id }}&amp;model=sale.order"
+                                                           class="btn btn-sm btn-outline-warning">
+                                                            Pagar pedido
+                                                        </a>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+
+                    </div>
+                </div>
+            </t>
+        </template>
+
+        <!-- ============================================================
+             New certificate request form
+        ============================================================ -->
+        <template id="portal_certificate_new" name="Nueva Solicitud de Certificado">
+            <t t-call="portal.portal_layout">
+                <t t-call="irg_gradebook_certificates.portal_breadcrumb_certificates">
+                    <t t-set="page_title">Nueva Solicitud</t>
+                </t>
+
+                <div class="o_portal_wrap">
+                    <div class="container py-4">
+                        <h3 class="mb-4">Solicitar Certificado de Notas</h3>
+
+                        <t t-if="error">
+                            <div class="alert alert-danger">
+                                <t t-out="error"/>
+                            </div>
+                        </t>
+
+                        <form action="/campus/certificates/new" method="post"
+                              class="o_portal_details">
+                            <input type="hidden" name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+
+                            <!-- Gradebook selector (only shown when user has multiple) -->
+                            <t t-if="len(gradebooks) > 1">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        Programa / Libreta
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="gradebook_id" class="form-select" required="required">
+                                        <option value="">-- Selecciona --</option>
+                                        <t t-foreach="gradebooks" t-as="gb">
+                                            <option t-att-value="gb.id"
+                                                    t-att-selected="post.get('gradebook_id') == str(gb.id) if post else None">
+                                                <t t-out="gb.course_id.name or gb.name"/>
+                                                <t t-if="gb.batch_id"> — <t t-out="gb.batch_id.name"/></t>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                            </t>
+                            <t t-elif="gradebooks">
+                                <input type="hidden" name="gradebook_id"
+                                       t-att-value="gradebooks[0].id"/>
+                            </t>
+
+                            <!-- Certificate type -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Tipo de Certificado <span class="text-danger">*</span>
+                                </label>
+                                <select name="certificate_type" id="cert_type_select"
+                                        class="form-select" required="required">
+                                    <option value="">-- Selecciona --</option>
+                                    <t t-foreach="certificate_types" t-as="ct">
+                                        <option t-att-value="ct[0]"
+                                                t-att-selected="post.get('certificate_type') == ct[0] if post else None">
+                                            <t t-out="ct[1]"/>
+                                            — <t t-out="'%.0f €' % price_map.get(ct[0], 0)"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+
+                            <!-- Shipping type (shown dynamically) -->
+                            <div class="mb-3" id="shipping_block">
+                                <label class="form-label fw-bold">
+                                    Tipo de Envío <span class="text-danger">*</span>
+                                </label>
+                                <select name="shipping_type" class="form-select">
+                                    <option value="">-- Selecciona --</option>
+                                    <t t-foreach="shipping_types" t-as="st">
+                                        <option t-att-value="st[0]"
+                                                t-att-selected="post.get('shipping_type') == st[0] if post else None">
+                                            <t t-out="st[1]"/>
+                                            (+<t t-out="'%.0f €' % shipping_map.get(st[0], 0)"/>)
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+
+                            <!-- Custom options (shown dynamically) -->
+                            <div class="mb-3" id="custom_options_block">
+                                <label class="form-label fw-bold">Opción Adicional</label>
+                                <select name="custom_options" class="form-select">
+                                    <option value="">-- Ninguna --</option>
+                                    <t t-foreach="custom_options" t-as="co">
+                                        <option t-att-value="co[0]"
+                                                t-att-selected="post.get('custom_options') == co[0] if post else None">
+                                            <t t-out="co[1]"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+
+                            <!-- Custom description -->
+                            <div class="mb-3" id="custom_desc_block">
+                                <label class="form-label fw-bold">Descripción de Peticiones</label>
+                                <textarea name="custom_description" class="form-control" rows="4"
+                                          placeholder="Describe las especificaciones adicionales que necesitas…"><t t-out="post.get('custom_description', '') if post else ''"/></textarea>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-check me-1"/> Solicitar Certificado
+                                </button>
+                                <a href="/campus/certificates" class="btn btn-secondary">
+                                    Cancelar
+                                </a>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+
+                <!-- Inline JS to show/hide conditional fields -->
+                <script type="text/javascript">
+                    (function () {
+                        var sel = document.getElementById('cert_type_select');
+                        var shipBlock = document.getElementById('shipping_block');
+                        var customOptBlock = document.getElementById('custom_options_block');
+                        var customDescBlock = document.getElementById('custom_desc_block');
+
+                        function toggleBlocks() {
+                            var val = sel ? sel.value : '';
+                            var isPhysical = (val === 'physical' || val === 'physical_apostilled');
+                            var isCustom = (val === 'custom');
+                            if (shipBlock) shipBlock.style.display = isPhysical ? '' : 'none';
+                            if (customOptBlock) customOptBlock.style.display = isCustom ? '' : 'none';
+                            if (customDescBlock) customDescBlock.style.display = isCustom ? '' : 'none';
+                        }
+
+                        if (sel) {
+                            sel.addEventListener('change', toggleBlocks);
+                            toggleBlocks();
+                        }
+                    })();
+                </script>
+            </t>
+        </template>
+
+        <!-- ============================================================
+             Confirmation page (after form submission)
+        ============================================================ -->
+        <template id="portal_certificate_confirm" name="Certificado — Solicitud Confirmada">
+            <t t-call="portal.portal_layout">
+                <t t-call="irg_gradebook_certificates.portal_breadcrumb_certificates">
+                    <t t-set="page_title">Solicitud Enviada</t>
+                </t>
+
+                <div class="o_portal_wrap">
+                    <div class="container py-4">
+                        <div class="alert alert-success text-center py-4">
+                            <i class="fa fa-check-circle fa-3x mb-3 d-block"/>
+                            <h4>¡Solicitud registrada correctamente!</h4>
+                            <p>
+                                Tu solicitud de certificado
+                                <strong><t t-out="cert.name"/></strong>
+                                ha sido registrada.
+                            </p>
+                            <t t-if="cert.certificate_type in ('digital', 'custom')">
+                                <p class="mb-0">
+                                    Recibirás un correo con el enlace de descarga cuando el pago sea confirmado.
+                                </p>
+                            </t>
+                            <t t-else="">
+                                <p class="mb-0">
+                                    Una vez confirmado el pago, nuestro equipo preparará y enviará tu certificado físico.
+                                    Te avisaremos por correo electrónico.
+                                </p>
+                            </t>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="/campus/certificates" class="btn btn-primary me-2">
+                                Ver mis certificados
+                            </a>
+                            <a href="/my/home" class="btn btn-secondary">
+                                Volver al inicio
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+
+    </data>
+</odoo>

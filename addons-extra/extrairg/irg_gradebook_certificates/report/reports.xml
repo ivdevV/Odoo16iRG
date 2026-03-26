@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Custom paper format: matches Word template margins exactly -->
+        <record id="paperformat_certificate_irg" model="report.paperformat">
+            <field name="name">Certificado IRG A4 Vertical</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">25</field>
+            <field name="margin_bottom">25</field>
+            <field name="margin_left">33</field>
+            <field name="margin_right">35</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">90</field>
+            <field name="disable_shrinking" eval="True"/>
+        </record>
+
+        <record id="action_report_certificate" model="ir.actions.report">
+            <field name="name">Certificado de Notas</field>
+            <field name="model">irg.certificate.request</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">irg_gradebook_certificates.report_certificate_document</field>
+            <field name="report_file">irg_gradebook_certificates.report_certificate_document</field>
+            <field name="binding_model_id" ref="model_irg_certificate_request"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="paperformat_certificate_irg"/>
+        </record>
+
+    </data>
+</odoo>

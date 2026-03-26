@@ -10,6 +10,7 @@
         'irg_sale_subscription_esp',
         'isep_website_sale_custom',
         'irg_migration_fields',
+        'base_vat_optional_vies',
     ],
     'data': [
         'views/cart_summary_fix.xml',

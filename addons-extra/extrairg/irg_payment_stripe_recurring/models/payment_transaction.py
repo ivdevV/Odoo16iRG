@@ -58,7 +58,7 @@ class PaymentTransaction(models.Model):
         """
         Extiende _reconcile_after_done para asignar el token Stripe
         a la suscripción (sale.order.payment_token_id) después de
-        que el pago se complete exitosamente.
+        que el pago se complete exitosamente.a
 
         CADENA DE HERENCIA (MRO):
         Este método se ejecuta DESPUÉS de:
@@ -75,22 +75,36 @@ class PaymentTransaction(models.Model):
         # Primero ejecutar toda la cadena de herencia existente
         res = super()._reconcile_after_done()
 
-        # Post-procesamiento: asignar token Stripe a la suscripción
+        # Post-procesamiento: asignar token Stripe y crear suscripción nativa
         for tx in self:
-            # Solo procesar transacciones Stripe exitosas con token
             if tx.provider_code != 'stripe':
                 continue
             if tx.state != 'done':
                 continue
-            if not tx.token_id:
-                continue
 
             for order in tx.sale_order_ids:
-                # Solo suscripciones
                 if not order.is_subscription:
                     continue
-                # No sobreescribir un token ya asignado manualmente
-                if order.payment_token_id:
+
+                # --- 1) Asignar token (si aún no tiene uno) ---
+                if tx.token_id and not order.payment_token_id:
+                    order.sudo().write({
+                        'payment_token_id': tx.token_id.id,
+                    })
+                    stripe_mode = getattr(order, 'irg_subscription_stripe_mode', False)
+                    if stripe_mode not in ('stripe_subscription_real', 'payment_link_fallback'):
+                        order.sudo().write({
+                            'stripe_subscription_ref': tx.token_id.provider_ref or tx.reference,
+                        })
+                    _logger.info(
+                        "IRG Stripe: Token %s (provider=%s) asignado a "
+                        "suscripción %s tras transacción %s",
+                        tx.token_id.id,
+                        tx.token_id.provider_id.name,
+                        order.name,
+                        tx.reference,
+                    )
+                elif tx.token_id and order.payment_token_id:
                     _logger.info(
                         "IRG Stripe: Suscripción %s ya tiene token %s, "
                         "no se sobreescribe con %s",
@@ -98,21 +112,64 @@ class PaymentTransaction(models.Model):
                         order.payment_token_id.id,
                         tx.token_id.id,
                     )
-                    continue
 
-                order.sudo().write({
-                    'payment_token_id': tx.token_id.id,
-                })
-                order.sudo().write({
-                    'stripe_subscription_ref': tx.token_id.provider_ref or tx.reference,
-                })
-                _logger.info(
-                    "IRG Stripe: Token %s (provider=%s) asignado a "
-                    "suscripción %s tras transacción %s",
-                    tx.token_id.id,
-                    tx.token_id.provider_id.name,
-                    order.name,
-                    tx.reference,
-                )
+                # --- 2) Crear suscripción nativa (siempre, independiente del token) ---
+                self._irg_maybe_create_stripe_subscription(tx, order)
 
         return res
+
+    def _irg_maybe_create_stripe_subscription(self, tx, order):
+        """
+        If the order is configured for ``stripe_subscription_real`` or
+        ``payment_link_fallback`` mode, create a native Stripe Subscription
+        after the first successful payment.
+        """
+        stripe_mode = getattr(order, 'irg_subscription_stripe_mode', False)
+        if stripe_mode not in ('stripe_subscription_real', 'payment_link_fallback'):
+            return
+
+        # Skip if a Stripe Subscription already exists (avoid duplicates)
+        if order.stripe_subscription_ref and order.stripe_subscription_ref.startswith('sub_'):
+            _logger.info(
+                "IRG Stripe: order %s already has Stripe subscription %s, skipping",
+                order.name,
+                order.stripe_subscription_ref,
+            )
+            return
+
+        # Extract the Stripe PaymentMethod ID from the token
+        # In Odoo 16 payment_stripe:
+        #   token.provider_ref          = Stripe Customer (cus_xxx)
+        #   token.stripe_payment_method = Stripe PM       (pm_xxx)
+        payment_method_id = tx.token_id.stripe_payment_method
+        if not payment_method_id and stripe_mode != 'payment_link_fallback':
+            _logger.warning(
+                "IRG Stripe: token %s for order %s has no stripe_payment_method, "
+                "cannot create Stripe Subscription",
+                tx.token_id.id,
+                order.name,
+            )
+            return
+
+        api = self.env['irg.stripe.api']
+        result = api._create_stripe_subscription(
+            order,
+            payment_method_id=payment_method_id if stripe_mode != 'payment_link_fallback' else None,
+        )
+        if result.get('id'):
+            _logger.info(
+                "IRG Stripe: native Subscription %s created for order %s",
+                result['id'],
+                order.name,
+            )
+            if hasattr(order, '_irg_log_bridge_event'):
+                order._irg_log_bridge_event(
+                    event_type='pending_real_subscription',
+                    description="Stripe Subscription %s created successfully." % result['id'],
+                )
+        else:
+            _logger.error(
+                "IRG Stripe: failed to create native Subscription for order %s: %s",
+                order.name,
+                result,
+            )

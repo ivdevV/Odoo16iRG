@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 import logging
+import time
 
 from odoo import models, fields, api
 
@@ -33,12 +34,23 @@ class SaleOrder(models.Model):
         return super(SaleOrder, self)._create_payment_transaction(vals)
 
     def _auto_scheduled_order(self):
+        start_all = time.perf_counter()
+        super_start = time.perf_counter()
         res = super(SaleOrder, self)._auto_scheduled_order()
+        _logger.info("IRG _auto_scheduled_order: super() in %.3fs", time.perf_counter() - super_start)
 
         for order in self:
+            per_start = time.perf_counter()
             try:
                 had_financing = bool(order.order_line.filtered(lambda l: l.irg_line_type == 'financing'))
+
+                ensure_start = time.perf_counter()
                 order._irg_ensure_financing_lines_consistent()
+                _logger.info(
+                    "IRG _auto_scheduled_order: ensure consistent in %.3fs (order=%s)",
+                    time.perf_counter() - ensure_start,
+                    order.name,
+                )
                 has_financing_now = bool(order.order_line.filtered(lambda l: l.irg_line_type == 'financing'))
 
                 if (
@@ -49,14 +61,25 @@ class SaleOrder(models.Model):
                     and order.start_date
                     and order.end_date
                 ):
+                    schedule_start = time.perf_counter()
                     order.create_subscription_schedule()
+                    _logger.info(
+                        "IRG _auto_scheduled_order: create_subscription_schedule in %.3fs (order=%s)",
+                        time.perf_counter() - schedule_start,
+                        order.name,
+                    )
             except Exception as exc:
                 _logger.exception(
                     "IRG post _auto_scheduled_order consistency failed for order %s: %s",
                     order.name,
                     exc,
                 )
+            finally:
+                per_elapsed = time.perf_counter() - per_start
+                _logger.info("IRG _auto_scheduled_order: order %s processed in %.3fs", order.name, per_elapsed)
 
+        total_elapsed = time.perf_counter() - start_all
+        _logger.info("IRG _auto_scheduled_order: processed %s orders in %.3fs", len(self), total_elapsed)
         return res
 
     academic_attachment_ids = fields.Many2many(
@@ -90,6 +113,7 @@ class SaleOrder(models.Model):
         difference between the financed variant and its contado sibling.
         Uses the same product lookup chain as _auto_scheduled_order.
         """
+        lookup_start = time.perf_counter()
         financing_product = self.env.ref(
             'irg_sale_subscription_esp.product_financing_fees',
             raise_if_not_found=False,
@@ -103,82 +127,143 @@ class SaleOrder(models.Model):
             financing_product = candidate if candidate.exists() else False
         if not financing_product:
             return
+        _logger.info(
+            "IRG _irg_ensure_financing_lines_consistent: financing product lookup %.3fs (product_id=%s)",
+            time.perf_counter() - lookup_start,
+            financing_product.id,
+        )
 
+        overall_start = time.perf_counter()
         for order in self:
-            for line in order.order_line.filtered(
-                lambda l: not l.display_type
-                and l.irg_line_type not in ('financing', 'matricula', 'matricula_discount')
-            ):
-                plan_ptav = line.product_id.product_template_attribute_value_ids.filtered(
-                    lambda x: x.attribute_id.name == 'Planes'
-                )
-                plan_ptav = plan_ptav[0] if plan_ptav else False
+            start = time.perf_counter()
+            try:
+                for line in order.order_line.filtered(
+                    lambda l: not l.display_type
+                    and l.irg_line_type not in ('financing', 'matricula', 'matricula_discount')
+                ):
+                    line_start = time.perf_counter()
+                    plan_ptav = line.product_id.product_template_attribute_value_ids.filtered(
+                        lambda x: x.attribute_id.name == 'Planes'
+                    )
+                    plan_ptav = plan_ptav[0] if plan_ptav else False
 
-                is_financed_plan = bool(plan_ptav and 'contado' not in (plan_ptav.name or '').lower())
-                is_multiterm_master = bool((order.term_number or 0) > 1 and line.irg_line_type == 'master')
-                if not (is_financed_plan or is_multiterm_master):
-                    continue
+                    is_financed_plan = bool(plan_ptav and 'contado' not in (plan_ptav.name or '').lower())
+                    is_multiterm_master = bool((order.term_number or 0) > 1 and line.irg_line_type == 'master')
+                    if not (is_financed_plan or is_multiterm_master):
+                        continue
 
-                sibling_contado = order._irg_get_sibling_contado(line.product_id)
-                if not sibling_contado:
-                    continue
+                    sibling_contado = order._irg_get_sibling_contado(line.product_id)
+                    if not sibling_contado:
+                        continue
 
-                use_line_price = not (line.irg_force_price_unit_set or (line.irg_force_price_unit and line.irg_force_price_unit > 0))
-                financed_price = line.price_unit if (use_line_price and line.price_unit and line.price_unit > 0) else line.product_id.lst_price
-                contado_price = order._irg_get_variant_order_price(
-                    sibling_contado,
-                    recurrence=order.recurrence_id,
-                    pricelist=order.pricelist_id,
-                )
+                    # Usar recurrence=None para evitar inconsistencias entre re-ejecuciones
+                    price_start = time.perf_counter()
+                    financed_price = order._irg_get_variant_order_price(
+                        line.product_id,
+                        recurrence=None,
+                        pricelist=order.pricelist_id,
+                    )
+                    contado_price = order._irg_get_variant_order_price(
+                        sibling_contado,
+                        recurrence=None,
+                        pricelist=order.pricelist_id,
+                    )
+                    _logger.info(
+                        "IRG ensure_consistent: price lookup %.3fs (order=%s line=%s)",
+                        time.perf_counter() - price_start,
+                        order.name,
+                        line.id,
+                    )
 
-                plan_extra = (plan_ptav.price_extra or 0.0) if plan_ptav else 0.0
-                contado_ptav = line.product_id.product_tmpl_id.attribute_line_ids.filtered(
-                    lambda attr_line: plan_ptav and attr_line.attribute_id.id == plan_ptav.attribute_id.id
-                ).product_template_value_ids.filtered(
-                    lambda value: 'contado' in (value.name or '').lower()
-                )
-                contado_extra = contado_ptav[0].price_extra if contado_ptav else 0.0
+                    plan_extra = (plan_ptav.price_extra or 0.0) if plan_ptav else 0.0
+                    contado_ptav = line.product_id.product_tmpl_id.attribute_line_ids.filtered(
+                        lambda attr_line: plan_ptav and attr_line.attribute_id.id == plan_ptav.attribute_id.id
+                    ).product_template_value_ids.filtered(
+                        lambda value: 'contado' in (value.name or '').lower()
+                    )
+                    contado_extra = contado_ptav[0].price_extra if contado_ptav else 0.0
 
-                financing_fee_unit = financed_price - contado_price
-                if financing_fee_unit <= 0:
-                    financing_fee_unit = plan_extra - contado_extra
-                if financing_fee_unit <= 0:
-                    continue
+                    # Nivel 3: lst_price de las variantes
+                    lst_financed = line.product_id.lst_price
+                    lst_contado = sibling_contado.lst_price
 
-                line.write({
-                    'price_unit': contado_price,
-                    'irg_force_price_unit': contado_price,
-                    'irg_force_price_unit_set': True,
-                    'irg_line_type': 'master',
-                })
+                    financing_fee_unit = financed_price - contado_price
+                    if financing_fee_unit <= 0:
+                        financing_fee_unit = plan_extra - contado_extra
+                    if financing_fee_unit <= 0:
+                        financing_fee_unit = lst_financed - lst_contado
+                    if financing_fee_unit <= 0:
+                        # Preservar línea existente si ya existe con fee > 0
+                        existing = order.order_line.filtered(
+                            lambda ln: ln.irg_line_type == 'financing' and ln.irg_parent_line_id == line
+                        )
+                        if existing and existing[0].price_unit > 0:
+                            _logger.info("IRG ensure_consistent: fee=0 but preserving existing financing line %s (price_unit=%s)", existing[0].id, existing[0].price_unit)
+                        continue
 
-                existing_fin_lines = order.order_line.filtered(
-                    lambda ln: ln.irg_line_type == 'financing' and ln.irg_parent_line_id == line
-                )
-                fin_name = "Gastos de Financiación (%s) - %s" % (
-                    (plan_ptav and plan_ptav.name) or ('%s meses' % (order.term_number or 1)),
-                    line.product_id.name,
-                )
-                if existing_fin_lines:
-                    fin_line = existing_fin_lines[0]
-                    (existing_fin_lines - fin_line).unlink()
-                    fin_line.write({
-                        'name': fin_name,
-                        'product_uom_qty': line.product_uom_qty,
-                        'price_unit': financing_fee_unit,
-                        'tax_id': [(6, 0, financing_product.taxes_id.ids)],
+                    write_start = time.perf_counter()
+                    line.write({
+                        'price_unit': contado_price,
+                        'irg_force_price_unit': contado_price,
+                        'irg_force_price_unit_set': True,
+                        'irg_line_type': 'master',
                     })
-                else:
-                    self.env['sale.order.line'].sudo().create({
-                        'order_id': order.id,
-                        'product_id': financing_product.id,
-                        'name': fin_name,
-                        'product_uom_qty': line.product_uom_qty,
-                        'price_unit': financing_fee_unit,
-                        'tax_id': [(6, 0, financing_product.taxes_id.ids)],
-                        'irg_line_type': 'financing',
-                        'irg_parent_line_id': line.id,
-                    })
+                    _logger.info(
+                        "IRG ensure_consistent: master line.write %.3fs (order=%s line=%s)",
+                        time.perf_counter() - write_start,
+                        order.name,
+                        line.id,
+                    )
+
+                    existing_fin_lines = order.order_line.filtered(
+                        lambda ln: ln.irg_line_type == 'financing' and ln.irg_parent_line_id == line
+                    )
+                    fin_name = "Gastos de Financiación (%s) - %s" % (
+                        (plan_ptav and plan_ptav.name) or ('%s meses' % (order.term_number or 1)),
+                        line.product_id.name,
+                    )
+                    fin_write_start = time.perf_counter()
+                    if existing_fin_lines:
+                        fin_line = existing_fin_lines[0]
+                        (existing_fin_lines - fin_line).unlink()
+                        fin_line.write({
+                            'name': fin_name,
+                            'product_uom_qty': line.product_uom_qty,
+                            'price_unit': financing_fee_unit,
+                            'irg_force_price_unit': financing_fee_unit,
+                            'irg_force_price_unit_set': True,
+                            'tax_id': [(6, 0, financing_product.taxes_id.ids)],
+                        })
+                    else:
+                        self.env['sale.order.line'].sudo().create({
+                            'order_id': order.id,
+                            'product_id': financing_product.id,
+                            'name': fin_name,
+                            'product_uom_qty': line.product_uom_qty,
+                            'price_unit': financing_fee_unit,
+                            'irg_force_price_unit': financing_fee_unit,
+                            'irg_force_price_unit_set': True,
+                            'tax_id': [(6, 0, financing_product.taxes_id.ids)],
+                            'irg_line_type': 'financing',
+                            'irg_parent_line_id': line.id,
+                        })
+                    _logger.info(
+                        "IRG ensure_consistent: financing line write/create %.3fs (order=%s line=%s)",
+                        time.perf_counter() - fin_write_start,
+                        order.name,
+                        line.id,
+                    )
+                    _logger.info(
+                        "IRG ensure_consistent: full line processing %.3fs (order=%s line=%s)",
+                        time.perf_counter() - line_start,
+                        order.name,
+                        line.id,
+                    )
+            finally:
+                elapsed = time.perf_counter() - start
+                _logger.info("IRG _irg_ensure_financing_lines_consistent: order %s processed in %.3fs", order.name, elapsed)
+        total = time.perf_counter() - overall_start
+        _logger.info("IRG _irg_ensure_financing_lines_consistent: processed %s orders in %.3fs", len(self), total)
 
     def _process_custom_form(self, partner_id, form_data):
         """

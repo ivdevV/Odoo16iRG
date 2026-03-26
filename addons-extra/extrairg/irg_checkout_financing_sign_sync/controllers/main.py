@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import base64
 import logging
+import time
+import uuid
 from datetime import datetime
 
 from odoo import http
@@ -12,6 +14,44 @@ _logger = logging.getLogger(__name__)
 
 class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
     """Final controller layer to keep checkout totals/lines consistent."""
+
+    def _irg_request_trace_id(self):
+        trace_id = request.context.get('irg_trace_id')
+        if not trace_id:
+            trace_id = uuid.uuid4().hex[:12]
+            request.update_context(irg_trace_id=trace_id)
+        return trace_id
+
+    def _irg_with_fast_checkout_context(self, callback):
+        """Execute callback with context flags that skip heavy external sync hooks.
+
+        Address -> extra_info must remain responsive for the user. We set a
+        scoped request context flag and let model hooks decide to defer external
+        side effects (e.g. Moodle API sync) until later.
+        """
+        previous_fast = request.context.get('irg_fast_checkout')
+        previous_skip = request.context.get('skip_moodle_sync')
+        previous_skip_vat = request.context.get('skip_vat_vies_validation')
+        previous_no_vat = request.context.get('no_vat_validation')
+        request.update_context(
+            irg_fast_checkout=True,
+            skip_moodle_sync=True,
+            skip_vat_vies_validation=True,
+            # Odoo-native key: base_vat.check_vat respects this unconditionally,
+            # even when sub-calls create a new env via with_context({}).
+            no_vat_validation=True,
+        )
+        try:
+            return callback()
+        finally:
+            # Odoo 16 forbids direct assignment to request.context.
+            # Restore previous truthy/falsy state through update_context.
+            request.update_context(
+                irg_fast_checkout=previous_fast,
+                skip_moodle_sync=previous_skip,
+                skip_vat_vies_validation=previous_skip_vat,
+                no_vat_validation=previous_no_vat,
+            )
 
     def _irg_parse_float(self, value):
         if not value:
@@ -66,7 +106,27 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
                 partner_vals['function'] = profession
 
         if partner_vals:
-            partner.write(partner_vals)
+            changed_vals = {}
+            for field_name, new_value in partner_vals.items():
+                current_value = partner[field_name]
+                if str(current_value or '').strip() != str(new_value or '').strip():
+                    changed_vals[field_name] = new_value
+
+            if changed_vals:
+                try:
+                    partner.with_context(
+                        tracking_disable=True,
+                        mail_notrack=True,
+                        mail_create_nolog=True,
+                        skip_moodle_sync=True,
+                    ).write(changed_vals)
+                except Exception as exc:
+                    # Do not block checkout progression if partner extra fields fail.
+                    _logger.exception(
+                        "IRG checkout: failed to write extra partner fields for order %s: %s",
+                        order.name,
+                        exc,
+                    )
 
         # Client POST must NOT overwrite computed order-level academic/payment values.
         # Those values are server-computed (scheduled/order logic) and therefore
@@ -75,35 +135,113 @@ class IrgWebsiteSaleFinancingSync(IrgWebsiteSale):
 
     @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def address(self, **kw):
-        res = super(IrgWebsiteSaleFinancingSync, self).address(**kw)
+        trace_id = self._irg_request_trace_id()
+        total_start = time.perf_counter()
+        _logger.info("IRG[%s] /shop/address start method=%s", trace_id, request.httprequest.method)
+
+        super_start = time.perf_counter()
+        res = self._irg_with_fast_checkout_context(
+            lambda: super(IrgWebsiteSaleFinancingSync, self).address(**kw)
+        )
+        _logger.info("IRG[%s] /shop/address super() finished in %.3fs", trace_id, time.perf_counter() - super_start)
 
         order = request.website.sale_get_order()
         if order and request.httprequest.method == 'POST':
-            self._irg_save_address_extra_fields(order, kw)
-
-        self._irg_sync_checkout_order(recalculate=True)
+            save_start = time.perf_counter()
+            try:
+                self._irg_save_address_extra_fields(order, kw)
+            except Exception as exc:
+                _logger.exception(
+                    "IRG[%s] checkout: unexpected error in _irg_save_address_extra_fields for order %s: %s",
+                    trace_id,
+                    order.name,
+                    exc,
+                )
+            finally:
+                _logger.info(
+                    "IRG[%s] /shop/address save extra fields finished in %.3fs (order=%s)",
+                    trace_id,
+                    time.perf_counter() - save_start,
+                    order.name,
+                )
+        _logger.info("IRG[%s] /shop/address total %.3fs", trace_id, time.perf_counter() - total_start)
         return res
 
     def _irg_sync_checkout_order(self, recalculate=False):
+        trace_id = self._irg_request_trace_id()
+        sync_start = time.perf_counter()
+        if request.httprequest.path in ('/shop/address', '/shop/extra_info', '/shop/payment'):
+            _logger.info("IRG[%s] skip _irg_sync_checkout_order on %s", trace_id, request.httprequest.path)
+            return
+
         order = request.website.sale_get_order()
         if not order:
+            _logger.info("IRG[%s] _irg_sync_checkout_order: no sale order", trace_id)
             return
         try:
+            recalc_marker = '_irg_auto_scheduled_order_done'
+            ensure_marker = '_irg_financing_lines_sync_done'
+
             if recalculate:
+                if getattr(request, recalc_marker, False):
+                    recalculate = False
+                else:
+                    setattr(request, recalc_marker, True)
+
+            if recalculate:
+                recalc_start = time.perf_counter()
                 order.sudo()._auto_scheduled_order()
+                _logger.info(
+                    "IRG[%s] _irg_sync_checkout_order: _auto_scheduled_order %.3fs (order=%s)",
+                    trace_id,
+                    time.perf_counter() - recalc_start,
+                    order.name,
+                )
+
+            if getattr(request, ensure_marker, False):
+                return
+            ensure_start = time.perf_counter()
             order.sudo()._irg_ensure_financing_lines_consistent()
+            setattr(request, ensure_marker, True)
+            _logger.info(
+                "IRG[%s] _irg_sync_checkout_order: _irg_ensure_financing_lines_consistent %.3fs (order=%s)",
+                trace_id,
+                time.perf_counter() - ensure_start,
+                order.name,
+            )
         except Exception as exc:
-            _logger.exception("IRG checkout sync failed for order %s: %s", order.name, exc)
+            _logger.exception("IRG[%s] checkout sync failed for order %s: %s", trace_id, order.name, exc)
+        finally:
+            _logger.info(
+                "IRG[%s] _irg_sync_checkout_order total %.3fs (recalculate=%s)",
+                trace_id,
+                time.perf_counter() - sync_start,
+                recalculate,
+            )
 
     @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth='public', website=True, sitemap=False)
     def extra_info(self, **post):
-        self._irg_sync_checkout_order(recalculate=True)
-        return super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
+        trace_id = self._irg_request_trace_id()
+        start = time.perf_counter()
+        _logger.info("IRG[%s] /shop/extra_info start method=%s", trace_id, request.httprequest.method)
+        res = self._irg_with_fast_checkout_context(
+            lambda: super(IrgWebsiteSaleFinancingSync, self).extra_info(**post)
+        )
+        _logger.info("IRG[%s] /shop/extra_info total %.3fs", trace_id, time.perf_counter() - start)
+        return res
 
     @http.route(['/shop/payment'], type='http', auth='public', website=True, sitemap=False)
     def shop_payment(self, **post):
-        self._irg_sync_checkout_order(recalculate=True)
-        return super().shop_payment(**post)
+        # Keep page transition non-blocking: defer heavy recalculation/sync
+        # to later steps (confirm/payment processing background hooks).
+        trace_id = self._irg_request_trace_id()
+        start = time.perf_counter()
+        _logger.info("IRG[%s] /shop/payment start", trace_id)
+        res = self._irg_with_fast_checkout_context(
+            lambda: super(IrgWebsiteSaleFinancingSync, self).shop_payment(**post)
+        )
+        _logger.info("IRG[%s] /shop/payment total %.3fs", trace_id, time.perf_counter() - start)
+        return res
 
     @http.route(['/shop/academic_documents/upload'], type='http', auth='public', website=True, methods=['POST'], csrf=True)
     def upload_academic_documents(self, **post):

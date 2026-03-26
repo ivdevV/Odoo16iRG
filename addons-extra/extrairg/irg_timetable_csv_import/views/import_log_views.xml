@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ── Tree ── -->
+        <record id="view_irg_import_log_tree" model="ir.ui.view">
+            <field name="name">irg.timetable.import.log.tree</field>
+            <field name="model">irg.timetable.import.log</field>
+            <field name="arch" type="xml">
+                <tree string="Logs de importación"
+                      decoration-danger="state == 'error'"
+                      decoration-warning="state == 'warning'"
+                      decoration-success="state == 'ok'">
+                    <field name="import_date"/>
+                    <field name="name"/>
+                    <field name="state"/>
+                    <field name="sessions_created"/>
+                    <field name="sessions_updated"/>
+                    <field name="sessions_skipped"/>
+                    <field name="subject_dates_updated"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ── Form ── -->
+        <record id="view_irg_import_log_form" model="ir.ui.view">
+            <field name="name">irg.timetable.import.log.form</field>
+            <field name="model">irg.timetable.import.log</field>
+            <field name="arch" type="xml">
+                <form string="Log de importación CSV">
+                    <sheet>
+                        <group>
+                            <group string="Archivo">
+                                <field name="name"/>
+                                <field name="import_date"/>
+                                <field name="state"
+                                       widget="badge"
+                                       decoration-danger="state == 'error'"
+                                       decoration-warning="state == 'warning'"
+                                       decoration-success="state == 'ok'"/>
+                            </group>
+                            <group string="Resultados">
+                                <field name="sessions_created"/>
+                                <field name="sessions_updated"/>
+                                <field name="sessions_skipped"/>
+                                <field name="subject_dates_updated"/>
+                            </group>
+                        </group>
+                        <separator string="Errores y advertencias"/>
+                        <field name="error_details" widget="text"
+                               placeholder="Sin errores"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- ── Action ── -->
+        <record id="action_irg_import_log" model="ir.actions.act_window">
+            <field name="name">Logs de importación CSV</field>
+            <field name="res_model">irg.timetable.import.log</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate="1" para que el usuario pueda ajustar el cron sin que se sobreescriba -->
+    <data noupdate="1">
+        <record id="ir_cron_timetable_csv_import" model="ir.cron">
+            <field name="name">IRG: Importar calendarios académicos desde CSV</field>
+            <field name="model_id" ref="model_irg_timetable_import_log"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_process_csv_directory()</field>
+            <field name="interval_number">6</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+    </data>
+</odoo>

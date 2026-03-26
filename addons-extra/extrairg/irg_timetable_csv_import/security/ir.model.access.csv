@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_program_map_admin,irg.timetable.program.map (admin),model_irg_timetable_program_map,base.group_system,1,1,1,1
+access_irg_program_map_user,irg.timetable.program.map (user),model_irg_timetable_program_map,openeducat_core.group_op_back_office_admin,1,1,1,0
+access_irg_import_log_admin,irg.timetable.import.log (admin),model_irg_timetable_import_log,base.group_system,1,1,1,1
+access_irg_import_log_user,irg.timetable.import.log (user),model_irg_timetable_import_log,openeducat_core.group_op_back_office_admin,1,0,0,0

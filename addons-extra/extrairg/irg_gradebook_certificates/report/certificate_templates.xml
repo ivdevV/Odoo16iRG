@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="report_certificate_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="id_type_name"
+                       t-value="o.partner_id.l10n_latam_identification_type_id.name if o.partner_id.l10n_latam_identification_type_id else False"/>
+                    <t t-set="id_number" t-value="o.partner_id.vat or ''"/>
+                    <t t-set="subjects"
+                       t-value="o.gradebook_student_id.gradebook_subject_ids.filtered(
+                           lambda s: s.op_subject_id.subject_type == 'compulsory'
+                       )"/>
+
+                    <div class="article"
+                         style="font-family: Calibri, 'Segoe UI', Arial, sans-serif;
+                                color: #000000; font-size: 11pt;">
+
+                        <!-- Vertical legal text on left margin (wkhtmltopdf compatible) -->
+                        <div style="position: fixed; left: -10mm; top: 50mm; width: 200mm; height: 10mm;
+                                    transform: rotate(-90deg); transform-origin: left top;
+                                    font-size: 7pt; color: #000; white-space: nowrap;">
+                            Instituto Raimon Gaja, S.L con n&#250;m. CIF: B56488687. Inscrita en el Registro Mercantil de Barcelona con fecha 18/10/2023. Folio 122. Tomo 48.980. Inscripci&#243;n 1&#170; Hoja B-603323
+                        </div>
+
+                        <!-- Logo centrado -->
+                        <div style="text-align: center; margin-bottom: 10pt;">
+                            <t t-if="o.env.company.logo">
+                                <img t-att-src="image_data_uri(o.env.company.logo)"
+                                     style="height: 2.0cm;" alt="Logo"/>
+                            </t>
+                        </div>
+
+                        <!-- T&#237;tulo -->
+                        <p style="text-align: center; margin: 0 0 12pt 0; font-size: 28pt; font-weight: bold;">
+                            CERTIFICADO DE CALIFICACIONES
+                        </p>
+
+                        <t t-if="o.certificate_type == 'physical_apostilled'">
+                            <p style="text-align: center; font-style: italic; color: #555; font-size: 10pt; margin: 0 0 8pt 0;">
+                                (Sujeto a Apostilla de La Haya &#8212; <t t-out="o.env.company.name"/>)
+                            </p>
+                        </t>
+
+                        <!-- Cuerpo -->
+                        <p style="text-align: justify; margin: 0 0 12pt 0;">
+                            El <strong>Instituto Raimon Gaja</strong> certifica que
+                            <strong><t t-out="o.partner_id.name or ''"/></strong>
+                            con <strong><t t-out="id_type_name or 'DNI/Pasaporte'"/> <t t-out="id_number"/></strong>
+                            ha cursado el programa de estudios
+                            <strong><t t-out="o.course_id.name or ''"/></strong>
+                            habiendo obtenido las siguientes calificaciones:
+                        </p>
+
+                        <!-- Tabla de calificaciones -->
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 6pt; font-size: 7.5pt;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 8%; background: #E8E8E8; border: 1px solid #000; padding: 3px 6px; text-align: left; font-weight: bold;">C&#243;d.</th>
+                                    <th style="width: 74%; background: #E8E8E8; border: 1px solid #000; padding: 3px 6px; text-align: left; font-weight: bold;">Asignatura</th>
+                                    <th style="width: 18%; background: #E8E8E8; border: 1px solid #000; padding: 3px 6px; text-align: left; font-weight: bold;">Calificaci&#243;n</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="subjects" t-as="subj">
+                                    <tr>
+                                        <td style="border: 1px solid #000; padding: 3px 6px;"><t t-out="subj.op_subject_id.code or ''"/></td>
+                                        <td style="border: 1px solid #000; padding: 3px 6px;"><t t-out="subj.op_subject_id.name or ''"/></td>
+                                        <td style="border: 1px solid #000; padding: 3px 6px;"><t t-out="'%.2f' % (subj.final_subject_note or 0.0)"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" style="background: #E8E8E8; border: 1px solid #000; padding: 3px 6px; font-weight: bold;">Nota Media General</td>
+                                    <td style="background: #E8E8E8; border: 1px solid #000; padding: 3px 6px; font-weight: bold;"><t t-out="'%.2f' % (o.gradebook_student_id.total_final or 0.0)"/></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Solo tipo custom -->
+                        <t t-if="o.certificate_type == 'custom' and o.custom_description">
+                            <div style="border: 1px solid #999; padding: 8px 10px; margin-bottom: 10pt; font-size: 10pt;">
+                                <strong>Especificaciones adicionales:</strong><br/>
+                                <t t-out="o.custom_description"/>
+                            </div>
+                        </t>
+
+                        <!-- Solo tipo apostillado -->
+                        <t t-if="o.certificate_type == 'physical_apostilled'">
+                            <div style="border-left: 3px solid #333; padding-left: 10px; margin-bottom: 10pt; font-size: 10pt; color: #444;">
+                                <strong>Nota legal:</strong>
+                                Este certificado est&#225; sujeto al tr&#225;mite de legalizaci&#243;n mediante la
+                                Apostilla de La Haya en virtud del Convenio de 5 de octubre de 1961.
+                                <t t-if="o.apostille_done">
+                                    <br/><em>Apostilla tramitada &#10003;</em>
+                                </t>
+                            </div>
+                        </t>
+
+                        <!-- "Para que as&#237; conste..." -->
+                        <p style="margin: 6pt 0 0 0;">
+                            Para que as&#237; conste, firmo la presente en Barcelona a fecha
+                            <t t-out="o.request_date.strftime('%d/%m/%Y') if o.request_date else ''"/>
+                        </p>
+
+                        <br/>
+
+                        <!-- "Firma y sello institucional" -->
+                        <p style="margin: 0; font-size: 7pt; color: #555555;">
+                            Firma y sello institucional
+                        </p>
+
+                        <br/>
+
+                        <!-- Logo peque&#241;o -->
+                        <t t-if="o.env.company.logo">
+                            <img t-att-src="image_data_uri(o.env.company.logo)"
+                                 style="height: 2.5cm;" alt="Logo"/>
+                        </t>
+
+                        <br/>
+
+                        <!-- Departamento Acad&#233;mico -->
+                        <p style="margin: 0; font-size: 12pt;">
+                            Departamento Acad&#233;mico
+                        </p>
+
+                        <!-- Instituto Raimon Gaja -->
+                        <p style="margin: 0; font-size: 12pt;">
+                            Instituto Raimon Gaja
+                        </p>
+
+                    </div><!-- .article -->
+                </t><!-- t-foreach -->
+            </t><!-- web.html_container -->
+        </template>
+
+    </data>
+</odoo>

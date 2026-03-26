@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="irg_products_item_default_combo" inherit_id="website_sale.products_item" priority="130">
+        <xpath expr="//div[hasclass('product_price')]" position="replace">
+            <div class="product_price">
+                <t t-set="product_tmpl" t-value="product if product._name == 'product.template' else product.product_tmpl_id"/>
+                <t t-set="default_data" t-value="product_tmpl._isep_get_default_installment_data(website.get_current_website().get_current_pricelist())"/>
+                <t t-set="default_installment_price" t-value="default_data and default_data[0] or False"/>
+                <t t-set="default_installment_months" t-value="default_data and default_data[1] or 1"/>
+                <t t-set="safe_template_price_vals" t-value="template_price_vals or {}"/>
+                <t t-set="display_currency" t-value="safe_template_price_vals.get('display_currency') or website.currency_id"/>
+                <t t-set="fallback_price" t-value="safe_template_price_vals.get('price', product_tmpl.list_price)"/>
+
+                <t t-if="default_installment_price">
+                    <span class="oe_price" style="white-space: nowrap;" t-esc="default_installment_price" t-options="{'widget': 'monetary', 'display_currency': display_currency}"/>
+                    <span class="text-muted isep_month_suffix" style="font-size: 0.8rem;" t-if="default_installment_months &gt; 1">
+                        <t t-esc="' / %s meses' % default_installment_months"/>
+                    </span>
+                </t>
+                <t t-else="">
+                    <span class="oe_price" style="white-space: nowrap;" t-esc="fallback_price" t-options="{'widget': 'monetary', 'display_currency': display_currency}"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

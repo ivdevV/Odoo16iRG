@@ -56,18 +56,35 @@ class SaleOrder(models.Model):
             
         # Updated search for register
         register_id = self.env['op.admission.register'].search([
-            ('state', 'in', ['confirm', 'application','admission']),
+            ('state', 'in', ['confirm', 'application', 'admission']),
             ('product_template_ids', 'in', [product_template_id.id]),
-            ('period','=', period )
-        ], limit=1 )
-        
-        # Fallback to old search
+            ('period', '=', period)
+        ], limit=1)
+
+        # Fallback: buscar por product_template_id (campo antiguo)
         if not register_id:
-             register_id = self.env['op.admission.register'].search([
-                ('state', 'in', ['confirm', 'application','admission']),
+            register_id = self.env['op.admission.register'].search([
+                ('state', 'in', ['confirm', 'application', 'admission']),
                 ('product_template_id', '=', product_template_id.id),
-                ('period','=', period )
-            ], limit=1 )
+                ('period', '=', period)
+            ], limit=1)
+
+        # Fallback: buscar por course_id cuando product_template_ids no está sincronizado
+        # (registros creados antes de instalar irg_openeducat_course_multi_product)
+        if not register_id:
+            course_for_search = self.env['op.course'].search(
+                [('product_template_ids', 'in', [product_template_id.id])], limit=1
+            )
+            if not course_for_search:
+                course_for_search = self.env['op.course'].search(
+                    [('product_template_id', '=', product_template_id.id)], limit=1
+                )
+            if course_for_search:
+                register_id = self.env['op.admission.register'].search([
+                    ('state', 'in', ['confirm', 'application', 'admission']),
+                    ('course_id', '=', course_for_search.id),
+                    ('period', '=', period)
+                ], limit=1)
 
         if register_id:
             if register_id.state == 'confirm':
@@ -86,16 +103,18 @@ class SaleOrder(models.Model):
                 if self.course_id.product_template_id.id == product_template_id.id or product_template_id.id in self.course_id.product_template_ids.ids:
                     course_id = self.course_id
 
-            _logger.info("\n###\n log 001 \n###")
             if course_id:
+                end_date = self.gat_date_max_register(period)
+                # Si el periodo ya venció, start_date no puede ser posterior a end_date
+                start_date = min(fields.Date.today(), end_date)
                 register_id = self.env['op.admission.register'].create({
                     'course_id': course_id.id,
-                    'name': str(period) +' '+course_id.name,
+                    'name': str(period) + ' ' + course_id.name,
                     'min_count': 1,
-                    'max_count':500,
+                    'max_count': 500,
                     'period': period,
-                    'start_date':fields.Date.today(),
-                    'end_date': self.gat_date_max_register(period),
+                    'start_date': start_date,
+                    'end_date': end_date,
                 })
                 register_id.start_application()
             else:

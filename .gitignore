@@ -57,6 +57,9 @@ yarn-error.log
 .DS_Store
 Thumbs.db
 
+#github
+.githooks/
+
 # Local addons / temporary
 local_addons/
 tmp/

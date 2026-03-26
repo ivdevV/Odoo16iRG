@@ -1,0 +1,11 @@
+/* IRG: make form inputs slightly lighter for better contrast in checkout */
+input.form-control, textarea.form-control, select.form-control {
+  background-color: #fbfbfb !important;
+  color: #222 !important;
+  border-color: #dcdcdc !important;
+}
+
+/* Slightly increase placeholder contrast */
+input::placeholder, textarea::placeholder {
+  color: #9a9a9a !important;
+}

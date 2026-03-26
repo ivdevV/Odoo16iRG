@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ── Template QWeb: Página de Upload ── -->
+
+        <template id="portal_upload_page" name="Página de Upload CSV">
+            <t t-call="website.layout">
+                <div class="container mt-5 mb-5">
+
+                    <!-- Encabezado -->
+                    <div class="row mb-4">
+                        <div class="col-lg-8">
+                            <h1 class="mb-2">
+                                <i class="fa fa-calendar-o"/> Actualizar Calendarios Académicos
+                            </h1>
+                            <p class="text-muted">
+                                Sube el archivo CSV consolidado para importar las fechas de sesiones académicas
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de éxito (si success en URL) -->
+                    <t t-if="success">
+                        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                            <strong>✓ Excelente!</strong> El archivo se subió correctamente.
+                            El sistema lo procesará automáticamente (cada 6 horas mediante cron).
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+                        </div>
+                    </t>
+
+                    <!-- Mensaje de error (si error) -->
+                    <t t-if="error">
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <strong>✗ Error:</strong>
+                            <t t-out="error"/>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+                        </div>
+                    </t>
+
+                    <!-- Tarjeta de upload -->
+                    <div class="row mb-5">
+                        <div class="col-lg-6">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fa fa-upload"/> Subir CSV
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+
+                                    <form method="POST"
+                                          action="/campus/csv-upload/action"
+                                          enctype="multipart/form-data"
+                                          id="csv_upload_form">
+                                        
+                                        <!-- Token CSRF -->
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                        <!-- Input file -->
+                                        <div class="form-group mb-3">
+                                            <label for="csv_file" class="form-label">
+                                                <strong>Selecciona el archivo CSV:</strong>
+                                            </label>
+                                            <input type="file"
+                                                   id="csv_file"
+                                                   name="csv_file"
+                                                   accept=".csv"
+                                                   class="form-control"
+                                                   required="required"/>
+                                            <small class="form-text text-muted">
+                                                Formato: CSV | Tamaño máximo: 10 MB
+                                            </small>
+                                        </div>
+
+                                        <!-- Requisitos -->
+                                        <div class="alert alert-info mb-3" role="alert">
+                                            <strong>Requisitos del CSV:</strong>
+                                            <ul class="mb-0 mt-2">
+                                                <li>Extensión: <code>.csv</code></li>
+                                                <li>Codificación: <code>UTF-8</code></li>
+                                                <li>Columnas requeridas:
+                                                    <code>Máster/Programa</code>,
+                                                    <code>Fecha</code>,
+                                                    <code>Nombre Asignatura</code>,
+                                                    <code>Docente</code>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        <!-- Botones -->
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fa fa-upload"/> Subir y Procesar
+                                            </button>
+                                            <a href="/campus/" class="btn btn-secondary">
+                                                Cancelar
+                                            </a>
+                                        </div>
+
+                                    </form>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instrucciones -->
+                        <div class="col-lg-6">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fa fa-info-circle"/> Instrucciones
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>
+                                        <strong>Pasos para generar el CSV:</strong>
+                                    </p>
+                                    <ol>
+                                        <li>
+                                            Descarga los calendarios desde Google Drive:
+                                            <br/>
+                                            <small class="text-muted">
+                                                Carpeta: <em>Calendarios 365-2026-2027</em>
+                                            </small>
+                                        </li>
+                                        <li>
+                                            Ejecuta el script <code>consolidar_calendarios.py</code>
+                                        </li>
+                                        <li>
+                                            Obtén el archivo <code>Calendario_Global_iRG.csv</code>
+                                        </li>
+                                        <li>
+                                            Sube el CSV aquí
+                                        </li>
+                                    </ol>
+                                    <p class="mt-3 text-muted">
+                                        <i class="fa fa-clock-o"/> Una vez subido, el sistema procesará el archivo
+                                        automáticamente (cada 6 horas mediante cron).
+                                    </p>
+                                    <div class="alert alert-warning mt-3 mb-0">
+                                        <strong>Nota:</strong> Las sesiones creadas aparecerán en los calendarios
+                                        después del procesamiento automático.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Historial de uploads -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fa fa-history"/> Historial de Uploads
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <t t-if="uploads">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Archivo</th>
+                                                        <th>Usuario</th>
+                                                        <th>Fecha</th>
+                                                        <th>Tamaño</th>
+                                                        <th>Estado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="uploads" t-as="upload">
+                                                        <tr>
+                                                            <td>
+                                                                <code class="small">
+                                                                    <t t-out="upload.name"/>
+                                                                </code>
+                                                            </td>
+                                                            <td>
+                                                                <t t-out="upload.uploaded_by.name"/>
+                                                            </td>
+                                                            <td>
+                                                                <small>
+                                                                    <t t-out="upload.upload_date.strftime('%d/%m/%Y %H:%M')"/>
+                                                                </small>
+                                                            </td>
+                                                            <td>
+                                                                <small>
+                                                                    <t t-out="'{:.1f} KB'.format(upload.file_size / 1024)"/>
+                                                                </small>
+                                                            </td>
+                                                            <td>
+                                                                <!-- Badge de estado -->
+                                                                <t t-if="upload.state == 'pending'">
+                                                                    <span class="badge bg-warning text-dark">
+                                                                        <i class="fa fa-clock-o"/> Pendiente
+                                                                    </span>
+                                                                </t>
+                                                                <t t-elif="upload.state == 'processing'">
+                                                                    <span class="badge bg-info">
+                                                                        <i class="fa fa-spinner fa-spin"/> Procesando
+                                                                    </span>
+                                                                </t>
+                                                                <t t-elif="upload.state == 'done'">
+                                                                    <span class="badge bg-success">
+                                                                        <i class="fa fa-check"/> Completado
+                                                                    </span>
+                                                                </t>
+                                                                <t t-elif="upload.state == 'error'">
+                                                                    <span class="badge bg-danger" title="Click para ver error">
+                                                                        <i class="fa fa-exclamation-triangle"/> Error
+                                                                    </span>
+                                                                </t>
+                                                            </td>
+                                                        </tr>
+                                                        <!-- Fila expandible de error (si aplica) -->
+                                                        <t t-if="upload.state == 'error' and upload.error_message">
+                                                            <tr class="table-light">
+                                                                <td colspan="5">
+                                                                    <small class="text-danger">
+                                                                        <strong>Error:</strong>
+                                                                        <br/>
+                                                                        <t t-out="upload.error_message"/>
+                                                                    </small>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <p class="text-muted mb-0">
+                                            Aún no hay uploads registrados.
+                                        </p>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </t>
+        </template>
+
+    </data>
+</odoo>

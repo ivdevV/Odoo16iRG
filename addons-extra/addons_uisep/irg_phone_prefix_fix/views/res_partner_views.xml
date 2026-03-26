@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        IRG: Force phone/mobile fields to render as plain text (widget="char").
+
+        Why this is needed:
+          The base view uses  widget="phone"  which triggers the JS PhoneField
+          widget. That widget calls Odoo's phone_format onchange AND locally
+          reformats the displayed value using libphonenumber's NATIONAL format.
+          Even after our Python _phone_format fix preserves "+52 1 ...", the JS
+          widget can silently strip the "1" again when the user focuses/blurs
+          the field in the browser.
+
+          Changing to  widget="char"  renders the field as a plain <input> with
+          a clickable tel: link. No JS phone-number parsing happens at all; what
+          is stored in the DB is what the user sees.
+
+        About asterisks (******):
+          If you previously saw asterisks, the cause was either:
+            - A  password="True"  attribute in a view XML (check with
+              Settings > Technical > User Interface > Views, search "partner form")
+            - A  groups="..."  restriction on the field (confidential fields in
+              some enterprise modules).
+          This view override explicitly omits password="True" so neither phone
+          nor mobile will ever be masked here.
+    -->
+    <record id="view_partner_form_irg_phone_widget" model="ir.ui.view">
+        <field name="name">res.partner.form.irg.phone.widget</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Replace the phone field widget so JS does not reformat the number -->
+            <xpath expr="//field[@name='phone'][@widget='phone']" position="replace">
+                <field name="phone" widget="char" placeholder="+52 1 55 1234 5678"/>
+            </xpath>
+            <!-- Replace the mobile field widget -->
+            <xpath expr="//field[@name='mobile'][@widget='phone']" position="replace">
+                <field name="mobile" widget="char" placeholder="+52 1 55 1234 5678"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

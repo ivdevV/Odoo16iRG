@@ -1,0 +1,3 @@
+product_ref,price_exception,name,active,note
+# Ejemplo: usa el Internal Reference (default_code) o el nombre exacto del producto
+#P12345,1400.00,Excepción P12345,True,Importado desde tarifario

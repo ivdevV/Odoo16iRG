@@ -14,6 +14,38 @@ class IrgWebsiteSale(CustomWebsiteSale):
     se crea una rama paralela y Odoo elige la de isep.
     """
 
+    def _irg_call_super_skip_custom_autoschedule(self, super_call):
+        key = 'irg_skip_custom_autoschedule'
+        previous = request.session.get(key)
+        request.session[key] = True
+        try:
+            return super_call()
+        finally:
+            if previous is None:
+                request.session.pop(key, None)
+            else:
+                request.session[key] = previous
+
+    def _irg_recalculate_once(self, order, route_name):
+        """Run expensive scheduling logic at most once per HTTP request."""
+        if not order:
+            return
+
+        marker = '_irg_auto_scheduled_order_done'
+        if getattr(request, marker, False):
+            _logger.debug("IRG %s: skipping duplicate _auto_scheduled_order for order %s", route_name, order.name)
+            return
+
+        # Defer heavy scheduling during intermediate checkout screens.
+        # This keeps address -> extra_info navigation responsive.
+        if request.httprequest.path in ('/shop/address', '/shop/extra_info', '/shop/payment'):
+            return
+
+        if order.subscription_schedule:
+            _logger.info("IRG %s: order %s already has subscription_schedule - forcing recalculation", route_name, order.name)
+        order.sudo()._auto_scheduled_order()
+        setattr(request, marker, True)
+
     @http.route(['/shop/confirm_order'], type='http', auth="public", website=True, sitemap=False)
     def confirm_order(self, **post):
         """
@@ -27,15 +59,14 @@ class IrgWebsiteSale(CustomWebsiteSale):
         # Ejecutar la lógica de scheduling antes de renderizar la página
         try:
             order = request.website.sale_get_order()
-            if order:
-                if order.subscription_schedule:
-                    _logger.info("IRG confirm_order: order %s already has subscription_schedule - forcing recalculation", order.name)
-                order.sudo()._auto_scheduled_order()
+            self._irg_recalculate_once(order, 'confirm_order')
         except Exception as e:
             _logger.exception("IRG confirm_order pre-super _auto_scheduled_order failed: %s", e)
 
         # Llamar al flujo original (que ahora encontrará la orden ya actualizada)
-        res = super(IrgWebsiteSale, self).confirm_order(**post)
+        res = self._irg_call_super_skip_custom_autoschedule(
+            lambda: super(IrgWebsiteSale, self).confirm_order(**post)
+        )
         return res
 
     @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
@@ -49,14 +80,13 @@ class IrgWebsiteSale(CustomWebsiteSale):
         # Ejecutar scheduling antes de renderizar la página
         try:
             order = request.website.sale_get_order()
-            if order:
-                if order.subscription_schedule:
-                    _logger.info("IRG address: order %s already has subscription_schedule - forcing recalculation", order.name)
-                order.sudo()._auto_scheduled_order()
+            self._irg_recalculate_once(order, 'address')
         except Exception as e:
             _logger.exception("IRG address pre-super _auto_scheduled_order failed: %s", e)
 
-        res = super(IrgWebsiteSale, self).address(**kw)
+        res = self._irg_call_super_skip_custom_autoschedule(
+            lambda: super(IrgWebsiteSale, self).address(**kw)
+        )
         return res
 
     @http.route(['/shop/extra_info'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
@@ -68,10 +98,7 @@ class IrgWebsiteSale(CustomWebsiteSale):
         _logger.info("IRG controller extra_info: ENTERING")
         try:
             order = request.website.sale_get_order()
-            if order:
-                if order.subscription_schedule:
-                    _logger.info("IRG extra_info: order %s already has subscription_schedule - forcing recalculation", order.name)
-                order.sudo()._auto_scheduled_order()
+            self._irg_recalculate_once(order, 'extra_info')
         except Exception as e:
             _logger.exception("IRG extra_info pre-super _auto_scheduled_order failed: %s", e)
 

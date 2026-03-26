@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================
+             1. Digital certificate ready — sent to student
+        ============================================================ -->
+        <record id="mail_template_cert_digital_ready" model="mail.template">
+            <field name="name">Certificado Digital — Listo para descargar</field>
+            <field name="model_id" ref="model_irg_certificate_request"/>
+            <field name="subject">Tu certificado de notas digital ya está disponible ({{ object.name }})</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+    <p>Estimado/a <strong>{{ object.partner_id.name }}</strong>,</p>
+    <p>
+        Tu <strong>certificado de notas digital</strong> con referencia
+        <strong>{{ object.name }}</strong> ya está disponible para su descarga.
+    </p>
+    <p>
+        Puedes descargarlo accediendo al portal del alumno en la sección
+        <em>Mis Certificados</em> o a través del siguiente enlace:
+    </p>
+    <p style="text-align:center; margin: 20px 0;">
+        <a href="{{ ctx.get('base_url', '') }}/campus/certificates/download/{{ object.id }}"
+           style="background-color:#875A7B;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;">
+            Descargar Certificado
+        </a>
+    </p>
+    <p>Si tienes alguna duda, no dudes en contactarnos.</p>
+    <p>Un cordial saludo,<br/><strong>{{ object.env.company.name }}</strong></p>
+</div>
+]]></field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <!-- ============================================================
+             2. Physical certificate payment confirmed — admin notified
+        ============================================================ -->
+        <record id="mail_template_cert_paid_physical" model="mail.template">
+            <field name="name">Certificado Físico — Pago recibido</field>
+            <field name="model_id" ref="model_irg_certificate_request"/>
+            <field name="subject">Certificado físico en preparación — {{ object.name }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+    <p>Estimado/a <strong>{{ object.partner_id.name }}</strong>,</p>
+    <p>
+        Hemos recibido el pago de tu solicitud de
+        <strong>certificado de notas físico</strong>
+        (referencia: <strong>{{ object.name }}</strong>).
+    </p>
+    <p>
+        Nuestro equipo procederá a la preparación e impresión del documento.
+        Te notificaremos en cuanto sea enviado&#8203;
+        % if object.shipping_type == 'national':
+        por mensajería nacional.
+        % else:
+        por mensajería internacional.
+        % endif
+    </p>
+    <p>
+        <strong>Tipo:</strong> {{ dict(object.fields_get(['certificate_type'])['certificate_type']['selection']).get(object.certificate_type, '') }}<br/>
+        <strong>Envío:</strong> {{ dict(object.fields_get(['shipping_type'])['shipping_type']['selection']).get(object.shipping_type, '') }}<br/>
+        <strong>Total abonado:</strong> {{ '%.2f' % object.price_total }} €
+    </p>
+    <p>Un cordial saludo,<br/><strong>{{ object.env.company.name }}</strong></p>
+</div>
+]]></field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <!-- ============================================================
+             3. Physical certificate shipped
+        ============================================================ -->
+        <record id="mail_template_cert_sent" model="mail.template">
+            <field name="name">Certificado — Enviado</field>
+            <field name="model_id" ref="model_irg_certificate_request"/>
+            <field name="subject">Tu certificado ha sido enviado — {{ object.name }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+    <p>Estimado/a <strong>{{ object.partner_id.name }}</strong>,</p>
+    <p>
+        Tu certificado de notas (referencia: <strong>{{ object.name }}</strong>)
+        ha sido enviado el
+        <strong>{{ object.delivery_date.strftime('%d/%m/%Y') if object.delivery_date else '' }}</strong>.
+    </p>
+    % if object.tracking_number:
+    <p>
+        Número de seguimiento: <strong>{{ object.tracking_number }}</strong>
+    </p>
+    % endif
+    <p>Un cordial saludo,<br/><strong>{{ object.env.company.name }}</strong></p>
+</div>
+]]></field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

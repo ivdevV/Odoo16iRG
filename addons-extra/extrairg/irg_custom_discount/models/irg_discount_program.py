@@ -29,6 +29,19 @@ class IrgDiscountProgram(models.Model):
         string='Tabla de tarifas',
         help='Tabla de referencia para mantener tarifas/importes del Excel.'
     )
+    oficiality_product_ids = fields.Many2many(
+        'product.product',
+        'irg_discount_program_oficiality_rel',
+        'program_id',
+        'product_id',
+        string='Productos de Oficialidad',
+        help='Productos que representan el coste de oficialidad (no deben recibir descuento).'
+    )
+    exclude_oficiality = fields.Boolean(
+        string='Excluir oficialidad del descuento',
+        default=False,
+        help='Si está marcado, el cálculo del descuento aplicará la fórmula solo sobre la parte del producto que no corresponde a oficialidad.'
+    )
     target_product_id = fields.Many2one(
         'product.product',
         string='Producto objetivo',
@@ -213,7 +226,28 @@ Ejemplos:
             target_lines = product_lines.filtered(
                 lambda l: l.product_id in products or l.product_id.product_tmpl_id in target_templates
             )
-            return sum(target_lines.mapped('price_subtotal'))
+            # Tener en cuenta excepciones de precio por producto (irg.discount.exception).
+            exceptions = self.env['irg.discount.exception']
+            total = 0.0
+            for l in target_lines:
+                # Buscar excepción activa para el producto
+                exc = exceptions.get_active_for_product(l.product_id)
+                if exc:
+                    total += float(exc.price_exception) * float(l.product_uom_qty)
+                else:
+                    total += float(l.price_subtotal)
+            return total
+
+        # Calcular monto de oficialidad entre las líneas objetivo si hay productos marcados
+        oficialidad_amount = 0.0
+        if self.oficiality_product_ids:
+            of_lines = product_lines.filtered(lambda l: l.product_id in self.oficiality_product_ids)
+            for l in of_lines:
+                exc = self.env['irg.discount.exception'].get_active_for_product(l.product_id)
+                if exc:
+                    oficialidad_amount += float(exc.price_exception) * float(l.product_uom_qty)
+                else:
+                    oficialidad_amount += float(l.price_subtotal)
 
         target_products = self.env['product.product']
         if self._table_exists('irg_discount_program_product_rel'):
@@ -240,6 +274,8 @@ Ejemplos:
             'qty_total': qty_total,
             'line_count': line_count,
             'product_amount': product_amount,
+            'oficialidad_amount': oficialidad_amount,
+            'product_amount_excl_oficialidad': max(0.0, product_amount - oficialidad_amount),
             'product_1_amount': product_1_amount,
             'product_2_amount': product_2_amount,
             'products_diff_amount': products_diff_amount,
@@ -255,6 +291,14 @@ Ejemplos:
         self.ensure_one()
 
         safe_vars = self._get_formula_context(order)
+
+        # Si el programa indica excluir oficialidad, forzamos que la variable
+        # `product_amount` represente la parte excluyendo oficialidad. De este modo
+        # las fórmulas estándares como `product_amount * 0.10` aplicarán el descuento
+        # únicamente sobre la porción no oficialidad.
+        if getattr(self, 'exclude_oficiality', False):
+            safe_vars['product_amount'] = safe_vars.get('product_amount_excl_oficialidad', 0.0)
+            safe_vars['applied_exclude_oficiality'] = True
         _logger.info(
             "IRG Discount debug [%s]: order=%s amount_untaxed=%s amount_total=%s qty_total=%s line_count=%s product_amount=%s product_1_amount=%s product_2_amount=%s products_diff_amount=%s formula=%s",
             self.code,

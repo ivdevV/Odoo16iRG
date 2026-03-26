@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Extend the gradebook student form to add the certificate button and stat button -->
+        <record id="view_app_gradebook_student_form_cert" model="ir.ui.view">
+            <field name="name">app.gradebook.student.form.irg.certificates</field>
+            <field name="model">app.gradebook.student</field>
+            <field name="inherit_id" ref="isep_gradebook.app_gradebook_student_form"/>
+            <field name="arch" type="xml">
+
+                <!-- 1. Add "Generar Certificado" button in header -->
+                <xpath expr="//button[@name='state_to_done']" position="after">
+                    <button name="action_open_certificate_wizard"
+                            string="Generar Certificado"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-file-text-o"
+                            attrs="{'invisible': [('state', '!=', 'done')]}"/>
+                </xpath>
+
+                <!-- 2. Add stat button box before oe_title -->
+                <xpath expr="//sheet/div[hasclass('oe_title')]" position="before">
+                    <div name="certificate_button_box" class="oe_button_box">
+                        <button name="action_view_certificates"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                attrs="{'invisible': [('certificate_count', '=', 0)]}">
+                            <field name="certificate_count"
+                                   widget="statinfo"
+                                   string="Certificados"/>
+                        </button>
+                    </div>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

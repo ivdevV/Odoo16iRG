@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_subscription_adjustment_user,irg.subscription.adjustment.user,model_irg_subscription_adjustment,base.group_user,1,1,1,0
+access_irg_subscription_adjustment_line_user,irg.subscription.adjustment.line.user,model_irg_subscription_adjustment_line,base.group_user,1,1,1,0
+access_irg_subscription_stripe_event_user,irg.subscription.stripe.event.user,model_irg_subscription_stripe_event,base.group_user,1,0,1,0

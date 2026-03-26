@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!--
+            Override the inline form that opens when clicking an admission row
+            in the "Educativo" tab of the op.student form view.
+
+            Priority 24 ensures this runs after isep_student_filter (priority 16)
+            has already added the op_admission_ids field to the student view.
+        -->
+        <record id="view_op_student_admission_editable" model="ir.ui.view">
+            <field name="name">view.op.student.admission.editable</field>
+            <field name="model">op.student</field>
+            <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+            <field name="priority" eval="24"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='op_admission_ids']/form" position="replace">
+                    <form string="Detalle de admisión">
+                        <group>
+                            <group>
+                                <field name="admission_date"/>
+                                <field name="application_number" string="Matrícula" readonly="1"/>
+                                <field name="course_id" options="{'no_create': True}"/>
+                            </group>
+                            <group>
+                                <field name="batch_id" options="{'no_create': True}"
+                                       context="{'course_id': course_id, 'get_parent_batch': 1}"/>
+                                <field name="due_date"/>
+                                <field name="state" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <separator string="Asignaturas"/>
+                        <field name="gradebook_subject_ids" readonly="1" nolabel="1">
+                            <tree string="Asignaturas" create="0" edit="0" delete="0">
+                                <field name="name" string="Asignatura"/>
+                                <field name="point_average_assignment" string="AVG Asignaciones"/>
+                                <field name="point_average_exam" string="AVG Exámenes"/>
+                                <field name="point_average_interaction" string="AVG Interacciones"/>
+                                <field name="point_average_foro" string="AVG Foro"/>
+                                <field name="final_subject_note" string="Calificación final"/>
+                            </tree>
+                        </field>
+                    </form>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

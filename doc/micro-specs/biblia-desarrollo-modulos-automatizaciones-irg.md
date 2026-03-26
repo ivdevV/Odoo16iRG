@@ -1,0 +1,592 @@
+# Biblia IRG de Modulos y Automatizaciones (Odoo 16)
+
+Version: 2026-03-23
+Ambito: Desarrollo, mantenimiento, hotfix y evolucion de modulos `irg_`.
+Audiencia: Desarrolladores y agentes (Copilot/LLM) que trabajan en este repo.
+
+---
+
+## 1. Objetivo de esta guia
+
+Este documento unifica como crear, modificar y operar modulos y automatizaciones en este proyecto, usando la experiencia acumulada en micro-specs, incidentes y fixes reales.
+
+Objetivos concretos:
+- Reducir regresiones por cambios de rutas, vistas heredadas y automatizaciones.
+- Estandarizar decisiones tecnicas para que dos personas/agentes implementen de forma consistente.
+- Acelerar troubleshooting con runbooks listos para usar.
+- Mantener cumplimiento estricto de [SPECIFICATIONS.md](../../SPECIFICATIONS.md).
+
+---
+
+## 2. Reglas no negociables (fuente de verdad)
+
+Basado en [SPECIFICATIONS.md](../../SPECIFICATIONS.md):
+
+1. Todo cambio funcional se hace en modulo extra bajo `addons-extra/extrairg/`.
+2. El modulo debe empezar por `irg_`.
+3. Nunca editar core de Odoo ni modulos nativos para meter fixes directos.
+4. Cada cambio debe tener micro-spec en `doc/micro-specs/`.
+5. Manifest en version `16.0.x.x` y `depends` explicitos.
+6. Se debe entregar changelog corto y claro.
+7. Para logica critica: tests obligatorios.
+8. Seguridad: revisar ACL/rules y justificar cualquier `sudo()`.
+9. Despliegue: push dispara Jenkins, no asumir reinicio manual salvo excepcion operativa.
+
+---
+
+## 3. Mapa operativo del ecosistema IRG
+
+### 3.1 Dominios y modulos principales
+
+- Website/Checkout:
+  - `irg_website_checkout_fixes`
+  - `irg_website_sale_monthly_price`
+  - `irg_website_sale_monthly_default_combo`
+  - `irg_checkout_financing_sign_sync`
+
+- Pagos/Suscripciones:
+  - `irg_payment_stripe_recurring`
+  - `irg_sale_subscription_esp`
+  - `irg_subscription_esp_single_invoice`
+  - `irg_custom_discount`
+
+- Forum/Web editor hardening:
+  - `irg_forum_web_editor_save_guard`
+  - `irg_web_editor_fix`
+  - `irg_forum_email_notify`
+  - `irg_forum_batch_visibility`
+
+- Academico/OpenEduCat/Survey/Quiz:
+  - `irg_quiz_auto_scoring`
+  - `irg_survey_regrade_attempts`
+  - `irg_exam_score_100`
+  - `irg_timetable_*`
+  - `irg_op_*`
+
+- Operacion/Cron guards:
+  - `irg_isep_cron_update_guard`
+
+### 3.2 Donde mirar segun problema
+
+- Cuotas/precio mensual en `/shop`:
+  - `addons-extra/extrairg/irg_website_sale_monthly_price/`
+  - `addons-extra/extrairg/irg_website_sale_monthly_default_combo/`
+  - `addons-extra/extrairg/irg_sale_subscription_esp/`
+
+- Firma + sincronizacion checkout:
+  - `addons-extra/extrairg/irg_checkout_financing_sign_sync/`
+
+- Incidencias Stripe recurrente:
+  - `addons-extra/extrairg/irg_payment_stripe_recurring/`
+
+- Errores de editor/forum (500 al guardar HTML):
+  - `addons-extra/extrairg/irg_forum_web_editor_save_guard/`
+  - `addons-extra/extrairg/irg_web_editor_fix/`
+
+- Bloqueos por cron durante updates:
+  - `addons-extra/extrairg/irg_isep_cron_update_guard/`
+
+---
+
+## 4. Flujo canonico para crear modulo nuevo
+
+### Paso 1: Abrir micro-spec
+
+Crear archivo en `doc/micro-specs/` con formato fecha + nombre, por ejemplo:
+- `doc/micro-specs/2026-03-23-irg_ejemplo.md`
+
+Debe incluir los 10 puntos definidos en [SPECIFICATIONS.md](../../SPECIFICATIONS.md).
+
+### Paso 2: Scaffolding minimo
+
+Estructura esperada:
+
+```text
+addons-extra/extrairg/irg_modulo_nuevo/
+  __init__.py
+  __manifest__.py
+  models/
+  views/
+  security/
+  static/
+  tests/
+```
+
+Notas:
+- No crear carpetas innecesarias si no se usan.
+- Si hay modelo nuevo, incluir `security/ir.model.access.csv` desde el inicio.
+
+### Paso 3: Implementar por herencia (no core)
+
+- Python: `_inherit` + `super()`.
+- XML: `inherit_id` + `xpath` robusto.
+- JS/OWL: patch acotado y defensivo.
+
+### Paso 4: Tests minimos
+
+- Unit test de logica critica.
+- Al menos un test de no-regresion del bug que motivó el cambio.
+
+### Paso 5: Changelog + validacion
+
+- Changelog corto.
+- Revisar `depends`, version y rutas.
+
+---
+
+## 5. Flujo canonico para modificar modulo existente
+
+### 5.1 Analisis previo obligatorio
+
+Antes de tocar codigo:
+1. Identificar modulo owner del feature.
+2. Confirmar orden de herencia y prioridades (XML/manifest/dependencies).
+3. Revisar si existe otro override del mismo metodo/template.
+4. Verificar impacto colateral en checkout, cron y pricing.
+
+### 5.2 Regla de compatibilidad
+
+- Mantener API publica y firmas salvo necesidad fuerte.
+- Cambios pequeños y localizados.
+- Fallbacks explicitos para datos incompletos.
+
+### 5.3 Regla de pruebas en fixes
+
+Cada fix debe tener:
+- Caso que falla antes.
+- Caso que pasa despues.
+- Escenario de fallback.
+
+---
+
+## 6. Automatizaciones: patron estandar
+
+### 6.1 Tipos de automatizacion en este repo
+
+1. Cron jobs (`ir.cron`)
+2. Hooks de modelo (`create/write/action_*`)
+3. Webhooks/callbacks de pago
+4. Scripts de import/export
+5. JS frontend que altera defaults/combinaciones
+
+### 6.2 Reglas de diseno para automatizaciones
+
+- Idempotencia: correr 2 veces no debe duplicar ni romper.
+- Trazabilidad: log suficiente para auditar.
+- Guardas: cortar ejecucion en condiciones de riesgo.
+- Timeouts y volumen: no bloquear workers con loops pesados sin paginacion.
+- Rollback funcional: tener modo desactivar/desinstalar/revertir.
+
+### 6.3 Cron safe pattern
+
+Aplicar patron de `irg_isep_cron_update_guard`:
+- Antes de ejecutar logica pesada, verificar si hay modulos en `to install`, `to upgrade`, `to remove`.
+- Si si: early return + log informativo.
+
+---
+
+## 7. Fragilidad de paths y como blindarse
+
+La mayor fuente de regresion en este repo es fragilidad de rutas/selectores/herencias.
+
+### 7.1 XML/QWeb/XPath
+
+Riesgos:
+- XPath demasiado especifico (rompe con cambios menores upstream).
+- Herencias en conflicto por prioridad.
+
+Mitigaciones:
+- Preferir anclas semanticas (`hasclass`, ids estables, bloques nombrados).
+- Evitar xpaths largos por posicion.
+- Documentar `inherit_id` y por que ese anchor.
+- Validar colision con otros modulos que heredan la misma vista.
+
+### 7.2 Python override chain
+
+Riesgos:
+- Multiples modulos override del mismo metodo.
+- Orden MRO inesperado por `depends`.
+
+Mitigaciones:
+- Revisar todos los `_inherit` y `super()` de ese metodo antes de cambiar.
+- Añadir comentario tecnico cuando haya fallback sensible.
+- Evitar devolver estructuras distintas a las esperadas por upstream.
+
+### 7.3 JS/frontend assets
+
+Riesgos:
+- Load order de assets.
+- Selectores CSS/DOM fragiles.
+
+Mitigaciones:
+- Parches defensivos (null checks y feature detection).
+- Clases de enganche propias (`irg-*`) cuando sea posible.
+- Probar en `/shop`, `/shop/cart`, `/shop/address`, `/shop/payment` segun alcance.
+
+### 7.4 Infra path/entorno
+
+Riesgos:
+- Comandos DB en host cuando binarios viven en contenedor.
+- Usuario/rol DB incorrecto.
+
+Mitigaciones:
+- Operar `pg_dump/psql` dentro de contenedor PostgreSQL.
+- Verificar rol real (`odoo` u otro) antes de dump/query.
+- Confirmar tamano real del backup y no solo existencia de archivo.
+
+---
+
+## 8. Catalogo de fallos recurrentes y solucion estandar
+
+### Caso A: Cuotas inconsistentes entre ficha y buscador
+
+Sintoma:
+- En buscador de `/shop` una cuota aparece distinta o como precio total.
+
+Patron de solucion:
+1. Revisar `_search_render_results_prices` y origen de `combination_info`.
+2. Priorizar `min_installment_price/min_installment_months` para busqueda cuando la combinacion default sea contado.
+3. Mantener fallback al comportamiento anterior.
+
+Referencia:
+- `irg_website_sale_monthly_price`
+- `irg_website_sale_monthly_default_combo`
+
+### Caso B: Placeholders `{}` en checkout
+
+Sintoma:
+- Textos de cuotas muestran `{}` literal.
+
+Patron de solucion:
+1. Heredar template correcto de cart summary.
+2. Reemplazar placeholders por `t-esc` con variable real.
+3. Validar flujo anonimo y logueado.
+
+Referencia:
+- `irg_website_checkout_fixes`
+- `irg_sale_subscription_esp`
+
+### Caso C: 500 al guardar contenido de forum/editor
+
+Sintoma:
+- Error interno al guardar post o contenido HTML.
+
+Patron de solucion:
+1. Sanitizar HTML en create/write.
+2. Fallback seguro para contenido invalido.
+3. Parchar JS editor en modo defensivo si el fallo es client-side.
+
+Referencia:
+- `irg_forum_web_editor_save_guard`
+- `irg_web_editor_fix`
+
+### Caso D: Perdida de +521 en telefonos MX
+
+Sintoma:
+- Odoo normaliza y elimina el `1` en `+521...`.
+
+Patron de solucion:
+1. Override controlado de `_phone_format` en `res.partner`.
+2. Evitar reformateo UI agresivo cuando corresponda.
+3. Testear numeros no MX para no romper global.
+
+Referencia:
+- `irg_phone_prefix_fix`
+
+### Caso E: Update bloqueado por procesos concurrentes
+
+Sintoma:
+- Upgrade/instalacion se bloquea o tarda por cron en paralelo.
+
+Patron de solucion:
+1. Aplicar guard antes de cron pesado.
+2. Exponer indicador visual de proceso bloqueante si aplica.
+3. Reintentar update en ventana limpia.
+
+Referencia:
+- `irg_isep_cron_update_guard`
+- `irg_blocking_process_topbar_indicator`
+
+---
+
+## 9. Testing matrix por tipo de cambio
+
+### 9.1 Cambios en pricing/checkout
+
+Minimo:
+- Caso anonimo + logueado.
+- `/shop` listado, ficha, carrito, address, payment.
+- Confirmar consistencia de cuota y total.
+
+### 9.2 Cambios en automatizacion/cron
+
+Minimo:
+- Idempotencia (segunda corrida).
+- Ejecucion con y sin condicion de guarda.
+- Verificar logs y estado final.
+
+### 9.3 Cambios en formularios/editor
+
+Minimo:
+- Guardado de contenido valido.
+- Guardado de contenido malformado (no 500).
+- Render posterior correcto.
+
+### 9.4 Cambios de datos/importacion
+
+Minimo:
+- Preview antes de importar.
+- Backup comprobado.
+- Conteo antes/despues.
+- Rollback claro.
+
+---
+
+## 10. Runbooks operativos
+
+### Runbook 1: Diagnostico rapido de 500 en Odoo Docker
+
+1. Ver estado contenedores.
+2. Revisar logs recientes de Odoo y Postgres.
+3. Verificar espacio en disco host/contenedores.
+4. Buscar `Traceback|ERROR|Exception`.
+5. Si procede, reiniciar servicio segun politica operativa.
+
+### Runbook 2: Backup DB seguro en Docker
+
+1. Ejecutar dump dentro del contenedor PostgreSQL.
+2. Usar rol DB correcto (confirmar antes).
+3. Copiar al host y validar tamano > 0.
+4. Guardar nombre con fecha/hora.
+
+### Runbook 3: Importacion segura de excepciones/precios
+
+1. Backup validado.
+2. Generar preview de mapeos.
+3. Importar en staging.
+4. Verificar muestra en UI y en DB.
+5. Solo entonces promover a produccion.
+
+### Runbook 4: Hotfix web pricing
+
+1. Localizar cadena de overrides (`_get_combination_info`, `_search_render_results_prices`, templates).
+2. Aplicar fix minimo con fallback.
+3. Testear ficha/listado/buscador.
+4. Documentar micro-spec + changelog.
+
+---
+
+## 11. Plantillas reutilizables
+
+### 11.1 Plantilla de micro-spec (resumen rapido)
+
+1. Titulo corto
+2. Resumen objetivo
+3. Motivo
+4. Alcance exacto
+5. Diseno tecnico
+6. Dependencias
+7. Compatibilidad/migracion
+8. Casos de prueba
+9. Rollback
+10. Estimacion y responsable
+
+### 11.2 Plantilla de changelog corto
+
+- Fecha
+- Modulo
+- Problema observado
+- Solucion aplicada
+- Impacto
+- Riesgo residual
+- Validaciones realizadas
+
+### 11.3 Plantilla de PR checklist
+
+- [ ] Micro-spec creada/aprobada
+- [ ] No hay cambios en core
+- [ ] `depends` y version correctos
+- [ ] Tests agregados/ejecutados
+- [ ] ACL incluidas (si aplica)
+- [ ] Rollback definido
+- [ ] Changelog incluido
+
+---
+
+## 12. Comandos base de referencia
+
+### Actualizar modulo en Odoo
+
+```bash
+python3 odoo-bin -c /etc/odoo/odoo.conf -d <DB> -u <modulo_irg> --stop-after-init
+```
+
+### Actualizar multiples modulos
+
+```bash
+python3 odoo-bin -c /etc/odoo/odoo.conf -d <DB> -u modulo_a,modulo_b --stop-after-init
+```
+
+### Commit convencional
+
+```bash
+git add -A
+git commit -m "irg: descripcion corta del fix"
+git push
+```
+
+Nota: en este repo, el push dispara pipeline Jenkins de despliegue.
+
+---
+
+## 13. Politica de mantenimiento de esta guia
+
+- Owner sugerido: equipo IRG (dev lead + 1 backup).
+- Actualizacion obligatoria cuando:
+  1. se crea un nuevo patron de automatizacion,
+  2. aparece un incidente critico nuevo,
+  3. cambia una regla de SPECIFICATIONS.
+- Frecuencia recomendada: al cierre de cada bloque de cambios relevante.
+
+---
+
+## 14. Referencias cruzadas (micro-specs clave)
+
+- [2026-02-12-irg-stripe-recurring-hardening.md](2026-02-12-irg-stripe-recurring-hardening.md)
+- [2026-02-12-checklist-staging-stripe-checkout-sign.md](2026-02-12-checklist-staging-stripe-checkout-sign.md)
+- [2026-03-13-irg_website_sale_monthly_default_combo.md](2026-03-13-irg_website_sale_monthly_default_combo.md)
+- [2026-03-16-irg_website_checkout_fixes.md](2026-03-16-irg_website_checkout_fixes.md)
+- [2026-03-20-irg_phone_prefix_fix_mx521.md](2026-03-20-irg_phone_prefix_fix_mx521.md)
+- [2026-03-03-irg_isep_cron_update_guard.md](2026-03-03-irg_isep_cron_update_guard.md)
+- [2026-03-13-irg-forum-web-editor-save-guard.md](2026-03-13-irg-forum-web-editor-save-guard.md)
+- [2026-03-13-irg-web-editor-fix.md](2026-03-13-irg-web-editor-fix.md)
+
+---
+
+## 15. Cierre
+
+Si una solucion propuesta no puede explicarse con este marco (reglas, ownership, pruebas, rollback), no esta lista para desplegarse.
+
+Primero consistencia y trazabilidad; despues velocidad.
+
+---
+
+## 16. Hallazgos recientes (2026-03-24)
+
+- **Visibilidad de forum en batches:** consultas sin `sudo()` y sin considerar relaciones `op_batch_ids`/`op.admission` pueden ocultar foros a usuarios portal. Fix aplicado: usar `sudo()` en el controlador y unir visibilidad por lote.
+- **Firma en prematrícula (posicionamiento):** se sincronizaron constantes canónicas y la creación de `sign.item` en `sale_order`. Valores finales tunados: `posX = 0.21`; `posY` página 1 = `0.730`, página 3 = `0.420`. Runbook: validar en staging y ajustar ±0.01 si es necesario.
+- **Cuota en buscador/auto-complete:** causa raíz: recomputado de cuota que ignoraba `combination_info['min_installment_price']`. Fix: priorizar `min_installment_price/min_installment_months` en `_search_render_results_prices` y usar el helper de plantilla como fallback; evita resultados erróneos (p.ej. 300€/19 meses).
+- **UX checkout (inputs):** añadido `form-visibility.css` y registrado en assets para mejorar contraste/legibilidad de campos en checkout sin cambiar comportamiento funcional.
+- **Operativa Git y despliegue:** algunas pushes fueron rechazadas por remoto adelantado; se resolvió con `git pull --rebase` y push final a `Dev_iRG`. Nota: actualizar módulos en staging: `-u irg_sign_position_fix,irg_website_sale_monthly_price,irg_website_sale_monthly_default_combo` y generar la prematrícula para validar.
+- **Pruebas y runbook:** añadir a la matriz de pruebas la verificación de paridad cuota (ficha ↔ buscador) y validación visual de la prematrícula (páginas 1 y 3) tras cada ajuste de posición.
+
+---
+
+## 17. Incidente: KeyError en bus / greenlets (gevent/threading)
+
+Fecha: 2026-03-24
+
+Sintoma observado (extracto de logs):
+- Mensajes repetidos tipo:
+  - "KeyError: <ImDispatch(odoo.addons.bus.models.bus.Bus, stopped daemon ...)>"
+  - Greenlet failed with KeyError
+  - DeprecationWarning sobre `swigvarlink` en stdout
+
+Diagnóstico rápido (causa probable):
+- El error aparece en la reconciliación entre `gevent` (greenlets) y el módulo `threading` de Python: se intenta eliminar una entrada de `_limbo` que ya no existe, lo que suele indicar una condición de carrera o que un hilo/greenlet fue creado/terminado fuera del ciclo de vida esperado (p. ej. hilos nativos creados por una librería C o threads no 'monkeypatched' por gevent).
+- Frecuente tras desplegar código que crea hilos/daemons (timers, workers locales, conexiones nativas) o cuando las dependencias de gevent/c-extensions (SWIG/Cython) tienen incompatibilidades.
+
+Impacto inmediato:
+- Mensajes de error en logs del contenedor Odoo; posible inestabilidad del bus (notificaciones en tiempo real) y fugas de greenlets/threads si no se corrige.
+
+Pasos de mitigación rápida (runbook):
+1. Reiniciar el servicio Odoo (o el contenedor `odoo_latest`) para limpiar threads/greenlets en memoria:
+
+```bash
+docker restart odoo_latest
+```
+
+2. Revisar módulos desplegados recientemente que creen hilos/daemons (p. ej. servicios de traducción, workers asíncronos). Si hubo un deploy/rollback reciente, revertir los cambios que introdujeron threads nativos.
+
+3. Comprobar versiones de `gevent`, `greenlet` y cualquier extensión nativa (libxml/swig) en el entorno Python. Actualizar a versiones compatibles con Python 3.9 y Odoo 16 si es necesario.
+
+4. Si el problema persiste, aplicar captura de stack y reiniciar en modo debug para trazar la creación de threads y greenlets:
+
+```bash
+# dentro del contenedor
+python3 - <<'PY'
+import threading, sys
+print('Python threads:', threading.enumerate())
+PY
+```
+
+5. Revisar módulos que llaman a `threading.Thread(...)` o C-libraries que inician hilos sin coordinación con gevent. Replace por `gevent.spawn` / utilizar `gevent.monkey.patch_all()` lo antes posible durante el arranque si la app requiere gevent-cooperative threading.
+
+Prevención y buenas prácticas (para evitar regresiones):
+- Evitar en módulos Odoo crear hilos nativos directamente; preferir cron jobs (`ir.cron`), colas (RQ/Celery) o `gevent.spawn` si el entorno usa gevent.
+- Documentar cualquier uso de threads en el módulo (porqué, cleanup, `stop()`/join en `uninstall`).
+- Añadir en la checklist de PRs: "¿Este cambio crea hilos/daemons o depende de librerías nativas?" Si la respuesta es sí, exigir revisión de ingeniería y un plan de cleanup.
+- Añadir pruebas de carga/soak en staging que ejecuten el bus y simulen usuarios concurrentes para detectar fugas de threads antes de promover a Dev/Prod.
+
+Acciones tomadas en este incidente:
+- Se revirtió el despliegue que introdujo módulos nuevos (`irg_auto_translate`, `irg_language_nav`) que añadían workers/hilos; se confirmó push revertido a `Dev_iRG` para eliminar la causa probable.
+- Se añadió esta entrada en la Biblia y se recomendó el runbook de reinicio y verificación de dependencias.
+
+Indicadores de éxito:
+- Ausencia de los KeyError en los logs durante 24–48h tras el reinicio.
+- Bus opera con normalidad (notificaciones y longpolling funcionantes).
+
+
+---
+
+## 18. Prevención: checklist para evitar errores en installs/upgrades
+
+Resumen: muchos problemas reproducibles en despliegues provienen de dos clases
+de errores frecuentes: (A) creación duplicada de `ir.config_parameter` vía
+XML/data y (B) uso de hilos nativos o librerías que no respetan gevent en Odoo 16.
+
+Reglas concretas:
+- **No crear `ir.config_parameter` mediante `data/*.xml`** salvo excepciones
+  muy justificadas. En su lugar, inicializar parámetros en `post_init_hook`
+  usando `ir.config_parameter` y `set_param()` comprobando existencia previo.
+  Ejemplo seguro en `post_init_hook`:
+
+  ```py
+  cfg = env['ir.config_parameter'].sudo()
+  if cfg.get_param('mi.modulo.param', default=None) is None:
+      cfg.set_param('mi.modulo.param', 'valor_por_defecto')
+  ```
+
+- **Si se usan `data/*.xml` para parámetros, marcarlos `noupdate="1"`
+  y documentar la razón en el micro-spec.** Pero preferir el patrón del hook
+  para evitar `UniqueViolation` en upgrades.
+
+- **Nunca crear `threading.Thread`, `concurrent.futures` o `asyncio` tasks
+  sin justificar en Odoo 16.** Si se requiere concurrencia:
+  - Usar `ir.cron` para tareas periódicas (batch paginado).
+  - Usar `gevent.spawn` *sólo* si el entorno y dependencias lo permiten,
+    y documentar el comportamiento y cleanup en `uninstall()`.
+
+- **Documentar en el micro-spec** cualquier comportamiento fuera de lo común:
+  - Lista de `ir.config_parameter` creados/modificados
+  - Necesidad real de hilos/daemons y plan de cleanup
+  - Volumen estimado y límites (batch size, timeouts)
+
+Pull request checklist (obligatorio para PRs que tocan `data/` o añaden
+threads/workers):
+- [ ] ¿Este cambio crea/edita `ir.config_parameter`? Si sí, usar `post_init_hook`.
+- [ ] ¿Se añaden hilos/daemons? Si sí, justificar y documentar cleanup.
+- [ ] ¿Se probó `-u module` en staging tras rebase y reinicio del contenedor?
+- [ ] ¿Se agregó log y guardas para evitar ejecuciones durante upgrades?
+
+Acciones rápidas al detectar un error en staging/CI:
+- Reiniciar contenedor Odoo y revisar logs (KeyError en `ImDispatch` es signo
+  típico de mezcla de threads nativos con gevent).
+- Si el error aparece en `load_data` (`ParseError` por `ir.config_parameter`),
+  revertir el `data/*.xml` que crea claves y aplicar la inicialización desde
+  `post_init_hook` antes de reintentar la actualización.
+
+Incluir esto en la Biblia ayuda a que los desarrolladores y revisores tengan
+una regla clara para evitar regresiones críticas en despliegues.
+
+

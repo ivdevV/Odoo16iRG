@@ -5,3 +5,5 @@ access_irg_discount_table_manager,irg.discount.table.manager,model_irg_discount_
 access_irg_discount_table_user,irg.discount.table.user,model_irg_discount_table,sales_team.group_sale_salesman,1,0,0,0
 access_irg_discount_table_line_manager,irg.discount.table.line.manager,model_irg_discount_table_line,sales_team.group_sale_manager,1,1,1,1
 access_irg_discount_table_line_user,irg.discount.table.line.user,model_irg_discount_table_line,sales_team.group_sale_salesman,1,0,0,0
+access_irg_discount_exception_manager,irg.discount.exception.manager,model_irg_discount_exception,sales_team.group_sale_manager,1,1,1,1
+access_irg_discount_exception_user,irg.discount.exception.user,model_irg_discount_exception,sales_team.group_sale_salesman,1,0,0,0

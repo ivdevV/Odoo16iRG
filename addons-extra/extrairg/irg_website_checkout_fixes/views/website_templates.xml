@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Fix label text for invoice name field -->
+        <template id="checkout_address_label_fix" inherit_id="website_sale.address">
+            <xpath expr="//label[@for='company_name']" position="replace">
+                <label class="col-form-label" for="company_name">Nombre en la Factura</label>
+            </xpath>
+        </template>
+    </data>
+</odoo>

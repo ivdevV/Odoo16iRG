@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_template_extra_info_placeholder">
+        <!-- placeholder extra_info template -->
+    </template>
+</odoo>

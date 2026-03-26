@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Fix 1: Rellenar "{}" en "Cuotas restantes ({}):" -->
+        <!-- Busca el template que contiene esta cadena y reemplaza {} con valor real -->
+        <template id="website_checkout_summary_cuotas_fix" 
+                  inherit_id="website_sale.cart_summary">
+            <!-- Reemplazar "Cuotas restantes ({})" por versión con valor dinámico -->
+            <xpath expr="//t[contains(text(), 'Cuotas restantes')]" position="replace">
+                <t t-if="sale_order and sale_order.subscription_count">
+                    <span t-esc="'Cuotas restantes (' + str(sale_order.subscription_count - 1) + '):'"/>
+                </t>
+            </xpath>
+
+            <!-- Reemplazar "Total en {} cuotas" por versión con valor dinámico -->
+            <xpath expr="//t[contains(text(), 'Total en') and contains(text(), 'cuotas')]" position="replace">
+                <t t-if="sale_order and sale_order.subscription_count">
+                    <span t-esc="'Total en ' + str(sale_order.subscription_count) + ' cuotas:'"/>
+                </t>
+            </xpath>
+        </template>
+
+        <!-- Fix 2: Cambiar label "Nombre de quíén factura" a "Nombre en la Factura" -->
+        <template id="website_checkout_invoice_name_label_fix" 
+                  inherit_id="website_sale.shop_address">
+            <xpath expr="//label[@for='invoice_name']" position="replace">
+                <label for="invoice_name" class="form-label">Nombre en la Factura</label>
+            </xpath>
+        </template>
+
+        <!-- Fix 3: CSS para inputs blancos (parte 1: inline en template) -->
+        <template id="website_checkout_form_style_fix" 
+                  inherit_id="website_sale.shop_address">
+            <!-- Añadir clase CSS personalizada a inputs del checkout -->
+            <xpath expr="//form[@id='address_form']" position="attributes">
+                <attribute name="class" add="irg-checkout-form"/>
+            </xpath>
+        </template>
+    </data>
+</odoo>

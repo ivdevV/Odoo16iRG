@@ -1,0 +1,31 @@
+/* Checkout form fields styling - white background with readable text */
+
+.o_website_sale .o_checkout_flow .form-control,
+.o_website_sale .o_checkout_flow input,
+.o_website_sale .o_checkout_flow textarea,
+.o_website_sale .o_checkout_flow select {
+    background-color: #ffffff !important;
+    color: #222222 !important;
+    border: 1px solid #dcdcdc !important;
+}
+.oe_website_sale .o_checkout select:focus {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+/* Labels más visibles */
+.oe_website_sale .o_checkout label {
+    color: #333333 !important;
+    font-weight: 500;
+}
+
+/* Forma del checkout con clase personalizada */
+.irg-checkout-form .form-control,
+.irg-checkout-form input,
+.irg-checkout-form textarea,
+.irg-checkout-form select {
+    background-color: #ffffff !important;
+    color: #222222 !important;
+}

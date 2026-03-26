@@ -37,8 +37,58 @@ def _non_plan_ptav_ids(product):
         lambda ptav: (ptav.attribute_id.name or '').strip().lower() != 'planes'
     ).ids)
 
+
+def _variant_installment(pricelist, variant):
+    months = _get_plan_months(variant)
+    if months <= 0:
+        return 0.0, months
+    price = pricelist._get_product_price(variant, 1.0) if pricelist else variant.lst_price
+    if not price or price <= 0:
+        return 0.0, months
+    return (price / months), months
+
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
+
+    def _isep_get_selected_installment_data(self, selected_product, pricelist=False):
+        """Return selected installment and a monotonic-capped installment.
+
+        For the same non-plan attributes (modality, campus, etc.), enforce that
+        a longer plan does not display a higher monthly installment than a shorter
+        one. This only affects display and keeps pricing monotonic for users.
+        """
+        self.ensure_one()
+        if not selected_product:
+            return 0.0, 0.0, 1
+
+        current_pricelist = pricelist
+        if not current_pricelist:
+            pricelist_id = self.env.context.get('pricelist')
+            if pricelist_id:
+                current_pricelist = self.env['product.pricelist'].browse(pricelist_id)
+        if not current_pricelist:
+            current_pricelist = self.env['website'].get_current_website().pricelist_id
+
+        selected_installment, selected_months = _variant_installment(current_pricelist, selected_product)
+        if not selected_installment or selected_months <= 1:
+            return selected_installment, selected_installment, selected_months or 1
+
+        scoped_non_plan_ids = _non_plan_ptav_ids(selected_product)
+        scoped_variants = self.product_variant_ids.filtered(
+            lambda variant: _non_plan_ptav_ids(variant) == scoped_non_plan_ids
+        )
+
+        shorter_installments = []
+        for variant in scoped_variants:
+            installment, months = _variant_installment(current_pricelist, variant)
+            if installment > 0 and 0 < months < selected_months:
+                shorter_installments.append(installment)
+
+        capped_installment = selected_installment
+        if shorter_installments:
+            capped_installment = min(selected_installment, min(shorter_installments))
+
+        return selected_installment, capped_installment, selected_months
 
     def _isep_get_min_installment_data(self, pricelist=False, scoped_non_plan_ids=None):
         self.ensure_one()
@@ -124,6 +174,15 @@ class ProductTemplate(models.Model):
                 combination_info['min_installment_price'] = scoped_min_installment_price
                 combination_info['min_installment_months'] = scoped_min_installment_months
 
+        selected_installment, capped_installment, capped_months = self._isep_get_selected_installment_data(
+            selected_product,
+            pricelist=current_pricelist,
+        )
+        if capped_installment and capped_months > 1:
+            combination_info['selected_installment_price'] = selected_installment
+            combination_info['display_installment_price'] = capped_installment
+            combination_info['display_installment_months'] = capped_months
+
         _logger.info(
             "ISEP Monthly Price Debug: Product=%s selected_months=%s selected_price=%s min_installment=%s min_months=%s",
             combination_info.get('product_id'),
@@ -202,6 +261,15 @@ class ProductProduct(models.Model):
             if min_installment_price is not False:
                 combination_info['min_installment_price'] = min_installment_price
                 combination_info['min_installment_months'] = min_installment_months
+
+            selected_installment, capped_installment, capped_months = self.product_tmpl_id._isep_get_selected_installment_data(
+                product,
+                pricelist=current_pricelist,
+            )
+            if capped_installment and capped_months > 1:
+                combination_info['selected_installment_price'] = selected_installment
+                combination_info['display_installment_price'] = capped_installment
+                combination_info['display_installment_months'] = capped_months
 
         else:
             months = 1

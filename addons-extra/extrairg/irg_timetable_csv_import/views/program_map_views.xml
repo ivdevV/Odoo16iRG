@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ── Tree ── -->
+        <record id="view_irg_program_map_tree" model="ir.ui.view">
+            <field name="name">irg.timetable.program.map.tree</field>
+            <field name="model">irg.timetable.program.map</field>
+            <field name="arch" type="xml">
+                <tree string="Mapeos de programas CSV">
+                    <field name="csv_label"/>
+                    <field name="course_id"/>
+                    <field name="batch_id"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ── Form ── -->
+        <record id="view_irg_program_map_form" model="ir.ui.view">
+            <field name="name">irg.timetable.program.map.form</field>
+            <field name="model">irg.timetable.program.map</field>
+            <field name="arch" type="xml">
+                <form string="Mapeo CSV → Curso">
+                    <sheet>
+                        <group>
+                            <field name="csv_label"
+                                   placeholder='ej: "Calendario NC 365"'/>
+                            <field name="course_id"/>
+                            <field name="batch_id"
+                                   attrs="{'invisible': [('course_id','=',False)]}"/>
+                            <field name="active"/>
+                        </group>
+                        <div class="alert alert-info" role="alert">
+                            Si <b>Lote específico</b> queda vacío, las sesiones se crearán
+                            para <b>todos los lotes activos</b> del curso seleccionado.
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- ── Action ── -->
+        <record id="action_irg_program_map" model="ir.actions.act_window">
+            <field name="name">Mapeos CSV → Curso</field>
+            <field name="res_model">irg.timetable.program.map</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>

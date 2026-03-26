@@ -1,0 +1,20 @@
+<odoo>
+    <record id="product_template_view_form_recurring_irg_strategy" model="ir.ui.view">
+        <field name="name">product.template.form.recurring.irg.strategy</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="sale_subscription.product_template_view_form_recurring"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='sales']" position="inside">
+                <group string="IRG Subscription Strategy" attrs="{'invisible': [('recurring_invoice', '=', False)]}">
+                    <group>
+                        <field name="irg_subscription_billing_strategy"/>
+                        <field name="irg_subscription_stripe_mode"/>
+                    </group>
+                    <group>
+                        <field name="irg_payment_link_fallback_enabled"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
