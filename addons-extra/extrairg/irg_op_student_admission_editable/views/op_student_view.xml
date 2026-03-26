@@ -33,6 +33,12 @@
                         </group>
 
                         <separator string="Asignaturas"/>
+                        <!--
+                            Provide both tree AND inline form so Odoo uses our form when
+                            clicking a subject row, bypassing app_gradebook_subject_form.
+                            This inline form has NO readonly restriction on gradebook_result_ids,
+                            so scoring_total is always editable regardless of subject state.
+                        -->
                         <field name="gradebook_subject_ids" nolabel="1">
                             <tree string="Asignaturas" create="0" edit="1" delete="0">
                                 <field name="name" string="Asignatura"/>
@@ -42,6 +48,59 @@
                                 <field name="point_average_foro" string="AVG Foro"/>
                                 <field name="final_subject_note" string="Calificación final"/>
                             </tree>
+                            <form string="Asignatura" create="0" edit="1" delete="0">
+                                <field name="show_exam" invisible="1"/>
+                                <field name="admission_id" invisible="1"/>
+                                <field name="course_id" invisible="1"/>
+                                <field name="gradebook_student_id" invisible="1"/>
+                                <sheet>
+                                    <div class="oe_title">
+                                        <h2><field name="name"/></h2>
+                                    </div>
+                                    <group>
+                                        <group>
+                                            <field name="op_subject_id" required="1"
+                                                   options="{'no_open': True, 'no_create': True}"/>
+                                            <field name="final_subject_note"/>
+                                        </group>
+                                        <group>
+                                            <label for="point_average_exam"
+                                                   attrs="{'invisible': [('show_exam','=', False)]}"/>
+                                            <div class="d-flex"
+                                                 attrs="{'invisible': [('show_exam','=', False)]}">
+                                                <field name="point_average_exam" class="oe_inline mx-3"/>
+                                                <span class="oe_inline o_form_label mx-3">=> </span>
+                                                <field name="info_exam"/>
+                                            </div>
+                                        </group>
+                                    </group>
+                                    <notebook>
+                                        <page string="Evaluaciones" name="exams">
+                                            <!-- No attrs readonly — scoring_total is always editable -->
+                                            <field name="gradebook_result_ids"
+                                                   context="{'default_admission_id': admission_id}">
+                                                <tree editable="bottom" delete="0">
+                                                    <field name="survey_type" optional="show" required="1"/>
+                                                    <field name="description"/>
+                                                    <field name="name" optional="hide" readonly="0" force_save="1"/>
+                                                    <field name="scoring_total"/>
+                                                    <field name="post_qty"
+                                                           attrs="{'invisible': [('survey_type','!=','foro')]}"/>
+                                                    <field name="comment" optional="hide"/>
+                                                    <field name="gradebook_subject_id" optional="hide"/>
+                                                </tree>
+                                            </field>
+                                        </page>
+                                        <page string="Opciones" name="options">
+                                            <group>
+                                                <group>
+                                                    <field name="gradebook_id" options="{'no_create': True}"/>
+                                                </group>
+                                            </group>
+                                        </page>
+                                    </notebook>
+                                </sheet>
+                            </form>
                         </field>
                     </form>
                 </xpath>
