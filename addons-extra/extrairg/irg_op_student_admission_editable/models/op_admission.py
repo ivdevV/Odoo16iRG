@@ -12,5 +12,4 @@ class OpAdmission(models.Model):
         comodel_name='app.gradebook.subject',
         inverse_name='admission_id',
         string='Asignaturas',
-        readonly=True,
     )
