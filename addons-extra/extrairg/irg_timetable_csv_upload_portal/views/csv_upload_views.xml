@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ── Vistas Backend del modelo irg.timetable.csv.upload ── -->
+
+        <!-- Tree view -->
+        <record id="view_irg_timetable_csv_upload_tree" model="ir.ui.view">
+            <field name="name">irg.timetable.csv.upload.tree</field>
+            <field name="model">irg.timetable.csv.upload</field>
+            <field name="arch" type="xml">
+                <tree string="Uploads de CSV"
+                      decoration-danger="state == 'error'"
+                      decoration-warning="state == 'pending'"
+                      decoration-success="state == 'done'">
+                    <field name="name"/>
+                    <field name="uploaded_by"/>
+                    <field name="upload_date"/>
+                    <field name="state" widget="badge"/>
+                    <field name="file_size" widget="integer" string="Tamaño (bytes)"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form view -->
+        <record id="view_irg_timetable_csv_upload_form" model="ir.ui.view">
+            <field name="name">irg.timetable.csv.upload.form</field>
+            <field name="model">irg.timetable.csv.upload</field>
+            <field name="arch" type="xml">
+                <form string="Upload de CSV">
+                    <sheet>
+                        <group>
+                            <group string="Información del archivo">
+                                <field name="name"/>
+                                <field name="file_size" widget="integer"/>
+                            </group>
+                            <group string="Metadata">
+                                <field name="upload_date"/>
+                                <field name="uploaded_by"/>
+                                <field name="state"
+                                       widget="badge"
+                                       decoration-danger="state == 'error'"
+                                       decoration-warning="state == 'pending'"
+                                       decoration-success="state == 'done'"/>
+                            </group>
+                        </group>
+
+                        <t t-if="state == 'done'">
+                            <group string="Importación">
+                                <field name="import_log_id"/>
+                            </group>
+                        </t>
+
+                        <t t-if="state == 'error'">
+                            <separator string="Error"/>
+                            <field name="error_message" widget="text"/>
+                        </t>
+
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action window -->
+        <record id="action_irg_timetable_csv_upload" model="ir.actions.act_window">
+            <field name="name">Uploads de CSV - Calendarios</field>
+            <field name="res_model">irg.timetable.csv.upload</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+        </record>
+
+        <!-- Menu item (opcional — solo para admin/técnicos) -->
+        <menuitem
+            id="menu_irg_csv_upload"
+            parent="irg_timetable_csv_import.menu_irg_timetable_csv_root"
+            name="Uploads Web"
+            action="action_irg_timetable_csv_upload"
+            groups="base.group_erp_manager"/>
+
+        <!-- Portal card removed for DBs without 'website' installed. -->
+
+    </data>
+</odoo>

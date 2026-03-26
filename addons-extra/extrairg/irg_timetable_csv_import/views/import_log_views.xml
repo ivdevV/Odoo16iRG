@@ -17,6 +17,7 @@
                     <field name="sessions_created"/>
                     <field name="sessions_updated"/>
                     <field name="sessions_skipped"/>
+                    <field name="subject_dates_updated"/>
                 </tree>
             </field>
         </record>
@@ -42,6 +43,7 @@
                                 <field name="sessions_created"/>
                                 <field name="sessions_updated"/>
                                 <field name="sessions_skipped"/>
+                                <field name="subject_dates_updated"/>
                             </group>
                         </group>
                         <separator string="Errores y advertencias"/>
