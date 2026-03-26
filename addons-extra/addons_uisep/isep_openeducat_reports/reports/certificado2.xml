@@ -79,7 +79,7 @@
 					<div class="col-12">
 					    <p style='font-size:20px;'>A quien corresponda: </p>
 					    <p style='font-size:20px;'>El departamento de Orientación Universitaria, por medio del presente certificado hace constar que <span t-out="'la alumna ' if o.gender == 'f' else 'el alumno '"/>
-					    <strong t-out="o.name"/> se encuentra actualmente cursando la <strong t-out="admission.course_id.display_name"/> en la Universidad ISEP.</p>
+					    <strong t-out="o.name"/> se encuentra actualmente cursando la <strong t-out="admission.course_id.display_name"/> en el Instituto Raimon Gaja.</p>
 					</div>
                                 </div>
 				    <table class="table table-borderless table-striped mt-1 p-0" style="font-size:20px;">

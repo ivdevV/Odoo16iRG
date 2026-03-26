@@ -2,7 +2,7 @@
 <odoo>
   <record id="email_op_admission_confirm_online" model="mail.template">
     <field name="name">Confirmación de admisión Elearning (Online)</field>
-    <field name="subject">¡Bienvenido/a a la Universidad ISEP! Tu nueva aventura comienza hoy</field>
+    <field name="subject">¡Bienvenido/a al Instituto Raimon Gaja! Tu nueva aventura comienza hoy</field>
     <field name="email_from">{{ user.email or '' }}</field>
     <field name="email_to">{{ object.email }}</field>
     <field name="model_id" ref="openeducat_admission.model_op_admission"/>
@@ -47,7 +47,7 @@
                               <td valign="top" style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;font-size: 13px;">
                                 <div bis_skin_checked="1">
                                     !Llegó el gran día! ✨ Hoy inicias una etapa que marcará un antes y un después en tu vida profesional y personal.<br/>
-                                    En la <span style="font-size: 15px;font-weight: 800 !important; color: #371C82;"><strong style="box-sizing:border-box;font-weight:500;"> Universidad ISEP</strong></span>
+                                    En la <span style="font-size: 15px;font-weight: 800 !important; color: #371C82;"><strong style="box-sizing:border-box;font-weight:500;"> Instituto Raimon Gaja</strong></span>
                                     nos llena de alegría recibirte y acompañarte en este camino de crecimiento.
                                     <br/>
                                     Queremos que tu inicio sea tan emocionante como productivo, por eso aquí tienes todo lo que necesitas para empezar con el pie derecho:
@@ -215,7 +215,7 @@
                                               acercará a la mejor versión de ti mismo/a. ¡Estamos felices de tenerte con nosotros!
                                               <br/><br/>
                                               Con entusiasmo,<br/><br/>
-                                              <span style="font-size: 15px; font-weight: bold;color: #371C82">Equipo Universidad ISEP</span>
+                                              <span style="font-size: 15px; font-weight: bold;color: #371C82">Equipo Instituto Raimon Gaja</span>
                                           </td>
                                         </tr>
                                       </tbody>

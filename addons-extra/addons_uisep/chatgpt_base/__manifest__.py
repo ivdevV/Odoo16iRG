@@ -6,7 +6,7 @@
     'summary': 'Registrar endpoints, testear, consumir funcion',
     'description': 'Registrar endpoints, testear, consumir funcion',
     'author': 'Hans Franco Olivos Cerna',
-    'company': 'Universidad Isep',
+    'company': 'Instituto Raimon Gaja',
     'maintainer': 'HFoc',
     'website': 'https://universidadisep.com',
     'depends': ['base'],

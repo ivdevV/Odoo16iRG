@@ -297,7 +297,7 @@
                         <!-- <div class="row container-fluid" style="text-align:justify;font-size:10px;">
                             Debo y pagaré incondicionalmente esta serie de
                             <span t-esc="o.term_number" style="margin:0 5px"/>
-                            pagarés a la orden de Universidad ISEP. en la ciudad de Culiacán, Sinaloa,
+                            pagarés a la orden de Instituto Raimon Gaja. en la ciudad de Culiacán, Sinaloa,
                             México, con domicilio en Av. Teniente Juan de la Barrera Nte. 1349.
                             <br/><br/>
                             Debiendo realizar los pagos de la siguiente manera:
@@ -353,7 +353,7 @@
                           <div class="row sign">
                               <div class="col-4" style="font-size:18px;text-align:center;"><strong>FIRMA DEL ALUMNO</strong></div>
                               <div class="col-4" style="font-size:18px;text-align:center;"><strong>FIRMA DEL TITULAR<br/>(Si es distinto al alumno)</strong></div>
-                              <div class="col-4" style="font-size:18px;text-align:center;"><strong>Universidad ISEP</strong></div>
+                              <div class="col-4" style="font-size:18px;text-align:center;"><strong>Instituto Raimon Gaja</strong></div>
                           </div>
                           <div class="row">
                               <div class="col-8"/>
@@ -386,8 +386,8 @@
 
                         <strong>MATRÍCULA UNIVERSITARIA – CONDICIONES GENERALES</strong>
                         <br/>
-                            Universidad ISEP agradece la confianza depositada y se compromete a brindar una experiencia educativa de calidad, acompañando al/la estudiante en cada etapa de su proceso formativo.
-                            Al firmar este documento, el/la estudiante declara haber recibido toda la información necesaria sobre el programa académico de Universidad ISEP, 
+                            Instituto Raimon Gaja agradece la confianza depositada y se compromete a brindar una experiencia educativa de calidad, acompañando al/la estudiante en cada etapa de su proceso formativo.
+                            Al firmar este documento, el/la estudiante declara haber recibido toda la información necesaria sobre el programa académico de Instituto Raimon Gaja, 
                             incluyendo aspectos económicos, administrativos y pedagógicos. Asimismo, acepta cumplir con las normativas vigentes de la institución y las condiciones aquí descritas.
                         <br/>
                         <br/>
@@ -405,7 +405,7 @@
                                 En ese caso, el primer pago no será reembolsado, ya que cubre gastos administrativos y la reserva de plaza.
                             </li>
                             <li>
-                                El/la estudiante autoriza a Universidad ISEP a realizar los cobros conforme a los plazos y 
+                                El/la estudiante autoriza a Instituto Raimon Gaja a realizar los cobros conforme a los plazos y 
                                 modalidad acordados al momento de la inscripción.
                             </li>
                             <li>
@@ -413,7 +413,7 @@
                                 se podrán aplicar cargos adicionales por intereses de mora, conforme a lo establecido en la normativa vigente.
                             </li>
                             <li>
-                                Universidad ISEP se reserva el derecho de suspender el acceso al campus o los servicios académicos 
+                                Instituto Raimon Gaja se reserva el derecho de suspender el acceso al campus o los servicios académicos 
                                 si se incumple con las normas institucionales o las condiciones de pago.
                             </li>
                             <li>
@@ -444,10 +444,10 @@
                             <li>
                                 El/la estudiante podrá acceder a los materiales del campus virtual únicamente para su uso personal. 
                                 Está prohibida su reproducción, modificación, distribución o uso con fines comerciales sin 
-                                la autorización escrita de Universidad ISEP.
+                                la autorización escrita de Instituto Raimon Gaja.
                             </li>
                             <li>
-                                Universidad ISEP podrá utilizar, con fines académicos, de investigación o de difusión institucional, 
+                                Instituto Raimon Gaja podrá utilizar, con fines académicos, de investigación o de difusión institucional, 
                                 las participaciones, trabajos o actividades realizadas por el/la estudiante durante su formación.
                             </li>
                         </ol>
@@ -466,7 +466,7 @@
                         <ol start="12" style="margin-left:11px">
 
                             <li>
-                                Universidad ISEP utilizará los datos personales del/de la estudiante exclusivamente para la gestión académica 
+                                Instituto Raimon Gaja utilizará los datos personales del/de la estudiante exclusivamente para la gestión académica 
                                 y administrativa. En caso de ser necesario, algunos datos podrán ser compartidos con instituciones 
                                 aliadas o autoridades competentes, únicamente para cumplir con los fines del servicio y conforme a la normativa aplicable.
                             </li>
@@ -508,7 +508,7 @@
                                 </div>
                             </div>
                         </div>
-                        Autorizo a Universidad ISEP. a realizar los cargos correspondientes a:<br/><br/>
+                        Autorizo a Instituto Raimon Gaja. a realizar los cargos correspondientes a:<br/><br/>
                         
                         
                         
@@ -557,7 +557,7 @@
                                 comprometo a realizar mis pagos a través de los siguientes medios:
                             </p>
                             <p>
-                                <strong>Datos Bancarios Oficiales de la Universidad ISEP</strong>
+                                <strong>Datos Bancarios Oficiales del Instituto Raimon Gaja</strong>
                             </p>
                             <p>
                                 https://universidadisep.com/mx/datos-bancarios-isep/
@@ -567,7 +567,7 @@
                                 el pago. En caso negativo, puede que no se refleje el pago en su expediente.
                             </p>
                             <p>
-                                Solicito y autorizo a Universidad ISEP, para que en mi nombre realice y gestione cualquier
+                                Solicito y autorizo a Instituto Raimon Gaja, para que en mi nombre realice y gestione cualquier
                                 trámite administrativo, pagos académicos y de titulación de la Universidad en donde he
                                 formalizado la inscripción, al no disponer de una tarjeta de crédito habilitada para
                                 cobros internacionales y evitarme los costos bancarios de las transferencias
@@ -618,7 +618,7 @@
 
                                 Debo y pagaré incondicionalmente esta serie de
                                 <span t-esc="o.term_number" style="margin:0 5px"/>
-                                pagarés a la orden de Universidad ISEP. en la ciudad de Culiacán, Sinaloa,
+                                pagarés a la orden de Instituto Raimon Gaja. en la ciudad de Culiacán, Sinaloa,
                                 México, con domicilio en Av. Teniente Juan de la Barrera Nte. 1349.
                                 <br/><br/>
 

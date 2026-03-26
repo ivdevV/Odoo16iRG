@@ -6,7 +6,7 @@
             <field name="inherit_id" ref="survey.survey_survey_view_form"/>
             <field name="arch" type="xml">            
                  <xpath expr="//field[@name='certification_report_layout']" position="replace">
-                    <span class="w-50">Universidad ISEP</span>           
+                    <span class="w-50">Instituto Raimon Gaja</span>           
                 </xpath>
                 <xpath expr="//notebook[1]" position="inside">                    
                         <page string="Certificado" name="cerconf">                           

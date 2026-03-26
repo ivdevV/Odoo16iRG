@@ -3,7 +3,7 @@
 {   
     'name' : "Custom Accounting Reports",
     'summary': "Accounting Reports personalizacion",
-    'author': "Universidad ISEP",
+    'author': "Instituto Raimon Gaja",
     'category': 'Accounting/Accounting',
     'website': '',
     'support': 'William Valencia', 

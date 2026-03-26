@@ -3,7 +3,7 @@
 {   
     'name' : "Custom tag crm",
     'summary': "Custom tag crm",
-    'author': "Universidad ISEP",
+    'author': "Instituto Raimon Gaja",
     'maintainer': 'William Valencia',
     "version": "1.0.1",
     'sequence': 200,
