@@ -5,60 +5,27 @@ from odoo import api, SUPERUSER_ID
 
 _logger = logging.getLogger(__name__)
 
-# External IDs que CREA este módulo — no se desactivarán
-_OUR_XML_IDS = [
-    'irg_identification_types.it_dni',
-    'irg_identification_types.it_pasaporte',
-    'irg_identification_types.it_documento_identificativo',
-]
-
-# Tipos upstream bien conocidos → tipo equivalente en este módulo
-# Sirve para reasignar los partners antes de desactivar los tipos legacy.
-_MIGRATION_MAP = {
-    'l10n_latam_base.it_vat': 'irg_identification_types.it_documento_identificativo',
-    'l10n_latam_base.it_pass': 'irg_identification_types.it_pasaporte',
+# Mapa xml_id → nombre canónico que debe tener el registro en BD.
+# Se aplica en cada instalación Y en cada -u, independientemente del flag
+# noupdate que haya guardado Odoo en ir.model.data.
+_CANONICAL_NAMES = {
+    'irg_identification_types.it_dni': 'DNI',
+    'irg_identification_types.it_pasaporte': 'Pasaporte',
+    'irg_identification_types.it_documento_identificativo': 'Documento de identificación personal',
 }
 
 
-def post_init_hook(cr, registry):
+def post_migrate(env, version_from, version_to):
     """
-    Ejecutado una vez al instalar el módulo:
-    1. Reasigna partners cuyo tipo de identificación sea un tipo legacy conocido.
-    2. Desactiva todos los tipos que no pertenezcan a este módulo.
+    Ejecutado en cada instalación (-i) y en cada actualización (-u).
+    Garantiza que los 3 tipos tengan siempre el nombre correcto,
+    sin importar el flag noupdate almacenado en ir.model.data.
     """
-    env = api.Environment(cr, SUPERUSER_ID, {})
-    IdType = env['l10n_latam.identification.type'].with_context(active_test=False)
-    Partner = env['res.partner'].with_context(active_test=False)
-
-    # Resuelve los IDs de nuestros 3 registros
-    our_ids = set()
-    for xml_id in _OUR_XML_IDS:
+    for xml_id, name in _CANONICAL_NAMES.items():
         rec = env.ref(xml_id, raise_if_not_found=False)
-        if rec:
-            our_ids.add(rec.id)
-
-    # Migra partners desde tipos legacy a los nuestros equivalentes
-    for src_xml_id, dst_xml_id in _MIGRATION_MAP.items():
-        src = env.ref(src_xml_id, raise_if_not_found=False)
-        dst = env.ref(dst_xml_id, raise_if_not_found=False)
-        if not src or not dst or src.id in our_ids:
-            continue
-        partners = Partner.search([('l10n_latam_identification_type_id', '=', src.id)])
-        if partners:
-            partners.write({'l10n_latam_identification_type_id': dst.id})
+        if rec and rec.name != name:
+            rec.write({'name': name})
             _logger.info(
-                'irg_identification_types: migrados %d partner(s) de "%s" → "%s"',
-                len(partners),
-                src.name,
-                dst.name,
+                'irg_identification_types: nombre actualizado "%s" → "%s"',
+                rec.name, name,
             )
-
-    # Desactiva todos los tipos que no son los nuestros
-    to_deactivate = IdType.search([('id', 'not in', list(our_ids))])
-    if to_deactivate:
-        to_deactivate.write({'active': False})
-        _logger.info(
-            'irg_identification_types: desactivados %d tipo(s) de identificación: %s',
-            len(to_deactivate),
-            to_deactivate.mapped('name'),
-        )

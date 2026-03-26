@@ -12,4 +12,5 @@
     ],
     'installable': True,
     'auto_install': False,
+    'post_migrate': 'hooks.post_migrate',
 }
