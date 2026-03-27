@@ -13,7 +13,7 @@
                 <table border="0" cellpadding="0" cellspacing="0">
                     <tr style='background-color: #002F5D;'>
                         <td>
-                            <h1 style="margin: 0; font-size: 24px; color:#EF660E;">Universidad Isep</h1>
+                            <h1 style="margin: 0; font-size: 24px; color:#EF660E;">Instituto Raimon Gaja</h1>
                         </td>
                         <td>
                             <img src="Automation_student_documents_email/static/src/img/Logo-ISEP-Anaranjado.png" alt="Logo de tu Empresa" style="max-width: 150px; margin-bottom: 10px;"/>
@@ -22,7 +22,7 @@
                     <tr>
                         <td>
                             <p><strong style='font-size:16px'>¡Hola <t t-out="object.name or ''">Nombre!</t></strong></p>
-                            <p>Espero que te encuentres bien. Quiero informarte que, como parte de tu proceso de inscripción en la Universidad ISEP, necesitamos que nos envíes ciertos documentos para completar tu expediente ante la Secretaría de Educación Pública.</p>
+                            <p>Espero que te encuentres bien. Quiero informarte que, como parte de tu proceso de inscripción en el Instituto Raimon Gaja, necesitamos que nos envíes ciertos documentos para completar tu expediente ante la Secretaría de Educación Pública.</p>
                             <p><strong>Documentos requeridos:</strong></p>
                             <ul>
                                 <li>Título de licenciatura: copia certificada por notario público o título electrónico.</li>
@@ -73,7 +73,7 @@
                     </tr>
                     <tr style='background-color: #002F5D;'>
                         <td style='color:#EF660E; font-size:16px;'>
-                            <p style="margin: 5px 0;">© 2024 Universidad Isep. Todos los derechos reservados.</p>
+                            <p style="margin: 5px 0;">© 2024 Instituto Raimon Gaja. Todos los derechos reservados.</p>
                         </td>
                         <td></td>
                     </tr>

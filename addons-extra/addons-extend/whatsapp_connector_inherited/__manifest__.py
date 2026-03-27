@@ -6,7 +6,7 @@
 {
     'name': 'ChatRoom Inherited Isep',
     'summary': '',
-    'description': 'Add features for omnichanel to Universidad Isep ',
+    'description': 'Add features for omnichanel to Instituto Raimon Gaja ',
     'version': '16.0.32',
     'author': '@yeyess1, @Zerandres27',
     'license': 'OPL-1',

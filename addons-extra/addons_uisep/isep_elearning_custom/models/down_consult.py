@@ -48,7 +48,6 @@ class AdmissionDownconsult(models.Model):
                 'rating': False,
                 'downconsult_id': record.id
             })  
-        record.action_send_down_mail()
         return record
 
     def action_mark_done(self):

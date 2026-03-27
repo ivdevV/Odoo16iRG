@@ -207,7 +207,7 @@
                         <!-- Encabezado y texto introductorio -->
                         <div class="header-section">
                             <p class="title"><strong>Certificado de Notas</strong></p>
-                            <p class="subtitle"><strong>El Departamento de Secretaría Académica Universidad ISEP</strong></p>
+                            <p class="subtitle"><strong>El Departamento de Secretaría Académica Instituto Raimon Gaja</strong></p>
                             <p class="highlight"><strong>CERTIFICA:</strong></p>
                             <p>
                                 Que <span t-out="o.name"/> con número de matrícula 
@@ -258,7 +258,7 @@
                         <!-- Encabezado y texto introductorio -->
                         <div class="header-section">
                             <p class="title"><strong>Certificado de Notas</strong></p>
-                            <p class="subtitle"><strong>El Departamento de Secretaría Académica Universidad ISEP</strong></p>
+                            <p class="subtitle"><strong>El Departamento de Secretaría Académica Instituto Raimon Gaja</strong></p>
                             <p class="highlight"><strong>CERTIFICA:</strong></p>
                             <p>
                                 Que <span t-out="o.name"/> con número de matrícula 
@@ -344,7 +344,7 @@
                         <!-- Bloque QR + Firma (evitando que se parta entre páginas) -->
                         <div class="block-final">
                             <div class="closing-text">
-                                <p>Los créditos se ajustan al Sistema Educativo Mexicano y a los planes de estudio de Universidad ISEP.</p>
+                                <p>Los créditos se ajustan al Sistema Educativo Mexicano y a los planes de estudio de Instituto Raimon Gaja.</p>
                                 <p>Para que así conste, firma el presente certificado a <span t-out="today_string"/>.</p>
                             </div>
                             <div class="row block-final" style="page-break-inside: avoid; margin-top: 40px; margin-bottom: 40px;width: 80%; text-align: center; margin-left: auto; margin-right: auto;">
@@ -375,7 +375,7 @@
                                             src="/isep_openeducat_reports/static/src/img/firma_decana_isep.png" 
                                             style="width: 132px; height: 81px; vertical-align: middle;"
                                         />
-                                        <!-- Logo de “Universidad ISEP”, a la derecha de la firma -->
+                                        <!-- Logo de “Instituto Raimon Gaja”, a la derecha de la firma -->
                                         <img 
                                             src="/isep_openeducat_reports/static/src/img/sello_isep.png" 
                                             style="width: 82px; height: 48px; margin-left: 16px; vertical-align: middle;"

@@ -2,7 +2,7 @@
 {
     'name': 'Estudiante Credencial',
     'version': '16.4',
-    'summary': """ Módulo para las credenciales exclusivo ante Universidad Isep """,
+    'summary': """ Módulo para las credenciales exclusivo ante Instituto Raimon Gaja """,
     'author': 'Breithner Aquituari',
     'website': '',
     'category': '',

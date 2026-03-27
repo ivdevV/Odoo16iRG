@@ -1,7 +1,7 @@
 
 {
     'name': 'Nómina Colombia para Isep',
-    'summary': 'Nómina electrónica DIAN para Colombia para Universidad Isep',
+    'summary': 'Nómina electrónica DIAN para Colombia para Instituto Raimon Gaja',
     'description': "Electronic payroll management for companies in Colombia",
     'author': 'Yeyess',
     'license': 'LGPL-3',

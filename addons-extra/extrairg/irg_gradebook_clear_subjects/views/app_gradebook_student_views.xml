@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Añade botón "Borrar Asignaturas" en la cabecera de la libreta del alumno -->
+        <record id="view_app_gradebook_student_form_clear_subjects" model="ir.ui.view">
+            <field name="name">app.gradebook.student.form.irg.clear.subjects</field>
+            <field name="model">app.gradebook.student</field>
+            <field name="inherit_id" ref="isep_gradebook.app_gradebook_student_form"/>
+            <field name="arch" type="xml">
+                <!-- Coloca el botón después del botón "Cerrar Libreta", visible sólo en estado "en proceso" -->
+                <xpath expr="//button[@name='state_to_done']" position="after">
+                    <button name="action_clear_subjects"
+                            string="Borrar Asignaturas"
+                            type="object"
+                            class="btn-danger"
+                            icon="fa-trash"
+                            confirm="¿Está seguro de que desea eliminar todas las asignaturas? Esta acción no se puede deshacer."
+                            attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

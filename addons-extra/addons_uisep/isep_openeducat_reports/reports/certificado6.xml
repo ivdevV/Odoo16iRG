@@ -67,7 +67,7 @@
                                 </div>
                                  <div class="row" style=" padding-top:50px;">    
 					<div class="col-12">
-					    <p style='font-size:30px;'><strong>UNIVERSIDAD ISEP</strong></p>
+					    <p style='font-size:30px;'><strong>INSTITUTO RAIMON GAJA</strong></p>
                                         </div>
                                         
                                 </div>
@@ -85,10 +85,10 @@
 
                                 <div class="row" style="text-align:justify; padding-top: 50px;">     
 					<div class="col-12">
-					    <p style='font-size:20px;'>Por medio de la presente, <strong>UNIVERSIDAD ISEP</strong> certifica  que <span t-out="'la ' if o.gender == 'f' else 'el '"/> estudiante 
+					    <p style='font-size:20px;'>Por medio de la presente, <strong>INSTITUTO RAIMON GAJA</strong> certifica  que <span t-out="'la ' if o.gender == 'f' else 'el '"/> estudiante 
 					    <strong t-out="o.name"/> ha realizado los pagos correspondientes a sus estudios de <strong t-out="admission.course_id.display_name"/>, cumpliendo así con la totalidad de sus obligaciones financieras. </p>
 					    <!-- <p style='font-size:20px;'>El monto total cubierto por <span t-out="'la ' if o.gender == 'f' else 'el '"/> estudiante es de  <strong><t t-out="'$ %.2f USD,' %(total_amount)"/>  </strong>   quedando formalmente saldada su deuda con nuestra institución. </p> -->
-					    <p style='font-size:20px;'>Por lo tanto, certificamos que no existen deudas, obligaciones o pagos pendientes con <strong>Universidad ISEP, </strong> quedando <span t-out="'la ' if o.gender == 'f' else 'el '"/> estudiante en plena libertad de recibir su diploma y todos los servicios correspondientes sin restricción alguna. </p>
+					    <p style='font-size:20px;'>Por lo tanto, certificamos que no existen deudas, obligaciones o pagos pendientes con <strong>Instituto Raimon Gaja, </strong> quedando <span t-out="'la ' if o.gender == 'f' else 'el '"/> estudiante en plena libertad de recibir su diploma y todos los servicios correspondientes sin restricción alguna. </p>
 
 					    <p style='font-size:20px;'>Sin más por el momento, quedamos a sus órdenes para cualquier aclaración que se requiera.</p>
 

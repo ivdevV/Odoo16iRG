@@ -74,7 +74,7 @@
                                 <div class="row" style="text-align:justify; padding-top: 50px;">     
 					<div class="col-12">
 					    <p style='font-size:20px;'>Por la presente, certificamos que <span t-out="'la alumna ' if o.gender == 'f' else 'el alumno '"/>
-					    <span t-out="o.name"/> con número de matrícula <span t-out="admission.application_number"/> , actualmente matriculad<span t-out="'a' if o.gender == 'f' else 'o'"/> en el <strong t-out="admission.course_id.display_name"/> en Universidad Isep, se encuentra realizando su Trabajo Final de Master (TFM) como parte de los requisitos de graduación del mencionado programa académico. </p>
+					    <span t-out="o.name"/> con número de matrícula <span t-out="admission.application_number"/> , actualmente matriculad<span t-out="'a' if o.gender == 'f' else 'o'"/> en el <strong t-out="admission.course_id.display_name"/> en Instituto Raimon Gaja, se encuentra realizando su Trabajo Final de Master (TFM) como parte de los requisitos de graduación del mencionado programa académico. </p>
                                             <p style='font-size:20px;'>El TFM <span t-out="'de la alumna ' if o.gender == 'f' else 'del alumno '"/> está en proceso de desarrollo y evaluación bajo la supervisión del tutor académico designado por la institución. Este certificado se emite a solicitud <span t-out="'de la alumna ' if o.gender == 'f' else 'del alumno '"/> para fines de documentación y referencia académica.</p>
 					</div>
                                 </div>

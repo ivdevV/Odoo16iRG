@@ -6,7 +6,7 @@
     'summary': 'Traduccion de contenido en Elearning',
     'description': 'Traduccion de contenido en Elearning',
     'author': 'Hans Franco Olivos Cerna',
-    'company': 'Universidad Isep',
+    'company': 'Instituto Raimon Gaja',
     'maintainer': 'HFoc',
     'website': 'https://universidadisep.com',
     'depends': ['website_slides','chatgpt_base'],
