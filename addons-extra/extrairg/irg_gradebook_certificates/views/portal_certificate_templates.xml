@@ -90,11 +90,24 @@
                                                             <i class="fa fa-download"/> Descargar PDF
                                                         </a>
                                                     </t>
-                                                    <t t-elif="cert.state == 'pending_payment' and cert.sale_order_id">
-                                                        <a t-attf-href="/web#id={{ cert.sale_order_id.id }}&amp;model=sale.order"
-                                                           class="btn btn-sm btn-outline-warning">
-                                                            Pagar pedido
+                                                    <t t-elif="cert.state == 'pending_payment' and cert.payment_link">
+                                                        <a t-att-href="cert.payment_link"
+                                                           class="btn btn-sm btn-warning">
+                                                            <i class="fa fa-credit-card me-1"/> Completar Pago
                                                         </a>
+                                                    </t>
+                                                    <t t-elif="cert.state in ('paid', 'in_process')">
+                                                        <span class="text-muted small">
+                                                            <i class="fa fa-clock-o me-1"/>En preparación
+                                                        </span>
+                                                    </t>
+                                                    <t t-elif="cert.state == 'sent'">
+                                                        <span class="text-success small">
+                                                            <i class="fa fa-truck me-1"/>Enviado
+                                                            <t t-if="cert.tracking_number">
+                                                                — <t t-out="cert.tracking_number"/>
+                                                            </t>
+                                                        </span>
                                                     </t>
                                                 </td>
                                             </tr>
@@ -175,7 +188,27 @@
                                 </select>
                             </div>
 
-                            <!-- Shipping type (shown dynamically) -->
+                            <!-- Signer selection (applies to all cert types) -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Persona que Firma</label>
+                                <div class="d-flex gap-4">
+                                    <t t-foreach="signer_types" t-as="sg">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio"
+                                                   name="signer"
+                                                   t-att-id="'signer_' + sg[0]"
+                                                   t-att-value="sg[0]"
+                                                   t-att-checked="True if (post.get('signer') == sg[0] if post else sg[0] == 'raimon') else None"/>
+                                            <label class="form-check-label"
+                                                   t-att-for="'signer_' + sg[0]">
+                                                <t t-out="sg[1]"/>
+                                            </label>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Shipping type (shown dynamically for physical certs) -->
                             <div class="mb-3" id="shipping_block">
                                 <label class="form-label fw-bold">
                                     Tipo de Envío <span class="text-danger">*</span>
@@ -263,26 +296,62 @@
 
                 <div class="o_portal_wrap">
                     <div class="container py-4">
-                        <div class="alert alert-success text-center py-4">
-                            <i class="fa fa-check-circle fa-3x mb-3 d-block"/>
-                            <h4>¡Solicitud registrada correctamente!</h4>
-                            <p>
-                                Tu solicitud de certificado
-                                <strong><t t-out="cert.name"/></strong>
-                                ha sido registrada.
-                            </p>
-                            <t t-if="cert.certificate_type in ('digital', 'custom')">
-                                <p class="mb-0">
-                                    Recibirás un correo con el enlace de descarga cuando el pago sea confirmado.
-                                </p>
-                            </t>
-                            <t t-else="">
-                                <p class="mb-0">
-                                    Una vez confirmado el pago, nuestro equipo preparará y enviará tu certificado físico.
-                                    Te avisaremos por correo electrónico.
-                                </p>
-                            </t>
+                        <!-- Cert summary card -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Resumen de tu solicitud</h5>
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">Referencia</dt>
+                                    <dd class="col-sm-8"><t t-out="cert.name"/></dd>
+                                    <dt class="col-sm-4">Tipo</dt>
+                                    <dd class="col-sm-8">
+                                        <t t-out="dict(cert.fields_get(['certificate_type'])['certificate_type']['selection']).get(cert.certificate_type, cert.certificate_type)"/>
+                                    </dd>
+                                    <t t-if="cert.shipping_type">
+                                        <dt class="col-sm-4">Envío</dt>
+                                        <dd class="col-sm-8">
+                                            <t t-out="dict(cert.fields_get(['shipping_type'])['shipping_type']['selection']).get(cert.shipping_type, '')"/>
+                                        </dd>
+                                    </t>
+                                    <dt class="col-sm-4">Firma</dt>
+                                    <dd class="col-sm-8">
+                                        <t t-out="dict(cert.fields_get(['signer'])['signer']['selection']).get(cert.signer, '')"/>
+                                    </dd>
+                                    <dt class="col-sm-4">Total</dt>
+                                    <dd class="col-sm-8"><strong><t t-out="'%.2f €' % cert.price_total"/></strong></dd>
+                                </dl>
+                            </div>
                         </div>
+
+                        <!-- Payment CTA -->
+                        <t t-if="cert.payment_link and cert.state == 'pending_payment'">
+                            <div class="alert alert-warning text-center py-4">
+                                <i class="fa fa-credit-card fa-2x mb-2 d-block"/>
+                                <h5>Completa el pago para procesar tu certificado</h5>
+                                <t t-if="cert.certificate_type in ('digital', 'custom')">
+                                    <p class="mb-3">Tu certificado digital se generará automáticamente en cuanto se confirme el pago.</p>
+                                </t>
+                                <t t-else="">
+                                    <p class="mb-3">Una vez confirmado el pago, nuestro equipo académico preparará y enviará tu certificado. Recibirás un correo de confirmación.</p>
+                                </t>
+                                <a t-att-href="cert.payment_link"
+                                   class="btn btn-warning btn-lg">
+                                    <i class="fa fa-lock me-2"/>Pagar ahora — <t t-out="'%.2f €' % cert.price_total"/>
+                                </a>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="alert alert-success text-center py-4">
+                                <i class="fa fa-check-circle fa-3x mb-3 d-block"/>
+                                <h4>¡Solicitud registrada correctamente!</h4>
+                                <t t-if="cert.certificate_type in ('digital', 'custom')">
+                                    <p class="mb-0">Recibirás un correo con el enlace de descarga cuando el pago sea confirmado.</p>
+                                </t>
+                                <t t-else="">
+                                    <p class="mb-0">Una vez confirmado el pago, nuestro equipo preparará y enviará tu certificado físico. Te avisaremos por correo electrónico.</p>
+                                </t>
+                            </div>
+                        </t>
                         <div class="text-center mt-3">
                             <a href="/campus/certificates" class="btn btn-primary me-2">
                                 Ver mis certificados

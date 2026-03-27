@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Runs every 10 minutes to detect portal certificate requests whose
+             invoice has been paid and triggers PDF generation (digital) or
+             academic-team notification (physical). -->
+        <record id="cron_process_paid_certificates" model="ir.cron">
+            <field name="name">Certificados: Procesar facturas de portal pagadas</field>
+            <field name="model_id" ref="model_irg_certificate_request"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_process_paid_certificates()</field>
+            <field name="interval_number">10</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="priority">10</field>
+        </record>
+
+    </data>
+</odoo>
