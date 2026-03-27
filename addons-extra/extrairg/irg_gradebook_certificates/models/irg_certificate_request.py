@@ -51,7 +51,7 @@ PRICE_MAP = {
     'digital': 30.0,
     'physical': 40.0,
     'custom': 40.0,
-    'physical_apostilled': 80.0,
+    'physical_apostilled': 120.0,
 }
 
 SHIPPING_MAP = {

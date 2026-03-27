@@ -30,10 +30,14 @@ SHIPPING_PRODUCT_XMLIDS = {
 
 
 def _get_portal_gradebooks():
-    """Return gradebooks belonging to the current portal user."""
+    """Return closed (state=done) gradebooks belonging to the current portal user.
+
+    Only closed libretas are eligible for certificate requests.
+    """
     partner = request.env.user.partner_id
     return request.env['app.gradebook.student'].sudo().search([
         ('partner_id', '=', partner.id),
+        ('state', '=', 'done'),
     ])
 
 
@@ -177,7 +181,9 @@ class CertificatePortalController(http.Controller):
             gradebook = gradebooks[0]
         elif not gradebooks:
             return _render_error(
-                _('No tienes ninguna libreta académica registrada. Contacta con administración.')
+                _('No tienes ninguna libreta académica cerrada. '
+                  'Solo puedes solicitar certificados cuando tu libreta de calificaciones '
+                  'esté finalizada. Contacta con administración si crees que es un error.')
             )
         else:
             return _render_error(_('Selecciona la libreta para la que solicitas el certificado.'))
