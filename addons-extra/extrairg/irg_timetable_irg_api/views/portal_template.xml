@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Replace Kendo's placeholder with our API calendar root.
+        The JS widget override (irg_timetable_api.js) fills this div.
+    -->
+    <template
+        id="irg_timetable_irg_api_portal"
+        inherit_id="openeducat_timetable_enterprise.openeducat_timetable_portal"
+        name="IRG Timetable — API Calendarios IRG"
+    >
+        <!-- Replace the kendo div with our calendar mount point -->
+        <xpath expr="//div[@id='timetable_portal_kendo']" position="replace">
+            <div id="irg-api-calendar-root" class="irg-api-root">
+                <div class="irg-api-loading">
+                    <span class="irg-api-spinner"></span>
+                    Cargando calendario…
+                </div>
+            </div>
+        </xpath>
+
+        <!--
+            NOTE: We intentionally do NOT remove the Kendo <script> templates
+            (event-template, day-event-template, editor). They are invisible
+            (type="text/x-kendo-template") and other modules like
+            isep_time_link_url add xpaths into them.  Deleting them would
+            break those xpaths.
+        -->
+    </template>
+</odoo>
