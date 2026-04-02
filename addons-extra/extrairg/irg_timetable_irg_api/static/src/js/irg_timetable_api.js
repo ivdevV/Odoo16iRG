@@ -12,7 +12,7 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
         return;
     }
 
-    // ─── Pure helpers ────────────────────────────────────────────────────────
+    // ─── Pure helpers -────────────────────────────────────────────────────────
 
     function escHtml(v) {
         return String(v == null ? '' : v)
