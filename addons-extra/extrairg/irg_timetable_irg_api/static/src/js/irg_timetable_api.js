@@ -112,6 +112,35 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
     ];
     var DAY_HEADERS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
+    // ─── Google Meet links per master (NFD-normalized, lowercase) ─────────
+    var MEET_LINKS = {
+        'psicologia clinica y de la salud':               'https://meet.google.com/dwi-wykx-ftw',
+        'sexologia clinica y terapia de parejas':         'https://meet.google.com/kof-qphm-nvt',
+        'neuropsicologia clinica basada en la evidencia': 'https://meet.google.com/kmm-iagm-gwi',
+        'psicologia clinica infantojuvenil':              'https://meet.google.com/ruy-mdjo-mfo',
+        'neurologopedia':                                'https://meet.google.com/ybe-xmxu-pnm',
+        'neurodesarrollo y dano cerebral adquirido':      'https://meet.google.com/bmq-yert-vib',
+    };
+
+    /** Strip accents and lowercase for fuzzy master→meet matching. */
+    function normalizeMaster(s) {
+        return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase().replace(/^master\s+(en\s+)?/i, '').trim();
+    }
+
+    function getMeetLink(masterName) {
+        var key = normalizeMaster(masterName);
+        // Try direct match first, then substring
+        if (MEET_LINKS[key]) { return MEET_LINKS[key]; }
+        var keys = Object.keys(MEET_LINKS);
+        for (var i = 0; i < keys.length; i++) {
+            if (key.indexOf(keys[i]) !== -1 || keys[i].indexOf(key) !== -1) {
+                return MEET_LINKS[keys[i]];
+            }
+        }
+        return null;
+    }
+
     var TZ_OPTIONS = [
         { value: 'Europe/Madrid',            label: 'España (Madrid)' },
         { value: 'America/Mexico_City',      label: 'México (CDMX)' },
@@ -176,6 +205,7 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
         var master  = apiData.master  || '';
         var horario = apiData.horario || '';
         var endHour = parseEndHour(horario);
+        var meetUrl = getMeetLink(master);
 
         // Parse dates once
         var clases = (apiData.clases || []).map(function (c) {
@@ -224,8 +254,19 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
                 if (isToday) { cls += ' today'; }
                 if (isSel)   { cls += ' sel'; }
 
-                cells += '<div class="' + cls + '" data-date="' + cell.toISOString() + '">' +
+                // Build tooltip text for days with classes
+                var cellEvts = idx[key] || [];
+                var tooltipAttr = '';
+                if (cellEvts.length) {
+                    tooltipAttr = ' data-cls-count="' + cellEvts.length + '"';
+                }
+
+                cells += '<div class="' + cls + '" data-date="' + cell.toISOString() + '"' + tooltipAttr + '>' +
                     '<span class="irg-api-dn">' + cell.getDate() + '</span>' +
+                    (hasCls && !isMuted
+                        ? '<span class="irg-api-cell-label">' + escHtml(cellEvts[0].asignatura).substring(0, 16) +
+                          (cellEvts[0].asignatura.length > 16 ? '…' : '') + '</span>'
+                        : '') +
                     '</div>';
             }
 
@@ -272,6 +313,10 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
                         (c.bloqueAsignaturas
                             ? '<div class="irg-api-cls-bloque">' + escHtml(c.bloqueAsignaturas) + '</div>'
                             : '') +
+                        (meetUrl
+                            ? '<a class="irg-api-meet-link" href="' + escHtml(meetUrl) + '" target="_blank" rel="noopener noreferrer">' +
+                              '<span class="irg-api-meet-icon">🎥</span> Unirse a la clase</a>'
+                            : '') +
                     '</div>' +
                     '</div>';
             }).join('') : '<div class="irg-api-empty">Sin clases en este período</div>';
@@ -293,6 +338,10 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
                                 (horario ? ' · ' + escHtml(horario) : '') +
                             '</div>' +
                         '</div>' +
+                        (meetUrl
+                            ? '<a class="irg-api-header-meet" href="' + escHtml(meetUrl) + '" target="_blank" rel="noopener noreferrer">' +
+                              '<span class="irg-api-meet-icon">🎥</span> Unirse a la clase</a>'
+                            : '') +
                     '</div>' +
 
                     '<div class="irg-api-tz-row">' +
@@ -320,6 +369,9 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
                             '<span class="irg-api-leg-dot tod"></span> Hoy' +
                         '</div>' +
                     '</div>' +
+
+                    // Popup (hidden until a cell with classes is clicked)
+                    '<div class="irg-api-popup" style="display:none"></div>' +
 
                     '<div class="irg-api-cls-section">' +
                         '<div class="irg-api-cls-title-row">' +
@@ -350,7 +402,8 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
             });
 
             root.querySelectorAll('.irg-api-cell').forEach(function (cell) {
-                cell.addEventListener('click', function () {
+                cell.addEventListener('click', function (e) {
+                    e.stopPropagation();
                     var raw = cell.getAttribute('data-date');
                     var clicked = new Date(raw);
                     // Navigate to the cell's month if it belongs to another month
@@ -368,10 +421,113 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
                     } else {
                         state.selDay = clicked;
                     }
+
+                    // Show popup if day has classes
+                    var dayClases = idx[clicked.toDateString()] || [];
+                    var popup = root.querySelector('.irg-api-popup');
+                    if (dayClases.length && popup) {
+                        var pStartDisp = (tz === 'Europe/Madrid') ? dayClases[0].hora
+                            : convertTime(dayClases[0].hora, dayClases[0]._date, tz);
+                        var pEndDisp = endHour
+                            ? ((tz === 'Europe/Madrid') ? endHour
+                                : convertTime(endHour, dayClases[0]._date, tz))
+                            : '';
+                        var pTimeRange = pStartDisp + (pEndDisp ? ' - ' + pEndDisp : '') + ' hora española';
+                        if (tz !== 'Europe/Madrid') {
+                            pTimeRange = pStartDisp + (pEndDisp ? ' - ' + pEndDisp : '') + ' (' + tz + ')';
+                        }
+
+                        popup.innerHTML =
+                            '<div class="irg-api-popup-inner">' +
+                                '<button class="irg-api-popup-close">&times;</button>' +
+                                '<div class="irg-api-popup-date">' +
+                                    '<span class="irg-api-popup-dn">' + clicked.getDate() + '</span> ' +
+                                    String(clicked.getDate()).padStart(2, '0') + '/' +
+                                    String(clicked.getMonth() + 1).padStart(2, '0') + '/' +
+                                    clicked.getFullYear() +
+                                '</div>' +
+                                dayClases.map(function (pc) {
+                                    var pcStart = (tz === 'Europe/Madrid') ? pc.hora
+                                        : convertTime(pc.hora, pc._date, tz);
+                                    var pcEnd = endHour
+                                        ? ((tz === 'Europe/Madrid') ? endHour
+                                            : convertTime(endHour, pc._date, tz))
+                                        : '';
+                                    var pcTime = pcStart + ':00' + (pcEnd ? ' - ' + pcEnd + ':00' : '') + ' hora española';
+                                    if (tz !== 'Europe/Madrid') {
+                                        pcTime = pcStart + (pcEnd ? ' - ' + pcEnd : '') + ' (' + tz + ')';
+                                    }
+                                    return '<div class="irg-api-popup-cls">' +
+                                        '<div class="irg-api-popup-title">' + escHtml(pc.asignatura) + '</div>' +
+                                        (pc.docente
+                                            ? '<div class="irg-api-popup-doc">Prof. ' + escHtml(pc.docente) + '</div>'
+                                            : '') +
+                                        '<div class="irg-api-popup-time">' + escHtml(pcTime) + '</div>' +
+                                        (meetUrl
+                                            ? '<a class="irg-api-popup-meet" href="' + escHtml(meetUrl) + '" target="_blank" rel="noopener noreferrer">' +
+                                              '<span class="irg-api-meet-icon">🎥</span> Unirse a la clase</a>'
+                                            : '') +
+                                    '</div>';
+                                }).join('') +
+                            '</div>';
+                        popup.style.display = '';
+
+                        // Position popup near the cell
+                        var cellRect = cell.getBoundingClientRect();
+                        var rootRect = root.getBoundingClientRect();
+                        popup.style.position = 'absolute';
+                        popup.style.top = (cellRect.bottom - rootRect.top + 6) + 'px';
+                        popup.style.left = Math.max(0, Math.min(
+                            cellRect.left - rootRect.left - 60,
+                            rootRect.width - 280
+                        )) + 'px';
+
+                        popup.querySelector('.irg-api-popup-close').addEventListener('click', function (ev) {
+                            ev.stopPropagation();
+                            popup.style.display = 'none';
+                        });
+                    } else if (popup) {
+                        popup.style.display = 'none';
+                    }
+
+                    // Re-render grid + class list (but NOT inside the popup flow)
+                    // Save popup state before render
+                    var popupHtml = popup ? popup.innerHTML : '';
+                    var popupDisplay = popup ? popup.style.display : 'none';
+                    var popupTop = popup ? popup.style.top : '';
+                    var popupLeft = popup ? popup.style.left : '';
+
                     render();
+
+                    // Restore popup after render
+                    var newPopup = root.querySelector('.irg-api-popup');
+                    if (newPopup && popupDisplay !== 'none') {
+                        newPopup.innerHTML = popupHtml;
+                        newPopup.style.display = popupDisplay;
+                        newPopup.style.position = 'absolute';
+                        newPopup.style.top = popupTop;
+                        newPopup.style.left = popupLeft;
+                        var closeBtn = newPopup.querySelector('.irg-api-popup-close');
+                        if (closeBtn) {
+                            closeBtn.addEventListener('click', function (ev) {
+                                ev.stopPropagation();
+                                newPopup.style.display = 'none';
+                            });
+                        }
+                    }
                 });
             });
-        }
+        } // end render()
+
+        // Close popup when clicking outside (registered once, outside render)
+        document.addEventListener('click', function (e) {
+            var popup = root.querySelector('.irg-api-popup');
+            if (popup && popup.style.display !== 'none' &&
+                !popup.contains(e.target) &&
+                !e.target.closest('.irg-api-cell')) {
+                popup.style.display = 'none';
+            }
+        });
 
         render();
     }
