@@ -1,0 +1,73 @@
+// ─── IRG Timetable — Embed iframe styles ──────────────────────────────────────
+
+.irg-api-root {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+// ── Loading state ─────────────────────────────────────────────────────────────
+
+.irg-api-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 220px;
+    color: #64748b;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+@keyframes irg-spin {
+    to { transform: rotate(360deg); }
+}
+
+.irg-api-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #1e3a5f;
+    border-radius: 50%;
+    animation: irg-spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+// ── Error state ───────────────────────────────────────────────────────────────
+
+.irg-api-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 20px 24px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+    color: #9a3412;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.irg-api-error-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+// ── Iframe ────────────────────────────────────────────────────────────────────
+
+.irg-api-iframe {
+    display: block;
+    width: 100%;
+    min-height: 700px;
+    border: none;
+    border-radius: 8px;
+    background: #fff;
+}
+
+@media (max-width: 768px) {
+    .irg-api-iframe {
+        min-height: 600px;
+        border-radius: 0;
+    }
+}

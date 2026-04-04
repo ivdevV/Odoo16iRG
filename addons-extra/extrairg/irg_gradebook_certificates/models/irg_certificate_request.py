@@ -51,7 +51,7 @@ PRICE_MAP = {
     'digital': 30.0,
     'physical': 40.0,
     'custom': 40.0,
-    'physical_apostilled': 80.0,
+    'physical_apostilled': 120.0,
 }
 
 SHIPPING_MAP = {
@@ -62,9 +62,22 @@ SHIPPING_MAP = {
 PHYSICAL_TYPES = ('physical', 'physical_apostilled')
 
 SIGNER_SELECTION = [
-    ('raimon', 'Raimon'),
+    ('raimon', 'Raimon Gaja Jaumeandreu'),
     ('dpto_academico', 'Departamento Académico'),
 ]
+
+# Product xml ids used when generating portal invoices
+_PORTAL_PRODUCT_XMLID = {
+    'digital': 'irg_gradebook_certificates.product_cert_digital',
+    'physical': 'irg_gradebook_certificates.product_cert_physical',
+    'custom': 'irg_gradebook_certificates.product_cert_custom',
+    'physical_apostilled': 'irg_gradebook_certificates.product_cert_apostilled',
+}
+
+_PORTAL_SHIPPING_XMLID = {
+    'national': 'irg_gradebook_certificates.product_shipping_national',
+    'international': 'irg_gradebook_certificates.product_shipping_international',
+}
 
 # Keyword that identifies the MNC course (Máster en Neuropsicología Clínica
 # basada en la Evidencia) to apply its specific ECTS / duration values.
@@ -227,6 +240,17 @@ class IrgCertificateRequest(models.Model):
         copy=False,
         readonly=True,
     )
+    invoice_id = fields.Many2one(
+        'account.move',
+        string='Factura de Portal',
+        copy=False,
+        readonly=True,
+    )
+    payment_link = fields.Char(
+        string='Enlace de Pago',
+        copy=False,
+        readonly=True,
+    )
     attachment_id = fields.Many2one(
         'ir.attachment',
         string='PDF Generado',
@@ -349,6 +373,8 @@ class IrgCertificateRequest(models.Model):
             self._send_digital_notification()
         else:
             self._send_paid_notification()
+            # Notify academic team so they can prepare and ship the physical cert
+            self._send_team_notification()
 
     # ------------------------------------------------------------------
     # PDF generation
@@ -763,3 +789,126 @@ class IrgCertificateRequest(models.Model):
         )
         if template:
             template.send_mail(self.id, force_send=False)
+
+    def _send_team_notification(self):
+        """Notify the academic team that a physical certificate has been paid."""
+        template = self.env.ref(
+            'irg_gradebook_certificates.mail_template_cert_physical_team',
+            raise_if_not_found=False,
+        )
+        if template:
+            template.send_mail(self.id, force_send=False)
+
+    # ------------------------------------------------------------------
+    # Portal invoice + payment link
+    # ------------------------------------------------------------------
+
+    def _create_portal_invoice(self):
+        """Create an out_invoice for this certificate request and store a
+        payment link on the record.
+
+        Called by the portal controller immediately after the certificate
+        request is created.  Stores the posted invoice in self.invoice_id
+        and the payment URL in self.payment_link.
+        """
+        self.ensure_one()
+        partner = self.partner_id
+
+        # Build invoice lines
+        cert_tmpl = self.env.ref(
+            _PORTAL_PRODUCT_XMLID[self.certificate_type]
+        ).sudo()
+        cert_product = cert_tmpl.product_variant_ids[:1]
+        if not cert_product:
+            raise UserError(
+                _('El producto del certificado no está configurado correctamente.')
+            )
+
+        invoice_lines = [(0, 0, {
+            'product_id': cert_product.id,
+            'quantity': 1,
+            'price_unit': PRICE_MAP.get(self.certificate_type, 0.0),
+            'name': cert_tmpl.name,
+        })]
+
+        if self.certificate_type in PHYSICAL_TYPES and self.shipping_type:
+            ship_tmpl = self.env.ref(
+                _PORTAL_SHIPPING_XMLID[self.shipping_type]
+            ).sudo()
+            ship_product = ship_tmpl.product_variant_ids[:1]
+            if ship_product:
+                invoice_lines.append((0, 0, {
+                    'product_id': ship_product.id,
+                    'quantity': 1,
+                    'price_unit': SHIPPING_MAP.get(self.shipping_type, 0.0),
+                    'name': ship_tmpl.name,
+                }))
+
+        # sudo() needed: called from portal context where the user lacks
+        # account.move creation rights.
+        invoice = self.env['account.move'].sudo().create({
+            'move_type': 'out_invoice',
+            'partner_id': partner.id,
+            'invoice_line_ids': invoice_lines,
+            'narration': _('Certificado de notas %s \u2014 %s') % (
+                dict(CERTIFICATE_TYPES).get(self.certificate_type, ''),
+                self.name,
+            ),
+            'ref': self.name,
+        })
+        invoice.sudo().action_post()
+        self.invoice_id = invoice
+
+        # Generate payment link via payment.link.wizard.
+        # sudo() needed: payment models are restricted to internal users.
+        try:
+            wizard = self.env['payment.link.wizard'].with_context(
+                active_model='account.move',
+                active_id=invoice.id,
+            ).sudo().create({
+                'res_model': 'account.move',
+                'res_id': invoice.id,
+                'amount': invoice.amount_residual,
+                'amount_max': invoice.amount_residual,
+                'currency_id': invoice.currency_id.id,
+                'partner_id': partner.id,
+                'description': _('Certificado %s') % self.name,
+            })
+            self.payment_link = wizard.link
+        except Exception:
+            _logger.warning(
+                'No se pudo generar el enlace de pago para el certificado %s; '
+                'el alumno podrá pagar desde el portal de facturas.',
+                self.name, exc_info=True,
+            )
+            # Fallback: portal URL of the invoice with access token
+            invoice._portal_ensure_token()
+            self.payment_link = invoice.get_portal_url()
+
+    # ------------------------------------------------------------------
+    # Cron: auto-process paid portal certificates
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _cron_process_paid_certificates(self):
+        """Detect portal certificate requests whose invoice has been paid
+        and trigger _process_payment() on each one.
+
+        Called every 10 minutes by the ir.cron record defined in
+        data/cron_data.xml.
+        """
+        pending = self.search([
+            ('state', '=', 'pending_payment'),
+            ('origin', '=', 'portal'),
+            ('invoice_id', '!=', False),
+        ])
+        for cert in pending:
+            if cert.invoice_id.payment_state in ('paid', 'in_payment'):
+                try:
+                    cert.sudo()._process_payment()
+                except Exception:
+                    _logger.exception(
+                        'Error procesando certificado %s tras pago de factura %s',
+                        cert.name,
+                        cert.invoice_id.name,
+                    )

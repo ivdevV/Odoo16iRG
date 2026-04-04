@@ -40,7 +40,7 @@
         <record id="product_cert_apostilled" model="product.template">
             <field name="name">Certificado de Notas Físico Apostillado</field>
             <field name="type">service</field>
-            <field name="list_price">80.0</field>
+            <field name="list_price">120.0</field>
             <field name="sale_ok" eval="True"/>
             <field name="purchase_ok" eval="False"/>
             <field name="is_published" eval="False"/>

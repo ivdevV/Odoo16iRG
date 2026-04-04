@@ -11,6 +11,7 @@ from ..models.irg_certificate_request import (
     PRICE_MAP,
     SHIPPING_MAP,
     PHYSICAL_TYPES,
+    SIGNER_SELECTION,
 )
 
 _logger = logging.getLogger(__name__)
@@ -29,10 +30,14 @@ SHIPPING_PRODUCT_XMLIDS = {
 
 
 def _get_portal_gradebooks():
-    """Return gradebooks belonging to the current portal user."""
+    """Return closed (state=done) gradebooks belonging to the current portal user.
+
+    Only closed libretas are eligible for certificate requests.
+    """
     partner = request.env.user.partner_id
     return request.env['app.gradebook.student'].sudo().search([
         ('partner_id', '=', partner.id),
+        ('state', '=', 'done'),
     ])
 
 
@@ -123,6 +128,7 @@ class CertificatePortalController(http.Controller):
                     'certificate_types': CERTIFICATE_TYPES,
                     'shipping_types': SHIPPING_TYPES,
                     'custom_options': CUSTOM_OPTIONS,
+                    'signer_types': SIGNER_SELECTION,
                     'price_map': PRICE_MAP,
                     'shipping_map': SHIPPING_MAP,
                     'page_name': 'certificates',
@@ -136,6 +142,9 @@ class CertificatePortalController(http.Controller):
         gradebook_id = int(post.get('gradebook_id', 0) or 0)
         custom_description = post.get('custom_description', '').strip() or False
         custom_options = post.get('custom_options', '').strip() or False
+        signer = post.get('signer', 'raimon').strip()
+        if signer not in dict(SIGNER_SELECTION):
+            signer = 'raimon'
 
         def _render_error(msg):
             return request.render(
@@ -145,6 +154,7 @@ class CertificatePortalController(http.Controller):
                     'certificate_types': CERTIFICATE_TYPES,
                     'shipping_types': SHIPPING_TYPES,
                     'custom_options': CUSTOM_OPTIONS,
+                    'signer_types': SIGNER_SELECTION,
                     'price_map': PRICE_MAP,
                     'shipping_map': SHIPPING_MAP,
                     'page_name': 'certificates',
@@ -171,12 +181,27 @@ class CertificatePortalController(http.Controller):
             gradebook = gradebooks[0]
         elif not gradebooks:
             return _render_error(
-                _('No tienes ninguna libreta académica registrada. Contacta con administración.')
+                _('No tienes ninguna libreta académica cerrada. '
+                  'Solo puedes solicitar certificados cuando tu libreta de calificaciones '
+                  'esté finalizada. Contacta con administración si crees que es un error.')
             )
         else:
             return _render_error(_('Selecciona la libreta para la que solicitas el certificado.'))
 
-        # Create certificate request
+        # Enrollment payment check — only for students with an active subscription.
+        # If the student has no op.student record the check is skipped gracefully.
+        student = request.env['op.student'].sudo().search(
+            [('partner_id', '=', partner.id)], limit=1
+        )
+        if student:
+            sub_data = student.get_subscription_data()
+            if sub_data.get('t_adeuda') or (sub_data.get('t_amount_due_data') or 0) > 0:
+                return _render_error(_(
+                    'No puedes solicitar un certificado mientras tengas cuotas de matrícula '
+                    'pendientes de pago. Por favor, regulariza tu situación antes de continuar.'
+                ))
+
+        # Create certificate request and portal invoice
         try:
             cert = request.env['irg.certificate.request'].sudo().create({
                 'gradebook_student_id': gradebook.id,
@@ -184,16 +209,17 @@ class CertificatePortalController(http.Controller):
                 'shipping_type': shipping_type or False,
                 'custom_description': custom_description,
                 'custom_options': custom_options or False,
+                'signer': signer,
                 'state': 'pending_payment',
                 'origin': 'portal',
             })
-            sale_order = _build_sale_order(cert, partner)
-            cert.sale_order_id = sale_order.id
-        except Exception as exc:
+            cert._create_portal_invoice()
+        except ValidationError as exc:
+            return _render_error(exc.args[0])
+        except Exception:
             _logger.exception('Error al crear la solicitud de certificado para partner %s', partner.id)
             return _render_error(_('Se ha producido un error al procesar tu solicitud. Inténtalo de nuevo.'))
 
-        # Redirect to confirm page (manual checkout is handled by admin)
         return request.redirect('/campus/certificates/confirm/%d' % cert.id)
 
     # ------------------------------------------------------------------
@@ -238,6 +264,10 @@ class CertificatePortalController(http.Controller):
         # Security: only the owning student may download
         if not cert.exists() or cert.partner_id.id != partner.id:
             return request.redirect('/campus/certificates')
+
+        # Not yet paid — take the student back to the confirm page with the payment link
+        if cert.state == 'pending_payment':
+            return request.redirect('/campus/certificates/confirm/%d' % cert.id)
 
         if not cert.attachment_id:
             return request.redirect('/campus/certificates?error=no_pdf')

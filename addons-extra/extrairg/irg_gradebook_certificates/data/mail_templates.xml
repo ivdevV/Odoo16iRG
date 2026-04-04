@@ -100,5 +100,72 @@
             <field name="auto_delete" eval="True"/>
         </record>
 
+        <!-- ============================================================
+             4. Physical certificate payment — notify academic team
+        ============================================================ -->
+        <record id="mail_template_cert_physical_team" model="mail.template">
+            <field name="name">Certificado Físico — Aviso Equipo Académico</field>
+            <field name="model_id" ref="model_irg_certificate_request"/>
+            <field name="subject">Nueva solicitud de certificado físico pagado: {{ object.name }}</field>
+            <field name="email_to">academica@institutoraimongaja.com</field>
+            <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+    <p><strong>Nueva solicitud de certificado físico — Pago recibido</strong></p>
+    <p>Se ha recibido el pago de una solicitud de certificado físico que requiere preparación manual:</p>
+    <table style="border-collapse: collapse; width: 100%; margin: 12px 0;">
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold; width: 40%;">Referencia</td>
+            <td style="padding: 5px 10px;">{{ object.name }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Alumno</td>
+            <td style="padding: 5px 10px;">{{ object.partner_id.name }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Email alumno</td>
+            <td style="padding: 5px 10px;">{{ object.partner_id.email or '' }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Programa</td>
+            <td style="padding: 5px 10px;">{{ object.course_id.name or '' }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Grupo / Promoción</td>
+            <td style="padding: 5px 10px;">{{ object.batch_id.name or '' }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Tipo de certificado</td>
+            <td style="padding: 5px 10px;">{{ dict(object.fields_get(['certificate_type'])['certificate_type']['selection']).get(object.certificate_type, '') }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Tipo de envío</td>
+            <td style="padding: 5px 10px;">{{ dict(object.fields_get(['shipping_type'])['shipping_type']['selection']).get(object.shipping_type, '') }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Persona que firma</td>
+            <td style="padding: 5px 10px;">{{ dict(object.fields_get(['signer'])['signer']['selection']).get(object.signer, '') }}</td>
+        </tr>
+        % if object.custom_description:
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Peticiones adicionales</td>
+            <td style="padding: 5px 10px;">{{ object.custom_description }}</td>
+        </tr>
+        % endif
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Importe cobrado</td>
+            <td style="padding: 5px 10px;"><strong>{{ '%.2f' % object.price_total }} €</strong></td>
+        </tr>
+    </table>
+    <p style="margin-top: 16px;">
+        Accede al backend de Odoo para marcar esta solicitud como
+        <em>En Proceso</em> una vez generado el certificado,
+        y como <em>Enviado</em> cuando se despache.
+    </p>
+    <p>—<br/>Sistema de Gestión Académica — {{ object.env.company.name }}</p>
+</div>
+]]></field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
     </data>
 </odoo>

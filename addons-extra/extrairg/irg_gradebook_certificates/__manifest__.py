@@ -34,6 +34,7 @@
         'data/sequence_data.xml',
         'data/product_data.xml',
         'data/mail_templates.xml',
+        'data/cron_data.xml',
         'views/irg_certificate_request_views.xml',
         'views/app_gradebook_student_views.xml',
         'views/menu.xml',
