@@ -13,7 +13,6 @@
         'isep_website_custom_design',
         'irg_course_portal_tiles',
         'isep_time_link_url',
-        'irg_timetable_portal_overhaul_v2',
     ],
     'data': [
         'views/user_profile_content_fix.xml',
