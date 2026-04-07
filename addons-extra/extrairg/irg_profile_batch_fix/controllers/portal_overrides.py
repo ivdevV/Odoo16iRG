@@ -4,7 +4,7 @@ import logging
 from odoo import http
 from odoo.http import request
 
-from odoo.addons.extrairg.irg_course_portal_tiles.controllers.portal_overrides import (
+from odoo.addons.irg_course_portal_tiles.controllers.portal_overrides import (
     IrgCoursePortalOverrides,
 )
 from odoo.addons.isep_time_link_url.controller.main import TimeTablePortalURl
