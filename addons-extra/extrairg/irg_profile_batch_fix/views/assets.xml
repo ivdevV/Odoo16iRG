@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_profile_batch_fix_assets" inherit_id="web.assets_frontend">
+        <xpath expr="." position="inside">
+            <script type="text/javascript"
+                    src="/irg_profile_batch_fix/static/src/js/timetable_batch_filter.js"/>
+        </xpath>
+    </template>
+</odoo>

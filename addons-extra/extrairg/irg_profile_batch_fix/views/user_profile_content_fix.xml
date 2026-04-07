@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Bug #1 Fix: La plantilla de diseño (isep_website_custom_design) hereda
+        isep_website_custom.user_profile_content y reemplaza el bloque completo
+        "Programa académico" usando register_id.course_id para mostrar el nombre
+        y para construir el link /campus/course/X.
+
+        El problema: register_id puede apuntar a un curso diferente al del batch
+        real del alumno (inconsistencia de datos en op.admission). El batch_id
+        es la fuente de verdad — cada batch pertenece a exactamente un curso.
+
+        Esta herencia sobre-escribe el t-set de course_line_id y el h5 del nombre
+        para usar batch_id.course_id en ambos casos.
+
+        IMPORTANTE: heredamos la plantilla FINAL (custom_user_profile_content_design
+        de isep_website_custom_design) porque esa es la que termina renderizándose.
+        Si cambia el orden de herencia en el futuro, este xpath seguirá funcionando
+        siempre que el t-set "course_line_id" exista en el árbol resultante.
+    -->
+    <template
+        id="irg_profile_batch_fix_course_name"
+        name="IRG: Fix nombre programa con batch_id"
+        inherit_id="isep_website_custom_design.custom_user_profile_content_design"
+    >
+        <!-- Reemplaza la asignación del ID usado para el link de navegación -->
+        <xpath
+            expr="//t[@t-set='course_line_id']"
+            position="replace"
+        >
+            <t t-set="course_line_id" t-value="course.batch_id.course_id.id"/>
+        </xpath>
+
+        <!-- Reemplaza el h5 que muestra el nombre del programa -->
+        <xpath
+            expr="//h5[contains(@class,'mt-0') and @t-field='course.register_id.course_id.name']"
+            position="replace"
+        >
+            <h5 class="mt-0 mb-1" style="color: #7848ff;"
+                t-if="course.batch_id and course.batch_id.course_id"
+                t-field="course.batch_id.course_id.name"/>
+        </xpath>
+    </template>
+
+</odoo>
