@@ -17,9 +17,12 @@
     'data': [
         'views/user_profile_content_fix.xml',
         'views/irg_tiles_calendar_fix.xml',
-        'views/assets.xml',
     ],
-    'assets': {},
+    'assets': {
+        'web.assets_frontend': [
+            'irg_profile_batch_fix/static/src/js/timetable_batch_filter.js',
+        ],
+    },
     'installable': True,
     'auto_install': False,
     'license': 'LGPL-3',
