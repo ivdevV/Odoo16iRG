@@ -28,6 +28,16 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
             '</div>';
     }
 
+    function buildIframe(baseUrl, lote) {
+        var embedUrl = baseUrl + '/embed/' + encodeURIComponent(lote);
+        return '<iframe class="irg-api-iframe" ' +
+                'src="' + escHtml(embedUrl) + '" ' +
+                'title="Calendario de clases" ' +
+                'allow="fullscreen" ' +
+                'loading="lazy">' +
+            '</iframe>';
+    }
+
     publicWidget.registry.PortalTimeTableWidget.include({
 
         /**
@@ -58,12 +68,17 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
                     '<span class="irg-api-spinner"></span>Cargando calendario\u2026' +
                 '</div>';
 
-            // Resolve lote via Odoo controller
-            var studId = (document.querySelector('.stud_id_timetable_parent') || {}).id || null;
+            // Extract course_id from the URL: /campus/course/{course_id}
+            var courseId = null;
+            var urlMatch = window.location.pathname.match(/\/campus\/course\/(\d+)/);
+            if (urlMatch) {
+                courseId = parseInt(urlMatch[1], 10);
+            }
+
             var loteInfo;
             try {
                 loteInfo = await ajax.jsonRpc('/irg-timetable/lote', 'call', {
-                    stud_id: studId || undefined,
+                    course_id: courseId || undefined,
                 });
             } catch (err) {
                 showError(root,
@@ -80,16 +95,8 @@ odoo.define('irg_timetable_irg_api.main', function (require) {
 
             var baseUrl = (loteInfo.base_url || 'https://calendario.institutoraimongaja.com')
                 .replace(/\/$/, '');
-            var embedUrl = baseUrl + '/embed/' + encodeURIComponent(loteInfo.lote);
 
-            // Mount the iframe
-            root.innerHTML =
-                '<iframe class="irg-api-iframe" ' +
-                    'src="' + escHtml(embedUrl) + '" ' +
-                    'title="Calendario de clases" ' +
-                    'allow="fullscreen" ' +
-                    'loading="lazy">' +
-                '</iframe>';
+            root.innerHTML = buildIframe(baseUrl, loteInfo.lote);
         },
     });
 });

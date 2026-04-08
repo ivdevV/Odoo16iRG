@@ -39,17 +39,26 @@ class IrgProfileBatchFixCourseOverride(IrgCoursePortalOverrides):
 
         values['op_course_id'] = course_id
 
-        # Buscar el batch del alumno para este curso específico
+        # Buscar el batch del alumno para este curso específico.
+        # Si el URL incluye ?batch_id=X (caso de 2 admisiones en el mismo curso),
+        # usamos ese valor directamente para evitar ambigüedad.
         student = request.env['op.student'].sudo().search(
             [('user_id', '=', request.env.uid)], limit=1
         )
         student_batch_id = False
+        batch_id_param = post.get('batch_id')
         if student:
-            course_detail = student.course_detail_ids.filtered(
-                lambda cd: cd.course_id.id == course_id
-            )
-            if course_detail:
-                student_batch_id = course_detail[0].batch_id.id
+            if batch_id_param:
+                try:
+                    student_batch_id = int(batch_id_param)
+                except (ValueError, TypeError):
+                    pass
+            if not student_batch_id:
+                course_detail = student.course_detail_ids.filtered(
+                    lambda cd: cd.course_id.id == course_id
+                )
+                if course_detail:
+                    student_batch_id = course_detail[0].batch_id.id
 
         values['student_batch_id'] = student_batch_id
 
