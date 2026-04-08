@@ -41,6 +41,18 @@
                 t-if="course.batch_id and course.batch_id.course_id"
                 t-field="course.batch_id.course_id.name"/>
         </xpath>
+
+        <!--
+            Bug #3 Fix: Si el alumno tiene 2 batches del mismo curso (mismo course_id),
+            el onclick genera la misma URL /campus/course/X y el controller no sabe
+            cuál batch mostrar en el calendario. Añadimos ?batch_id=Y para disambiguar.
+        -->
+        <xpath
+            expr="//div[contains(@t-attf-class,'o_wprofile_slides_course_card_body')]"
+            position="attributes"
+        >
+            <attribute name="t-attf-onclick">#{ 'location.href=\'/campus/course/%s?batch_id=%s\'' % (course_line_id, course.batch_id.id if course.batch_id else '') if vigente else '' }</attribute>
+        </xpath>
     </template>
 
 </odoo>
