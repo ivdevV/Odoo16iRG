@@ -18,7 +18,7 @@
             expr="//div[@class='form-group'][.//div[contains(@class,'grid-container')]]"
             position="attributes"
         >
-            <attribute name="t-if">not user.share</attribute>
+            <attribute name="t-if">not request.env.user.share</attribute>
         </xpath>
     </template>
 
@@ -35,7 +35,7 @@
         name="IRG - Ocultar menú centros en portal home (portal)"
     >
         <xpath expr="//t[@t-call='portal.portal_docs_entry']" position="replace">
-            <t t-if="not user.share">
+            <t t-if="not request.env.user.share">
                 <t t-call="portal.portal_docs_entry">
                     <t t-set="title">Centro de práctica</t>
                     <t t-set="url" t-value="'/my/centers'"/>
