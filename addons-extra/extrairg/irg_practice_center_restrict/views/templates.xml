@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Override 1: Ocultar el bloque "Centros de práctica habilitados"
+        del formulario de solicitud de práctica para usuarios de portal (alumnos).
+
+        El div.form-group que contiene el grid-container (los checkboxes de centros)
+        se oculta completamente para usuarios con user.share=True (portal users).
+        Los usuarios internos (staff/coordinadores) siguen viendo la sección.
+    -->
+    <template
+        id="irg_restrict_practice_request_form"
+        inherit_id="isep_practices_2.practice_request_form_template"
+        name="IRG - Ocultar centros en solicitud (portal)"
+    >
+        <xpath
+            expr="//div[@class='form-group'][.//div[contains(@class,'grid-container')]]"
+            position="attributes"
+        >
+            <attribute name="t-if">not request.env.user.share</attribute>
+        </xpath>
+    </template>
+
+    <!--
+        Override 2: Ocultar la entrada "Centro de práctica" del portal home
+        para usuarios de portal (alumnos).
+
+        La entrada que enlaza a /my/centers se envuelve en un t-if para que
+        solo la vean los usuarios internos (user.share=False).
+    -->
+    <template
+        id="irg_restrict_portal_my_centers"
+        inherit_id="isep_practices_2.portal_my_centers"
+        name="IRG - Ocultar menú centros en portal home (portal)"
+    >
+        <xpath expr="//t[@t-call='portal.portal_docs_entry']" position="replace">
+            <t t-if="not request.env.user.share">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">Centro de práctica</t>
+                    <t t-set="url" t-value="'/my/centers'"/>
+                    <t t-set="placeholder_count" t-value="'practice_centers_count'"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>
