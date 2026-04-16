@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Extiende la plantilla del perfil del alumno para aplicar la lógica de
+        visibilidad de asignaturas por lote.
+
+        Cadena de herencia:
+            isep_website_custom.user_profile_content_details  (base)
+                ← irg_subject_slide_fix.user_profile_content_details_fix
+                    (filtra subject_ids a batch.subject_to_batch_ids)
+                ← este template (priority=25, se aplica el último)
+                    (recomputa subject_ids desde course_id.subject_ids usando
+                     nuestros campos de visibilidad, ignorando subject_to_batch_ids)
+
+        Lógica: una asignatura es visible para el alumno si:
+            - visible_all_course_batches = True  (sin restricción)
+            - O batch_visibility_ids está vacío    (sin restricción configurada)
+            - O el lote del alumno está en batch_visibility_ids
+    -->
+    <record id="view_user_profile_subject_visibility" model="ir.ui.view">
+        <field name="name">user_profile_content_details.subject_visibility</field>
+        <field name="model">ir.ui.view</field>
+        <field name="inherit_id" ref="isep_website_custom.user_profile_content_details"/>
+        <!-- Prioridad alta para que se aplique después de irg_subject_slide_fix (prio 16) -->
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <!--
+                Ancla: //t[@t-set='slide_channel_ids'] es el primer t-set que viene
+                DESPUÉS del bloque de subject_ids en el arch combinado.
+                Insertamos justo antes para tener el valor final de subject_ids
+                antes de que el div lo renderice.
+            -->
+            <xpath expr="//t[@t-set='slide_channel_ids']" position="before">
+                <!-- Obtener la admisión del alumno para saber su lote -->
+                <t t-set="student_admission_vis"
+                   t-value="env['op.admission'].sudo().search(
+                       [('partner_id', '=', user.partner_id.id),
+                        ('course_id',  '=', course_id.id)],
+                       order='id desc', limit=1
+                   )"/>
+                <t t-set="student_batch_vis"
+                   t-value="student_admission_vis.batch_id if student_admission_vis else False"/>
+
+                <!--
+                    Sobreescribir subject_ids partiendo del catálogo completo del
+                    curso (course_id.subject_ids), no del subject_to_batch_ids del
+                    lote, para que los subjects con visible_all=True aparezcan aunque
+                    no estén en el lote (ej: asignaturas añadidas después de crear
+                    el lote).
+                -->
+                <t t-set="subject_ids"
+                   t-value="course_id.subject_ids.filtered(
+                       lambda s:
+                           s.visible_all_course_batches
+                           or not s.batch_visibility_ids
+                           or (student_batch_vis and student_batch_vis in s.batch_visibility_ids)
+                   )"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

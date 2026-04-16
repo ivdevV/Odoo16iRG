@@ -20,10 +20,12 @@
         'openeducat_teams',
         'irg_op_subject_multi_course',
         'isep_elearning_custom',
+        'isep_website_custom',
     ],
     'data': [
         'views/op_subject_views.xml',
         'templates/subject_visibility_tmpl.xml',
+        'templates/portal_subject_visibility.xml',
     ],
     'installable': True,
     'application': False,
