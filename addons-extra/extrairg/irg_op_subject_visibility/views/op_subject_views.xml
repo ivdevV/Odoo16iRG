@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Extiende el formulario de op.subject heredando de la vista del módulo
+        irg_op_subject_multi_course (que ya reemplaza el field course_id por course_ids).
+        Se añade un grupo de visibilidad justo antes del chatter.
+    -->
+    <record id="view_op_subject_form_visibility" model="ir.ui.view">
+        <field name="name">op.subject.form.visibility</field>
+        <field name="model">op.subject</field>
+        <field name="inherit_id" ref="irg_op_subject_multi_course.view_op_subject_form_multi_course"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='oe_chatter']" position="before">
+                <group string="Visibilidad en Portal eLearning" col="2">
+                    <field name="visible_all_course_batches" widget="boolean_toggle"/>
+                    <field
+                        name="batch_visibility_ids"
+                        widget="many2many_tags"
+                        options="{'no_create': True}"
+                        attrs="{'invisible': [('visible_all_course_batches', '=', True)]}"
+                        colspan="2"
+                    />
+                    <field
+                        name="effective_batch_ids"
+                        widget="many2many_tags"
+                        readonly="1"
+                        colspan="2"
+                    />
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
