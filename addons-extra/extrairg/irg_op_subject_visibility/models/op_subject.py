@@ -67,6 +67,10 @@ class OpSubject(models.Model):
         if not batch:
             return True
         if self.visible_all_course_batches:
-            # Visible para cualquier lote cuyo curso esté en los cursos de la asignatura
-            return batch.course_id in self.course_ids
+            # Sin restricción por lote: accesible para todos
+            return True
+        # Restricción activa: solo los lotes seleccionados tienen acceso.
+        # Si no se ha configurado ningún lote aún, no bloqueamos (restricción vacía = sin efecto).
+        if not self.batch_visibility_ids:
+            return True
         return batch in self.batch_visibility_ids

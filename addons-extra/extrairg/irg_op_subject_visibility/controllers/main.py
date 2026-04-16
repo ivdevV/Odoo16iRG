@@ -34,7 +34,9 @@ class SubjectVisibilitySlides(CustomWebsiteSlides):
 
         is_internal_user = request.env.user.has_group('base.group_user')
         if not is_internal_user:
-            self._check_subject_visibility(channel)
+            redirect = self._check_subject_visibility(channel)
+            if redirect:
+                return redirect
 
         return super().channel(
             channel,
