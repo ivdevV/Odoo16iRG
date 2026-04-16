@@ -7,7 +7,7 @@ class OpSubject(models.Model):
 
     visible_all_course_batches = fields.Boolean(
         string=_('Visible para todos los lotes del curso'),
-        default=True,
+        default=False,
         help=_(
             'Si está activado, la asignatura es visible en el portal eLearning para todos '
             'los lotes de los cursos a los que pertenece.\n'
@@ -67,10 +67,10 @@ class OpSubject(models.Model):
         if not batch:
             return True
         if self.visible_all_course_batches:
-            # Sin restricción por lote: accesible para todos
+            # Marcada explícitamente como visible para todos los lotes
             return True
-        # Restricción activa: solo los lotes seleccionados tienen acceso.
-        # Si no se ha configurado ningún lote aún, no bloqueamos (restricción vacía = sin efecto).
+        # Sin restricción configurada → no tiene acceso por visibilidad global;
+        # el sistema de subject_to_batch_ids (irg_subject_fix) gestiona el acceso.
         if not self.batch_visibility_ids:
-            return True
+            return False
         return batch in self.batch_visibility_ids
