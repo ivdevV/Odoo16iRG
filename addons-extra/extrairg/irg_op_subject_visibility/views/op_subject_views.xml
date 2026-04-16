@@ -10,23 +10,30 @@
         <field name="model">op.subject</field>
         <field name="inherit_id" ref="irg_op_subject_multi_course.view_op_subject_form_multi_course"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@class='oe_chatter']" position="before">
-                <group string="Visibilidad en Portal eLearning" col="2">
-                    <field name="visible_all_course_batches" widget="boolean_toggle"/>
-                    <field
-                        name="batch_visibility_ids"
-                        widget="many2many_tags"
-                        options="{'no_create': True}"
-                        attrs="{'invisible': [('visible_all_course_batches', '=', True)]}"
-                        colspan="2"
-                    />
-                    <field
-                        name="effective_batch_ids"
-                        widget="many2many_tags"
-                        readonly="1"
-                        colspan="2"
-                    />
-                </group>
+            <!--
+                El notebook con la pestaña "Equipos de Microsoft" es añadido por
+                openeducat_teams dentro del sheet (después del group principal).
+                Añadimos nuestra pestaña al mismo notebook para mantener coherencia visual.
+            -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Visibilidad eLearning" name="elearning_visibility">
+                    <group col="2">
+                        <field name="visible_all_course_batches" widget="boolean_toggle"/>
+                        <field
+                            name="batch_visibility_ids"
+                            widget="many2many_tags"
+                            options="{'no_create': True}"
+                            attrs="{'invisible': [('visible_all_course_batches', '=', True)]}"
+                            colspan="2"
+                        />
+                        <field
+                            name="effective_batch_ids"
+                            widget="many2many_tags"
+                            readonly="1"
+                            colspan="2"
+                        />
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>

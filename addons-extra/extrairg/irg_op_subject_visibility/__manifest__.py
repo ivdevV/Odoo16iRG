@@ -17,6 +17,7 @@
     'license': 'LGPL-3',
     'depends': [
         'openeducat_core',
+        'openeducat_teams',
         'irg_op_subject_multi_course',
         'isep_elearning_custom',
     ],
