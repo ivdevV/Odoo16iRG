@@ -41,3 +41,29 @@ class WebsiteSlidesCustom(WebsiteSlides):
                 })
         
         return super(WebsiteSlidesCustom, self).slide_view(slide, **kwargs)
+
+    def _get_slide_detail(self, slide):
+        """Añade restricted_slide_ids al contexto del fullscreen para bloquear
+        la navegación JS en slides con prerrequisitos no completados."""
+        values = super(WebsiteSlidesCustom, self)._get_slide_detail(slide)
+        user = request.env.user
+        if user._is_public():
+            values['restricted_slide_ids'] = set()
+            return values
+
+        completed_slide_ids = set(
+            request.env['slide.slide.partner'].sudo().search([
+                ('partner_id', '=', user.partner_id.id),
+                ('completed', '=', True),
+            ]).mapped('slide_id').ids
+        )
+        restricted_ids = set()
+        for s in slide.channel_id.slide_content_ids.sudo():
+            if s.restriction_slide_ids:
+                missing = s.restriction_slide_ids.filtered(
+                    lambda r: r.id not in completed_slide_ids
+                )
+                if missing:
+                    restricted_ids.add(s.id)
+        values['restricted_slide_ids'] = restricted_ids
+        return values
