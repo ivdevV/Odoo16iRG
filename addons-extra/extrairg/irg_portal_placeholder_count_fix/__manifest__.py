@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Portal Placeholder Count Fix',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': 'Previene errores JS en badges de contador del portal cuando faltan valores de placeholder_count.',
     'description': """
         Evita el fallo "Cannot set properties of null (setting 'textContent')"
@@ -13,7 +13,14 @@
     'depends': [
         'portal',
     ],
-    'data': [],
+    'data': [
+        'views/assets.xml',
+    ],
+    'assets': {
+        'web.assets_frontend': [
+            'irg_portal_placeholder_count_fix/static/src/js/portal.js',
+        ],
+    },
     'installable': True,
     'auto_install': False,
     'application': False,

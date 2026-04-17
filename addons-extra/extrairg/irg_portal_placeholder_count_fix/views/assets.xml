@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Assets para portal placeholder count fix -->
+        <template id="assets_frontend" inherit_id="web.assets_frontend" name="Portal Placeholder Count Fix Assets">
+            <xpath expr="." position="inside">
+                <script type="text/javascript" src="/irg_portal_placeholder_count_fix/static/src/js/portal.js"></script>
+            </xpath>
+        </template>
+    </data>
+</odoo>
