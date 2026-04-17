@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <template id="slide_fullscreen_sidebar_batch_hide"
+              inherit_id="website_slides.slide_fullscreen_sidebar_category"
+              name="Sidebar: ocultar slides restringidos por lote">
+        <!-- Oculta completamente el <li> de la sidebar cuando el slide está
+             bloqueado por lote para el alumno (batch_blocked_slide_ids es un set
+             inyectado por WebsiteSlidesBatchRestrictions._get_slide_detail). -->
+        <xpath expr="//li[contains(@t-attf-class,'o_wslides_fs_sidebar_list_item')]" position="attributes">
+            <attribute name="t-if">not (batch_blocked_slide_ids and slide.id in batch_blocked_slide_ids)</attribute>
+        </xpath>
+    </template>
+
     <template id="slide_batch_restriction_error" name="Slide Batch Restriction Error">
         <t t-call="website.layout">
             <div class="container mt-5">

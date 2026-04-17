@@ -29,3 +29,19 @@ class WebsiteSlidesBatchRestrictions(WebsiteSlidesCustom):
 
         # Delega morosidad + prerrequisitos a WebsiteSlidesCustom
         return super(WebsiteSlidesBatchRestrictions, self).slide_view(slide, **kwargs)
+
+    def _get_slide_detail(self, slide):
+        """Añade batch_blocked_slide_ids al contexto para ocultar completamente
+        en la sidebar del fullscreen los slides restringidos por lote."""
+        values = super(WebsiteSlidesBatchRestrictions, self)._get_slide_detail(slide)
+        user = request.env.user
+        if user._is_public():
+            values['batch_blocked_slide_ids'] = set()
+            return values
+
+        batch_blocked_ids = set()
+        for s in slide.channel_id.slide_content_ids.sudo():
+            if s.allowed_batch_ids and not s.is_user_allowed_by_batch(user):
+                batch_blocked_ids.add(s.id)
+        values['batch_blocked_slide_ids'] = batch_blocked_ids
+        return values
