@@ -11,21 +11,33 @@
                 (function(){
                     if (window.__irg_portal_placeholder_guard__) { return; }
                     window.__irg_portal_placeholder_guard__ = true;
-                    var origQS = Document.prototype.querySelector;
-                    Document.prototype.querySelector = function(sel){
+
+                    function ensureContainer(){
+                        var container = document.getElementById('irg_portal_placeholder_safeguards_global');
+                        if(!container){
+                            container = document.createElement('div');
+                            container.id = 'irg_portal_placeholder_safeguards_global';
+                            container.style.display = 'none';
+                            (document.documentElement || document.body).appendChild(container);
+                        }
+                        return container;
+                    }
+
+                    function extractPlaceholderName(sel){
+                        var m = sel && sel.match(/\[data-placeholder_count=(?:'|\")?([^'\"]+)(?:'|\")?\]/);
+                        return m && m[1];
+                    }
+
+                    var origDocQS = Document.prototype.querySelector;
+                    var origElemQS = Element.prototype.querySelector;
+
+                    function guardedQuerySelector(context, sel, orig){
                         try{
-                            var el = origQS.call(this, sel);
+                            var el = orig.call(context, sel);
                             if (!el && /placeholder_count/.test(sel)){
-                                var container = document.getElementById('irg_portal_placeholder_safeguards_global');
-                                if(!container){
-                                    container = document.createElement('div');
-                                    container.id = 'irg_portal_placeholder_safeguards_global';
-                                    container.style.display = 'none';
-                                    (document.documentElement || document.body).appendChild(container);
-                                }
-                                var m = sel.match(/\\[data-placeholder_count=(?:'|\")?([^'\"]+)(?:'|\")?\\]/);
-                                if(m){
-                                    var name = m[1];
+                                var container = ensureContainer();
+                                var name = extractPlaceholderName(sel);
+                                if(name){
                                     var s = container.querySelector('span[data-placeholder_count="'+name+'"]');
                                     if(!s){
                                         s = document.createElement('span');
@@ -38,8 +50,16 @@
                             }
                             return el;
                         }catch(e){
-                            return origQS.call(this, sel);
+                            try{ return orig.call(context, sel); }catch(err){ return null; }
                         }
+                    }
+
+                    Document.prototype.querySelector = function(sel){
+                        return guardedQuerySelector(this, sel, origDocQS);
+                    };
+
+                    Element.prototype.querySelector = function(sel){
+                        return guardedQuerySelector(this, sel, origElemQS);
                     };
                 })();
                 </script>
