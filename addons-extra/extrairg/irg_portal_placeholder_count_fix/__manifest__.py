@@ -12,6 +12,7 @@
     'category': 'Website',
     'depends': [
         'portal',
+        'openeducat_web',
     ],
     'data': [
         'views/portal_templates.xml',
