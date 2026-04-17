@@ -20,6 +20,9 @@
         'web.assets_frontend': [
             'irg_portal_placeholder_count_fix/static/src/js/portal.js',
         ],
+        'web.assets_frontend_lazy': [
+            'irg_portal_placeholder_count_fix/static/src/js/portal.js',
+        ],
     },
     'installable': True,
     'auto_install': False,
