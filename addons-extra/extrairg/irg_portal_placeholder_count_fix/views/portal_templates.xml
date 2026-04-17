@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Override del portal home para inyectar placeholders faltantes -->
+        <template id="portal.portal_my_home" inherit_id="portal.portal_my_home" name="Portal Home - IRG Placeholder Count Fix">
+            <!-- Inyectar elementos invisibles para todos los placeholders que portal.js busca -->
+            <!-- Esto previene "Cannot set properties of null" cuando faltan badges en el template original -->
+            <xpath expr="." position="inside">
+                <!-- Elementos invisibles que el JS del portal intentará actualizar -->
+                <div id="irg_portal_placeholder_safeguards" class="d-none" style="display:none !important;">
+                    <span data-placeholder_count="documents_quantity">0</span>
+                    <span data-placeholder_count="documents_count">0</span>
+                    <span data-placeholder_count="quotation_count">0</span>
+                    <span data-placeholder_count="order_count">0</span>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

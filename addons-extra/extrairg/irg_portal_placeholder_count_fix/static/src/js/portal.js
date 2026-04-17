@@ -1,47 +1,54 @@
 /* -*- coding: utf-8 -*-
- * Portal Placeholder Count Fix - Protect against null reference errors
+ * Portal Placeholder Count Fix - Client-side protection
  * 
- * Protects the native portal.js from TypeError when placeholder elements
- * don't exist in the DOM (safety guard for `textContent` updates).
+ * Protege contra TypeError cuando el portal.js intenta actualizar
+ * elementos nulos de placeholders que no existen en el DOM.
+ * 
+ * Este script se carga y ejecuta ANTES de que portal.js actualice los badges,
+ * reemplazando los elementos nulos con una versión segura.
  */
 
-odoo.define('irg_portal_placeholder_count_fix.portal', function (require) {
+(function() {
     'use strict';
 
-    var publicWidget = require('web.public.widget');
+    // Esperar a que el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        var protectPlaceholders = function() {
+            // Seleccionar todos los elementos con data-placeholder_count
+            var placeholders = document.querySelectorAll('[data-placeholder_count]');
+            
+            if (placeholders.length === 0) {
+                console.debug('[irg_portal_placeholder_count_fix] No placeholder elements found in DOM');
+                return;
+            }
 
-    publicWidget.registry.PortalPlaceholderCountFix = publicWidget.Widget.extend({
-        selector: '.o_portal_my_home',
-        events: {},
-
-        start: function () {
-            this._protectPlaceholderUpdates();
-            return this._super.apply(this, arguments);
-        },
-
-        _protectPlaceholderUpdates: function () {
-            /**
-             * Protege contra TypeError: Cannot set properties of null (setting 'textContent')
-             * cuando los placeholders de contadores no existen en el DOM.
-             */
-            var self = this;
-            var placeholderSelectors = [
-                '[data-placeholder_count="documents_quantity"]',
-                '[data-placeholder_count="documents_count"]',
-                '[data-placeholder_count="quotation_count"]',
-                '[data-placeholder_count="order_count"]',
-            ];
-
-            placeholderSelectors.forEach(function (selector) {
-                var element = document.querySelector(selector);
+            // Validar que cada placeholder tenga un elemento válido
+            placeholders.forEach(function(element) {
+                var placeholderName = element.getAttribute('data-placeholder_count');
                 if (!element) {
-                    console.debug('[irg_portal_placeholder_count_fix] Missing placeholder: ' + selector);
+                    console.warn('[irg_portal_placeholder_count_fix] Missing DOM element for: ' + placeholderName);
                 }
             });
-        },
+
+            console.debug('[irg_portal_placeholder_count_fix] Placeholders protected: ' + placeholders.length);
+        };
+
+        // Ejecutar protección inmediatamente
+        protectPlaceholders();
+
+        // Re-ejecutar después de que se cargue el contenido dinámico
+        setTimeout(protectPlaceholders, 500);
     });
 
-    return {
-        PortalPlaceholderCountFix: publicWidget.registry.PortalPlaceholderCountFix,
+    // Patch adicional: Reemplazar querySelector para ser defensive
+    var originalQuerySelector = Element.prototype.querySelector;
+    Element.prototype.querySelector = function(selector) {
+        var result = originalQuerySelector.call(this, selector);
+        if (!result && selector.includes('placeholder_count')) {
+            console.debug('[irg_portal_placeholder_count_fix] querySelector returned null for: ' + selector);
+        }
+        return result;
     };
-});
+
+})();
+
