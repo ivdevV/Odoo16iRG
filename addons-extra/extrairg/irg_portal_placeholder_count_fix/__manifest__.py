@@ -16,6 +16,7 @@
     ],
     'data': [
         'views/portal_templates.xml',
+        'views/portal_head_patch.xml',
     ],
     'assets': {
         'web.assets_frontend': [

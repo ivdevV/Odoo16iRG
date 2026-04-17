@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inject a small early script into the layout head to ensure
+             any selector looking for [data-placeholder_count] returns
+             a harmless hidden element (prevents textContent on null).
+             This runs before bundled assets. -->
+        <template id="irg_portal_head_guard" inherit_id="web.layout" name="IRG Portal Placeholder Head Guard">
+            <xpath expr="/html/head" position="inside">
+                <script type="text/javascript">
+                (function(){
+                    if (window.__irg_portal_placeholder_guard__) { return; }
+                    window.__irg_portal_placeholder_guard__ = true;
+                    var origQS = Document.prototype.querySelector;
+                    Document.prototype.querySelector = function(sel){
+                        try{
+                            var el = origQS.call(this, sel);
+                            if (!el && /placeholder_count/.test(sel)){
+                                var container = document.getElementById('irg_portal_placeholder_safeguards_global');
+                                if(!container){
+                                    container = document.createElement('div');
+                                    container.id = 'irg_portal_placeholder_safeguards_global';
+                                    container.style.display = 'none';
+                                    (document.documentElement || document.body).appendChild(container);
+                                }
+                                var m = sel.match(/\\[data-placeholder_count=(?:'|\")?([^'\"]+)(?:'|\")?\\]/);
+                                if(m){
+                                    var name = m[1];
+                                    var s = container.querySelector('span[data-placeholder_count="'+name+'"]');
+                                    if(!s){
+                                        s = document.createElement('span');
+                                        s.setAttribute('data-placeholder_count', name);
+                                        s.textContent = '0';
+                                        container.appendChild(s);
+                                    }
+                                    return s;
+                                }
+                            }
+                            return el;
+                        }catch(e){
+                            return origQS.call(this, sel);
+                        }
+                    };
+                })();
+                </script>
+            </xpath>
+        </template>
+    </data>
+</odoo>
