@@ -4,14 +4,14 @@ from odoo.http import request
 
 
 @tagged('post_install', '-at_install')
-class TestPortalPlaceholderCountFix(TransactionCase):
-    def test_prepare_home_portal_values_adds_default_counters(self):
-        from odoo.addons.irg_portal_placeholder_count_fix.controllers.portal import CustomerPortalPlaceholderCountFix
+class TestPortalPlaceholderSafe(TransactionCase):
+    def test_prepare_home_portal_values_defaults(self):
+        from odoo.addons.irg_portal_placeholder_safe.controllers.portal import CustomerPortalPlaceholderSafe
 
         old_env = getattr(request, 'env', None)
         request.env = self.env
         try:
-            controller = CustomerPortalPlaceholderCountFix()
+            controller = CustomerPortalPlaceholderSafe()
             values = controller._prepare_home_portal_values({})
             self.assertEqual(values.get('documents_quantity'), 0)
             self.assertEqual(values.get('documents_count'), 0)
