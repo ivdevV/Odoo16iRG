@@ -1,12 +1,13 @@
 from odoo import http
-from odoo.addons.website_slides.controllers.main import WebsiteSlides
+from odoo.addons.irg_elearning_restrictions.controllers.main import WebsiteSlidesCustom
 from odoo.http import request
 from datetime import date
 
 
-class WebsiteSlidesBatchRestrictions(WebsiteSlides):
+class WebsiteSlidesBatchRestrictions(WebsiteSlidesCustom):
     @http.route(['/slides/slide/<model("slide.slide"):slide>'], type='http', auth="public", website=True, sitemap=True)
     def slide_view(self, slide, **kwargs):
+        # Verificar fecha programada
         if slide.scheduled_date:
             today = date.today()
             if today < slide.scheduled_date:
@@ -15,26 +16,7 @@ class WebsiteSlidesBatchRestrictions(WebsiteSlides):
                     'scheduled_date': slide.scheduled_date,
                 })
 
-        if slide.restriction_slide_ids:
-            user = request.env.user
-            if user._is_public():
-                return request.redirect('/web/login?redirect=/slides/slide/%s' % slide.id)
-
-            completed_slide_ids = set(
-                request.env['slide.slide.partner'].sudo().search([
-                    ('partner_id', '=', user.partner_id.id),
-                    ('completed', '=', True),
-                ]).mapped('slide_id').ids
-            )
-            missing = slide.restriction_slide_ids.filtered(
-                lambda s: s.id not in completed_slide_ids
-            )
-            if missing:
-                return request.render('irg_elearning_restrictions.slide_restriction_error', {
-                    'slide': slide,
-                    'prerequisites': missing,
-                })
-
+        # Verificar restricción por lote
         if slide.sudo().allowed_batch_ids:
             user = request.env.user
             if user._is_public():
@@ -45,4 +27,5 @@ class WebsiteSlidesBatchRestrictions(WebsiteSlides):
                     'slide': slide,
                 })
 
+        # Delega morosidad + prerrequisitos a WebsiteSlidesCustom
         return super(WebsiteSlidesBatchRestrictions, self).slide_view(slide, **kwargs)
