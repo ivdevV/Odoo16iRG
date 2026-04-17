@@ -13,9 +13,7 @@
     'depends': [
         'portal',
     ],
-    'data': [
-        'views/assets.xml',
-    ],
+    'data': [],
     'assets': {
         'web.assets_frontend': [
             'irg_portal_placeholder_count_fix/static/src/js/portal.js',
