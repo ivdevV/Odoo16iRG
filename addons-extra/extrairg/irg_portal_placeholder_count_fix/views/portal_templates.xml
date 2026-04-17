@@ -15,5 +15,15 @@
                 </div>
             </xpath>
         </template>
+        
+            <!-- Also inject safeguards into OpenEduCat student portal menu template -->
+            <template id="irg_portal_student_menu_inherit" inherit_id="new_portal_menu" name="IRG Student Portal Placeholders">
+                <xpath expr="." position="inside">
+                    <div id="irg_portal_placeholder_safeguards_student" class="d-none" style="display:none !important;">
+                        <span data-placeholder_count="quotation_count">0</span>
+                        <span data-placeholder_count="order_count">0</span>
+                    </div>
+                </xpath>
+            </template>
     </data>
 </odoo>
