@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <!-- Override del portal home para inyectar placeholders faltantes -->
-        <template id="portal.portal_my_home" inherit_id="portal.portal_my_home" name="Portal Home - IRG Placeholder Count Fix">
+        <template id="irg_portal_my_home_inherit" inherit_id="portal.portal_my_home" name="Portal Home - IRG Placeholder Count Fix">
             <!-- Inyectar elementos invisibles para todos los placeholders que portal.js busca -->
             <!-- Esto previene "Cannot set properties of null" cuando faltan badges en el template original -->
             <xpath expr="." position="inside">
