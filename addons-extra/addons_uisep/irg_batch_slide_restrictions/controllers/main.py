@@ -1,12 +1,13 @@
 from odoo import http
-from odoo.addons.website_slides.controllers.main import WebsiteSlides
+from odoo.addons.irg_elearning_restrictions.controllers.main import WebsiteSlidesCustom
 from odoo.http import request
 from datetime import date
 
 
-class WebsiteSlidesBatchRestrictions(WebsiteSlides):
+class WebsiteSlidesBatchRestrictions(WebsiteSlidesCustom):
     @http.route(['/slides/slide/<model("slide.slide"):slide>'], type='http', auth="public", website=True, sitemap=True)
     def slide_view(self, slide, **kwargs):
+        # Verificar fecha programada
         if slide.scheduled_date:
             today = date.today()
             if today < slide.scheduled_date:
@@ -15,23 +16,7 @@ class WebsiteSlidesBatchRestrictions(WebsiteSlides):
                     'scheduled_date': slide.scheduled_date,
                 })
 
-        if slide.restriction_slide_id:
-            user = request.env.user
-            if user._is_public():
-                return request.redirect('/web/login?redirect=/slides/slide/%s' % slide.id)
-
-            domain = [
-                ('slide_id', '=', slide.restriction_slide_id.id),
-                ('partner_id', '=', user.partner_id.id),
-                ('completed', '=', True)
-            ]
-            has_completed = request.env['slide.slide.partner'].sudo().search_count(domain)
-            if not has_completed:
-                return request.render('irg_elearning_restrictions.slide_restriction_error', {
-                    'slide': slide,
-                    'prerequisite': slide.restriction_slide_id,
-                })
-
+        # Verificar restricción por lote
         if slide.sudo().allowed_batch_ids:
             user = request.env.user
             if user._is_public():
@@ -42,4 +27,21 @@ class WebsiteSlidesBatchRestrictions(WebsiteSlides):
                     'slide': slide,
                 })
 
+        # Delega morosidad + prerrequisitos a WebsiteSlidesCustom
         return super(WebsiteSlidesBatchRestrictions, self).slide_view(slide, **kwargs)
+
+    def _get_slide_detail(self, slide):
+        """Añade batch_blocked_slide_ids al contexto para ocultar completamente
+        en la sidebar del fullscreen los slides restringidos por lote."""
+        values = super(WebsiteSlidesBatchRestrictions, self)._get_slide_detail(slide)
+        user = request.env.user
+        if user._is_public():
+            values['batch_blocked_slide_ids'] = set()
+            return values
+
+        batch_blocked_ids = set()
+        for s in slide.channel_id.slide_content_ids.sudo():
+            if s.allowed_batch_ids and not s.is_user_allowed_by_batch(user):
+                batch_blocked_ids.add(s.id)
+        values['batch_blocked_slide_ids'] = batch_blocked_ids
+        return values

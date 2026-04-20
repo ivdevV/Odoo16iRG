@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Aplica el filtro de visibilidad de asignaturas por lote en el portal del alumno.
+
+        PROBLEMA PREVIO: heredar de la plantilla base (isep_website_custom) e insertar
+        antes del primer t-set='slide_channel_ids' no funcionaba porque irg_subject_fix
+        re-asigna subject_ids MÁS ABAJO en el arch combinado (A+B+C), sobreescribiendo
+        nuestro valor antes de que llegue al loop t-foreach.
+
+        SOLUCIÓN: heredar de irg_subject_fix.user_profile_content_details_irg_fix e
+        insertar nuestra asignación justo antes del div t-foreach="subject_ids",
+        que es la última posición antes del renderizado. Garantiza que nuestro
+        subject_ids es el valor efectivo en el loop.
+
+        Orden final de ejecuciones en el arch:
+          1. A (base): subject_ids = course_id.subject_ids
+          2. B (design): subject_ids = course_id.subject_ids  (re-set)
+          3. C (irg_subject_fix): subject_ids = batch-filtered
+          4. ESTE TEMPLATE: subject_ids = get_subjects_visible_for_batch(batch)  ← GANA
+          5. <div t-foreach="subject_ids"> ← usa nuestro valor
+    -->
+    <template id="user_profile_subject_visibility"
+              name="Subject Visibility Portal Filter"
+              inherit_id="irg_subject_fix.user_profile_content_details_irg_fix"
+              priority="16">
+
+        <!--
+            Insertar justo antes del div que itera las asignaturas.
+            En el arch de irg_subject_fix, el loop es:
+              <div class="col-12 col-lg-6" t-foreach="subject_ids" t-as="subject">
+        -->
+        <xpath expr="//div[@t-foreach='subject_ids']" position="before">
+            <!-- Obtener la admisión más reciente del alumno en este curso -->
+            <t t-set="vis_admission"
+               t-value="env['op.admission'].sudo().search(
+                   [('partner_id', '=', user.partner_id.id),
+                    ('course_id',  '=', course_id.id)],
+                   order='id desc', limit=1
+               )"/>
+            <t t-set="vis_batch"
+               t-value="vis_admission.batch_id if vis_admission else False"/>
+
+            <!--
+                Sobreescribir subject_ids con todos los subjects del curso filtrados
+                por nuestra lógica de visibilidad (visible_all_course_batches /
+                batch_visibility_ids). Al estar justo antes del t-foreach, es la
+                última asignación y no puede ser sobreescrita.
+            -->
+            <t t-set="subject_ids"
+               t-value="course_id.get_subjects_visible_for_batch(vis_batch)"/>
+        </xpath>
+
+    </template>
+</odoo>

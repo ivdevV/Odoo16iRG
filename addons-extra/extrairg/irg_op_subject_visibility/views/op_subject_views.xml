@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Extiende el formulario de op.subject heredando de la vista del módulo
+        irg_op_subject_multi_course (que ya reemplaza el field course_id por course_ids).
+        Se añade un grupo de visibilidad justo antes del chatter.
+    -->
+    <record id="view_op_subject_form_visibility" model="ir.ui.view">
+        <field name="name">op.subject.form.visibility</field>
+        <field name="model">op.subject</field>
+        <field name="inherit_id" ref="openeducat_teams.view_op_subject_webhook_inherited_form"/>
+        <field name="arch" type="xml">
+            <!--
+                openeducat_teams define el <notebook> dentro del sheet.
+                Heredamos de esa vista (no de multi_course) para que el xpath //notebook
+                sea válido en el arch del padre, y añadimos nuestra pestaña.
+            -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Visibilidad eLearning" name="elearning_visibility">
+                    <group col="2">
+                        <field name="visible_all_course_batches" widget="boolean_toggle"/>
+                        <field
+                            name="batch_visibility_ids"
+                            widget="many2many_tags"
+                            options="{'no_create': True}"
+                            attrs="{'invisible': [('visible_all_course_batches', '=', True)]}"
+                            colspan="2"
+                        />
+                        <field
+                            name="effective_batch_ids"
+                            widget="many2many_tags"
+                            readonly="1"
+                            colspan="2"
+                        />
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -10,7 +10,9 @@
             <!-- Basado en el XML proporcionado por el usuario donde se ve la estructura real -->
             <xpath expr="//page[@name='quiz']//group[@name='quiz_rewards']" position="before">
                 <group string="Prerrequisitos (iRG)">
-                    <field name="restriction_slide_id" domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"/>
+                    <field name="restriction_slide_ids" widget="many2many_tags"
+                           domain="[('channel_id', '=', channel_id), ('id', '!=', id)]"
+                           options="{'no_create': True}"/>
                 </group>
             </xpath>
         </field>

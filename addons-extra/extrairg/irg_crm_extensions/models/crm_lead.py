@@ -10,6 +10,11 @@ class CrmLead(models.Model):
         help="Comercial asignado justo antes del actual."
     )
 
+    fecha_reactivacion = fields.Datetime(
+        string="Fecha Reactivación",
+        help="Fecha en la que el lead fue reactivado (el contacto volvió a pedir información sin necesidad de crear un nuevo lead).",
+    )
+
     # CAMPOS "FANTASMA" PARA EVITAR ERROR DE INSTALACION
     # Definimos estos campos aquí para que Odoo reconozca que existen y NO intente borrar
     # las columnas de la base de datos, lo cual está causando el error de constraint.

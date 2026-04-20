@@ -6,13 +6,22 @@
                 <div class="alert alert-warning" role="alert">
                     <h4 class="alert-heading">Contenido Bloqueado</h4>
                     <p>
-                        Para acceder a este contenido (<strong><t t-esc="slide.name"/></strong>), 
-                        primero debes completar el siguiente requisito:
+                        Para acceder a este contenido (<strong><t t-esc="slide.name"/></strong>),
+                        primero debes completar los siguientes requisitos:
                     </p>
+                    <ul class="mb-3">
+                        <t t-foreach="prerequisites" t-as="prereq">
+                            <li>
+                                <a t-att-href="'/slides/slide/%s' % prereq.id">
+                                    <t t-esc="prereq.name"/>
+                                </a>
+                            </li>
+                        </t>
+                    </ul>
                     <hr/>
                     <p class="mb-0">
-                        <a t-att-href="'/slides/slide/%s' % prerequisite.id" class="btn btn-primary">
-                            Ir a <t t-esc="prerequisite.name"/>
+                        <a t-att-href="'/slides/%s' % slide.channel_id.id" class="btn btn-secondary">
+                            Volver al curso
                         </a>
                     </p>
                 </div>
@@ -33,5 +42,16 @@
                 </div>
             </div>
         </t>
+    </template>
+    <template id="slide_fullscreen_sidebar_restriction"
+              inherit_id="website_slides.slide_fullscreen_sidebar_category"
+              name="Sidebar: marcar como no accesibles los slides con prerrequisitos pendientes">
+        <!-- Añade un t-set DESPUÉS del original para sobreescribir can_access
+             cuando el slide tiene prerrequisitos pendientes.
+             restricted_slide_ids es un set inyectado por WebsiteSlidesCustom._get_slide_detail -->
+        <xpath expr="//t[@t-set='can_access']" position="after">
+            <t t-if="restricted_slide_ids and slide.id in restricted_slide_ids"
+               t-set="can_access" t-value="False"/>
+        </xpath>
     </template>
 </odoo>

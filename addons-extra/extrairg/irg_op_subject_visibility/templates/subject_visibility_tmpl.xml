@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Página de aviso que se muestra cuando un estudiante intenta acceder a un canal de
+        eLearning cuya asignatura vinculada no está habilitada para su lote actual.
+        Variables recibidas del controlador:
+          - channel_name: nombre del slide.channel
+          - subject_name: nombre de la op.subject vinculada
+    -->
+    <template id="template_subject_not_visible" name="Asignatura no visible para el lote">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="s_text_block pt80 pb80">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8 text-center">
+                                <h3>Contenido no disponible</h3>
+                                <p class="lead">
+                                    La asignatura <strong><t t-esc="subject_name"/></strong>
+                                    no está habilitada para tu grupo de matriculación actual.
+                                </p>
+                                <p>
+                                    Si crees que es un error, contacta con tu responsable académico.
+                                </p>
+                                <a href="/my/home" class="btn btn-primary mt-4">
+                                    Volver a mi cuenta
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

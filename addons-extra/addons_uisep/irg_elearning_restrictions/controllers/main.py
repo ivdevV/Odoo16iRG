@@ -18,25 +18,52 @@ class WebsiteSlidesCustom(WebsiteSlides):
                 'slide': slide,
             })
 
-        if slide.restriction_slide_id:
+        if slide.restriction_slide_ids:
             user = request.env.user
-            # Si es public user, probablemente queramos bloquear o pedir login
+            # Si es public user, pedir login
             if user._is_public():
-                 return request.redirect('/web/login?redirect=/slides/slide/%s' % slide.id)
+                return request.redirect('/web/login?redirect=/slides/slide/%s' % slide.id)
 
-            # Check if prerequisite is completed
-            domain = [
-                ('slide_id', '=', slide.restriction_slide_id.id),
-                ('partner_id', '=', user.partner_id.id),
-                ('completed', '=', True)
-            ]
-            has_completed = request.env['slide.slide.partner'].sudo().search_count(domain)
-            
-            if not has_completed:
-                # Opción A: Redirigir al requisito
+            # Comprobar que TODOS los requisitos están completados
+            completed_slide_ids = set(
+                request.env['slide.slide.partner'].sudo().search([
+                    ('partner_id', '=', user.partner_id.id),
+                    ('completed', '=', True),
+                ]).mapped('slide_id').ids
+            )
+            missing = slide.restriction_slide_ids.filtered(
+                lambda s: s.id not in completed_slide_ids
+            )
+            if missing:
                 return request.render('irg_elearning_restrictions.slide_restriction_error', {
                     'slide': slide,
-                    'prerequisite': slide.restriction_slide_id,
+                    'prerequisites': missing,
                 })
         
         return super(WebsiteSlidesCustom, self).slide_view(slide, **kwargs)
+
+    def _get_slide_detail(self, slide):
+        """Añade restricted_slide_ids al contexto del fullscreen para bloquear
+        la navegación JS en slides con prerrequisitos no completados."""
+        values = super(WebsiteSlidesCustom, self)._get_slide_detail(slide)
+        user = request.env.user
+        if user._is_public():
+            values['restricted_slide_ids'] = set()
+            return values
+
+        completed_slide_ids = set(
+            request.env['slide.slide.partner'].sudo().search([
+                ('partner_id', '=', user.partner_id.id),
+                ('completed', '=', True),
+            ]).mapped('slide_id').ids
+        )
+        restricted_ids = set()
+        for s in slide.channel_id.slide_content_ids.sudo():
+            if s.restriction_slide_ids:
+                missing = s.restriction_slide_ids.filtered(
+                    lambda r: r.id not in completed_slide_ids
+                )
+                if missing:
+                    restricted_ids.add(s.id)
+        values['restricted_slide_ids'] = restricted_ids
+        return values
