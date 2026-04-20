@@ -9,6 +9,11 @@
             <xpath expr="//field[@name='user_id']" position="after">
                 <field name="last_user_id" widget="many2one_avatar_user"/>
             </xpath>
+            <xpath expr="//page[@name='extra_info']" position="inside">
+                <group string="Reactivación">
+                    <field name="fecha_reactivacion"/>
+                </group>
+            </xpath>
         </field>
     </record>
 
@@ -20,6 +25,30 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='user_id']" position="after">
                 <field name="last_user_id" optional="show"/>
+                <field name="fecha_reactivacion" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- VISTA BÚSQUEDA: filtros por fecha de reactivación -->
+    <record id="crm_lead_view_search_extension" model="ir.ui.view">
+        <field name="name">crm.lead.view.search.extension</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_form_view_leads_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='my_activities']" position="after">
+                <separator/>
+                <filter
+                    string="Reactivados"
+                    name="reactivados"
+                    domain="[('fecha_reactivacion', '!=', False)]"
+                    help="Leads que han sido reactivados"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter
+                    string="Fecha Reactivación"
+                    name="group_fecha_reactivacion"
+                    context="{'group_by': 'fecha_reactivacion:month'}"/>
             </xpath>
         </field>
     </record>
