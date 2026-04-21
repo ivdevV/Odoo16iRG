@@ -129,11 +129,17 @@ class CrmLeadDedup(models.Model):
             if loser_fecha and (not winner_fecha or loser_fecha > winner_fecha):
                 winner.fecha_reactivacion = loser_fecha
 
-        # --- Mensajes del chatter: reasignar al winner ---
-        loser.message_ids.sudo().write({'res_id': winner.id})
+        # --- Mensajes del chatter: reasignar al winner via SQL (sin disparar eventos ORM) ---
+        self.env.cr.execute(
+            "UPDATE mail_message SET res_id = %s WHERE model = 'crm.lead' AND res_id = %s",
+            (winner.id, loser.id)
+        )
 
-        # --- Actividades: reasignar ---
-        loser.activity_ids.sudo().write({'res_id': winner.id})
+        # --- Actividades: reasignar via SQL ---
+        self.env.cr.execute(
+            "UPDATE mail_activity SET res_id = %s WHERE res_model = 'crm.lead' AND res_id = %s",
+            (winner.id, loser.id)
+        )
 
         # --- Archivar el loser ---
         loser.sudo().write({'active': False})
