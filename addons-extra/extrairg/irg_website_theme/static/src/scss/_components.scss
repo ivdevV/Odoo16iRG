@@ -1,0 +1,312 @@
+// ============================================================
+// IRG Website Theme — Componentes UI
+//
+// Sobreescritura de componentes Odoo usando variables Bootstrap.
+// NO usar colores hardcoded. Siempre $primary, $secondary, etc.
+// ============================================================
+
+
+// ============================================================
+// NAVBAR
+// ============================================================
+
+nav#top,
+.o_main_nav,
+.o_website_navbar {
+    background: $primary !important;
+    box-shadow: 0 2px 12px rgba($black, 0.15);
+
+    .navbar-brand,
+    .nav-logo {
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    .nav-link {
+        color: rgba($white, 0.88) !important;
+        font-weight: 500;
+        transition: color 0.2s ease;
+        padding: 0.4rem 0.75rem;
+
+        &:hover,
+        &:focus {
+            color: $white !important;
+        }
+
+        &.active {
+            color: $white !important;
+            font-weight: 600;
+        }
+    }
+
+    // Dropdown del navbar
+    .dropdown-menu {
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+        box-shadow: $box-shadow;
+        padding: 0.5rem 0;
+
+        .dropdown-item {
+            font-size: $font-size-sm;
+            padding: 0.45rem 1rem;
+            transition: background-color 0.15s ease;
+
+            &:hover,
+            &:focus {
+                background-color: rgba($primary, 0.07);
+                color: $primary;
+            }
+
+            &.active {
+                background-color: $primary;
+                color: $white;
+            }
+        }
+    }
+}
+
+
+// ============================================================
+// BOTONES
+// ============================================================
+
+.btn {
+    letter-spacing: 0.01em;
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: $box-shadow-sm;
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.btn-primary {
+    background-color: $primary;
+    border-color: $primary;
+
+    &:hover,
+    &:focus {
+        background-color: darken($primary, 6%);
+        border-color: darken($primary, 6%);
+    }
+}
+
+.btn-secondary {
+    background-color: $secondary;
+    border-color: $secondary;
+
+    &:hover,
+    &:focus {
+        background-color: darken($secondary, 6%);
+        border-color: darken($secondary, 6%);
+    }
+}
+
+.btn-outline-primary {
+    color: $primary;
+    border-color: $primary;
+
+    &:hover,
+    &:focus {
+        background-color: $primary;
+        color: $white;
+    }
+}
+
+
+// ============================================================
+// CARDS
+// ============================================================
+
+.card {
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow-sm;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    overflow: hidden;
+
+    &:hover {
+        box-shadow: $box-shadow;
+        transform: translateY(-2px);
+    }
+
+    .card-header {
+        background: rgba($gray-100, 0.8);
+        border-bottom: 1px solid $border-color;
+        font-weight: 600;
+        padding: 0.875rem $card-spacer-x;
+    }
+
+    .card-body {
+        padding: $card-spacer-y $card-spacer-x;
+    }
+
+    .card-footer {
+        background: rgba($gray-100, 0.6);
+        border-top: 1px solid $border-color;
+        padding: 0.75rem $card-spacer-x;
+    }
+}
+
+
+// ============================================================
+// BREADCRUMBS
+// ============================================================
+
+.breadcrumb {
+    background: rgba($primary, 0.06);
+    border: 1px solid rgba($primary, 0.15);
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    font-size: $font-size-sm;
+
+    .breadcrumb-item {
+        color: $gray-600;
+
+        a {
+            color: $gray-700;
+            text-decoration: none;
+
+            &:hover {
+                color: $primary;
+            }
+        }
+
+        &.active {
+            color: $primary;
+            font-weight: 600;
+        }
+
+        + .breadcrumb-item::before {
+            color: $gray-400;
+        }
+    }
+}
+
+
+// ============================================================
+// BADGES
+// ============================================================
+
+.badge {
+    font-weight: $badge-font-weight;
+    letter-spacing: 0.02em;
+    border-radius: $badge-border-radius;
+}
+
+.badge.bg-primary { background-color: $primary !important; }
+.badge.bg-secondary { background-color: $secondary !important; }
+
+
+// ============================================================
+// FORMULARIOS
+// ============================================================
+
+.form-control,
+.form-select {
+    border-color: $input-border-color;
+    border-radius: $input-border-radius;
+    background-color: $input-bg;
+    color: $body-color;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:focus {
+        border-color: $input-focus-border-color;
+        box-shadow: 0 0 0 3px rgba($primary, 0.15);
+        outline: none;
+    }
+
+    &::placeholder {
+        color: $gray-400;
+    }
+}
+
+.form-label {
+    font-weight: $form-label-font-weight;
+    color: $gray-700;
+    margin-bottom: 0.35rem;
+    font-size: $font-size-sm;
+}
+
+
+// ============================================================
+// TABLAS
+// ============================================================
+
+.table {
+    border-color: $border-color;
+
+    thead th {
+        font-weight: 600;
+        color: $gray-700;
+        border-bottom: 2px solid rgba($primary, 0.15);
+        font-size: $font-size-sm;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    tbody tr {
+        transition: background-color 0.15s ease;
+
+        &:hover {
+            background-color: rgba($primary, 0.04);
+        }
+    }
+
+    &.table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba($primary, 0.02);
+    }
+}
+
+
+// ============================================================
+// ALERTAS
+// ============================================================
+
+.alert {
+    border-radius: $border-radius;
+    border-width: 0;
+    border-left: 4px solid;
+    font-size: $font-size-sm;
+
+    &.alert-primary { border-color: $primary; background-color: rgba($primary, 0.08); color: darken($primary, 10%); }
+    &.alert-success { border-color: $success; background-color: rgba($success, 0.08); color: darken($success, 10%); }
+    &.alert-danger  { border-color: $danger;  background-color: rgba($danger, 0.08);  color: darken($danger, 10%);  }
+    &.alert-warning { border-color: $warning; background-color: rgba($warning, 0.08); color: darken($warning, 20%); }
+    &.alert-info    { border-color: $info;    background-color: rgba($info, 0.08);    color: darken($info, 10%);    }
+}
+
+
+// ============================================================
+// FOOTER
+// ============================================================
+
+footer,
+#footer,
+.o_footer {
+    background: $primary;
+    color: rgba($white, 0.85);
+    border-top: 3px solid $secondary;
+
+    a {
+        color: rgba($white, 0.75);
+        text-decoration: none;
+        transition: color 0.2s ease;
+
+        &:hover {
+            color: $white;
+        }
+    }
+
+    .o_footer_copyright {
+        color: rgba($white, 0.5);
+        font-size: $font-size-sm;
+        border-top: 1px solid rgba($white, 0.1);
+        padding-top: 1rem;
+        margin-top: 1.5rem;
+    }
+}

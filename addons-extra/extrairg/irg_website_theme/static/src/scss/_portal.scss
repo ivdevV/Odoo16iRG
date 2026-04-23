@@ -1,0 +1,179 @@
+// ============================================================
+// IRG Website Theme — Portal del Alumno
+//
+// Personalización del portal (/my/home, /campus, etc.)
+// Usa exclusivamente variables Bootstrap definidas en _variables.scss
+// ============================================================
+
+
+// ============================================================
+// WRAPPER GENERAL DEL PORTAL
+// ============================================================
+
+.o_portal_wrap {
+    background-color: $body-bg;
+    min-height: 80vh;
+
+    .o_portal_sidebar {
+        background: $white;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+        box-shadow: $box-shadow-sm;
+    }
+}
+
+
+// ============================================================
+// PORTAL — HOME (menú de módulos)
+// ============================================================
+
+.o_portal_docs {
+    .o_portal_doc_entry {
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+        padding: 1rem 1.25rem;
+        background: $white;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+        text-decoration: none;
+        color: $body-color;
+
+        &:hover {
+            box-shadow: $box-shadow;
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: $primary;
+        }
+
+        .o_portal_doc_count {
+            background: rgba($primary, 0.1);
+            color: $primary;
+            border-radius: 999px;
+            font-size: $font-size-sm;
+            font-weight: 700;
+            padding: 0.2rem 0.65rem;
+            min-width: 2rem;
+            text-align: center;
+        }
+    }
+}
+
+
+// ============================================================
+// PORTAL — TABLES (listados: pedidos, facturas, etc.)
+// ============================================================
+
+.o_portal_chatter_message_count {
+    font-size: $font-size-sm;
+    color: $gray-600;
+}
+
+// Header de sección en el portal
+.o_portal_section_header {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $gray-500;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid $border-color;
+}
+
+
+// ============================================================
+// CAMPUS — DASHBOARD (/campus)
+// ============================================================
+
+// Cards de asignaturas/cursos en el campus
+.card_new,
+.o_campus_card {
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow-sm;
+    background: $white;
+    overflow: hidden;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+
+    &:hover {
+        box-shadow: $box-shadow;
+        transform: translateY(-3px);
+    }
+
+    .card-header,
+    .o_campus_card_header {
+        background: linear-gradient(
+            135deg,
+            rgba($primary, 0.9) 0%,
+            rgba($primary, 0.7) 60%,
+            rgba($secondary, 0.6) 100%
+        );
+        color: $white;
+        font-weight: 600;
+        padding: 0.875rem 1rem;
+    }
+}
+
+// Submenu del campus (el que estaba hardcoded en isep_website_custom)
+.submenu_campus {
+    padding: 0.45rem 1rem;
+    background: $primary;
+    color: $white;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+}
+
+.subcampus_item {
+    display: block;
+    width: 100%;
+    padding: 0.3rem 1rem;
+    color: $gray-800;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+    font-size: $font-size-sm;
+
+    &:hover,
+    &:active {
+        background-color: rgba($primary, 0.08);
+        color: $primary;
+    }
+}
+
+
+// ============================================================
+// PORTAL — BREADCRUMBS
+// ============================================================
+
+.o_portal_wrap .breadcrumb {
+    background: rgba($primary, 0.05);
+    border: 1px solid rgba($primary, 0.12);
+    border-radius: 999px;
+    padding: 0.3rem 0.85rem;
+    font-size: $font-size-sm;
+    margin-bottom: 1.5rem;
+}
+
+
+// ============================================================
+// RESPONSIVE — Ajustes mobile
+// ============================================================
+
+@media (max-width: 767.98px) {
+    .o_portal_wrap {
+        padding: 0.75rem;
+    }
+
+    .o_portal_docs .o_portal_doc_entry {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .submenu_campus {
+        font-size: 0.65rem;
+    }
+}
