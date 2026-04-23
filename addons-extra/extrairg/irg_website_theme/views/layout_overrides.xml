@@ -51,90 +51,11 @@
         </template>
 
 
-        <!-- ============================================================
-             4. Footer — Override del footer corporativo IRG
-             Reemplazamos el contenido del footer con la estructura
-             de la institución. Hereda website.footer.
-             AJUSTAR: Textos, links, redes sociales y columnas según necesidad.
-        ============================================================ -->
-        <template id="footer_irg"
-                  inherit_id="website.footer"
-                  name="IRG — Footer corporativo">
-            <xpath expr="//div[@id='footer']" position="replace">
-                <div id="footer" class="o_footer irg-footer py-5">
-                    <div class="container">
-                        <div class="row gy-4">
-
-                            <!-- Columna 1: Logotipo e identidad -->
-                            <div class="col-12 col-md-4">
-                                <a href="/" class="d-inline-block mb-3">
-                                    <t t-call="website.logo"/>
-                                </a>
-                                <p class="small mb-3" style="color: rgba(255,255,255,0.65);">
-                                    Instituto Raimon Gaju — Formación superior de calidad.
-                                </p>
-                            </div>
-
-                            <!-- Columna 2: Campus y formación -->
-                            <div class="col-6 col-md-2">
-                                <p class="fw-bold mb-2 text-white small text-uppercase" style="letter-spacing:.06em;">
-                                    Campus
-                                </p>
-                                <ul class="list-unstyled mb-0">
-                                    <li><a href="/campus" class="irg-footer-link small">Mi Campus</a></li>
-                                    <li><a href="/slides" class="irg-footer-link small">Formación</a></li>
-                                    <li><a href="/my/home" class="irg-footer-link small">Mi Cuenta</a></li>
-                                </ul>
-                            </div>
-
-                            <!-- Columna 3: Legal -->
-                            <div class="col-6 col-md-2">
-                                <p class="fw-bold mb-2 text-white small text-uppercase" style="letter-spacing:.06em;">
-                                    Legal
-                                </p>
-                                <ul class="list-unstyled mb-0">
-                                    <li><a href="/privacy" class="irg-footer-link small">Privacidad</a></li>
-                                    <li><a href="/terms" class="irg-footer-link small">Términos</a></li>
-                                    <li><a href="/cookies" class="irg-footer-link small">Cookies</a></li>
-                                </ul>
-                            </div>
-
-                            <!-- Columna 4: Contacto -->
-                            <div class="col-12 col-md-4">
-                                <p class="fw-bold mb-2 text-white small text-uppercase" style="letter-spacing:.06em;">
-                                    Contacto
-                                </p>
-                                <ul class="list-unstyled mb-0">
-                                    <li class="small" style="color: rgba(255,255,255,0.65);">
-                                        <i class="fa fa-envelope me-2"/>
-                                        <a href="mailto:info@institutoraimongaju.com" class="irg-footer-link small">
-                                            info@institutoraimongaju.com
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-
-                        </div><!-- /.row -->
-
-                        <!-- Copyright -->
-                        <div class="o_footer_copyright mt-4 pt-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-                            <span class="small" style="color: rgba(255,255,255,0.45);">
-                                © <t t-esc="datetime.date.today().year"/> Instituto Raimon Gaju. Todos los derechos reservados.
-                            </span>
-                            <div class="d-flex gap-3">
-                                <a href="/web#action=website.action_website"
-                                   t-if="editable"
-                                   class="small"
-                                   style="color: rgba(255,255,255,0.35);">
-                                    Editar
-                                </a>
-                            </div>
-                        </div>
-
-                    </div><!-- /.container -->
-                </div><!-- /#footer -->
-            </xpath>
-        </template>
+        <!-- NOTA: El footer en Odoo 16 se gestiona vía el Website Builder
+             (se guarda en base de datos, no como template XML estático).
+             El template website.footer no existe como xmlid independiente
+             en todas las instalaciones. El estilo del footer se controla
+             desde _components.scss con los selectores footer, #footer, .o_footer -->
 
     </data>
 </odoo>
