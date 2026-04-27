@@ -1,7 +1,9 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
+import ast
 import logging
 
 from odoo import SUPERUSER_ID, api
+from odoo.osv import expression
 
 _logger = logging.getLogger(__name__)
 
@@ -88,7 +90,70 @@ def repair_move_lines_source(env):
         )
 
 
+def repair_analytic_domains(env):
+    """Clear analytic_domain values that reference fields not on account.move.line.
+
+    mis.report.instance and mis.report.instance.period both have an
+    ``analytic_domain`` Text field whose value is evaluated and appended to the
+    move-line query domain.  If a domain leaf references a field that does not
+    exist on ``account.move.line`` (e.g. ``custom_value`` from
+    ``product.attribute.custom.value``), the query will fail with
+    ``ValueError: Invalid field account.move.line.<field>``.
+
+    This function parses each stored domain, checks every leaf against the
+    actual fields of ``account.move.line``, and resets invalid domains to
+    ``[]``.
+    """
+    aml_fields = set(env["account.move.line"].sudo()._fields.keys())
+
+    def _domain_has_invalid_field(domain_str):
+        """Return True if any leaf field in domain_str is not in aml_fields."""
+        try:
+            domain = ast.literal_eval(domain_str or "[]")
+            if not domain:
+                return False
+            # Walk every leaf; a leaf is a 3-tuple (field_path, op, value).
+            for leaf in domain:
+                if not expression.is_leaf(leaf):
+                    continue
+                field_path = leaf[0].split(".")[0]  # only check first segment
+                if field_path not in aml_fields:
+                    return True
+        except Exception:
+            # Unparseable domain — treat as invalid to be safe.
+            return True
+        return False
+
+    fixed = 0
+    for model_name in ("mis.report.instance", "mis.report.instance.period"):
+        records = env[model_name].sudo().search([])
+        for rec in records:
+            domain_str = rec.analytic_domain
+            if domain_str and domain_str.strip() not in ("[]", ""):
+                if _domain_has_invalid_field(domain_str):
+                    _logger.warning(
+                        "irg_mis_builder_fix: clearing invalid analytic_domain "
+                        "on %s id=%s: %s",
+                        model_name,
+                        rec.id,
+                        domain_str,
+                    )
+                    rec.analytic_domain = "[]"
+                    fixed += 1
+
+    if fixed:
+        _logger.info(
+            "irg_mis_builder_fix: cleared %d invalid analytic_domain value(s).",
+            fixed,
+        )
+    else:
+        _logger.info(
+            "irg_mis_builder_fix: all analytic_domain values are valid."
+        )
+
+
 def post_init_hook(cr, registry):
     """Run on first install."""
     env = api.Environment(cr, SUPERUSER_ID, {})
     repair_move_lines_source(env)
+    repair_analytic_domains(env)
