@@ -11,7 +11,7 @@
     """,
     'author': 'IRG',
     'category': 'eLearning',
-    'depends': ['website_slides'],
+    'depends': ['website_slides', 'isep_content_interactive'],
     'data': [
         'views/slide_slide_views.xml',
         'views/website_slides_templates.xml',
