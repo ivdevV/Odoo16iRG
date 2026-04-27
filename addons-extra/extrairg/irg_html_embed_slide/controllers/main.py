@@ -44,7 +44,7 @@ class IrgHtmlEmbedController(http.Controller):
         if not slide.exists():
             return {'is_embed': False, 'html_content': ''}
 
-        if slide.irg_use_html_embed and slide.irg_html_embed_code:
+        if slide.irg_use_html_embed and slide.irg_html_embed_code and slide.irg_html_embed_code.strip():
             lang = _lang_code(request.env.user.lang)
             html = slide.with_context(lang=lang).irg_html_embed_code or ''
             return {'is_embed': True, 'html_content': html}

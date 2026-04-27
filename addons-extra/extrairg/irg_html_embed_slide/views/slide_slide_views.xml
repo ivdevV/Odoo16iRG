@@ -11,12 +11,11 @@
                 <page name="irg_content_interactive" string="Contenido Interactivo">
                     <group string="Contenido Interactivo">
                         <group>
-                            <!-- Solo lectura: se activa automáticamente al rellenar el campo HTML -->
-                            <field name="irg_use_html_embed" readonly="1"/>
+                            <field name="irg_use_html_embed"/>
                         </group>
-                        <group>
-                            <field name="irg_html_embed_code" widget="text" nolabel="0"/>
-                        </group>
+                        <group/>
+                        <field name="irg_html_embed_code" widget="text" colspan="2"
+                               attrs="{'invisible': [('irg_use_html_embed', '=', False)]}"/>
                     </group>
                 </page>
             </xpath>
