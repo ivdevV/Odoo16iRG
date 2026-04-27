@@ -17,7 +17,7 @@
 
         <!--
             Reemplaza el <t t-if="slide.use_html_embed..."> de isep por nuestra
-            cadena irg → isep (como fallback) → normal.
+            cadena irg → isep (como fallback) →anormal.
             El <t t-else=""> que viene después en el template padre sigue
             gestionando el contenido nativo.
         -->
