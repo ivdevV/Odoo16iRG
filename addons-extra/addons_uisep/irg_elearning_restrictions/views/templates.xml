@@ -12,9 +12,7 @@
                     <ul class="mb-3">
                         <t t-foreach="prerequisites" t-as="prereq">
                             <li>
-                                <a t-att-href="'/slides/slide/%s' % prereq.id">
-                                    <t t-esc="prereq.name"/>
-                                </a>
+                                <t t-esc="prereq.name"/>
                             </li>
                         </t>
                     </ul>
