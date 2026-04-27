@@ -17,7 +17,13 @@
                     <group>
                         <field name="irg_use_html_embed"/>
                     </group>
-                    <group/>
+                    <group>
+                        <button string="Cargar plantilla Test"
+                                name="action_load_test_template"
+                                type="object"
+                                class="btn btn-secondary"
+                                help="Rellena el campo HTML con la plantilla estándar de actividad tipo test. Recuerda ajustar el ID del slide en la URL."/>
+                    </group>
                     <field name="irg_html_embed_code" widget="text" colspan="2"
                            attrs="{'invisible': [('irg_use_html_embed', '=', False)]}"/>
                 </group>
