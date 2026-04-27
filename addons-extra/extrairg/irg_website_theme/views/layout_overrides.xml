@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================================
+             1. Layout raíz — Añadir fuentes Inter al <head>
+             Heredamos website.layout para inyectar el <link> de Google Fonts
+             sin modificar el módulo website.
+             NOTA: Las fuentes se cargan aquí (HTML), no en SCSS,
+             para evitar incompatibilidades con el compilador LibSass de Odoo.
+        ============================================================ -->
+        <template id="layout_head_fonts"
+                  inherit_id="website.layout"
+                  name="IRG — Fuentes corporativas (Inter)">
+            <xpath expr="//head" position="inside">
+                <!-- Preconnect para reducir latencia -->
+                <link rel="preconnect" href="https://fonts.googleapis.com"/>
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+                <!-- Inter: pesos 400 (normal), 500 (medium), 600 (semibold), 700 (bold) -->
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+                      rel="stylesheet"/>
+            </xpath>
+        </template>
+
+
+        <!-- ============================================================
+             2. Navbar — Añadir clase de tema IRG al header
+             Usamos position="attributes" para añadir una clase extra
+             al header sin reemplazarlo completo.
+        ============================================================ -->
+        <template id="navbar_irg_class"
+                  inherit_id="website.layout"
+                  name="IRG — Clase de tema en navbar">
+            <xpath expr="//header[@id='top']" position="attributes">
+                <attribute name="class" add="irg-navbar-theme" separator=" "/>
+            </xpath>
+        </template>
+
+
+        <!-- ============================================================
+             3. Cuerpo — Añadir clase de tema al body para scoping CSS
+             Permite usar .irg-theme body { ... } en SCSS si hace falta
+             aislar estilos del tema.
+        ============================================================ -->
+        <template id="body_irg_class"
+                  inherit_id="website.layout"
+                  name="IRG — Clase de tema en body">
+            <xpath expr="//body" position="attributes">
+                <attribute name="class" add="irg-theme" separator=" "/>
+            </xpath>
+        </template>
+
+
+        <!-- NOTA: El footer en Odoo 16 se gestiona vía el Website Builder
+             (se guarda en base de datos, no como template XML estático).
+             El template website.footer no existe como xmlid independiente
+             en todas las instalaciones. El estilo del footer se controla
+             desde _components.scss con los selectores footer, #footer, .o_footer -->
+
+    </data>
+</odoo>

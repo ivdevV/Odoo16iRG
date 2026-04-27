@@ -9,7 +9,7 @@
             <xpath expr="//field[@name='user_id']" position="after">
                 <field name="last_user_id" widget="many2one_avatar_user"/>
             </xpath>
-            <xpath expr="//page[@name='extra_info']" position="inside">
+            <xpath expr="//page[@name='extra']" position="inside">
                 <group string="Reactivación">
                     <field name="fecha_reactivacion"/>
                 </group>
@@ -34,9 +34,9 @@
     <record id="crm_lead_view_search_extension" model="ir.ui.view">
         <field name="name">crm.lead.view.search.extension</field>
         <field name="model">crm.lead</field>
-        <field name="inherit_id" ref="crm.crm_case_form_view_leads_filter"/>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
         <field name="arch" type="xml">
-            <xpath expr="//filter[@name='my_activities']" position="after">
+            <xpath expr="//filter[last()]" position="after">
                 <separator/>
                 <filter
                     string="Reactivados"
