@@ -4,7 +4,7 @@
 Habilitar segundo intento real en examenes tipo test de eLearning.
 
 ## 2. Resumen objetivo
-Corregir el flujo de examenes tipo test para que el alumno pueda iniciar un segundo intento en lugar de caer directamente en la pantalla de resultado del primer intento.
+Corregir el flujo de examenes tipo test para que el alumno pueda iniciar un segundo intento en lugar de caer directamente en la pantalla de resultado del primer intento, y asegurar que la nota del intento cerrado se sincronice con la libreta academica correcta.
 
 ## 3. Motivo / justificacion
 `isep_survey` fuerza los examenes academicos como surveys con intentos limitados, pero no garantiza que el limite sea de dos intentos. Como no se modifica Odoo nativo ni `isep_survey`, la correccion se implementa en el modulo extra existente `irg_survey_second_attempt_fix` mediante herencia de modelos y hook de actualizacion.
@@ -12,6 +12,7 @@ Corregir el flujo de examenes tipo test para que el alumno pueda iniciar un segu
 ## 4. Alcance exacto
 - Modelo heredado: `survey.survey`.
 - Modelo heredado existente: `survey.user_input`.
+- Sincronizacion con `app.gradebook.result` cuando el intento de examen pasa a `done`.
 - Hook de instalacion y XML de datos para surveys tipo examen ya existentes.
 - Documentacion tecnica del modulo.
 - Sin cambios de vistas, controladores, assets ni permisos.
@@ -25,9 +26,12 @@ Corregir el flujo de examenes tipo test para que el alumno pueda iniciar un segu
 - Agregar metodo `irg_fix_exam_attempt_limits()` ejecutado desde XML de datos para que tambien corra en `-u`.
 - Agregar `hooks.py` con `post_init_hook` para cubrir instalaciones frescas.
 - Conservar la correccion existente de `survey.user_input.scoring_success` para que el resultado mostrado corresponda al intento actual.
+- Al cerrar un intento `exam`, localizar/crear la `app.gradebook.subject` que corresponde a `admission_id + op_subject_id` usando `slide.channel.partner.search_gradebook_subject()`.
+- Crear o actualizar el `app.gradebook.result` de tipo `exam` para esa libreta/asignatura y enlazar los intentos del mismo examen al resultado correcto.
+- Mantener en libreta la mejor nota entre intentos del mismo survey.
 
 ## 6. Dependencias
-`depends`: `isep_survey`.
+`depends`: `isep_survey`, `isep_gradebook`.
 
 ## 7. Backwards-compatibility / migracion
 La actualizacion automatica solo afecta `survey.survey` con `survey_type = 'exam'`. No toca encuestas generales, asignaciones, certificaciones ni examenes que ya tengan mas de dos intentos configurados.
@@ -38,6 +42,8 @@ La actualizacion automatica solo afecta `survey.survey` con `survey_type = 'exam
 3. Un survey tipo `exam` con `attempts_limit=3` conserva sus tres intentos.
 4. El hook corrige examenes existentes con limite menor que dos.
 5. En flujo funcional, tras finalizar el primer intento, el alumno puede iniciar un segundo intento nuevo y no se muestra directamente el resultado anterior.
+6. Al finalizar el intento, la nota aparece en la libreta/asignatura correspondiente al `admission_id` y `op_subject_id` del alumno.
+7. Si existen varios intentos del mismo examen, el resultado de libreta conserva la mejor nota.
 
 ## 9. Rollback plan
 Actualizar o desinstalar el modulo segun proceda:
