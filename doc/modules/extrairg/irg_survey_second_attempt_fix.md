@@ -1,7 +1,7 @@
 # irg_survey_second_attempt_fix
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.0
+**Versión:** 16.0.1.1.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
@@ -11,18 +11,21 @@
 
 ## ¿Qué hace este módulo?
 
-Corrige un bug por el que al realizar el segundo intento de un examen (slide tipo survey), siempre se mostraba la nota del primer intento en lugar de la del intento actual. El fix asegura que cada intento muestre correctamente su propia puntuación.
+Habilita el segundo intento real en exámenes tipo test de eLearning y corrige un bug por el que, al volver al examen, se mostraba la calificación del primer intento en lugar de permitir iniciar un nuevo intento. El fix asegura un mínimo de dos intentos para surveys académicos tipo examen y mantiene la puntuación correcta por intento.
 
 ## Funcionalidades principales
 
-- Corrección del cálculo de nota en el segundo (y posteriores) intentos.
-- Sin cambios de modelo ni de vistas; es un fix de lógica en Python.
+- Configura los surveys tipo `exam` con `is_attempts_limited=True` y `attempts_limit=2` como mínimo.
+- Corrige exámenes ya existentes durante instalación y actualización del módulo.
+- Corrige el cálculo de estado aprobado/suspenso (`scoring_success`) en el segundo y posteriores intentos.
+- Sin cambios de vistas; es un fix de lógica en Python.
 
 ## Modelos
 
 | Modelo | Tipo | Campos principales |
 |--------|------|--------------------|
-| `survey.user_input` (o slide relacionado) | Herencia | Fix en cálculo de nota por intento |
+| `survey.survey` | Herencia | Límite mínimo de dos intentos para exámenes |
+| `survey.user_input` | Herencia | Fix en cálculo de nota y estado por intento |
 
 ## Instalación / Actualización
 
