@@ -118,6 +118,10 @@ Fullscreen.include({
     // Override del renderizado del slide
     // -----------------------------------------------------------------------
     async _renderSlide() {
+        // IMPORTANTE: capturar _super ANTES de cualquier await,
+        // ya que Odoo limpia la referencia al salir del contexto síncrono.
+        const superRender = this._super.bind(this);
+
         const slide = this.get('slide');
         const $content = this.$('.o_wslides_fs_content');
 
@@ -127,7 +131,7 @@ Fullscreen.include({
         if (!slide.irg_use_html_embed) {
             // Sin embed: limpiar handlers y delegar al comportamiento nativo
             this._teardownIrgHandlers();
-            return await this._super(...arguments);
+            return await superRender(...arguments);
         }
 
         // Con embed: construir iframe seguro
