@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Vista normal del reproductor (slide_content_detailed).
+        Para diapositivas de tipo 'article': si irg_use_html_embed está activo,
+        renderiza el HTML en un div wrapper que el widget JS convertirá en iframe.
+        En caso contrario, conserva el comportamiento nativo de Odoo.
+    -->
+    <template
+        id="slide_content_detailed_irg_html_embed"
+        inherit_id="website_slides.slide_content_detailed"
+        name="IRG: Embed HTML en vista de artículo">
+
+        <div t-if="slide.slide_category == 'article'" position="replace">
+            <t t-if="slide.irg_use_html_embed and slide.irg_html_embed_code">
+                <div class="bg-white p-3">
+                    <div class="irg_html_embed_wrapper"
+                         t-att-data-embed="slide.with_context(lang=request.env.user.lang).irg_html_embed_code"/>
+                </div>
+            </t>
+            <t t-else="">
+                <div t-if="slide.slide_category == 'article'">
+                    <div t-if="is_html_empty(slide.html_content)"
+                         class="alert alert-info o_not_editable">
+                        Click on the "Edit" button in the top corner of the screen to edit your slide content.
+                    </div>
+                    <div class="bg-white p-3">
+                        <div t-field="slide.html_content" placeholder="Add your content here..."/>
+                    </div>
+                </div>
+            </t>
+        </div>
+
+    </template>
+</odoo>
