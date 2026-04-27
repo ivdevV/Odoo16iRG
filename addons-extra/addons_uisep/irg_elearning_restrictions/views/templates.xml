@@ -16,6 +16,9 @@
                             </li>
                         </t>
                     </ul>
+                    <p>
+                        Una vez cumplidos estos requisitos, el contenido se desbloqueará automáticamente. Por favor regresa al curso y completa las encuentas pendientes.
+                    </p>
                     <hr/>
                     <p class="mb-0">
                         <a t-att-href="'/slides/%s' % slide.channel_id.id" class="btn btn-secondary">
