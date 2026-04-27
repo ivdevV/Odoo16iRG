@@ -1,35 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <!--
-        Vista normal del reproductor (slide_content_detailed).
-        Para diapositivas de tipo 'article': si irg_use_html_embed está activo,
-        renderiza el HTML en un div wrapper que el widget JS convertirá en iframe.
-        En caso contrario, conserva el comportamiento nativo de Odoo.
+        Hereda el template de isep_content_interactive (que ya reemplazó el
+        bloque article de website_slides.slide_content_detailed) y añade
+        nuestra condición irg_use_html_embed con t-elif antes que la suya.
+
+        Prioridad de renderizado:
+          1. irg_use_html_embed=True  → muestra irg_html_embed_code (nuestro módulo)
+          2. use_html_embed=True      → muestra html_embed_code (isep, compatibilidad)
+          3. ninguno                  → contenido nativo de Odoo
     -->
     <template
         id="slide_content_detailed_irg_html_embed"
-        inherit_id="website_slides.slide_content_detailed"
+        inherit_id="isep_content_interactive.slide_content_detailed_inh"
         name="IRG: Embed HTML en vista de artículo">
 
-        <div t-if="slide.slide_category == 'article'" position="replace">
+        <!--
+            Reemplaza el <t t-if="slide.use_html_embed..."> de isep por nuestra
+            cadena irg → isep (como fallback) → normal.
+            El <t t-else=""> que viene después en el template padre sigue
+            gestionando el contenido nativo.
+        -->
+        <xpath expr="//t[@t-if]" position="replace">
             <t t-if="slide.irg_use_html_embed and slide.irg_html_embed_code">
                 <div class="bg-white p-3">
                     <div class="irg_html_embed_wrapper"
                          t-att-data-embed="slide.with_context(lang=request.env.user.lang).irg_html_embed_code"/>
                 </div>
             </t>
-            <t t-else="">
-                <div t-if="slide.slide_category == 'article'">
-                    <div t-if="is_html_empty(slide.html_content)"
-                         class="alert alert-info o_not_editable">
-                        Click on the "Edit" button in the top corner of the screen to edit your slide content.
-                    </div>
-                    <div class="bg-white p-3">
-                        <div t-field="slide.html_content" placeholder="Add your content here..."/>
-                    </div>
+            <t t-elif="slide.use_html_embed and slide.html_embed_code">
+                <div class="bg-white p-3">
+                    <div class="o_html_embed_wrapper"
+                         t-att-data-embed="slide.with_context(lang=request.env.user.lang).html_embed_code"/>
                 </div>
             </t>
-        </div>
+        </xpath>
 
     </template>
 </odoo>
