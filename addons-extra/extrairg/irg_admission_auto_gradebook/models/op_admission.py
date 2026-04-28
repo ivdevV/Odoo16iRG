@@ -54,18 +54,15 @@ class OpAdmission(models.Model):
                     lambda s: s.subject_type == 'compulsory'
                 )
 
-            # Obtener el template 'Solo Examen' definido en irg_gradebook_exam_as_final.
+            # Crear la libreta.
             # sudo() justificado: enroll_student puede ejecutarse desde contextos
             # de suscripción o portal donde el usuario no tiene permisos directos
             # sobre app.gradebook.student (modelo de isep_gradebook).
-            solo_examen_template = self.env.ref(
-                'irg_gradebook_exam_as_final.gradebook_template_solo_examen',
-                raise_if_not_found=False,
-            )
-            gradebook_vals = {'admission_id': record.id}
-            if solo_examen_template:
-                gradebook_vals['gradebook_id'] = solo_examen_template.id
-            gradebook = self.env['app.gradebook.student'].sudo().create(gradebook_vals)
+            # El template 'Solo Examen' se asigna automáticamente a cada
+            # app.gradebook.subject vía compute_gradebook_id (irg_gradebook_exam_as_final).
+            gradebook = self.env['app.gradebook.student'].sudo().create({
+                'admission_id': record.id,
+            })
 
             _logger.info(
                 'IRG Auto Gradebook: libreta %s creada para la admisión %s '

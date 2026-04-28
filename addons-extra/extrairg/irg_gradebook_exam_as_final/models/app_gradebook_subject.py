@@ -51,3 +51,16 @@ class AppGradebookSubject(models.Model):
         super().compute_data_show()
         for rec in self:
             rec.show_assignment = False
+
+    @api.depends('op_subject_id', 'admission_id')
+    def compute_gradebook_id(self):
+        """Override: always assign the 'Solo Examen' template regardless of
+        what is configured on the op.subject record.
+        This ensures no assignment lines are required anywhere in the flow.
+        """
+        solo_examen = self.env.ref(
+            'irg_gradebook_exam_as_final.gradebook_template_solo_examen',
+            raise_if_not_found=False,
+        )
+        for rec in self:
+            rec.gradebook_id = solo_examen if solo_examen else False
