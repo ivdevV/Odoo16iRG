@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            Plantilla de calificaciones que solo contiene 1 examen (peso 100%).
+            Asignar esta plantilla al curso evita cualquier conflicto con las
+            validaciones de asignaciones en state_to_done.
+        -->
+        <record id="gradebook_template_solo_examen" model="app.gradebook">
+            <field name="name">Solo Examen</field>
+            <field name="grading_scale">10</field>
+            <field name="gradebook_template_ids" eval="[
+                (0, 0, {'type': 'exam', 'weight': 100.0, 'qty': 1}),
+            ]"/>
+        </record>
+    </data>
+</odoo>
