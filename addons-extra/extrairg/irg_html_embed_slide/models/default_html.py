@@ -3,8 +3,7 @@
 # El marcador {id} debe sustituirse por el ID real del slide (se hace manualmente
 # o mediante lógica adicional) antes de guardar.
 
-DEFAULT_TEST_HTML = """\
-<!DOCTYPE html>
+DEFAULT_TEST_HTML = r"""<!DOCTYPE html>
 <html lang="es">
 
 <head>
