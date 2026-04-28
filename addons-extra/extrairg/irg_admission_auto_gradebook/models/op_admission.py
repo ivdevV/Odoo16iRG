@@ -54,13 +54,18 @@ class OpAdmission(models.Model):
                     lambda s: s.subject_type == 'compulsory'
                 )
 
-            # Crear la libreta.
+            # Obtener el template 'Solo Examen' definido en irg_gradebook_exam_as_final.
             # sudo() justificado: enroll_student puede ejecutarse desde contextos
             # de suscripción o portal donde el usuario no tiene permisos directos
             # sobre app.gradebook.student (modelo de isep_gradebook).
-            gradebook = self.env['app.gradebook.student'].sudo().create({
-                'admission_id': record.id,
-            })
+            solo_examen_template = self.env.ref(
+                'irg_gradebook_exam_as_final.gradebook_template_solo_examen',
+                raise_if_not_found=False,
+            )
+            gradebook_vals = {'admission_id': record.id}
+            if solo_examen_template:
+                gradebook_vals['gradebook_id'] = solo_examen_template.id
+            gradebook = self.env['app.gradebook.student'].sudo().create(gradebook_vals)
 
             _logger.info(
                 'IRG Auto Gradebook: libreta %s creada para la admisión %s '
@@ -71,11 +76,18 @@ class OpAdmission(models.Model):
                 record.course_id.name,
             )
 
-            # Poblar las líneas de asignatura
+            # Poblar las líneas de asignatura y añadir 1 línea de examen por asignatura
             for subject in subjects:
-                self.env['app.gradebook.subject'].sudo().create({
+                gb_subject = self.env['app.gradebook.subject'].sudo().create({
                     'gradebook_student_id': gradebook.id,
                     'op_subject_id': subject.id,
+                })
+                # Crear la evaluación de tipo examen automáticamente
+                self.env['app.gradebook.result'].sudo().create({
+                    'gradebook_subject_id': gb_subject.id,
+                    'survey_type': 'exam',
+                    'description': _('Evaluación'),
+                    'scoring_total': 0.0,
                 })
 
             _logger.info(
