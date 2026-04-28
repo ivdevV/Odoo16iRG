@@ -79,13 +79,18 @@ class OpAdmission(models.Model):
                     'gradebook_student_id': gradebook.id,
                     'op_subject_id': subject.id,
                 })
-                # Crear la evaluación de tipo examen automáticamente
-                self.env['app.gradebook.result'].sudo().create({
+                # Resolver el slide.channel vinculado a la asignatura (op.subject.slide_channel_id)
+                channel = subject.slide_channel_id if subject.slide_channel_id else False
+                result_vals = {
                     'gradebook_subject_id': gb_subject.id,
                     'survey_type': 'exam',
                     'description': _('Evaluación'),
                     'scoring_total': 0.0,
-                })
+                }
+                if channel:
+                    result_vals['channel_id'] = channel.id
+                # Crear la evaluación de tipo examen automáticamente
+                self.env['app.gradebook.result'].sudo().create(result_vals)
 
             _logger.info(
                 'IRG Auto Gradebook: %s asignatura(s) añadida(s) a la '
