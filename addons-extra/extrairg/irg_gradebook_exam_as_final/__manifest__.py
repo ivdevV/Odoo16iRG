@@ -12,9 +12,7 @@
     'author': 'IRG',
     'category': 'Education',
     'depends': ['isep_gradebook'],
-    'data': [
-        'data/gradebook_template_solo_examen.xml',
-    ],
+    'data': [],
     'installable': True,
     'application': False,
     'auto_install': False,

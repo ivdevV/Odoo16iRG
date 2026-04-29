@@ -36,31 +36,3 @@ class AppGradebookSubject(models.Model):
                 final_note = rec.round_custom(final_note)
 
             rec.final_subject_note = final_note
-
-    @api.depends(
-        'gradebook_id',
-        'gradebook_id.gradebook_template_ids',
-        'gradebook_student_id.gradebook_id',
-        'gradebook_student_id.gradebook_id.gradebook_template_ids',
-    )
-    def compute_data_show(self):
-        """Override: assignments do not participate in the final grade under
-        irg_gradebook_exam_as_final, so we always hide the assignment block
-        and remove the assignment-count requirement from the template check.
-        """
-        super().compute_data_show()
-        for rec in self:
-            rec.show_assignment = False
-
-    @api.depends('op_subject_id', 'admission_id')
-    def compute_gradebook_id(self):
-        """Override: always assign the 'Solo Examen' template regardless of
-        what is configured on the op.subject record.
-        This ensures no assignment lines are required anywhere in the flow.
-        """
-        solo_examen = self.env.ref(
-            'irg_gradebook_exam_as_final.gradebook_template_solo_examen',
-            raise_if_not_found=False,
-        )
-        for rec in self:
-            rec.gradebook_id = solo_examen if solo_examen else False

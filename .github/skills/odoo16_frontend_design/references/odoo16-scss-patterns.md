@@ -185,43 +185,11 @@ footer, #footer      // Footer general
     color: $secondary;
 }
 
-// MAL: @import local en SCSS custom — PROHIBIDO por Odoo 16
-// El compilador lanza: "Local import 'X' is forbidden for security reasons"
-@import 'variables';
-@import 'components';
-
-// BIEN: Registrar cada archivo individualmente en __manifest__.py
-// 'assets': {
-//     'web.assets_frontend': [
-//         ('prepend', 'mi_modulo/static/src/scss/_variables.scss'),
-//         'mi_modulo/static/src/scss/_components.scss',
-//     ],
-// }
-
 // MAL: Importar fuentes en SCSS (causa problemas con LibSass de Odoo)
 @import url('https://fonts.googleapis.com/...');
 
 // BIEN: Importar fuentes vía layout_overrides.xml en el <head>
 // <link rel="preconnect" href="https://fonts.googleapis.com"/>
-```
-
-## Regla crítica — No usar `@import` en SCSS de módulos custom
-
-Odoo 16 prohíbe explícitamente los `@import` de archivos locales en SCSS custom.
-El compilador LibSass de Odoo gestiona el orden de compilación a través del `__manifest__.py`.
-
-**Patrón correcto para múltiples archivos SCSS:**
-```python
-# __manifest__.py
-'assets': {
-    'web.assets_frontend': [
-        # Con 'prepend': se compila ANTES de Bootstrap (para variables)
-        ('prepend', 'mi_modulo/static/src/scss/_variables.scss'),
-        # Sin prepend: posición normal después de Bootstrap
-        'mi_modulo/static/src/scss/_components.scss',
-        'mi_modulo/static/src/scss/_portal.scss',
-    ],
-},
 ```
 
 ## Compatibilidad con módulos existentes

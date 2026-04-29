@@ -15,15 +15,13 @@ Fullscreen.include({
     async _fetchHtmlContent() {
         const slide = this.get('slide');
         const r = await this._rpc({ route: "/slides/slide/get_html_content", params: { slide_id: slide.id }});
-        slide.use_html_embed = !!(r && r.is_embed);
+        slide.use_html_embed = !!(r && r.html_content);
         slide.htmlContent = r && r.html_content;
     },
 
     async _renderSlide() {
         const slide = this.get('slide');
         const $content = this.$('.o_wslides_fs_content');
-
-        await this._fetchHtmlContent();
 
         if (!slide.use_html_embed) {
             this._teardownEmbedHandlers();
