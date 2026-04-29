@@ -12,14 +12,13 @@ El reproductor fullscreen de Odoo 16 y varios modulos custom extienden `_renderS
 ## 4. Alcance exacto
 - Asset frontend JS para `web.assets_frontend`.
 - Override final de `_renderSlide` en el reproductor fullscreen de `website_slides`.
-- Categorias cubiertas: `quiz`, mini-quiz, `certification`, `article`, `local_external`, `bunny`, `scorm`.
-- Delegacion al renderer previo para contenidos nativos (`document`, `infographic`, Google Drive, YouTube, Vimeo), conservando su comportamiento fullscreen original.
+- Categorias cubiertas: `quiz`, mini-quiz, `certification`, `document`, `infographic`, `article`, `google_drive`, `local_external`, `bunny`, `scorm`.
+- Delegacion al renderer previo para videos YouTube/Vimeo, que dependen de subwidgets privados del modulo nativo.
 
 ## 5. Diseno tecnico
 - Modulo tecnico: `irg_website_slides_render_fix`.
 - Herencia JS: `Fullscreen.include({ _renderSlide: ... })` sobre `@website_slides/js/slides_course_fullscreen_player`.
 - No se llama a `this._super` para quizzes, certificaciones ni categorias custom afectadas.
-- Los documentos e infografias se dejan al renderer anterior para no alterar el iframe/contenedor nativo de Odoo.
 - Se reutilizan plantillas QWeb existentes: `website.slides.fullscreen.content`, `website.slides.fullscreen.certification`, `custom_html_template`, `website.slides.fullscreen.video.google_drive`.
 
 ## 6. Dependencias
@@ -31,8 +30,7 @@ No anade modelos, campos ni datos persistentes. El rollback consiste en desinsta
 ## 8. Casos de prueba / criterios de aceptacion
 - Abrir un examen/certificacion en fullscreen sin `UncaughtPromiseError`.
 - Renderizar quiz y mini-quiz en fullscreen.
-- Renderizar contenidos `bunny`, `scorm`, `local_external` y `article`.
-- Renderizar documentos e infografias con el comportamiento fullscreen nativo previo.
+- Renderizar contenidos `bunny`, `scorm`, `local_external`, `document`, `infographic` y `article`.
 - Verificar que los assets frontend recompilan al actualizar el modulo.
 
 ## 9. Rollback plan
