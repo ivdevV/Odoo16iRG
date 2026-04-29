@@ -17,16 +17,13 @@ odoo.define('irg_website_slides_render_fix.fullscreen_render_fix', function (req
             var handledCategory = slide && _.contains([
                 'quiz',
                 'certification',
-                'document',
-                'infographic',
                 'local_external',
                 'bunny',
                 'scorm',
                 'article',
             ], slide.category);
-            var handledVideo = slide && slide.category === 'video' && slide.videoSourceType === 'google_drive';
 
-            if (!slide || (!slide.isQuiz && !handledCategory && !handledVideo)) {
+            if (!slide || (!slide.isQuiz && !handledCategory)) {
                 return previousRenderSlide.apply(this, arguments);
             }
 
@@ -52,10 +49,8 @@ odoo.define('irg_website_slides_render_fix.fullscreen_render_fix', function (req
 
                 if (slide.category === 'certification') {
                     await this._renderCertificationSlide($content, slide);
-                } else if (_.contains(['document', 'infographic', 'local_external', 'bunny', 'scorm'], slide.category)) {
+                } else if (_.contains(['local_external', 'bunny', 'scorm'], slide.category)) {
                     $content.html(QWeb.render('website.slides.fullscreen.content', {widget: this}));
-                } else if (slide.category === 'video' && slide.videoSourceType === 'google_drive') {
-                    $content.html(QWeb.render('website.slides.fullscreen.video.google_drive', {widget: this}));
                 } else if (slide.category === 'article') {
                     await this._renderArticleSlide($content, slide);
                 }
