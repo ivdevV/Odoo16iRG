@@ -4,7 +4,7 @@
         'Habilita el segundo intento y corrige la nota mostrada en slides '
         'tipo examen'
     ),
-    'version': '16.0.1.2.0',
+    'version': '16.0.1.3.0',
     'category': 'Website/eLearning',
     'author': 'iRG',
     'license': 'LGPL-3',

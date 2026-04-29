@@ -29,6 +29,7 @@ Corregir el flujo de examenes tipo test para que el alumno pueda iniciar un segu
 - Al cerrar un intento `exam`, localizar/crear la `app.gradebook.subject` que corresponde a `admission_id + op_subject_id` usando `slide.channel.partner.search_gradebook_subject()`.
 - Crear o actualizar el `app.gradebook.result` de tipo `exam` para esa libreta/asignatura y enlazar los intentos del mismo examen al resultado correcto.
 - Mantener en libreta la mejor nota entre intentos del mismo survey.
+- Enlazar varios intentos con `_write()` para no disparar el `write()` singleton de `isep_gradebook` sobre recordsets multiples.
 
 ## 6. Dependencias
 `depends`: `isep_survey`, `isep_gradebook`.
@@ -44,6 +45,7 @@ La actualizacion automatica solo afecta `survey.survey` con `survey_type = 'exam
 5. En flujo funcional, tras finalizar el primer intento, el alumno puede iniciar un segundo intento nuevo y no se muestra directamente el resultado anterior.
 6. Al finalizar el intento, la nota aparece en la libreta/asignatura correspondiente al `admission_id` y `op_subject_id` del alumno.
 7. Si existen varios intentos del mismo examen, el resultado de libreta conserva la mejor nota.
+8. El cierre del segundo intento no lanza `Expected singleton` al enlazar intentos previos con el resultado de libreta.
 
 ## 9. Rollback plan
 Actualizar o desinstalar el modulo segun proceda:
