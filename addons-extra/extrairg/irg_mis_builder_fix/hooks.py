@@ -91,69 +91,55 @@ def repair_move_lines_source(env):
 
 
 def repair_analytic_domains(env):
-    """Clear analytic_domain values that are invalid as account.move.line filters.
+    """Clear analytic_domain values that reference fields not on account.move.line.
 
-    Two classes of invalid domain are detected and cleared to ``[]``:
+    mis.report.instance and mis.report.instance.period both have an
+    ``analytic_domain`` Text field whose value is evaluated and appended to the
+    move-line query domain.  If a domain leaf references a field that does not
+    exist on ``account.move.line`` (e.g. ``custom_value`` from
+    ``product.attribute.custom.value``), the query will fail with
+    ``ValueError: Invalid field account.move.line.<field>``.
 
-    1. **Invalid field** — a leaf references a field that does not exist on
-       ``account.move.line`` (e.g. ``custom_value`` from
-       ``product.attribute.custom.value``).  This caused
-       ``ValueError: Invalid field account.move.line.<field>``.
-
-    2. **Spurious ``id`` filter** — a domain of the form ``[("id", "=", X)]``
-       where X is a small integer.  This residue is left by the PostgreSQL ID-
-       reuse bug: the old ir.model ID (e.g. 1) was recycled and stored as the
-       analytic_domain of the MIS instance, resulting in move-line queries that
-       return 0 or 1 result instead of all journal entries.
+    This function parses each stored domain, checks every leaf against the
+    actual fields of ``account.move.line``, and resets invalid domains to
+    ``[]``.
     """
     aml_fields = set(env["account.move.line"].sudo()._fields.keys())
 
-    def _domain_is_invalid(domain_str):
-        """Return (is_invalid, reason) for a stored analytic_domain string."""
+    def _domain_has_invalid_field(domain_str):
+        """Return True if any leaf field in domain_str is not in aml_fields."""
         try:
             domain = ast.literal_eval(domain_str or "[]")
             if not domain:
-                return False, None
+                return False
+            # Walk every leaf; a leaf is a 3-tuple (field_path, op, value).
             for leaf in domain:
                 if not expression.is_leaf(leaf):
                     continue
-                field_path, operator, value = leaf[0], leaf[1], leaf[2]
-                first_field = field_path.split(".")[0]
-
-                # Case 1: field doesn't exist on account.move.line
-                if first_field not in aml_fields:
-                    return True, "unknown field '%s'" % first_field
-
-                # Case 2: filtering by id = <small integer> is almost certainly
-                # a residual from the ir.model ID-reuse corruption.
-                # A legitimate analytic filter on account.move.line would never
-                # restrict by a specific record id.
-                if first_field == "id" and operator in ("=", "!=", "in", "not in"):
-                    return True, "suspicious id filter: %s" % str(leaf)
-
-        except Exception as exc:
-            return True, "unparseable domain: %s" % exc
-        return False, None
+                field_path = leaf[0].split(".")[0]  # only check first segment
+                if field_path not in aml_fields:
+                    return True
+        except Exception:
+            # Unparseable domain — treat as invalid to be safe.
+            return True
+        return False
 
     fixed = 0
     for model_name in ("mis.report.instance", "mis.report.instance.period"):
         records = env[model_name].sudo().search([])
         for rec in records:
             domain_str = rec.analytic_domain
-            if not domain_str or domain_str.strip() in ("[]", ""):
-                continue
-            invalid, reason = _domain_is_invalid(domain_str)
-            if invalid:
-                _logger.warning(
-                    "irg_mis_builder_fix: clearing invalid analytic_domain "
-                    "on %s id=%s (%s): %s",
-                    model_name,
-                    rec.id,
-                    reason,
-                    domain_str,
-                )
-                rec.analytic_domain = "[]"
-                fixed += 1
+            if domain_str and domain_str.strip() not in ("[]", ""):
+                if _domain_has_invalid_field(domain_str):
+                    _logger.warning(
+                        "irg_mis_builder_fix: clearing invalid analytic_domain "
+                        "on %s id=%s: %s",
+                        model_name,
+                        rec.id,
+                        domain_str,
+                    )
+                    rec.analytic_domain = "[]"
+                    fixed += 1
 
     if fixed:
         _logger.info(
