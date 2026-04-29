@@ -21,6 +21,7 @@
     'depends': [
         'openeducat_admission',
         'isep_gradebook',
+        'irg_gradebook_exam_as_final',
     ],
     'data': [
         'views/op_course_views.xml',

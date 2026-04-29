@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Hereda la vista de isep_content_interactive y reemplaza el contenido
+        de su pestaña "Contenido Interactivo" con los campos de este módulo,
+        evitando crear una pestaña duplicada.
+    -->
+    <record id="view_slide_slide_form_irg_html_embed" model="ir.ui.view">
+        <field name="name">slide.slide.form.irg.html.embed</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="isep_content_interactive.view_slide_slide_form_inh"/>
+        <field name="arch" type="xml">
+            <!-- Reemplaza el grupo interno de la pestaña existente -->
+            <xpath expr="//page[@name='content_interactive']/group" position="replace">
+                <group string="Contenido Interactivo">
+                    <group>
+                        <field name="irg_use_html_embed"/>
+                    </group>
+                    <group>
+                        <button string="Cargar plantilla Test"
+                                name="action_load_test_template"
+                                type="object"
+                                class="btn btn-secondary"
+                                help="Rellena el campo HTML con la plantilla estándar de actividad tipo test. Recuerda ajustar el ID del slide en la URL."/>
+                    </group>
+                    <field name="irg_html_embed_code" widget="text" colspan="2"
+                           attrs="{'invisible': [('irg_use_html_embed', '=', False)]}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

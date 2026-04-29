@@ -30,7 +30,8 @@ class WebsiteSlidesInh(WebsiteSlides):
         if slide.use_html_embed and slide.html_embed_code:
             html = slide.with_context(lang=lang).html_embed_code or ''
             return {
-                'html_content': html
+                'html_content': html,
+                'is_embed': True,
             }
 
         html_content = request.env['ir.qweb.field.html'].record_to_html(

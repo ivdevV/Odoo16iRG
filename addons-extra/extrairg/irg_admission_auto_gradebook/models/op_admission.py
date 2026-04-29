@@ -58,6 +58,8 @@ class OpAdmission(models.Model):
             # sudo() justificado: enroll_student puede ejecutarse desde contextos
             # de suscripción o portal donde el usuario no tiene permisos directos
             # sobre app.gradebook.student (modelo de isep_gradebook).
+            # El template 'Solo Examen' se asigna automáticamente a cada
+            # app.gradebook.subject vía compute_gradebook_id (irg_gradebook_exam_as_final).
             gradebook = self.env['app.gradebook.student'].sudo().create({
                 'admission_id': record.id,
             })
@@ -71,7 +73,10 @@ class OpAdmission(models.Model):
                 record.course_id.name,
             )
 
-            # Poblar las líneas de asignatura
+            # Poblar las líneas de asignatura.
+            # No se pre-crea la línea de resultado de examen: isep_gradebook la
+            # genera automáticamente al completar el survey. Pre-crearla causaba
+            # duplicados (línea vacía + línea del survey real).
             for subject in subjects:
                 self.env['app.gradebook.subject'].sudo().create({
                     'gradebook_student_id': gradebook.id,

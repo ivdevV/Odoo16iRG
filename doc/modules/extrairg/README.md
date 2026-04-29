@@ -52,7 +52,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_admission_auto_gradebook](./irg_admission_auto_gradebook.md) | Auto-crea libreta al matricular alumno | `op.admission`, `op.course` | Instalable |
 | [irg_quiz_auto_scoring](./irg_quiz_auto_scoring.md) | Auto-puntuación de cuestionarios y sync con libreta | `survey.user_input` | Instalable |
 | [irg_survey_regrade_attempts](./irg_survey_regrade_attempts.md) | Recalificación de intentos de examen | `survey.user_input` | Instalable |
-| [irg_survey_second_attempt_fix](./irg_survey_second_attempt_fix.md) | Fix nota mostrada en el segundo intento | `survey.user_input` | Instalable |
+| [irg_survey_second_attempt_fix](./irg_survey_second_attempt_fix.md) | Segundo intento, nota y libreta correcta | `survey.survey`, `survey.user_input` | Instalable |
 | [irg_survey_txt_import_feedback](./irg_survey_txt_import_feedback.md) | Importación de preguntas desde TXT | `irg.survey.txt.import.wizard` (nuevo) | Instalable |
 | [irg_elearning_styles_rework](./irg_elearning_styles_rework.md) | Rework visual del eLearning | — | Instalable |
 | [irg_exam_score_100](./irg_exam_score_100.md) | Campo de compatibilidad escala 100 en surveys | `survey.survey` | Instalable |
