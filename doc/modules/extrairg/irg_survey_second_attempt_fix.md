@@ -1,7 +1,7 @@
 # irg_survey_second_attempt_fix
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.3.0
+**Versión:** 16.0.1.2.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
@@ -20,7 +20,6 @@ Habilita el segundo intento real en exámenes tipo test de eLearning y corrige u
 - Corrige el cálculo de estado aprobado/suspenso (`scoring_success`) en el segundo y posteriores intentos.
 - Sincroniza el resultado del examen con `app.gradebook.result` al finalizar el intento.
 - Mantiene en libreta la mejor nota de los intentos del mismo examen.
-- Evita el error `Expected singleton` al enlazar varios intentos al mismo resultado de libreta.
 - Sin cambios de vistas; es un fix de lógica en Python.
 
 ## Modelos
