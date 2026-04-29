@@ -121,8 +121,10 @@ class SurveyUserInputSecondAttemptFix(models.Model):
                 result = self.env['app.gradebook.result'].sudo().create(result_values)
 
             # sudo(): enlaza intentos previos del mismo examen al resultado de
-            # libreta aunque el cierre venga desde el usuario portal.
-            attempts.sudo().with_context(irg_skip_gradebook_sync=True).write({
+            # libreta aunque el cierre venga desde el usuario portal. _write()
+            # evita el write() singleton de isep_gradebook en recordsets de
+            # varios intentos; la nota ya se actualizo arriba en result.write().
+            attempts.sudo()._write({
                 'result_id': result.id,
                 'gradebook_student_id': (
                     gradebook_student.id if gradebook_student else False
