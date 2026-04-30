@@ -11,7 +11,7 @@
         <field name="model">slide.slide</field>
         <field name="inherit_id" ref="isep_content_interactive.view_slide_slide_form_inh"/>
         <field name="arch" type="xml">
-            <!-- Reemplaza el grupo internoo de la pestaña existente -->
+            <!-- Reemplaza el grupo interno de la pestaña existente -->
             <xpath expr="//page[@name='content_interactive']/group" position="replace">
                 <group string="Contenido Interactivo">
                     <group>
