@@ -47,7 +47,7 @@
     <template id="slide_fullscreen_sidebar_restriction"
               inherit_id="website_slides.slide_fullscreen_sidebar_category"
               name="Sidebar: marcar como no accesibles los slides con prerrequisitos pendientes">
-        <!-- Añade un t-set DESPUÉS del original para sobreescribir can_access
+        <!-- Añadee un t-set DESPUÉS del original para sobreescribir can_access
              cuando el slide tiene prerrequisitos pendientes.
              restricted_slide_ids es un set inyectado por WebsiteSlidesCustom._get_slide_detail -->
         <xpath expr="//t[@t-set='can_access']" position="after">
