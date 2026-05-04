@@ -3,7 +3,7 @@
     <data noupdate="1">
         <!--
             Plantilla de calificaciones que solo contiene 1 examen (peso 100%).
-            Asignar esta plantilla al curso evita cualquier conflicto con las
+            Asignar esta plantilla al curso zevita cualquier conflicto con las
             validaciones de asignaciones en state_to_done.
         -->
         <record id="gradebook_template_solo_examen" model="app.gradebook">

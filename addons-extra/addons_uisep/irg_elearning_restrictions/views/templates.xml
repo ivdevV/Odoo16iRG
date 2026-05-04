@@ -49,7 +49,7 @@
               name="Sidebar: marcar como no accesibles los slides con prerrequisitos pendientes">
         <!-- Añadee un t-set DESPUÉS del original para sobreescribir can_access
              cuando el slide tiene prerrequisitos pendientes.
-             restricted_slide_ids es un set inyectado por WebsiteSlidesCustom._get_slide_detail -->
+             restricted_slide_ids es un set inyectado por WebsiteSlidesCustom._get_slide_detail ok-->
         <xpath expr="//t[@t-set='can_access']" position="after">
             <t t-if="restricted_slide_ids and slide.id in restricted_slide_ids"
                t-set="can_access" t-value="False"/>

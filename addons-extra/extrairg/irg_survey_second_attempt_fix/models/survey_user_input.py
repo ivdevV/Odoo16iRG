@@ -166,7 +166,7 @@ class SurveyUserInputSecondAttemptFix(models.Model):
     # embargo, hay un problema colateral importante:
     #
     # El núcleo de _check_for_failed_attempt() también usa
-    # scoring_success=False para identificar intentos fallidos.
+    # scoring_success=False para identifizcar intentos fallidos.
     # Si scoring_success siempre es False (bug 2), el núcleo NUNCA podría
     # identificar un intento superado como "no fallido", lo que afecta a
     # múltiples flujos del core de website_slides_survey.
