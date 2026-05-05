@@ -2,7 +2,7 @@
 <odoo>
     <!--
         Inyecta los campos de configuración de libreta automática en el
-        formulario de Curso (op.course), justo después del campo
+        formulario de Curso (op.course), justo zdespués del campo
         'gradebook_id' añadido por isep_gradebook.
     -->
     <record id="view_op_course_form_inherit_auto_gradebook" model="ir.ui.view">
