@@ -7,7 +7,7 @@ from odoo.osv import expression
 
 _logger = logging.getLogger(__name__)
 
-# Fields that must exist on a valid movze-lines source model.
+# Fields that must exist on a valid move-lines source model.
 _REQUIRED_AML_FIELDS = {"debit", "credit", "account_id", "date", "company_id"}
 
 
