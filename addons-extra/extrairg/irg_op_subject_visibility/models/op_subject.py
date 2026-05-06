@@ -69,8 +69,8 @@ class OpSubject(models.Model):
         if self.visible_all_course_batches:
             # Marcada explícitamente como visible para todos los lotes
             return True
-        # Sin restricción configurada → no tiene acceso por visibilidad global;
-        # el sistema de subject_to_batch_ids (irg_subject_fix) gestiona el acceso.
+        # Sin batch_visibility_ids configurados → no hay restricción explícita;
+        # se delega al sistema base (irg_subject_fix / subject_to_batch_ids).
         if not self.batch_visibility_ids:
-            return False
+            return True
         return batch in self.batch_visibility_ids
