@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- VISTA FORMULARIO: grupo Reactivación en pestaña Info. adicional -->
+    <record id="crm_lead_view_form_reactivacion" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.reactivacion</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='extra']" position="inside">
+                <group string="Reactivación">
+                    <field name="irg_fecha_reactivacion"/>
+                    <field name="irg_campana_reactivacion"/>
+                    <field name="irg_fuente_reactivacion"/>
+                    <field name="irg_referido_reactivacion"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- VISTA LISTA: columnas opcionales de reactivación -->
+    <record id="crm_lead_view_tree_reactivacion" model="ir.ui.view">
+        <field name="name">crm.lead.view.tree.reactivacion</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="irg_fecha_reactivacion" optional="hide"/>
+                <field name="irg_campana_reactivacion" optional="hide"/>
+                <field name="irg_fuente_reactivacion" optional="hide"/>
+                <field name="irg_referido_reactivacion" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- VISTA BÚSQUEDA: filtros y agrupaciones por campos de reactivación -->
+    <record id="crm_lead_view_search_reactivacion" model="ir.ui.view">
+        <field name="name">crm.lead.view.search.reactivacion</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[last()]" position="after">
+                <separator/>
+                <filter
+                    string="Reactivados"
+                    name="filter_reactivados"
+                    domain="[('irg_fecha_reactivacion', '!=', False)]"
+                    help="Leads que tienen fecha de reactivación registrada"/>
+                <filter
+                    string="Con campaña de reactivación"
+                    name="filter_campana_reactivacion"
+                    domain="[('irg_campana_reactivacion', '!=', False)]"/>
+                <filter
+                    string="Con fuente de reactivación"
+                    name="filter_fuente_reactivacion"
+                    domain="[('irg_fuente_reactivacion', '!=', False)]"/>
+                <filter
+                    string="Con referido de reactivación"
+                    name="filter_referido_reactivacion"
+                    domain="[('irg_referido_reactivacion', '!=', False)]"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter
+                    string="Fecha de Reactivación"
+                    name="group_fecha_reactivacion"
+                    context="{'group_by': 'irg_fecha_reactivacion:month'}"/>
+                <filter
+                    string="Campaña de Reactivación"
+                    name="group_campana_reactivacion"
+                    context="{'group_by': 'irg_campana_reactivacion'}"/>
+                <filter
+                    string="Fuente de Reactivación"
+                    name="group_fuente_reactivacion"
+                    context="{'group_by': 'irg_fuente_reactivacion'}"/>
+                <filter
+                    string="Referido de Reactivación"
+                    name="group_referido_reactivacion"
+                    context="{'group_by': 'irg_referido_reactivacion'}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
