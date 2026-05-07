@@ -27,10 +27,6 @@
             <xpath expr="//field[@name='default_order']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
-            <!-- Ocultar botón importar CSV del módulo isep_upload_forum -->
-            <xpath expr="//button[@name='open_wizard_upload_csv']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
             <xpath expr="//page[@name='options']/group/group[@name='group_order']" position="after">
                 <group string="Configuración Académica" col="2">
                     <field name="irg_course_id" string="Curso Académico"/>
