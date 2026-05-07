@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_batch_form_subject_reload_button" model="ir.ui.view">
+        <field name="name">op.batch.form.subject.reload.button</field>
+        <field name="model">op.batch</field>
+        <field name="inherit_id" ref="irg_batch_subject_schedule_manual.view_op_batch_form_subject_schedule_manual"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='pro_subject']/field[@name='subject_to_batch_ids']" position="before">
+                <button name="action_irg_reload_subject_to_batch"
+                        string="Recargar asignaturas"
+                        type="object"
+                        class="btn-secondary"
+                        icon="fa-refresh"
+                        confirm="Se sincronizaran las asignaturas del lote con el curso actual. Las fechas de asignaturas existentes se conservaran, pero se eliminaran lineas duplicadas o ajenas al curso."/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
