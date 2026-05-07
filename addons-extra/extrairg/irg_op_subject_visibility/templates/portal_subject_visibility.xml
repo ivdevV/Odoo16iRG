@@ -49,6 +49,18 @@
             -->
             <t t-set="subject_ids"
                t-value="course_id.get_subjects_visible_for_batch(vis_batch)"/>
+
+            <!--
+                Para las asignaturas con visibilidad global (visible_all_course_batches=True),
+                el alumno puede no tener matrícula en el canal eLearning vinculado
+                (slide.channel.partner), lo que hace que el click esté deshabilitado
+                aunque la asignatura sea visible. Añadimos esos canales a
+                slide_channel_active_ids para que sean clicables.
+            -->
+            <t t-set="vis_global_channel_ids"
+               t-value="subject_ids.filtered('visible_all_course_batches').mapped('slide_channel_id').ids"/>
+            <t t-set="slide_channel_active_ids"
+               t-value="list(set((slide_channel_active_ids or []) + vis_global_channel_ids))"/>
         </xpath>
 
     </template>
