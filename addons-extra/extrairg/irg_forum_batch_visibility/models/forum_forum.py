@@ -19,6 +19,7 @@ class ForumForum(models.Model):
         'batch_id',
         string='Visibility Batches',
         help='If empty, all users can access this forum. If set, only users in these batches can access it.',
+        domain="[('course_id', '=', irg_course_id)]",
     )
     visibility_course_ids = fields.Many2many(
         'op.course',

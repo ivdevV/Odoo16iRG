@@ -47,7 +47,12 @@ Modificar `irg_forum_batch_visibility` para automatizar la selección de lotes b
 - Idempotente: onchange usa `(6, 0, ids)` sin duplicados
 - Fallback: si no hay curso, limpiar lotes
 
-## Casos de prueba
+## Mejoras UI (v16.0.3.0.0)
+- Ocultar campos técnicos: `privacy`, `default_order`, botón importar CSV
+- Grupo "Configuración Académica": `irg_course_id`, `irg_subject_id`, `visibility_batch_ids`
+- Widget lotes: cambiar a `many2many` con vista tree limpia (solo nombre/código)
+- Domain estricto: `visibility_batch_ids` filtrado por `irg_course_id`
+- Vista tree `op.subject`: solo Nombre y Código, ocultar columnas técnicas
 1. Seleccionar curso → lotes elegibles aparecen marcados
 2. Cambiar curso → lotes se actualizan sin duplicados
 3. Crear post → solo alumnos no aprobados reciben notificación
