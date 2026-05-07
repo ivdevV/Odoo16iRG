@@ -36,6 +36,7 @@
                     <field name="irg_course_id" string="Curso Académico"/>
                     <field name="irg_subject_id" string="Asignatura"/>
                     <field name="visibility_batch_ids" string="Lotes Visibles" widget="many2many" context="{'tree_view_ref': 'irg_forum_batch_visibility.view_op_batch_tree_clean'}"/>
+                    <field name="visibility_course_ids" invisible="1"/>
                 </group>
             </xpath>
         </field>
