@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_admission_form_online_subject_opening" model="ir.ui.view">
+        <field name="name">op.admission.form.online.subject.opening</field>
+        <field name="model">op.admission</field>
+        <field name="inherit_id" ref="openeducat_admission.view_op_admission_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='batch_id']" position="after">
+                <field name="irg_is_online_subject_opening" readonly="1"/>
+            </xpath>
+            <xpath expr="//page[@name='admission_detail']" position="after">
+                <page name="irg_online_subject_opening" string="Aperturas Online" attrs="{'invisible': [('irg_is_online_subject_opening', '=', False)]}">
+                    <field name="irg_online_subject_opening_ids" nolabel="1" readonly="1">
+                        <tree string="Aperturas Online" create="0" edit="0" delete="0">
+                            <field name="sequence"/>
+                            <field name="subject_id"/>
+                            <field name="subject_code"/>
+                            <field name="slide_channel_id"/>
+                            <field name="opening_date"/>
+                            <field name="closing_date"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_irg_online_subject_opening_tree" model="ir.ui.view">
+        <field name="name">irg.online.subject.opening.tree</field>
+        <field name="model">irg.online.subject.opening</field>
+        <field name="arch" type="xml">
+            <tree string="Aperturas Online" create="0" edit="0">
+                <field name="admission_id"/>
+                <field name="partner_id"/>
+                <field name="course_id"/>
+                <field name="batch_id"/>
+                <field name="sequence"/>
+                <field name="subject_id"/>
+                <field name="subject_code"/>
+                <field name="opening_date"/>
+                <field name="closing_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_online_subject_opening_search" model="ir.ui.view">
+        <field name="name">irg.online.subject.opening.search</field>
+        <field name="model">irg.online.subject.opening</field>
+        <field name="arch" type="xml">
+            <search string="Aperturas Online">
+                <field name="admission_id"/>
+                <field name="partner_id"/>
+                <field name="course_id"/>
+                <field name="batch_id"/>
+                <field name="subject_id"/>
+                <filter string="Activas" name="active" domain="[('active', '=', True)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Curso" name="group_by_course" domain="[]" context="{'group_by': 'course_id'}"/>
+                    <filter string="Lote" name="group_by_batch" domain="[]" context="{'group_by': 'batch_id'}"/>
+                    <filter string="Asignatura" name="group_by_subject" domain="[]" context="{'group_by': 'subject_id'}"/>
+                    <filter string="Fecha de apertura" name="group_by_opening_date" domain="[]" context="{'group_by': 'opening_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_irg_online_subject_opening" model="ir.actions.act_window">
+        <field name="name">Aperturas Online</field>
+        <field name="res_model">irg.online.subject.opening</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="view_irg_online_subject_opening_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+    </record>
+
+    <menuitem id="menu_irg_online_subject_opening"
+              name="Aperturas Online"
+              parent="openeducat_admission.menu_op_admission_root"
+              action="action_irg_online_subject_opening"
+              sequence="85"
+              groups="openeducat_admission.group_op_admission_user"/>
+</odoo>

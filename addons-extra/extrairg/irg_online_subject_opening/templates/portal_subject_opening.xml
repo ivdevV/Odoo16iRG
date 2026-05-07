@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="user_profile_online_subject_opening"
+              name="IRG Online Subject Opening Portal Filter"
+              inherit_id="irg_subject_fix.user_profile_content_details_irg_fix"
+              priority="18">
+        <xpath expr="//t[@t-set='subject_ids' and contains(@t-value, 'valid_batch_lines.mapped')]" position="replace">
+            <t t-if="student_admission.irg_has_online_subject_opening_context()">
+                <t t-set="subject_ids" t-value="student_admission.irg_get_visible_online_subjects_for_date(today_date)"/>
+            </t>
+            <t t-else="">
+                <t t-set="subject_ids" t-value="valid_batch_lines.mapped('subject_id')"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>
