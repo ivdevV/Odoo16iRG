@@ -1,5 +1,6 @@
 from odoo import api, fields, models
 from odoo.osv import expression
+from datetime import date
 
 
 # ensure moderation is never enabled: it causes front-end JS to prevent
@@ -27,6 +28,52 @@ class ForumForum(models.Model):
         string='Visibility Courses',
         help='Courses linked to this forum (multiple selection).',
     )
+
+    irg_course_id = fields.Many2one(
+        'op.course',
+        string='Curso Académico (iRG)',
+        help='Selecciona el curso para autocompletar los lotes afectados.',
+        options="{'no_create': True, 'no_open': True}",
+    )
+
+    irg_subject_id = fields.Many2one(
+        'op.subject',
+        string='Asignatura (iRG)',
+        help='Asignatura específica del foro para filtrar notificaciones.',
+        options="{'no_create': True, 'no_open': True}",
+    )
+
+    @api.onchange('irg_course_id')
+    def _onchange_irg_course_id(self):
+        """
+        Biblia iRG: Filtrar lotes activos del curso que iniciaron después de
+        la era Moodle (01/11/2025) y que ya estén en curso.
+        """
+        # Limpiar si no hay curso
+        if not self.irg_course_id:
+            self.visibility_batch_ids = [(5, 0, 0)]
+            return {'domain': {'visibility_batch_ids': []}}
+
+        moodle_cutoff = date(2025, 11, 1)
+        today = fields.Date.context_today(self)
+
+        # Buscar lotes elegibles
+        eligible_batches = self.env['op.batch'].search([
+            ('course_id', '=', self.irg_course_id.id),
+            ('start_date', '>=', moodle_cutoff),
+            ('start_date', '<=', today),
+            ('state', '=', 'active')  # Solo lotes activos
+        ])
+
+        # Autoseleccionar (marcar con tilde) usando comando 6
+        self.visibility_batch_ids = [(6, 0, eligible_batches.ids)]
+
+        # Restringir el desplegable para que no puedan elegir lotes viejos/inválidos
+        return {
+            'domain': {
+                'visibility_batch_ids': [('id', 'in', eligible_batches.ids)]
+            }
+        }
 
     @api.model
     def _visibility_domain_for_user(self, user, course=None):
