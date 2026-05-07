@@ -1,0 +1,1 @@
+from . import test_subject_to_batch_manual
