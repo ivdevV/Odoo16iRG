@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_scholarship_documents" name="Documentacion de beca">
+        <t t-call="website.layout">
+            <div class="container mt-4 mb-5">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+                    <div>
+                        <h1 class="mb-1">Documentacion de beca</h1>
+                        <div class="text-muted" t-if="scholarship_type">
+                            <span>Tipo:</span>
+                            <strong t-out="scholarship_type.name"/>
+                        </div>
+                        <div class="text-muted" t-if="not scholarship_type">
+                            <span>Sin tipo de beca asignado</span>
+                        </div>
+                    </div>
+                    <a href="/campus" class="btn btn-outline-secondary">Volver</a>
+                </div>
+
+                <t t-if="success">
+                    <div class="alert alert-success" role="alert">Documento subido correctamente.</div>
+                </t>
+                <t t-if="error">
+                    <div class="alert alert-danger" role="alert">
+                        <t t-out="error"/>
+                    </div>
+                </t>
+
+                <div class="row g-4">
+                    <div class="col-12 col-lg-7">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Documentos aportados</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <t t-if="documents">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Documento</th>
+                                                    <th>Fecha</th>
+                                                    <th>Estado</th>
+                                                    <th class="text-end">Archivo</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="documents" t-as="document">
+                                                    <tr>
+                                                        <td>
+                                                            <strong t-out="document.name"/>
+                                                            <div class="small text-muted" t-if="document.note" t-out="document.note"/>
+                                                        </td>
+                                                        <td>
+                                                            <small t-out="document.create_date"/>
+                                                        </td>
+                                                        <td>
+                                                            <span t-if="document.state == 'submitted'" class="badge bg-info">Recibido</span>
+                                                            <span t-if="document.state == 'accepted'" class="badge bg-success">Aceptado</span>
+                                                            <span t-if="document.state == 'observed'" class="badge bg-warning text-dark">Observado</span>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <a class="btn btn-sm btn-outline-primary"
+                                                               t-attf-href="/web/content/irg.scholarship.document/#{document.id}/file/#{document.filename}?download=true">
+                                                                Descargar
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </t>
+                                <t t-if="not documents">
+                                    <div class="p-4 text-muted">No hay documentos cargados.</div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-5">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Subir documento</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="/my/scholarship-documents/upload" enctype="multipart/form-data">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="mb-3">
+                                        <label for="document_name" class="form-label">Nombre del documento</label>
+                                        <input type="text" id="document_name" name="document_name" class="form-control" placeholder="Ej. Declaracion de renta"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="scholarship_file" class="form-label">Archivo</label>
+                                        <input type="file" id="scholarship_file" name="scholarship_file" class="form-control" required="required" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"/>
+                                        <small class="form-text text-muted">
+                                            <t t-out="allowed_extensions"/> · max. <t t-out="max_file_size_mb"/> MB
+                                        </small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="note" class="form-label">Observaciones</label>
+                                        <textarea id="note" name="note" class="form-control" rows="3"/>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Subir</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

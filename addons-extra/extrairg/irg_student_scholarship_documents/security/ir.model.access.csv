@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_scholarship_type_user,access.irg.scholarship.type.user,model_irg_scholarship_type,base.group_user,1,1,1,1
+access_irg_scholarship_type_portal,access.irg.scholarship.type.portal,model_irg_scholarship_type,base.group_portal,1,0,0,0
+access_irg_scholarship_document_user,access.irg.scholarship.document.user,model_irg_scholarship_document,base.group_user,1,1,1,1
+access_irg_scholarship_document_portal,access.irg.scholarship.document.portal,model_irg_scholarship_document,base.group_portal,1,0,0,0

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_scholarship_documents" model="ir.ui.view">
+        <field name="name">op.student.form.scholarship.documents</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="irg_scholarship_documents" string="Beca">
+                    <group>
+                        <field name="irg_scholarship_type_id" options="{'no_create_edit': False}"/>
+                    </group>
+                    <field name="irg_scholarship_document_ids" context="{'default_partner_id': partner_id}" mode="tree,form">
+                        <tree string="Documentacion de beca" editable="bottom">
+                            <field name="create_date" readonly="1"/>
+                            <field name="name"/>
+                            <field name="filename"/>
+                            <field name="file" filename="filename"/>
+                            <field name="state"/>
+                            <field name="note"/>
+                        </tree>
+                        <form string="Documento de beca">
+                            <group>
+                                <field name="partner_id" invisible="1"/>
+                                <field name="name"/>
+                                <field name="filename"/>
+                                <field name="file" filename="filename"/>
+                                <field name="state"/>
+                                <field name="note"/>
+                            </group>
+                        </form>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

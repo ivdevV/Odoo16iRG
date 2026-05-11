@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_scholarship_document_tree" model="ir.ui.view">
+        <field name="name">irg.scholarship.document.tree</field>
+        <field name="model">irg.scholarship.document</field>
+        <field name="arch" type="xml">
+            <tree string="Documentos de beca" default_order="create_date desc">
+                <field name="create_date"/>
+                <field name="partner_id"/>
+                <field name="scholarship_type_id"/>
+                <field name="name"/>
+                <field name="filename"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_scholarship_document_form" model="ir.ui.view">
+        <field name="name">irg.scholarship.document.form</field>
+        <field name="model">irg.scholarship.document</field>
+        <field name="arch" type="xml">
+            <form string="Documento de beca">
+                <header>
+                    <button name="action_mark_submitted" type="object" string="Marcar recibido" attrs="{'invisible': [('state', '=', 'submitted')]}"/>
+                    <button name="action_accept" type="object" string="Aceptar" class="oe_highlight" attrs="{'invisible': [('state', '=', 'accepted')]}"/>
+                    <button name="action_observe" type="object" string="Observar" attrs="{'invisible': [('state', '=', 'observed')]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="submitted,accepted,observed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="scholarship_type_id" readonly="1"/>
+                            <field name="name"/>
+                            <field name="filename"/>
+                        </group>
+                        <group>
+                            <field name="file" filename="filename"/>
+                            <field name="note"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_scholarship_document" model="ir.actions.act_window">
+        <field name="name">Documentos de beca</field>
+        <field name="res_model">irg.scholarship.document</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Todavia no hay documentos de beca.</p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_irg_scholarship_document"
+        name="Documentos de beca"
+        parent="contacts.menu_contacts"
+        action="action_irg_scholarship_document"
+        sequence="80"/>
+</odoo>

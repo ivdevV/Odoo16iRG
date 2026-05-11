@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_scholarship_type_tree" model="ir.ui.view">
+        <field name="name">irg.scholarship.type.tree</field>
+        <field name="model">irg.scholarship.type</field>
+        <field name="arch" type="xml">
+            <tree string="Tipos de beca" default_order="sequence, name">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_scholarship_type_form" model="ir.ui.view">
+        <field name="name">irg.scholarship.type.form</field>
+        <field name="model">irg.scholarship.type</field>
+        <field name="arch" type="xml">
+            <form string="Tipo de beca">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_scholarship_type" model="ir.actions.act_window">
+        <field name="name">Tipos de beca</field>
+        <field name="res_model">irg.scholarship.type</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Crea el primer tipo de beca.</p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_irg_scholarship_type"
+        name="Tipos de beca"
+        parent="contacts.res_partner_menu_config"
+        action="action_irg_scholarship_type"
+        sequence="35"/>
+</odoo>
