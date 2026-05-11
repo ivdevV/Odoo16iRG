@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_online_subject_opening_user,irg.online.subject.opening.user,model_irg_online_subject_opening,base.group_user,1,0,0,0
+access_irg_online_subject_opening_admission,irg.online.subject.opening.admission,model_irg_online_subject_opening,openeducat_admission.group_op_admission_user,1,1,1,1

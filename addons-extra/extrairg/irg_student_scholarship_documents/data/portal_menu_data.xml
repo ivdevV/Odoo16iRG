@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="portal_menu_scholarship_documents" model="openeducat.portal.menu">
+        <field name="name">Documentacion de beca</field>
+        <field name="menu_ref_name">Scholarship Documents</field>
+        <field name="link">/my/scholarship-documents</field>
+        <field name="active">True</field>
+        <field name="is_visible_to_student">True</field>
+        <field name="is_visible_to_parent">False</field>
+        <field name="sequence" type="int">45</field>
+        <field name="background_color">#304cd5</field>
+        <field name="icon_image" type="base64" file="openeducat_core_enterprise/static/img/academic.png"/>
+    </record>
+</odoo>

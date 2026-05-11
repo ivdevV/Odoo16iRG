@@ -1,0 +1,4 @@
+- Corregido error de descarga PDF en website slides cuando el slide no incluye `div.oe_structure`.
+- Se añadió módulo local `addons-extra/extrairg/irg_website_slides_download_fix` con parche JS seguro.
+- El fix intercepta clicks sobre `#custom_download_button`, evita el código vulnerable y aplica fallback para contenido embebido/HTML.
+- No se modificaron módulos nativos ni el código existente de `addons_uisep`.

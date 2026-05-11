@@ -20,10 +20,19 @@
         <field name="model">forum.forum</field>
         <field name="inherit_id" ref="website_forum.view_forum_forum_form"/>
         <field name="arch" type="xml">
+            <!-- Ocultar campos no utilizados -->
+            <xpath expr="//field[@name='privacy']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='default_order']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
             <xpath expr="//page[@name='options']/group/group[@name='group_order']" position="after">
-                <group string="Lotes de visibilidad">
-                    <field name="visibility_batch_ids" widget="many2many_tags"/>
-                    <field name="visibility_course_ids" widget="many2many_tags"/>
+                <group string="Configuración Académica" col="2">
+                    <field name="irg_course_id" string="Curso Académico"/>
+                    <field name="irg_subject_id" string="Asignatura"/>
+                    <field name="visibility_batch_ids" string="Lotes Visibles" widget="many2many" context="{'tree_view_ref': 'irg_forum_batch_visibility.view_op_batch_tree_clean'}"/>
+                    <field name="visibility_course_ids" invisible="1"/>
                 </group>
             </xpath>
         </field>
@@ -37,6 +46,45 @@
             <field name="forum_id" position="after">
                 <field name="visibility_batch_ids" widget="many2many_tags" optional="hide"/>
             </field>
+        </field>
+    </record>
+
+    <!-- Vista tree limpia para op.batch -->
+    <record id="view_op_batch_tree_clean" model="ir.ui.view">
+        <field name="name">op.batch.tree.clean</field>
+        <field name="model">op.batch</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_batch_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='start_date']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='end_date']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='course_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista tree limpia para op.subject -->
+    <record id="view_op_subject_tree_clean" model="ir.ui.view">
+        <field name="name">op.subject.tree.clean</field>
+        <field name="model">op.subject</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_subject_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='subject_type']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='grade_weightage']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='department_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
         </field>
     </record>
 </odoo>

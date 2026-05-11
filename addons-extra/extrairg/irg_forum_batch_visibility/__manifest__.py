@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG - Forum Batch Visibility',
-    'version': '16.0.1.0.0',
+    'version': '16.0.3.0.0',
     'category': 'Website/Forum',
     'summary': 'Limit forum visibility by custom batches',
     'author': 'IRG',

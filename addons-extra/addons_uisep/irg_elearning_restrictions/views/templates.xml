@@ -45,13 +45,17 @@
     </template>
     <template id="slide_fullscreen_sidebar_restriction"
               inherit_id="website_slides.slide_fullscreen_sidebar_category"
-              name="Sidebar: marcar como no accesibles los slides con prerrequisitos pendientes">
+              name="Sidebar: marcar como no accesibles los slides con prerrequisitos pendientes"
+              priority="99">
         <!-- Añadee un t-set DESPUÉS del original para sobreescribir can_access
              cuando el slide tiene prerrequisitos pendientes.
              restricted_slide_ids es un set inyectado por WebsiteSlidesCustom._get_slide_detail ok-->
         <xpath expr="//t[@t-set='can_access']" position="after">
             <t t-if="restricted_slide_ids and slide.id in restricted_slide_ids"
                t-set="can_access" t-value="False"/>
+        </xpath>
+        <xpath expr="//li[contains(@t-attf-class,'o_wslides_fs_sidebar_list_item')]" position="attributes">
+            <attribute name="t-att-data-embed-code">False if restricted_slide_ids and slide.id in restricted_slide_ids else slide.embed_code if slide.slide_category in ['video', 'document', 'infographic', 'local_external', 'bunny', 'scorm'] else False</attribute>
         </xpath>
     </template>
 </odoo>
