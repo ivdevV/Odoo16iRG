@@ -2,7 +2,7 @@
 
 {
     'name': 'IRG Student Scholarship Webhook',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'OpenEduCat',
     'summary': 'Webhook externo para documentacion de becas de alumnos',
     'description': """

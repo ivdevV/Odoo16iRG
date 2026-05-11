@@ -60,11 +60,20 @@ class IrgScholarshipWebhookService(models.AbstractModel):
         encoded_file = encoded_file.strip()
 
         document_name = self._clean_optional_text(payload, 'document_name') or filename
+        scholarship_type_name = self._clean_optional_text(payload, 'scholarship_type_name')
         note = self._clean_optional_text(payload, 'note')
 
         partner, student, error = self._resolve_partner_by_email(email)
         if error:
             return error
+
+        scholarship_type = False
+        if scholarship_type_name:
+            scholarship_type, error = self._resolve_scholarship_type_by_name(
+                scholarship_type_name
+            )
+            if error:
+                return error
 
         file_content, error = self._decode_file(encoded_file)
         if error:
@@ -73,6 +82,9 @@ class IrgScholarshipWebhookService(models.AbstractModel):
         error = self._validate_file(filename, file_content)
         if error:
             return error
+
+        if scholarship_type and partner.irg_scholarship_type_id != scholarship_type:
+            partner.sudo().write({'irg_scholarship_type_id': scholarship_type.id})
 
         document_model = self.env['irg.scholarship.document'].sudo()
         existing_document = document_model.search([
@@ -145,6 +157,24 @@ class IrgScholarshipWebhookService(models.AbstractModel):
             )
             return None, None, (error, status)
         return partners, student_model.browse(), None
+
+    def _resolve_scholarship_type_by_name(self, scholarship_type_name):
+        scholarship_types = self.env['irg.scholarship.type'].sudo().search([
+            ('name', '=ilike', scholarship_type_name),
+            ('active', '=', True),
+        ])
+        if len(scholarship_types) > 1:
+            return False, self._error(
+                'ambiguous_scholarship_type',
+                _('Hay mas de un tipo de beca con el nombre indicado.'),
+                status=409,
+            )
+        if not scholarship_types:
+            return False, self._error(
+                'scholarship_type_not_found',
+                _('No se encontro ningun tipo de beca con el nombre indicado.'),
+            )
+        return scholarship_types, None
 
     def _decode_file(self, encoded_file):
         try:

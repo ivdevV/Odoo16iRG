@@ -19,6 +19,9 @@ class TestScholarshipWebhook(TransactionCase):
             'name': 'Alumno Webhook',
             'email': 'alumno.webhook@example.com',
         })
+        self.scholarship_type = self.env['irg.scholarship.type'].create({
+            'name': 'Beca Merito Academico',
+        })
 
     def _payload(self, **overrides):
         payload = {
@@ -103,6 +106,25 @@ class TestScholarshipWebhook(TransactionCase):
         self.assertEqual(document.partner_id, self.partner)
         self.assertEqual(document.name, 'Solicitud de beca')
         self.assertEqual(document.filename, 'solicitud.pdf')
+
+    def test_process_payload_assigns_scholarship_type_to_partner(self):
+        result, status = self.service.process_payload(
+            self._payload(scholarship_type_name=self.scholarship_type.name)
+        )
+
+        document = self.env['irg.scholarship.document'].browse(result['document_id'])
+
+        self.assertEqual(status, 200)
+        self.assertEqual(self.partner.irg_scholarship_type_id, self.scholarship_type)
+        self.assertEqual(document.scholarship_type_id, self.scholarship_type)
+
+    def test_process_payload_rejects_unknown_scholarship_type(self):
+        result, status = self.service.process_payload(
+            self._payload(scholarship_type_name='Beca inexistente')
+        )
+
+        self.assertEqual(status, 400)
+        self.assertEqual(result['error'], 'scholarship_type_not_found')
 
     def test_process_payload_updates_existing_document(self):
         first_result, first_status = self.service.process_payload(self._payload(note='Primera nota'))
