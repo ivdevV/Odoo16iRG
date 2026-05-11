@@ -6,15 +6,16 @@ Documentacion de becas para alumnos y contactos.
 
 ## 2. Resumen objetivo
 
-Crear una funcionalidad para registrar el tipo de beca seleccionado por un alumno y gestionar multiples documentos asociados a esa beca. La informacion se mostrara en el contacto, en el perfil backend del alumno y en una pagina del portal del alumno.
+Crear una funcionalidad para registrar el tipo de beca OpenEduCat seleccionado por un alumno y gestionar multiples documentos asociados a esa beca. La informacion se mostrara en el contacto, en el perfil backend del alumno y en una pagina del portal del alumno.
 
 ## 3. Motivo / justificacion
 
-La gestion de becas requiere centralizar la documentacion aportada por cada alumno sin modificar modulos nativos ni OpenEduCat. Se implementa como modulo extra `irg_*` usando herencia sobre `res.partner` y vistas heredadas, ya que `op.student` delega en `res.partner` mediante `_inherits` y permite mostrar los mismos datos sin duplicarlos.
+La gestion de becas requiere centralizar la documentacion aportada por cada alumno sin modificar modulos nativos ni OpenEduCat. Se implementa como modulo extra `irg_*` usando herencia sobre `res.partner` y vistas heredadas, reutilizando `op.scholarship.type` como catalogo oficial de tipos de beca.
 
 ## 4. Alcance exacto
 
-- Modelos nuevos: `irg.scholarship.type` y `irg.scholarship.document`.
+- Modelo nuevo: `irg.scholarship.document`.
+- Modelo OpenEduCat reutilizado: `op.scholarship.type`.
 - Modelo heredado: `res.partner`.
 - Vistas backend: formulario de contactos, formulario de alumnos, vistas/listados de tipos de beca y documentos.
 - Portal: pagina `/my/scholarship-documents` y ruta POST de subida de documentos.
@@ -23,9 +24,9 @@ La gestion de becas requiere centralizar la documentacion aportada por cada alum
 
 ## 5. Diseno tecnico
 
-- `res.partner` recibe `irg_scholarship_type_id` y `irg_scholarship_document_ids`.
+- `res.partner` recibe `irg_scholarship_type_id` apuntando a `op.scholarship.type` y `irg_scholarship_document_ids`.
 - `op.student` no duplica campos: los campos de `res.partner` se usan desde el alumno por delegacion de OpenEduCat.
-- `irg.scholarship.type` almacena tipos configurables de beca con nombre, descripcion, secuencia y activo.
+- `op.scholarship.type` almacena los tipos configurables de beca con nombre, monto, compania y activo desde el modulo `openeducat_scholarship_enterprise`.
 - `irg.scholarship.document` almacena multiples documentos por contacto con binario `attachment=True`, nombre de archivo y estado simple.
 - Vista contacto: `inherit_id="base.view_partner_form"`, `xpath` sobre `//notebook`.
 - Vista alumno: `inherit_id="openeducat_core.view_op_student_form"`, `xpath` sobre `//notebook`.
@@ -34,15 +35,15 @@ La gestion de becas requiere centralizar la documentacion aportada por cada alum
 
 ## 6. Dependencias
 
-`base`, `contacts`, `portal`, `website`, `openeducat_core`, `openeducat_web`, `isep_website_custom`.
+`base`, `contacts`, `portal`, `website`, `openeducat_core`, `openeducat_scholarship_enterprise`, `openeducat_web`, `isep_website_custom`.
 
 ## 7. Backwards-compatibility / migracion
 
-No modifica tablas nativas ni cambia comportamientos existentes. Anade campos y modelos nuevos. Los contactos existentes quedan sin tipo de beca y sin documentos hasta que se informen manualmente o desde el portal.
+No modifica tablas nativas ni cambia comportamientos existentes. Anade campos y el modelo de documentos. Los contactos existentes quedan sin tipo de beca y sin documentos hasta que se informen manualmente, desde el portal o desde el webhook.
 
 ## 8. Casos de prueba / criterios de aceptacion
 
-- Un usuario interno puede crear tipos de beca configurables.
+- Un usuario interno puede seleccionar tipos de beca OpenEduCat existentes.
 - Un contacto puede tener un tipo de beca y multiples documentos asociados.
 - El formulario de alumno muestra la misma informacion de beca que el contacto enlazado.
 - Un alumno portal puede ver su beca y subir documentos permitidos.

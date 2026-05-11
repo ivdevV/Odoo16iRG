@@ -1,281 +1,96 @@
 # irg_student_scholarship_documents
 
-**Categoría:** extrairg  
-**Versión:** 16.0.1.0.0  
+**Categoria:** extrairg  
+**Version:** 16.0.1.1.0  
 **Licencia:** LGPL-3  
-**Instalable:** Sí  
+**Instalable:** Si  
 **Autor:** IRG  
-**Depende de:** `base`, `contacts`, `portal`, `website`, `openeducat_core`, `openeducat_web`, `isep_website_custom`
+**Depende de:** `base`, `contacts`, `portal`, `website`, `openeducat_core`, `openeducat_scholarship_enterprise`, `openeducat_web`, `isep_website_custom`
 
 ---
 
-## ¿Qué hace este módulo?
+## Que hace este modulo
 
-Permite a los alumnos subir documentación relacionada con solicitudes de becas desde su portal privado y al personal administrativo gestionar esa documentación desde el backend. El módulo introduce el concepto de "tipos de beca" (becas por mérito, becas económicas, ayudas, etc.) que se asignan a cada alumno o contacto y proporciona un sistema completo para adjuntar, revisar y aprobar los documentos requeridos.
+Centraliza la documentacion de solicitudes de beca en contactos y alumnos de OpenEduCat. Reutiliza el catalogo oficial de tipos de beca de OpenEduCat (`op.scholarship.type`), el mismo que se administra desde el menu **Becas > Tipos de becas** y que incluye el campo **Monto** (`amount`).
 
-Los alumnos acceden a `/my/scholarship-documents` desde su campus virtual, donde pueden ver el tipo de beca asignado, consultar el historial de documentos enviados (con fecha, estado y observaciones) y cargar nuevos archivos. Cada documento puede tener tres estados: Recibido (pendiente de revisión), Aceptado (aprobado por administración) u Observado (requiere corrección). El personal administrativo gestiona todo desde el módulo Contactos de Odoo, con acceso rápido a los documentos desde el perfil del alumno y filtros por tipo de beca o estado de documento.
+El modulo anade una pestana **Beca** en `res.partner` y `op.student`, permite adjuntar documentos con archivo binario, y ofrece una pagina de portal para que el alumno suba documentacion.
 
 ## Funcionalidades principales
 
-- **Tipos de beca configurables** — Catálogo de tipos de beca (ej: "Beca Excelencia", "Ayuda Económica") con descripción y ordenamiento por secuencia.
-- **Asignación de beca a contacto/alumno** — Campo `irg_scholarship_type_id` en `res.partner` y `op.student` (vía related).
-- **Subida de documentos desde el portal** — Página pública autenticada en `/my/scholarship-documents` con formulario de upload.
-- **Validación de archivos** — Extensiones permitidas (PDF, JPG, JPEG, PNG, DOC, DOCX), límite de 10 MB, archivo obligatorio.
-- **Gestión de estados de documento** — Flujo: Recibido → Aceptado/Observado, con botones de acción en el backend.
-- **Visualización en pestaña de contacto/alumno** — Notebook tab "Beca" en formulario de contactos y alumnos con lista de documentos editable inline.
-- **Reglas de seguridad portal** — Los usuarios portal solo ven y descargan sus propios documentos.
-- **Menú dinámico en campus** — Entrada visible en el portal del alumno con icono personalizado.
+- Usa `op.scholarship.type` como fuente de verdad para los tipos de beca.
+- Anade `irg_scholarship_type_id` en `res.partner`, apuntando a `op.scholarship.type`.
+- Anade `irg_scholarship_document_ids` en `res.partner` para listar documentos de beca.
+- Crea el modelo `irg.scholarship.document` para guardar documentos, archivos, estado y observaciones.
+- Muestra la misma informacion en `op.student` gracias a la delegacion de OpenEduCat por `partner_id`.
+- Anade portal `/my/scholarship-documents` con subida de archivos.
+- Valida extensiones permitidas y tamano maximo de 10 MB.
+- Protege portal para que cada usuario vea solo sus documentos.
 
 ## Modelos
 
-| Modelo | Tipo | Campos principales |
-|--------|------|--------------------|
-| `irg.scholarship.type` | Nuevo | `name` (traducible), `description` (traducible), `sequence`, `active` |
-| `irg.scholarship.document` | Nuevo | `name`, `partner_id`, `scholarship_type_id` (related), `file`, `filename`, `note`, `state` (submitted/accepted/observed), `create_date` |
-| `res.partner` | Herencia | `irg_scholarship_type_id`, `irg_scholarship_document_ids` (One2many) |
-| `op.student` | Herencia indirecta | Mismos campos vía `partner_id` |
+| Modelo | Tipo | Uso |
+| --- | --- | --- |
+| `op.scholarship.type` | OpenEduCat | Catalogo oficial de tipos de beca con nombre y monto. |
+| `res.partner` | Heredado | Campos `irg_scholarship_type_id` y `irg_scholarship_document_ids`. |
+| `op.student` | Delegado | Muestra los campos del partner asociado. |
+| `irg.scholarship.document` | Nuevo | Documentos aportados por alumno/contacto. |
 
-### Campos añadidos a `res.partner`
+### Campos en `res.partner`
 
-- **`irg_scholarship_type_id`** (`Many2one` → `irg.scholarship.type`) — Tipo de beca asignado al contacto.
-- **`irg_scholarship_document_ids`** (`One2many` ← `irg.scholarship.document.partner_id`) — Lista de todos los documentos de beca del contacto.
-
-### Campos añadidos a `op.student`
-
-Los campos se acceden directamente desde `partner_id`. Las vistas en `op.student` heredan el formulario de OpenEduCat y añaden la misma pestaña "Beca" usando los campos relacionados.
-
-### Campo `state` en `irg.scholarship.document`
-
-- **`submitted`** (Recibido) — Estado inicial al subir el documento desde el portal o crear en backend.
-- **`accepted`** (Aceptado) — Documento revisado y aprobado.
-- **`observed`** (Observado) — Documento requiere correcciones o atención adicional.
-
-## Vistas y UI
-
-### Backend (Odoo)
-
-**Menú: Contactos → Tipos de beca**
-- Lista de tipos de beca con secuenciación drag & drop.
-- Formulario simple con nombre, descripción (traducibles) y campo activo.
-
-**Menú: Contactos → Documentos de beca**
-- Lista de todos los documentos del sistema ordenados por fecha descendente.
-- Filtros por contacto, tipo de beca, estado.
-- Formulario con header statusbar (estado del documento) y botones de acción:
-  - **Marcar recibido** — Volver al estado inicial.
-  - **Aceptar** — Aprobar el documento.
-  - **Observar** — Marcar para revisión o corrección.
-
-**Formulario de contacto/alumno → Pestaña "Beca"**
-- Campo de selección de tipo de beca.
-- Lista editable inline de documentos con columnas: Fecha, Nombre, Filename, Archivo, Estado, Observaciones.
-- Posibilidad de adjuntar documentos directamente desde el backend.
-
-### Frontend (Portal del alumno)
-
-**URL:** `/my/scholarship-documents`
-
-La página se divide en dos columnas:
-
-**Columna izquierda** — Documentos aportados (tabla responsive)
-- Muestra: Nombre del documento, Fecha de subida, Estado (badge coloreado), Botón de descarga.
-- Tooltip con observaciones si el documento tiene notas.
-- Mensaje "No hay documentos cargados" si está vacía.
-
-**Columna derecha** — Formulario de subida
-- Campo de texto: Nombre del documento (opcional, por defecto usa el filename).
-- Input de archivo: Acepta `.pdf,.jpg,.jpeg,.png,.doc,.docx`, obligatorio.
-- Textarea: Observaciones opcionales del alumno.
-- Botón "Subir" que envía POST a `/my/scholarship-documents/upload`.
-
-**Header de página:**
-- Título "Documentación de beca".
-- Muestra el tipo de beca asignado al alumno (o "Sin tipo de beca asignado" si no tiene).
-- Botón "Volver" que redirige a `/campus`.
-
-**Mensajes de feedback:**
-- **Éxito:** "Documento subido correctamente" (alerta verde).
-- **Error:** Mensajes específicos según validación fallida (alerta roja).
-
-**Integración en campus:**
-- Entrada de menú "Documentación de beca" en el portal de OpenEduCat (icono académico azul, secuencia 45).
-- Visible solo para alumnos, no para padres.
-
-## Controladores / Endpoints
-
-### GET `/my/scholarship-documents`
-
-- **Autenticación:** Usuario autenticado (`auth='user'`)
-- **CSRF:** Habilitado (página de formulario)
-- **Descripción:** Renderiza la página de documentación de beca con lista de documentos y formulario de subida.
-- **Lógica:**
-  - Resuelve el partner del usuario actual (si es alumno portal, busca su `op.student` con `sudo()`).
-  - Carga todos los documentos del partner con `sudo()` (necesario para que portal lea attachments).
-  - Renderiza template `irg_student_scholarship_documents.portal_scholarship_documents`.
-
-### POST `/my/scholarship-documents/upload`
-
-- **Autenticación:** Usuario autenticado (`auth='user'`)
-- **CSRF:** Habilitado (`csrf=True`)
-- **Métodos:** Solo POST
-- **Descripción:** Procesa el upload de un documento de beca.
-- **Parámetros (multipart form-data):**
-  - `scholarship_file` (file, requerido) — Archivo binario.
-  - `document_name` (string, opcional) — Nombre descriptivo del documento.
-  - `note` (string, opcional) — Observaciones del alumno.
-
-- **Validaciones:**
-  1. Archivo presente y con nombre válido.
-  2. Extensión en lista permitida (`ALLOWED_EXTENSIONS`).
-  3. Contenido no vacío.
-  4. Tamaño ≤ 10 MB (`MAX_FILE_SIZE_BYTES`).
-
-- **Respuesta exitosa:** Redirige a `/my/scholarship-documents?success=1`.
-- **Errores posibles:**
-  - "Selecciona un archivo." — No se subió archivo.
-  - "El archivo no tiene nombre." — Filename vacío.
-  - "Formato no permitido. Usa PDF, JPG, PNG, DOC o DOCX." — Extensión no válida.
-  - "El archivo está vacío." — Contenido vacío tras leer.
-  - "El archivo supera el límite de 10 MB." — Excede `MAX_FILE_SIZE_BYTES`.
-
-## Seguridad / Record Rules
-
-### Modelo `irg.scholarship.type`
-
-**Acceso:**
-- **Usuarios internos** (`base.group_user`): CRUD completo.
-- **Usuarios portal** (`base.group_portal`): Solo lectura.
-
-**Record rule portal:**
-- `rule_irg_scholarship_type_portal_active` — Los usuarios portal solo ven tipos de beca activos (`[('active', '=', True)]`).
+- `irg_scholarship_type_id`: `Many2one` a `op.scholarship.type`.
+- `irg_scholarship_document_ids`: `One2many` a `irg.scholarship.document`.
 
 ### Modelo `irg.scholarship.document`
 
-**Acceso:**
-- **Usuarios internos** (`base.group_user`): CRUD completo.
-- **Usuarios portal** (`base.group_portal`): Solo lectura (la creación se hace con `sudo()` tras validación de identidad).
+- `name`: nombre del documento.
+- `partner_id`: contacto/alumno asociado.
+- `scholarship_type_id`: related almacenado desde `partner_id.irg_scholarship_type_id`.
+- `file`: archivo binario con `attachment=True`.
+- `filename`: nombre de archivo.
+- `note`: observaciones.
+- `state`: `submitted`, `accepted` u `observed`.
 
-**Record rule portal:**
-- `rule_irg_scholarship_document_portal_own` — Los usuarios portal solo ven sus propios documentos (`[('partner_id', '=', user.partner_id.id)]`).
+## Vistas y UI
 
-### Uso de `sudo()` en controladores
+### Backend
 
-El módulo usa `sudo()` en dos puntos del portal:
+- Formulario de contacto: pestana **Beca** con tipo de beca y documentos.
+- Formulario de alumno: pestana **Beca** con la misma informacion del partner.
+- Menu **Contactos > Documentos de beca** para revisar documentos.
+- Los tipos se gestionan en el menu OpenEduCat **Becas > Tipos de becas**.
 
-1. **Resolución de alumno:** Para que usuarios portal sin acceso directo a `op.student` puedan resolver su registro de alumno y obtener su `partner_id`.
-2. **Lectura/creación de documentos:** Los usuarios portal no tienen permisos de escritura en `irg.scholarship.document` ni en `ir.attachment` (modelo subyacente de `fields.Binary`).
+### Portal
 
-**Justificación:** Estos `sudo()` están protegidos porque:
-- El partner siempre se deriva del usuario autenticado (`request.env.user`).
-- Solo se leen/crean documentos asociados a ese partner.
-- Todas las validaciones de archivo (tamaño, formato, contenido) se ejecutan antes del `sudo()`.
-- Las record rules adicionales previenen accesos indebidos si se intenta forzar otro partner_id.
+- URL: `/my/scholarship-documents`.
+- Muestra el tipo de beca asignado al alumno.
+- Lista documentos ya aportados.
+- Permite subir nuevos documentos con nombre, archivo y observaciones.
+- Extensiones permitidas: `.pdf`, `.jpg`, `.jpeg`, `.png`, `.doc`, `.docx`.
+- Tamano maximo: 10 MB.
 
-Este patrón es seguro y necesario para que los usuarios portal puedan interactuar con sus propios documentos sin exponer vulnerabilidades.
+## Seguridad
 
-## Dependencias externas
-
-- **`openeducat_core`** — Modelo `op.student` para resolución de alumno en portal.
-- **`openeducat_web`** — Modelo `openeducat.portal.menu` para entrada dinámica en campus.
-- **`isep_website_custom`** — Dependencia de infraestructura web del proyecto.
-
-## Notas técnicas
-
-### Extensiones permitidas
-
-Definidas en constante `ALLOWED_EXTENSIONS`:
-
-```python
-{'.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'}
-```
-
-Para cambiar las extensiones permitidas, modifica esta constante en [controllers/portal.py](../../../addons-extra/extrairg/irg_student_scholarship_documents/controllers/portal.py).
-
-### Límite de tamaño de archivo
-
-Definido en constante `MAX_FILE_SIZE_BYTES`:
-
-```python
-10 * 1024 * 1024  # 10 MB
-```
-
-Para aumentar el límite, modifica esta constante **y** ajusta el límite de Nginx (`client_max_body_size`) y PHP-FPM si corresponde.
-
-### Almacenamiento de archivos
-
-Los documentos se almacenan usando `fields.Binary(attachment=True)`, lo que significa que Odoo los guarda en el filestore (directorio de attachments) en lugar de la base de datos. Esto optimiza el rendimiento y el tamaño de backups.
-
-### Acceso a descargas desde portal
-
-La descarga de archivos usa la URL estándar de Odoo:
-
-```
-/web/content/irg.scholarship.document/{id}/file/{filename}?download=true
-```
-
-Esta ruta está protegida por las record rules de portal — solo se puede descargar si el documento pertenece al usuario autenticado.
+- Usuarios internos (`base.group_user`) tienen CRUD sobre `irg.scholarship.document`.
+- Usuarios portal (`base.group_portal`) solo tienen lectura.
+- Record rule portal: cada portal solo ve documentos donde `partner_id = user.partner_id.id`.
+- La creacion desde portal usa `sudo()` despues de resolver el partner desde el usuario autenticado y validar archivo.
+- La seguridad de `op.scholarship.type` la proporciona `openeducat_scholarship_enterprise`.
 
 ## Tests
 
-El módulo incluye suite de tests en [tests/test_scholarship_documents.py](../../../addons-extra/extrairg/irg_student_scholarship_documents/tests/test_scholarship_documents.py) con cobertura de:
+Tests en [tests/test_scholarship_documents.py](../../../addons-extra/extrairg/irg_student_scholarship_documents/tests/test_scholarship_documents.py):
 
-- **`test_partner_stores_scholarship_documents`** — Verifica que los documentos se asocian correctamente al partner y el campo `scholarship_type_id` se resuelve vía related field.
-- **`test_portal_user_only_sees_own_documents`** — Verifica que las record rules previenen que un usuario portal vea documentos de otros alumnos.
+- Asociacion de documentos y tipo OpenEduCat al partner.
+- Restriccion portal para ver solo documentos propios.
 
-**Ejecutar tests:**
-
-```bash
-docker exec odoo_latest odoo \
-  -c /etc/odoo/odoo.conf \
-  -d <dbname> \
-  --test-tags=irg_student_scholarship_documents \
-  --stop-after-init \
-  --db_host=pgodoo_latest
-```
-
-## Instalación / Actualización
+## Instalacion / Actualizacion
 
 ```bash
-# Instalar
-docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
-    -d <dbname> -i irg_student_scholarship_documents \
-    --stop-after-init --db_host=pgodoo_latest
-
-# Actualizar
 docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
     -d <dbname> -u irg_student_scholarship_documents \
     --stop-after-init --db_host=pgodoo_latest
 ```
 
-## Rollback / Desinstalación
+## Rollback
 
-Para desinstalar el módulo de forma limpia:
-
-1. **Desde la interfaz de Odoo:**
-   - Activar modo desarrollador.
-   - Ir a Aplicaciones → Buscar "IRG Student Scholarship Documents".
-   - Desinstalar.
-
-2. **Desde CLI:**
-
-```bash
-docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
-    -d <dbname> \
-    --uninstall irg_student_scholarship_documents \
-    --stop-after-init \
-    --db_host=pgodoo_latest
-```
-
-**Advertencia:** La desinstalación eliminará:
-- Todos los registros de `irg.scholarship.type`.
-- Todos los registros de `irg.scholarship.document` (incluyendo archivos adjuntos).
-- Los campos añadidos a `res.partner` (`irg_scholarship_type_id`, `irg_scholarship_document_ids`).
-- El menú del portal del alumno.
-
-**Antes de desinstalar, considera:**
-- Exportar los documentos de beca si necesitas conservar el historial.
-- Verificar que ningún otro módulo depende de `irg_student_scholarship_documents`.
-- Hacer backup de la base de datos.
-
-**Dependientes conocidos:**
-- `irg_student_scholarship_webhook` — Usa el modelo `irg.scholarship.document` para crear documentos vía API. Si este módulo está instalado, desinstálalo primero.
+Desinstalar `irg_student_scholarship_documents` desde Apps o shell Odoo. Los tipos de beca OpenEduCat (`op.scholarship.type`) no se eliminan porque pertenecen a `openeducat_scholarship_enterprise`; si se requiere conservar documentos, exportarlos antes de desinstalar.

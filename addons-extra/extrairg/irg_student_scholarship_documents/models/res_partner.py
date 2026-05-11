@@ -7,7 +7,7 @@ class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     irg_scholarship_type_id = fields.Many2one(
-        'irg.scholarship.type',
+        'op.scholarship.type',
         string='Tipo de beca',
         tracking=True,
     )

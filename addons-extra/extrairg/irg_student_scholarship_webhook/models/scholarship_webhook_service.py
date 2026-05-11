@@ -169,7 +169,7 @@ class IrgScholarshipWebhookService(models.AbstractModel):
         if scholarship_type_name:
             requested_keys.add(self._normalize_identifier(scholarship_type_name))
 
-        scholarship_types = self.env['irg.scholarship.type'].sudo().search([
+        scholarship_types = self.env['op.scholarship.type'].sudo().search([
             ('active', '=', True),
         ])
         scholarship_types = scholarship_types.filtered(

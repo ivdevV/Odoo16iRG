@@ -19,8 +19,9 @@ class TestScholarshipWebhook(TransactionCase):
             'name': 'Alumno Webhook',
             'email': 'alumno.webhook@example.com',
         })
-        self.scholarship_type = self.env['irg.scholarship.type'].create({
+        self.scholarship_type = self.env['op.scholarship.type'].create({
             'name': 'Beca Merito Academico',
+            'amount': 999,
         })
 
     def _payload(self, **overrides):
@@ -127,8 +128,9 @@ class TestScholarshipWebhook(TransactionCase):
         self.assertEqual(self.partner.irg_scholarship_type_id, self.scholarship_type)
 
     def test_process_payload_assigns_scholarship_type_without_accents(self):
-        scholarship_type = self.env['irg.scholarship.type'].create({
+        scholarship_type = self.env['op.scholarship.type'].create({
             'name': 'Beca Desocupación',
+            'amount': 999,
         })
 
         result, status = self.service.process_payload(

@@ -10,8 +10,9 @@ from odoo.tests.common import TransactionCase
 class TestScholarshipDocuments(TransactionCase):
     def setUp(self):
         super().setUp()
-        self.scholarship_type = self.env['irg.scholarship.type'].create({
+        self.scholarship_type = self.env['op.scholarship.type'].create({
             'name': 'Beca de prueba',
+            'amount': 999,
         })
         self.partner = self.env['res.partner'].create({
             'name': 'Alumno Beca',

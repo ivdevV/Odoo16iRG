@@ -32,6 +32,8 @@ El modulo `irg_student_scholarship_documents` ya centraliza la informacion de be
   - `filename`: obligatorio.
   - `document_content_base64`: obligatorio.
   - `document_name`: opcional; si falta se usa `filename`.
+  - `scholarship_type_name`: opcional; nombre del tipo de beca en `op.scholarship.type`.
+  - `scholarship_type_key`: opcional; clave normalizada del nombre del tipo de beca en `op.scholarship.type`.
   - `note`: opcional.
 - Resolucion de persona:
   - Buscar primero `op.student` por `partner_id.email`.
@@ -42,12 +44,13 @@ El modulo `irg_student_scholarship_documents` ya centraliza la informacion de be
   - Tamano maximo: 10 MB tras decodificar base64.
   - Rechazo de base64 invalido, archivo vacio, filename vacio o extension no permitida.
 - Escritura:
+  - Si llega tipo de beca, resolverlo contra `op.scholarship.type` activo y asignarlo a `res.partner.irg_scholarship_type_id`.
   - Crear o actualizar `irg.scholarship.document` por `partner_id`, `filename` y `name` para evitar duplicados accidentales.
   - Usar `sudo()` solo tras validar token y payload, porque la aplicacion externa no dispone de usuario Odoo.
 
 ## 6. Dependencias
 
-`base`, `openeducat_core`, `irg_student_scholarship_documents`.
+`base`, `openeducat_core`, `openeducat_scholarship_enterprise`, `irg_student_scholarship_documents`.
 
 ## 7. Backwards-compatibility / migracion
 
@@ -59,6 +62,8 @@ No modifica tablas nativas ni cambia vistas existentes. El modulo depende de los
 - El webhook rechaza token invalido.
 - El webhook rechaza payload JSON invalido o campos obligatorios ausentes.
 - El webhook rechaza emails inexistentes o ambiguos.
+- El webhook asigna un tipo de beca OpenEduCat cuando recibe `scholarship_type_name` o `scholarship_type_key` valido.
+- El webhook rechaza tipos de beca inexistentes o ambiguos.
 - El webhook rechaza base64 invalido, archivos vacios, extensiones no permitidas y archivos de mas de 10 MB.
 - Con token valido, email existente y archivo valido, se crea un documento de beca asociado al contacto correcto.
 - Si se repite la misma combinacion `partner_id`, `filename` y `document_name`, se actualiza el documento existente en lugar de duplicarlo.
