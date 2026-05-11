@@ -82,6 +82,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_profile_batch_fix](./irg_profile_batch_fix.md) | Fix nombre de programa y filtro de calendario por lote | — | Instalable |
 | [irg_sign_position_fix](./irg_sign_position_fix.md) | Ajusta posición del bloque de firma en matrícula | `sign.template` | Instalable |
 | [irg_sign_reposition](./irg_sign_reposition.md) | Lógica alternativa de reposición de firma | `sign.template`, `sign.item` | Instalable |
+| [irg_student_scholarship_documents](./irg_student_scholarship_documents.md) | Gestión de documentación de becas de alumnos | `irg.scholarship.document` (nuevo), `res.partner`, `op.scholarship.type` | Instalable |
 | [irg_subject_fix](./irg_subject_fix.md) | Fix de filtrado de asignaturas por lote activo | — | Instalable |
 | [irg_web_editor_fix](./irg_web_editor_fix.md) | Guarda JS en OdooEditor para el foro | — | Instalable |
 | [looker_connector](./looker_connector.md) | Conector Odoo → Google Looker Studio | — | Instalable |

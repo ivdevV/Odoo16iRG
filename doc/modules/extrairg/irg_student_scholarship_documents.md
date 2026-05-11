@@ -83,6 +83,29 @@ Tests en [tests/test_scholarship_documents.py](../../../addons-extra/extrairg/ir
 - Asociacion de documentos y tipo OpenEduCat al partner.
 - Restriccion portal para ver solo documentos propios.
 
+## Migraciones
+
+### Version 16.0.1.1.0
+
+**Pre-migracion:** Mapeo de tipos de beca heredados desde `irg_scholarship_type` a `op.scholarship.type`.
+
+En versiones anteriores se usaba una tabla custom `irg_scholarship_type`. La migración realiza:
+
+1. **Detección inteligente de nombres traducidos:** Antes de realizar el mapeo, verifica si las columnas `name` en ambas tablas son de tipo `jsonb` (campos traducibles multi-idioma).
+
+2. **Extracción de valores traducidos:** Si detecta `jsonb`, extrae el nombre con la siguiente prioridad:
+   - Español (`es_ES`)
+   - Inglés (`en_US`)
+   - Cualquier otro idioma disponible
+
+3. **Mapeo normalizado:** Compara nombres con `lower(trim())` para hacer coincidir tipos de beca independientemente de mayúsculas/espacios y traducción.
+
+4. **Limpieza de huérfanos:** Anula referencias de `res.partner.irg_scholarship_type_id` que apuntan a tipos que no existen en la tabla OpenEduCat.
+
+**Implementación técnica:** La función auxiliar `_name_text_expression()` genera dinámicamente la expresión SQL apropiada según el tipo de columna (texto plano o `jsonb`), garantizando compatibilidad con entornos multilenguaje.
+
+**Contexto:** Este hotfix fue necesario porque algunos despliegues tenían campos traducibles en `irg_scholarship_type.name`, y el mapeo simple por texto fallaba al no considerar la estructura `jsonb`.
+
 ## Instalacion / Actualizacion
 
 ```bash
@@ -94,3 +117,5 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ## Rollback
 
 Desinstalar `irg_student_scholarship_documents` desde Apps o shell Odoo. Los tipos de beca OpenEduCat (`op.scholarship.type`) no se eliminan porque pertenecen a `openeducat_scholarship_enterprise`; si se requiere conservar documentos, exportarlos antes de desinstalar.
+
+**Nota sobre migracion:** La pre-migración de la versión 16.0.1.1.0 es irreversible. Una vez ejecutada, los registros de `res.partner.irg_scholarship_type_id` apuntan definitivamente a `op.scholarship.type` y la tabla antigua `irg_scholarship_type` (si existía) deja de usarse. Si se requiere revertir a una versión anterior del módulo que dependía de la tabla custom, se debe restaurar un backup de base de datos previo a la migración.
