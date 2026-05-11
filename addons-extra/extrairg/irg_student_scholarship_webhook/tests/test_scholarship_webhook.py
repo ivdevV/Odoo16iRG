@@ -118,6 +118,26 @@ class TestScholarshipWebhook(TransactionCase):
         self.assertEqual(self.partner.irg_scholarship_type_id, self.scholarship_type)
         self.assertEqual(document.scholarship_type_id, self.scholarship_type)
 
+    def test_process_payload_assigns_scholarship_type_by_key(self):
+        result, status = self.service.process_payload(
+            self._payload(scholarship_type_key='merito-academico')
+        )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(self.partner.irg_scholarship_type_id, self.scholarship_type)
+
+    def test_process_payload_assigns_scholarship_type_without_accents(self):
+        scholarship_type = self.env['irg.scholarship.type'].create({
+            'name': 'Beca Desocupación',
+        })
+
+        result, status = self.service.process_payload(
+            self._payload(scholarship_type_name='Beca Desocupacion')
+        )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(self.partner.irg_scholarship_type_id, scholarship_type)
+
     def test_process_payload_rejects_unknown_scholarship_type(self):
         result, status = self.service.process_payload(
             self._payload(scholarship_type_name='Beca inexistente')

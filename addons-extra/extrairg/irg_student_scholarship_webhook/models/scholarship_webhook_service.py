@@ -4,6 +4,8 @@ import base64
 import binascii
 import hmac
 import os
+import re
+import unicodedata
 
 from odoo import _, models
 
@@ -60,6 +62,7 @@ class IrgScholarshipWebhookService(models.AbstractModel):
         encoded_file = encoded_file.strip()
 
         document_name = self._clean_optional_text(payload, 'document_name') or filename
+        scholarship_type_key = self._clean_optional_text(payload, 'scholarship_type_key')
         scholarship_type_name = self._clean_optional_text(payload, 'scholarship_type_name')
         note = self._clean_optional_text(payload, 'note')
 
@@ -68,9 +71,10 @@ class IrgScholarshipWebhookService(models.AbstractModel):
             return error
 
         scholarship_type = False
-        if scholarship_type_name:
-            scholarship_type, error = self._resolve_scholarship_type_by_name(
-                scholarship_type_name
+        if scholarship_type_key or scholarship_type_name:
+            scholarship_type, error = self._resolve_scholarship_type(
+                scholarship_type_key,
+                scholarship_type_name,
             )
             if error:
                 return error
@@ -158,11 +162,21 @@ class IrgScholarshipWebhookService(models.AbstractModel):
             return None, None, (error, status)
         return partners, student_model.browse(), None
 
-    def _resolve_scholarship_type_by_name(self, scholarship_type_name):
+    def _resolve_scholarship_type(self, scholarship_type_key, scholarship_type_name):
+        requested_keys = set()
+        if scholarship_type_key:
+            requested_keys.add(self._normalize_identifier(scholarship_type_key))
+        if scholarship_type_name:
+            requested_keys.add(self._normalize_identifier(scholarship_type_name))
+
         scholarship_types = self.env['irg.scholarship.type'].sudo().search([
-            ('name', '=ilike', scholarship_type_name),
             ('active', '=', True),
         ])
+        scholarship_types = scholarship_types.filtered(
+            lambda scholarship_type: requested_keys.intersection(
+                self._scholarship_type_identifiers(scholarship_type)
+            )
+        )
         if len(scholarship_types) > 1:
             return False, self._error(
                 'ambiguous_scholarship_type',
@@ -175,6 +189,28 @@ class IrgScholarshipWebhookService(models.AbstractModel):
                 _('No se encontro ningun tipo de beca con el nombre indicado.'),
             )
         return scholarship_types, None
+
+    def _scholarship_type_identifiers(self, scholarship_type):
+        identifiers = set()
+        names = {
+            scholarship_type.name,
+            scholarship_type.with_context(lang=None).name,
+        }
+        for name in names:
+            normalized_name = self._normalize_identifier(name)
+            identifiers.add(normalized_name)
+            if normalized_name.startswith('beca-'):
+                identifiers.add(normalized_name[5:])
+        return identifiers
+
+    @staticmethod
+    def _normalize_identifier(value):
+        normalized = unicodedata.normalize('NFKD', value or '')
+        ascii_value = ''.join(
+            character for character in normalized
+            if not unicodedata.combining(character)
+        )
+        return re.sub(r'[^a-z0-9]+', '-', ascii_value.lower()).strip('-')
 
     def _decode_file(self, encoded_file):
         try:
