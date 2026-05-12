@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import base64
+import unicodedata
 from urllib.parse import urlencode
 
 from babel.dates import format_date
@@ -14,10 +15,24 @@ VERIFY_BASE_URL = 'https://app.institutoraimongaja.com/verificar/'
 class DiplomaWizard(models.TransientModel):
     _inherit = 'irg.diploma.wizard'
 
+    def _get_student_verification_prefix(self):
+        self.ensure_one()
+        normalized = unicodedata.normalize('NFKD', self.student_id.name or '')
+        ascii_name = ''.join(char for char in normalized if not unicodedata.combining(char))
+        letters = ''.join(char for char in ascii_name.upper() if char.isalpha())
+        return (letters[:3] or 'IRG').ljust(3, 'X')
+
+    def _next_verification_code(self):
+        self.ensure_one()
+        prefix = self._get_student_verification_prefix()
+        sequence = self.env['ir.sequence'].next_by_code('irg.diploma.verification.code') or '0000'
+        return '{}-{}'.format(prefix, sequence)
+
     def action_print_diploma(self):
         self.ensure_one()
 
         registry_number = self.env['ir.sequence'].next_by_code('irg.diploma.registry') or 'DRAFT'
+        verification_code = self._next_verification_code()
 
         date_es = '{} de {} de {}'.format(
             self.date.day,
@@ -36,10 +51,11 @@ class DiplomaWizard(models.TransientModel):
         normer = self.env['report.irg_generacion_diplomas.diploma_pdf']
         course_name_cat = normer._normalize_catalan_course_name(course_name_cat)
 
-        query_params = {'id': registry_number}
+        query_params = {'id': verification_code}
         if 'op.sign_certificate' in self.env:
             stamp_payload = {
                 'registry_number': registry_number,
+                'verification_code': verification_code,
                 'student_name': student_name,
                 'course_name_es': course_name_es,
                 'course_name_cat': course_name_cat,
@@ -76,6 +92,7 @@ class DiplomaWizard(models.TransientModel):
             'date_es': date_es,
             'date_cat': date_cat,
             'registry_number': registry_number,
+            'verification_code': verification_code,
             'qr_url': qr_url,
         }
 
@@ -98,6 +115,7 @@ class DiplomaWizard(models.TransientModel):
 
         self.env['irg.diploma.registry'].sudo().create({
             'registry_number': registry_number,
+            'verification_code': verification_code,
             'student_id': self.student_id.id,
             'student_course_id': self.student_course_id.id,
             'issue_date': self.date,

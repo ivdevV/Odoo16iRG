@@ -30,9 +30,9 @@
                                         <dd class="col-sm-8" t-esc="course_name"/>
 
                                         <dt class="col-sm-4">Codigo</dt>
-                                        <dd class="col-sm-8"><strong t-esc="code"/></dd>
+                                        <dd class="col-sm-8"><strong t-esc="verification_code or code"/></dd>
 
-                                        <t t-if="registry_number and registry_number != code">
+                                        <t t-if="registry_number">
                                             <dt class="col-sm-4">Registro</dt>
                                             <dd class="col-sm-8" t-esc="registry_number"/>
                                         </t>

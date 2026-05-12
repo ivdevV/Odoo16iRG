@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="irg_generacion_diplomas.action_irg_diploma_wizard" model="ir.actions.act_window">
+        <field name="binding_model_id" ref="openeducat_core.model_op_student"/>
+        <field name="binding_type">action</field>
+        <field name="binding_view_types">form</field>
+        <field name="context">{'default_student_id': active_id}</field>
+    </record>
+</odoo>
