@@ -2,6 +2,13 @@
 <odoo>
     <template id="portal_verify_diploma" name="Verificacion de Diploma iRG">
         <t t-call="website.layout">
+            <t t-set="head">
+                <script type="text/javascript">
+                    // Some mobile QR scanners/extensions inject ethereum code even on non-wallet pages.
+                    // Defining an empty object prevents that injected script from breaking the public verification page.
+                    window.ethereum = window.ethereum || {};
+                </script>
+            </t>
             <div class="container my-5">
                 <div class="row justify-content-center">
                     <div class="col-12 col-lg-8 col-xl-7">

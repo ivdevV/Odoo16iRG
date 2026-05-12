@@ -9,7 +9,7 @@ from babel.dates import format_date
 from odoo import models
 
 
-VERIFY_BASE_URL = 'https://app.institutoraimongaja.com/verificar/'
+VERIFY_BASE_URL_PARAM = 'irg_diploma_sheet_verification.verify_base_url'
 
 
 class DiplomaWizard(models.TransientModel):
@@ -27,6 +27,15 @@ class DiplomaWizard(models.TransientModel):
         prefix = self._get_student_verification_prefix()
         sequence = self.env['ir.sequence'].next_by_code('irg.diploma.verification.code') or '0000'
         return '{}-{}'.format(prefix, sequence)
+
+    def _get_verify_base_url(self):
+        config = self.env['ir.config_parameter'].sudo()
+        base_url = (
+            config.get_param(VERIFY_BASE_URL_PARAM)
+            or config.get_param('web.base.url')
+            or ''
+        )
+        return '{}/verificar/'.format(base_url.rstrip('/'))
 
     def action_print_diploma(self):
         self.ensure_one()
@@ -72,7 +81,7 @@ class DiplomaWizard(models.TransientModel):
                     'certificate_id': stamp_data.get('certificate_id'),
                 })
 
-        qr_url = '{}?{}'.format(VERIFY_BASE_URL, urlencode(query_params))
+        qr_url = '{}?{}'.format(self._get_verify_base_url(), urlencode(query_params))
 
         def html_split(name, lang='es'):
             if not name:
