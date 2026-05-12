@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_verify_diploma" name="Verificacion de Diploma iRG">
+        <t t-call="website.layout">
+            <div class="container my-5">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-8 col-xl-7">
+                        <div class="text-center mb-4">
+                            <h1 class="mb-2">Verificacion de diploma</h1>
+                            <p class="text-muted mb-0">Instituto Raimon Gaja</p>
+                        </div>
+
+                        <t t-if="not code">
+                            <div class="alert alert-secondary text-center shadow-sm" role="alert">
+                                Escanea el codigo QR del diploma para verificar.
+                            </div>
+                        </t>
+
+                        <t t-if="code and found">
+                            <div class="card border-success shadow-sm">
+                                <div class="card-header bg-success text-white text-center py-3">
+                                    <h2 class="h4 mb-0">CERTIFICADO VALIDO</h2>
+                                </div>
+                                <div class="card-body p-4">
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-4">Alumno</dt>
+                                        <dd class="col-sm-8" t-esc="student_name"/>
+
+                                        <dt class="col-sm-4">Curso</dt>
+                                        <dd class="col-sm-8" t-esc="course_name"/>
+
+                                        <dt class="col-sm-4">Codigo</dt>
+                                        <dd class="col-sm-8"><strong t-esc="code"/></dd>
+
+                                        <t t-if="registry_number and registry_number != code">
+                                            <dt class="col-sm-4">Registro</dt>
+                                            <dd class="col-sm-8" t-esc="registry_number"/>
+                                        </t>
+
+                                        <t t-if="issue_date">
+                                            <dt class="col-sm-4">Fecha</dt>
+                                            <dd class="col-sm-8" t-esc="issue_date"/>
+                                        </t>
+
+                                        <t t-if="diploma_type">
+                                            <dt class="col-sm-4">Tipo</dt>
+                                            <dd class="col-sm-8" t-esc="diploma_type"/>
+                                        </t>
+                                    </dl>
+                                </div>
+                            </div>
+                        </t>
+
+                        <t t-if="code and not found">
+                            <div class="card border-danger shadow-sm">
+                                <div class="card-header bg-danger text-white text-center py-3">
+                                    <h2 class="h4 mb-0">NO ENCONTRADO</h2>
+                                </div>
+                                <div class="card-body text-center p-4">
+                                    <p class="mb-0">
+                                        El codigo <strong t-esc="code"/> no existe en nuestra base de datos.
+                                    </p>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
