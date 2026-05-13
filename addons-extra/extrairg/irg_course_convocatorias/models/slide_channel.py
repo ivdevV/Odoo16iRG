@@ -47,8 +47,8 @@ class SlideChannel(models.Model):
         'op_subject_ids',
         'op_subject_ids.course_id',
         'op_subject_ids.course_id.irg_modality_ids',
-        'op_subject_ids.course_id.product_id',
-        'op_subject_ids.course_id.product_id.product_tmpl_id.product_variant_ids',
+        'irg_native_section_ids',
+        'irg_native_section_ids.allowed_batch_ids',
     )
     def _compute_irg_course_convocatoria_data(self):
         course_model = self.env['op.course']
@@ -82,7 +82,8 @@ class SlideChannel(models.Model):
         courses = self.op_subject_ids.mapped('course_id')
         if self.op_subject_ids:
             courses |= course_model.search([('subject_ids', 'in', self.op_subject_ids.ids)])
-        courses |= course_model.search([('slide_channel_ids', 'in', self.id)])
+        if 'slide_channel_ids' in course_model._fields:
+            courses |= course_model.search([('slide_channel_ids', 'in', self.id)])
         return courses
 
     def _irg_batch_matches_modality(self, batch, modality_code):
@@ -97,7 +98,7 @@ class SlideChannel(models.Model):
     def _irg_get_online_variant(self, courses):
         self.ensure_one()
         for course in courses:
-            product = getattr(course, 'product_id', False)
+            product = course.product_id if 'product_id' in course._fields else False
             template = product.product_tmpl_id if product else False
             variants = template.product_variant_ids if template else self.env['product.product']
             online_variant = variants.filtered(self._irg_is_online_variant)[:1]
