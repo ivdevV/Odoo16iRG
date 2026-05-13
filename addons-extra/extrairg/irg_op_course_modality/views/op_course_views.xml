@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ========== op.course Form — añadir campo Modalidades ========== -->
+    <record id="view_op_course_form_irg_modality" model="ir.ui.view">
+        <field name="name">op.course.form.irg.modality</field>
+        <field name="model">op.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_course_form"/>
+        <field name="arch" type="xml">
+            <!-- Insertar después del campo 'code' en el grupo superior izquierdo -->
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="irg_modality_ids"
+                       widget="many2many_tags"
+                       options="{'color_field': 'sequence'}"
+                       string="Modalidades"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ========== op.course Tree — añadir columna Modalidades ========== -->
+    <record id="view_op_course_tree_irg_modality" model="ir.ui.view">
+        <field name="name">op.course.tree.irg.modality</field>
+        <field name="model">op.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_course_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='evaluation_type']" position="after">
+                <field name="irg_modality_ids"
+                       widget="many2many_tags"
+                       optional="show"
+                       string="Modalidades"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

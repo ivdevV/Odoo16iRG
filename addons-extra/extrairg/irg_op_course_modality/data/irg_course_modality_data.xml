@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+    <record id="modality_presencial" model="irg.course.modality">
+        <field name="name">Presencial</field>
+        <field name="code">presencial</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="modality_homeclass" model="irg.course.modality">
+        <field name="name">HomeClass</field>
+        <field name="code">homeclass</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="modality_online" model="irg.course.modality">
+        <field name="name">Online</field>
+        <field name="code">online</field>
+        <field name="sequence">30</field>
+    </record>
+</odoo>
