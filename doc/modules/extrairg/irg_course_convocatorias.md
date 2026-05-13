@@ -24,6 +24,7 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 - Calcula los lotes HomeClass y Online reales a partir de `op.batch.course_id` y `op.batch.modality_id`.
 - Calcula la variante Online desde el producto del curso cuando existe una variante con atributo `modalidad = online`.
 - Filtra las secciones HomeClass y Online sobre las secciones nativas del canal usando `allowed_batch_ids`.
+- Filtra `Online > Contenido` sobre `slide.slide`, mostrando solo elementos online de tipo estructural o artículo y excluyendo documentos.
 - Oculta las pestañas HomeClass/Online cuando no hay modalidad ni lotes aplicables.
 - Reordena la UX del formulario para que HomeClass y Online sean las pestañas de primer nivel y el resto queden como subpestañas internas.
 
@@ -42,6 +43,7 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 - `irg_homeclass_batch_ids`: lotes reales del curso filtrados como HomeClass.
 - `irg_online_batch_ids`: lotes reales del curso filtrados como Online.
 - `irg_homeclass_section_ids`: secciones nativas del canal cuyo `allowed_batch_ids` intersecta con los lotes HomeClass.
+- `irg_online_content_ids`: contenidos del canal visibles para online, limitados a categorías y artículos.
 - `irg_online_section_ids`: secciones nativas del canal cuyo `allowed_batch_ids` intersecta con los lotes Online.
 - `irg_online_variant_id`: primera variante del producto del curso detectada como Online por el atributo `modalidad`.
 - `irg_has_homeclass` / `irg_has_online`: banderas que controlan la visibilidad de pestañas.

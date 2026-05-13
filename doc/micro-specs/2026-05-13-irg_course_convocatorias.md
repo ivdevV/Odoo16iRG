@@ -42,6 +42,7 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 - `website_slides.view_slide_channel_form` vía inserción de un notebook superior nuevo antes del notebook base.
 - Pestaña superior **HomeClass**: contiene un notebook interno al que se mueven las pestañas existentes del canal (`content`, `description`, `options`, `karma_rules`, `op_subject`, `irg_sections`).
 - Pestaña superior **Online**: contiene un notebook interno propio con `Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas` y `Secciones iRG` construidas sobre datos online.
+- En `Online > Contenido`, se muestran contenidos `slide.slide` filtrados por lotes online y se excluyen los materiales documentales, conservando categorías y artículos.
 - El notebook original del formulario se oculta tras mover las pestañas reutilizadas a HomeClass.
 
 ## 6. Dependencias
@@ -63,6 +64,7 @@ Sin impacto destructivo en datos existentes. La UI del canal pasa a reflejar cur
 - Al entrar en HomeClass, aparecen dentro las subpestañas del canal (`Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas`, `Secciones iRG`).
 - Al entrar en Online, aparecen subpestañas equivalentes adaptadas a datos online.
 - La pestaña Online muestra lotes `op.batch` reales filtrados por modalidad Online y la variante Online detectada.
+- La pestaña `Online > Contenido` muestra contenidos del canal filtrados para online y sin documentos.
 - Las pestañas de modalidad no muestran ya el diseño plano previo a nivel superior.
 
 ## 9. Rollback plan

@@ -29,6 +29,11 @@ class SlideChannel(models.Model):
         compute='_compute_irg_course_convocatoria_data',
         string='Secciones HomeClass',
     )
+    irg_online_content_ids = fields.Many2many(
+        'slide.slide',
+        compute='_compute_irg_course_convocatoria_data',
+        string='Contenido Online',
+    )
     irg_online_section_ids = fields.Many2many(
         'slide.slide',
         compute='_compute_irg_course_convocatoria_data',
@@ -52,6 +57,10 @@ class SlideChannel(models.Model):
         'op_subject_ids',
         'op_subject_ids.course_id',
         'op_subject_ids.course_id.irg_modality_ids',
+        'slide_ids',
+        'slide_ids.allowed_batch_ids',
+        'slide_ids.slide_category',
+        'slide_ids.is_category',
         'irg_native_section_ids',
         'irg_native_section_ids.allowed_batch_ids',
     )
@@ -71,6 +80,10 @@ class SlideChannel(models.Model):
             homeclass_sections = channel.irg_native_section_ids.filtered(
                 lambda section: bool(section.allowed_batch_ids & homeclass_batches)
             )
+            online_content = channel.slide_ids.filtered(
+                lambda slide: channel._irg_slide_matches_batches(slide, online_batches)
+                and channel._irg_is_online_visible_content(slide)
+            )
             online_sections = channel.irg_native_section_ids.filtered(
                 lambda section: bool(section.allowed_batch_ids & online_batches)
             )
@@ -80,6 +93,7 @@ class SlideChannel(models.Model):
             channel.irg_homeclass_batch_ids = homeclass_batches
             channel.irg_online_batch_ids = online_batches
             channel.irg_homeclass_section_ids = homeclass_sections
+            channel.irg_online_content_ids = online_content
             channel.irg_online_section_ids = online_sections
             channel.irg_has_homeclass = bool(related_modalities.filtered(lambda modality: modality.code == 'homeclass') or homeclass_batches)
             channel.irg_has_online = bool(related_modalities.filtered(lambda modality: modality.code == 'online') or online_batches)
@@ -103,6 +117,14 @@ class SlideChannel(models.Model):
         if modality_code == 'online':
             return 'online' in modality_name or ('onl' in batch_code and 'monl' not in batch_code)
         return False
+
+    def _irg_slide_matches_batches(self, slide, batches):
+        if not slide.allowed_batch_ids:
+            return False
+        return bool(slide.allowed_batch_ids & batches)
+
+    def _irg_is_online_visible_content(self, slide):
+        return slide.is_category or slide.slide_category == 'article'
 
     def _irg_get_online_variant(self, courses):
         self.ensure_one()

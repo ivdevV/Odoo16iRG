@@ -24,6 +24,8 @@
 
 - **Nuevo campo calculado `irg_online_section_ids`** — permite mostrar una pestaña `Secciones iRG` específica para Online filtrando `allowed_batch_ids` contra lotes online.
 
+- **Nuevo campo calculado `irg_online_content_ids`** — la pestaña `Online > Contenido` deja de mostrar lotes y pasa a mostrar contenidos `slide.slide` del canal filtrados para online, manteniendo solo estructura visible (`categorías` y `artículos`) y excluyendo materiales tipo documento.
+
 - **Dependencia nueva** — se añade `isep_elearning_custom` al manifest porque la nueva estructura reutiliza explícitamente `op_subject_ids` y la pestaña `Asignaturas` dentro del notebook por modalidad.
 
 - **Seguridad** — `ir.model.access.csv` con acceso completo a `irg.course.convocatoria` para `base.group_user`.
