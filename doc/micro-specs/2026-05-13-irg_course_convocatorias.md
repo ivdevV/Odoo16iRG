@@ -6,63 +6,63 @@ Pestañas HomeClass y Online con convocatorias anuales en el formulario de curso
 
 ## 2. Resumen objetivo
 
-Añadir dos pestañas al formulario backend de `slide.channel` — **HomeClass** y **Online** — que permiten gestionar convocatorias anuales por modalidad, asociar lotes (`op.batch`) y organizar secciones de contenido específicas de cada convocatoria.
+Añadir dos pestañas al formulario backend de `slide.channel` — **HomeClass** y **Online** — construidas sobre datos reales de `op.course`, `irg_op_course_modality` y `op.batch`, para mostrar la estructura académica del curso sin introducir un flujo manual paralelo de convocatorias.
 
 ## 3. Motivo / justificación
 
-Los cursos HomeClass se imparten en convocatorias anuales (identificadas por año, ej. HC2601) y el equipo académico necesita una forma de gestionar el contenido, los lotes y la variante de producto de cada convocatoria directamente desde la ficha del curso, sin mezclar información entre años. No se toca ningún módulo nativo ni de `addons_uisep`.
+La primera aproximación basada en un modelo manual `irg.course.convocatoria` no seguía el flujo real del proyecto. El patrón correcto ya existe en `irg_op_course_modality`: las modalidades viven en `op.course` mediante catálogo, y los lotes reales viven en `op.batch`. Este módulo debe apoyarse en esa base para que la UI de `slide.channel` refleje modalidades, lotes y contenido reales del curso.
 
 ## 4. Alcance exacto
 
-- Nuevo modelo `irg.course.convocatoria` (modelos Python).
-- Herencia de `slide.channel` para añadir campos O2M de convocatorias HomeClass y Online.
-- Herencia de `irg.slide.section` para añadir campo `convocatoria_id`.
-- Vistas XML: form + list propio del nuevo modelo; inherit del form de `slide.channel`.
-- `ir.model.access.csv` para el nuevo modelo.
+- Herencia de `slide.channel` para añadir campos calculados de cursos relacionados, modalidades, lotes HomeClass, lotes Online, variante Online y secciones HomeClass.
+- Reutilización de `irg.slide.section` y de las secciones nativas del canal filtradas por `allowed_batch_ids`.
+- Vistas XML: inherit del form de `slide.channel` para mostrar datos reales en las pestañas HomeClass y Online.
+- Dependencia explícita de `irg_op_course_modality`.
 
 ## 5. Diseño técnico
 
-**Nuevo modelo:** `irg.course.convocatoria`
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `name` | Char | Requerido. Ej: "HomeClass 2026" |
-| `modality` | Selection | `homeclass` / `online` |
-| `year` | Char | "2026", "2025"… |
-| `sequence` | Integer | Orden dentro del canal |
-| `channel_id` | Many2one(`slide.channel`) | Requerido, ondelete=cascade |
-| `batch_ids` | Many2many(`op.batch`) | Lotes asociados |
-| `online_variant_id` | Many2one(`product.product`) | Solo para modalidad Online |
-| `irg_section_ids` | One2many(`irg.slide.section`) | Secciones de esta convocatoria |
-
 **Herencias Python:**
-- `slide.channel` → añade `irg_homeclass_conv_ids` (domain `modality=homeclass`) e `irg_online_conv_ids` (domain `modality=online`).
-- `irg.slide.section` → añade `convocatoria_id` Many2one(irg.course.convocatoria, ondelete='set null').
+- `slide.channel` → añade campos calculados:
+  - `irg_related_course_ids`
+  - `irg_related_modality_ids`
+  - `irg_homeclass_batch_ids`
+  - `irg_online_batch_ids`
+  - `irg_homeclass_section_ids`
+  - `irg_online_variant_id`
+  - `irg_has_homeclass`
+  - `irg_has_online`
+- La relación `slide.channel` → `op.course` se obtiene por dos vías:
+  - asignaturas del canal (`op_subject_ids.course_id` y `subject_ids`)
+  - cursos que incluyen el canal en `slide_channel_ids`
+- Los lotes HomeClass/Online se calculan desde `op.batch` de los cursos relacionados y `modality_id`.
+- La variante Online se obtiene de `course.product_id.product_tmpl_id.product_variant_ids` filtrando por atributo `modalidad = online`.
+- Las secciones HomeClass se calculan sobre `irg_native_section_ids` filtrando `allowed_batch_ids` contra los lotes HomeClass.
 
 **Herencia XML:**
 - `website_slides.view_slide_channel_form` vía XPath `//notebook/page[@name='irg_sections']` position=after.
-- Dos `<page>` nuevas: "HomeClass" y "Online", cada una con un O2M tree + form popup que incluye pestaña de secciones.
+- Pestaña **HomeClass**: muestra cursos/modalidades relacionadas, lotes HomeClass reales y secciones HomeClass reales.
+- Pestaña **Online**: muestra cursos/modalidades relacionadas, la variante Online detectada y los lotes Online reales.
 
 ## 6. Dependencias
 
 ```python
-depends = ['website_slides', 'openeducat_core', 'irg_elearning_editable_sections']
+depends = ['website_slides', 'openeducat_core', 'irg_op_course_modality', 'irg_elearning_editable_sections']
 ```
 
 ## 7. Backwards-compatibility / migración
 
-Sin impacto en datos existentes. El campo `convocatoria_id` en `irg.slide.section` es opcional (`set null`). Las secciones sin `convocatoria_id` siguen apareciendo en la pestaña "Secciones iRG" original.
+Sin impacto destructivo en datos existentes. La UI del canal pasa a reflejar cursos, modalidades y lotes reales; no se requiere migración de datos para visualizar la nueva estructura.
 
 ## 8. Casos de prueba / criterios de aceptación
 
 - El formulario de `slide.channel` muestra las pestañas "HomeClass" y "Online" tras instalar el módulo.
-- Se puede crear una convocatoria "HomeClass 2026" desde la pestaña HomeClass; aparece como fila en el tree.
-- Se pueden asignar lotes `op.batch` a la convocatoria.
-- Desde la convocatoria se pueden crear secciones (`irg.slide.section`); dichas secciones aparecen también en la pestaña "Secciones iRG".
-- En la pestaña Online, el campo `online_variant_id` es visible y seleccionable.
-- Crear una convocatoria Online sin `online_variant_id` no bloquea el guardado (campo no required en v1).
-- Las convocatorias HomeClass no aparecen en la pestaña Online y viceversa (domain funciona).
-- Desinstalar el módulo no rompe el canal ni las secciones existentes.
+- Si el curso relacionado tiene modalidad HomeClass o lotes HomeClass, la pestaña HomeClass es visible.
+- Si el curso relacionado tiene modalidad Online o lotes Online, la pestaña Online es visible.
+- La pestaña HomeClass muestra lotes `op.batch` reales filtrados por modalidad HomeClass.
+- La pestaña HomeClass muestra secciones del canal cuyos `allowed_batch_ids` intersectan con los lotes HomeClass.
+- La pestaña Online muestra lotes `op.batch` reales filtrados por modalidad Online.
+- La pestaña Online muestra la variante Online detectada desde el producto del curso cuando existe.
+- No aparece ningún flujo manual de "Nueva convocatoria HomeClass/Online" en el formulario del canal.
 
 ## 9. Rollback plan
 

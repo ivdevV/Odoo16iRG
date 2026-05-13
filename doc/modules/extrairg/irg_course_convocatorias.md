@@ -5,55 +5,52 @@
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
-**Depende de:** `website_slides`, `openeducat_core`, `irg_elearning_editable_sections`
+**Depende de:** `website_slides`, `openeducat_core`, `irg_op_course_modality`, `irg_elearning_editable_sections`
 
 ---
 
 ## ¿Qué hace este módulo?
 
-Añade una capa de gestión académica sobre los cursos de eLearning (`slide.channel`) para separar sus convocatorias por modalidad y año. En lugar de concentrar todas las secciones y lotes del curso en una única estructura, el módulo introduce dos pestañas nuevas en la ficha del curso: **HomeClass** y **Online**.
+Añade una capa de lectura académica sobre los cursos de eLearning (`slide.channel`) para separar visualmente la información HomeClass y Online usando la estructura real del proyecto. En lugar de crear convocatorias manuales desde el canal, el módulo parte de los cursos `op.course` relacionados, sus modalidades (`irg_op_course_modality`) y sus lotes reales (`op.batch`).
 
-Cada convocatoria queda registrada como un elemento propio, vinculado al curso eLearning, con sus lotes (`op.batch`) y sus secciones iRG asociadas. Esto permite que un mismo curso reutilice su estructura general en Odoo, pero organice el contenido y la planificación por edición anual sin mezclar convocatorias históricas con nuevas aperturas.
+Las pestañas **HomeClass** y **Online** muestran lotes reales del curso y, en el caso de HomeClass, las secciones del canal filtradas por `allowed_batch_ids`. En Online, además, intenta detectar automáticamente la variante comercial online del producto vinculado al curso.
 
 En la práctica, el módulo actúa como puente entre la estructura nativa de `website_slides`, la organización académica de OpenEduCat y el modelo de secciones editables aportado por `irg_elearning_editable_sections`. No expone controladores ni lógica de portal; su impacto es principalmente de backoffice y de modelado de datos para el equipo académico.
 
 ## Funcionalidades principales
 
-- Crea el nuevo modelo `irg.course.convocatoria` para representar convocatorias de curso por modalidad (`homeclass` / `online`) y año.
-- Añade al curso eLearning (`slide.channel`) dos relaciones O2M separadas: `irg_homeclass_conv_ids` y `irg_online_conv_ids`.
-- Permite asociar lotes académicos (`op.batch`) a cada convocatoria para segmentar alumnos o ediciones.
-- Permite vincular una variante de producto (`product.product`) a las convocatorias Online mediante `online_variant_id`.
-- Reutiliza las secciones editables de `irg.slide.section` y las asigna opcionalmente a una convocatoria concreta mediante `convocatoria_id`.
-- Incluye vista lista y formulario propias para `irg.course.convocatoria`, además de la extensión del formulario de `slide.channel`.
-- Expone permisos de lectura, escritura, creación y borrado del nuevo modelo para `base.group_user`.
+- Calcula automáticamente los cursos `op.course` relacionados con el `slide.channel`.
+- Lee las modalidades disponibles desde `irg_op_course_modality` en `op.course.irg_modality_ids`.
+- Calcula los lotes HomeClass y Online reales a partir de `op.batch.course_id` y `op.batch.modality_id`.
+- Calcula la variante Online desde el producto del curso cuando existe una variante con atributo `modalidad = online`.
+- Filtra las secciones HomeClass sobre las secciones nativas del canal usando `allowed_batch_ids`.
+- Oculta las pestañas HomeClass/Online cuando no hay modalidad ni lotes aplicables.
 
 ## Modelos
 
 | Modelo | Tipo | Campos principales |
 |--------|------|--------------------|
-| `irg.course.convocatoria` | Nuevo | `name`, `modality`, `year`, `sequence`, `active`, `channel_id`, `batch_ids`, `online_variant_id`, `irg_section_ids`, `section_count` |
-| `slide.channel` | Herencia | `irg_homeclass_conv_ids`, `irg_online_conv_ids` |
+| `irg.course.convocatoria` | Nuevo/auxiliar | `name`, `modality`, `year`, `sequence`, `active`, `channel_id`, `batch_ids`, `online_variant_id`, `irg_section_ids`, `section_count` |
+| `slide.channel` | Herencia | `irg_related_course_ids`, `irg_related_modality_ids`, `irg_homeclass_batch_ids`, `irg_online_batch_ids`, `irg_homeclass_section_ids`, `irg_online_variant_id`, `irg_has_homeclass`, `irg_has_online` |
 | `irg.slide.section` | Herencia | `convocatoria_id` |
 
 ### Detalle funcional de campos
 
-- `name`: nombre visible de la convocatoria. El `onchange` propone automáticamente un valor del tipo "HomeClass 2026" cuando hay modalidad y año y el nombre aún está vacío.
-- `modality`: separación operativa entre convocatorias HomeClass y Online.
-- `year`: año de referencia de la edición; se modela como `Char`, no como entero.
-- `channel_id`: relación obligatoria con el curso eLearning (`slide.channel`). Si el curso se elimina, sus convocatorias se eliminan también (`ondelete='cascade'`).
-- `batch_ids`: relación Many2many con `op.batch`, usada para agrupar la convocatoria por lotes/promociones académicas.
-- `online_variant_id`: variante comercial asociada a la modalidad Online. Solo se muestra en las vistas Online, aunque no existe una restricción ORM que la obligue fuera de la UI.
-- `irg_section_ids`: secciones iRG asociadas a la convocatoria. Estas secciones siguen perteneciendo al canal, pero ahora pueden quedar clasificadas por convocatoria.
-- `section_count`: contador calculado a partir de `irg_section_ids`.
+- `irg_related_course_ids`: cursos relacionados con el canal por asignaturas o por `slide_channel_ids`.
+- `irg_related_modality_ids`: modalidades del catálogo `irg.course.modality` presentes en los cursos relacionados.
+- `irg_homeclass_batch_ids`: lotes reales del curso filtrados como HomeClass.
+- `irg_online_batch_ids`: lotes reales del curso filtrados como Online.
+- `irg_homeclass_section_ids`: secciones nativas del canal cuyo `allowed_batch_ids` intersecta con los lotes HomeClass.
+- `irg_online_variant_id`: primera variante del producto del curso detectada como Online por el atributo `modalidad`.
+- `irg_has_homeclass` / `irg_has_online`: banderas que controlan la visibilidad de pestañas.
 
 ## Vistas y UI
 
 - `views/slide_channel_views.xml` hereda `website_slides.view_slide_channel_form`.
 - El `xpath` se ancla en la pestaña `page[@name='irg_sections']`, que procede del módulo `irg_elearning_editable_sections`.
 - Inserta dos páginas nuevas en el notebook del curso:
-  - **HomeClass**: lista convocatorias de modalidad HomeClass, con `sequence`, `name`, `year`, `batch_ids` y `section_count`.
-  - **Online**: misma estructura, añadiendo `online_variant_id`.
-- En ambas pestañas, cada convocatoria se puede abrir en formulario emergente y gestionar desde ahí sus secciones internas.
+- **HomeClass**: cursos/modalidades relacionadas, lotes HomeClass reales y secciones HomeClass reales.
+- **Online**: cursos/modalidades relacionadas, lotes Online reales y variante Online detectada.
 - `views/irg_course_convocatoria_views.xml` define además:
   - vista lista del nuevo modelo,
   - vista formulario con notebook de secciones,
@@ -68,23 +65,24 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 ## Cómo interactúa con la estructura existente de eLearning y cursos
 
 - `website_slides` sigue siendo la base del curso: `slide.channel` continúa siendo el contenedor principal del curso eLearning.
-- `irg_elearning_editable_sections` aporta el modelo `irg.slide.section` y la pestaña previa "Secciones iRG". Este módulo no la reemplaza; la complementa con una clasificación adicional por convocatoria.
-- `openeducat_core` aporta `op.batch`, que se usa para asociar una convocatoria a sus lotes o promociones académicas.
-- Las secciones asignadas a una convocatoria siguen ligadas al mismo `channel_id`, por lo que la organización por convocatoria convive con la organización global del curso.
-- El módulo no altera la lógica de venta, matrícula, publicación ni progreso del alumno. Su objetivo es estructurar mejor el backoffice del contenido y la planificación académica.
+- `irg_op_course_modality` define el catálogo de modalidades y el campo `irg_modality_ids` en `op.course`; este módulo se apoya en esa capa en lugar de duplicarla.
+- `irg_elearning_editable_sections` aporta la pestaña "Secciones iRG" y el uso de `allowed_batch_ids` en las secciones nativas.
+- `openeducat_core` aporta `op.batch`, que se filtra por modalidad y curso.
+- El módulo no altera matrícula, venta ni progreso; reorganiza la lectura de backoffice del canal según la estructura académica real.
 
 ## Dependencias externas
 
 - `website_slides`: modelo `slide.channel` y formulario backend del curso eLearning que se hereda.
-- `openeducat_core`: modelo `op.batch` usado en `batch_ids`.
+- `openeducat_core`: modelo `op.batch` usado para calcular HomeClass y Online.
+- `irg_op_course_modality`: catálogo `irg.course.modality` y campo `op.course.irg_modality_ids`.
 - `irg_elearning_editable_sections`: modelo `irg.slide.section` y pestaña `irg_sections` sobre la que se inserta la nueva UI.
 
 ## Riesgos y notas técnicas
 
 - El `xpath` depende de que `irg_elearning_editable_sections` siga aportando la página `name="irg_sections"`. Si esa vista cambia, la inserción de las pestañas HomeClass y Online dejará de aplicarse.
-- `year` es un `Char` y el orden del modelo usa `year desc`; si se cargan valores no homogéneos, la ordenación puede no reflejar correctamente la cronología esperada.
-- `online_variant_id` solo se exige en determinadas vistas, pero no existe una validación Python o SQL que obligue a rellenarlo para convocatorias Online creadas por importación, RPC o vistas alternativas.
-- El acceso completo para `base.group_user` simplifica la operativa, pero amplía bastante la superficie de edición del modelo.
+- La detección de HomeClass depende del nombre de `op.batch.modality_id` y la detección de Online usa nombre de modalidad o patrón `ONL` en código de lote, excluyendo `MONL`.
+- La variante Online se detecta por atributo de producto; si el producto del curso no usa ese esquema de atributos, el campo quedará vacío.
+- El modelo `irg.course.convocatoria` permanece en el módulo como capa auxiliar heredada de la primera iteración, pero la UI principal ya no depende de él.
 - No se detectan `sudo()`, SQL raw, crons ni endpoints HTTP en este módulo.
 
 ## Historial reciente

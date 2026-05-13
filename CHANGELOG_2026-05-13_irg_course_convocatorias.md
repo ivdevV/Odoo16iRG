@@ -4,17 +4,23 @@
 
 ### Qué se hizo
 
-- **Nuevo modelo `irg.course.convocatoria`** — gestiona convocatorias de un curso (`slide.channel`) por modalidad (`homeclass` / `online`) y año. Incluye `batch_ids` (lotes `op.batch`), `online_variant_id` (variante de producto) y `irg_section_ids` (secciones del curso).
+- **Corrección de enfoque funcional** — la UI de `slide.channel` ya no se apoya en una lista manual de convocatorias creada desde el formulario. Ahora se alimenta de datos reales de `op.course`, `irg_op_course_modality` y `op.batch`.
 
-- **Herencia de `slide.channel`** — añade dos campos O2M filtrados:
-  - `irg_homeclass_conv_ids` (domain `modality=homeclass`)
-  - `irg_online_conv_ids` (domain `modality=online`)
+- **Herencia de `slide.channel`** — añade campos calculados:
+  - `irg_related_course_ids`
+  - `irg_related_modality_ids`
+  - `irg_homeclass_batch_ids`
+  - `irg_online_batch_ids`
+  - `irg_homeclass_section_ids`
+  - `irg_online_variant_id`
+  - `irg_has_homeclass`
+  - `irg_has_online`
 
-- **Herencia de `irg.slide.section`** — añade campo `convocatoria_id` (Many2one a `irg.course.convocatoria`, opcional, `ondelete=set null`). Las secciones existentes no se ven afectadas.
+- **Integración con `irg_op_course_modality`** — el módulo depende ahora del catálogo de modalidades existente en `op.course` en vez de inventar una gestión paralela para HomeClass y Online.
 
 - **Vistas backend** — dos pestañas nuevas en el formulario de `slide.channel`:
-  - **HomeClass**: lista de convocatorias anuales HC con lotes y contador de secciones; form popup con pestaña de secciones interna.
-  - **Online**: igual pero con campo `online_variant_id` para vincular la variante online del producto.
+  - **HomeClass**: cursos relacionados, modalidades, lotes HomeClass reales y secciones del curso filtradas por `allowed_batch_ids`.
+  - **Online**: cursos relacionados, modalidades, lotes Online reales y variante Online detectada desde el producto del curso.
 
 - **Seguridad** — `ir.model.access.csv` con acceso completo a `irg.course.convocatoria` para `base.group_user`.
 
@@ -37,6 +43,10 @@ addons-extra/extrairg/irg_course_convocatorias/
 ```
 
 ### Sin cambios en módulos nativos ni en `addons_uisep`
+
+### Nota importante
+
+- El modelo `irg.course.convocatoria` sigue existiendo en el módulo, pero la UI principal del formulario del canal ya no depende de ese flujo manual para HomeClass y Online.
 
 ### Comando de instalación
 

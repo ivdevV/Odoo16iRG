@@ -7,6 +7,7 @@
     'depends': [
         'website_slides',
         'openeducat_core',
+        'irg_op_course_modality',
         'irg_elearning_editable_sections',
     ],
     'data': [
