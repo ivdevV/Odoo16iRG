@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_tfm_acta_admin,irg.tfm.acta - Admin,model_irg_tfm_acta,base.group_system,1,1,1,1
+access_irg_tfm_acta_user,irg.tfm.acta - User,model_irg_tfm_acta,base.group_user,1,0,0,0
+access_irg_tfm_acta_wizard_admin,irg.tfm.acta.wizard - Admin,model_irg_tfm_acta_wizard,base.group_system,1,1,1,1
+access_irg_tfm_acta_wizard_user,irg.tfm.acta.wizard - User,model_irg_tfm_acta_wizard,base.group_user,1,1,1,0
