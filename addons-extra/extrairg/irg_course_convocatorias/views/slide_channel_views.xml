@@ -8,6 +8,11 @@
         <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
         <field name="arch" type="xml">
 
+            <xpath expr="//form/sheet" position="inside">
+                <field name="irg_has_homeclass" invisible="1"/>
+                <field name="irg_has_online" invisible="1"/>
+            </xpath>
+
             <!-- Tab HomeClass: listed after "Secciones iRG" -->
             <xpath expr="//notebook/page[@name='irg_sections']" position="after">
 
