@@ -25,6 +25,7 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 - Calcula la variante Online desde el producto del curso cuando existe una variante con atributo `modalidad = online`.
 - Filtra las secciones HomeClass y Online sobre las secciones nativas del canal usando `allowed_batch_ids`.
 - Filtra `Online > Contenido` sobre `slide.slide`, mostrando solo elementos online de tipo estructural o artículo y excluyendo documentos.
+- Renderiza `Online > Contenido` usando `slide_ids` con dominio sobre el subconjunto online para mantener el editor nativo del canal.
 - Oculta las pestañas HomeClass/Online cuando no hay modalidad ni lotes aplicables.
 - Reordena la UX del formulario para que HomeClass y Online sean las pestañas de primer nivel y el resto queden como subpestañas internas.
 

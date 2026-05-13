@@ -26,6 +26,8 @@
 
 - **Nuevo campo calculado `irg_online_content_ids`** — la pestaña `Online > Contenido` deja de mostrar lotes y pasa a mostrar contenidos `slide.slide` del canal filtrados para online, manteniendo solo estructura visible (`categorías` y `artículos`) y excluyendo materiales tipo documento.
 
+- **`Online > Contenido` vuelve al modelo nativo de contenidos** — la pestaña pasa a renderizar `slide_ids` con dominio sobre `irg_online_content_ids`, recuperando el comportamiento estándar del editor de contenidos del canal en lugar de una lista calculada de solo lectura.
+
 - **Dependencia nueva** — se añade `isep_elearning_custom` al manifest porque la nueva estructura reutiliza explícitamente `op_subject_ids` y la pestaña `Asignaturas` dentro del notebook por modalidad.
 
 - **Seguridad** — `ir.model.access.csv` con acceso completo a `irg.course.convocatoria` para `base.group_user`.

@@ -43,6 +43,7 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 - Pestaña superior **HomeClass**: contiene un notebook interno al que se mueven las pestañas existentes del canal (`content`, `description`, `options`, `karma_rules`, `op_subject`, `irg_sections`).
 - Pestaña superior **Online**: contiene un notebook interno propio con `Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas` y `Secciones iRG` construidas sobre datos online.
 - En `Online > Contenido`, se muestran contenidos `slide.slide` filtrados por lotes online y se excluyen los materiales documentales, conservando categorías y artículos.
+- La subpestaña `Online > Contenido` reutiliza el campo nativo `slide_ids` del canal con dominio sobre el subconjunto online para conservar la UX estándar de gestión de contenidos.
 - El notebook original del formulario se oculta tras mover las pestañas reutilizadas a HomeClass.
 
 ## 6. Dependencias
