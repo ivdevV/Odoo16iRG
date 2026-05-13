@@ -70,7 +70,9 @@
                             </page>
                             <page string="Karma" name="irg_online_karma">
                                 <group>
-                                    <label string="La configuración de karma sigue siendo global para el canal y se mantiene en la pestaña HomeClass."/>
+                                    <div class="o_form_label">
+                                        La configuración de karma sigue siendo global para el canal y se mantiene en la pestaña HomeClass.
+                                    </div>
                                 </group>
                             </page>
                             <page string="Asignaturas" name="irg_online_subjects">
