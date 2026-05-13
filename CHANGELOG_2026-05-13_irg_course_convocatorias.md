@@ -19,8 +19,12 @@
 - **Integración con `irg_op_course_modality`** — el módulo depende ahora del catálogo de modalidades existente en `op.course` en vez de inventar una gestión paralela para HomeClass y Online.
 
 - **Vistas backend** — dos pestañas nuevas en el formulario de `slide.channel`:
-  - **HomeClass**: cursos relacionados, modalidades, lotes HomeClass reales y secciones del curso filtradas por `allowed_batch_ids`.
-  - **Online**: cursos relacionados, modalidades, lotes Online reales y variante Online detectada desde el producto del curso.
+  - **HomeClass**: ahora es una pestaña superior que contiene dentro el notebook original del canal (`Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas`, `Secciones iRG`).
+  - **Online**: ahora es una pestaña superior con notebook interno propio y subpestañas equivalentes para datos online.
+
+- **Nuevo campo calculado `irg_online_section_ids`** — permite mostrar una pestaña `Secciones iRG` específica para Online filtrando `allowed_batch_ids` contra lotes online.
+
+- **Dependencia nueva** — se añade `isep_elearning_custom` al manifest porque la nueva estructura reutiliza explícitamente `op_subject_ids` y la pestaña `Asignaturas` dentro del notebook por modalidad.
 
 - **Seguridad** — `ir.model.access.csv` con acceso completo a `irg.course.convocatoria` para `base.group_user`.
 
@@ -47,6 +51,7 @@ addons-extra/extrairg/irg_course_convocatorias/
 ### Nota importante
 
 - El modelo `irg.course.convocatoria` sigue existiendo en el módulo, pero la UI principal del formulario del canal ya no depende de ese flujo manual para HomeClass y Online.
+- La UX pasa de un esquema plano de pestañas a un esquema jerárquico: pestañas de modalidad arriba, subpestañas funcionales dentro.
 
 ### Comando de instalación
 

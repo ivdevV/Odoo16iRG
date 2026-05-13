@@ -6,7 +6,7 @@ Pestañas HomeClass y Online con convocatorias anuales en el formulario de curso
 
 ## 2. Resumen objetivo
 
-Añadir dos pestañas al formulario backend de `slide.channel` — **HomeClass** y **Online** — construidas sobre datos reales de `op.course`, `irg_op_course_modality` y `op.batch`, para mostrar la estructura académica del curso sin introducir un flujo manual paralelo de convocatorias.
+Reestructurar el formulario backend de `slide.channel` para que las modalidades **HomeClass** y **Online** aparezcan como pestañas superiores, y que cada una contenga su propio notebook interno con subpestañas del tipo `Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas` y `Secciones iRG`.
 
 ## 3. Motivo / justificación
 
@@ -14,10 +14,10 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 
 ## 4. Alcance exacto
 
-- Herencia de `slide.channel` para añadir campos calculados de cursos relacionados, modalidades, lotes HomeClass, lotes Online, variante Online y secciones HomeClass.
-- Reutilización de `irg.slide.section` y de las secciones nativas del canal filtradas por `allowed_batch_ids`.
-- Vistas XML: inherit del form de `slide.channel` para mostrar datos reales en las pestañas HomeClass y Online.
-- Dependencia explícita de `irg_op_course_modality`.
+- Herencia de `slide.channel` para añadir campos calculados de cursos relacionados, modalidades, lotes HomeClass, lotes Online, variante Online y secciones filtradas para ambas modalidades.
+- Reestructuración del notebook principal del formulario para introducir un notebook superior por modalidad.
+- Reutilización de las pestañas existentes del canal dentro de HomeClass y definición de un notebook paralelo para Online.
+- Dependencia explícita de `irg_op_course_modality` e `isep_elearning_custom`.
 
 ## 5. Diseño técnico
 
@@ -39,9 +39,10 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 - Las secciones HomeClass se calculan sobre `irg_native_section_ids` filtrando `allowed_batch_ids` contra los lotes HomeClass.
 
 **Herencia XML:**
-- `website_slides.view_slide_channel_form` vía XPath `//notebook/page[@name='irg_sections']` position=after.
-- Pestaña **HomeClass**: muestra cursos/modalidades relacionadas, lotes HomeClass reales y secciones HomeClass reales.
-- Pestaña **Online**: muestra cursos/modalidades relacionadas, la variante Online detectada y los lotes Online reales.
+- `website_slides.view_slide_channel_form` vía inserción de un notebook superior nuevo antes del notebook base.
+- Pestaña superior **HomeClass**: contiene un notebook interno al que se mueven las pestañas existentes del canal (`content`, `description`, `options`, `karma_rules`, `op_subject`, `irg_sections`).
+- Pestaña superior **Online**: contiene un notebook interno propio con `Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas` y `Secciones iRG` construidas sobre datos online.
+- El notebook original del formulario se oculta tras mover las pestañas reutilizadas a HomeClass.
 
 ## 6. Dependencias
 
@@ -58,11 +59,11 @@ Sin impacto destructivo en datos existentes. La UI del canal pasa a reflejar cur
 - El formulario de `slide.channel` muestra las pestañas "HomeClass" y "Online" tras instalar el módulo.
 - Si el curso relacionado tiene modalidad HomeClass o lotes HomeClass, la pestaña HomeClass es visible.
 - Si el curso relacionado tiene modalidad Online o lotes Online, la pestaña Online es visible.
-- La pestaña HomeClass muestra lotes `op.batch` reales filtrados por modalidad HomeClass.
-- La pestaña HomeClass muestra secciones del canal cuyos `allowed_batch_ids` intersectan con los lotes HomeClass.
-- La pestaña Online muestra lotes `op.batch` reales filtrados por modalidad Online.
-- La pestaña Online muestra la variante Online detectada desde el producto del curso cuando existe.
-- No aparece ningún flujo manual de "Nueva convocatoria HomeClass/Online" en el formulario del canal.
+- El formulario de `slide.channel` muestra primero las pestañas superiores `HomeClass` y `Online`.
+- Al entrar en HomeClass, aparecen dentro las subpestañas del canal (`Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas`, `Secciones iRG`).
+- Al entrar en Online, aparecen subpestañas equivalentes adaptadas a datos online.
+- La pestaña Online muestra lotes `op.batch` reales filtrados por modalidad Online y la variante Online detectada.
+- Las pestañas de modalidad no muestran ya el diseño plano previo a nivel superior.
 
 ## 9. Rollback plan
 

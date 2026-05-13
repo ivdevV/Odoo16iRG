@@ -11,9 +11,9 @@
 
 ## ¿Qué hace este módulo?
 
-Añade una capa de lectura académica sobre los cursos de eLearning (`slide.channel`) para separar visualmente la información HomeClass y Online usando la estructura real del proyecto. En lugar de crear convocatorias manuales desde el canal, el módulo parte de los cursos `op.course` relacionados, sus modalidades (`irg_op_course_modality`) y sus lotes reales (`op.batch`).
+Añade una capa de lectura académica sobre los cursos de eLearning (`slide.channel`) para separar visualmente la información HomeClass y Online usando la estructura real del proyecto. En lugar de crear convocatorias manuales desde el canal, el módulo parte de los cursos `op.course` relacionados, sus modalidades (`irg_op_course_modality`) y sus lotes reales (`op.batch`), y reorganiza el formulario en dos niveles de pestañas.
 
-Las pestañas **HomeClass** y **Online** muestran lotes reales del curso y, en el caso de HomeClass, las secciones del canal filtradas por `allowed_batch_ids`. En Online, además, intenta detectar automáticamente la variante comercial online del producto vinculado al curso.
+Las pestañas superiores **HomeClass** y **Online** aparecen por encima de las pestañas funcionales del canal. Dentro de **HomeClass** se reutiliza el notebook real del curso (`Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas`, `Secciones iRG`). Dentro de **Online** se construye un notebook paralelo orientado a lotes, variante y secciones online.
 
 En la práctica, el módulo actúa como puente entre la estructura nativa de `website_slides`, la organización académica de OpenEduCat y el modelo de secciones editables aportado por `irg_elearning_editable_sections`. No expone controladores ni lógica de portal; su impacto es principalmente de backoffice y de modelado de datos para el equipo académico.
 
@@ -23,15 +23,16 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 - Lee las modalidades disponibles desde `irg_op_course_modality` en `op.course.irg_modality_ids`.
 - Calcula los lotes HomeClass y Online reales a partir de `op.batch.course_id` y `op.batch.modality_id`.
 - Calcula la variante Online desde el producto del curso cuando existe una variante con atributo `modalidad = online`.
-- Filtra las secciones HomeClass sobre las secciones nativas del canal usando `allowed_batch_ids`.
+- Filtra las secciones HomeClass y Online sobre las secciones nativas del canal usando `allowed_batch_ids`.
 - Oculta las pestañas HomeClass/Online cuando no hay modalidad ni lotes aplicables.
+- Reordena la UX del formulario para que HomeClass y Online sean las pestañas de primer nivel y el resto queden como subpestañas internas.
 
 ## Modelos
 
 | Modelo | Tipo | Campos principales |
 |--------|------|--------------------|
 | `irg.course.convocatoria` | Nuevo/auxiliar | `name`, `modality`, `year`, `sequence`, `active`, `channel_id`, `batch_ids`, `online_variant_id`, `irg_section_ids`, `section_count` |
-| `slide.channel` | Herencia | `irg_related_course_ids`, `irg_related_modality_ids`, `irg_homeclass_batch_ids`, `irg_online_batch_ids`, `irg_homeclass_section_ids`, `irg_online_variant_id`, `irg_has_homeclass`, `irg_has_online` |
+| `slide.channel` | Herencia | `irg_related_course_ids`, `irg_related_modality_ids`, `irg_homeclass_batch_ids`, `irg_online_batch_ids`, `irg_homeclass_section_ids`, `irg_online_section_ids`, `irg_online_variant_id`, `irg_has_homeclass`, `irg_has_online` |
 | `irg.slide.section` | Herencia | `convocatoria_id` |
 
 ### Detalle funcional de campos
@@ -41,16 +42,16 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 - `irg_homeclass_batch_ids`: lotes reales del curso filtrados como HomeClass.
 - `irg_online_batch_ids`: lotes reales del curso filtrados como Online.
 - `irg_homeclass_section_ids`: secciones nativas del canal cuyo `allowed_batch_ids` intersecta con los lotes HomeClass.
+- `irg_online_section_ids`: secciones nativas del canal cuyo `allowed_batch_ids` intersecta con los lotes Online.
 - `irg_online_variant_id`: primera variante del producto del curso detectada como Online por el atributo `modalidad`.
 - `irg_has_homeclass` / `irg_has_online`: banderas que controlan la visibilidad de pestañas.
 
 ## Vistas y UI
 
 - `views/slide_channel_views.xml` hereda `website_slides.view_slide_channel_form`.
-- El `xpath` se ancla en la pestaña `page[@name='irg_sections']`, que procede del módulo `irg_elearning_editable_sections`.
-- Inserta dos páginas nuevas en el notebook del curso:
-- **HomeClass**: cursos/modalidades relacionadas, lotes HomeClass reales y secciones HomeClass reales.
-- **Online**: cursos/modalidades relacionadas, lotes Online reales y variante Online detectada.
+- Inserta un notebook superior nuevo antes del notebook original del canal.
+- Mueve las pestañas funcionales existentes del canal dentro de `HomeClass`.
+- Construye para `Online` un notebook paralelo con `Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas` y `Secciones iRG`.
 - `views/irg_course_convocatoria_views.xml` define además:
   - vista lista del nuevo modelo,
   - vista formulario con notebook de secciones,

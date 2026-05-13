@@ -29,6 +29,11 @@ class SlideChannel(models.Model):
         compute='_compute_irg_course_convocatoria_data',
         string='Secciones HomeClass',
     )
+    irg_online_section_ids = fields.Many2many(
+        'slide.slide',
+        compute='_compute_irg_course_convocatoria_data',
+        string='Secciones Online',
+    )
     irg_online_variant_id = fields.Many2one(
         'product.product',
         compute='_compute_irg_course_convocatoria_data',
@@ -66,12 +71,16 @@ class SlideChannel(models.Model):
             homeclass_sections = channel.irg_native_section_ids.filtered(
                 lambda section: bool(section.allowed_batch_ids & homeclass_batches)
             )
+            online_sections = channel.irg_native_section_ids.filtered(
+                lambda section: bool(section.allowed_batch_ids & online_batches)
+            )
 
             channel.irg_related_course_ids = related_courses or course_model.browse()
             channel.irg_related_modality_ids = related_modalities or modality_model.browse()
             channel.irg_homeclass_batch_ids = homeclass_batches
             channel.irg_online_batch_ids = online_batches
             channel.irg_homeclass_section_ids = homeclass_sections
+            channel.irg_online_section_ids = online_sections
             channel.irg_has_homeclass = bool(related_modalities.filtered(lambda modality: modality.code == 'homeclass') or homeclass_batches)
             channel.irg_has_online = bool(related_modalities.filtered(lambda modality: modality.code == 'online') or online_batches)
             channel.irg_online_variant_id = channel._irg_get_online_variant(related_courses) or product_model.browse()

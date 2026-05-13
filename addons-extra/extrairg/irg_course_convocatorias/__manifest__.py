@@ -8,6 +8,7 @@
         'website_slides',
         'openeducat_core',
         'irg_op_course_modality',
+        'isep_elearning_custom',
         'irg_elearning_editable_sections',
     ],
     'data': [
