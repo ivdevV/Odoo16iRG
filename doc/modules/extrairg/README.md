@@ -61,6 +61,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_admission_birthdate_edit](./irg_admission_birthdate_edit.md) | Hace editable birth_date en op.admission | `op.admission` | Instalable |
 | [irg_admission_register_export](./irg_admission_register_export.md) | Exportación de admisiones a CSV/XLSX | `irg.admission.export.wizard` (nuevo) | Instalable |
 | [irg_auto_translate](./irg_auto_translate.md) | Auto-traducción de cursos y asignaturas con DeepL/Google | `op.course`, `op.subject` | Instalable |
+| [irg_course_convocatorias](./irg_course_convocatorias.md) | Convocatorias HomeClass y Online por curso eLearning | `irg.course.convocatoria` (nuevo), `slide.channel`, `irg.slide.section` | Instalable |
 | [irg_course_portal_tiles](./irg_course_portal_tiles.md) | Tiles de acceso rápido en el campus | — | Instalable |
 | [irg_crm_extensions](./irg_crm_extensions.md) | Comercial anterior y fecha de reactivación en leads | `crm.lead` | Instalable |
 | [irg_crm_gclid](./irg_crm_gclid.md) | Campo GCLID de Google Ads en leads | `crm.lead` | Instalable |
