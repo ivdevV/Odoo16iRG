@@ -15,7 +15,7 @@
         <!-- Insertar botones después del bloque de contenido principal (t-else) -->
         <!-- Apuntamos solo al div con t-else para no romper el par t-if/t-else -->
         <xpath expr="//div[@t-else='' and hasclass('o_wslides_lesson_content_type')]" position="after">
-            <div class="irg-slide-bottom-nav d-flex justify-content-between align-items-center mt-4 mb-3 pt-3 border-top">
+            <div class="irg-slide-bottom-nav d-flex justify-content-between align-items-center mt-4 mb-3 pt-3 border-top" style="position: relative; z-index: 100;">
                 <!-- Anterior: <a> navegable si existe la slide, <span> inactivo si no -->
                 <a t-if="previous_slide" t-att-href="previous_slide.website_url" class="btn btn-outline-secondary">
                     <i class="fa fa-chevron-left me-2"/>Anterior
