@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_crm_case_leads_filter_date_open" model="ir.ui.view">
+        <field name="name">crm.lead.search.lead.date.open</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_leads_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='create_date']" position="after">
+                <field name="date_open" string="Fecha de asignación"/>
+            </xpath>
+            <xpath expr="//filter[@name='filter_creation_date']" position="after">
+                <filter string="Fecha de asignación" name="filter_date_open" date="date_open"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_crm_case_opportunities_filter_date_open" model="ir.ui.view">
+        <field name="name">crm.lead.search.opportunity.date.open</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='activity_state']" position="after">
+                <field name="date_open" string="Fecha de asignación"/>
+            </xpath>
+            <xpath expr="//filter[@name='creation_date']" position="after">
+                <filter string="Fecha de asignación" name="filter_date_open" date="date_open"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
