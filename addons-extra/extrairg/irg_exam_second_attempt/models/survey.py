@@ -7,11 +7,13 @@ EXAM_ATTEMPTS_LIMIT = 2
 class SurveySurveyExamSecondAttempt(models.Model):
     _inherit = 'survey.survey'
 
+    SURVEY_TYPES_WITH_SECOND_ATTEMPT = ('exam', 'survey')
+
     def _irg_prepare_exam_second_attempt_values(self, values):
         prepared_values = dict(values)
         if (
             'attempts_limit' in self._fields
-            and prepared_values.get('survey_type') == 'exam'
+            and prepared_values.get('survey_type') in self.SURVEY_TYPES_WITH_SECOND_ATTEMPT
         ):
             prepared_values['is_attempts_limited'] = True
             if prepared_values.get('attempts_limit', 0) < EXAM_ATTEMPTS_LIMIT:
@@ -29,7 +31,7 @@ class SurveySurveyExamSecondAttempt(models.Model):
 
         target_type = values.get('survey_type')
         exam_surveys = self.filtered(
-            lambda survey: (target_type or survey.survey_type) == 'exam'
+            lambda survey: (target_type or survey.survey_type) in self.SURVEY_TYPES_WITH_SECOND_ATTEMPT
         )
         other_surveys = self - exam_surveys
 
@@ -55,7 +57,7 @@ class SurveySurveyExamSecondAttempt(models.Model):
             return True
 
         exam_surveys = self.sudo().search([
-            ('survey_type', '=', 'exam'),
+            ('survey_type', 'in', list(self.SURVEY_TYPES_WITH_SECOND_ATTEMPT)),
             '|',
             ('is_attempts_limited', '=', False),
             ('attempts_limit', '<', EXAM_ATTEMPTS_LIMIT),

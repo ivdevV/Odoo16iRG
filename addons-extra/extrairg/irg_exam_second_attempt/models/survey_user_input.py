@@ -179,7 +179,7 @@ class SurveyUserInputExamSecondAttempt(models.Model):
 
     def _check_for_failed_attempt(self):
         self.ensure_one()
-        if self.survey_type in ('exam', 'assignment'):
+        if self.survey_type in ('exam', 'assignment', 'survey'):
             # Para exámenes académicos: nunca reactivar un intento anterior.
             # El controlador usará el nuevo intento limpio directamente.
             # certification=False en estos surveys, por lo que la lógica de
@@ -218,7 +218,7 @@ class SurveyUserInputExamSecondAttempt(models.Model):
 
         if values.get('state') == 'done':
             for record in self.filtered(
-                lambda r: r.survey_type in ('exam', 'assignment')
+                lambda r: r.survey_type in ('exam', 'assignment', 'survey')
             ):
                 survey = record.survey_id
                 # Solo aplica a surveys con puntuación (no 'no_scoring').
