@@ -27,6 +27,7 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 - Filtra `Online > Contenido` sobre `slide.slide`, mostrando contenidos marcados con modalidad Online.
 - Renderiza `Online > Contenido` usando `irg_online_slide_ids`, un `one2many` técnico contra `slide.slide/channel_id`, para mantener contenidos editables sin duplicar `slide_ids` en el mismo formulario.
 - Añade `irg_content_modality` a `slide.slide` para que HomeClass y Online puedan tener contenidos nativos separados dentro del mismo canal.
+- Permite crear secciones desde `Online > Contenido` con los mismos defaults estructurales que HomeClass y con modalidad Online.
 - Oculta las pestañas HomeClass/Online cuando no hay modalidad ni lotes aplicables.
 - Reordena la UX del formulario para que HomeClass y Online sean las pestañas de primer nivel y el resto queden como subpestañas internas.
 

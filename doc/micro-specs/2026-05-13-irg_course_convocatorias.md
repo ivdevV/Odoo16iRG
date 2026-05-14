@@ -67,6 +67,7 @@ Sin impacto destructivo en datos existentes. La UI del canal pasa a reflejar cur
 - Al entrar en Online, aparecen subpestañas equivalentes adaptadas a datos online.
 - La pestaña Online muestra lotes `op.batch` reales filtrados por modalidad Online y la variante Online detectada.
 - La pestaña `Online > Contenido` permite crear contenidos nativos `slide.slide` marcados como Online.
+- La pestaña `Online > Contenido` permite crear secciones nativas marcadas como Online mediante el botón `Añadir sección`.
 - Las pestañas de modalidad no muestran ya el diseño plano previo a nivel superior.
 
 ## 9. Rollback plan
