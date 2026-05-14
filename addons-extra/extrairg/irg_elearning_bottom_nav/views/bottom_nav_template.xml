@@ -16,18 +16,20 @@
         <!-- Apuntamos solo al div con t-else para no romper el par t-if/t-else -->
         <xpath expr="//div[@t-else='' and hasclass('o_wslides_lesson_content_type')]" position="after">
             <div class="irg-slide-bottom-nav d-flex justify-content-between align-items-center mt-4 mb-3 pt-3 border-top">
-                <a t-attf-class="btn btn-outline-secondary #{'disabled' if not previous_slide else ''}"
-                   role="button"
-                   t-att-aria-disabled="'disabled' if not previous_slide else None"
-                   t-att-href="previous_slide.website_url if previous_slide else '#'">
+                <!-- Anterior: <a> navegable si existe la slide, <span> inactivo si no -->
+                <a t-if="previous_slide" t-att-href="previous_slide.website_url" class="btn btn-outline-secondary">
                     <i class="fa fa-chevron-left me-2"/>Anterior
                 </a>
-                <a t-attf-class="btn btn-primary #{'disabled' if not next_slide else ''}"
-                   role="button"
-                   t-att-aria-disabled="'disabled' if not next_slide else None"
-                   t-att-href="next_slide.website_url if next_slide else '#'">
+                <span t-else="" class="btn btn-outline-secondary disabled" aria-disabled="true">
+                    <i class="fa fa-chevron-left me-2"/>Anterior
+                </span>
+                <!-- Siguiente: <a> navegable si existe la slide, <span> inactivo si no -->
+                <a t-if="next_slide" t-att-href="next_slide.website_url" class="btn btn-primary">
                     Siguiente<i class="fa fa-chevron-right ms-2"/>
                 </a>
+                <span t-else="" class="btn btn-primary disabled" aria-disabled="true">
+                    Siguiente<i class="fa fa-chevron-right ms-2"/>
+                </span>
             </div>
         </xpath>
 
