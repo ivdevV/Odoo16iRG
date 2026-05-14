@@ -42,14 +42,15 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 - `website_slides.view_slide_channel_form` vía inserción de un notebook superior nuevo antes del notebook base.
 - Pestaña superior **HomeClass**: contiene un notebook interno al que se mueven las pestañas existentes del canal (`content`, `description`, `options`, `karma_rules`, `op_subject`, `irg_sections`).
 - Pestaña superior **Online**: contiene un notebook interno propio con `Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas` y `Secciones iRG` construidas sobre datos online.
-- En `Online > Contenido`, se muestran contenidos `slide.slide` filtrados por lotes online y se excluyen los materiales documentales, conservando categorías y artículos.
-- La subpestaña `Online > Contenido` reutiliza el campo nativo `slide_ids` del canal con dominio sobre el subconjunto online para conservar la UX estándar de gestión de contenidos.
+- En `Online > Contenido`, se muestran contenidos nativos `slide.slide` marcados como Online.
+- La subpestaña `Online > Contenido` reutiliza el campo nativo `slide_ids` del canal con dominio por modalidad para conservar la UX estándar de gestión de contenidos.
+- La separación editable del contenido se implementa en `slide.slide` mediante `irg_content_modality`, evitando modelos paralelos y permitiendo añadir secciones, documentos y demás contenidos desde Online sin mezclarlos con HomeClass.
 - El notebook original del formulario se oculta tras mover las pestañas reutilizadas a HomeClass.
 
 ## 6. Dependencias
 
 ```python
-depends = ['website_slides', 'openeducat_core', 'irg_op_course_modality', 'irg_elearning_editable_sections']
+depends = ['website_slides', 'openeducat_core', 'irg_op_course_modality', 'isep_elearning_custom', 'irg_elearning_editable_sections']
 ```
 
 ## 7. Backwards-compatibility / migración
@@ -65,7 +66,7 @@ Sin impacto destructivo en datos existentes. La UI del canal pasa a reflejar cur
 - Al entrar en HomeClass, aparecen dentro las subpestañas del canal (`Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas`, `Secciones iRG`).
 - Al entrar en Online, aparecen subpestañas equivalentes adaptadas a datos online.
 - La pestaña Online muestra lotes `op.batch` reales filtrados por modalidad Online y la variante Online detectada.
-- La pestaña `Online > Contenido` muestra contenidos del canal filtrados para online y sin documentos.
+- La pestaña `Online > Contenido` permite crear contenidos nativos `slide.slide` marcados como Online.
 - Las pestañas de modalidad no muestran ya el diseño plano previo a nivel superior.
 
 ## 9. Rollback plan

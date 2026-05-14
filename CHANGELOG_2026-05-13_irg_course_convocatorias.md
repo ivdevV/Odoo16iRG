@@ -24,9 +24,11 @@
 
 - **Nuevo campo calculado `irg_online_section_ids`** — permite mostrar una pestaña `Secciones iRG` específica para Online filtrando `allowed_batch_ids` contra lotes online.
 
-- **Nuevo campo calculado `irg_online_content_ids`** — la pestaña `Online > Contenido` deja de mostrar lotes y pasa a mostrar contenidos `slide.slide` del canal filtrados para online, manteniendo solo estructura visible (`categorías` y `artículos`) y excluyendo materiales tipo documento.
+- **Nuevo campo calculado `irg_online_content_ids`** — la pestaña `Online > Contenido` deja de mostrar lotes y pasa a trabajar con contenidos `slide.slide` del canal marcados como Online.
 
-- **`Online > Contenido` vuelve al modelo nativo de contenidos** — la pestaña pasa a renderizar `slide_ids` con dominio sobre `irg_online_content_ids`, recuperando el comportamiento estándar del editor de contenidos del canal en lugar de una lista calculada de solo lectura.
+- **`Online > Contenido` vuelve al modelo nativo de contenidos** — la pestaña pasa a renderizar `slide_ids` con dominio por modalidad, recuperando el comportamiento estándar del editor de contenidos del canal en lugar de una lista calculada de solo lectura.
+
+- **Separación real por modalidad en `slide.slide`** — se añade `irg_content_modality` a `slide.slide` para separar contenidos HomeClass y Online dentro del mismo canal. `HomeClass > Contenido` muestra contenidos sin modalidad o HomeClass; `Online > Contenido` muestra y crea contenidos con modalidad Online.
 
 - **Dependencia nueva** — se añade `isep_elearning_custom` al manifest porque la nueva estructura reutiliza explícitamente `op_subject_ids` y la pestaña `Asignaturas` dentro del notebook por modalidad.
 
@@ -42,6 +44,7 @@ addons-extra/extrairg/irg_course_convocatorias/
 │   ├── __init__.py
 │   ├── irg_course_convocatoria.py
 │   ├── irg_slide_section.py
+│   ├── slide_slide.py
 │   └── slide_channel.py
 ├── security/
 │   └── ir.model.access.csv

@@ -61,6 +61,7 @@ class SlideChannel(models.Model):
         'slide_ids.allowed_batch_ids',
         'slide_ids.slide_category',
         'slide_ids.is_category',
+        'slide_ids.irg_content_modality',
         'irg_native_section_ids',
         'irg_native_section_ids.allowed_batch_ids',
     )
@@ -81,11 +82,10 @@ class SlideChannel(models.Model):
                 lambda section: bool(section.allowed_batch_ids & homeclass_batches)
             )
             online_content = channel.slide_ids.filtered(
-                lambda slide: channel._irg_slide_matches_batches(slide, online_batches)
-                and channel._irg_is_online_visible_content(slide)
+                lambda slide: slide.irg_content_modality == 'online'
             )
-            online_sections = channel.irg_native_section_ids.filtered(
-                lambda section: bool(section.allowed_batch_ids & online_batches)
+            online_sections = online_content.filtered(
+                lambda slide: slide.is_category
             )
 
             channel.irg_related_course_ids = related_courses or course_model.browse()
@@ -122,9 +122,6 @@ class SlideChannel(models.Model):
         if not slide.allowed_batch_ids:
             return False
         return bool(slide.allowed_batch_ids & batches)
-
-    def _irg_is_online_visible_content(self, slide):
-        return slide.is_category or slide.slide_category == 'article'
 
     def _irg_get_online_variant(self, courses):
         self.ensure_one()

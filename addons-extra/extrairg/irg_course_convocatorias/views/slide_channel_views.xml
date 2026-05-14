@@ -11,7 +11,6 @@
             <xpath expr="//form/sheet" position="inside">
                 <field name="irg_has_homeclass" invisible="1"/>
                 <field name="irg_has_online" invisible="1"/>
-                <field name="irg_online_content_ids" invisible="1"/>
                 <field name="irg_online_batch_ids" invisible="1"/>
             </xpath>
 
@@ -32,10 +31,11 @@
                                         <field name="irg_online_variant_id" readonly="1" options="{'no_open': True}"/>
                                     </group>
                                 </group>
-                                <field name="slide_ids" domain="[('id', 'in', irg_online_content_ids)]" context="{'default_channel_id': active_id, 'default_allowed_batch_ids': irg_online_batch_ids}">
+                                <field name="slide_ids" domain="[('irg_content_modality', '=', 'online')]" context="{'default_channel_id': active_id, 'default_irg_content_modality': 'online'}">
                                     <tree>
                                         <field name="sequence" widget="handle"/>
                                         <field name="name"/>
+                                        <field name="irg_content_modality" invisible="1"/>
                                         <field name="slide_category" string="Categoría"/>
                                         <field name="allowed_batch_ids" widget="many2many_tags" optional="show"/>
                                         <field name="scheduled_date" optional="show"/>
@@ -108,6 +108,15 @@
                 <xpath expr="//form/sheet/notebook/page[@name='karma_rules']" position="move"/>
                 <xpath expr="//form/sheet/notebook/page[@name='op_subject']" position="move"/>
                 <xpath expr="//form/sheet/notebook/page[@name='irg_sections']" position="move"/>
+            </xpath>
+
+            <xpath expr="//notebook[@name='irg_homeclass_notebook']/page[@name='content']//field[@name='slide_ids']" position="attributes">
+                <attribute name="domain">['|', ('irg_content_modality', '=', False), ('irg_content_modality', '=', 'homeclass')]</attribute>
+                <attribute name="context">{'default_channel_id': active_id, 'default_irg_content_modality': 'homeclass'}</attribute>
+            </xpath>
+
+            <xpath expr="//notebook[@name='irg_homeclass_notebook']/page[@name='content']//field[@name='slide_ids']//tree/field[@name='name']" position="after">
+                <field name="irg_content_modality" invisible="1"/>
             </xpath>
 
             <xpath expr="//form/sheet/notebook[not(@name='irg_modality_notebook')][1]" position="attributes">
