@@ -31,7 +31,7 @@
                                         <field name="irg_online_variant_id" readonly="1" options="{'no_open': True}"/>
                                     </group>
                                 </group>
-                                <field name="slide_ids" domain="[('irg_content_modality', '=', 'online')]" context="{'default_channel_id': active_id, 'default_irg_content_modality': 'online'}">
+                                <field name="irg_online_slide_ids" domain="[('irg_content_modality', '=', 'online')]" context="{'default_channel_id': active_id, 'default_irg_content_modality': 'online'}">
                                     <tree>
                                         <field name="sequence" widget="handle"/>
                                         <field name="name"/>

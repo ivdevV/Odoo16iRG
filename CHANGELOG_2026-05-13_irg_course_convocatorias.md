@@ -30,6 +30,8 @@
 
 - **Separación real por modalidad en `slide.slide`** — se añade `irg_content_modality` a `slide.slide` para separar contenidos HomeClass y Online dentro del mismo canal. `HomeClass > Contenido` muestra contenidos sin modalidad o HomeClass; `Online > Contenido` muestra y crea contenidos con modalidad Online.
 
+- **Campo editable propio para Online** — `Online > Contenido` deja de duplicar el campo `slide_ids` en el mismo formulario y usa `irg_online_slide_ids`, un `one2many` técnico contra `slide.slide/channel_id` con dominio Online. Esto evita que el cliente web reutilice el mismo dataset visual que HomeClass.
+
 - **Dependencia nueva** — se añade `isep_elearning_custom` al manifest porque la nueva estructura reutiliza explícitamente `op_subject_ids` y la pestaña `Asignaturas` dentro del notebook por modalidad.
 
 - **Seguridad** — `ir.model.access.csv` con acceso completo a `irg.course.convocatoria` para `base.group_user`.

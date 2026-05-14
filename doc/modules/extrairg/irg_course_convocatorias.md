@@ -25,7 +25,7 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 - Calcula la variante Online desde el producto del curso cuando existe una variante con atributo `modalidad = online`.
 - Filtra las secciones HomeClass y Online sobre las secciones nativas del canal usando `allowed_batch_ids`.
 - Filtra `Online > Contenido` sobre `slide.slide`, mostrando contenidos marcados con modalidad Online.
-- Renderiza `Online > Contenido` usando `slide_ids` con dominio por modalidad para mantener el editor nativo del canal.
+- Renderiza `Online > Contenido` usando `irg_online_slide_ids`, un `one2many` técnico contra `slide.slide/channel_id`, para mantener contenidos editables sin duplicar `slide_ids` en el mismo formulario.
 - Añade `irg_content_modality` a `slide.slide` para que HomeClass y Online puedan tener contenidos nativos separados dentro del mismo canal.
 - Oculta las pestañas HomeClass/Online cuando no hay modalidad ni lotes aplicables.
 - Reordena la UX del formulario para que HomeClass y Online sean las pestañas de primer nivel y el resto queden como subpestañas internas.
@@ -35,7 +35,7 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 | Modelo | Tipo | Campos principales |
 |--------|------|--------------------|
 | `irg.course.convocatoria` | Nuevo/auxiliar | `name`, `modality`, `year`, `sequence`, `active`, `channel_id`, `batch_ids`, `online_variant_id`, `irg_section_ids`, `section_count` |
-| `slide.channel` | Herencia | `irg_related_course_ids`, `irg_related_modality_ids`, `irg_homeclass_batch_ids`, `irg_online_batch_ids`, `irg_homeclass_section_ids`, `irg_online_section_ids`, `irg_online_variant_id`, `irg_has_homeclass`, `irg_has_online` |
+| `slide.channel` | Herencia | `irg_related_course_ids`, `irg_related_modality_ids`, `irg_homeclass_batch_ids`, `irg_online_batch_ids`, `irg_homeclass_section_ids`, `irg_online_content_ids`, `irg_online_slide_ids`, `irg_online_section_ids`, `irg_online_variant_id`, `irg_has_homeclass`, `irg_has_online` |
 | `slide.slide` | Herencia | `irg_content_modality` |
 | `irg.slide.section` | Herencia | `convocatoria_id` |
 
@@ -47,6 +47,7 @@ En la práctica, el módulo actúa como puente entre la estructura nativa de `we
 - `irg_online_batch_ids`: lotes reales del curso filtrados como Online.
 - `irg_homeclass_section_ids`: secciones nativas del canal cuyo `allowed_batch_ids` intersecta con los lotes HomeClass.
 - `irg_online_content_ids`: contenidos del canal visibles para online según `irg_content_modality`.
+- `irg_online_slide_ids`: relación editable a `slide.slide` filtrada por modalidad Online, usada por la pestaña `Online > Contenido`.
 - `irg_content_modality`: marca en cada contenido (`slide.slide`) para separarlo entre HomeClass y Online. Los contenidos existentes sin valor quedan visibles en HomeClass.
 - `irg_online_section_ids`: secciones nativas del canal cuyo `allowed_batch_ids` intersecta con los lotes Online.
 - `irg_online_variant_id`: primera variante del producto del curso detectada como Online por el atributo `modalidad`.
