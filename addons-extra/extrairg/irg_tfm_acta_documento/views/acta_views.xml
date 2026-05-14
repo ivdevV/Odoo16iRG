@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Tree View -->
+    <record id="view_irg_tfm_acta_tree" model="ir.ui.view">
+        <field name="name">irg.tfm.acta.tree</field>
+        <field name="model">irg.tfm.acta</field>
+        <field name="arch" type="xml">
+            <tree string="Actas de TFM/TFG">
+                <field name="name"/>
+                <field name="acta_type"/>
+                <field name="defense_date"/>
+                <field name="state"/>
+                <field name="created_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_irg_tfm_acta_form" model="ir.ui.view">
+        <field name="name">irg.tfm.acta.form</field>
+        <field name="model">irg.tfm.acta</field>
+        <field name="arch" type="xml">
+            <form string="Acta de TFM/TFG" readonly="1">
+                <header>
+                    <button name="action_download_pdf" string="Descargar PDF" type="object" class="btn-primary"/>
+                </header>
+                
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="student_id"/>
+                            <field name="acta_type"/>
+                            <field name="state"/>
+                            <field name="created_date"/>
+                            <field name="created_by"/>
+                        </group>
+                        <group>
+                            <field name="student_name"/>
+                            <field name="student_surnames"/>
+                            <field name="student_dni"/>
+                            <field name="defense_date"/>
+                            <field name="academic_year"/>
+                        </group>
+                    </group>
+                    
+                    <separator string="Titulación y Trabajo"/>
+                    <group>
+                        <group>
+                            <field name="degree_name"/>
+                        </group>
+                        <group>
+                            <field name="tfm_title"/>
+                        </group>
+                    </group>
+                    
+                    <separator string="Director/a TFT"/>
+                    <group>
+                        <group>
+                            <field name="director_name"/>
+                            <field name="director_surnames"/>
+                        </group>
+                    </group>
+                    
+                    <separator string="Tribunal"/>
+                    <group>
+                        <group>
+                            <field name="president_name"/>
+                            <field name="president_surnames"/>
+                        </group>
+                        <group>
+                            <field name="secretary_name"/>
+                            <field name="secretary_surnames"/>
+                        </group>
+                    </group>
+                    
+                    <separator string="Datos del Acta (Editables en PDF)"/>
+                    <group>
+                        <group>
+                            <field name="grade"/>
+                        </group>
+                        <group>
+                            <field name="observations"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <field name="attachment_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_irg_tfm_acta_search" model="ir.ui.view">
+        <field name="name">irg.tfm.acta.search</field>
+        <field name="model">irg.tfm.acta</field>
+        <field name="arch" type="xml">
+            <search string="Actas de TFM/TFG">
+                <field name="name" string="Acta"/>
+                <field name="student_id" string="Estudiante"/>
+                <field name="student_name" string="Nombre Estudiante"/>
+                <separator/>
+                <filter name="filter_tfm" string="TFM" domain="[('acta_type', '=', 'tfm')]"/>
+                <filter name="filter_tfg" string="TFG" domain="[('acta_type', '=', 'tfg')]"/>
+                <separator/>
+                <filter name="filter_valid" string="Válidas" domain="[('state', '=', 'valid')]"/>
+                <filter name="filter_draft" string="Borradores" domain="[('state', '=', 'draft')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_by_acta_type" string="Tipo" context="{'group_by': 'acta_type'}"/>
+                    <filter name="group_by_student" string="Estudiante" context="{'group_by': 'student_id'}"/>
+                    <filter name="group_by_state" string="Estado" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_irg_tfm_acta" model="ir.actions.act_window">
+        <field name="name">Actas de TFM/TFG</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">irg.tfm.acta</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_irg_tfm_acta_search"/>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_irg_tfm_acta" name="Actas TFM/TFG" parent="openeducat_core.menu_academic_operations" 
+              action="action_irg_tfm_acta" groups="base.group_user" sequence="100"/>
+
+    <!-- Herencia: Botón en la ficha del estudiante (op.student) -->
+    <record id="view_op_student_form_acta_button" model="ir.ui.view">
+        <field name="name">op.student.form.acta.button</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[1]" position="after">
+                <button name="%(action_irg_tfm_acta_wizard)d" string="Generar Acta TFM/TFG" type="action" class="btn-primary"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

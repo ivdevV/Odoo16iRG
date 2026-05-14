@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ========== irg.course.modality — Tree ========== -->
+    <record id="view_irg_course_modality_tree" model="ir.ui.view">
+        <field name="name">irg.course.modality.tree</field>
+        <field name="model">irg.course.modality</field>
+        <field name="arch" type="xml">
+            <tree string="Modalidades de Curso" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ========== irg.course.modality — Form ========== -->
+    <record id="view_irg_course_modality_form" model="ir.ui.view">
+        <field name="name">irg.course.modality.form</field>
+        <field name="model">irg.course.modality</field>
+        <field name="arch" type="xml">
+            <form string="Modalidad de Curso">
+                <sheet>
+                    <field name="active" invisible="1"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
+                            attrs="{'invisible': [('active', '=', True)]}"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="sequence"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========== Action ========== -->
+    <record id="action_irg_course_modality" model="ir.actions.act_window">
+        <field name="name">Modalidades de Curso</field>
+        <field name="res_model">irg.course.modality</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <!-- ========== Menu: bajo Configuración General de OpenEduCat ========== -->
+    <menuitem
+        id="menu_irg_course_modality"
+        name="Modalidades de Curso"
+        parent="openeducat_core.menu_op_school_config_general"
+        action="action_irg_course_modality"
+        sequence="30"
+        groups="base.group_system"
+    />
+</odoo>

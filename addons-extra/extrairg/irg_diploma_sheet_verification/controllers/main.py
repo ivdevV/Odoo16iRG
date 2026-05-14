@@ -31,6 +31,8 @@ class IrgDiplomaSheetVerificationController(IrgDiplomaVerificationController):
         if not code:
             return False
         return request.env['irg.diploma.registry'].sudo().search([
+            '|',
+            ('verification_code', '=', code),
             ('registry_number', '=', code),
             ('state', '=', 'valid'),
         ], limit=1)
@@ -76,6 +78,7 @@ class IrgDiplomaSheetVerificationController(IrgDiplomaVerificationController):
                     else ''
                 ),
                 'registry_number': record.registry_number,
+                'verification_code': record.verification_code or '',
                 'issue_date': record.issue_date,
                 'diploma_type': dict(record._fields['diploma_type'].selection).get(
                     record.diploma_type, record.diploma_type
@@ -88,6 +91,7 @@ class IrgDiplomaSheetVerificationController(IrgDiplomaVerificationController):
                 'found': True,
                 'record': False,
                 'diploma_type': '',
+                'verification_code': sheet_result.get('code'),
             })
             return sheet_result
 
@@ -99,6 +103,7 @@ class IrgDiplomaSheetVerificationController(IrgDiplomaVerificationController):
             'student_name': '',
             'course_name': '',
             'registry_number': '',
+            'verification_code': '',
             'issue_date': '',
             'diploma_type': '',
         }
@@ -131,6 +136,7 @@ class IrgDiplomaSheetVerificationController(IrgDiplomaVerificationController):
             'student_name': result['student_name'],
             'course_name': result['course_name'],
             'registry_number': result['registry_number'],
+            'verification_code': result.get('verification_code') or '',
             'issue_date': str(result['issue_date']) if result['issue_date'] else '',
         }
         return request.make_json_response(payload)

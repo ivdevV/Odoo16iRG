@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_course_modality_user,irg.course.modality user,model_irg_course_modality,base.group_user,1,0,0,0
+access_irg_course_modality_manager,irg.course.modality manager,model_irg_course_modality,base.group_system,1,1,1,1

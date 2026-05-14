@@ -1,7 +1,7 @@
 # Índice Global de Módulos — Odoo 16 IRG/ISEP
 
-> Documentación generada automáticamente. Fecha: 2026-04-23.
-> Total de módulos documentados: ~300+ (71 extrairg con doc individual + 19 addons_uisep con doc individual + resúmenes de categorías con ~1.400+ módulos adicionales).
+> Documentación generada automáticamente. Fecha: 2026-05-13.
+> Total de módulos documentados: ~300+ (72 extrairg con doc individual + 19 addons_uisep con doc individual + resúmenes de categorías con ~1.400+ módulos adicionales).
 
 ---
 
@@ -9,7 +9,7 @@
 
 | Categoría | Nº módulos (aprox.) | Descripción | README |
 |-----------|---------------------|-------------|--------|
-| [extrairg](./extrairg/README.md) | 71 | Módulos custom IRG (prefijo `irg_`) + conectores terceros | [Ver](./extrairg/README.md) |
+| [extrairg](./extrairg/README.md) | 72 | Módulos custom IRG (prefijo `irg_`) + conectores terceros | [Ver](./extrairg/README.md) |
 | [addons_uisep](./addons_uisep/README.md) | ~143 | Módulos base ISEP (`isep_*`) + módulos auxiliares | [Ver](./addons_uisep/README.md) |
 | [enterprise-16](./enterprise-16/README.md) | ~55 | OpenEduCat Enterprise v16 | [Ver](./enterprise-16/README.md) |
 | [community-16](./community-16/README.md) | ~14 | OpenEduCat Community v16 | [Ver](./community-16/README.md) |
@@ -78,6 +78,7 @@
 | [irg_admission_birthdate_edit](./extrairg/irg_admission_birthdate_edit.md) | extrairg | birth_date editable en admisión | 16.0.1.0.0 |
 | [irg_admission_register_export](./extrairg/irg_admission_register_export.md) | extrairg | Exportación de admisiones a CSV/XLSX | 16.0.1.0.0 |
 | [irg_auto_translate](./extrairg/irg_auto_translate.md) | extrairg | Auto-traducción con DeepL/Google Translate | 16.0.1.0.0 |
+| [irg_course_convocatorias](./extrairg/irg_course_convocatorias.md) | extrairg | Convocatorias HomeClass y Online por curso eLearning | 16.0.1.0.0 |
 | [irg_course_portal_tiles](./extrairg/irg_course_portal_tiles.md) | extrairg | Tiles de acceso rápido en el campus | 16.0.1.0.0 |
 | [irg_crm_extensions](./extrairg/irg_crm_extensions.md) | extrairg | Comercial anterior y fecha reactivación | 16.0.1.0.3 |
 | [irg_crm_gclid](./extrairg/irg_crm_gclid.md) | extrairg | Campo GCLID de Google Ads en leads | 16.0.1.0 |
@@ -90,6 +91,7 @@
 | [irg_invoice_payments_sort](./extrairg/irg_invoice_payments_sort.md) | extrairg | Ordena pagos de factura por fecha | 16.0.1.0.0 |
 | [irg_isep_cron_update_guard](./extrairg/irg_isep_cron_update_guard.md) | extrairg | Pausa crons pesados en actualizaciones | 16.0.1.0.0 |
 | [irg_language_nav](./extrairg/irg_language_nav.md) | extrairg | Selector de idioma ES/EN primero | 16.0.1.0.0 |
+| [irg_op_course_modality](./extrairg/irg_op_course_modality.md) | extrairg | Modalidades múltiples de impartición en cursos | 16.0.1.0.0 |
 | [irg_op_course_subjects_manage](./extrairg/irg_op_course_subjects_manage.md) | extrairg | Gestión de asignaturas desde el curso | 16.0.1.0.0 |
 | [irg_op_subject_multi_course](./extrairg/irg_op_subject_multi_course.md) | extrairg | Asignatura en múltiples cursos | 16.0.1.0.0 |
 | [irg_op_subject_visibility](./extrairg/irg_op_subject_visibility.md) | extrairg | Visibilidad de asignatura por lote | 16.0.1.0.0 |

@@ -2,7 +2,7 @@
 
 {
     'name': 'IRG Diploma Sheet Verification',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Education',
     'summary': 'Verifica diplomas por QR en Odoo con fallback a Google Sheet',
     'description': """
@@ -16,6 +16,8 @@
         'irg_generacion_diplomas',
     ],
     'data': [
+        'data/ir_sequence_data.xml',
+        'views/diploma_action_views.xml',
         'views/diploma_verify_templates.xml',
     ],
     'installable': True,

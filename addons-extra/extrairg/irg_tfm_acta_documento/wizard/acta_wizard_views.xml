@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Wizard View (Modal) -->
+    <record id="view_irg_tfm_acta_wizard_form" model="ir.ui.view">
+        <field name="name">irg.tfm.acta.wizard.form</field>
+        <field name="model">irg.tfm.acta.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generar Acta de TFM/TFG">
+                <group>
+                    <group>
+                        <field name="student_id" invisible="1"/>
+                        <field name="student_course_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="acta_type" widget="radio"/>
+                        <field name="academic_year"/>
+                        <field name="defense_date"/>
+                    </group>
+                </group>
+                
+                <separator string="Titulación y Trabajo"/>
+                <group>
+                    <group>
+                        <field name="degree_name" placeholder="Ej. Máster Universitario en Psicología..."/>
+                        <field name="tfm_title"/>
+                    </group>
+                </group>
+                
+                <separator string="Director/a TFT"/>
+                <group>
+                    <group>
+                        <field name="director_name" placeholder="Nombre"/>
+                        <field name="director_surnames" placeholder="Apellidos"/>
+                    </group>
+                </group>
+                
+                <separator string="Tribunal - Presidente"/>
+                <group>
+                    <group>
+                        <field name="president_name" placeholder="Nombre"/>
+                        <field name="president_surnames" placeholder="Apellidos"/>
+                    </group>
+                </group>
+                
+                <separator string="Tribunal - Secretario/a"/>
+                <group>
+                    <group>
+                        <field name="secretary_name" placeholder="Nombre"/>
+                        <field name="secretary_surnames" placeholder="Apellidos"/>
+                    </group>
+                </group>
+                
+                <footer>
+                    <button name="action_generate_acta_pdf" string="Generar PDF" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open Wizard -->
+    <record id="action_irg_tfm_acta_wizard" model="ir.actions.act_window">
+        <field name="name">Generar Acta de TFM/TFG</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">irg.tfm.acta.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_irg_tfm_acta_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
