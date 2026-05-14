@@ -14,6 +14,7 @@
     ],
     'data': [
         'data/fix_exam_attempt_limits.xml',
+        'views/survey_templates.xml',
     ],
     'post_init_hook': 'post_init_hook',
     'installable': True,
