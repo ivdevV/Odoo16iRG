@@ -7,6 +7,9 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='create_date']" position="after">
                 <field name="fecha_reactivacion" string="Fecha Reactivación" optional="hide"/>
+                <field name="irg_campana_reactivacion" optional="hide"/>
+                <field name="irg_fuente_reactivacion" optional="hide"/>
+                <field name="irg_referido_reactivacion" optional="hide"/>
             </xpath>
         </field>
     </record>
@@ -30,6 +33,9 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='create_date']" position="after">
                 <field name="fecha_reactivacion" string="Fecha Reactivación"/>
+                <field name="irg_campana_reactivacion"/>
+                <field name="irg_fuente_reactivacion"/>
+                <field name="irg_referido_reactivacion"/>
             </xpath>
             <xpath expr="//filter[@name='filter_creation_date']" position="after">
                 <filter string="Fecha Reactivación" name="filter_fecha_reactivacion" date="fecha_reactivacion"/>
@@ -44,6 +50,9 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='activity_state']" position="after">
                 <field name="fecha_reactivacion" string="Fecha Reactivación"/>
+                <field name="irg_campana_reactivacion"/>
+                <field name="irg_fuente_reactivacion"/>
+                <field name="irg_referido_reactivacion"/>
             </xpath>
             <xpath expr="//filter[@name='creation_date']" position="after">
                 <filter string="Fecha Reactivación" name="filter_fecha_reactivacion" date="fecha_reactivacion"/>

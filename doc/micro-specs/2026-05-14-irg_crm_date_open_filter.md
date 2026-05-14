@@ -4,15 +4,15 @@
 
 1. Titulo corto
 
-   Fecha de reactivacion en busqueda y columnas CRM.
+   Campos de reactivacion en busqueda y columnas CRM.
 
 2. Resumen objetivo
 
-   Exponer el campo `fecha_reactivacion` de `crm.lead` en las vistas de busqueda generales de Leads/Oportunidades y en las columnas opcionales de Leads. El cambio permite localizar, filtrar y mostrar registros por fecha de reactivacion sin tocar el modulo nativo `crm`.
+   Exponer los campos de reactivacion de `crm.lead` en las vistas de busqueda generales de Leads/Oportunidades y en las columnas opcionales de Leads. El cambio permite localizar, filtrar y mostrar registros por fecha, campana, fuente y referido de reactivacion sin tocar el modulo nativo `crm`.
 
 3. Motivo / justificacion
 
-   `fecha_reactivacion` ya existe en `crm.lead` a traves de `irg_crm_extensions`, pero no aparece como columna opcional en el listado estandar de Leads ni como filtro de fecha en la busqueda de Leads. Se implementa mediante un modulo extra con herencia XML para respetar la politica de no modificar core ni modulos existentes.
+   `fecha_reactivacion` ya existe en `crm.lead` a traves de `irg_crm_extensions`, y los campos `irg_campana_reactivacion`, `irg_fuente_reactivacion` e `irg_referido_reactivacion` existen a traves de `irg_crm_reactivacion`. Estos campos no aparecen como columnas opcionales en el listado estandar de Leads ni como criterios generales de busqueda de Leads. Se implementa mediante un modulo extra con herencia XML para respetar la politica de no modificar core ni modulos existentes.
 
 4. Alcance exacto
 
@@ -27,27 +27,31 @@
 
    - Crear modulo `irg_crm_date_open_filter` en `addons-extra/extrairg/`.
    - Depender de `irg_crm_extensions`, que define `fecha_reactivacion`.
+   - Depender de `irg_crm_reactivacion`, que define `irg_campana_reactivacion`, `irg_fuente_reactivacion` e `irg_referido_reactivacion`.
    - Heredar las vistas de busqueda de Leads y Oportunidades mediante `inherit_id`.
    - Heredar la vista de lista de Leads mediante `inherit_id`.
-   - Insertar `<field name="fecha_reactivacion"/>` en la zona de campos generales de busqueda.
+   - Insertar los campos de reactivacion en la zona de campos generales de busqueda.
    - Insertar `<filter date="fecha_reactivacion"/>` junto a los filtros de fecha existentes.
-   - Insertar `<field name="fecha_reactivacion" optional="hide"/>` despues de `create_date` en el listado para que aparezca en el selector de columnas opcionales.
+   - Insertar los campos de reactivacion con `optional="hide"` despues de `create_date` en el listado de Leads para que aparezcan en el selector de columnas opcionales.
 
 6. Dependencias
 
    - `crm`.
    - `irg_crm_extensions`.
+   - `irg_crm_reactivacion`.
 
 7. Backwards-compatibility / migracion
 
-   No requiere migracion de datos. El campo `fecha_reactivacion` ya existe en `irg_crm_extensions` y los registros existentes conservaran sus valores actuales.
+   No requiere migracion de datos. Los campos ya existen en sus modulos propietarios y los registros existentes conservaran sus valores actuales.
 
 8. Casos de prueba / criterios de aceptacion
 
    - El modulo instala/actualiza sin errores XML.
    - En CRM > Leads aparece `Fecha Reactivacion` como criterio de busqueda y filtro de fecha.
    - En CRM > Leads aparece `Fecha Reactivacion` en el selector de columnas opcionales del listado.
+   - En CRM > Leads aparecen `Campana de Reactivacion`, `Fuente de Reactivacion` y `Referido de Reactivacion` como criterios de busqueda y columnas opcionales.
    - En CRM > Pipeline/Oportunidades aparece `Fecha Reactivacion` como criterio de busqueda y filtro de fecha.
+   - En CRM > Pipeline/Oportunidades aparecen `Campana de Reactivacion`, `Fuente de Reactivacion` y `Referido de Reactivacion` como criterios de busqueda.
    - La busqueda por rangos de fecha usa el campo `fecha_reactivacion`.
 
 9. Rollback plan
