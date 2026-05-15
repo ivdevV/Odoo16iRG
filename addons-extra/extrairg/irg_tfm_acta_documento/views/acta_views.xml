@@ -127,7 +127,7 @@
     </record>
 
     <!-- Menu Item -->
-    <menuitem id="menu_irg_tfm_acta" name="Actas TFM/TFG" parent="openeducat_core.menu_academic_operations" 
+    <menuitem id="menu_irg_tfm_acta" name="Actas TFM/TFG" parent="web.menu_root" 
               action="action_irg_tfm_acta" groups="base.group_user" sequence="100"/>
 
     <!-- Herencia: Botón en la ficha del estudiante (op.student) -->
