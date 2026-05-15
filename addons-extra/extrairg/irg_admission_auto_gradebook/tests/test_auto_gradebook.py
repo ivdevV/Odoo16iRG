@@ -16,6 +16,13 @@ class TestAutoGradebook(TransactionCase):
     def setUp(self):
         super().setUp()
 
+        # Producto de servicio necesario para el register (dominio: type=service)
+        self.product = self.env['product.product'].sudo().create({
+            'name': 'Curso Test AGBook',
+            'type': 'service',
+            'list_price': 1000.0,
+        })
+
         # Curso con auto-creación habilitada (filtro: solo obligatorias)
         self.course = self.env['op.course'].sudo().create({
             'name': 'Test Auto Gradebook Course',
@@ -49,6 +56,7 @@ class TestAutoGradebook(TransactionCase):
         self.register = self.env['op.admission.register'].sudo().create({
             'name': 'Registro Test AGBook',
             'course_id': self.course.id,
+            'product_id': self.product.id,
             'start_date': '2026-01-01',
             'end_date': '2026-12-31',
             'state': 'admission',
@@ -56,6 +64,7 @@ class TestAutoGradebook(TransactionCase):
 
         # Admisión en estado pre-enroll (se forzará 'done' en cada test)
         self.admission = self.env['op.admission'].sudo().create({
+            'first_name': 'Alumno',
             'name': 'Alumno Test Libreta',
             'last_name': 'Apellido Test',
             'register_id': self.register.id,
@@ -63,6 +72,7 @@ class TestAutoGradebook(TransactionCase):
             'application_date': '2026-04-01',
             'birth_date': '2000-01-01',
             'gender': 'm',
+            'email': 'alumno.test@example.com',
             'state': 'confirm',
             'mobile': '600000001',
         })
