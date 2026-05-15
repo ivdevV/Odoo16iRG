@@ -1,4 +1,4 @@
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 
 class SlideChannel(models.Model):
@@ -139,6 +139,25 @@ class SlideChannel(models.Model):
             if online_variant:
                 return online_variant
         return self.env['product.product']
+
+    def action_copy_homeclass_to_online(self):
+        """Copia el contenido de HomeClass al tab Online como registros independientes."""
+        self.ensure_one()
+        homeclass_slides = self.slide_ids.filtered(
+            lambda s: s.irg_content_modality in (False, 'homeclass')
+        ).sorted('sequence')
+        for slide in homeclass_slides:
+            slide.copy({'irg_content_modality': 'online', 'is_published': False})
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Contenido copiado'),
+                'message': _('%d elemento(s) copiado(s) a Online. Puedes editarlos de forma independiente.') % len(homeclass_slides),
+                'type': 'success',
+                'sticky': False,
+            },
+        }
 
     def _irg_is_online_variant(self, variant):
         for line in variant.attribute_line_ids:

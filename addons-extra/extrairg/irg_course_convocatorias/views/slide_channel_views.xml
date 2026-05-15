@@ -22,6 +22,14 @@
                     <page string="Online" name="irg_online_top" attrs="{'invisible': [('irg_has_online', '=', False)]}">
                         <notebook name="irg_online_notebook">
                             <page string="Contenido" name="irg_online_content">
+                                <div class="mb-3">
+                                    <button name="action_copy_homeclass_to_online"
+                                            type="object"
+                                            string="Copiar contenido de HomeClass"
+                                            icon="fa-copy"
+                                            class="btn btn-secondary"
+                                            confirm="¿Copiar el contenido de HomeClass a Online? Se crearán nuevos registros independientes (no se elimina el contenido online existente)."/>
+                                </div>
                                 <group>
                                     <group string="Base académica">
                                         <field name="irg_related_course_ids" widget="many2many_tags" readonly="1"/>
