@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Override the "Retry" button condition so that exams and surveys
+        always show the retry option when attempts are still available,
+        regardless of whether the user passed or failed.
+
+        Core template: survey.survey_button_retake
+        Original guard: not answer.scoring_success and not answer.is_session_answer
+        New guard     : (not answer.scoring_success OR exam/survey type) and not session
+    -->
+    <template
+        id="survey_button_retake_irg_override"
+        inherit_id="survey.survey_button_retake"
+        name="iRG: Always show retry for exam/survey types"
+    >
+        <xpath
+            expr="//t[@t-if='not answer.scoring_success and not answer.is_session_answer']"
+            position="attributes"
+        >
+            <attribute name="t-if">(not answer.scoring_success or survey.survey_type in ('exam', 'survey')) and not answer.is_session_answer</attribute>
+        </xpath>
+    </template>
+</odoo>
