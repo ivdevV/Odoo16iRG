@@ -420,11 +420,11 @@ class DiplomaReportPDF(models.AbstractModel):
 
             role_y = label_start_y - sp(16)
             self._draw_text_in_column(c, "Director", left_col_x + sig_shift, role_y, col_width, font_regular, sf(10), align='center')
-            self._draw_text_in_column(c, "Directora Académica", right_col_x - sig_shift, role_y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Director Académico", right_col_x - sig_shift, role_y, col_width, font_regular, sf(10), align='center')
 
             footer_y = role_y - sp(14)
             self._draw_text_in_column(c, "Fundador", left_col_x + sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
-            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x - sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Director Acadèmic", right_col_x - sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
             # place the QR a bit above the footer baseline so it does not
             # overlap the registry text; keep registry baseline at footer_y
             qr_y = footer_y + sp(12)
@@ -472,12 +472,12 @@ class DiplomaReportPDF(models.AbstractModel):
             self._draw_text_in_column(c, "Interessat/da", left_student_x, role_y - sp(10), col_width, font_regular, sf(9), align='center')
             # keep Director centered on page
             self._draw_centered_text(c, "Director", role_y, font_regular, sf(9), page_width)
-            self._draw_text_in_column(c, "Directora Académica", right_col_x, role_y, col_width, font_regular, sf(9), align='center')
+            self._draw_text_in_column(c, "Director Académico", right_col_x, role_y, col_width, font_regular, sf(9), align='center')
 
             # third row: footer names (keep them lower to allow signing above)
             footer_y = role_y - sp(12)
             self._draw_centered_text(c, "Fundador", footer_y, font_regular, sf(9), page_width)
-            self._draw_text_in_column(c, "Directora Acadèmica", right_col_x, footer_y, col_width, font_regular, sf(9), align='center')
+            self._draw_text_in_column(c, "Director Acadèmic", right_col_x, footer_y, col_width, font_regular, sf(9), align='center')
             # set registry baseline for physical diplomas so the registry
             # text aligns vertically with the 'Interessat/da' label by
             # placing it at the same baseline.
