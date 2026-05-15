@@ -151,9 +151,9 @@
                 </div>
                 <div class="col-6" t-att-style="'text-align: center; %s' % right_shift">
                     <div t-att-style="'height: %s; margin-bottom: %s;' % (sig_img_height, sig_img_margin_bottom)">
-                        <img t-if="data.get('sign_grecia')" t-att-src="'data:image/png;base64,' + data.get('sign_grecia')" style="height: 100%;"/>
+                        <img t-if="data.get('sign_grecia')" t-att-src="'data:image/jpeg;base64,' + data.get('sign_grecia')" style="height: 100%;"/>
                     </div>
-                    <div t-att-style="'font-weight: 700; font-size: 16px; margin-top: 4px;'">Grecia Malcotti</div>
+                    <div t-att-style="'font-weight: 700; font-size: 16px; margin-top: 4px;'">Fermín Carrillo</div>
                     <div t-att-style="'font-size: 13px; margin-top: 2px;'">Directora Academica</div>
                     <div t-att-style="'font-size: 13px; margin-top: 2px;'">Directora Academica</div>
                 </div>

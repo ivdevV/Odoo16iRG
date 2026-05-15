@@ -402,7 +402,7 @@ class DiplomaReportPDF(models.AbstractModel):
                 c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
             
             # Signature Grecia (right)
-            sign_grecia_path = self._get_image_path('firma_grecia.png')
+            sign_grecia_path = self._get_image_path('firmaferminv2.jpg')
             sig_width = sp(95)
             sig_height = sp(47)
             if sign_grecia_path and os.path.exists(sign_grecia_path):
@@ -416,7 +416,7 @@ class DiplomaReportPDF(models.AbstractModel):
             # apply same horizontal nudge to text labels so they line up with
             # the nudged signature images (use column-centred anchors)
             self._draw_text_in_column(c, "Raimon Gaja", left_col_x + sig_shift, label_start_y, col_width, font_bold, sf(13), align='center')
-            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x - sig_shift, label_start_y, col_width, font_bold, sf(13), align='center')
+            self._draw_text_in_column(c, "Fermín Carrillo", right_col_x - sig_shift, label_start_y, col_width, font_bold, sf(13), align='center')
 
             role_y = label_start_y - sp(16)
             self._draw_text_in_column(c, "Director", left_col_x + sig_shift, role_y, col_width, font_regular, sf(10), align='center')
@@ -463,7 +463,7 @@ class DiplomaReportPDF(models.AbstractModel):
                 sf(10),
                 page_width,
             )
-            self._draw_text_in_column(c, "Grecia Malcotti", right_col_x, sign_text_y, col_width, font_bold, sf(10), align='center')
+            self._draw_text_in_column(c, "Fermín Carrillo", right_col_x, sign_text_y, col_width, font_bold, sf(10), align='center')
 
             # second row: roles titles/labels (left = interested, centre=Director, right=Acad.)
             role_y = sign_text_y - sp(18)
