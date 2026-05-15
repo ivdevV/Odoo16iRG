@@ -136,7 +136,7 @@
         <field name="model">op.student</field>
         <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//header/button[1]" position="after">
+            <xpath expr="//header/button[@name='create_student_user']" position="after">
                 <button name="%(action_irg_tfm_acta_wizard)d" string="Generar Acta TFM/TFG" type="action" class="btn-primary"/>
             </xpath>
         </field>

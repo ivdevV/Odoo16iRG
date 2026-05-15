@@ -142,21 +142,7 @@ class IrgTfmActaWizard(models.TransientModel):
         pdf_generator = self.env['report.irg_tfm_acta_documento.acta_pdf']
         pdf_content = pdf_generator.generate_acta_pdf(data, acta_type=self.acta_type)
         
-        # Crear attachment
-        import base64
-        type_label = 'TFM' if self.acta_type == 'tfm' else 'TFG'
-        filename = f"Acta_{type_label}_{student_name}_{student_surnames}_{self.defense_date.year}.pdf"
-        
-        attachment = self.env['ir.attachment'].create({
-            'name': filename,
-            'type': 'binary',
-            'datas': base64.b64encode(pdf_content),
-            'res_model': 'op.student',
-            'res_id': self.student_id.id,
-            'mimetype': 'application/pdf',
-        })
-        
-        # Crear registro de acta
+        # Crear registro de acta sin attachment primero.
         acta = self.env['irg.tfm.acta'].create({
             'student_id': self.student_id.id,
             'student_course_id': self.student_course_id.id if self.student_course_id else None,
@@ -174,9 +160,22 @@ class IrgTfmActaWizard(models.TransientModel):
             'secretary_surnames': self.secretary_surnames,
             'defense_date': self.defense_date,
             'acta_type': self.acta_type,
-            'attachment_id': attachment.id,
             'state': 'valid',
         })
+
+        # Crear attachment vinculado al acta.
+        import base64
+        type_label = 'TFM' if self.acta_type == 'tfm' else 'TFG'
+        filename = f"Acta_{type_label}_{student_name}_{student_surnames}_{self.defense_date.year}.pdf"
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': base64.b64encode(pdf_content).decode('utf-8'),
+            'res_model': 'irg.tfm.acta',
+            'res_id': acta.id,
+            'mimetype': 'application/pdf',
+        })
+        acta.attachment_id = attachment
         
         # Retornar acción de descarga
         return {
