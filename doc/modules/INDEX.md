@@ -1,7 +1,7 @@
 # Índice Global de Módulos — Odoo 16 IRG/ISEP
 
 > Documentación generada automáticamente. Fecha: 2026-05-13.
-> Total de módulos documentados: ~300+ (72 extrairg con doc individual + 19 addons_uisep con doc individual + resúmenes de categorías con ~1.400+ módulos adicionales).
+> Total de módulos documentados: ~300+ (73 extrairg con doc individual + 19 addons_uisep con doc individual + resúmenes de categorías con ~1.400+ módulos adicionales).
 
 ---
 
@@ -9,7 +9,7 @@
 
 | Categoría | Nº módulos (aprox.) | Descripción | README |
 |-----------|---------------------|-------------|--------|
-| [extrairg](./extrairg/README.md) | 72 | Módulos custom IRG (prefijo `irg_`) + conectores terceros | [Ver](./extrairg/README.md) |
+| [extrairg](./extrairg/README.md) | 73 | Módulos custom IRG (prefijo `irg_`) + conectores terceros | [Ver](./extrairg/README.md) |
 | [addons_uisep](./addons_uisep/README.md) | ~143 | Módulos base ISEP (`isep_*`) + módulos auxiliares | [Ver](./addons_uisep/README.md) |
 | [enterprise-16](./enterprise-16/README.md) | ~55 | OpenEduCat Enterprise v16 | [Ver](./enterprise-16/README.md) |
 | [community-16](./community-16/README.md) | ~14 | OpenEduCat Community v16 | [Ver](./community-16/README.md) |
@@ -91,6 +91,7 @@
 | [irg_invoice_payments_sort](./extrairg/irg_invoice_payments_sort.md) | extrairg | Ordena pagos de factura por fecha | 16.0.1.0.0 |
 | [irg_isep_cron_update_guard](./extrairg/irg_isep_cron_update_guard.md) | extrairg | Pausa crons pesados en actualizaciones | 16.0.1.0.0 |
 | [irg_language_nav](./extrairg/irg_language_nav.md) | extrairg | Selector de idioma ES/EN primero | 16.0.1.0.0 |
+| [irg_mail_n8n_webhook](./extrairg/irg_mail_n8n_webhook.md) | extrairg | Redirige correo saliente a n8n con cola de reintentos | 16.0.1.0.0 |
 | [irg_op_course_modality](./extrairg/irg_op_course_modality.md) | extrairg | Modalidades múltiples de impartición en cursos | 16.0.1.0.0 |
 | [irg_op_course_subjects_manage](./extrairg/irg_op_course_subjects_manage.md) | extrairg | Gestión de asignaturas desde el curso | 16.0.1.0.0 |
 | [irg_op_subject_multi_course](./extrairg/irg_op_subject_multi_course.md) | extrairg | Asignatura en múltiples cursos | 16.0.1.0.0 |
