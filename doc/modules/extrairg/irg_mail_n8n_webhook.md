@@ -1,11 +1,11 @@
 # irg_mail_n8n_webhook
 
 **Categoria:** extrairg  
-**Version:** 16.0.1.2.0  
+**Version:** 16.0.1.3.0  
 **Licencia:** LGPL-3  
 **Instalable:** Si  
 **Autor:** IRG  
-**Depende de:** `base`, `mail`
+**Depende de:** `base`, `mail`, `base_automation`
 
 ---
 
@@ -15,7 +15,9 @@ Redirige el correo saliente de Odoo hacia un webhook de n8n. En lugar de entrega
 
 El objetivo es delegar la entrega real del email en un workflow externo de n8n, manteniendo en Odoo una cola tecnica de entregas con estado, trazabilidad, clave de idempotencia, respuesta HTTP y reintentos. Si el conector esta desactivado, Odoo vuelve a usar el comportamiento nativo de `mail.mail.send()`.
 
-La version 16.0.1.2.0 retira la dependencia dura sobre `mail_smtp_imap_by_company`. Esto es intencional: el modulo no debe provocar instalaciones ni actualizaciones colaterales de addons de SMTP/IMAP por compania. La compatibilidad con ese addon se mantiene interceptando `mail.mail._send()`, porque su override de `send()` termina llamando al flujo interno `_send()`.
+El modulo no declara dependencia dura sobre `mail_smtp_imap_by_company`. Esto es intencional: no debe provocar instalaciones ni actualizaciones colaterales de addons de SMTP/IMAP por compania. La compatibilidad con ese addon se mantiene interceptando `mail.mail._send()`, porque su override de `send()` termina llamando al flujo interno `_send()`.
+
+La version 16.0.1.3.0 anade una accion automatizada nativa de Odoo para ejecutar el despacho hacia n8n justo cuando se crea un correo saliente. Esta integracion aparece en **Ajustes > Tecnico > Automatizacion > Acciones automatizadas** y esta pensada especialmente para correos de Odoo Sign enviados con `force_send`, de forma que el webhook pueda procesarlos inmediatamente tras la creacion de `mail.mail` y antes de que el flujo SMTP los entregue.
 
 No expone controladores HTTP en Odoo: Odoo actua como cliente saliente y n8n como receptor del webhook.
 
@@ -23,6 +25,7 @@ No expone controladores HTTP en Odoo: Odoo actua como cliente saliente y n8n com
 
 - Intercepta el envio de correos de `mail.mail` cuando `irg_mail_n8n_webhook.enabled` esta activo.
 - Intercepta tanto `send()` como `_send()` para cubrir envios normales y llamadas directas desde overrides SMTP.
+- Registra una accion automatizada sobre `mail.mail` para despachar correos recien creados hacia n8n cuando el conector esta activo.
 - Crea o reutiliza una entrega tecnica `irg.mail.n8n.delivery` por correo usando una clave de idempotencia estable.
 - Envia a n8n un `POST` JSON con cabecera `Authorization: Bearer <token>` y `Idempotency-Key`.
 - Registra intentos, estado, URL usada, hash del payload, codigo HTTP, cuerpo de respuesta y motivo de fallo.
@@ -36,7 +39,7 @@ No expone controladores HTTP en Odoo: Odoo actua como cliente saliente y n8n com
 | Campo | Valor |
 |-------|-------|
 | `name` | IRG Mail n8n Webhook |
-| `version` | 16.0.1.2.0 |
+| `version` | 16.0.1.3.0 |
 | `category` | Technical |
 | `summary` | Redirige el correo saliente de Odoo a un webhook de n8n |
 | `author` | IRG |
@@ -50,14 +53,16 @@ Dependencias del manifest:
 
 - `base`: configuracion y modelos base de Odoo.
 - `mail`: modelo `mail.mail`, mensajes, destinatarios y postproceso de envio.
+- `base_automation`: accion automatizada sobre `mail.mail` para disparar el envio a n8n en la creacion del correo.
 
-No se declara dependencia sobre `mail_smtp_imap_by_company` de forma deliberada. Ese addon es compatible porque su override de `mail.mail.send()` acaba llamando a `mail.mail._send()`, y `irg_mail_n8n_webhook` intercepta ese punto comun del flujo de envio. Mantener solo `base` y `mail` evita que una actualizacion del webhook arrastre la instalacion o actualizacion de modulos SMTP/IMAP ajenos al conector n8n.
+No se declara dependencia sobre `mail_smtp_imap_by_company` de forma deliberada. Ese addon es compatible porque su override de `mail.mail.send()` acaba llamando a `mail.mail._send()`, y `irg_mail_n8n_webhook` intercepta ese punto comun del flujo de envio. Mantener la dependencia limitada a `base`, `mail` y `base_automation` evita que una actualizacion del webhook arrastre la instalacion o actualizacion de modulos SMTP/IMAP ajenos al conector n8n.
 
 Archivos cargados por el manifest:
 
 - `security/ir.model.access.csv`
 - `data/config_data.xml`
 - `data/cron_data.xml`
+- `data/base_automation_data.xml`
 - `views/res_config_settings_views.xml`
 - `views/irg_mail_n8n_delivery_views.xml`
 
@@ -69,6 +74,7 @@ Archivos cargados por el manifest:
 | `irg.mail.n8n.service` | Servicio abstracto nuevo | `_is_enabled()`, `_get_config()`, `_dispatch_mail()`, `_send_delivery()`, `_build_payload()`, `_build_recipients()`, `_build_attachments()`, `_post_json()` |
 | `mail.mail` | Herencia | Sobrescribe `send()` y `_send()` para desviar el envio a n8n si el conector esta activado; delega a `super()` si esta desactivado |
 | `res.config.settings` | Herencia | Expone parametros de configuracion del webhook en Ajustes |
+| `base.automation` | Datos de automatizacion | Accion automatizada `IRG: Enviar correo saliente a n8n` sobre `mail.mail` |
 
 El modelo `irg.mail.n8n.delivery` tiene una restriccion SQL `unique(idempotency_key)` para evitar duplicar entregas tecnicas del mismo correo. La clave se genera como `odoo-mail-<database>-<mail_id>`.
 
@@ -116,17 +122,38 @@ Configuracion:
 
 El cron procesa hasta 50 entregas por ejecucion en estado `pending` o `failed` cuando `next_attempt_at` esta vacio o ya vencido. Si el conector esta desactivado, no procesa la cola.
 
+## Accion automatizada
+
+La version 16.0.1.3.0 carga el archivo `data/base_automation_data.xml`, que crea la accion automatizada **IRG: Enviar correo saliente a n8n**.
+
+Configuracion:
+
+- Modelo: `mail.mail` / **Correos electronicos salientes**.
+- Disparador: al crear el registro.
+- Tipo de accion: ejecutar codigo Python.
+- Codigo ejecutado cuando el conector esta activo:
+
+```python
+env['irg.mail.n8n.service']._dispatch_mail(mail)
+```
+
+Esta accion se gestiona desde **Ajustes > Tecnico > Automatizacion > Acciones automatizadas**. Su objetivo es cubrir flujos que crean y envian correos de forma inmediata, especialmente emails de Odoo Sign con `force_send`, para que el despacho a n8n ocurra en el momento de creacion del `mail.mail` y antes de que el correo pueda continuar por SMTP.
+
+La accion automatizada no define la URL ni el token del webhook. La configuracion sigue saliendo de los parametros de **IRG Mail n8n** (`irg_mail_n8n_webhook.webhook_url` y `irg_mail_n8n_webhook.auth_token`), no de acciones generadas o configuradas desde n8n.
+
 ## Flujo operativo
 
-1. Odoo crea un registro `mail.mail` y llama a `send()` o `_send()` segun el flujo de correo activo.
-2. Si `irg_mail_n8n_webhook.enabled` esta desactivado, se usa el envio nativo de Odoo.
-3. Si esta activado, el servicio crea o recupera una entrega `irg.mail.n8n.delivery` con clave de idempotencia.
-4. Si la entrega ya esta `sent`, el correo se marca como `sent` y no se reenvia.
-5. El servicio valida que existan URL y token, construye el payload y calcula `payload_hash` con SHA-256.
-6. Odoo envia un `POST` JSON a n8n con timeout configurable.
-7. Si n8n responde con HTTP `2xx`, la entrega y el correo pasan a `sent` y se ejecuta el postproceso normal de mensaje enviado.
-8. Si hay error HTTP, error de conexion, configuracion incompleta o adjunto demasiado grande, se registra el fallo y se agenda reintento.
-9. Cuando se agotan los intentos, el correo pasa a `exception` y la entrega queda `failed` sin proximo intento.
+1. Odoo crea un registro `mail.mail` para un correo saliente.
+2. La accion automatizada `IRG: Enviar correo saliente a n8n` puede llamar a `_dispatch_mail(mail)` en el momento de creacion si `irg_mail_n8n_webhook.enabled` esta activo.
+3. Si el flujo llama despues a `send()` o `_send()`, el override mantiene la misma proteccion de desvio a n8n y evita depender solo de la automatizacion.
+4. Si `irg_mail_n8n_webhook.enabled` esta desactivado, se usa el envio nativo de Odoo.
+5. Si esta activado, el servicio crea o recupera una entrega `irg.mail.n8n.delivery` con clave de idempotencia.
+6. Si la entrega ya esta `sent`, el correo se marca como `sent` y no se reenvia.
+7. El servicio valida que existan URL y token, construye el payload y calcula `payload_hash` con SHA-256.
+8. Odoo envia un `POST` JSON a n8n con timeout configurable.
+9. Si n8n responde con HTTP `2xx`, la entrega y el correo pasan a `sent` y se ejecuta el postproceso normal de mensaje enviado.
+10. Si hay error HTTP, error de conexion, configuracion incompleta o adjunto demasiado grande, se registra el fallo y se agenda reintento.
+11. Cuando se agotan los intentos, el correo pasa a `exception` y la entrega queda `failed` sin proximo intento.
 
 ## Payload enviado a n8n
 
@@ -264,7 +291,7 @@ Comprobacion operativa en servidor tras actualizar el modulo:
 2. Confirmar que `irg_mail_n8n_webhook.webhook_url` y `irg_mail_n8n_webhook.auth_token` estan configurados.
 3. Enviar una solicitud de firma de Odoo Sign para generar un correo real del flujo operativo.
 4. Revisar **Administracion > Mail n8n > Entregas** y confirmar que aparece una entrega asociada al correo.
-5. Si el email sigue saliendo por SMTP, revisar que el modulo se haya actualizado correctamente a la version 16.0.1.2.0 y que la intercepcion de `_send()` este activa.
+5. Si el email sigue saliendo por SMTP, revisar que el modulo se haya actualizado correctamente a la version 16.0.1.3.0, que la accion automatizada este activa y que la intercepcion de `_send()` siga disponible.
 
 ### Nota sobre errores ajenos durante actualizaciones
 
@@ -288,6 +315,7 @@ Si hay entregas fallidas o pendientes que no deben reenviarse, cancelarlas desde
 ## Notas tecnicas
 
 - Usa `urllib.request` de la libreria estandar para realizar el `POST` a n8n.
+- Usa `base_automation` para disparar el servicio desde la creacion de `mail.mail` sin almacenar credenciales en la accion automatizada.
 - Trunca el cuerpo de respuesta HTTP almacenado a 2000 caracteres.
 - Calcula `payload_hash` sobre el JSON ordenado para facilitar trazabilidad tecnica.
 - El envio se considera correcto con cualquier estado HTTP `2xx`.

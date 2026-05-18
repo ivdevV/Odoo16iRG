@@ -11,7 +11,7 @@ class TestMailN8nWebhook(TransactionCase):
     def setUp(self):
         super().setUp()
         self.params = self.env['ir.config_parameter'].sudo()
-        self.params.set_param('irg_mail_n8n_webhook.enabled', 'True')
+        self.params.set_param('irg_mail_n8n_webhook.enabled', 'False')
         self.params.set_param('irg_mail_n8n_webhook.webhook_url', 'https://n8n.example.test/webhook/mail')
         self.params.set_param('irg_mail_n8n_webhook.auth_token', 'test-token')
         self.params.set_param('irg_mail_n8n_webhook.max_attempts', '2')
@@ -23,6 +23,7 @@ class TestMailN8nWebhook(TransactionCase):
             'email_from': 'odoo@example.test',
             'email_to': 'student@example.test',
         })
+        self.params.set_param('irg_mail_n8n_webhook.enabled', 'True')
 
     def test_build_payload_includes_core_mail_data(self):
         delivery = self.service._get_or_create_delivery(self.mail)
@@ -53,6 +54,20 @@ class TestMailN8nWebhook(TransactionCase):
 
         self.assertTrue(result)
         self.assertEqual(self.mail.state, 'sent')
+        self.assertEqual(delivery.state, 'sent')
+
+    def test_automation_action_dispatches_new_outgoing_mail(self):
+        with patch.object(type(self.service), '_post_json', return_value=(202, '{"ok": true}')):
+            mail = self.env['mail.mail'].create({
+                'subject': 'Correo creado por automatizacion',
+                'body_html': '<p>Contenido</p>',
+                'email_from': 'odoo@example.test',
+                'email_to': 'student@example.test',
+            })
+
+        delivery = self.env['irg.mail.n8n.delivery'].search([('mail_id', '=', mail.id)])
+
+        self.assertEqual(mail.state, 'sent')
         self.assertEqual(delivery.state, 'sent')
 
     def test_send_schedules_retry_on_http_failure(self):

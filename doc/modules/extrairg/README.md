@@ -74,7 +74,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_invoice_payments_sort](./irg_invoice_payments_sort.md) | Ordena pagos de factura por fecha ascendente | `account.move` | Instalable |
 | [irg_isep_cron_update_guard](./irg_isep_cron_update_guard.md) | Pausa crons pesados durante actualizaciones | — | Instalable |
 | [irg_language_nav](./irg_language_nav.md) | Selector de idioma con ES/EN primero | — | Instalable |
-| [irg_mail_n8n_webhook](./irg_mail_n8n_webhook.md) | Redirige correo saliente a n8n con cola de reintentos | `irg.mail.n8n.delivery` (nuevo), `mail.mail`, `res.config.settings` | Instalable |
+| [irg_mail_n8n_webhook](./irg_mail_n8n_webhook.md) | Redirige correo saliente a n8n con cola de reintentos | `irg.mail.n8n.delivery` (nuevo), `irg.mail.n8n.service`, `mail.mail`, `base.automation`, `res.config.settings` | Instalable |
 | [irg_op_course_modality](./irg_op_course_modality.md) | Modalidades múltiples de impartición en cursos | `op.course`, `irg.course.modality` | Instalable |
 | [irg_op_course_subjects_manage](./irg_op_course_subjects_manage.md) | Gestión de asignaturas desde el formulario del curso | `op.course` | Instalable |
 | [irg_op_subject_multi_course](./irg_op_subject_multi_course.md) | Asignatura vinculable a múltiples cursos | `op.subject` | Instalable |

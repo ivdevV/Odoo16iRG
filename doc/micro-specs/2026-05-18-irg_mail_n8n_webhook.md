@@ -16,6 +16,7 @@ El envio de correo en Odoo se centraliza en `mail.mail`, tanto para plantillas c
 
 - Nuevo modulo tecnico `irg_mail_n8n_webhook` en `addons-extra/extrairg/`.
 - Herencia de `mail.mail` para redirigir el envio saliente.
+- Accion automatizada sobre `mail.mail` al crear correos salientes para integrarse con la seccion tecnica de acciones automatizadas.
 - Nuevo modelo tecnico `irg.mail.n8n.delivery` para registrar estado, intentos y errores.
 - Servicio tecnico `irg.mail.n8n.service` para construir payloads y llamar a n8n.
 - Vista de ajustes en `res.config.settings` con parametros de n8n.
@@ -26,6 +27,7 @@ El envio de correo en Odoo se centraliza en `mail.mail`, tanto para plantillas c
 ## 5. Diseno tecnico
 
 - `mail.mail.send(auto_commit=False, raise_exception=False)` y `mail.mail._send(...)` se heredan para interceptar el envio central y cubrir overrides SMTP de terceros que llamen directamente a `_send()`.
+- Se crea una accion automatizada `IRG: Enviar correo saliente a n8n` sobre el modelo `mail.mail`, trigger `on_create`, que invoca `irg.mail.n8n.service` inmediatamente al crear el correo. Esto permite que los correos `force_send=True` de Odoo Sign se conviertan en webhook antes de que el SMTP los recoja.
 - Si `irg_mail_n8n_webhook.enabled` esta desactivado, se delega en `super()` y SMTP funciona como hasta ahora.
 - Si esta activado, cada `mail.mail` crea o reutiliza una entrega `irg.mail.n8n.delivery` con clave idempotente `odoo-mail-<db>-<mail_id>`.
 - El servicio envia un `POST` JSON al webhook de n8n con `Authorization: Bearer <token>` y cabecera `Idempotency-Key`.
@@ -37,7 +39,7 @@ El envio de correo en Odoo se centraliza en `mail.mail`, tanto para plantillas c
 
 ## 6. Dependencias
 
-`base`, `mail`.
+`base`, `base_automation`, `mail`.
 
 No se declara una dependencia dura con `mail_smtp_imap_by_company` para evitar instalaciones o actualizaciones colaterales de ese addon y sus dependencias. La compatibilidad se cubre interceptando tambien `mail.mail._send()`, ya que el override SMTP por compania termina llamando a `_send()` antes de entregar por SMTP.
 
@@ -50,6 +52,7 @@ El modulo esta desactivado por defecto mediante `irg_mail_n8n_webhook.enabled=Fa
 - Con la redireccion desactivada, `mail.mail.send()` delega en el flujo nativo.
 - Con redireccion activada y configuracion incompleta, el correo queda en error controlado.
 - Con webhook 2xx, se crea entrega n8n, se envia un payload completo y el correo queda `sent`.
+- Al crear un `mail.mail`, la accion automatizada `IRG: Enviar correo saliente a n8n` dispara el servicio y deja traza en `irg.mail.n8n.delivery`.
 - Los correos de Firma que pasan por el override SMTP por compania no abren SMTP cuando la redireccion n8n esta activa.
 - Con webhook 5xx o excepcion de red, se incrementan intentos y se programa reintento.
 - Al agotar intentos, el correo queda `exception` con motivo.
