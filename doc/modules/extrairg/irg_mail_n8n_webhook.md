@@ -1,11 +1,11 @@
 # irg_mail_n8n_webhook
 
 **Categoria:** extrairg  
-**Version:** 16.0.1.1.0  
+**Version:** 16.0.1.2.0  
 **Licencia:** LGPL-3  
 **Instalable:** Si  
 **Autor:** IRG  
-**Depende de:** `base`, `mail`, `mail_smtp_imap_by_company`
+**Depende de:** `base`, `mail`
 
 ---
 
@@ -15,7 +15,7 @@ Redirige el correo saliente de Odoo hacia un webhook de n8n. En lugar de entrega
 
 El objetivo es delegar la entrega real del email en un workflow externo de n8n, manteniendo en Odoo una cola tecnica de entregas con estado, trazabilidad, clave de idempotencia, respuesta HTTP y reintentos. Si el conector esta desactivado, Odoo vuelve a usar el comportamiento nativo de `mail.mail.send()`.
 
-La version 16.0.1.1.0 anade una dependencia explicita de `mail_smtp_imap_by_company`. Ese addon redefine `mail.mail.send()` sin llamar a `super()`, por lo que, si se carga despues, puede saltarse la redireccion a n8n y enrutar el correo por SMTP. La dependencia fuerza un orden de carga compatible y la nueva intercepcion en `_send()` cubre tambien llamadas directas al flujo SMTP sobrescrito.
+La version 16.0.1.2.0 retira la dependencia dura sobre `mail_smtp_imap_by_company`. Esto es intencional: el modulo no debe provocar instalaciones ni actualizaciones colaterales de addons de SMTP/IMAP por compania. La compatibilidad con ese addon se mantiene interceptando `mail.mail._send()`, porque su override de `send()` termina llamando al flujo interno `_send()`.
 
 No expone controladores HTTP en Odoo: Odoo actua como cliente saliente y n8n como receptor del webhook.
 
@@ -36,7 +36,7 @@ No expone controladores HTTP en Odoo: Odoo actua como cliente saliente y n8n com
 | Campo | Valor |
 |-------|-------|
 | `name` | IRG Mail n8n Webhook |
-| `version` | 16.0.1.1.0 |
+| `version` | 16.0.1.2.0 |
 | `category` | Technical |
 | `summary` | Redirige el correo saliente de Odoo a un webhook de n8n |
 | `author` | IRG |
@@ -50,7 +50,8 @@ Dependencias del manifest:
 
 - `base`: configuracion y modelos base de Odoo.
 - `mail`: modelo `mail.mail`, mensajes, destinatarios y postproceso de envio.
-- `mail_smtp_imap_by_company`: se declara para garantizar que `irg_mail_n8n_webhook` cargue despues de este addon. Es necesario porque `mail_smtp_imap_by_company` sobrescribe `mail.mail.send()` sin `super()` y, sin esta relacion de dependencia, podria enviar por SMTP antes de que el webhook intercepte el correo.
+
+No se declara dependencia sobre `mail_smtp_imap_by_company` de forma deliberada. Ese addon es compatible porque su override de `mail.mail.send()` acaba llamando a `mail.mail._send()`, y `irg_mail_n8n_webhook` intercepta ese punto comun del flujo de envio. Mantener solo `base` y `mail` evita que una actualizacion del webhook arrastre la instalacion o actualizacion de modulos SMTP/IMAP ajenos al conector n8n.
 
 Archivos cargados por el manifest:
 
@@ -263,7 +264,13 @@ Comprobacion operativa en servidor tras actualizar el modulo:
 2. Confirmar que `irg_mail_n8n_webhook.webhook_url` y `irg_mail_n8n_webhook.auth_token` estan configurados.
 3. Enviar una solicitud de firma de Odoo Sign para generar un correo real del flujo operativo.
 4. Revisar **Administracion > Mail n8n > Entregas** y confirmar que aparece una entrega asociada al correo.
-5. Si el email sigue saliendo por SMTP, revisar que el modulo se haya actualizado correctamente y que el orden de carga respete la dependencia con `mail_smtp_imap_by_company`.
+5. Si el email sigue saliendo por SMTP, revisar que el modulo se haya actualizado correctamente a la version 16.0.1.2.0 y que la intercepcion de `_send()` este activa.
+
+### Nota sobre errores ajenos durante actualizaciones
+
+Durante un intento de actualizacion se observo un error de validacion del servidor relacionado con la clave foranea `op_subject_registration_student_id_fkey`. Ese error no pertenece a `irg_mail_n8n_webhook`: apunta a un problema de integridad de datos de OpenEduCat durante un intento de instalar o actualizar otras dependencias.
+
+La accion recomendada es traer este fix al servidor y actualizar unicamente `irg_mail_n8n_webhook`, sin forzar la instalacion ni la actualizacion de dependencias adicionales no relacionadas.
 
 ## Rollback operativo
 

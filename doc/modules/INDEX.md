@@ -91,7 +91,7 @@
 | [irg_invoice_payments_sort](./extrairg/irg_invoice_payments_sort.md) | extrairg | Ordena pagos de factura por fecha | 16.0.1.0.0 |
 | [irg_isep_cron_update_guard](./extrairg/irg_isep_cron_update_guard.md) | extrairg | Pausa crons pesados en actualizaciones | 16.0.1.0.0 |
 | [irg_language_nav](./extrairg/irg_language_nav.md) | extrairg | Selector de idioma ES/EN primero | 16.0.1.0.0 |
-| [irg_mail_n8n_webhook](./extrairg/irg_mail_n8n_webhook.md) | extrairg | Redirige correo saliente a n8n con cola de reintentos | 16.0.1.1.0 |
+| [irg_mail_n8n_webhook](./extrairg/irg_mail_n8n_webhook.md) | extrairg | Redirige correo saliente a n8n con cola de reintentos | 16.0.1.2.0 |
 | [irg_op_course_modality](./extrairg/irg_op_course_modality.md) | extrairg | Modalidades múltiples de impartición en cursos | 16.0.1.0.0 |
 | [irg_op_course_subjects_manage](./extrairg/irg_op_course_subjects_manage.md) | extrairg | Gestión de asignaturas desde el curso | 16.0.1.0.0 |
 | [irg_op_subject_multi_course](./extrairg/irg_op_subject_multi_course.md) | extrairg | Asignatura en múltiples cursos | 16.0.1.0.0 |

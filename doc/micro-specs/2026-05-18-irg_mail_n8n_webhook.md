@@ -37,9 +37,9 @@ El envio de correo en Odoo se centraliza en `mail.mail`, tanto para plantillas c
 
 ## 6. Dependencias
 
-`base`, `mail`, `mail_smtp_imap_by_company`.
+`base`, `mail`.
 
-La dependencia con `mail_smtp_imap_by_company` asegura que el modulo n8n se cargue despues del override de SMTP por compania, que redefine `mail.mail.send()` sin delegar en `super()`.
+No se declara una dependencia dura con `mail_smtp_imap_by_company` para evitar instalaciones o actualizaciones colaterales de ese addon y sus dependencias. La compatibilidad se cubre interceptando tambien `mail.mail._send()`, ya que el override SMTP por compania termina llamando a `_send()` antes de entregar por SMTP.
 
 ## 7. Backwards-compatibility / migracion
 

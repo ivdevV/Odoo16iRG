@@ -2,7 +2,7 @@
 
 {
     'name': 'IRG Mail n8n Webhook',
-    'version': '16.0.1.1.0',
+    'version': '16.0.1.2.0',
     'category': 'Technical',
     'summary': 'Redirige el correo saliente de Odoo a un webhook de n8n',
     'description': """
@@ -15,7 +15,6 @@
     'depends': [
         'base',
         'mail',
-        'mail_smtp_imap_by_company',
     ],
     'data': [
         'security/ir.model.access.csv',
