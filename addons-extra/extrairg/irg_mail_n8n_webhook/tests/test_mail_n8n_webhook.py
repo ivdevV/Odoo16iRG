@@ -45,6 +45,16 @@ class TestMailN8nWebhook(TransactionCase):
         self.assertEqual(delivery.state, 'sent')
         self.assertEqual(delivery.attempt_count, 1)
 
+    def test_direct_send_interception_marks_mail_as_sent_on_success(self):
+        with patch.object(type(self.service), '_post_json', return_value=(202, '{"ok": true}')):
+            result = self.mail._send()
+
+        delivery = self.env['irg.mail.n8n.delivery'].search([('mail_id', '=', self.mail.id)])
+
+        self.assertTrue(result)
+        self.assertEqual(self.mail.state, 'sent')
+        self.assertEqual(delivery.state, 'sent')
+
     def test_send_schedules_retry_on_http_failure(self):
         with patch.object(type(self.service), '_post_json', return_value=(500, 'server error')):
             result = self.mail.send()

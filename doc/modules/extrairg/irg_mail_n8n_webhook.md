@@ -1,25 +1,28 @@
 # irg_mail_n8n_webhook
 
 **Categoria:** extrairg  
-**Version:** 16.0.1.0.0  
+**Version:** 16.0.1.1.0  
 **Licencia:** LGPL-3  
 **Instalable:** Si  
 **Autor:** IRG  
-**Depende de:** `base`, `mail`
+**Depende de:** `base`, `mail`, `mail_smtp_imap_by_company`
 
 ---
 
 ## Que hace este modulo
 
-Redirige el correo saliente de Odoo hacia un webhook de n8n. En lugar de entregar los mensajes mediante el flujo SMTP nativo cuando el conector esta activado, el modulo intercepta `mail.mail.send()` y envia a n8n un payload JSON con los datos del correo, destinatarios, autor, contexto de Odoo y adjuntos codificados en base64.
+Redirige el correo saliente de Odoo hacia un webhook de n8n. En lugar de entregar los mensajes mediante el flujo SMTP nativo cuando el conector esta activado, el modulo intercepta `mail.mail.send()` y `mail.mail._send()` para enviar a n8n un payload JSON con los datos del correo, destinatarios, autor, contexto de Odoo y adjuntos codificados en base64.
 
 El objetivo es delegar la entrega real del email en un workflow externo de n8n, manteniendo en Odoo una cola tecnica de entregas con estado, trazabilidad, clave de idempotencia, respuesta HTTP y reintentos. Si el conector esta desactivado, Odoo vuelve a usar el comportamiento nativo de `mail.mail.send()`.
+
+La version 16.0.1.1.0 anade una dependencia explicita de `mail_smtp_imap_by_company`. Ese addon redefine `mail.mail.send()` sin llamar a `super()`, por lo que, si se carga despues, puede saltarse la redireccion a n8n y enrutar el correo por SMTP. La dependencia fuerza un orden de carga compatible y la nueva intercepcion en `_send()` cubre tambien llamadas directas al flujo SMTP sobrescrito.
 
 No expone controladores HTTP en Odoo: Odoo actua como cliente saliente y n8n como receptor del webhook.
 
 ## Funcionalidades principales
 
 - Intercepta el envio de correos de `mail.mail` cuando `irg_mail_n8n_webhook.enabled` esta activo.
+- Intercepta tanto `send()` como `_send()` para cubrir envios normales y llamadas directas desde overrides SMTP.
 - Crea o reutiliza una entrega tecnica `irg.mail.n8n.delivery` por correo usando una clave de idempotencia estable.
 - Envia a n8n un `POST` JSON con cabecera `Authorization: Bearer <token>` y `Idempotency-Key`.
 - Registra intentos, estado, URL usada, hash del payload, codigo HTTP, cuerpo de respuesta y motivo de fallo.
@@ -33,7 +36,7 @@ No expone controladores HTTP en Odoo: Odoo actua como cliente saliente y n8n com
 | Campo | Valor |
 |-------|-------|
 | `name` | IRG Mail n8n Webhook |
-| `version` | 16.0.1.0.0 |
+| `version` | 16.0.1.1.0 |
 | `category` | Technical |
 | `summary` | Redirige el correo saliente de Odoo a un webhook de n8n |
 | `author` | IRG |
@@ -42,6 +45,12 @@ No expone controladores HTTP en Odoo: Odoo actua como cliente saliente y n8n com
 | `installable` | True |
 | `auto_install` | False |
 | `application` | False |
+
+Dependencias del manifest:
+
+- `base`: configuracion y modelos base de Odoo.
+- `mail`: modelo `mail.mail`, mensajes, destinatarios y postproceso de envio.
+- `mail_smtp_imap_by_company`: se declara para garantizar que `irg_mail_n8n_webhook` cargue despues de este addon. Es necesario porque `mail_smtp_imap_by_company` sobrescribe `mail.mail.send()` sin `super()` y, sin esta relacion de dependencia, podria enviar por SMTP antes de que el webhook intercepte el correo.
 
 Archivos cargados por el manifest:
 
@@ -57,7 +66,7 @@ Archivos cargados por el manifest:
 |--------|------|------------------------------|
 | `irg.mail.n8n.delivery` | Nuevo | `mail_id`, `state`, `attempt_count`, `next_attempt_at`, `last_attempt_at`, `sent_at`, `idempotency_key`, `webhook_url`, `response_status`, `response_body`, `failure_reason`, `payload_hash`; metodos `action_retry_now()`, `action_cancel()`, `_cron_retry_pending_deliveries()` |
 | `irg.mail.n8n.service` | Servicio abstracto nuevo | `_is_enabled()`, `_get_config()`, `_dispatch_mail()`, `_send_delivery()`, `_build_payload()`, `_build_recipients()`, `_build_attachments()`, `_post_json()` |
-| `mail.mail` | Herencia | Sobrescribe `send()` para desviar el envio a n8n si el conector esta activado; delega a `super()` si esta desactivado |
+| `mail.mail` | Herencia | Sobrescribe `send()` y `_send()` para desviar el envio a n8n si el conector esta activado; delega a `super()` si esta desactivado |
 | `res.config.settings` | Herencia | Expone parametros de configuracion del webhook en Ajustes |
 
 El modelo `irg.mail.n8n.delivery` tiene una restriccion SQL `unique(idempotency_key)` para evitar duplicar entregas tecnicas del mismo correo. La clave se genera como `odoo-mail-<database>-<mail_id>`.
@@ -108,7 +117,7 @@ El cron procesa hasta 50 entregas por ejecucion en estado `pending` o `failed` c
 
 ## Flujo operativo
 
-1. Odoo crea un registro `mail.mail` y llama a `send()`.
+1. Odoo crea un registro `mail.mail` y llama a `send()` o `_send()` segun el flujo de correo activo.
 2. Si `irg_mail_n8n_webhook.enabled` esta desactivado, se usa el envio nativo de Odoo.
 3. Si esta activado, el servicio crea o recupera una entrega `irg.mail.n8n.delivery` con clave de idempotencia.
 4. Si la entrega ya esta `sent`, el correo se marca como `sent` y no se reenvia.
@@ -248,9 +257,17 @@ Activacion funcional:
 4. Activar **Enviar correos por n8n**.
 5. Enviar un correo de prueba y revisar **Administracion > Mail n8n > Entregas**.
 
+Comprobacion operativa en servidor tras actualizar el modulo:
+
+1. Verificar que el parametro `irg_mail_n8n_webhook.enabled` esta en `True`.
+2. Confirmar que `irg_mail_n8n_webhook.webhook_url` y `irg_mail_n8n_webhook.auth_token` estan configurados.
+3. Enviar una solicitud de firma de Odoo Sign para generar un correo real del flujo operativo.
+4. Revisar **Administracion > Mail n8n > Entregas** y confirmar que aparece una entrega asociada al correo.
+5. Si el email sigue saliendo por SMTP, revisar que el modulo se haya actualizado correctamente y que el orden de carga respete la dependencia con `mail_smtp_imap_by_company`.
+
 ## Rollback operativo
 
-Para volver al comportamiento nativo de Odoo sin desinstalar el modulo, desactivar `irg_mail_n8n_webhook.enabled` desde ajustes o parametros de sistema. Desde ese momento `mail.mail.send()` delega en el flujo original de Odoo.
+Para volver al comportamiento nativo de Odoo sin desinstalar el modulo, desactivar `irg_mail_n8n_webhook.enabled` desde ajustes o parametros de sistema. Desde ese momento `mail.mail.send()` y `mail.mail._send()` delegan en el flujo original de Odoo.
 
 Si hay entregas fallidas o pendientes que no deben reenviarse, cancelarlas desde **Administracion > Mail n8n > Entregas** con el boton **Cancelar**. El cron no procesa entregas cuando el conector esta desactivado.
 
