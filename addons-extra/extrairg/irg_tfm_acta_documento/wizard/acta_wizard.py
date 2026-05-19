@@ -99,6 +99,18 @@ class IrgTfmActaWizard(models.TransientModel):
         default=fields.Date.context_today,
         help='Fecha en que se realizó la defensa'
     )
+
+    # Resultado
+    apto_status = fields.Selection(
+        [
+            ('apto', 'APTO'),
+            ('no_apto', 'NO APTO'),
+        ],
+        string='Resultado',
+        required=True,
+        default='no_apto',
+        help='Resultado de la evaluación: APTO o NO APTO'
+    )
     
     @staticmethod
     def _default_academic_year():
@@ -119,7 +131,7 @@ class IrgTfmActaWizard(models.TransientModel):
         student_parts = self.student_id.name.split()
         student_name = student_parts[0] if student_parts else ''
         student_surnames = ' '.join(student_parts[1:]) if len(student_parts) > 1 else ''
-        student_dni = getattr(self.student_id, 'identification_id', '') or ''
+        student_dni = getattr(self.student_id, 'id_number', '') or ''
         
         data = {
             'student_name': student_name,
@@ -136,6 +148,7 @@ class IrgTfmActaWizard(models.TransientModel):
             'secretary_surnames': self.secretary_surnames,
             'defense_date': str(self.defense_date),
             'acta_type': self.acta_type,
+            'apto_status': self.apto_status,
         }
         
         # Generar PDF
@@ -160,6 +173,7 @@ class IrgTfmActaWizard(models.TransientModel):
             'secretary_surnames': self.secretary_surnames,
             'defense_date': self.defense_date,
             'acta_type': self.acta_type,
+            'apto_status': self.apto_status,
             'state': 'valid',
         })
 

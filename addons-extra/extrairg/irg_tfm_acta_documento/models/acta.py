@@ -114,6 +114,16 @@ class IrgTfmActa(models.Model):
         default='tfm',
         help='Tipo de trabajo: Máster o Grado'
     )
+    apto_status = fields.Selection(
+        [
+            ('apto', 'APTO'),
+            ('no_apto', 'NO APTO'),
+        ],
+        string='Resultado',
+        required=True,
+        default='no_apto',
+        help='Resultado de la evaluación: APTO o NO APTO'
+    )
     defense_date = fields.Date(
         string='Fecha de Defensa',
         required=True,

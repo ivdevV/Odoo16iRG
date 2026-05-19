@@ -9,6 +9,7 @@
             <tree string="Actas de TFM/TFG">
                 <field name="name"/>
                 <field name="acta_type"/>
+                <field name="apto_status"/>
                 <field name="defense_date"/>
                 <field name="state"/>
                 <field name="created_date"/>
@@ -32,6 +33,7 @@
                             <field name="name"/>
                             <field name="student_id"/>
                             <field name="acta_type"/>
+                            <field name="apto_status"/>
                             <field name="state"/>
                             <field name="created_date"/>
                             <field name="created_by"/>
