@@ -127,6 +127,11 @@
                 <attribute name="context">{'default_channel_id': active_id, 'default_irg_content_modality': 'homeclass'}</attribute>
             </xpath>
 
+            <xpath expr="//notebook[@name='irg_homeclass_notebook']/page[@name='irg_sections']//field[@name='irg_native_section_ids']" position="attributes">
+                <attribute name="domain">['|', ('irg_content_modality', '=', False), ('irg_content_modality', '=', 'homeclass')]</attribute>
+                <attribute name="context">{'default_channel_id': active_id, 'default_irg_content_modality': 'homeclass', 'default_is_category': True, 'default_slide_category': 'article'}</attribute>
+            </xpath>
+
             <xpath expr="//notebook[@name='irg_homeclass_notebook']/page[@name='content']//field[@name='slide_ids']//tree/field[@name='name']" position="after">
                 <field name="irg_content_modality" invisible="1"/>
             </xpath>
