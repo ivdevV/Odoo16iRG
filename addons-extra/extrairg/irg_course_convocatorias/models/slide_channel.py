@@ -216,6 +216,10 @@ class SlideChannel(models.Model):
             vals = self._irg_bootstrap_prepare_slide_values(source)
             vals['sequence'] = sequence_offset + (index + 1) * 10
             copy = slide_model.create(vals)
+            # Defensa post-create: website_slides puede recolocar is_category
+            # a False si su create nativo aplica defaults; lo reafirmamos.
+            if source.is_category and not copy.is_category:
+                copy.write({'is_category': True})
             slide_map[source.id] = copy
             copied_slides |= copy
 
@@ -299,8 +303,25 @@ class SlideChannel(models.Model):
         )
 
     def _irg_bootstrap_prepare_slide_values(self, source):
-        """Valores para ``create()`` en el pase 1 (sin referencias remapeables)."""
+        """Valores para ``create()`` en el pase 1 (sin referencias remapeables).
+
+        Trata aparte las secciones (``is_category=True``): omite
+        ``slide_category`` y demás campos de contenido para no chocar con la
+        lógica nativa de ``website_slides`` que asume que una sección no tiene
+        categoría de contenido (``document``, ``video``...). De lo contrario
+        Odoo cuela el default ``slide_category='document'`` y la copia deja
+        de comportarse como sección.
+        """
         self.ensure_one()
+        is_section = bool(source._fields.get('is_category') and source.is_category)
+        # Campos que sólo aplican a contenidos reales, nunca a una sección.
+        content_only_fields = {
+            'slide_category', 'url', 'document_google_url', 'mime_type',
+            'datas', 'html_content', 'video_url', 'embed_code',
+            'completion_time', 'survey_id',
+            'quiz_first_attempt_reward', 'quiz_second_attempt_reward',
+            'quiz_third_attempt_reward', 'quiz_fourth_attempt_reward',
+        }
         vals = {
             'channel_id': self.id,
             'irg_content_modality': 'online',
@@ -311,6 +332,8 @@ class SlideChannel(models.Model):
                 continue
             if field_name not in source._fields:
                 continue
+            if is_section and field_name in content_only_fields:
+                continue
             field = source._fields[field_name]
             value = source[field_name]
             if field.type == 'many2one':
@@ -320,6 +343,9 @@ class SlideChannel(models.Model):
                 vals[field_name] = [(6, 0, value.ids)]
             else:
                 vals[field_name] = value
+        if is_section:
+            # Forzar marcadores de sección por si la whitelist no los incluye.
+            vals['is_category'] = True
         if 'tag_ids' in source._fields:
             vals['tag_ids'] = [(6, 0, source.tag_ids.ids)]
         # allowed_batch_ids se vacía deliberadamente en bootstrap.
