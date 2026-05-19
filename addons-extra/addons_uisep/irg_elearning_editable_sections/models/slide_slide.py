@@ -34,6 +34,8 @@ class SlideSlide(models.Model):
 
     @api.onchange('parent_slide_id', 'inherit_limitations_from_parent')
     def _onchange_parent_slide_apply_limitations(self):
+        if self.env.context.get('irg_skip_parent_propagation'):
+            return
         for slide in self:
             parent_slide = slide.parent_slide_id
             if not parent_slide:
@@ -52,6 +54,8 @@ class SlideSlide(models.Model):
 
     @api.onchange('category_id')
     def _onchange_category_id_set_parent(self):
+        if self.env.context.get('irg_skip_parent_propagation'):
+            return
         for slide in self:
             if slide.category_id:
                 slide.parent_slide_id = slide.category_id
@@ -65,12 +69,16 @@ class SlideSlide(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
+        if self.env.context.get('irg_skip_parent_propagation'):
+            return records
         records._apply_parent_hierarchy()
         records._apply_parent_limitations(only_empty=True)
         return records
 
     def write(self, vals):
         res = super().write(vals)
+        if self.env.context.get('irg_skip_parent_propagation'):
+            return res
         if {'parent_slide_id', 'category_id', 'inherit_limitations_from_parent'} & set(vals):
             self._apply_parent_hierarchy()
             self._apply_parent_limitations(only_empty=True)

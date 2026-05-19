@@ -28,7 +28,7 @@
                                             string="Copiar contenido de HomeClass"
                                             icon="fa-copy"
                                             class="btn btn-secondary"
-                                            confirm="¿Copiar el contenido de HomeClass a Online? Se crearán nuevos registros independientes (no se elimina el contenido online existente)."/>
+                                            confirm="¿Clonar el contenido de HomeClass como Online? Se crearán nuevos registros independientes al final del listado Online (no se elimina ni modifica nada existente). Los lotes permitidos quedarán vacíos en las copias para que los asignes a lotes Online manualmente."/>
                                 </div>
                                 <group>
                                     <group string="Base académica">
