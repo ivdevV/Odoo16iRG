@@ -294,6 +294,8 @@ class SlideChannel(models.Model):
             'quiz_first_attempt_reward', 'quiz_second_attempt_reward',
             'quiz_third_attempt_reward', 'quiz_fourth_attempt_reward',
             'inherit_limitations_from_parent', 'scheduled_date',
+            # website_slides_survey: certificaciones / encuestas vinculadas.
+            'survey_id',
         )
 
     def _irg_bootstrap_prepare_slide_values(self, source):
