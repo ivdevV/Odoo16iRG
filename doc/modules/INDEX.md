@@ -69,7 +69,7 @@
 | [irg_admission_auto_gradebook](./extrairg/irg_admission_auto_gradebook.md) | extrairg | Auto-crea libreta al matricular | 16.0.1.0.0 |
 | [irg_quiz_auto_scoring](./extrairg/irg_quiz_auto_scoring.md) | extrairg | Auto-puntuación y sync con libreta | 16.0.1.0 |
 | [irg_survey_regrade_attempts](./extrairg/irg_survey_regrade_attempts.md) | extrairg | Recalificación de intentos de examen | 16.0.1.0.0 |
-| [irg_survey_second_attempt_fix](./extrairg/irg_survey_second_attempt_fix.md) | extrairg | Segundo intento, nota y libreta correcta | 16.0.1.3.0 |
+| [irg_survey_second_attempt_fix](./extrairg/irg_survey_second_attempt_fix.md) | extrairg | Fix nota en segundo intento | 16.0.1.0.0 |
 | [irg_survey_txt_import_feedback](./extrairg/irg_survey_txt_import_feedback.md) | extrairg | Importación de preguntas desde TXT | 16.0.1.0.0 |
 | [irg_elearning_styles_rework](./extrairg/irg_elearning_styles_rework.md) | extrairg | Rework visual del eLearning | 16.0.1.0.0 |
 | [irg_exam_score_100](./extrairg/irg_exam_score_100.md) | extrairg | Campo de compatibilidad escala 100 | 16.0.1.0.0 |

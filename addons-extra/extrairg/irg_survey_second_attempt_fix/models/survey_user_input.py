@@ -8,150 +8,6 @@ _logger = logging.getLogger(__name__)
 class SurveyUserInputSecondAttemptFix(models.Model):
     _inherit = 'survey.user_input'
 
-    def _irg_get_exam_score_for_gradebook(self):
-        self.ensure_one()
-        if 'answer_score_total' in self._fields:
-            return self.answer_score_total or 0.0
-        return round((self.scoring_percentage or 0.0) / 10.0, 2)
-
-    def _irg_get_exam_attempts_for_gradebook(self):
-        self.ensure_one()
-        attempts = self
-        if self.slide_partner_id:
-            attempts = self.slide_partner_id.user_input_ids.filtered(
-                lambda attempt: (
-                    attempt.survey_id == self.survey_id
-                    and attempt.survey_type == 'exam'
-                    and not attempt.test_entry
-                    and attempt.state == 'done'
-                )
-            )
-        return attempts | self
-
-    def _irg_sync_exam_gradebook_result(self):
-        if not all(
-            field_name in self._fields
-            for field_name in (
-                'result_id',
-                'gradebook_student_id',
-                'gradebook_subject_id',
-                'admission_id',
-                'op_subject_id',
-                'course_id',
-                'channel_partner_id',
-            )
-        ):
-            return
-
-        for record in self.filtered(
-            lambda attempt: (
-                attempt.survey_type == 'exam'
-                and not attempt.test_entry
-                and attempt.state == 'done'
-            )
-        ):
-            if (
-                (not record.admission_id or not record.op_subject_id)
-                and hasattr(record, 'compute_slide_channel_partner')
-            ):
-                record.compute_slide_channel_partner()
-
-            if not (
-                record.partner_id
-                and record.admission_id
-                and record.op_subject_id
-                and record.course_id
-                and record.channel_partner_id
-            ):
-                continue
-
-            # sudo(): usa la misma regla funcional de isep_gradebook para crear
-            # o localizar libreta/asignatura académica aunque el intento llegue
-            # desde el portal del alumno.
-            gradebook_data = record.channel_partner_id.sudo().search_gradebook_subject(
-                record.partner_id,
-                record.admission_id,
-                record.course_id,
-                record.op_subject_id,
-            )
-            gradebook_student = gradebook_data.get('gradebook_student_id')
-            gradebook_subject = gradebook_data.get('gradebook_subject_id')
-            if not gradebook_subject:
-                continue
-
-            attempts = record._irg_get_exam_attempts_for_gradebook()
-            score_for_gradebook = max(
-                attempts.mapped(
-                    lambda attempt: attempt._irg_get_exam_score_for_gradebook()
-                )
-                or [record._irg_get_exam_score_for_gradebook()]
-            )
-
-            result = record.result_id.filtered(
-                lambda res: res.gradebook_subject_id == gradebook_subject
-            )[:1]
-            if not result:
-                # sudo(): los resultados de libreta son registros académicos;
-                # el alumno puede finalizar el examen desde portal sin permisos
-                # directos sobre app.gradebook.result.
-                result = self.env['app.gradebook.result'].sudo().search([
-                    ('gradebook_subject_id', '=', gradebook_subject.id),
-                    ('survey_type', '=', 'exam'),
-                    ('survey_user_input_id', 'in', attempts.ids),
-                ], limit=1)
-
-            result_values = {
-                'name': record.survey_id.title,
-                'survey_user_input_id': record.id,
-                'channel_id': record.channel_id.id,
-                'channel_partner_id': record.channel_partner_id.id,
-                'scoring_total': score_for_gradebook,
-                'gradebook_subject_id': gradebook_subject.id,
-                'survey_type': 'exam',
-                'description': '%s - %s' % (
-                    record.admission_id.application_number or 'N/A',
-                    record.course_id.name or 'N/A',
-                ),
-                'rated_by': self.env.user.partner_id.id or False,
-                'comment': record.comment,
-            }
-            if result:
-                result.sudo().write(result_values)
-            else:
-                result = self.env['app.gradebook.result'].sudo().create(result_values)
-
-            # sudo(): enlaza intentos previos del mismo examen al resultado de
-            # libreta aunque el cierre venga desde el usuario portal. _write()
-            # evita el write() singleton de isep_gradebook en recordsets de
-            # varios intentos; la nota ya se actualizo arriba en result.write().
-            attempts.sudo()._write({
-                'result_id': result.id,
-                'gradebook_student_id': (
-                    gradebook_student.id if gradebook_student else False
-                ),
-                'gradebook_subject_id': gradebook_subject.id,
-                'rated_by': self.env.user.partner_id.id or False,
-            })
-
-    def _irg_should_sync_exam_gradebook(self, values):
-        if self.env.context.get('irg_skip_gradebook_sync'):
-            return False
-        trigger_fields = {
-            'state',
-            'scoring_percentage',
-            'scoring_total',
-            'answer_score_total',
-            'comment',
-            'slide_partner_id',
-            'slide_id',
-            'partner_id',
-            'admission_id',
-            'op_subject_id',
-            'course_id',
-            'channel_partner_id',
-        }
-        return bool(trigger_fields.intersection(values))
-
     # ------------------------------------------------------------------
     # BUG-FIX 1: _check_for_failed_attempt siempre retorna True
     # ------------------------------------------------------------------
@@ -216,44 +72,43 @@ class SurveyUserInputSecondAttemptFix(models.Model):
     def write(self, values):
         result = super().write(values)
 
-        if values.get('state') == 'done':
-            for record in self.filtered(
-                lambda r: r.survey_type in ('exam', 'assignment')
+        # Solo aplicar corrección en el momento en que se cierra el intento.
+        # _mark_done() llama write({'state': 'done', 'end_datetime': ...}).
+        if values.get('state') != 'done':
+            return result
+
+        for record in self.filtered(
+            lambda r: r.survey_type in ('exam', 'assignment')
+        ):
+            survey = record.survey_id
+            # Solo aplica a surveys con puntuación (no 'no_scoring').
+            if survey.scoring_type not in (
+                'scoring_without_answers',
+                'scoring_with_answers',
             ):
-                survey = record.survey_id
-                # Solo aplica a surveys con puntuación (no 'no_scoring').
-                if survey.scoring_type not in (
-                    'scoring_without_answers',
-                    'scoring_with_answers',
-                ):
-                    continue
+                continue
 
-                # Calcular el scoring_success correcto basado en la nota real.
-                # record.scoring_percentage ya tiene el valor actualizado porque
-                # _compute_scoring_values() se disparó cuando se guardaron las
-                # respuestas (user_input_line_ids.answer_score cambió).
-                correct_success = (
-                    record.scoring_percentage >= survey.scoring_success_min
+            # Calcular el scoring_success correcto basado en la nota real.
+            # record.scoring_percentage ya tiene el valor actualizado porque
+            # _compute_scoring_values() se disparó cuando se guardaron las
+            # respuestas (user_input_line_ids.answer_score cambió).
+            correct_success = (
+                record.scoring_percentage >= survey.scoring_success_min
+            )
+
+            if record.scoring_success != correct_success:
+                _logger.info(
+                    "irg_survey_second_attempt_fix: corrigiendo scoring_success "
+                    "%s → %s para user_input %s "
+                    "(scoring_percentage=%.2f, scoring_success_min=%.2f)",
+                    record.scoring_success,
+                    correct_success,
+                    record.id,
+                    record.scoring_percentage,
+                    survey.scoring_success_min,
                 )
-
-                if record.scoring_success != correct_success:
-                    _logger.info(
-                        "irg_survey_second_attempt_fix: corrigiendo scoring_success "
-                        "%s → %s para user_input %s "
-                        "(scoring_percentage=%.2f, scoring_success_min=%.2f)",
-                        record.scoring_success,
-                        correct_success,
-                        record.id,
-                        record.scoring_percentage,
-                        survey.scoring_success_min,
-                    )
-                    # _write() escribe directamente a la BD sin pasar por write()
-                    # ni disparar recomputaciones encadenadas de scoring_success.
-                    record._write({'scoring_success': correct_success})
-
-        if self._irg_should_sync_exam_gradebook(values):
-            self.filtered(
-                lambda record: record.state == 'done'
-            )._irg_sync_exam_gradebook_result()
+                # _write() escribe directamente a la BD sin pasar por write()
+                # ni disparar recomputaciones encadenadas de scoring_success.
+                record._write({'scoring_success': correct_success})
 
         return result

@@ -34,16 +34,10 @@
     ],
     'assets': {
         'web.assets_frontend': [
-            # REGLA ODOO: @import local está prohibido. Cada archivo SCSS
-            # se registra individualmente aquí; Odoo gestiona el orden.
-            #
-            # _variables.scss con 'prepend' = se compila ANTES de Bootstrap,
-            # garantizando que $primary, $secondary, etc. estén disponibles
-            # para todos los módulos que usen variables Bootstrap.
-            ('prepend', 'irg_website_theme/static/src/scss/_variables.scss'),
-            # Componentes y portal van en posición normal (después de Bootstrap)
-            'irg_website_theme/static/src/scss/_components.scss',
-            'irg_website_theme/static/src/scss/_portal.scss',
+            # prepend = se compila ANTES que Bootstrap y el resto de estilos.
+            # Esto garantiza que $primary, $secondary y demás variables estén
+            # disponibles cuando cualquier otro módulo SCSS las consume.
+            ('prepend', 'irg_website_theme/static/src/scss/irg_theme.scss'),
         ],
     },
     'installable': True,
