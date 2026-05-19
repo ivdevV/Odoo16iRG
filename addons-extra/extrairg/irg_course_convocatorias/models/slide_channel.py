@@ -306,10 +306,20 @@ class SlideChannel(models.Model):
             'irg_content_modality': 'online',
         }
         for field_name in self._irg_bootstrap_slide_clone_fields():
-            if field_name in source._fields and field_name != 'access_token':
-                vals[field_name] = source[field_name]
-        # access_token se regenera; no copiar para evitar colisiones.
-        # tags many2many (si existe) se copia como replace.
+            if field_name == 'access_token':
+                # access_token se regenera; no copiar para evitar colisiones.
+                continue
+            if field_name not in source._fields:
+                continue
+            field = source._fields[field_name]
+            value = source[field_name]
+            if field.type == 'many2one':
+                vals[field_name] = value.id if value else False
+            elif field.type in ('many2many', 'one2many'):
+                # one2many no debería estar en la whitelist; many2many como replace.
+                vals[field_name] = [(6, 0, value.ids)]
+            else:
+                vals[field_name] = value
         if 'tag_ids' in source._fields:
             vals['tag_ids'] = [(6, 0, source.tag_ids.ids)]
         # allowed_batch_ids se vacía deliberadamente en bootstrap.
