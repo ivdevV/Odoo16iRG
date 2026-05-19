@@ -29,6 +29,12 @@ class SlideChannel(models.Model):
         compute='_compute_irg_course_convocatoria_data',
         string='Secciones HomeClass',
     )
+    irg_homeclass_slide_ids = fields.One2many(
+        'slide.slide',
+        'channel_id',
+        string='Contenido HomeClass editable',
+        domain=['|', ('irg_content_modality', '=', False), ('irg_content_modality', '=', 'homeclass')],
+    )
     irg_online_content_ids = fields.Many2many(
         'slide.slide',
         compute='_compute_irg_course_convocatoria_data',

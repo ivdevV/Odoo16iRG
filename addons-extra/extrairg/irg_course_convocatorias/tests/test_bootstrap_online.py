@@ -92,6 +92,11 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
         # HomeClass intacto: mismos ids y mismas secuencias.
         homeclass = self._homeclass_slides()
         self.assertEqual(set(homeclass.ids), set(self._homeclass_ids))
+        self.assertEqual(
+            set(self.channel.irg_homeclass_slide_ids.ids),
+            set(self._homeclass_ids),
+            "La pestaña HomeClass no debe listar las copias Online",
+        )
         for slide in homeclass:
             self.assertEqual(
                 slide.sequence, self._homeclass_sequences[slide.id],
