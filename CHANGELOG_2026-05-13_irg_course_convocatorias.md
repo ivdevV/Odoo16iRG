@@ -4,10 +4,16 @@
 
 - El botón `Copiar contenido de HomeClass` crea copias Online independientes conservando nombre, tipo, estado publicado y datos normales de copia.
 - Las secciones/categorías se copian antes internamente para poder remapear `category_id`, `parent_slide_id` e `irg_section_id`, pero la secuencia final conserva el orden visual del bloque HomeClass copiado dentro de Online.
-- HomeClass deja de usar el `slide_ids` nativo compartido en la pestaña de contenido y pasa a usar `irg_homeclass_slide_ids`, un `one2many` filtrado por modalidad para evitar que registros Online alteren su listado.
+- `HomeClass > Contenido` mantiene el campo nativo `slide_ids` para compatibilidad con vistas heredadas de otros módulos y aplica dominio/contexto por modalidad HomeClass.
 - La copia ya no reescribe ni limpia `allowed_batch_ids`; no transforma lotes durante una operación cuyo objetivo es copiar contenido.
 - La pestaña de secciones HomeClass filtra por modalidad HomeClass/sin modalidad, evitando que las secciones Online copiadas aparezcan o alteren el orden visible de HomeClass.
-- Versión del módulo actualizada a `16.0.1.2.0`.
+- Versión del módulo actualizada a `16.0.1.3.0`.
+
+## 2026-05-19 — Hotfix actualización de vista
+
+- Se restaura el nombre nativo `slide_ids` en `HomeClass > Contenido` para no romper XPaths de módulos que heredan `website_slides.view_slide_channel_form`, como `connect_chatgpt`.
+- El filtro de modalidad se conserva mediante `domain` y `context`, sin renombrar el campo en la arquitectura final de la vista.
+- Versión del módulo actualizada a `16.0.1.3.0`.
 
 ## Nuevo módulo: `addons-extra/extrairg/irg_course_convocatorias`
 

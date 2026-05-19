@@ -88,4 +88,4 @@ Desinstalar desde Apps > `irg_course_convocatorias`. Las columnas `irg_slide_sec
 
 - Responsable: GitHub Copilot / iRG Dev
 - Implementado: 2026-05-13
-- Versión del módulo: `16.0.1.2.0`
+- Versión del módulo: `16.0.1.3.0`

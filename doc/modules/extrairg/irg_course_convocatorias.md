@@ -1,7 +1,7 @@
 # irg_course_convocatorias
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.2.0
+**Versión:** 16.0.1.3.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
@@ -17,7 +17,7 @@ Las pestañas superiores **HomeClass** y **Online** aparecen por encima de las p
 
 En la práctica, el módulo actúa como puente entre la estructura nativa de `website_slides`, la organización académica de OpenEduCat y el modelo de secciones editables aportado por `irg_elearning_editable_sections`. No expone controladores ni lógica de portal; su impacto es principalmente de backoffice y de modelado de datos para el equipo académico.
 
-La versión `16.0.1.2.0` corrige el flujo de copia de contenido desde HomeClass hacia Online. El botón `Copiar contenido de HomeClass` crea registros Online independientes, reconstruye las relaciones internas de jerarquía y evita que las secciones Online reaparezcan dentro de la pestaña HomeClass sin transformar los datos normales de una copia.
+La versión `16.0.1.3.0` corrige el flujo de copia de contenido desde HomeClass hacia Online y restaura compatibilidad de vistas durante la actualización. El botón `Copiar contenido de HomeClass` crea registros Online independientes, reconstruye las relaciones internas de jerarquía y evita que las secciones Online reaparezcan dentro de la pestaña HomeClass sin transformar los datos normales de una copia.
 
 ## Funcionalidades principales
 
@@ -41,7 +41,7 @@ La versión `16.0.1.2.0` corrige el flujo de copia de contenido desde HomeClass 
 | Modelo | Tipo | Campos principales |
 |--------|------|--------------------|
 | `irg.course.convocatoria` | Nuevo/auxiliar | `name`, `modality`, `year`, `sequence`, `active`, `channel_id`, `batch_ids`, `online_variant_id`, `irg_section_ids`, `section_count` |
-| `slide.channel` | Herencia | `irg_related_course_ids`, `irg_related_modality_ids`, `irg_homeclass_batch_ids`, `irg_online_batch_ids`, `irg_homeclass_section_ids`, `irg_homeclass_slide_ids`, `irg_online_content_ids`, `irg_online_slide_ids`, `irg_online_section_ids`, `irg_online_variant_id`, `irg_has_homeclass`, `irg_has_online` |
+| `slide.channel` | Herencia | `irg_related_course_ids`, `irg_related_modality_ids`, `irg_homeclass_batch_ids`, `irg_online_batch_ids`, `irg_homeclass_section_ids`, `irg_online_content_ids`, `irg_online_slide_ids`, `irg_online_section_ids`, `irg_online_variant_id`, `irg_has_homeclass`, `irg_has_online` |
 | `slide.slide` | Herencia | `irg_content_modality` |
 | `irg.slide.section` | Herencia | `convocatoria_id` |
 
@@ -52,7 +52,6 @@ La versión `16.0.1.2.0` corrige el flujo de copia de contenido desde HomeClass 
 - `irg_homeclass_batch_ids`: lotes reales del curso filtrados como HomeClass.
 - `irg_online_batch_ids`: lotes reales del curso filtrados como Online.
 - `irg_homeclass_section_ids`: secciones nativas HomeClass del canal cuyo `allowed_batch_ids` intersecta con los lotes HomeClass.
-- `irg_homeclass_slide_ids`: relación editable a `slide.slide` filtrada por modalidad HomeClass/sin modalidad, usada por `HomeClass > Contenido` para no compartir dataset visual con Online.
 - `irg_online_content_ids`: contenidos del canal visibles para online según `irg_content_modality`.
 - `irg_online_slide_ids`: relación editable a `slide.slide` filtrada por modalidad Online, usada por la pestaña `Online > Contenido`.
 - `irg_content_modality`: marca en cada contenido (`slide.slide`) para separarlo entre HomeClass y Online. Los contenidos existentes sin valor quedan visibles en HomeClass.
@@ -89,7 +88,7 @@ Con esto, las secciones copiadas a Online quedan fuera del flujo HomeClass aunqu
 - Construye para `Online` un notebook paralelo con `Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas` y `Secciones iRG`.
 - Añade en `Online > Contenido` el botón `Copiar contenido de HomeClass`, que llama a `action_copy_homeclass_to_online` y muestra una notificación de éxito con el número de elementos copiados.
 - El árbol de `Online > Contenido` aplica `decoration-muted="is_category"` para marcar visualmente las filas que son categorías/secciones sin cambiar su comportamiento funcional.
-- `HomeClass > Contenido` usa `irg_homeclass_slide_ids`, un `one2many` técnico filtrado por modalidad HomeClass/sin modalidad, para evitar que el cliente web mezcle el dataset visual con Online.
+- `HomeClass > Contenido` mantiene el campo nativo `slide_ids` para que otros módulos puedan seguir heredando sus anclas XPath, y aplica un dominio para mostrar solo contenidos sin modalidad o con modalidad HomeClass.
 - Aplica un dominio en `HomeClass > Secciones iRG` para mostrar secciones sin modalidad o con modalidad HomeClass, evitando que las secciones Online copiadas se mezclen en el listado HomeClass.
 - `views/irg_course_convocatoria_views.xml` define además:
   - vista lista del nuevo modelo,
@@ -129,7 +128,7 @@ Con esto, las secciones copiadas a Online quedan fuera del flujo HomeClass aunqu
 
 ## Historial reciente
 
-El changelog del módulo registra el 2026-05-19 la corrección del botón `Copiar contenido de HomeClass`. El cambio documentado actualiza el módulo a `16.0.1.2.0` y centra la mejora en hacer que la copia HomeClass -> Online sea estructuralmente independiente sin transformar los datos copiados.
+El changelog del módulo registra el 2026-05-19 la corrección del botón `Copiar contenido de HomeClass` y el hotfix de actualización de vista. El cambio documentado actualiza el módulo a `16.0.1.3.0` y centra la mejora en hacer que la copia HomeClass -> Online sea estructuralmente independiente sin transformar los datos copiados, manteniendo el campo nativo `slide_ids` como ancla para otros módulos.
 
 Artefactos relacionados:
 
