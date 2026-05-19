@@ -108,6 +108,14 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
         self.assertEqual(len(copy_of_category), 1)
         self.assertEqual(len(copy_of_lesson), 1)
         self.assertEqual(len(copy_of_child), 1)
+        self.assertEqual(
+            copy_of_category.slide_category, 'article',
+            "La sección Online debe conservar la categoría técnica de sección, no document",
+        )
+        self.assertEqual(
+            copy_of_category.irg_content_modality, 'online',
+            "La sección copiada debe quedar fuera del dominio HomeClass",
+        )
 
         self.assertEqual(
             copy_of_lesson.category_id, copy_of_category,

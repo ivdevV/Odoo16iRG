@@ -216,10 +216,15 @@ class SlideChannel(models.Model):
             vals = self._irg_bootstrap_prepare_slide_values(source)
             vals['sequence'] = sequence_offset + (index + 1) * 10
             copy = slide_model.create(vals)
-            # Defensa post-create: website_slides puede recolocar is_category
-            # a False si su create nativo aplica defaults; lo reafirmamos.
-            if source.is_category and not copy.is_category:
-                copy.write({'is_category': True})
+            # Defensa post-create: website_slides aplica defaults de contenido
+            # incluso para secciones; reafirmamos los marcadores estructurales.
+            if source.is_category and (
+                not copy.is_category or copy.slide_category != vals.get('slide_category')
+            ):
+                copy.write({
+                    'is_category': True,
+                    'slide_category': vals.get('slide_category'),
+                })
             slide_map[source.id] = copy
             copied_slides |= copy
 
@@ -346,6 +351,10 @@ class SlideChannel(models.Model):
         if is_section:
             # Forzar marcadores de sección por si la whitelist no los incluye.
             vals['is_category'] = True
+            # Las secciones creadas manualmente por la vista usan article como
+            # categoría técnica. Si se omite, website_slides usa document por
+            # defecto y la sección aparece en Online como "Documento".
+            vals['slide_category'] = 'article'
         if 'tag_ids' in source._fields:
             vals['tag_ids'] = [(6, 0, source.tag_ids.ids)]
         # allowed_batch_ids se vacía deliberadamente en bootstrap.

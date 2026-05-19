@@ -15,6 +15,7 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 ## 4. Alcance exacto
 
 - Herencia de `slide.channel` para añadir campos calculados de cursos relacionados, modalidades, lotes HomeClass, lotes Online, variante Online y secciones filtradas para ambas modalidades.
+- Corrección de detección para cursos/lotes HomeClass con enlaces de clase cuando la relación académica no llega por asignaturas o la modalidad no contiene literalmente `homeclass`.
 - Reestructuración del notebook principal del formulario para introducir un notebook superior por modalidad.
 - Reutilización de las pestañas existentes del canal dentro de HomeClass y definición de un notebook paralelo para Online.
 - Dependencia explícita de `irg_op_course_modality` e `isep_elearning_custom`.
@@ -34,7 +35,9 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 - La relación `slide.channel` → `op.course` se obtiene por dos vías:
   - asignaturas del canal (`op_subject_ids.course_id` y `subject_ids`)
   - cursos que incluyen el canal en `slide_channel_ids`
+- Además, se incorporan los cursos de los lotes ya asignados en `allowed_batch_ids` de contenidos y secciones del canal, evitando que cursos como Neuropsicología Clínica o Neurodesarrollo queden fuera si no comparten la relación por asignaturas.
 - Los lotes HomeClass/Online se calculan desde `op.batch` de los cursos relacionados y `modality_id`.
+- La detección de HomeClass revisa campos normalizados de `op.batch.modality_id` (`name`, `code`, `new_code`, `analytic_code`), el código del lote y, si no existe marcador Online, acepta lotes con `teams_link` como lotes con enlace de clase HomeClass.
 - La variante Online se obtiene de `course.product_id.product_tmpl_id.product_variant_ids` filtrando por atributo `modalidad = online`.
 - Las secciones HomeClass se calculan sobre `irg_native_section_ids` filtrando `allowed_batch_ids` contra los lotes HomeClass.
 
@@ -62,6 +65,8 @@ Sin impacto destructivo en datos existentes. La UI del canal pasa a reflejar cur
 
 - El formulario de `slide.channel` muestra las pestañas "HomeClass" y "Online" tras instalar el módulo.
 - Si el curso relacionado tiene modalidad HomeClass o lotes HomeClass, la pestaña HomeClass es visible.
+- Los cursos relacionados por lotes asignados en contenidos/secciones se detectan aunque no lleguen por `op_subject_ids`.
+- Los lotes con enlace de clase (`teams_link`) se muestran como HomeClass si no están marcados explícitamente como Online.
 - Si el curso relacionado tiene modalidad Online o lotes Online, la pestaña Online es visible.
 - El formulario de `slide.channel` muestra primero las pestañas superiores `HomeClass` y `Online`.
 - Al entrar en HomeClass, aparecen dentro las subpestañas del canal (`Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas`, `Secciones iRG`).
@@ -88,4 +93,4 @@ Desinstalar desde Apps > `irg_course_convocatorias`. Las columnas `irg_slide_sec
 
 - Responsable: GitHub Copilot / iRG Dev
 - Implementado: 2026-05-13
-- Versión del módulo: `16.0.1.3.0`
+- Versión del módulo: `16.0.1.4.0`

@@ -1,5 +1,13 @@
 # Changelog 2026-05-13 — irg_course_convocatorias
 
+## 2026-05-19 — Corrección detección HomeClass en NC y Neurodesarrollo
+
+- Los cursos relacionados del canal ahora también se detectan desde los lotes asignados en `allowed_batch_ids` de contenidos y secciones, no solo desde asignaturas o `slide_channel_ids`.
+- La detección de lotes HomeClass revisa `name`, `code`, `new_code` y `analytic_code` de `op.batch.modality_id`, además del código del lote.
+- Si un lote tiene `teams_link` y no está marcado explícitamente como Online, se considera HomeClass para que aparezcan sus enlaces de clase.
+- Este ajuste evita que cursos como Neuropsicología Clínica y Neurodesarrollo queden sin lotes/secciones HomeClass por diferencias en codificación de modalidad.
+- Versión del módulo actualizada a `16.0.1.4.0`.
+
 ## 2026-05-19 — Corrección de copia HomeClass → Online
 
 - El botón `Copiar contenido de HomeClass` crea copias Online independientes conservando nombre, tipo, estado publicado y datos normales de copia.
