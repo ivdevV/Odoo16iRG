@@ -34,6 +34,12 @@ class SlideChannel(models.Model):
         compute='_compute_irg_course_convocatoria_data',
         string='Contenido Online',
     )
+    irg_online_slide_ids = fields.One2many(
+        'slide.slide',
+        string='Contenidos Online',
+        related='irg_online_channel_id.slide_ids',
+        readonly=False,
+    )
     irg_online_section_ids = fields.Many2many(
         'slide.slide',
         compute='_compute_irg_course_convocatoria_data',
@@ -54,6 +60,10 @@ class SlideChannel(models.Model):
         ondelete='set null',
         help='Canal HomeClass desde el que se creó esta versión Online.',
     )
+    irg_is_online_clone = fields.Boolean(
+        compute='_compute_irg_is_online_clone',
+        string='Es canal Online iRG',
+    )
     irg_online_variant_id = fields.Many2one(
         'product.product',
         compute='_compute_irg_course_convocatoria_data',
@@ -67,6 +77,11 @@ class SlideChannel(models.Model):
         compute='_compute_irg_course_convocatoria_data',
         string='Tiene Online',
     )
+
+    @api.depends('irg_homeclass_channel_id')
+    def _compute_irg_is_online_clone(self):
+        for channel in self:
+            channel.irg_is_online_clone = bool(channel.irg_homeclass_channel_id)
 
     @api.depends(
         'op_subject_ids',
@@ -240,15 +255,11 @@ class SlideChannel(models.Model):
         online_channel = self._irg_get_or_create_online_channel()
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Contenidos Online'),
-            'res_model': 'slide.slide',
-            'view_mode': 'tree,form',
+            'name': _('Canal Online'),
+            'res_model': 'slide.channel',
+            'res_id': online_channel.id,
+            'view_mode': 'form',
             'target': 'current',
-            'domain': [('channel_id', '=', online_channel.id)],
-            'context': {
-                'default_channel_id': online_channel.id,
-                'default_irg_content_modality': 'online',
-            },
         }
 
     def action_copy_homeclass_to_online(self):
@@ -260,9 +271,10 @@ class SlideChannel(models.Model):
         ``irg_elearning_editable_sections``. Trabaja en dos pases: primero
         crea los registros con sus datos base, luego remapea las referencias
         jerárquicas (``category_id``, ``parent_slide_id``, ``irg_section_id``).
-        Las copias se añaden al final del listado Online y dejan
+        Las copias se crean en un canal Online independiente y dejan
         ``allowed_batch_ids`` vacío para que el equipo académico los asigne
-        manualmente a lotes Online.
+        manualmente a lotes Online. Si el canal Online ya tiene contenido, la
+        acción no vuelve a copiar para evitar duplicados accidentales.
         """
         self.ensure_one()
         homeclass_slides = self.slide_ids.filtered(self._irg_is_homeclass_content)
@@ -272,8 +284,15 @@ class SlideChannel(models.Model):
 
         clone_env = self.env(context=dict(self.env.context, irg_skip_parent_propagation=True))
         online_channel = self._irg_get_or_create_online_channel()
+        if online_channel.slide_ids:
+            return self._irg_bootstrap_existing_online_notification(online_channel)
+
         section_map = self._irg_bootstrap_clone_irg_sections(clone_env, online_channel)
         sequence_offset = self._irg_bootstrap_base_sequence(online_channel)
+        sequence_by_source = {
+            source.id: sequence_offset + (index + 1) * 10
+            for index, source in enumerate(ordered_slides)
+        }
 
         slide_model = clone_env['slide.slide']
         slide_map = {}
@@ -286,7 +305,7 @@ class SlideChannel(models.Model):
 
         for index, source in enumerate(creation_order):
             vals = self._irg_bootstrap_prepare_slide_values(source, online_channel)
-            vals['sequence'] = sequence_offset + (index + 1) * 10
+            vals['sequence'] = sequence_by_source[source.id]
             copy = slide_model.create(vals)
             # Defensa post-create: website_slides aplica defaults de contenido
             # incluso para secciones; reafirmamos los marcadores estructurales.
@@ -310,6 +329,20 @@ class SlideChannel(models.Model):
         self._irg_bootstrap_clone_quizzes(creation_order, slide_map, clone_env)
 
         return self._irg_bootstrap_notification(len(copied_slides))
+
+    def _irg_bootstrap_existing_online_notification(self, online_channel):
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Bootstrap Online'),
+                'message': _(
+                    'El canal Online "%s" ya tiene contenido. No se ha copiado de nuevo para evitar duplicados.'
+                ) % online_channel.name,
+                'type': 'warning',
+                'sticky': False,
+            },
+        }
 
     def _irg_bootstrap_notification(self, count):
         if not count:
@@ -367,13 +400,19 @@ class SlideChannel(models.Model):
         return (
             'name', 'description', 'slide_category', 'is_category',
             'is_published', 'url', 'document_google_url', 'mime_type',
-            'datas', 'image_1920', 'html_content', 'video_url',
-            'embed_code', 'completion_time', 'access_token',
+            'datas', 'document_binary_content', 'image_1920', 'html_content',
+            'video_url', 'source_type', 'video_source_type', 'embed_code',
+            'completion_time', 'access_token',
             'quiz_first_attempt_reward', 'quiz_second_attempt_reward',
             'quiz_third_attempt_reward', 'quiz_fourth_attempt_reward',
             'inherit_limitations_from_parent', 'scheduled_date',
             # website_slides_survey: certificaciones / encuestas vinculadas.
             'survey_id',
+            # Tipos de contenido y flags custom instalados en esta instancia.
+            'bunny_url', 'external_url', 'scorm_data', 'filename',
+            'scorm_version', 'html_embed_code', 'html_code_text',
+            'msn_custom', 'translate_with_gpt', 'x_is_interactive',
+            'x_interactive_json',
         )
 
     def _irg_bootstrap_prepare_slide_values(self, source, online_channel):
@@ -391,8 +430,12 @@ class SlideChannel(models.Model):
         # Campos que sólo aplican a contenidos reales, nunca a una sección.
         content_only_fields = {
             'slide_category', 'url', 'document_google_url', 'mime_type',
-            'datas', 'html_content', 'video_url', 'embed_code',
-            'completion_time', 'survey_id',
+            'datas', 'document_binary_content', 'html_content', 'video_url',
+            'source_type', 'video_source_type', 'embed_code',
+            'completion_time', 'survey_id', 'bunny_url', 'external_url',
+            'scorm_data', 'filename', 'scorm_version', 'html_embed_code',
+            'html_code_text', 'msn_custom', 'translate_with_gpt',
+            'x_is_interactive', 'x_interactive_json',
             'quiz_first_attempt_reward', 'quiz_second_attempt_reward',
             'quiz_third_attempt_reward', 'quiz_fourth_attempt_reward',
         }
@@ -443,6 +486,19 @@ class SlideChannel(models.Model):
         if 'irg_section_id' in source._fields:
             target = section_map.get(source.irg_section_id.id) if source.irg_section_id else False
             updates['irg_section_id'] = target.id if target else False
+        if 'prerequisite_slide_id' in source._fields:
+            target = slide_map.get(source.prerequisite_slide_id.id) if source.prerequisite_slide_id else False
+            updates['prerequisite_slide_id'] = target.id if target else False
+        if 'x_original_slide_id' in source._fields:
+            target = slide_map.get(source.x_original_slide_id.id) if source.x_original_slide_id else False
+            updates['x_original_slide_id'] = target.id if target else False
+        if 'restriction_slide_ids' in source._fields:
+            target_ids = [
+                slide_map[restriction.id].id
+                for restriction in source.restriction_slide_ids
+                if restriction.id in slide_map
+            ]
+            updates['restriction_slide_ids'] = [(6, 0, target_ids)]
         return updates
 
     def _irg_bootstrap_clone_quizzes(self, sources, slide_map, clone_env):

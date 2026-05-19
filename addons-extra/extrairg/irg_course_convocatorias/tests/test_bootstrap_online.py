@@ -57,6 +57,13 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
             'slide_category': 'article',
             'parent_slide_id': self.slide_in_cat.id,
         })
+        relation_updates = {}
+        if 'prerequisite_slide_id' in self.slide_child._fields:
+            relation_updates['prerequisite_slide_id'] = self.slide_in_cat.id
+        if 'restriction_slide_ids' in self.slide_child._fields:
+            relation_updates['restriction_slide_ids'] = [(6, 0, [self.slide_in_cat.id])]
+        if relation_updates:
+            self.slide_child.write(relation_updates)
         self.slide_loose = self.Slide.create({
             'name': 'Lección suelta',
             'channel_id': self.channel.id,
@@ -105,6 +112,11 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
                 slide.sequence, self._homeclass_sequences[slide.id],
                 "La secuencia de los slides HomeClass no debe cambiar",
             )
+        self.assertEqual(
+            online.sorted(lambda slide: (slide.sequence, slide.id)).mapped('name'),
+            self.channel.slide_ids.sorted(lambda slide: (slide.sequence, slide.id)).mapped('name'),
+            "El canal Online debe conservar el orden relativo de HomeClass",
+        )
 
     def test_bootstrap_remaps_hierarchy_within_online(self):
         self.channel.action_copy_homeclass_to_online()
@@ -133,6 +145,16 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
             copy_of_child.parent_slide_id, copy_of_lesson,
             "El parent_slide_id debe remapearse a la copia online",
         )
+        if 'prerequisite_slide_id' in copy_of_child._fields:
+            self.assertEqual(
+                copy_of_child.prerequisite_slide_id, copy_of_lesson,
+                "El prerequisite_slide_id debe remapearse a la copia online",
+            )
+        if 'restriction_slide_ids' in copy_of_child._fields:
+            self.assertEqual(
+                copy_of_child.restriction_slide_ids, copy_of_lesson,
+                "restriction_slide_ids debe remapearse a copias online",
+            )
         self.assertNotIn(
             copy_of_lesson.id, self._homeclass_ids,
             "La lección copiada no debe ser el original",
@@ -159,24 +181,21 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
         self.assertEqual(result['params']['type'], 'warning')
         self.assertFalse(empty_channel.slide_ids)
 
-    def test_bootstrap_idempotent_append(self):
+    def test_bootstrap_does_not_duplicate_existing_online_content(self):
         self.channel.action_copy_homeclass_to_online()
         first_online = self._online_slides()
-        self.channel.action_copy_homeclass_to_online()
+        result = self.channel.action_copy_homeclass_to_online()
         second_online = self._online_slides()
         self.assertEqual(
-            len(second_online), len(first_online) * 2,
-            "La segunda ejecución debe añadir un segundo lote sin tocar el primero",
+            second_online,
+            first_online,
+            "La segunda ejecución no debe duplicar contenido Online existente",
         )
+        self.assertEqual(result['params']['type'], 'warning')
 
     def test_open_online_content_action_uses_online_channel(self):
         action = self.channel.action_open_online_channel()
-        self.assertEqual(action['res_model'], 'slide.slide')
-        self.assertEqual(
-            action['domain'],
-            [('channel_id', '=', self.channel.irg_online_channel_id.id)],
-        )
-        self.assertEqual(
-            action['context']['default_channel_id'],
-            self.channel.irg_online_channel_id.id,
-        )
+        self.assertEqual(action['res_model'], 'slide.channel')
+        self.assertEqual(action['res_id'], self.channel.irg_online_channel_id.id)
+        self.assertEqual(action['view_mode'], 'form')
+        self.assertTrue(self.channel.irg_online_channel_id.irg_is_online_clone)
