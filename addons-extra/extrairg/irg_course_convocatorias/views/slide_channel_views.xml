@@ -48,12 +48,12 @@
                                     </group>
                                 </group>
                                 <field name="irg_online_slide_ids"
-                                       context="{'default_channel_id': irg_online_channel_id, 'default_irg_content_modality': 'online'}"
+                                       context="{'default_channel_id': parent.irg_online_channel_id, 'default_irg_content_modality': 'online'}"
                                        readonly="0">
                                     <tree decoration-muted="is_category" editable="false">
                                         <control>
                                             <create name="add_slide_lesson" string="Añadir contenido"/>
-                                            <create name="add_slide_section" string="Añadir sección" context="{'default_channel_id': irg_online_channel_id, 'default_irg_content_modality': 'online', 'default_is_category': True, 'default_slide_category': 'article', 'default_name': 'Nueva sección'}"/>
+                                            <create name="add_slide_section" string="Añadir sección" context="{'default_channel_id': parent.irg_online_channel_id, 'default_irg_content_modality': 'online', 'default_is_category': True, 'default_slide_category': 'article', 'default_name': 'Nueva sección'}"/>
                                         </control>
                                         <field name="sequence" widget="handle"/>
                                         <field name="name"/>
