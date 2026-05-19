@@ -1,6 +1,6 @@
 {
     'name': 'iRG Course Convocatorias',
-    'version': '16.0.2.0.4',
+    'version': '16.0.3.0.0',
     'category': 'Website/eLearning',
     'summary': 'Pestañas HomeClass y Online con convocatorias anuales en el formulario de curso',
     'author': 'iRG',

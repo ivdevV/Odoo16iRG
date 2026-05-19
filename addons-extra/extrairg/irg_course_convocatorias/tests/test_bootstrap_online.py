@@ -75,9 +75,7 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
         )
 
     def _online_slides(self):
-        return self.channel.slide_ids.filtered(
-            lambda s: s.irg_content_modality == 'online'
-        )
+        return self.channel.irg_online_channel_id.slide_ids
 
     def test_bootstrap_creates_independent_online_copies(self):
         result = self.channel.action_copy_homeclass_to_online()
@@ -88,10 +86,20 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
             len(online), len(self._homeclass_ids),
             "Se debe copiar un slide Online por cada slide HomeClass elegible",
         )
+        self.assertTrue(self.channel.irg_online_channel_id)
+        self.assertEqual(
+            self.channel.irg_online_channel_id.irg_homeclass_channel_id,
+            self.channel,
+            "El contenido Online debe vivir en un canal independiente enlazado al HomeClass",
+        )
 
         # HomeClass intacto: mismos ids y mismas secuencias.
         homeclass = self._homeclass_slides()
         self.assertEqual(set(homeclass.ids), set(self._homeclass_ids))
+        self.assertFalse(
+            set(online.ids) & set(self.channel.slide_ids.ids),
+            "Las copias Online no deben pertenecer al slide_ids del canal HomeClass",
+        )
         for slide in homeclass:
             self.assertEqual(
                 slide.sequence, self._homeclass_sequences[slide.id],
@@ -132,13 +140,13 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
 
     def test_bootstrap_clones_all_irg_sections(self):
         self.channel.action_copy_homeclass_to_online()
-        all_sections = self.env['irg.slide.section'].search([
-            ('channel_id', '=', self.channel.id),
+        online_sections = self.env['irg.slide.section'].search([
+            ('channel_id', '=', self.channel.irg_online_channel_id.id),
         ])
-        # Originales + copias (todas las secciones del canal, no sólo las referenciadas).
+        # Todas las secciones del canal HomeClass se clonan al canal Online independiente.
         self.assertEqual(
-            len(all_sections),
-            len(self._homeclass_section_ids) * 2,
+            len(online_sections),
+            len(self._homeclass_section_ids),
             "Se deben clonar todas las secciones iRG del canal, también las vacías",
         )
 
@@ -159,4 +167,16 @@ class TestBootstrapOnlineFromHomeClass(TransactionCase):
         self.assertEqual(
             len(second_online), len(first_online) * 2,
             "La segunda ejecución debe añadir un segundo lote sin tocar el primero",
+        )
+
+    def test_open_online_content_action_uses_online_channel(self):
+        action = self.channel.action_open_online_channel()
+        self.assertEqual(action['res_model'], 'slide.slide')
+        self.assertEqual(
+            action['domain'],
+            [('channel_id', '=', self.channel.irg_online_channel_id.id)],
+        )
+        self.assertEqual(
+            action['context']['default_channel_id'],
+            self.channel.irg_online_channel_id.id,
         )

@@ -34,16 +34,25 @@ class SlideChannel(models.Model):
         compute='_compute_irg_course_convocatoria_data',
         string='Contenido Online',
     )
-    irg_online_slide_ids = fields.One2many(
-        'slide.slide',
-        'channel_id',
-        string='Contenido Online editable',
-        domain=[('irg_content_modality', '=', 'online')],
-    )
     irg_online_section_ids = fields.Many2many(
         'slide.slide',
         compute='_compute_irg_course_convocatoria_data',
         string='Secciones Online',
+    )
+    irg_online_channel_id = fields.Many2one(
+        'slide.channel',
+        string='Canal Online',
+        copy=False,
+        ondelete='set null',
+        help='Canal eLearning independiente que contiene la versión Online del contenido HomeClass.',
+    )
+    irg_homeclass_channel_id = fields.Many2one(
+        'slide.channel',
+        string='Canal HomeClass origen',
+        copy=False,
+        index=True,
+        ondelete='set null',
+        help='Canal HomeClass desde el que se creó esta versión Online.',
     )
     irg_online_variant_id = fields.Many2one(
         'product.product',
@@ -68,6 +77,9 @@ class SlideChannel(models.Model):
         'slide_ids.slide_category',
         'slide_ids.is_category',
         'slide_ids.irg_content_modality',
+        'irg_online_channel_id',
+        'irg_online_channel_id.slide_ids',
+        'irg_online_channel_id.slide_ids.is_category',
         'irg_native_section_ids',
         'irg_native_section_ids.allowed_batch_ids',
     )
@@ -88,9 +100,8 @@ class SlideChannel(models.Model):
                 lambda section: channel._irg_is_homeclass_content(section)
                 and bool(section.allowed_batch_ids & homeclass_batches)
             )
-            online_content = channel.slide_ids.filtered(
-                lambda slide: slide.irg_content_modality == 'online'
-            )
+            online_channel = channel.irg_online_channel_id
+            online_content = online_channel.slide_ids if online_channel else self.env['slide.slide']
             online_sections = online_content.filtered(
                 lambda slide: slide.is_category
             )
@@ -180,6 +191,66 @@ class SlideChannel(models.Model):
                 return online_variant
         return self.env['product.product']
 
+    def _irg_get_or_create_online_channel(self):
+        self.ensure_one()
+        if self.irg_online_channel_id:
+            return self.irg_online_channel_id
+
+        existing_channel = self.search([
+            ('irg_homeclass_channel_id', '=', self.id),
+        ], limit=1)
+        if existing_channel:
+            self.irg_online_channel_id = existing_channel
+            return existing_channel
+
+        vals = self._irg_prepare_online_channel_values()
+        online_channel = self.create(vals)
+        self.irg_online_channel_id = online_channel
+        return online_channel
+
+    def _irg_prepare_online_channel_values(self):
+        self.ensure_one()
+        vals = {
+            'name': _('%s - Online') % self.name,
+            'channel_type': self.channel_type,
+            'irg_homeclass_channel_id': self.id,
+        }
+        optional_fields = (
+            'description', 'user_id', 'visibility', 'enroll',
+            'promote_strategy', 'is_published', 'website_id',
+            'company_id', 'image_1920', 'tag_ids', 'op_subject_ids',
+        )
+        for field_name in optional_fields:
+            if field_name not in self._fields:
+                continue
+            field = self._fields[field_name]
+            value = self[field_name]
+            if field.type == 'many2one':
+                vals[field_name] = value.id if value else False
+            elif field.type == 'many2many':
+                vals[field_name] = [(6, 0, value.ids)]
+            elif field.type == 'one2many':
+                continue
+            else:
+                vals[field_name] = value
+        return vals
+
+    def action_open_online_channel(self):
+        self.ensure_one()
+        online_channel = self._irg_get_or_create_online_channel()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Contenidos Online'),
+            'res_model': 'slide.slide',
+            'view_mode': 'tree,form',
+            'target': 'current',
+            'domain': [('channel_id', '=', online_channel.id)],
+            'context': {
+                'default_channel_id': online_channel.id,
+                'default_irg_content_modality': 'online',
+            },
+        }
+
     def action_copy_homeclass_to_online(self):
         """Bootstrap 1:1 del contenido HomeClass al tab Online.
 
@@ -200,8 +271,9 @@ class SlideChannel(models.Model):
             return self._irg_bootstrap_notification(0)
 
         clone_env = self.env(context=dict(self.env.context, irg_skip_parent_propagation=True))
-        section_map = self._irg_bootstrap_clone_irg_sections(clone_env)
-        sequence_offset = self._irg_bootstrap_base_sequence()
+        online_channel = self._irg_get_or_create_online_channel()
+        section_map = self._irg_bootstrap_clone_irg_sections(clone_env, online_channel)
+        sequence_offset = self._irg_bootstrap_base_sequence(online_channel)
 
         slide_model = clone_env['slide.slide']
         slide_map = {}
@@ -213,7 +285,7 @@ class SlideChannel(models.Model):
         creation_order = list(ordered_categories) + list(ordered_contents)
 
         for index, source in enumerate(creation_order):
-            vals = self._irg_bootstrap_prepare_slide_values(source)
+            vals = self._irg_bootstrap_prepare_slide_values(source, online_channel)
             vals['sequence'] = sequence_offset + (index + 1) * 10
             copy = slide_model.create(vals)
             # Defensa post-create: website_slides aplica defaults de contenido
@@ -257,14 +329,11 @@ class SlideChannel(models.Model):
             },
         }
 
-    def _irg_bootstrap_base_sequence(self):
-        self.ensure_one()
-        existing_online_sequences = self.slide_ids.filtered(
-            lambda slide: slide.irg_content_modality == 'online'
-        ).mapped('sequence')
+    def _irg_bootstrap_base_sequence(self, online_channel):
+        existing_online_sequences = online_channel.slide_ids.mapped('sequence')
         return max(existing_online_sequences or [0])
 
-    def _irg_bootstrap_clone_irg_sections(self, clone_env):
+    def _irg_bootstrap_clone_irg_sections(self, clone_env, online_channel):
         """Clona todas las secciones iRG del canal (no sólo las referenciadas)."""
         self.ensure_one()
         section_map = {}
@@ -279,7 +348,7 @@ class SlideChannel(models.Model):
             vals = {
                 'name': section.name,
                 'sequence': section.sequence,
-                'channel_id': self.id,
+                'channel_id': online_channel.id,
             }
             if 'active' in section._fields:
                 vals['active'] = section.active
@@ -307,7 +376,7 @@ class SlideChannel(models.Model):
             'survey_id',
         )
 
-    def _irg_bootstrap_prepare_slide_values(self, source):
+    def _irg_bootstrap_prepare_slide_values(self, source, online_channel):
         """Valores para ``create()`` en el pase 1 (sin referencias remapeables).
 
         Trata aparte las secciones (``is_category=True``): omite
@@ -328,7 +397,7 @@ class SlideChannel(models.Model):
             'quiz_third_attempt_reward', 'quiz_fourth_attempt_reward',
         }
         vals = {
-            'channel_id': self.id,
+            'channel_id': online_channel.id,
             'irg_content_modality': 'online',
         }
         for field_name in self._irg_bootstrap_slide_clone_fields():

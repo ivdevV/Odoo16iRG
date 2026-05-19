@@ -12,6 +12,7 @@
                 <field name="irg_has_homeclass" invisible="1"/>
                 <field name="irg_has_online" invisible="1"/>
                 <field name="irg_online_batch_ids" invisible="1"/>
+                <field name="irg_online_channel_id" invisible="1"/>
             </xpath>
 
             <xpath expr="//form/sheet/notebook" position="before">
@@ -28,7 +29,12 @@
                                             string="Copiar contenido de HomeClass"
                                             icon="fa-copy"
                                             class="btn btn-secondary"
-                                            confirm="¿Clonar el contenido de HomeClass como Online? Se crearán nuevos registros independientes al final del listado Online (no se elimina ni modifica nada existente). Los lotes permitidos quedarán vacíos en las copias para que los asignes a lotes Online manualmente."/>
+                                            confirm="¿Clonar el contenido de HomeClass al canal Online independiente? No se elimina ni modifica nada existente. Los lotes permitidos quedarán vacíos en las copias para que los asignes a lotes Online manualmente."/>
+                                    <button name="action_open_online_channel"
+                                            type="object"
+                                            string="Abrir contenidos Online"
+                                            icon="fa-external-link"
+                                            class="btn btn-primary ms-2"/>
                                 </div>
                                 <group>
                                     <group string="Base académica">
@@ -36,15 +42,12 @@
                                         <field name="irg_related_modality_ids" widget="many2many_tags" readonly="1"/>
                                     </group>
                                     <group string="Vinculación online">
+                                        <field name="irg_online_channel_id" readonly="1" options="{'no_open': True}"/>
                                         <field name="irg_online_variant_id" readonly="1" options="{'no_open': True}"/>
                                     </group>
                                 </group>
-                                <field name="irg_online_slide_ids" domain="[('irg_content_modality', '=', 'online')]" context="{'default_channel_id': active_id, 'default_irg_content_modality': 'online'}">
-                                    <tree editable="false" decoration-muted="is_category">
-                                        <control>
-                                            <create name="add_online_slide_lesson" string="Añadir contenido" context="{'default_channel_id': active_id, 'default_irg_content_modality': 'online'}"/>
-                                            <create name="add_online_slide_section" string="Añadir sección" context="{'default_channel_id': active_id, 'default_irg_content_modality': 'online', 'default_is_category': True, 'default_slide_category': 'article', 'default_name': 'Nueva sección'}"/>
-                                        </control>
+                                <field name="irg_online_content_ids" readonly="1">
+                                    <tree create="0" delete="0" edit="0" decoration-muted="is_category">
                                         <field name="sequence" widget="handle"/>
                                         <field name="name"/>
                                         <field name="is_category" invisible="1"/>
