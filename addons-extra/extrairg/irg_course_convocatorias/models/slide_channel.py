@@ -29,6 +29,12 @@ class SlideChannel(models.Model):
         compute='_compute_irg_course_convocatoria_data',
         string='Secciones HomeClass',
     )
+    irg_homeclass_slide_ids = fields.One2many(
+        'slide.slide',
+        'channel_id',
+        string='Contenido HomeClass editable',
+        domain=['|', ('irg_content_modality', '=', False), ('irg_content_modality', '=', 'homeclass')],
+    )
     irg_online_content_ids = fields.Many2many(
         'slide.slide',
         compute='_compute_irg_course_convocatoria_data',
@@ -148,14 +154,22 @@ class SlideChannel(models.Model):
         """Copia el contenido de HomeClass al tab Online como registros independientes."""
         self.ensure_one()
         homeclass_slides = self.slide_ids.filtered(self._irg_is_homeclass_content)
-        ordered_slides = self._irg_order_slides_for_online_copy(homeclass_slides)
+        ordered_slides = homeclass_slides.sorted(lambda slide: (slide.sequence, slide.id))
+        sequence_map = self._irg_get_online_copy_sequence_map(ordered_slides)
         section_map = self._irg_copy_irg_sections_for_online(homeclass_slides)
         slide_map = {}
         copied_slides = self.env['slide.slide']
 
-        for slide in ordered_slides:
+        for slide in ordered_slides.filtered(lambda source: source.is_category):
             copied_slide = slide.copy(
-                self._irg_prepare_online_slide_copy_values(slide, slide_map, section_map)
+                self._irg_prepare_online_slide_copy_values(slide, slide_map, section_map, sequence_map)
+            )
+            slide_map[slide.id] = copied_slide
+            copied_slides |= copied_slide
+
+        for slide in ordered_slides.filtered(lambda source: not source.is_category):
+            copied_slide = slide.copy(
+                self._irg_prepare_online_slide_copy_values(slide, slide_map, section_map, sequence_map)
             )
             slide_map[slide.id] = copied_slide
             copied_slides |= copied_slide
@@ -171,10 +185,15 @@ class SlideChannel(models.Model):
             },
         }
 
-    def _irg_order_slides_for_online_copy(self, slides):
-        sections = slides.filtered(lambda slide: slide.is_category).sorted(lambda slide: (slide.sequence, slide.id))
-        content = (slides - sections).sorted(lambda slide: (slide.sequence, slide.id))
-        return sections + content
+    def _irg_get_online_copy_sequence_map(self, ordered_slides):
+        self.ensure_one()
+        max_sequence = max(self.slide_ids.filtered(
+            lambda slide: slide.irg_content_modality == 'online'
+        ).mapped('sequence') or [0])
+        return {
+            slide.id: max_sequence + ((index + 1) * 10)
+            for index, slide in enumerate(ordered_slides)
+        }
 
     def _irg_copy_irg_sections_for_online(self, slides):
         self.ensure_one()
@@ -193,16 +212,16 @@ class SlideChannel(models.Model):
             })
         return section_map
 
-    def _irg_prepare_online_slide_copy_values(self, slide, slide_map, section_map):
+    def _irg_prepare_online_slide_copy_values(self, slide, slide_map, section_map, sequence_map):
         self.ensure_one()
         values = {
+            'name': slide.name,
+            'sequence': sequence_map[slide.id],
+            'is_category': slide.is_category,
+            'slide_category': slide.slide_category,
             'irg_content_modality': 'online',
-            'is_published': False,
+            'is_published': slide.is_published,
         }
-
-        online_batches = self.irg_online_batch_ids
-        if 'allowed_batch_ids' in slide._fields:
-            values['allowed_batch_ids'] = [(6, 0, online_batches.ids)] if online_batches else [(5, 0, 0)]
 
         if 'category_id' in slide._fields:
             copied_category = slide_map.get(slide.category_id.id) if slide.category_id else False

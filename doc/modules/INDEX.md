@@ -78,7 +78,7 @@
 | [irg_admission_birthdate_edit](./extrairg/irg_admission_birthdate_edit.md) | extrairg | birth_date editable en admisión | 16.0.1.0.0 |
 | [irg_admission_register_export](./extrairg/irg_admission_register_export.md) | extrairg | Exportación de admisiones a CSV/XLSX | 16.0.1.0.0 |
 | [irg_auto_translate](./extrairg/irg_auto_translate.md) | extrairg | Auto-traducción con DeepL/Google Translate | 16.0.1.0.0 |
-| [irg_course_convocatorias](./extrairg/irg_course_convocatorias.md) | extrairg | Convocatorias HomeClass y Online por curso eLearning | 16.0.1.1.0 |
+| [irg_course_convocatorias](./extrairg/irg_course_convocatorias.md) | extrairg | Convocatorias HomeClass y Online por curso eLearning | 16.0.1.2.0 |
 | [irg_course_portal_tiles](./extrairg/irg_course_portal_tiles.md) | extrairg | Tiles de acceso rápido en el campus | 16.0.1.0.0 |
 | [irg_crm_extensions](./extrairg/irg_crm_extensions.md) | extrairg | Comercial anterior y fecha reactivación | 16.0.1.0.3 |
 | [irg_crm_gclid](./extrairg/irg_crm_gclid.md) | extrairg | Campo GCLID de Google Ads en leads | 16.0.1.0 |

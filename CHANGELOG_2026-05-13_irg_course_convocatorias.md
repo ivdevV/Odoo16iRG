@@ -2,11 +2,12 @@
 
 ## 2026-05-19 — Corrección de copia HomeClass → Online
 
-- El botón `Copiar contenido de HomeClass` ahora copia primero las secciones/categorías nativas y después el resto de contenidos para poder reconstruir la jerarquía en Online.
-- Los documentos copiados ya no quedan vinculados a secciones, categorías ni padres HomeClass: `category_id`, `parent_slide_id` y `irg_section_id` se reasignan a las copias online correspondientes.
-- Las restricciones por lote dejan de arrastrar lotes HomeClass; si existen lotes Online relacionados se aplican a las copias, y si no existen se limpian para evitar contaminación entre modalidades.
+- El botón `Copiar contenido de HomeClass` crea copias Online independientes conservando nombre, tipo, estado publicado y datos normales de copia.
+- Las secciones/categorías se copian antes internamente para poder remapear `category_id`, `parent_slide_id` e `irg_section_id`, pero la secuencia final conserva el orden visual del bloque HomeClass copiado dentro de Online.
+- HomeClass deja de usar el `slide_ids` nativo compartido en la pestaña de contenido y pasa a usar `irg_homeclass_slide_ids`, un `one2many` filtrado por modalidad para evitar que registros Online alteren su listado.
+- La copia ya no reescribe ni limpia `allowed_batch_ids`; no transforma lotes durante una operación cuyo objetivo es copiar contenido.
 - La pestaña de secciones HomeClass filtra por modalidad HomeClass/sin modalidad, evitando que las secciones Online copiadas aparezcan o alteren el orden visible de HomeClass.
-- Versión del módulo actualizada a `16.0.1.1.0`.
+- Versión del módulo actualizada a `16.0.1.2.0`.
 
 ## Nuevo módulo: `addons-extra/extrairg/irg_course_convocatorias`
 
