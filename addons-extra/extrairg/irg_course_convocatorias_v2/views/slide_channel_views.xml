@@ -219,6 +219,61 @@
                 <field name="irg_is_online_clone" invisible="1"/>
             </xpath>
 
+            <!-- Poblar el notebook nativo (que quedó vacío tras los moves de la v2)
+                 con las páginas editables para gestionar el canal Online. -->
+            <xpath expr="//form/sheet/notebook[not(@name='irg_modality_notebook')]" position="inside">
+                <page string="Contenido" name="online_clone_content">
+                    <field name="slide_ids"
+                           widget="slide_category_one2many"
+                           mode="tree,kanban">
+                        <tree decoration-muted="is_category">
+                            <control>
+                                <create name="add" string="Añadir contenido"/>
+                                <create name="add_section" string="Añadir sección"
+                                        context="{'default_is_category': True, 'default_slide_category': 'article'}"/>
+                            </control>
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="is_category" invisible="1"/>
+                            <field name="slide_category" string="Categoría"/>
+                            <field name="survey_id" string="Certificación" optional="show"/>
+                            <field name="completion_time" string="Duración" widget="float_time"/>
+                            <field name="total_views" string="# Vistas Totales"/>
+                            <field name="is_preview" string="Vista previa"/>
+                            <field name="is_published" string="Publicado"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Descripción" name="online_clone_description">
+                    <field name="description_html" widget="html" options="{'safe': True}" nolabel="1"/>
+                </page>
+                <page string="Opciones" name="online_clone_options">
+                    <group>
+                        <group string="Acceso del Curso">
+                            <field name="enroll"/>
+                            <field name="enroll_group_ids" widget="many2many_tags"
+                                   attrs="{'invisible': [('enroll', '!=', 'invite')]}"/>
+                            <field name="visibility"/>
+                            <field name="promote_strategy"/>
+                        </group>
+                        <group string="Derechos de subida">
+                            <field name="upload_group_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <group string="Mensaje de inscripción"
+                           attrs="{'invisible': [('enroll', '!=', 'invite')]}">
+                        <field name="enroll_msg" widget="html" nolabel="1"/>
+                    </group>
+                </page>
+                <page string="Karma" name="online_clone_karma">
+                    <group string="Reglas de Karma">
+                        <field name="karma_gen_slide_vote"/>
+                        <field name="karma_gen_channel_finish"/>
+                        <field name="karma_gen_channel_rank"/>
+                    </group>
+                </page>
+            </xpath>
+
         </field>
     </record>
 
