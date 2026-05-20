@@ -64,6 +64,10 @@ class SlideChannel(models.Model):
         compute='_compute_irg_is_online_clone',
         string='Es canal Online iRG',
     )
+    irg_active_tab = fields.Selection([
+        ('homeclass', 'HomeClass'),
+        ('online', 'Online'),
+    ], string='Pestaña Activa', default='homeclass')
     irg_online_variant_id = fields.Many2one(
         'product.product',
         compute='_compute_irg_course_convocatoria_data',
@@ -309,15 +313,12 @@ class SlideChannel(models.Model):
     def action_open_online_channel(self):
         self.ensure_one()
         online_channel = self._irg_get_or_create_online_channel()
-        view_id = self.env.ref('irg_course_convocatorias_v2.view_slide_channel_form_online_clone_irg').id
         return {
             'type': 'ir.actions.act_window',
             'name': _('Canal Online'),
             'res_model': 'slide.channel',
             'res_id': online_channel.id,
             'view_mode': 'form',
-            'view_id': view_id,
-            'views': [(view_id, 'form')],
             'target': 'current',
             'context': self.env.context,
         }

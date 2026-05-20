@@ -185,7 +185,7 @@ class OpAdmission(models.Model):
             record.write({
                 'nbr': 1,
                 'state': 'done',
-                'admission_date': fields.Date.today(),
+                'admission_date': record.admission_date or fields.Date.today(),
                 'student_id': student_id,
                 'is_student': True,
             })

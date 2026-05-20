@@ -101,16 +101,6 @@ class SaleOrder(models.Model):
         if not lot_id:            
             ad = self.env['auto.admission.required'].search([], limit=1)        
             lot_values = {}
-            if course_id.lang in ('es_MX', 'es_ES'):
-                lot_values.update({
-                    'tutor_id': ad.mx_tutor_id.id if ad.mx_tutor_id else False,
-                    'professor_id': ad.mx_professor_id.id if ad.mx_professor_id else False,
-                    'coordinator': ad.mx_coordinator.id if ad.mx_coordinator else False,
-                    'teams_domain': ad.mx_teams_domain if ad.mx_teams_domain else False,
-                    'teams_link': ad.mx_teams_link if ad.mx_teams_link else False,
-                    'teams_msg': ad.mx_teams_msg if ad.mx_teams_msg else False,
-                    'modality_id': ad.mx_modality_id.id if ad.mx_modality_id else False,
-                })
             if course_id.lang == 'pt_BR':     
                 lot_values.update({
                     'tutor_id': ad.br_tutor_id.id if ad.br_tutor_id else False,
@@ -120,6 +110,17 @@ class SaleOrder(models.Model):
                     'teams_link': ad.br_teams_link if ad.br_teams_link else False,
                     'teams_msg': ad.br_teams_msg if ad.br_teams_msg else False,
                     'modality_id': ad.br_modality_id.id if ad.br_modality_id else False,
+                })
+            else:
+                # Fallback por defecto (para es_MX, es_ES, o cualquier otro idioma como en_US en tests)
+                lot_values.update({
+                    'tutor_id': ad.mx_tutor_id.id if ad.mx_tutor_id else False,
+                    'professor_id': ad.mx_professor_id.id if ad.mx_professor_id else False,
+                    'coordinator': ad.mx_coordinator.id if ad.mx_coordinator else False,
+                    'teams_domain': ad.mx_teams_domain if ad.mx_teams_domain else False,
+                    'teams_link': ad.mx_teams_link if ad.mx_teams_link else False,
+                    'teams_msg': ad.mx_teams_msg if ad.mx_teams_msg else False,
+                    'modality_id': ad.mx_modality_id.id if ad.mx_modality_id else False,
                 })
                 
             if prefix_02 in ['HC', 'PRS']:
@@ -140,5 +141,25 @@ class SaleOrder(models.Model):
             lot_id = op_batch.create(lot_values)            
         else:
             _logger.info("IRG Custom Logic: Found existing batch: %s", lot_id.name)
+            if not lot_id.tutor_id:
+                ad = self.env['auto.admission.required'].search([], limit=1)
+                if ad:
+                    vals_to_write = {}
+                    if course_id.lang == 'pt_BR':
+                        vals_to_write.update({
+                            'tutor_id': ad.br_tutor_id.id if ad.br_tutor_id else False,
+                            'professor_id': ad.br_professor_id.id if ad.br_professor_id and not lot_id.professor_id else False,
+                            'coordinator': ad.br_coordinator.id if ad.br_coordinator and not lot_id.coordinator else False,
+                        })
+                    else:
+                        vals_to_write.update({
+                            'tutor_id': ad.mx_tutor_id.id if ad.mx_tutor_id else False,
+                            'professor_id': ad.mx_professor_id.id if ad.mx_professor_id and not lot_id.professor_id else False,
+                            'coordinator': ad.mx_coordinator.id if ad.mx_coordinator and not lot_id.coordinator else False,
+                        })
+                    vals_to_write = {k: v for k, v in vals_to_write.items() if v}
+                    if vals_to_write:
+                        _logger.info("IRG Custom Logic: auto-completando tutor/profesor/coordinador del lote existente %s con: %s", lot_id.name, vals_to_write)
+                        lot_id.write(vals_to_write)
             
         return lot_id
