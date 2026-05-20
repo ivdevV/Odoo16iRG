@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List view for irg.course.convocatoria -->
+    <record id="view_irg_course_convocatoria_list" model="ir.ui.view">
+        <field name="name">irg.course.convocatoria.list</field>
+        <field name="model">irg.course.convocatoria</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="modality"/>
+                <field name="year"/>
+                <field name="channel_id"/>
+                <field name="batch_ids" widget="many2many_tags"/>
+                <field name="section_count"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view for irg.course.convocatoria -->
+    <record id="view_irg_course_convocatoria_form" model="ir.ui.view">
+        <field name="name">irg.course.convocatoria.form</field>
+        <field name="model">irg.course.convocatoria</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Información general">
+                            <field name="name"/>
+                            <field name="modality"/>
+                            <field name="year"/>
+                            <field name="sequence"/>
+                            <field name="channel_id"/>
+                        </group>
+                        <group string="Configuración">
+                            <field name="batch_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="online_variant_id"
+                                   attrs="{'invisible': [('modality', '!=', 'online')], 'required': [('modality', '=', 'online')]}"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Secciones" name="sections">
+                            <field name="irg_section_ids"
+                                   context="{'default_convocatoria_id': active_id, 'default_channel_id': channel_id}">
+                                <tree>
+                                    <control>
+                                        <create string="Añadir sección"/>
+                                    </control>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="slide_count" string="Contenidos"/>
+                                    <field name="active" optional="hide"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <field name="name"/>
+                                        <field name="channel_id" readonly="1"/>
+                                        <field name="convocatoria_id" readonly="1"/>
+                                        <field name="sequence"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for irg.course.convocatoria -->
+    <record id="action_irg_course_convocatoria" model="ir.actions.act_window">
+        <field name="name">Convocatorias de Curso</field>
+        <field name="res_model">irg.course.convocatoria</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay convocatorias registradas
+            </p>
+            <p>
+                Las convocatorias se gestionan desde el formulario de cada curso.
+            </p>
+        </field>
+    </record>
+
+</odoo>
