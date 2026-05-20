@@ -8,6 +8,16 @@
         <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
         <field name="arch" type="xml">
 
+            <!-- Botón de retorno al canal HomeClass en la cabecera del canal Online clonado -->
+            <xpath expr="//header" position="inside">
+                <button name="action_open_homeclass_channel"
+                        type="object"
+                        string="Volver a HomeClass"
+                        icon="fa-arrow-left"
+                        class="btn btn-secondary"
+                        attrs="{'invisible': [('irg_is_online_clone', '=', False)]}"/>
+            </xpath>
+
             <xpath expr="//form/sheet" position="inside">
                 <field name="irg_has_homeclass" invisible="1"/>
                 <field name="irg_has_online" invisible="1"/>
@@ -36,11 +46,18 @@
                                             confirm="¿Clonar el contenido de HomeClass al canal Online independiente? No se elimina ni modifica nada existente. Los lotes permitidos quedarán vacíos en las copias para que los asignes a lotes Online manualmente."/>
                                     <button name="action_open_online_channel"
                                             type="object"
-                                            string="Abrir contenidos Online"
+                                            string="Abrir contenidos Online (Gestionar)"
                                             icon="fa-external-link"
-                                            class="btn btn-primary ms-2"/>
+                                            class="btn btn-primary ms-2"
+                                            attrs="{'invisible': [('irg_online_channel_id', '=', False)]}"/>
                                 </div>
-                                <group>
+
+                                <div class="alert alert-info text-center" role="alert" attrs="{'invisible': [('irg_online_channel_id', '!=', False)]}">
+                                    <i class="fa fa-info-circle me-1"/> 
+                                    El canal Online de este curso no está inicializado todavía. Haz clic en <strong>Copiar contenido de HomeClass</strong> para realizar la clonación inicial de contenidos de forma aislada.
+                                </div>
+
+                                <group attrs="{'invisible': [('irg_online_channel_id', '=', False)]}">
                                     <group string="Base académica">
                                         <field name="irg_related_course_ids" widget="many2many_tags" readonly="1"/>
                                         <field name="irg_related_modality_ids" widget="many2many_tags" readonly="1"/>
@@ -50,16 +67,14 @@
                                         <field name="irg_online_variant_id" readonly="1" options="{'no_open': True}"/>
                                     </group>
                                 </group>
+
                                 <field name="irg_online_slide_ids"
                                        widget="slide_category_one2many"
                                        mode="tree,kanban"
-                                       context="{'default_channel_id': irg_online_channel_id, 'default_irg_content_modality': 'online'}"
-                                       readonly="0">
-                                    <tree decoration-muted="is_category" editable="false">
-                                        <control>
-                                            <create name="add_slide_lesson" string="Añadir contenido"/>
-                                            <create name="add_slide_section" string="Añadir sección" context="{'default_channel_id': parent.irg_online_channel_id, 'default_irg_content_modality': 'online', 'default_is_category': True, 'default_slide_category': 'article', 'default_name': 'Nueva sección'}"/>
-                                        </control>
+                                       context="{'default_channel_id': irg_online_channel_id}"
+                                       readonly="1"
+                                       attrs="{'invisible': [('irg_online_channel_id', '=', False)]}">
+                                    <tree decoration-muted="is_category" create="0" delete="0" edit="0">
                                         <field name="sequence" widget="handle"/>
                                         <field name="name"/>
                                         <field name="is_category" invisible="1"/>

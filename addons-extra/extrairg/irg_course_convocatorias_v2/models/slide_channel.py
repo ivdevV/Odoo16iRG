@@ -316,7 +316,23 @@ class SlideChannel(models.Model):
             'res_id': online_channel.id,
             'view_mode': 'form',
             'target': 'current',
+            'context': self.env.context,
         }
+
+    def action_open_homeclass_channel(self):
+        self.ensure_one()
+        if self.irg_homeclass_channel_id:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Curso Principal (HomeClass)'),
+                'res_model': 'slide.channel',
+                'res_id': self.irg_homeclass_channel_id.id,
+                'view_mode': 'form',
+                'target': 'current',
+                'context': self.env.context,
+            }
+        return False
+
 
     def action_copy_homeclass_to_online(self):
         """Bootstrap 1:1 del contenido HomeClass al tab Online.
