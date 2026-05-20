@@ -188,4 +188,38 @@
         </field>
     </record>
 
+    <!-- Vista dedicada para gestionar el canal Online clonado.
+         Hereda del formulario BASE de Odoo (sin los moves de HomeClass/Online)
+         para que las pestañas nativas de Contenido, Descripción, Opciones y Karma
+         aparezcan normalmente y el widget slide_category_one2many funcione
+         correctamente apuntando al canal activo. -->
+    <record id="view_slide_channel_form_online_clone_irg" model="ir.ui.view">
+        <field name="name">slide.channel.form.online.clone.irg</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+        <!-- mode=primary: crea una vista independiente que hereda la base de Odoo
+             pero NO recibe las extensiones de view_slide_channel_form_convocatorias_v2
+             (los moves de páginas a HomeClass). Así las pestañas nativas aparecen normalmente. -->
+        <field name="mode">primary</field>
+        <field name="priority">999</field>
+        <field name="arch" type="xml">
+
+            <!-- Botón de retorno al canal HomeClass -->
+            <xpath expr="//header" position="inside">
+                <button name="action_open_homeclass_channel"
+                        type="object"
+                        string="Volver a HomeClass"
+                        icon="fa-arrow-left"
+                        class="btn btn-secondary"/>
+            </xpath>
+
+            <!-- Campo técnico necesario para la navegación -->
+            <xpath expr="//form/sheet" position="inside">
+                <field name="irg_homeclass_channel_id" invisible="1"/>
+                <field name="irg_is_online_clone" invisible="1"/>
+            </xpath>
+
+        </field>
+    </record>
+
 </odoo>

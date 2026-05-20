@@ -309,12 +309,15 @@ class SlideChannel(models.Model):
     def action_open_online_channel(self):
         self.ensure_one()
         online_channel = self._irg_get_or_create_online_channel()
+        view_id = self.env.ref('irg_course_convocatorias_v2.view_slide_channel_form_online_clone_irg').id
         return {
             'type': 'ir.actions.act_window',
             'name': _('Canal Online'),
             'res_model': 'slide.channel',
             'res_id': online_channel.id,
             'view_mode': 'form',
+            'view_id': view_id,
+            'views': [(view_id, 'form')],
             'target': 'current',
             'context': self.env.context,
         }
