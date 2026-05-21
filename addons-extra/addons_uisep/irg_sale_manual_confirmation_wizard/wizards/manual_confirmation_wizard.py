@@ -182,7 +182,7 @@ class ManualConfirmationWizard(models.TransientModel):
         # Detect if bonificado (price <= 0) - ONLY FOR ONL modality
         is_bonificado = line.price_unit <= 0 or line.price_subtotal <= 0
         if is_bonificado and modality == 'ONL' and profix_01.startswith('M'):
-            profix_01 = 'M' + 'B' + profix_01[1:]
+            profix_01 = 'MB'
 
         course_code = course_id.code or ''
         eff_date = date
@@ -191,6 +191,11 @@ class ManualConfirmationWizard(models.TransientModel):
         today = fields.Date.today()
         if modality in ('HC', 'PRS') and today.day > 7 and date.month == today.month and date.year == today.year:
             eff_date = date + relativedelta(months=1)
+
+        # HC Summer Period Rule: everything entering (or shifted to) between July and Sept 1st goes to September (09)
+        if modality == 'HC' and eff_date:
+            if eff_date.month in (7, 8) or (eff_date.month == 9 and eff_date.day == 1):
+                eff_date = eff_date.replace(month=9, day=1)
 
         # Si el modulo quarterly esta activo y modalidad = ONL, preview trimestral
         ad = self.env['auto.admission.required'].search([], limit=1)

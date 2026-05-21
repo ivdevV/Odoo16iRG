@@ -72,7 +72,7 @@ class SaleOrder(models.Model):
         # Check if bonificado (price <= 0) - ONLY FOR ONL modality
         if matching_line and (matching_line.price_unit <= 0 or matching_line.price_subtotal <= 0):
             if profix_01.startswith('M'):
-                profix_01 = 'M' + 'B' + profix_01[1:]
+                profix_01 = 'MB'
 
         prefix_011 = course_id.code or ''
         prefix_02 = 'ONL'

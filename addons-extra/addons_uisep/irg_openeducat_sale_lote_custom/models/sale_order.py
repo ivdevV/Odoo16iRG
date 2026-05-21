@@ -99,7 +99,7 @@ class SaleOrder(models.Model):
         # Check if bonificado (price <= 0) - ONLY FOR ONL modality
         if matching_line and prefix_02 == 'ONL' and (matching_line.price_unit <= 0 or matching_line.price_subtotal <= 0):
             if profix_01.startswith('M'):
-                profix_01 = 'M' + 'B' + profix_01[1:]
+                profix_01 = 'MB'
 
         _logger.info("IRG Custom Logic: Determined prefix_02: %s", prefix_02)
 
@@ -121,6 +121,12 @@ class SaleOrder(models.Model):
         if prefix_02 in ['HC', 'PRS'] and today.day > 7 and date.month == today.month and date.year == today.year:
              date = date + relativedelta(months=1)
              _logger.info("IRG Custom Logic: Date shifted to next month (Current day %s > 7 and selected date is current month): %s", today.day, date)
+
+        # HC Summer Period Rule: everything entering (or shifted to) between July and Sept 1st goes to September (09)
+        if prefix_02 == 'HC' and date:
+            if date.month in (7, 8) or (date.month == 9 and date.day == 1):
+                date = date.replace(month=9, day=1)
+                _logger.info("IRG Custom Logic: HC date forced to September 1st due to summer period: %s", date)
 
         year = date.strftime("%y")
         month = date.strftime("%m")

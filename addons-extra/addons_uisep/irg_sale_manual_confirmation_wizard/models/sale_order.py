@@ -50,6 +50,21 @@ class SaleOrder(models.Model):
             'target': 'new',
         }
 
+    def _get_line_modality(self, line):
+        if not line or not line.product_id:
+            return ''
+        for ptav in line.product_id.product_template_attribute_value_ids:
+            if ptav.attribute_id.name == 'Modalidad':
+                name = (ptav.product_attribute_value_id.name or '').strip()
+                if name == 'Online':
+                    return 'ONL'
+                if name == 'HomeClass':
+                    return 'HC'
+                if name == 'Presencial':
+                    return 'PRS'
+                return name[:3].upper() if name else 'GE'
+        return 'GE'
+
     def _create_or_get_admission(self, line):
         """Override de isep_sale_order_admissions.
         Asegura que la fecha de inicio en la línea del presupuesto (o la fecha de admisión seleccionada),
@@ -65,6 +80,17 @@ class SaleOrder(models.Model):
             admission_date = line.start_date_enroller or self.admission_date
 
             if admission_date:
+                modality = self._get_line_modality(line)
+                today = fields.Date.today()
+                if modality in ('HC', 'PRS') and today.day > 7 and admission_date.month == today.month and admission_date.year == today.year:
+                    from dateutil.relativedelta import relativedelta
+                    admission_date = admission_date + relativedelta(months=1)
+                
+                # HC Summer Period Rule: everything entering (or shifted to) between July and Sept 1st goes to September (09)
+                if modality == 'HC':
+                    if admission_date.month in (7, 8) or (admission_date.month == 9 and admission_date.day == 1):
+                        admission_date = admission_date.replace(month=9, day=1)
+
                 _logger.info(
                     "IRG Manual Wizard: Propagando admission_date %s y fees_start_date a la admisión %s desde línea/SO %s",
                     admission_date, admission.name, self.name
@@ -110,6 +136,17 @@ class SaleOrder(models.Model):
             line = self.env['sale.order.line'].browse(line_id)
             line_date = line.start_date_enroller
             if line_date:
+                modality = self._get_line_modality(line)
+                today = fields.Date.today()
+                if modality in ('HC', 'PRS') and today.day > 7 and line_date.month == today.month and line_date.year == today.year:
+                    from dateutil.relativedelta import relativedelta
+                    line_date = line_date + relativedelta(months=1)
+                
+                # HC Summer Period Rule: everything entering (or shifted to) between July and Sept 1st goes to September (09)
+                if modality == 'HC':
+                    if line_date.month in (7, 8) or (line_date.month == 9 and line_date.day == 1):
+                        line_date = line_date.replace(month=9, day=1)
+
                 if 'code' in self.env['op.academic.term']._fields:
                     term = self.env['op.academic.term'].search([
                         ('term_start_date', '<=', line_date),
@@ -146,12 +183,24 @@ class SaleOrder(models.Model):
             course=course, product_template=product_template, error_msg=error_msg
         )
         if line.start_date_enroller:
+            line_date = line.start_date_enroller
+            modality = self._get_line_modality(line)
+            today = fields.Date.today()
+            if modality in ('HC', 'PRS') and today.day > 7 and line_date.month == today.month and line_date.year == today.year:
+                from dateutil.relativedelta import relativedelta
+                line_date = line_date + relativedelta(months=1)
+            
+            # HC Summer Period Rule: everything entering (or shifted to) between July and Sept 1st goes to September (09)
+            if modality == 'HC':
+                if line_date.month in (7, 8) or (line_date.month == 9 and line_date.day == 1):
+                    line_date = line_date.replace(month=9, day=1)
+
             row = self.env['sale.order.admission.line'].search([
                 ('order_id', '=', self.id),
                 ('sale_line_id', '=', line.id),
             ], limit=1)
-            if row and row.admission_date != line.start_date_enroller:
-                row.write({'admission_date': line.start_date_enroller})
+            if row and row.admission_date != line_date:
+                row.write({'admission_date': line_date})
         return res
 
     def _process_auto_admission(self, admission, line):
