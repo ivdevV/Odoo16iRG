@@ -9,10 +9,10 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 
-QUARTER_LETTERS = {1: 'A', 2: 'A', 3: 'A',
-                   4: 'B', 5: 'B', 6: 'B',
-                   7: 'C', 8: 'C', 9: 'C',
-                   10: 'D', 11: 'D', 12: 'D'}
+QUARTER_LETTERS = {1: '1', 2: '1', 3: '1',
+                   4: '2', 5: '2', 6: '2',
+                   7: '3', 8: '3', 9: '3',
+                   10: '4', 11: '4', 12: '4'}
 
 
 class ManualConfirmationWizard(models.TransientModel):
@@ -30,7 +30,7 @@ class ManualConfirmationWizard(models.TransientModel):
         compute='_compute_preview',
         store=False,
     )
-    batch_preview = fields.Char(
+    batch_preview = fields.Text(
         string='Lote previsto',
         compute='_compute_preview',
         store=False,
@@ -52,7 +52,12 @@ class ManualConfirmationWizard(models.TransientModel):
         if order_id:
             order = self.env['sale.order'].browse(order_id)
             academic_lines = order.order_line.filtered(
-                lambda l: l.product_template_id.is_academic_program and l.product_template_id.recurring_invoice
+                lambda l: (l.product_template_id.is_academic_program and l.product_template_id.recurring_invoice) or
+                          self.env['op.course'].search_count([
+                              '|',
+                              ('product_template_id', '=', l.product_template_id.id),
+                              ('product_template_ids', 'in', l.product_template_id.id)
+                          ]) > 0
             )
             line_start_date = False
             if academic_lines:
@@ -88,98 +93,117 @@ class ManualConfirmationWizard(models.TransientModel):
         if not order:
             return ('', '', '')
 
-        if not order.course_id or not order.product_template_id:
-            order.get_academic_product_template_id()
+        academic_lines = order.order_line.filtered(
+            lambda l: (l.product_template_id.is_academic_program and l.product_template_id.recurring_invoice) or
+                      self.env['op.course'].search_count([
+                          '|',
+                          ('product_template_id', '=', l.product_template_id.id),
+                          ('product_template_ids', 'in', l.product_template_id.id)
+                      ]) > 0
+        )
+        if not academic_lines:
+            return ('', '', '')
 
-        course_id = order.course_id
-        if not course_id:
-            warnings.append(_("El presupuesto no tiene curso asignado (order.course_id vacio)."))
-
-        modalidad = self._detect_modalidad(order, course_id)
-        if not modalidad:
-            warnings.append(_("No se ha podido detectar la modalidad (atributo 'Modalidad' del producto)."))
-            modalidad = 'GE'
-
-        date = self.admission_date or fields.Date.today()
+        modalities = []
+        batch_previews = []
         today = fields.Date.today()
+        date = self.admission_date or today
+
         if date.month != today.month or date.year != today.year:
             warnings.append(_(
-                "La fecha de admision (%s) no esta en el mes actual (%s). "
-                "El codigo de lote se calculara con esa fecha."
+                "La fecha de admision general (%s) no esta en el mes actual (%s). "
+                "El codigo de lote se calculara con esa fecha si no hay fecha especifica en la linea."
             ) % (date, today))
 
-        if modalidad in ('HC', 'PRS') and today.day > 7 and date.month == today.month and date.year == today.year:
-            warnings.append(_(
-                "Modalidad %s y hoy es dia %s (> 7) en el mismo mes que admission_date: "
-                "la logica de irg_openeducat_sale_lote_custom desplazara la fecha al mes siguiente."
-            ) % (modalidad, today.day))
+        for line in academic_lines:
+            course_id = self._find_course_for_line(line)
+            if not course_id:
+                warnings.append(_("El producto %s no tiene curso asignado.") % line.product_template_id.name)
+                continue
 
-        # Preview del codigo
-        batch_code = self._build_batch_code_preview(order, course_id, modalidad, date)
+            modality = self._detect_line_modalidad(line, course_id)
+            if not modality:
+                warnings.append(_("No se ha podido detectar la modalidad para el producto %s.") % line.product_template_id.name)
+                modality = 'GE'
+
+            line_date = line.start_date_enroller or date
+
+            if modality in ('HC', 'PRS') and today.day > 7 and line_date.month == today.month and line_date.year == today.year:
+                warnings.append(_(
+                    "Modalidad %s para %s y hoy es dia %s (> 7) en el mismo mes que la fecha del lote (%s): "
+                    "la logica de irg_openeducat_sale_lote_custom desplazara la fecha al mes siguiente."
+                ) % (modality, line.product_template_id.name, today.day, line_date))
+
+            batch_code = self._build_line_batch_code_preview(line, course_id, modality, line_date)
+
+            if modality not in modalities:
+                modalities.append(modality)
+            batch_previews.append(f"{line.product_template_id.name}: {batch_code}")
 
         warning_html = ''
         if warnings:
             warning_html = '<ul>' + ''.join('<li>%s</li>' % w for w in warnings) + '</ul>'
-        return (modalidad, batch_code, warning_html)
 
-    def _detect_modalidad(self, order, course_id):
+        return (', '.join(modalities), '\n'.join(batch_previews), warning_html)
+
+    def _find_course_for_line(self, line):
+        domain = ['|', 
+                 ('product_template_id', '=', line.product_template_id.id),
+                 ('product_template_ids', 'in', line.product_template_id.id)]
+        return self.env['op.course'].search(domain, limit=1)
+
+    def _detect_line_modalidad(self, line, course_id):
         if not course_id:
             return ''
-        for line in order.order_line:
-            if not self._line_matches(line, course_id):
-                continue
-            for ptav in line.product_id.product_template_attribute_value_ids:
-                if ptav.attribute_id.name == 'Modalidad':
-                    name = (ptav.product_attribute_value_id.name or '').strip()
-                    if name == 'Online':
-                        return 'ONL'
-                    if name == 'HomeClass':
-                        return 'HC'
-                    if name == 'Presencial':
-                        return 'PRS'
-                    return name[:3].upper() if name else 'GE'
+        for ptav in line.product_id.product_template_attribute_value_ids:
+            if ptav.attribute_id.name == 'Modalidad':
+                name = (ptav.product_attribute_value_id.name or '').strip()
+                if name == 'Online':
+                    return 'ONL'
+                if name == 'HomeClass':
+                    return 'HC'
+                if name == 'Presencial':
+                    return 'PRS'
+                return name[:3].upper() if name else 'GE'
         return 'GE'
 
-    def _line_matches(self, line, course_id):
-        if hasattr(line.product_id, 'course_id') and line.product_id.course_id.id == course_id.id:
-            return True
-        if course_id.product_template_id and line.product_id.product_tmpl_id.id == course_id.product_template_id.id:
-            return True
-        if hasattr(course_id, 'product_template_ids') and line.product_id.product_tmpl_id.id in course_id.product_template_ids.ids:
-            return True
-        return False
-
-    def _build_batch_code_preview(self, order, course_id, modalidad, date):
+    def _build_line_batch_code_preview(self, line, course_id, modality, date):
         if not course_id:
             return ''
-        profix_01 = ''
-        if course_id.product_template_id:
-            profix_01 = course_id.product_template_id.categ_id.code or ''
-        elif hasattr(course_id, 'product_template_ids') and course_id.product_template_ids:
-            profix_01 = course_id.product_template_ids[0].categ_id.code or ''
-        for line in order.order_line:
-            if self._line_matches(line, course_id) and line.product_id.categ_id.code:
-                profix_01 = line.product_id.categ_id.code
-                break
+        
+        # Category code (profix_01)
+        profix_01 = line.product_id.categ_id.code or ''
+        if not profix_01:
+            if course_id.product_template_id:
+                profix_01 = course_id.product_template_id.categ_id.code or ''
+            elif hasattr(course_id, 'product_template_ids') and course_id.product_template_ids:
+                profix_01 = course_id.product_template_ids[0].categ_id.code or ''
 
-        prefix_011 = course_id.code or ''
+        # Detect if bonificado (price <= 0) - ONLY FOR ONL modality
+        is_bonificado = line.price_unit <= 0 or line.price_subtotal <= 0
+        if is_bonificado and modality == 'ONL' and profix_01.startswith('M'):
+            profix_01 = 'M' + 'B' + profix_01[1:]
+
+        course_code = course_id.code or ''
         eff_date = date
 
         # Replicar shift HC/PRS si procede
         today = fields.Date.today()
-        if modalidad in ('HC', 'PRS') and today.day > 7 and date.month == today.month and date.year == today.year:
+        if modality in ('HC', 'PRS') and today.day > 7 and date.month == today.month and date.year == today.year:
             eff_date = date + relativedelta(months=1)
 
         # Si el modulo quarterly esta activo y modalidad = ONL, preview trimestral
         ad = self.env['auto.admission.required'].search([], limit=1)
         quarterly_active = bool(ad and 'quarterly_online_enabled' in ad._fields and ad.quarterly_online_enabled)
-        if modalidad == 'ONL' and quarterly_active:
+        
+        if modality == 'ONL' and quarterly_active:
+            quarter = str((eff_date.month - 1) // 3 + 1)
             year = eff_date.strftime('%y')
-            return f"{profix_01}{prefix_011}ONL{year}{QUARTER_LETTERS[eff_date.month]}"
+            return f"{profix_01}{course_code}ONL{year}{quarter}"
 
         year = eff_date.strftime('%y')
         month = eff_date.strftime('%m')
-        return f"{profix_01}{prefix_011}{modalidad}{year}{month}"
+        return f"{profix_01}{course_code}{modality}{year}{month}"
 
     # ----------------------------------------------------------------
     # Actions

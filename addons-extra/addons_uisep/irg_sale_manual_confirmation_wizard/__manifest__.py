@@ -32,6 +32,7 @@
         'irg_openeducat_sale_lote_custom',
         'irg_elearning_correo_bienvenida_selector',
         'isep_sale_order_admissions',
+        'isep_admission_from_student_field',
     ],
     'data': [
         'security/ir.model.access.csv',

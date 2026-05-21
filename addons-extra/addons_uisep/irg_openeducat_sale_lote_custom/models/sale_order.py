@@ -13,10 +13,11 @@ class SaleOrder(models.Model):
         # If the original method was smaller or split, we could call super(), 
         # but since the logic for constructing 'code' is monolithic, we rewrite it.
         
-        _logger.info("IRG Custom Logic: get_lot_id called for course %s", course_id.name)
+        # Retrieve line from context if available
+        line_id = self.env.context.get('irg_get_lot_line_id')
+        line = self.env['sale.order.line'].browse(line_id) if line_id else None
         
-        date = self.admission_date
-        _logger.info("IRG Custom Logic: Initial admission_date: %s", date)
+        _logger.info("IRG Custom Logic: get_lot_id called for course %s, extracted line %s from context", course_id.name, line)
         
         # Determine profix_01 (Category Code)
         # Priority: 
@@ -32,45 +33,86 @@ class SaleOrder(models.Model):
             profix_01 = course_id.product_template_ids[0].categ_id.code or ''
 
         prefix_02 = 'GE'
+        matching_line = line
 
-        for line in self.order_line:
-            # Check if line matches the course
-            is_match = False
-            if hasattr(line.product_id, 'course_id') and line.product_id.course_id.id == course_id.id:
-                is_match = True
-            elif course_id.product_template_id and line.product_id.product_tmpl_id.id == course_id.product_template_id.id:
-                is_match = True
-            elif hasattr(course_id, 'product_template_ids') and line.product_id.product_tmpl_id.id in course_id.product_template_ids.ids:
-                is_match = True
+        if matching_line:
+            # Prefer the category code from the line's product
+            if matching_line.product_id.categ_id.code:
+                profix_01 = matching_line.product_id.categ_id.code
             
-            if is_match:
-                # If we found the line, we prefer the category code from the line's product
-                if line.product_id.categ_id.code:
-                    profix_01 = line.product_id.categ_id.code
-                
-                if line.product_id.product_template_attribute_value_ids:
-                    for ptav in line.product_id.product_template_attribute_value_ids:
-                        if ptav.attribute_id.name == 'Modalidad':
-                            # Custom logic for Modalidad code
-                            modalidad_name = ptav.product_attribute_value_id.name
-                            _logger.info("IRG Custom Logic: Found Modalidad: %s", modalidad_name)
-                            
-                            if modalidad_name == 'Online':
-                                prefix_02 = 'ONL'
-                            elif modalidad_name == 'HomeClass':
-                                prefix_02 = 'HC'
-                            elif modalidad_name == 'Presencial':
-                                prefix_02 = 'PRS'
+            if matching_line.product_id.product_template_attribute_value_ids:
+                for ptav in matching_line.product_id.product_template_attribute_value_ids:
+                    if ptav.attribute_id.name == 'Modalidad':
+                        modalidad_name = ptav.product_attribute_value_id.name
+                        _logger.info("IRG Custom Logic: Found Modalidad: %s", modalidad_name)
+                        
+                        if modalidad_name == 'Online':
+                            prefix_02 = 'ONL'
+                        elif modalidad_name == 'HomeClass':
+                            prefix_02 = 'HC'
+                        elif modalidad_name == 'Presencial':
+                            prefix_02 = 'PRS'
+                        else:
+                            if ptav.code:
+                                prefix_02 = ptav.code
                             else:
-                                # Fallback to original logic or default if needed
-                                if ptav.code:
-                                    prefix_02 = ptav.code
+                                prefix_02 = modalidad_name[:3].upper() if modalidad_name else 'GE'
+                        break
+        else:
+            for l in self.order_line:
+                # Check if line matches the course
+                is_match = False
+                if hasattr(l.product_id, 'course_id') and l.product_id.course_id.id == course_id.id:
+                    is_match = True
+                elif course_id.product_template_id and l.product_id.product_tmpl_id.id == course_id.product_template_id.id:
+                    is_match = True
+                elif hasattr(course_id, 'product_template_ids') and l.product_id.product_tmpl_id.id in course_id.product_template_ids.ids:
+                    is_match = True
+                
+                if is_match:
+                    matching_line = l
+                    # If we found the line, we prefer the category code from the line's product
+                    if l.product_id.categ_id.code:
+                        profix_01 = l.product_id.categ_id.code
+                    
+                    if l.product_id.product_template_attribute_value_ids:
+                        for ptav in l.product_id.product_template_attribute_value_ids:
+                            if ptav.attribute_id.name == 'Modalidad':
+                                # Custom logic for Modalidad code
+                                modalidad_name = ptav.product_attribute_value_id.name
+                                _logger.info("IRG Custom Logic: Found Modalidad: %s", modalidad_name)
+                                
+                                if modalidad_name == 'Online':
+                                    prefix_02 = 'ONL'
+                                elif modalidad_name == 'HomeClass':
+                                    prefix_02 = 'HC'
+                                elif modalidad_name == 'Presencial':
+                                    prefix_02 = 'PRS'
                                 else:
-                                    prefix_02 = modalidad_name[:3].upper() if modalidad_name else 'GE'
-                            break
-                break
+                                    if ptav.code:
+                                        prefix_02 = ptav.code
+                                    else:
+                                        prefix_02 = modalidad_name[:3].upper() if modalidad_name else 'GE'
+                                break
+                    break
+
+        # Check if bonificado (price <= 0) - ONLY FOR ONL modality
+        if matching_line and prefix_02 == 'ONL' and (matching_line.price_unit <= 0 or matching_line.price_subtotal <= 0):
+            if profix_01.startswith('M'):
+                profix_01 = 'M' + 'B' + profix_01[1:]
 
         _logger.info("IRG Custom Logic: Determined prefix_02: %s", prefix_02)
+
+        # Resolve date: prioritize matching_line.start_date_enroller, fallback to self.admission_date, fallback to today
+        date = False
+        if matching_line:
+            date = matching_line.start_date_enroller
+        if not date:
+            date = self.admission_date
+        if not date:
+            date = fields.Date.today()
+
+        _logger.info("IRG Custom Logic: Initial admission_date for batch calculation: %s", date)
 
         # Logic for date shift based on modality: HomeClass (HC) or Presencial (PRS)
         # We check against TODAY's day because admission_date is often set to the 1st of the month by the website.
@@ -123,18 +165,38 @@ class SaleOrder(models.Model):
                     'modality_id': ad.mx_modality_id.id if ad.mx_modality_id else False,
                 })
                 
-            if prefix_02 in ['HC', 'PRS']:
+            if prefix_02 in ['HC', 'PRS', 'ONL']:
                 batch_start_date = date.replace(day=1)
             else:
                 batch_start_date = date
 
-            lot_values.update({
-                'name': code,
-                'code': code,
-                'course_id': course_id.id,
-                'start_date': batch_start_date,
-                'end_date': batch_start_date + relativedelta(years=1),
-            })
+            if prefix_02 in ('HC', 'ONL'):
+                course_code = (course_id.code or '').strip().upper()
+                duration_months = 24 if course_code == 'NC' else 16
+                batch_end_date = batch_start_date + relativedelta(months=duration_months, days=-1)
+                
+                # Class start date
+                if prefix_02 == 'HC':
+                    date_start_class = batch_start_date + relativedelta(days=(4 - batch_start_date.weekday()) % 7)
+                else:  # ONL
+                    date_start_class = batch_start_date
+
+                lot_values.update({
+                    'name': code,
+                    'code': code,
+                    'course_id': course_id.id,
+                    'start_date': batch_start_date,
+                    'end_date': batch_end_date,
+                    'date_start_class': date_start_class,
+                })
+            else:
+                lot_values.update({
+                    'name': code,
+                    'code': code,
+                    'course_id': course_id.id,
+                    'start_date': batch_start_date,
+                    'end_date': batch_start_date + relativedelta(years=1),
+                })
             
             _logger.info("IRG Custom Logic: Creating new batch with values: %s", lot_values)
             

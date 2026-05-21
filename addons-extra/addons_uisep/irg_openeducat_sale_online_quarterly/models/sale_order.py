@@ -6,12 +6,12 @@ from dateutil.relativedelta import relativedelta
 _logger = logging.getLogger(__name__)
 
 
-# Mapeo mes -> (letra_trimestre, mes_inicio_trimestre)
+# Mapeo mes -> (numero_trimestre, mes_inicio_trimestre)
 QUARTER_MAP = {
-    1: ('A', 1), 2: ('A', 1), 3: ('A', 1),
-    4: ('B', 4), 5: ('B', 4), 6: ('B', 4),
-    7: ('C', 7), 8: ('C', 7), 9: ('C', 7),
-    10: ('D', 10), 11: ('D', 10), 12: ('D', 10),
+    1: ('1', 1), 2: ('1', 1), 3: ('1', 1),
+    4: ('2', 4), 5: ('2', 4), 6: ('2', 4),
+    7: ('3', 7), 8: ('3', 7), 9: ('3', 7),
+    10: ('4', 10), 11: ('4', 10), 12: ('4', 10),
 }
 
 
@@ -28,19 +28,36 @@ class SaleOrder(models.Model):
         if not ad or not ad.quarterly_online_enabled:
             return super().get_lot_id(course_id)
 
-        # Detectamos prefix_02 replicando la deteccion del super (no podemos
-        # llamarlo dos veces porque crea el lote). Solo miramos el atributo
-        # 'Modalidad' del producto de la linea que matchea con el curso.
-        is_online = self._irg_quarterly_is_online_course(course_id)
+        # Retrieve line from context if available
+        line_id = self.env.context.get('irg_get_lot_line_id')
+        line = self.env['sale.order.line'].browse(line_id) if line_id else None
+
+        is_online = False
+        matching_line = line
+
+        if matching_line:
+            is_online = self._irg_quarterly_line_is_online(matching_line)
+        else:
+            for l in self.order_line:
+                if self._irg_quarterly_line_matches(l, course_id):
+                    if self._irg_quarterly_line_is_online(l):
+                        is_online = True
+                        matching_line = l
+                        break
+
         if not is_online:
             return super().get_lot_id(course_id)
 
-        _logger.info("IRG Quarterly: rama trimestral activada para curso %s", course_id.name)
+        _logger.info("IRG Quarterly: rama trimestral activada para curso %s con linea %s", course_id.name, matching_line)
 
-        date = self.admission_date
+        # Resolve date: prioritize matching_line.start_date_enroller, fallback to self.admission_date, fallback to today
+        date = False
+        if matching_line:
+            date = matching_line.start_date_enroller
         if not date:
-            _logger.warning("IRG Quarterly: admission_date vacia, delegando en super")
-            return super().get_lot_id(course_id)
+            date = self.admission_date
+        if not date:
+            date = fields.Date.today()
 
         # Categoria (prefix_01) - misma logica que el super
         profix_01 = ''
@@ -48,11 +65,14 @@ class SaleOrder(models.Model):
             profix_01 = course_id.product_template_id.categ_id.code or ''
         elif hasattr(course_id, 'product_template_ids') and course_id.product_template_ids:
             profix_01 = course_id.product_template_ids[0].categ_id.code or ''
-        for line in self.order_line:
-            if self._irg_quarterly_line_matches(line, course_id):
-                if line.product_id.categ_id.code:
-                    profix_01 = line.product_id.categ_id.code
-                break
+        
+        if matching_line and matching_line.product_id.categ_id.code:
+            profix_01 = matching_line.product_id.categ_id.code
+
+        # Check if bonificado (price <= 0) - ONLY FOR ONL modality
+        if matching_line and (matching_line.price_unit <= 0 or matching_line.price_subtotal <= 0):
+            if profix_01.startswith('M'):
+                profix_01 = 'M' + 'B' + profix_01[1:]
 
         prefix_011 = course_id.code or ''
         prefix_02 = 'ONL'
@@ -112,8 +132,10 @@ class SaleOrder(models.Model):
             })
 
         batch_start_date = date.replace(day=1, month=quarter_start_month)
-        # Ultimo dia del trimestre (start + 3 meses - 1 dia)
-        batch_end_date = batch_start_date + relativedelta(months=3, days=-1)
+        
+        course_code = (course_id.code or '').strip().upper()
+        duration_months = 24 if course_code == 'NC' else 16
+        batch_end_date = batch_start_date + relativedelta(months=duration_months, days=-1)
 
         lot_values.update({
             'name': code,
@@ -121,6 +143,7 @@ class SaleOrder(models.Model):
             'course_id': course_id.id,
             'start_date': batch_start_date,
             'end_date': batch_end_date,
+            'date_start_class': batch_start_date,
         })
         _logger.info("IRG Quarterly: creando lote trimestral %s (%s -> %s)",
                      code, batch_start_date, batch_end_date)
@@ -144,8 +167,14 @@ class SaleOrder(models.Model):
         for line in self.order_line:
             if not self._irg_quarterly_line_matches(line, course_id):
                 continue
-            for ptav in line.product_id.product_template_attribute_value_ids:
-                if ptav.attribute_id.name == 'Modalidad':
-                    val_name = (ptav.product_attribute_value_id.name or '').strip()
-                    return val_name == 'Online'
+            if self._irg_quarterly_line_is_online(line):
+                return True
+        return False
+
+    def _irg_quarterly_line_is_online(self, line):
+        """True si la linea tiene atributo Modalidad = Online."""
+        for ptav in line.product_id.product_template_attribute_value_ids:
+            if ptav.attribute_id.name == 'Modalidad':
+                val_name = (ptav.product_attribute_value_id.name or '').strip()
+                return val_name == 'Online'
         return False

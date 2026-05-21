@@ -15,8 +15,9 @@
                         <field name="modalidad_detected" readonly="1"/>
                         <field name="batch_preview" readonly="1"/>
                     </group>
-                    <group string="Avisos" attrs="{'invisible': [('warning_message', '=', False)]}">
-                        <field name="warning_message" nolabel="1" readonly="1"/>
+                    <separator string="Avisos" attrs="{'invisible': [('warning_message', '=', False)]}"/>
+                    <group col="1" attrs="{'invisible': [('warning_message', '=', False)]}" class="w-100">
+                        <field name="warning_message" nolabel="1" readonly="1" class="w-100"/>
                     </group>
                 </sheet>
                 <footer>
