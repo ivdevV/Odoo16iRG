@@ -171,6 +171,11 @@ class SaleOrder(models.Model):
                     'modality_id': ad.mx_modality_id.id if ad.mx_modality_id else False,
                 })
                 
+            if prefix_02 == 'HC':
+                hc_mod = self.env['op.modality'].search([('name', '=ilike', 'HomeClass')], limit=1)
+                if hc_mod:
+                    lot_values['modality_id'] = hc_mod.id
+
             if prefix_02 in ['HC', 'PRS', 'ONL']:
                 batch_start_date = date.replace(day=1)
             else:
