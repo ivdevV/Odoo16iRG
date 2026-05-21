@@ -181,18 +181,24 @@ class SaleOrder(models.Model):
             else:
                 batch_start_date = date
 
-            if prefix_02 == 'ONL':
+            if prefix_02 in ('HC', 'ONL'):
                 course_code = (course_id.code or '').strip().upper()
                 duration_months = 24 if course_code == 'NC' else 16
                 batch_end_date = batch_start_date + relativedelta(months=duration_months, days=-1)
                 
+                # Class start date
+                if prefix_02 == 'HC':
+                    date_start_class = batch_start_date + relativedelta(days=(4 - batch_start_date.weekday()) % 7)
+                else:  # ONL
+                    date_start_class = batch_start_date
+
                 lot_values.update({
                     'name': code,
                     'code': code,
                     'course_id': course_id.id,
                     'start_date': batch_start_date,
                     'end_date': batch_end_date,
-                    'date_start_class': batch_start_date,
+                    'date_start_class': date_start_class,
                 })
             else:
                 lot_values.update({
