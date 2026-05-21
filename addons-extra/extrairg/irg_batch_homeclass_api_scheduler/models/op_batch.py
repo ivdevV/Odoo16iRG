@@ -16,12 +16,17 @@ class OpBatch(models.Model):
         compute="_compute_is_homeclass_batch",
     )
 
-    @api.depends('modality_id', 'modality_id.code', 'modality_id.name')
+    @api.depends('modality_id', 'modality_id.code', 'modality_id.name', 'code', 'name')
     def _compute_is_homeclass_batch(self):
         for record in self:
             is_hc = False
             if record.modality_id:
                 is_hc = (record.modality_id.code == 'HC') or ('homeclass' in (record.modality_id.name or '').lower())
+            if not is_hc:
+                # Fallback check on code or name
+                code_upper = (record.code or '').upper()
+                name_lower = (record.name or '').lower()
+                is_hc = ('HC' in code_upper) or ('homeclass' in name_lower)
             record.is_homeclass_batch = is_hc
 
 
