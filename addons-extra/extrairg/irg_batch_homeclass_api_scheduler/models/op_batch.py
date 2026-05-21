@@ -29,6 +29,14 @@ class OpBatch(models.Model):
                 is_hc = ('HC' in code_upper) or ('homeclass' in name_lower)
             record.is_homeclass_batch = is_hc
 
+    def _normalize_string(self, s):
+        if not s:
+            return ""
+        import unicodedata
+        s_norm = "".join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+        for char in ['.', ',', '-', '_', ':', ';', '(', ')', '/', '\\', ' ']:
+            s_norm = s_norm.replace(char, '')
+        return s_norm.upper()
 
     def _sync_homeclass_calendar(self):
         """
@@ -75,7 +83,7 @@ class OpBatch(models.Model):
             _logger.warning("Sync HomeClass: No records returned in calendar API for batch %s.", self.code)
             return False
 
-        # Group minimum dates by block code and block name
+        # Group minimum dates by block code, block name, and subject name
         bloque_dates = {}
         for rec in records:
             fecha_str = rec.get('fecha')
@@ -99,6 +107,16 @@ class OpBatch(models.Model):
                 if b_name not in bloque_dates or date_val < bloque_dates[b_name]:
                     bloque_dates[b_name] = date_val
 
+            asignatura = rec.get('asignatura')
+            if asignatura:
+                a_name = str(asignatura).strip().upper()
+                if a_name not in bloque_dates or date_val < bloque_dates[a_name]:
+                    bloque_dates[a_name] = date_val
+                # Also store normalized version to catch minor differences (accents, spaces)
+                a_norm = self._normalize_string(a_name)
+                if a_norm and (a_norm not in bloque_dates or date_val < bloque_dates[a_norm]):
+                    bloque_dates[a_norm] = date_val
+
         if not bloque_dates:
             _logger.warning("Sync HomeClass: No valid dates mapped from calendar API for batch %s.", self.code)
             return False
@@ -119,6 +137,11 @@ class OpBatch(models.Model):
                 match_date = bloque_dates[subject_code]
             elif subject_name and subject_name in bloque_dates:
                 match_date = bloque_dates[subject_name]
+            else:
+                # Try normalized match
+                norm_name = self._normalize_string(subject_name) if subject_name else None
+                if norm_name and norm_name in bloque_dates:
+                    match_date = bloque_dates[norm_name]
 
             if match_date:
                 line.write({
