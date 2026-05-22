@@ -14,6 +14,12 @@ class SlideSlide(models.Model):
         string='Categoría iRG',
         compute='_compute_irg_display_category',
     )
+    irg_original_slide_id = fields.Many2one(
+        'slide.slide',
+        string='Diapositiva original (HomeClass)',
+        ondelete='set null',
+        copy=False,
+    )
 
     @api.depends('is_category', 'slide_category')
     def _compute_irg_display_category(self):

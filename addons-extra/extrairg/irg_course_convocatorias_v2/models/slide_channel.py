@@ -518,6 +518,7 @@ class SlideChannel(models.Model):
         vals = {
             'channel_id': online_channel.id,
             'irg_content_modality': 'online',
+            'irg_original_slide_id': source.id,
         }
         for field_name in self._irg_bootstrap_slide_clone_fields():
             if field_name == 'access_token':
@@ -609,5 +610,37 @@ class SlideChannel(models.Model):
             attribute_name = (line.attribute_id.name or '').strip().lower()
             values = [value.name.strip().lower() for value in line.value_ids]
             if attribute_name == 'modalidad' and any('online' in value and 'convenio' not in value for value in values):
+                return True
+        return False
+
+    def _irg_is_online_student_for_channel(self):
+        self.ensure_one()
+        return self._irg_is_partner_online_student_for_channel(self.env.user.partner_id)
+
+    def _irg_is_partner_online_student_for_channel(self, partner):
+        self.ensure_one()
+        if not partner:
+            return False
+
+        today = fields.Date.today()
+        admissions = self.env['op.admission'].sudo().search([
+            ('partner_id', '=', partner.id)
+        ])
+
+        active_batches = self.env['op.batch']
+        for admission in admissions:
+            batch = admission.batch_id
+            if batch and batch.end_date and batch.end_date >= today:
+                active_batches |= batch
+
+        if not active_batches:
+            return False
+
+        related_courses = self._irg_get_related_courses()
+        channel_active_batches = active_batches.filtered(lambda b: b.course_id in related_courses)
+        batches_to_check = channel_active_batches or active_batches
+
+        for batch in batches_to_check:
+            if self._irg_batch_matches_modality(batch, 'online'):
                 return True
         return False

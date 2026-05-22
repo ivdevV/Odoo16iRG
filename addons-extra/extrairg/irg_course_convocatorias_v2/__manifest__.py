@@ -11,6 +11,7 @@
         'irg_op_course_modality',
         'isep_elearning_custom',
         'irg_elearning_editable_sections',
+        'irg_op_subject_visibility',
     ],
     'data': [
         'security/ir.model.access.csv',

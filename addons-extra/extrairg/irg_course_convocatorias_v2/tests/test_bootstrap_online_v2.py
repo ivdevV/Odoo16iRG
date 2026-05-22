@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from odoo.tests.common import TransactionCase, tagged
 
 
@@ -21,6 +22,11 @@ class TestBootstrapOnlineFromHomeClassV2(TransactionCase):
         self.channel = self.Channel.create({
             'name': 'Curso iRG bootstrap test V2',
             'channel_type': 'training',
+        })
+
+        self.product = self.env['product.product'].create({
+            'name': 'Online Opening Fee Test V2',
+            'type': 'service',
         })
 
         # Sección iRG con y sin slides asociados.
@@ -199,3 +205,254 @@ class TestBootstrapOnlineFromHomeClassV2(TransactionCase):
         self.assertEqual(action['res_id'], self.channel.irg_online_channel_id.id)
         self.assertEqual(action['view_mode'], 'form')
         self.assertTrue(self.channel.irg_online_channel_id.irg_is_online_clone)
+
+    def test_original_slide_id_set_during_bootstrap(self):
+        self.channel.action_copy_homeclass_to_online()
+        online_slides = self._online_slides()
+        for online_slide in online_slides:
+            if not online_slide.is_category:
+                original_slide = self.channel.slide_ids.filtered(
+                    lambda s: s.name == online_slide.name and s.irg_content_modality in (False, 'homeclass')
+                )
+                self.assertEqual(online_slide.irg_original_slide_id, original_slide)
+
+    def test_student_modality_detection(self):
+        Course = self.env['op.course']
+        Subject = self.env['op.subject']
+        Batch = self.env['op.batch']
+        Admission = self.env['op.admission']
+        Partner = self.env['res.partner']
+
+        course = Course.create({'name': 'Curso de Prueba', 'code': 'TEST-DETECTION'})
+        Subject.create({
+            'name': 'Asignatura de Prueba',
+            'code': 'SUBJ-DETECTION',
+            'course_id': course.id,
+            'slide_channel_id': self.channel.id,
+        })
+
+        today = date.today()
+        register = self.env['op.admission.register'].create({
+            'name': 'Admission Register Detection',
+            'course_id': course.id,
+            'product_id': self.product.id,
+            'start_date': today - timedelta(days=20),
+            'end_date': today + timedelta(days=20),
+            'min_count': 1,
+            'max_count': 30,
+            'state': 'admission',
+        })
+
+        # Partner A: Active Online Student (code has ONL)
+        partner_a = Partner.create({'name': 'Student Online'})
+        batch_online = Batch.create({
+            'name': 'Batch Online',
+            'code': 'ONL-2026',
+            'course_id': course.id,
+            'start_date': today - timedelta(days=10),
+            'end_date': today + timedelta(days=10),
+        })
+        Admission.create({
+            'name': 'Student Online',
+            'first_name': 'Student',
+            'last_name': 'Online',
+            'birth_date': '2000-01-01',
+            'gender': 'm',
+            'email': 'student.online@example.com',
+            'state': 'confirm',
+            'partner_id': partner_a.id,
+            'batch_id': batch_online.id,
+            'course_id': course.id,
+            'register_id': register.id,
+        })
+
+        # Partner B: Active HomeClass Student (code has HC)
+        partner_b = Partner.create({'name': 'Student HomeClass'})
+        batch_homeclass = Batch.create({
+            'name': 'Batch HC',
+            'code': 'HC-2026',
+            'course_id': course.id,
+            'start_date': today - timedelta(days=10),
+            'end_date': today + timedelta(days=10),
+        })
+        Admission.create({
+            'name': 'Student HomeClass',
+            'first_name': 'Student',
+            'last_name': 'HomeClass',
+            'birth_date': '2000-01-01',
+            'gender': 'm',
+            'email': 'student.homeclass@example.com',
+            'state': 'confirm',
+            'partner_id': partner_b.id,
+            'batch_id': batch_homeclass.id,
+            'course_id': course.id,
+            'register_id': register.id,
+        })
+
+        # Partner C: Expired Online Student
+        partner_c = Partner.create({'name': 'Student Expired'})
+        batch_expired = Batch.create({
+            'name': 'Batch Expired',
+            'code': 'ONL-2025',
+            'course_id': course.id,
+            'start_date': today - timedelta(days=20),
+            'end_date': today - timedelta(days=5),
+        })
+        Admission.create({
+            'name': 'Student Expired',
+            'first_name': 'Student',
+            'last_name': 'Expired',
+            'birth_date': '2000-01-01',
+            'gender': 'm',
+            'email': 'student.expired@example.com',
+            'state': 'confirm',
+            'partner_id': partner_c.id,
+            'batch_id': batch_expired.id,
+            'course_id': course.id,
+            'register_id': register.id,
+        })
+
+        # Partner D: Batch code contains MONL (excluded)
+        partner_d = Partner.create({'name': 'Student MONL'})
+        batch_monl = Batch.create({
+            'name': 'Batch MONL',
+            'code': 'MONL-2026',
+            'course_id': course.id,
+            'start_date': today - timedelta(days=10),
+            'end_date': today + timedelta(days=10),
+        })
+        Admission.create({
+            'name': 'Student MONL',
+            'first_name': 'Student',
+            'last_name': 'MONL',
+            'birth_date': '2000-01-01',
+            'gender': 'm',
+            'email': 'student.monl@example.com',
+            'state': 'confirm',
+            'partner_id': partner_d.id,
+            'batch_id': batch_monl.id,
+            'course_id': course.id,
+            'register_id': register.id,
+        })
+
+        # Verify modality detection
+        self.assertTrue(self.channel._irg_is_partner_online_student_for_channel(partner_a))
+        self.assertFalse(self.channel._irg_is_partner_online_student_for_channel(partner_b))
+        self.assertFalse(self.channel._irg_is_partner_online_student_for_channel(partner_c))
+        self.assertFalse(self.channel._irg_is_partner_online_student_for_channel(partner_d))
+
+    def test_slide_channel_partner_synchronization(self):
+        Course = self.env['op.course']
+        Subject = self.env['op.subject']
+        Batch = self.env['op.batch']
+        Admission = self.env['op.admission']
+        Partner = self.env['res.partner']
+
+        course = Course.create({'name': 'Curso de Prueba', 'code': 'TEST-SYNC'})
+        Subject.create({
+            'name': 'Asignatura de Prueba',
+            'code': 'SUBJ-SYNC',
+            'course_id': course.id,
+            'slide_channel_id': self.channel.id,
+        })
+
+        today = date.today()
+        register = self.env['op.admission.register'].create({
+            'name': 'Admission Register Sync',
+            'course_id': course.id,
+            'product_id': self.product.id,
+            'start_date': today - timedelta(days=20),
+            'end_date': today + timedelta(days=20),
+            'min_count': 1,
+            'max_count': 30,
+            'state': 'admission',
+        })
+
+        # Online Student
+        partner_online = Partner.create({'name': 'Student Online'})
+        batch_online = Batch.create({
+            'name': 'Batch Online',
+            'code': 'ONL-2026',
+            'course_id': course.id,
+            'start_date': today - timedelta(days=10),
+            'end_date': today + timedelta(days=10),
+        })
+        Admission.create({
+            'name': 'Student Online Sync',
+            'first_name': 'Student',
+            'last_name': 'Online',
+            'birth_date': '2000-01-01',
+            'gender': 'm',
+            'email': 'student.onlinesync@example.com',
+            'state': 'confirm',
+            'partner_id': partner_online.id,
+            'batch_id': batch_online.id,
+            'course_id': course.id,
+            'register_id': register.id,
+        })
+
+        # HomeClass Student
+        partner_homeclass = Partner.create({'name': 'Student HomeClass'})
+        batch_homeclass = Batch.create({
+            'name': 'Batch HC',
+            'code': 'HC-2026',
+            'course_id': course.id,
+            'start_date': today - timedelta(days=10),
+            'end_date': today + timedelta(days=10),
+        })
+        Admission.create({
+            'name': 'Student HomeClass Sync',
+            'first_name': 'Student',
+            'last_name': 'HomeClass',
+            'birth_date': '2000-01-01',
+            'gender': 'm',
+            'email': 'student.homeclasssync@example.com',
+            'state': 'confirm',
+            'partner_id': partner_homeclass.id,
+            'batch_id': batch_homeclass.id,
+            'course_id': course.id,
+            'register_id': register.id,
+        })
+
+        # Bootstrap to create the online channel clone
+        self.channel.action_copy_homeclass_to_online()
+        online_channel = self.channel.irg_online_channel_id
+
+        # 1. Create membership on HomeClass for Online student
+        cp_online = self.env['slide.channel.partner'].create({
+            'channel_id': self.channel.id,
+            'partner_id': partner_online.id,
+        })
+        # Verify it synchronized to the online clone
+        clone_cp_online = self.env['slide.channel.partner'].search([
+            ('channel_id', '=', online_channel.id),
+            ('partner_id', '=', partner_online.id),
+        ])
+        self.assertEqual(len(clone_cp_online), 1)
+
+        # 2. Create membership on HomeClass for HomeClass student
+        self.env['slide.channel.partner'].create({
+            'channel_id': self.channel.id,
+            'partner_id': partner_homeclass.id,
+        })
+        # Verify it did NOT synchronize to the online clone
+        clone_cp_hc = self.env['slide.channel.partner'].search([
+            ('channel_id', '=', online_channel.id),
+            ('partner_id', '=', partner_homeclass.id),
+        ])
+        self.assertEqual(len(clone_cp_hc), 0)
+
+        # 3. Update membership on HomeClass for Online student (mark as completed)
+        cp_online.write({'completed': True})
+        # Verify it updated in the online clone
+        self.assertTrue(clone_cp_online.completed)
+
+        # 4. Unlink membership on HomeClass for Online student
+        cp_online.unlink()
+        # Verify it was deleted in the online clone
+        clone_cp_online_check = self.env['slide.channel.partner'].search([
+            ('channel_id', '=', online_channel.id),
+            ('partner_id', '=', partner_online.id),
+        ])
+        self.assertEqual(len(clone_cp_online_check), 0)
+
