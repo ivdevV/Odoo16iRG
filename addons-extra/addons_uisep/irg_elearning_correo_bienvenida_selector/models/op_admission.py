@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import logging
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 class OpAdmission(models.Model):
     _inherit = 'op.admission'
@@ -68,6 +71,10 @@ class OpAdmission(models.Model):
                 if 'online' in modality_name:
                     is_online = True
             
+            # Fallback based on batch code/name
+            if not is_online and self.batch_id:
+                is_online = 'ONL' in (self.batch_id.code or '').upper() or 'ONL' in (self.batch_id.name or '').upper()
+
             if is_online:
                 student_name = self.name
                 if not self.tutor_id:
@@ -76,6 +83,11 @@ class OpAdmission(models.Model):
                     raise UserError('%s - Necesita establecer fecha de inicio de Clases.' % (student_name))
                 if not self.batch_id:
                     raise UserError('%s - Necesita asignar un grupo.' % (student_name))            
+
+                # Safeguard: if date_start_class is empty in the batch, auto-populate it with start_date
+                if self.batch_id and not self.batch_id.date_start_class and self.batch_id.start_date:
+                    _logger.info("IRG Welcome Email: Auto-populating empty date_start_class with start_date %s for batch %s before sending email", self.batch_id.start_date, self.batch_id.name)
+                    self.batch_id.sudo().write({'date_start_class': self.batch_id.start_date})
 
                 template_id = self.env.ref('irg_elearning_correo_bienvenida_selector.email_op_admission_confirm_online').id
                 template = self.env['mail.template'].sudo().browse(template_id)
