@@ -71,33 +71,29 @@ class SubjectVisibilitySlides(CustomWebsiteSlides):
             # Visibilidad general activa → sin restricción adicional
             return
 
-        # Obtener el lote activo del estudiante (el de mayor fecha de fin que siga vigente)
         partner = request.env.user.partner_id
         today = date.today()
-        admissions = request.env['op.admission'].sudo().search(
-            [('partner_id', '=', partner.id)]
-        )
+        course_ids = (subject.course_id + subject.course_ids).ids
+        admissions = request.env['op.admission'].sudo().search([
+            ('partner_id', '=', partner.id),
+            ('course_id', 'in', course_ids)
+        ])
 
-        active_batch = False
-        highest_end_date = False
+        if not admissions:
+            return request.redirect('/warning/subject-visibility/%s' % channel.id)
+
         for admission in admissions:
-            batch = admission.batch_id
-            if not batch or not batch.end_date:
-                continue
-            if batch.end_date >= today:
-                if not highest_end_date or batch.end_date > highest_end_date:
-                    highest_end_date = batch.end_date
-                    active_batch = batch
+            if admission.irg_has_online_subject_opening_context():
+                visible_subjects = admission.irg_get_visible_online_subjects_for_date(today)
+                if subject in visible_subjects:
+                    return
+            else:
+                batch = admission.batch_id
+                if batch and batch.end_date and batch.end_date >= today:
+                    if subject.is_visible_for_batch(batch):
+                        return
 
-        if not active_batch:
-            # Sin lote activo: sin datos suficientes para evaluar → permitir acceso
-            # (la comprobación de expiración ya la hace el controlador padre)
-            return
-
-        if not subject.is_visible_for_batch(active_batch):
-            return request.redirect(
-                '/warning/subject-visibility/%s' % channel.id
-            )
+        return request.redirect('/warning/subject-visibility/%s' % channel.id)
 
     # ------------------------------------------------------------------
     # Ruta de aviso de visibilidad restringida por asignatura
