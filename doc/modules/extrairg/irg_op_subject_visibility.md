@@ -1,7 +1,7 @@
 # irg_op_subject_visibility
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.0
+**Versión:** 16.0.1.2.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG Developer
@@ -29,7 +29,7 @@ Extiende `op.subject` con campos de visibilidad por lote/promoción. Permite def
 
 ## Vistas y UI
 
-- `views/op_subject_visibility_views.xml` — campos de visibilidad en el formulario de asignatura.
+- `views/op_subject_views.xml` — campos de visibilidad en el formulario de asignatura.
 
 ## Instalación / Actualización
 
@@ -46,6 +46,10 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Changelog
+
+### [16.0.1.2.0] - 2026-05-22
+- Corrección de acceso en controlador: se actualizó `SubjectVisibilitySlides._check_subject_visibility` para filtrar las admisiones según los cursos de la asignatura, previniendo el desbordamiento de acceso entre cursos (cross-course bleed).
+- Integración de la lógica de apertura de asignaturas online basada en fechas para el control de acceso en rutas directas `/slides/<channel>`.
 
 ### [16.0.1.1.0] - 2026-05-22
 - Modificación del método `get_subjects_visible_for_batch(batch, admission=None)` en `op.course` para soportar el contexto de apertura de asignaturas online.
