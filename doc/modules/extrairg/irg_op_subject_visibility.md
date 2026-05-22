@@ -44,3 +44,9 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
     -d <dbname> -u irg_op_subject_visibility \
     --stop-after-init --db_host=pgodoo_latest
 ```
+
+## Changelog
+
+### [16.0.1.1.0] - 2026-05-22
+- Modificación del método `get_subjects_visible_for_batch(batch, admission=None)` en `op.course` para soportar el contexto de apertura de asignaturas online.
+- Filtro en portal ajustado en `portal_subject_visibility.xml` para pasar la variable `vis_admission` de admisión al método de visibilidad de asignaturas.

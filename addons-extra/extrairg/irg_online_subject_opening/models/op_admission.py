@@ -18,7 +18,7 @@ class OpAdmission(models.Model):
         store=True,
     )
 
-    @api.depends('batch_id.code')
+    @api.depends('batch_id.code', 'batch_id.subject_to_batch_ids.date_from', 'batch_id.subject_to_batch_ids.date_to')
     def _compute_irg_is_online_subject_opening(self):
         for record in self:
             record.irg_is_online_subject_opening = record._irg_is_online_subject_opening_batch()

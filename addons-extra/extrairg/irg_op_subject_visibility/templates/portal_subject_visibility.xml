@@ -48,7 +48,7 @@
                 última asignación y no puede ser sobreescrita.
             -->
             <t t-set="subject_ids"
-               t-value="course_id.get_subjects_visible_for_batch(vis_batch)"/>
+               t-value="course_id.get_subjects_visible_for_batch(vis_batch, vis_admission)"/>
 
             <!--
                 Para las asignaturas con visibilidad global (visible_all_course_batches=True),

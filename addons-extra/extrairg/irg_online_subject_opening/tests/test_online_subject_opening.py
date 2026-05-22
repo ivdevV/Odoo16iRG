@@ -147,3 +147,15 @@ class TestOnlineSubjectOpening(TransactionCase):
 
         self.assertFalse(admission.irg_is_online_subject_opening)
         self.assertFalse(admission.irg_online_subject_opening_ids)
+
+    def test_get_subjects_visible_for_batch_online(self):
+        batch = self._create_batch_no_subject_dates('MOPCONL')
+        # Set admission_date to today so that the first subject is visible today
+        admission = self._create_admission(batch, admission_date=date.today())
+
+        # Call the modified method
+        visible_subjects = self.course.get_subjects_visible_for_batch(batch, admission)
+
+        # The first subject 'IRG-OO-A' should be visible
+        self.assertEqual(len(visible_subjects), 1)
+        self.assertEqual(visible_subjects.code, 'IRG-OO-A')
