@@ -346,7 +346,7 @@ class SaleOrderStripeBridge(models.Model):
             response = provider._stripe_make_request(
                 "subscriptions",
                 payload=payload,
-                idempotency_key="irg_sub_%s_%s" % (self.id, int(time.time())),
+                idempotency_key="irg_sub_%s" % self.id,
             )
         except Exception:
             _logger.exception(
