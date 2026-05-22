@@ -89,7 +89,93 @@ class OpAdmission(models.Model):
                 record.partner_id.write({'birth_date': birth})
         return res
 
+    def _ensure_portal_user(self):
+        """Asegura que el alumno tenga un usuario de portal (res.users) creado y vinculado.
+        
+        Si el alumno ya existe (student_id informado), pero no tiene usuario portal (user_id = False),
+        este método busca un usuario existente por partner_id o por email/login, o crea uno nuevo
+        con rol base.group_portal y lo vincula.
+        """
+        portal_group = self.env.ref('base.group_portal', raise_if_not_found=False)
+        for record in self:
+            if not record.student_id:
+                continue
+            student = record.student_id
+            partner = record.partner_id or student.partner_id
+            if not partner:
+                continue
+
+            user = student.user_id
+            
+            # 1. Si no tiene usuario, buscar si ya existe para el partner
+            if not user:
+                user = self.env['res.users'].sudo().search([('partner_id', '=', partner.id)], limit=1)
+
+            # 2. Si no, buscar por email/login
+            if not user and (record.email or partner.email):
+                email = (record.email or partner.email).strip()
+                user = self.env['res.users'].sudo().search([('login', '=', email)], limit=1)
+                if user:
+                    # Si el usuario ya existe, usamos su partner para mantener consistencia
+                    partner = user.partner_id
+                    if record.partner_id != partner:
+                        record.sudo().write({'partner_id': partner.id})
+
+            # 3. Si no existe en ningún sitio, crearlo vinculado al partner
+            if not user:
+                login_email = (record.email or partner.email or '').strip()
+                if not login_email:
+                    _logger.warning(
+                        "IRG Manual Wizard: No se puede crear usuario de portal para admisión %s porque no tiene email.",
+                        record.name
+                    )
+                    continue
+
+                _logger.info(
+                    "IRG Manual Wizard: Creando usuario portal para admisión %s, partner %s (%s)",
+                    record.name, partner.name, login_email
+                )
+                user_vals = {
+                    'name': partner.name,
+                    'login': login_email,
+                    'partner_id': partner.id,
+                    'is_student': True,
+                    'company_id': record.company_id.id or self.env.company.id,
+                }
+                if portal_group:
+                    user_vals['groups_id'] = [(6, 0, [portal_group.id])]
+                
+                user = self.env['res.users'].sudo().create(user_vals)
+
+            # 4. Vincular el usuario al estudiante y asegurar que coincide el partner
+            student_vals = {}
+            if student.user_id != user:
+                student_vals['user_id'] = user.id
+            if student.partner_id != partner:
+                student_vals['partner_id'] = partner.id
+            if student_vals:
+                student.sudo().write(student_vals)
+
+            # 5. Asegurar que tiene el grupo portal si no es usuario interno (base.group_user)
+            if user and portal_group and portal_group not in user.groups_id:
+                if not user.has_group('base.group_user'):
+                    user.sudo().write({'groups_id': [(4, portal_group.id)]})
+
+            # 6. Sincronizar datos básicos de contacto en el partner si faltan
+            partner_vals = {}
+            if not partner.email and (record.email or user.login):
+                partner_vals['email'] = record.email or user.login
+            if not partner.mobile and record.mobile:
+                partner_vals['mobile'] = record.mobile
+            if not partner.phone and record.phone:
+                partner_vals['phone'] = record.phone
+            if partner_vals:
+                partner.sudo().write(partner_vals)
+
     def enroll_student(self):
+        # Aseguramos que se cree y vincule el usuario de portal antes de procesar el registro
+        self._ensure_portal_user()
+
         for record in self:
             if record.partner_id and not record.partner_id.birth_date:
                 record.partner_id.write({'birth_date': record.birth_date or '2000-01-01'})
@@ -108,6 +194,7 @@ class OpAdmission(models.Model):
                 )
                 record.admission_date = orig_date
         return res
+
 
     def get_student_vals(self):
         res = super().get_student_vals()
