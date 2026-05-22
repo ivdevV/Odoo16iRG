@@ -26,7 +26,12 @@ class OpAdmission(models.Model):
     def _irg_is_online_subject_opening_batch(self):
         self.ensure_one()
         batch_code = (self.batch_id.code or '').upper()
-        return bool(batch_code and 'ONL' in batch_code and 'MONL' not in batch_code)
+        if not (batch_code and 'ONL' in batch_code and 'MONL' not in batch_code):
+            return False
+        # Si el lote ya tiene fechas en sus asignaturas, usar lógica de lote (no ventanas individuales)
+        return not self.batch_id.subject_to_batch_ids.filtered(
+            lambda s: s.date_from and s.date_to
+        )
 
     def _irg_has_online_subject_opening_context(self):
         self.ensure_one()
