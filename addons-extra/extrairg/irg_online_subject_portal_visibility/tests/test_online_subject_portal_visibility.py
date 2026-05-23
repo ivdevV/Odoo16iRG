@@ -213,3 +213,29 @@ class TestOnlineSubjectPortalVisibility(TransactionCase):
             res_a = self.controller._check_subject_visibility(self.channel_a)
             # Access should be blocked
             self.assertEqual(res_a, f"redirect:/warning/subject-visibility/{self.channel_a.id}")
+
+    def test_clone_redirection_preservation(self):
+        """Test Case 5: Clone redirection preservation.
+        Set self.channel_a.irg_online_channel_id = self.channel_b.id.
+        Create an online active admission (using _create_online_batch_no_dates('MOPCONL_CLONE'))
+        with today <= due_date.
+        Verify that calling self.controller.channel(self.channel_a) redirects the student
+        to the online clone channel: redirect:/slides/<self.channel_b.id>.
+        """
+        self.channel_a.irg_online_channel_id = self.channel_b.id
+
+        today = date.today()
+        # Create active online admission (due_date in future)
+        batch = self._create_online_batch_no_dates('MOPCONL_CLONE')
+        admission = self._create_admission(batch, admission_date=today, due_date=today + timedelta(days=30))
+
+        # Mock request and check channel redirection
+        mock_req = self._get_mock_request()
+        SlideChannelClass = type(self.env['slide.channel'])
+        with patch.object(SlideChannelClass, '_irg_is_online_student_for_channel', return_value=True), \
+             patch('odoo.addons.irg_online_subject_portal_visibility.controllers.main.request', mock_req):
+            res = self.controller.channel(self.channel_a)
+            # Verify they are redirected to the online clone channel channel_b
+            res_content = res.data.decode('utf-8') if hasattr(res, 'data') else res
+            self.assertEqual(res_content, f"redirect:/slides/{self.channel_b.id}")
+

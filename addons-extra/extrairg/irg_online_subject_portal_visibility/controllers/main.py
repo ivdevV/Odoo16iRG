@@ -3,11 +3,11 @@ from datetime import date
 
 from odoo import http
 from odoo.http import request
-from odoo.addons.irg_op_subject_visibility.controllers.main import SubjectVisibilitySlides
+from odoo.addons.irg_course_convocatorias_v2.controllers.main import CourseConvocatoriasSlides
 from odoo.addons.website_slides.controllers.main import WebsiteSlides
 
 
-class OnlineSubjectVisibilitySlides(SubjectVisibilitySlides):
+class OnlineSubjectVisibilitySlides(CourseConvocatoriasSlides):
 
     @http.route([
         '/slides/<model("slide.channel"):channel>',
@@ -24,6 +24,17 @@ class OnlineSubjectVisibilitySlides(SubjectVisibilitySlides):
         """
         is_internal_user = request.env.user.has_group('base.group_user')
         if not is_internal_user:
+            # Case 1: Channel is HomeClass and student is Online modality
+            if channel.irg_online_channel_id:
+                if channel._irg_is_online_student_for_channel():
+                    return request.redirect('/slides/%s' % channel.irg_online_channel_id.id)
+
+            # Case 2: Channel is Online clone and student is NOT Online modality (meaning HomeClass)
+            elif channel.irg_homeclass_channel_id:
+                if not channel.irg_homeclass_channel_id._irg_is_online_student_for_channel():
+                    return request.redirect('/slides/%s' % channel.irg_homeclass_channel_id.id)
+
+            # If no clone redirection occurred and there is a subject linked to the channel
             subject = request.env['op.subject'].sudo().search([('slide_channel_id', '=', channel.id)], limit=1)
             if subject:
                 redirect = self._check_subject_visibility(channel)
@@ -45,7 +56,7 @@ class OnlineSubjectVisibilitySlides(SubjectVisibilitySlides):
                     **kw
                 )
 
-        return super().channel(
+        return super(OnlineSubjectVisibilitySlides, self).channel(
             channel,
             category=category,
             tag=tag,
