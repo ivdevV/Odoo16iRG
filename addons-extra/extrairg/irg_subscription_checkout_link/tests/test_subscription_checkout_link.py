@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from unittest.mock import patch
+from types import SimpleNamespace
 
 from odoo import fields
 from odoo.tests.common import TransactionCase, tagged
@@ -295,3 +296,44 @@ class TestSubscriptionCheckoutLink(TransactionCase):
 
         create_mock.assert_called_once_with(order)
         self.assertEqual(order.irg_checkout_state, "consumed")
+
+    def test_setup_only_transaction_forces_tokenization_requested(self):
+        from odoo.addons.irg_subscription_checkout_link.controllers.main import (
+            IRGSubscriptionCheckoutController,
+        )
+
+        order = self._create_order({"irg_subscription_checkout_mode": "setup_only"})
+        controller = IRGSubscriptionCheckoutController()
+        captured = {}
+
+        def _capture_create_transaction(**kwargs):
+            captured["kwargs"] = kwargs
+            return SimpleNamespace(_get_processing_values=lambda: {})
+
+        with patch(
+            "odoo.addons.irg_subscription_checkout_link.controllers.main.request",
+            SimpleNamespace(env=self.env),
+        ), patch.object(
+            type(controller),
+            "_get_checkout_order",
+            autospec=True,
+            return_value=(order, True),
+        ), patch.object(
+            type(controller),
+            "_get_stripe_checkout_providers",
+            autospec=True,
+            return_value=self.provider,
+        ), patch.object(
+            controller,
+            "_create_transaction",
+            side_effect=_capture_create_transaction,
+        ):
+            controller.irg_subscription_checkout_transaction(
+                order.id,
+                "valid-token",
+                payment_option_id=self.provider.id,
+                flow="direct",
+            )
+
+        self.assertTrue(captured["kwargs"]["is_validation"])
+        self.assertTrue(captured["kwargs"]["tokenization_requested"])

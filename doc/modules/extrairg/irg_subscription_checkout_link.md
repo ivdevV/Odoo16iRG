@@ -185,3 +185,4 @@ Cobertura declarada por la suite:
 - **2026-05-23:** actualizado el comportamiento de `setup_only` para reflejar tokenizacion con `SetupIntent`/validacion sin creacion inmediata de suscripcion Stripe, con estado `tokenized_pending_confirmation` y consumo posterior por el wizard.
 - **2026-05-23:** documentado el bugfix del callback: `_irg_checkout_assign_token_callback` devuelve el resultado real de `_irg_record_checkout_transaction(tx)`, permite reintento si el registro se rechaza y emite aviso con token enmascarado.
 - **2026-05-23:** registrados los resultados de validacion del modulo individual y de la combinacion con `irg_payment_stripe_recurring`.
+- **2026-05-23:** bugfix en el endpoint publico de `setup_only`: ahora fuerza `tokenization_requested=True` antes de crear la transaccion de validacion para que Stripe genere `payment.token` tambien con usuario publico y sin checkbox visible.

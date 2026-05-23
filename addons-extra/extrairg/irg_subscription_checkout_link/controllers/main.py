@@ -104,6 +104,7 @@ class IRGSubscriptionCheckoutController(payment_portal.PaymentPortal):
         }
         if mode == "setup_only":
             kwargs["reference_prefix"] = payment_utils.singularize_reference_prefix(prefix="V")
+            kwargs["tokenization_requested"] = True
             tx = self._create_transaction(
                 custom_create_values=custom_create_values,
                 is_validation=True,
