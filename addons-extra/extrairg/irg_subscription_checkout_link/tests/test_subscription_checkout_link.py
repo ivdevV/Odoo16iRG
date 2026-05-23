@@ -83,6 +83,19 @@ class TestSubscriptionCheckoutLink(TransactionCase):
             order.irg_subscription_checkout_url,
         )
 
+    def test_mail_template_renders_public_checkout_url(self):
+        order = self._create_order()
+        order.action_irg_generate_subscription_checkout_link()
+        template = self.env.ref(
+            "irg_subscription_checkout_link.mail_template_subscription_checkout_link"
+        )
+
+        body = template._render_field("body_html", [order.id])[order.id]
+
+        self.assertIn(order.irg_subscription_checkout_url, body)
+        self.assertNotIn("{{ object.irg_subscription_checkout_url }}", body)
+        self.assertNotIn("{{ object.partner_id.name", body)
+
     def test_invalid_token_false(self):
         order = self._create_order()
         order.action_irg_generate_subscription_checkout_link()

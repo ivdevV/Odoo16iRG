@@ -9,13 +9,13 @@
         <field name="auto_delete" eval="False"/>
         <field name="body_html" type="html">
             <div>
-                <p>Hola {{ object.partner_id.name or '' }},</p>
+                <p>Hola <t t-out="object.partner_id.name or ''"/>,</p>
                 <p>
                     Puedes completar el pago o guardar tu tarjeta para la suscripcion
                     desde el siguiente enlace:
                 </p>
                 <p>
-                    <a href="{{ object.irg_subscription_checkout_url }}">
+                    <a t-att-href="object.irg_subscription_checkout_url">
                         Abrir enlace de pago
                     </a>
                 </p>
