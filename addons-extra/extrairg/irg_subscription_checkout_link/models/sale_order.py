@@ -8,6 +8,15 @@ from odoo.fields import Command
 _logger = logging.getLogger(__name__)
 
 
+def _irg_mask_log_value(value, keep=4):
+    if not value:
+        return "-"
+    value = str(value)
+    if len(value) <= keep:
+        return "*" * len(value)
+    return "...%s" % value[-keep:]
+
+
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
@@ -251,8 +260,17 @@ class SaleOrder(models.Model):
 
     def _irg_checkout_assign_token_callback(self, tx):
         self.ensure_one()
-        self._irg_record_checkout_transaction(tx)
-        return True
+        recorded = self._irg_record_checkout_transaction(tx)
+        if not recorded:
+            _logger.warning(
+                "IRG checkout: rejected callback persistence for order %s (tx=%s, token=%s)",
+                self.name,
+                getattr(tx, "reference", False) or getattr(tx, "id", False) or "-",
+                _irg_mask_log_value(
+                    getattr(getattr(tx, "token_id", False), "provider_ref", False)
+                ),
+            )
+        return recorded
 
     def _irg_has_stripe_subscription(self):
         self.ensure_one()

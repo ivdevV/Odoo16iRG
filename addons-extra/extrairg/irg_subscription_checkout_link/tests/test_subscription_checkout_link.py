@@ -127,6 +127,41 @@ class TestSubscriptionCheckoutLink(TransactionCase):
 
         self.assertEqual(order.state, "draft")
 
+    def test_callback_returns_true_when_pending_token_was_recorded(self):
+        order = self._create_order({"irg_subscription_checkout_mode": "setup_only"})
+
+        result = order._irg_checkout_assign_token_callback(self.tx)
+
+        self.assertTrue(result)
+        self.assertEqual(order.irg_pending_payment_transaction_id, self.tx)
+        self.assertEqual(order.irg_pending_payment_token_id, self.token)
+        self.assertEqual(
+            order.irg_checkout_state,
+            "tokenized_pending_confirmation",
+        )
+
+    def test_callback_returns_false_when_pending_token_was_not_recorded(self):
+        order = self._create_order({"irg_subscription_checkout_mode": "setup_only"})
+        invalid_token = self.token.copy(
+            {
+                "provider_ref": "cus_checkout_invalid_callback",
+                "stripe_payment_method": False,
+            }
+        )
+        invalid_tx = self.tx.copy(
+            {
+                "reference": "IRG-CHECKOUT-CALLBACK-INVALID",
+                "token_id": invalid_token.id,
+            }
+        )
+
+        result = order._irg_checkout_assign_token_callback(invalid_tx)
+
+        self.assertFalse(result)
+        self.assertFalse(order.irg_pending_payment_transaction_id)
+        self.assertFalse(order.irg_pending_payment_token_id)
+        self.assertEqual(order.irg_checkout_state, "draft")
+
     def test_record_pending_token_state(self):
         order = self._create_order({"irg_subscription_checkout_mode": "setup_only"})
 

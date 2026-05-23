@@ -11,7 +11,7 @@
 
 Permite enviar al alumno un enlace publico de checkout para preparar una suscripcion antes de que el asesor confirme manualmente el pedido.
 
-El enlace no sustituye el proceso interno de admision. Solo recoge un pago inicial o tokeniza una tarjeta Stripe y deja el resultado pendiente en el pedido. La confirmacion final sigue pasando por el wizard manual de venta/admisiones.
+El enlace no sustituye el proceso interno de admision. En `initial_payment` recoge un pago inicial y deja la confirmacion pendiente; en `setup_only` usa Stripe mediante `SetupIntent` o validacion para tokenizar la tarjeta sin crear la suscripcion Stripe de inmediato. En ambos casos el resultado queda pendiente en el pedido hasta que el wizard manual lo consume.
 
 ## Flujo de negocio
 
@@ -45,7 +45,7 @@ Estados relevantes de `irg_checkout_state`:
 | `draft` | Enlace no enviado o aun reutilizable si no hay pendiente. |
 | `sent` | Enlace generado/enviado y pendiente de uso. |
 | `paid_pending_confirmation` | Pago inicial recibido y pendiente de confirmacion manual. |
-| `tokenized_pending_confirmation` | Tarjeta tokenizada y pendiente de confirmacion manual. |
+| `tokenized_pending_confirmation` | Tarjeta tokenizada y pendiente de confirmacion manual, sin suscripcion Stripe creada todavia. |
 | `consumed` | El wizard manual ya consumio el pendiente. |
 | `expired` | Reservado para caducidad operativa/manual. |
 | `error` | Fallo al crear la suscripcion Stripe durante el consumo. |
@@ -68,6 +68,8 @@ El enlace es valido solo si:
 - no existe ya una transaccion o token pendiente en el pedido.
 
 Si el enlace no es valido, el controlador devuelve `404`. Despues de registrar un pendiente, el enlace queda invalidado para evitar dobles capturas o doble tokenizacion.
+
+Cuando el flujo llega a `setup_only`, el comportamiento esperado es tokenizar la tarjeta con la validacion de Stripe, guardar `irg_pending_payment_token_id` y dejar `irg_checkout_state` en `tokenized_pending_confirmation`. En ese modo no se crea una suscripcion Stripe en el callback publico.
 
 ## `initial_payment` vs `setup_only`
 
@@ -92,6 +94,14 @@ Durante el consumo:
 - si habia un pendiente y el proceso termina correctamente, el estado pasa a `consumed`.
 
 El callback del checkout no confirma el pedido ni crea la suscripcion Stripe por si solo. Esa separacion mantiene la revision manual de admision como punto de control obligatorio.
+
+Si el token pendiente ya puede consumirse y aplican las reglas de `irg_payment_stripe_recurring`, el wizard crea o reintenta la suscripcion Stripe en ese momento. Si la suscripcion ya existe (`sub_...`), no se duplica.
+
+## Callback del checkout y reintentos
+
+El callback interno `_irg_checkout_assign_token_callback` devuelve el resultado real de `_irg_record_checkout_transaction(tx)`. Si el registro de la transaccion se rechaza, Odoo no marca `callback_is_done` y el flujo puede reintentarse de forma segura.
+
+Cuando el registro se rechaza, el sistema registra una advertencia con el token enmascarado para facilitar trazabilidad sin exponer credenciales ni identificadores completos.
 
 ## Restricciones Stripe e invariantes de seguridad
 
@@ -137,7 +147,11 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf \
     --stop-after-init
 ```
 
-Resultado local: `0 failed, 0 error(s)` al cargar la base `test_irg_db`.
+Resultado local: `16` tests OK en el modulo.
+
+Suite combinada con `irg_payment_stripe_recurring`:
+
+Resultado local: `24` tests OK.
 
 Cobertura declarada por la suite:
 
@@ -145,8 +159,10 @@ Cobertura declarada por la suite:
 - rechazo de token invalido;
 - calculo automatico de `setup_only` para vencimiento futuro;
 - calculo automatico de `initial_payment` para vencimiento actual o pasado;
+- tokenizacion sin suscripcion inmediata en `setup_only`;
 - callback sin confirmacion automatica del pedido;
 - registro de token pendiente y estado `tokenized_pending_confirmation`;
+- retorno real del callback de asignacion de token y reintento cuando el registro es rechazado;
 - rechazo de transacciones no finalizadas o sin `stripe_payment_method`;
 - invalidacion del enlace tras registrar un pendiente;
 - no consumo ni creacion Stripe desde callback sobre pedido confirmado;
@@ -166,4 +182,6 @@ Cobertura declarada por la suite:
 ## Changelog
 
 - **2026-05-22:** creado el modulo `irg_subscription_checkout_link` para generar enlaces publicos de alta/pago de suscripcion antes del wizard manual, con captura Stripe pendiente, consumo posterior por admision manual, controles anti-doble cobro e invariantes de proveedor/token Stripe.
-- **2026-05-22:** documentado el flujo de negocio, acciones del asesor, comportamiento del enlace publico, modos de checkout, consumo por wizard manual, configuracion, pruebas y notas operativas.
+- **2026-05-23:** actualizado el comportamiento de `setup_only` para reflejar tokenizacion con `SetupIntent`/validacion sin creacion inmediata de suscripcion Stripe, con estado `tokenized_pending_confirmation` y consumo posterior por el wizard.
+- **2026-05-23:** documentado el bugfix del callback: `_irg_checkout_assign_token_callback` devuelve el resultado real de `_irg_record_checkout_transaction(tx)`, permite reintento si el registro se rechaza y emite aviso con token enmascarado.
+- **2026-05-23:** registrados los resultados de validacion del modulo individual y de la combinacion con `irg_payment_stripe_recurring`.
