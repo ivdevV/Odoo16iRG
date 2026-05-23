@@ -194,7 +194,8 @@ class SlideChannel(models.Model):
 
     def _irg_get_related_courses(self):
         self.ensure_one()
-        course_model = self.env['op.course']
+        self = self.sudo()
+        course_model = self.env['op.course'].sudo()
         courses = self.op_subject_ids.mapped('course_id')
         if self.op_subject_ids:
             courses |= course_model.search([('subject_ids', 'in', self.op_subject_ids.ids)])
@@ -615,10 +616,11 @@ class SlideChannel(models.Model):
 
     def _irg_is_online_student_for_channel(self):
         self.ensure_one()
-        return self._irg_is_partner_online_student_for_channel(self.env.user.partner_id)
+        return self.sudo()._irg_is_partner_online_student_for_channel(self.env.user.partner_id)
 
     def _irg_is_partner_online_student_for_channel(self, partner):
         self.ensure_one()
+        self = self.sudo()
         if not partner:
             return False
 
@@ -627,7 +629,7 @@ class SlideChannel(models.Model):
             ('partner_id', '=', partner.id)
         ])
 
-        active_batches = self.env['op.batch']
+        active_batches = self.env['op.batch'].sudo()
         for admission in admissions:
             batch = admission.batch_id
             if batch and batch.end_date and batch.end_date >= today:

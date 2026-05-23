@@ -456,3 +456,68 @@ class TestBootstrapOnlineFromHomeClassV2(TransactionCase):
         ])
         self.assertEqual(len(clone_cp_online_check), 0)
 
+    def test_portal_user_access_check(self):
+        # Create a portal partner and user
+        portal_group = self.env.ref('base.group_portal')
+        portal_partner = self.env['res.partner'].create({
+            'name': 'Portal Student Test',
+            'email': 'portal.student.test@example.com',
+        })
+        portal_user = self.env['res.users'].create({
+            'name': 'Portal User Test',
+            'login': 'portal.student.test@example.com',
+            'partner_id': portal_partner.id,
+            'groups_id': [(6, 0, [portal_group.id])],
+        })
+
+        Course = self.env['op.course']
+        Subject = self.env['op.subject']
+        Batch = self.env['op.batch']
+        Admission = self.env['op.admission']
+
+        course = Course.create({'name': 'Curso de Prueba Portal', 'code': 'TEST-PORTAL'})
+        Subject.create({
+            'name': 'Asignatura de Prueba Portal',
+            'code': 'SUBJ-PORTAL',
+            'course_id': course.id,
+            'slide_channel_id': self.channel.id,
+        })
+
+        today = date.today()
+        register = self.env['op.admission.register'].create({
+            'name': 'Admission Register Portal',
+            'course_id': course.id,
+            'product_id': self.product.id,
+            'start_date': today - timedelta(days=20),
+            'end_date': today + timedelta(days=20),
+            'min_count': 1,
+            'max_count': 30,
+            'state': 'admission',
+        })
+
+        batch_online = Batch.create({
+            'name': 'Batch Online Portal',
+            'code': 'ONL-PORTAL',
+            'course_id': course.id,
+            'start_date': today - timedelta(days=10),
+            'end_date': today + timedelta(days=10),
+        })
+
+        Admission.create({
+            'name': 'Student Online Portal',
+            'first_name': 'Student',
+            'last_name': 'Portal',
+            'birth_date': '2000-01-01',
+            'gender': 'm',
+            'email': 'portal.student.test@example.com',
+            'state': 'confirm',
+            'partner_id': portal_partner.id,
+            'batch_id': batch_online.id,
+            'course_id': course.id,
+            'register_id': register.id,
+        })
+
+        # Run as portal user and verify it works without raising AccessError (403) and correctly evaluates to True
+        res = self.channel.with_user(portal_user)._irg_is_online_student_for_channel()
+        self.assertTrue(res)
+
