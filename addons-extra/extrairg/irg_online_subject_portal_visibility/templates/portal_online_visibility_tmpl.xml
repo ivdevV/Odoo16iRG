@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Página de aviso que se muestra cuando el curso de un estudiante
+        ha expirado (superado la fecha de vencimiento).
+        Variables recibidas del controlador:
+          - admission: registro de op.admission
+          - course_name: nombre del curso
+          - due_date: fecha de vencimiento
+    -->
+    <template id="template_online_admission_expired" name="Acceso a curso online expirado">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="s_text_block pt80 pb80">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8 text-center">
+                                <h3>Acceso Finalizado</h3>
+                                <p class="lead mt-3">
+                                    El acceso al curso <strong><t t-esc="course_name"/></strong>
+                                    ha finalizado porque se ha superado la fecha de vencimiento establecida
+                                    (<t t-esc="due_date" t-options="{'widget': 'date'}"/>).
+                                </p>
+                                <p>
+                                    Si necesitas más información o deseas solicitar una prórroga,
+                                    por favor contacta con tu responsable académico.
+                                </p>
+                                <a href="/my/home" class="btn btn-primary mt-4">
+                                    Volver a mi cuenta
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>
