@@ -13,6 +13,16 @@ class OpCourse(models.Model):
         self.ensure_one()
         _logger.info("[PORTAL_VISIBILITY] get_subjects_visible_for_batch called for course: %s, batch: %s (ID: %s), admission: %s",
                      self.name, batch.name if batch else 'None', batch.id if batch else 'None', admission.id if admission else 'None')
+        
+        # Temporary detailed logging for diagnostics
+        for subject in self.subject_ids:
+            _logger.info("[PORTAL_VISIBILITY] -> Subject name: '%s', visible_all_course_batches: %s",
+                         subject.name, subject.visible_all_course_batches)
+        if batch:
+            for line in batch.subject_to_batch_ids:
+                _logger.info("[PORTAL_VISIBILITY] -> Batch subject line: '%s', date_from: %s, date_to: %s",
+                             line.subject_id.name, line.date_from, line.date_to)
+
         if admission:
             # Let's log why irg_has_online_subject_opening_context evaluates to True or False
             batch_code = (admission.batch_id.code or '').upper()
