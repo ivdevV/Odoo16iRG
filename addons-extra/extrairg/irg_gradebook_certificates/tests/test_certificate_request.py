@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from odoo import fields
 from odoo.tests.common import TransactionCase
 from odoo.exceptions import ValidationError, UserError
 
@@ -13,12 +14,33 @@ class TestIrgCertificateRequest(TransactionCase):
         cls.partner = cls.env['res.partner'].create({'name': 'Test Student Portal'})
         cls.course = cls.env['op.course'].create({'name': 'Test Course', 'code': 'TC01'})
         cls.batch = cls.env['op.batch'].create({
-            'name': 'Batch A', 'code': 'BA', 'course_id': cls.course.id
+            'name': 'Batch A',
+            'code': 'BA',
+            'course_id': cls.course.id,
+            'start_date': fields.Date.today(),
+            'end_date': fields.Date.today(),
+        })
+        cls.product = cls.env['product.product'].create({
+            'name': 'Test Course Product',
+            'type': 'service',
+        })
+        cls.register = cls.env['op.admission.register'].create({
+            'name': 'Test Register',
+            'course_id': cls.course.id,
+            'start_date': fields.Date.today(),
+            'end_date': fields.Date.today(),
+            'min_count': 1,
+            'max_count': 100,
+            'product_id': cls.product.id,
         })
         cls.admission = cls.env['op.admission'].create({
             'name': 'ADM-TEST',
             'partner_id': cls.partner.id,
             'course_id': cls.course.id,
+            'register_id': cls.register.id,
+            'gender': 'm',
+            'first_name': 'Test',
+            'last_name': 'Student',
         })
         cls.gradebook = cls.env['app.gradebook.student'].create({
             'partner_id': cls.partner.id,

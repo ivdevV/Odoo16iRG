@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+import base64
+import io
 import logging
 from odoo import http, _
 from odoo.http import request
 from odoo.exceptions import ValidationError
-
-from ..models.irg_certificate_request import (
+from odoo.addons.irg_gradebook_certificates.controllers.portal import (
+    CertificatePortalController,
     CERTIFICATE_TYPES,
     SHIPPING_TYPES,
     CUSTOM_OPTIONS,
@@ -16,68 +18,8 @@ from ..models.irg_certificate_request import (
 
 _logger = logging.getLogger(__name__)
 
-PRODUCT_XMLIDS = {
-    'digital': 'irg_gradebook_certificates.product_cert_digital',
-    'physical': 'irg_gradebook_certificates.product_cert_physical',
-    'custom': 'irg_gradebook_certificates.product_cert_custom',
-    'physical_apostilled': 'irg_gradebook_certificates.product_cert_apostilled',
-}
 
-SHIPPING_PRODUCT_XMLIDS = {
-    'national': 'irg_gradebook_certificates.product_shipping_national',
-    'international': 'irg_gradebook_certificates.product_shipping_international',
-}
-
-
-def _get_portal_gradebooks():
-    """Return closed (state=done) gradebooks belonging to the current portal user.
-
-    Only closed libretas are eligible for certificate requests.
-    """
-    partner = request.env.user.partner_id
-    return request.env['app.gradebook.student'].sudo().search([
-        ('partner_id', '=', partner.id),
-        ('state', '=', 'done'),
-    ])
-
-
-def _build_sale_order(cert, partner):
-    """Create and return a new sale.order for the given certificate request."""
-    cert_product_tmpl = request.env.ref(PRODUCT_XMLIDS[cert.certificate_type]).sudo()
-    cert_product = cert_product_tmpl.product_variant_ids[:1]
-    if not cert_product:
-        raise ValidationError(_('El producto del certificado no está configurado.'))
-
-    order_lines = [(0, 0, {
-        'product_id': cert_product.id,
-        'product_uom_qty': 1,
-        'price_unit': PRICE_MAP.get(cert.certificate_type, 0.0),
-        'name': cert_product_tmpl.name,
-    })]
-
-    if cert.shipping_type and cert.certificate_type in PHYSICAL_TYPES:
-        ship_tmpl = request.env.ref(SHIPPING_PRODUCT_XMLIDS[cert.shipping_type]).sudo()
-        ship_product = ship_tmpl.product_variant_ids[:1]
-        if ship_product:
-            order_lines.append((0, 0, {
-                'product_id': ship_product.id,
-                'product_uom_qty': 1,
-                'price_unit': SHIPPING_MAP.get(cert.shipping_type, 0.0),
-                'name': ship_tmpl.name,
-            }))
-
-    sale_order = request.env['sale.order'].sudo().create({
-        'partner_id': partner.id,
-        'order_line': order_lines,
-        'certificate_request_id': cert.id,
-        'note': _('Certificado de notas %s — referencia %s') % (
-            dict(CERTIFICATE_TYPES).get(cert.certificate_type, ''), cert.name
-        ),
-    })
-    return sale_order
-
-
-class CertificatePortalController(http.Controller):
+class IrgCampusCertificatesPortal(CertificatePortalController):
 
     # ------------------------------------------------------------------
     # /campus/certificates — list
@@ -92,13 +34,34 @@ class CertificatePortalController(http.Controller):
     )
     def certificate_list(self, **kw):
         partner = request.env.user.partner_id
+        
+        # 1. Solicitudes de certificados de notas del partner actual
         certs = request.env['irg.certificate.request'].sudo().search([
             ('partner_id', '=', partner.id),
         ], order='id desc')
+        
+        # 2. Estudiante(s) asociado(s) al partner actual
+        students = request.env['op.student'].sudo().search([
+            ('partner_id', '=', partner.id)
+        ])
+        
+        # 3. Actas de TFM/TFG del estudiante
+        actas = request.env['irg.tfm.acta'].sudo().search([
+            ('student_id', 'in', students.ids),
+        ], order='id desc')
+        
+        # 4. Diplomas válidos del estudiante
+        diplomas = request.env['irg.diploma.registry'].sudo().search([
+            ('student_id', 'in', students.ids),
+            ('state', '=', 'valid'),
+        ], order='id desc')
+        
         return request.render(
             'irg_gradebook_certificates.portal_certificate_list',
             {
                 'certs': certs,
+                'actas': actas,
+                'diplomas': diplomas,
                 'page_name': 'certificates',
             },
         )
@@ -117,7 +80,21 @@ class CertificatePortalController(http.Controller):
     )
     def certificate_new(self, **post):
         partner = request.env.user.partner_id
-        gradebooks = _get_portal_gradebooks()
+        
+        # Load all gradebooks that are not draft or cancelled
+        gradebooks = request.env['app.gradebook.student'].sudo().search([
+            ('partner_id', '=', partner.id),
+            ('state', 'not in', ('draft', 'cancelled')),
+        ])
+
+        # Define document types
+        document_types = [
+            ('gradebook', 'Certificado de Notas Completo'),
+            ('gradebook_partial', 'Certificado de Notas Parcial'),
+            ('diploma', 'Diploma'),
+            ('attendance', 'Certificado de Asistencia'),
+            ('enrollment', 'Certificado de Matrícula'),
+        ]
 
         # ---- GET ----
         if request.httprequest.method == 'GET':
@@ -125,6 +102,7 @@ class CertificatePortalController(http.Controller):
                 'irg_gradebook_certificates.portal_certificate_new',
                 {
                     'gradebooks': gradebooks,
+                    'document_types': document_types,
                     'certificate_types': CERTIFICATE_TYPES,
                     'shipping_types': SHIPPING_TYPES,
                     'custom_options': CUSTOM_OPTIONS,
@@ -138,6 +116,7 @@ class CertificatePortalController(http.Controller):
             )
 
         # ---- POST ----
+        document_type = post.get('document_type', 'gradebook').strip()
         cert_type = post.get('certificate_type', '').strip()
         shipping_type = post.get('shipping_type', '').strip() or False
         gradebook_id = int(post.get('gradebook_id', 0) or 0)
@@ -152,6 +131,7 @@ class CertificatePortalController(http.Controller):
                 'irg_gradebook_certificates.portal_certificate_new',
                 {
                     'gradebooks': gradebooks,
+                    'document_types': document_types,
                     'certificate_types': CERTIFICATE_TYPES,
                     'shipping_types': SHIPPING_TYPES,
                     'custom_options': CUSTOM_OPTIONS,
@@ -164,10 +144,14 @@ class CertificatePortalController(http.Controller):
                 },
             )
 
+        # Validate document type
+        if document_type not in dict(document_types):
+            return _render_error(_('Selecciona un tipo de documento válido.'))
+
         # Validate certificate type
         valid_types = [t[0] for t in CERTIFICATE_TYPES]
         if cert_type not in valid_types:
-            return _render_error(_('Selecciona un tipo de certificado válido.'))
+            return _render_error(_('Selecciona un formato de entrega válido.'))
 
         # Validate shipping for physical types
         if cert_type in PHYSICAL_TYPES and not shipping_type:
@@ -182,15 +166,22 @@ class CertificatePortalController(http.Controller):
             gradebook = gradebooks[0]
         elif not gradebooks:
             return _render_error(
-                _('No tienes ninguna libreta académica cerrada. '
-                  'Solo puedes solicitar certificados cuando tu libreta de calificaciones '
-                  'esté finalizada. Contacta con administración si crees que es un error.')
+                _('No tienes ninguna libreta académica activa. '
+                  'Contacta con administración si crees que es un error.')
             )
         else:
             return _render_error(_('Selecciona la libreta para la que solicitas el certificado.'))
 
-        # Enrollment payment check — only for students with an active subscription.
-        # If the student has no op.student record the check is skipped gracefully.
+        # Check state constraints for gradebook/diploma vs partial/attendance/enrollment
+        if document_type in ('gradebook', 'diploma') and gradebook.state != 'done':
+            return _render_error(
+                _('Para solicitar este documento (Notas Completo o Diploma), '
+                  'tu libreta debe estar finalizada (estado Cerrada).')
+            )
+        if gradebook.state in ('draft', 'cancelled'):
+            return _render_error(_('La libreta seleccionada no está activa.'))
+
+        # Enrollment payment check
         student = request.env['op.student'].sudo().search(
             [('partner_id', '=', partner.id)], limit=1
         )
@@ -206,6 +197,7 @@ class CertificatePortalController(http.Controller):
         try:
             cert = request.env['irg.certificate.request'].sudo().create({
                 'gradebook_student_id': gradebook.id,
+                'document_type': document_type,
                 'certificate_type': cert_type,
                 'shipping_type': shipping_type or False,
                 'custom_description': custom_description,
@@ -224,56 +216,57 @@ class CertificatePortalController(http.Controller):
         return request.redirect('/campus/certificates/confirm/%d' % cert.id)
 
     # ------------------------------------------------------------------
-    # /campus/certificates/confirm/<id> — confirmation page
+    # Download Endpoints for Diplomas and Actas (using .sudo() for safety)
     # ------------------------------------------------------------------
 
     @http.route(
-        '/campus/certificates/confirm/<int:cert_id>',
+        '/campus/certificates/download/diploma/<int:diploma_id>',
         type='http',
         auth='user',
         website=True,
         methods=['GET'],
     )
-    def certificate_confirm(self, cert_id, **kw):
-        cert = request.env['irg.certificate.request'].sudo().browse(cert_id)
+    def download_diploma(self, diploma_id, **kw):
         partner = request.env.user.partner_id
-        if not cert.exists() or cert.partner_id.id != partner.id:
+        diploma = request.env['irg.diploma.registry'].sudo().browse(diploma_id)
+        
+        # Security: only the student associated with the logged-in partner may download
+        if not diploma.exists() or diploma.student_id.partner_id.id != partner.id or diploma.state != 'valid':
             return request.redirect('/campus/certificates')
-        return request.render(
-            'irg_gradebook_certificates.portal_certificate_confirm',
-            {
-                'cert': cert,
-                'page_name': 'certificates',
-            },
-        )
-
-    # ------------------------------------------------------------------
-    # /campus/certificates/download/<id> — PDF download
-    # ------------------------------------------------------------------
-
-    @http.route(
-        '/campus/certificates/download/<int:cert_id>',
-        type='http',
-        auth='user',
-        website=True,
-        methods=['GET'],
-    )
-    def certificate_download(self, cert_id, **kw):
-        partner = request.env.user.partner_id
-        cert = request.env['irg.certificate.request'].sudo().browse(cert_id)
-
-        # Security: only the owning student may download
-        if not cert.exists() or cert.partner_id.id != partner.id:
-            return request.redirect('/campus/certificates')
-
-        # Not yet paid — take the student back to the confirm page with the payment link
-        if cert.state == 'pending_payment':
-            return request.redirect('/campus/certificates/confirm/%d' % cert.id)
-
-        if not cert.attachment_id:
+            
+        if not diploma.attachment_id or not diploma.attachment_id.datas:
             return request.redirect('/campus/certificates?error=no_pdf')
+            
+        try:
+            data = io.BytesIO(base64.standard_b64decode(diploma.attachment_id.datas))
+            filename = diploma.attachment_id.name or "diploma.pdf"
+            return http.send_file(data, filename=filename, as_attachment=True)
+        except Exception:
+            _logger.exception('Error al descargar el diploma %s', diploma_id)
+            return request.redirect('/campus/certificates?error=download_error')
 
-        # Serve the attachment directly
-        return request.redirect(
-            '/web/content/%d?download=true' % cert.attachment_id.id
-        )
+    @http.route(
+        '/campus/certificates/download/acta/<int:acta_id>',
+        type='http',
+        auth='user',
+        website=True,
+        methods=['GET'],
+    )
+    def download_acta(self, acta_id, **kw):
+        partner = request.env.user.partner_id
+        acta = request.env['irg.tfm.acta'].sudo().browse(acta_id)
+        
+        # Security: only the student associated with the logged-in partner may download
+        if not acta.exists() or acta.student_id.partner_id.id != partner.id:
+            return request.redirect('/campus/certificates')
+            
+        if not acta.attachment_id or not acta.attachment_id.datas:
+            return request.redirect('/campus/certificates?error=no_pdf')
+            
+        try:
+            data = io.BytesIO(base64.standard_b64decode(acta.attachment_id.datas))
+            filename = acta.attachment_id.name or "acta.pdf"
+            return http.send_file(data, filename=filename, as_attachment=True)
+        except Exception:
+            _logger.exception('Error al descargar el acta %s', acta_id)
+            return request.redirect('/campus/certificates?error=download_error')

@@ -107,6 +107,19 @@ class IrgCertificateRequest(models.Model):
         readonly=True,
         required=True,
     )
+    document_type = fields.Selection(
+        selection=[
+            ('gradebook', 'Certificado de Notas Completo'),
+            ('gradebook_partial', 'Certificado de Notas Parcial'),
+            ('diploma', 'Diploma'),
+            ('attendance', 'Certificado de Asistencia'),
+            ('enrollment', 'Certificado de Matrícula'),
+        ],
+        string='Tipo de Documento',
+        default='gradebook',
+        required=True,
+        tracking=True,
+    )
 
     # ------------------------------------------------------------------
     # Academic data (from gradebook)
@@ -385,18 +398,20 @@ class IrgCertificateRequest(models.Model):
     # ------------------------------------------------------------------
 
     def _get_template_path(self):
-        """Return the absolute path to the Word certificate template.
-
-        Template selection is based on the signer field:
-          - 'raimon'        → Plantilla-certificado-notas-raimon.docx
-          - 'dpto_academico' → Plantilla-certificado-notas-dpto.docx
-        """
+        """Return the absolute path to the Word certificate template based on signer and document_type."""
         module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         tpl_dir = os.path.join(module_path, 'static', 'src', 'templates')
-        if self.signer == 'dpto_academico':
-            filename = 'Plantilla-certificado-notas-dpto.docx'
+        
+        signer_suffix = 'dpto' if self.signer == 'dpto_academico' else 'raimon'
+        
+        if self.document_type == 'attendance':
+            filename = f'Plantilla-certificado-asistencia-{signer_suffix}.docx'
+        elif self.document_type == 'enrollment':
+            filename = f'Plantilla-certificado-curso-{signer_suffix}.docx'
         else:
-            filename = 'Plantilla-certificado-notas-raimon.docx'
+            # Fallback for gradebook / gradebook_partial
+            filename = f'Plantilla-certificado-notas-{signer_suffix}.docx'
+            
         return os.path.join(tpl_dir, filename)
 
     @staticmethod
@@ -543,6 +558,15 @@ class IrgCertificateRequest(models.Model):
                     for para in cell.paragraphs:
                         for old, new in replacements.items():
                             self._replace_in_paragraph(para, old, new)
+
+        # For non-gradebook types (attendance, enrollment), skip table editing
+        if self.document_type not in ('gradebook', 'gradebook_partial'):
+            tmp_docx = tempfile.NamedTemporaryFile(
+                suffix='.docx', delete=False, prefix='cert_'
+            )
+            doc.save(tmp_docx.name)
+            tmp_docx.close()
+            return tmp_docx.name
 
         # --- Fill the grades table (table index 0) --------------------------
         table = doc.tables[0]
@@ -714,12 +738,113 @@ class IrgCertificateRequest(models.Model):
 
         return pdf_bytes
 
+    def _generate_diploma_pdf_content(self):
+        self.ensure_one()
+        # Get sequence
+        registry_number = self.env['ir.sequence'].next_by_code('irg.diploma.registry') or 'DRAFT'
+        
+        # Format dates
+        from babel.dates import format_date
+        from urllib.parse import urlencode
+        
+        date_to_use = self.request_date or fields.Date.context_today(self)
+        # Convert datetime to date for formatting
+        date_val = date_to_use.date() if hasattr(date_to_use, 'date') else date_to_use
+        date_es = "{} de {} de {}".format(
+            date_val.day, 
+            format_date(date_val, format='MMMM', locale='es_ES'), 
+            date_val.year
+        )
+        date_cat = "{} de {} de {}".format(
+            date_val.day, 
+            format_date(date_val, format='MMMM', locale='ca_ES'), 
+            date_val.year
+        )
+
+        # Get names
+        student_name = self.partner_id.name or ""
+        course_name_es = self.course_id.name or ""
+        course_name_cat = getattr(self.course_id, 'name_cat', None) or course_name_es
+        
+        pdf_generator = self.env['report.irg_generacion_diplomas.diploma_pdf']
+        course_name_cat = pdf_generator._normalize_catalan_course_name(course_name_cat)
+
+        # QR URL
+        query_params = {'id': registry_number}
+        student = self.gradebook_student_id.student_id
+        if not student:
+            student = self.env['op.student'].search([('partner_id', '=', self.partner_id.id)], limit=1)
+            
+        if student and 'op.sign_certificate' in self.env:
+            stamp_payload = {
+                'registry_number': registry_number,
+                'student_name': student_name,
+                'course_name_es': course_name_es,
+                'course_name_cat': course_name_cat,
+                'issue_date': str(date_val),
+                'diploma_type': 'digital' if self.certificate_type in ('digital', 'custom') else 'physical',
+            }
+            stamp_data = self.env['op.sign_certificate'].sudo().stamp_data(stamp_payload, student=student) or {}
+            if stamp_data.get('stamp') and stamp_data.get('data_str') and stamp_data.get('certificate_id'):
+                query_params.update({
+                    'stamp': stamp_data.get('stamp'),
+                    'data_str': stamp_data.get('data_str'),
+                    'certificate_id': stamp_data.get('certificate_id'),
+                })
+
+        qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
+
+        def html_split(name, lang='es'):
+            if not name:
+                return name
+            sep = ' y ' if lang == 'es' else ' i '
+            if sep in name:
+                parts = name.rsplit(sep, 1)
+                return parts[0] + sep.strip() + '<br/>' + parts[1]
+            return name
+
+        data = {
+            'student_name': student_name,
+            'course_name_es': course_name_es,
+            'course_name_cat': course_name_cat,
+            'course_name_es_html': html_split(course_name_es, lang='es'),
+            'course_name_cat_html': html_split(course_name_cat, lang='cat'),
+            'date_es': date_es,
+            'date_cat': date_cat,
+            'registry_number': registry_number,
+            'qr_url': qr_url,
+        }
+        
+        diploma_type = 'physical' if self.certificate_type in PHYSICAL_TYPES else 'digital'
+        pdf_content = pdf_generator.generate_diploma_pdf(data, diploma_type=diploma_type)
+        
+        # Create irg.diploma.registry record
+        student_course = self.env['op.student.course'].search([
+            ('student_id', '=', student.id if student else False),
+            ('course_id', '=', self.course_id.id),
+        ], limit=1)
+        
+        self.env['irg.diploma.registry'].sudo().create({
+            'registry_number': registry_number,
+            'student_id': student.id if student else False,
+            'student_course_id': student_course.id if student_course else False,
+            'issue_date': date_val,
+            'diploma_type': diploma_type,
+            'qr_url': qr_url,
+            'state': 'valid',
+        })
+        
+        return pdf_content
+
     def _generate_and_attach_pdf(self):
-        """Fill the Word template with real data and convert to PDF."""
+        """Fill the Word template or generate ReportLab diploma, and convert/attach as PDF."""
         self.ensure_one()
         try:
-            docx_path = self._fill_template()
-            pdf_content = self._convert_to_pdf(docx_path)
+            if self.document_type == 'diploma':
+                pdf_content = self._generate_diploma_pdf_content()
+            else:
+                docx_path = self._fill_template()
+                pdf_content = self._convert_to_pdf(docx_path)
         except UserError:
             raise
         except Exception as exc:
