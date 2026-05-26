@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-try:
-    import stripe
-except ImportError:
-    stripe = None
-
+import hmac
+import hashlib
+import time
 from odoo import http
 from odoo.http import request
 
@@ -14,43 +12,68 @@ _logger = logging.getLogger(__name__)
 
 class StripeWebhookController(http.Controller):
 
+    def _verify_stripe_signature(self, payload, sig_header, secret, tolerance=300):
+        """Valida la firma HMAC-SHA256 del webhook de Stripe de forma nativa sin usar la librería stripe."""
+        if not sig_header or not secret:
+            return False
+        
+        try:
+            pairs = [pair.split('=') for pair in sig_header.split(',')]
+            sig_dict = {pair[0].strip(): pair[1].strip() for pair in pairs if len(pair) == 2}
+        except Exception:
+            return False
+        
+        timestamp = sig_dict.get('t')
+        signature = sig_dict.get('v1')
+        
+        if not timestamp or not signature:
+            return False
+            
+        try:
+            ts_int = int(timestamp)
+            now = int(time.time())
+            if abs(now - ts_int) > tolerance:
+                _logger.warning("Stripe Webhook: Firma expirada (timestamp: %s, actual: %s)", ts_int, now)
+                return False
+        except ValueError:
+            return False
+            
+        if isinstance(payload, str):
+            payload_bytes = payload.encode('utf-8')
+        else:
+            payload_bytes = payload
+            
+        signed_payload = f"{timestamp}.".encode('utf-8') + payload_bytes
+        expected_signature = hmac.new(
+            secret.encode('utf-8'),
+            signed_payload,
+            hashlib.sha256
+        ).hexdigest()
+        
+        return hmac.compare_digest(expected_signature, signature)
+
     @http.route('/stripe/webhook', type='http', auth='public', methods=['POST'], csrf=False)
     def stripe_webhook(self):
-        if not stripe:
-            _logger.error("Stripe Webhook: La librería de Python 'stripe' no está instalada en el sistema.")
-            return request.make_response("Python stripe library not installed", status=500)
-
         payload = request.httprequest.data
         sig_header = request.httprequest.headers.get('Stripe-Signature')
         
         param_obj = request.env['ir.config_parameter'].sudo()
         webhook_secret = param_obj.get_param('stripe.webhook_secret')
-        api_key = param_obj.get_param('stripe.api_key')
-        api_version = param_obj.get_param('stripe.api_version')
         
         if not webhook_secret:
             _logger.error("Stripe Webhook: 'stripe.webhook_secret' no está configurado en los Parámetros del Sistema.")
             return request.make_response("Webhook secret not configured", status=500)
             
-        if api_key:
-            stripe.api_key = api_key
-        if api_version:
-            stripe.api_version = api_version
+        # Validar la firma nativamente
+        if not self._verify_stripe_signature(payload, sig_header, webhook_secret):
+            _logger.error("Stripe Webhook: Firma de Stripe inválida.")
+            return request.make_response("Invalid signature", status=400)
             
         try:
-            # Validar firma del webhook
-            event = stripe.Webhook.construct_event(
-                payload, sig_header, webhook_secret
-            )
-        except ValueError as e:
-            _logger.error("Stripe Webhook: Payload inválido. %s", str(e))
-            return request.make_response("Invalid payload", status=400)
-        except stripe.error.SignatureVerificationError as e:
-            _logger.error("Stripe Webhook: Error de verificación de firma. %s", str(e))
-            return request.make_response("Invalid signature", status=400)
+            event = json.loads(payload)
         except Exception as e:
-            _logger.error("Stripe Webhook: Error inesperado al validar firma. %s", str(e))
-            return request.make_response("Verification error", status=400)
+            _logger.error("Stripe Webhook: Payload JSON inválido. %s", str(e))
+            return request.make_response("Invalid payload JSON", status=400)
             
         event_id = event.get('id')
         event_type = event.get('type')
@@ -84,5 +107,4 @@ class StripeWebhookController(http.Controller):
             log_record.write({
                 'error': str(e),
             })
-            # Devolvemos un código 500 para indicar a Stripe que reintente en caso de fallo temporal
             return request.make_response(f"Internal processing error: {str(e)}", status=500)
