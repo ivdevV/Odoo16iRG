@@ -27,11 +27,12 @@ A diferencia de `irg_payment_stripe_recurring` (que actúa principalmente como p
    - Soporta eventos de creación, actualización y cancelación de suscripciones, así como confirmaciones de checkout de Payment Links.
 5. **Acciones en Presupuestos (`sale.order`)**:
    - Generación directa de un cliente en Stripe.
-   - Creación de una suscripción nativa desde la orden.
-   - Generación de un Payment Link fijo de Stripe para la suscripción, asociándolo de forma persistente y mostrando su URL en el presupuesto.
-6. **Sincronización con Suscripciones Nativas y Wizard**:
+   - Creación de una suscripción nativa desde la orden, alineando su vencimiento/cancellación con `end_date` si está definido.
+   - Generación de un Payment Link de Stripe para la suscripción, configurando su vencimiento automático (`subscription_data[cancel_at]`) a partir de `end_date` (ej. 19 meses), inyectando metadatos para rastrear la orden y añadiendo una descripción de Checkout enriquecida que desglosa el número de cuotas, el importe unitario y el total.
+6. **Sincronización con Suscripciones Nativas, Wizard y Webhooks**:
    - Se integra con `irg_sale_manual_confirmation_wizard` y `irg_payment_stripe_recurring` interceptando la creación/edición de suscripciones para que persistan y vinculen de inmediato el registro en `stripe.subscription`.
    - Si la suscripción de Stripe se actualiza (ej. cancelada o pausada) vía webhook, suspende/reactiva automáticamente la suscripción nativa de Odoo (`sale.order.subscription_suspended` y estado).
+   - Procesa eventos `invoice.paid` y `invoice.payment_failed` de forma resiliente: si el evento llega antes de que el webhook de Checkout complete la vinculación, Odoo consulta la suscripción de Stripe por API, extrae la orden desde sus metadatos, la vincula de inmediato y marca el plazo del cronograma correspondiente (la primera cuota tras el checkout) como "Pagado".
 
 ---
 
@@ -126,3 +127,4 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf \
 ## Historial de Cambios
 
 - **2026-05-26**: Creación inicial del módulo `irg_stripe_subscriptions` con soporte para modelos nativos Stripe, sincronización bidireccional por webhook idempotente, compatibilidad de tipos (Char a Many2one) con `irg_payment_stripe_recurring`, y suite de pruebas unitarias integradas.
+- **2026-05-26 (Revisión V1.1)**: Añadido soporte para inyectar `cancel_at` (vencimiento/duración del curso) y metadatos (`odoo_order_id`) en la creación de Enlaces de Pago y suscripciones de Stripe. Implementada lógica de fallback en `stripe.sync` para consultar de forma resiliente la suscripción de Stripe ante webhooks concurrentes (`invoice.paid` / `invoice.payment_failed`), vinculando de inmediato el pedido en Odoo y marcando el primer plazo del cronograma como pagado de forma automática tras el checkout.

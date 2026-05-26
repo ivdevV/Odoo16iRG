@@ -236,6 +236,20 @@ class SaleOrder(models.Model):
         if not price_id:
             raise UserError(_("No se pudo generar el precio en Stripe para este pedido."))
 
+        term_number = self.term_number or 1
+        cuota = round(self.amount_total / term_number, 2)
+        currency_name = self.currency_id.name or "EUR"
+        description = "%s - %s cuotas de %s %s (Total: %s %s)" % (
+            self.name or "",
+            term_number,
+            cuota,
+            currency_name,
+            self.amount_total,
+            currency_name
+        )
+        if len(description) > 500:
+            description = description[:497] + "..."
+
         # 2. Crear el Payment Link en Stripe
         payload = {
             "line_items[0][price]": price_id,
@@ -243,6 +257,23 @@ class SaleOrder(models.Model):
             "metadata[odoo_order_id]": str(self.id),
             "metadata[odoo_order_name]": self.name or "",
         }
+
+        if self.is_subscription:
+            payload.update({
+                "subscription_data[metadata][odoo_order_id]": str(self.id),
+                "subscription_data[metadata][odoo_order_name]": self.name or "",
+                "subscription_data[description]": description,
+            })
+            if self.end_date:
+                import datetime
+                import time
+                if isinstance(self.end_date, datetime.datetime):
+                    end_dt = self.end_date
+                else:
+                    end_dt = datetime.datetime.combine(self.end_date, datetime.time.min)
+                cancel_at_ts = int(time.mktime(end_dt.timetuple()))
+                if cancel_at_ts > time.time():
+                    payload["subscription_data[cancel_at]"] = str(cancel_at_ts)
 
         try:
             response = provider._stripe_make_request("payment_links", payload=payload)

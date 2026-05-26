@@ -34,6 +34,10 @@ class StripeSync(models.AbstractModel):
             self._sync_subscription_deleted(event_obj)
         elif event_type == 'checkout.session.completed':
             self._sync_checkout_session(event_obj)
+        elif event_type == 'invoice.paid':
+            self._sync_invoice_paid(event_obj)
+        elif event_type == 'invoice.payment_failed':
+            self._sync_invoice_payment_failed(event_obj)
         else:
             _logger.info("Evento Stripe '%s' no requiere acción de sincronización directa.", event_type)
 
@@ -377,3 +381,95 @@ class StripeSync(models.AbstractModel):
             })
             
         return link_rec
+
+    @api.model
+    def _sync_invoice_paid(self, invoice_obj):
+        """Procesa el cobro de una factura en Stripe, marcando el plazo correspondiente en Odoo como pagado."""
+        subscription_id = invoice_obj.get('subscription')
+        if not subscription_id:
+            return
+            
+        # Buscamos la orden por la suscripción vinculada o referencia string
+        order = self.env['sale.order'].sudo().search([
+            '|',
+            ('stripe_subscription_id.stripe_id', '=', subscription_id),
+            ('stripe_subscription_ref', '=', subscription_id)
+        ], limit=1)
+        
+        if not order:
+            provider = self._get_stripe_provider()
+            if provider:
+                try:
+                    sub_res = provider._stripe_make_request(f"subscriptions/{subscription_id}", method='GET')
+                    if sub_res and not sub_res.get('error'):
+                        metadata = sub_res.get('metadata', {})
+                        odoo_order_id = metadata.get('odoo_order_id')
+                        if odoo_order_id:
+                            self._sync_subscription_object(sub_res)
+                            order = self.env['sale.order'].sudo().browse(int(odoo_order_id)).exists()
+                except Exception:
+                    _logger.warning("No se pudo recuperar la suscripción %s desde Stripe para fallback en invoice.paid", subscription_id)
+
+        if order:
+            _logger.info("Stripe Webhook (sync): invoice.paid recibido para la orden %s (Sub: %s)", order.name, subscription_id)
+            
+            # Registrar evento en chatter
+            order._irg_mark_stripe_event(
+                event_name='invoice.paid',
+                state='active',
+                clear_grace=True
+            )
+            
+            # Buscar el plazo del cronograma más antiguo sin pagar en Odoo
+            unpaid = order.subscription_schedule.filtered(
+                lambda s: s.payment_state == 'not_paid'
+            ).sorted('date_due')
+            
+            if unpaid:
+                unpaid[0].sudo().write({'payment_state': 'paid'})
+                _logger.info(
+                    "Stripe Webhook (sync): Plazo %s ('%s') marcado como pagado para orden %s debido a cobro en Stripe.",
+                    unpaid[0].id, unpaid[0].name or unpaid[0].date_due, order.name
+                )
+            else:
+                _logger.info("Stripe Webhook (sync): No hay plazos pendientes de pago para la orden %s.", order.name)
+
+    @api.model
+    def _sync_invoice_payment_failed(self, invoice_obj):
+        """Procesa el fallo de cobro de una factura en Stripe, actualizando la orden de Odoo."""
+        subscription_id = invoice_obj.get('subscription')
+        if not subscription_id:
+            return
+            
+        order = self.env['sale.order'].sudo().search([
+            '|',
+            ('stripe_subscription_id.stripe_id', '=', subscription_id),
+            ('stripe_subscription_ref', '=', subscription_id)
+        ], limit=1)
+        
+        if not order:
+            provider = self._get_stripe_provider()
+            if provider:
+                try:
+                    sub_res = provider._stripe_make_request(f"subscriptions/{subscription_id}", method='GET')
+                    if sub_res and not sub_res.get('error'):
+                        metadata = sub_res.get('metadata', {})
+                        odoo_order_id = metadata.get('odoo_order_id')
+                        if odoo_order_id:
+                            self._sync_subscription_object(sub_res)
+                            order = self.env['sale.order'].sudo().browse(int(odoo_order_id)).exists()
+                except Exception:
+                    _logger.warning("No se pudo recuperar la suscripción %s desde Stripe para fallback en invoice.payment_failed", subscription_id)
+
+        if order:
+            from datetime import timedelta
+            # Consultar días de gracia de la configuración
+            grace_days = int(self.env['ir.config_parameter'].sudo().get_param('irg_stripe.overdue_grace_days', '15'))
+            grace_until = fields.Date.today() + timedelta(days=grace_days)
+            
+            order._irg_mark_stripe_event(
+                event_name='invoice.payment_failed',
+                state='past_due',
+                grace_until=grace_until
+            )
+            _logger.warning("Stripe Webhook (sync): Pago fallido recibido para orden %s (Sub: %s). Estado: past_due.", order.name, subscription_id)
