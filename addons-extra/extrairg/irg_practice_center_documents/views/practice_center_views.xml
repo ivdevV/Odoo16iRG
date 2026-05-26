@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_center_form_documents" model="ir.ui.view">
+        <field name="name">practice.center.form.documents</field>
+        <field name="model">practice.center</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_center_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='schedule_description']/.." position="before">
+                <group string="Center Documentation" colspan="2">
+                    <field name="document_ids" widget="many2many_binary" nolabel="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
