@@ -241,7 +241,6 @@ class SaleOrder(models.Model):
             "line_items[0][quantity]": "1",
             "metadata[odoo_order_id]": str(self.id),
             "metadata[odoo_order_name]": self.name or "",
-            "client_reference_id": f"odoo_order_{self.id}",
         }
 
         try:
@@ -249,6 +248,8 @@ class SaleOrder(models.Model):
             if response and not response.get('error'):
                 plink_id = response.get('id')
                 url = response.get('url')
+                if url:
+                    url = f"{url}?client_reference_id=odoo_order_{self.id}"
                 active = response.get('active', True)
                 
                 # Registramos localmente el Payment Link
