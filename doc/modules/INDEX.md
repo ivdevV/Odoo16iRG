@@ -98,6 +98,7 @@
 | [irg_op_subject_visibility](./extrairg/irg_op_subject_visibility.md) | extrairg | Visibilidad de asignatura por lote | 16.0.1.0.0 |
 | [irg_portal_placeholder_safe](./extrairg/irg_portal_placeholder_safe.md) | extrairg | Valores por defecto en placeholders del portal | 16.0.1.0.0 |
 | [irg_practicas_fix](./extrairg/irg_practicas_fix.md) | extrairg | Fix user_id en prácticas | 16.0.1.0.0 |
+| [irg_practice_center_type_modalities](./extrairg/irg_practice_center_type_modalities.md) | extrairg | Modalidades academicas para tipos de centro de practicas | 16.0.1.0.0 |
 | [irg_practice_center_restrict](./extrairg/irg_practice_center_restrict.md) | extrairg | Oculta centros de prácticas al alumno | 16.0.1.0.0 |
 | [irg_profile_batch_fix](./extrairg/irg_profile_batch_fix.md) | extrairg | Fix nombre de programa y filtro por lote | 16.0.1.0.0 |
 | [irg_sign_position_fix](./extrairg/irg_sign_position_fix.md) | extrairg | Fix posición del bloque de firma | 16.0.1.0.0 |
