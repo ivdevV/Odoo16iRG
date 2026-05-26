@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="stripe_event_log_view_tree" model="ir.ui.view">
+        <field name="name">stripe.event.log.view.tree</field>
+        <field name="model">stripe.event.log</field>
+        <field name="arch" type="xml">
+            <tree string="Logs de Eventos Stripe" create="false" edit="false">
+                <field name="received_at"/>
+                <field name="event_id"/>
+                <field name="event_type"/>
+                <field name="processed" widget="boolean_toggle"/>
+                <field name="error" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="stripe_event_log_view_form" model="ir.ui.view">
+        <field name="name">stripe.event.log.view.form</field>
+        <field name="model">stripe.event.log</field>
+        <field name="arch" type="xml">
+            <form string="Log de Evento Stripe" create="false" edit="false">
+                <header>
+                    <field name="processed" widget="boolean_toggle" readonly="1" string="Procesado"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Información del Evento">
+                            <field name="event_id" readonly="1"/>
+                            <field name="event_type" readonly="1"/>
+                            <field name="received_at" readonly="1"/>
+                        </group>
+                        <group string="Estado y Error" attrs="{'invisible': [('error', '=', False)]}">
+                            <field name="error" readonly="1" class="text-danger"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Payload JSON Completo">
+                            <field name="payload" readonly="1" widget="ace" options="{'mode': 'json'}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_stripe_event_log" model="ir.actions.act_window">
+        <field name="name">Logs de Eventos Stripe</field>
+        <field name="res_model">stripe.event.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay logs de eventos de Stripe.
+            </p>
+            <p>
+                Aquí aparecerán los eventos enviados por los Webhooks de Stripe en tiempo real.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_stripe_event_log" 
+              name="Logs de Eventos Stripe" 
+              parent="menu_stripe_integration_root" 
+              action="action_stripe_event_log" 
+              sequence="30"/>
+</odoo>

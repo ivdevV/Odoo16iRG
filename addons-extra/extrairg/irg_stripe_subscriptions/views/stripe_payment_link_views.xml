@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="stripe_payment_link_view_tree" model="ir.ui.view">
+        <field name="name">stripe.payment.link.view.tree</field>
+        <field name="model">stripe.payment.link</field>
+        <field name="arch" type="xml">
+            <tree string="Enlaces de Pago Stripe">
+                <field name="name"/>
+                <field name="stripe_id"/>
+                <field name="url" widget="url"/>
+                <field name="is_recurring" widget="boolean_toggle"/>
+                <field name="active" widget="boolean_toggle"/>
+                <field name="price_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="stripe_payment_link_view_form" model="ir.ui.view">
+        <field name="name">stripe.payment.link.view.form</field>
+        <field name="model">stripe.payment.link</field>
+        <field name="arch" type="xml">
+            <form string="Enlace de Pago Stripe">
+                <header>
+                    <button name="action_refresh_from_stripe" string="Sincronizar de Stripe" type="object" class="btn-primary" icon="fa-refresh"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Ej: Enlace suscripción MBA"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Detalles del Enlace">
+                            <field name="stripe_id"/>
+                            <field name="url" widget="url"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Configuración de Stripe">
+                            <field name="price_id"/>
+                            <field name="is_recurring"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Clientes Vinculados">
+                            <field name="partner_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        </page>
+                        <page string="Metadatos">
+                            <field name="metadata_json" widget="ace" options="{'mode': 'json'}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_stripe_payment_link" model="ir.actions.act_window">
+        <field name="name">Enlaces de Pago Stripe</field>
+        <field name="res_model">stripe.payment.link</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree o sincronice enlaces de pago de Stripe.
+            </p>
+            <p>
+                Los enlaces de pago fijos permiten a los clientes completar transacciones de pago único o de suscripción.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_stripe_payment_link" 
+              name="Enlaces de Pago Stripe" 
+              parent="menu_stripe_integration_root" 
+              action="action_stripe_payment_link" 
+              sequence="20"/>
+</odoo>

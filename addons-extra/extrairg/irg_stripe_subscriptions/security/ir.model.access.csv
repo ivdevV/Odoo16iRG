@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stripe_subscription_user,stripe.subscription.user,model_stripe_subscription,base.group_user,1,1,1,1
+access_stripe_payment_link_user,stripe.payment.link.user,model_stripe_payment_link,base.group_user,1,1,1,1
+access_stripe_event_log_user,stripe.event.log.user,model_stripe_event_log,base.group_user,1,1,1,1

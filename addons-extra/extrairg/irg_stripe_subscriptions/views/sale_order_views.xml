@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_form_inherit_stripe_subs" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.stripe.subs</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="irg_payment_stripe_recurring.irg_payment_stripe_recurring_sale_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Configuramos stripe_subscription_id como Many2one para abrir el registro local -->
+            <xpath expr="//field[@name='stripe_subscription_id']" position="attributes">
+                <attribute name="readonly">0</attribute>
+                <attribute name="options">{'no_create': True}</attribute>
+            </xpath>
+
+            <!-- Mostramos el ID del cliente de Stripe en la sección -->
+            <xpath expr="//field[@name='stripe_subscription_state']" position="before">
+                <field name="stripe_customer_id" readonly="1"/>
+            </xpath>
+
+            <!-- Agregamos los campos del Payment Link -->
+            <xpath expr="//page[@name='irg_stripe_subscription']/group/group[1]" position="inside">
+                <field name="stripe_payment_link_id" options="{'no_create': True}"/>
+                <field name="stripe_payment_link_url" widget="url" readonly="1"/>
+            </xpath>
+
+            <!-- Inyectamos los nuevos botones para crear cliente y generar Payment Link -->
+            <xpath expr="//page[@name='irg_stripe_subscription']/group[last()]" position="inside">
+                <button name="action_irg_create_stripe_customer"
+                        type="object"
+                        string="Crear/Vincular Cliente Stripe"
+                        class="btn-secondary"
+                        attrs="{'invisible': [('stripe_customer_id', '!=', False)]}"
+                        help="Crea un cliente en Stripe para este contacto si no tiene uno asignado."/>
+                <button name="action_irg_create_stripe_payment_link"
+                        type="object"
+                        string="Generar Enlace de Pago Stripe"
+                        class="btn-primary"
+                        attrs="{'invisible': ['|', ('is_subscription', '=', False), ('stripe_payment_link_id', '!=', False)]}"
+                        help="Genera un enlace de pago fijo de Stripe para este presupuesto."/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
