@@ -27,3 +27,15 @@ class TestPracticeCenterDocuments(TransactionCase):
             arch.index('name="document_ids"'),
             arch.index('string="Practice Schedules"'),
         )
+
+    def test_documents_section_shows_attachment_names(self):
+        view = self.env.ref('isep_practices_2.view_practice_center_form')
+        arch = view.read_combined(['arch'])['arch']
+        root = etree.fromstring(arch.encode())
+
+        document_name_fields = root.xpath(
+            "//field[@name='document_ids']/tree/field[@name='name']"
+        )
+
+        self.assertTrue(document_name_fields)
+        self.assertEqual(document_name_fields[0].get('string'), 'Document Name')

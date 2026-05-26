@@ -1,7 +1,7 @@
 # irg_practice_center_documents
 
 **Categoria:** extrairg
-**Version:** 16.0.1.0.0
+**Version:** 16.0.1.0.1
 **Licencia:** LGPL-3
 **Instalable:** Si
 **Autor:** IRG
@@ -18,6 +18,7 @@ Añade una seccion de documentacion en la ficha backend de `Practice Centers` pa
 - Añade el campo `document_ids` al modelo `practice.center`.
 - Permite asociar multiples registros `ir.attachment` a un centro de practicas.
 - Inserta la seccion `Center Documentation` en la vista formulario de `practice.center`.
+- Muestra los nombres de los documentos adjuntos en una lista de solo lectura bajo el control de subida.
 - Mantiene el cambio fuera del portal del alumno.
 
 ## Diseno tecnico
@@ -39,6 +40,7 @@ La vista se extiende mediante `inherit_id="isep_practices_2.view_practice_center
 
 - `views/practice_center_views.xml` — añade `Center Documentation` antes de `Practice Schedules`.
 - El campo usa el widget `many2many_binary`, por lo que el usuario interno puede subir archivos directamente desde el formulario.
+- La misma relacion se muestra debajo en modo lista de solo lectura con la columna `Document Name`, para que los nombres de los adjuntos sean visibles.
 
 ## Seguridad
 
@@ -68,7 +70,7 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf \
     --db_host=pgodoo_local --http-port=18069 --gevent-port=18072
 ```
 
-Resultado: `0 failed, 0 error(s) of 2 tests`.
+Resultado: `0 failed, 0 error(s) of 3 tests`.
 
 ## Limitaciones conocidas
 
@@ -81,3 +83,4 @@ Resultado: `0 failed, 0 error(s) of 2 tests`.
 - 2026-05-26: Creado el modulo `irg_practice_center_documents`.
 - 2026-05-26: Añadida seccion `Center Documentation` antes de `Practice Schedules`.
 - 2026-05-26: Añadidos tests para validar campo de adjuntos y posicion en vista.
+- 2026-05-26: Añadida lista de solo lectura para mostrar el nombre de los documentos adjuntos.
