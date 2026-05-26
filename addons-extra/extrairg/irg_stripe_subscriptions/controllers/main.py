@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-import stripe
+try:
+    import stripe
+except ImportError:
+    stripe = None
+
 from odoo import http
 from odoo.http import request
 
@@ -12,6 +16,10 @@ class StripeWebhookController(http.Controller):
 
     @http.route('/stripe/webhook', type='http', auth='public', methods=['POST'], csrf=False)
     def stripe_webhook(self):
+        if not stripe:
+            _logger.error("Stripe Webhook: La librería de Python 'stripe' no está instalada en el sistema.")
+            return request.make_response("Python stripe library not installed", status=500)
+
         payload = request.httprequest.data
         sig_header = request.httprequest.headers.get('Stripe-Signature')
         

@@ -21,6 +21,9 @@
         'sale_subscription',
         'irg_payment_stripe_recurring',
     ],
+    'external_dependencies': {
+        'python': ['stripe'],
+    },
     'data': [
         'security/ir.model.access.csv',
         'views/res_config_settings_views.xml',
