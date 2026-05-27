@@ -102,6 +102,19 @@ Se implementó una elevación de privilegios controlada utilizando `.sudo()` en 
 
 ---
 
+## Optimización de Copia de Canales (Preferencia de Rendimiento y Memoria)
+
+### Descripción del Incidente (MemoryError / Timeout)
+Al realizar el bootstrap de canales de gran tamaño con archivos adjuntos pesados (presentaciones PDF extensas, vídeos o imágenes en alta resolución), la serialización en base64 de Python consumía excesiva memoria virtual. Esto provocaba fallos de falta de memoria (`MemoryError`) en el worker de Odoo y tiempos de espera excedidos (`Timeout`) debido a la alta carga de E/S al leer y escribir archivos físicos de gran tamaño repetidamente.
+
+### Solución de Rendimiento Aplicada
+Se reestructuró el proceso de duplicación de diapositivas para realizarlo sin serializar base64 en Python:
+1. **Exclusión técnica en la creación inicial:** Los campos binarios `'datas'`, `'document_binary_content'` e `'image_1920'` se eliminaron de la lista de clonación inicial en `_irg_bootstrap_slide_clone_fields()`.
+2. **Duplicación nativa de adjuntos:** Tras la creación de la diapositiva, se realiza una búsqueda de sus correspondientes `ir.attachment` en la base de datos y se duplican usando `attachment.copy({'res_id': copy_id})`.
+3. **Independencia funcional:** El filestore de Odoo trabaja con direccionamiento por hash. Al copiar los registros de `ir.attachment`, ambos adjuntos apuntan inicialmente al mismo archivo físico en disco (ahorrando espacio de disco), pero son registros totalmente independientes en la base de datos. Si el usuario sube un archivo nuevo al clon de Online, se crea un nuevo archivo en el filestore para el canal Online, dejando el canal HomeClass de origen 100% inalterado y seguro.
+
+---
+
 ## Validación y Suite de Pruebas
 
 La suite de pruebas del módulo valida el correcto comportamiento de la elevación de privilegios y el flujo de bootstrap.
