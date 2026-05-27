@@ -11,6 +11,7 @@
         'isep_website_sale_custom',
         'irg_migration_fields',
         'base_vat_optional_vies',
+        'irg_sale_order_extended',
     ],
     'data': [
         'views/cart_summary_fix.xml',
