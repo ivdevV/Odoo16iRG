@@ -41,7 +41,9 @@ class SlideChannel(models.Model):
                          admission.id, batch.name, batch.code, is_online, admission.due_date, batch.end_date)
 
             if is_online:
-                if not admission.due_date or admission.due_date >= today:
+                # Priorizar due_date de la admisión, usar batch.end_date como fallback
+                limit_date = admission.due_date or batch.end_date
+                if not limit_date or limit_date >= today:
                     active_batches |= batch
                     _logger.info("[PORTAL_VISIBILITY] -> Added online batch to active_batches: %s", batch.code)
             else:

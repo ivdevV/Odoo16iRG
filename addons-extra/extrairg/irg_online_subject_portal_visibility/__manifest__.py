@@ -2,7 +2,7 @@
 {
     'name': 'iRG - Visibilidad de Asignaturas Online en Portal',
     'summary': 'Aplica restricciones de visibilidad de asignaturas y vencimiento para cursos online',
-    'version': '16.0.1.1.0',
+    'version': '16.0.1.2.0',
     'category': 'Education',
     'author': 'iRG Developer',
     'license': 'LGPL-3',

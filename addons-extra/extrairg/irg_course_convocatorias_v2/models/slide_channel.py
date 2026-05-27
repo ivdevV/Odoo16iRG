@@ -384,6 +384,16 @@ class SlideChannel(models.Model):
             vals = self._irg_bootstrap_prepare_slide_values(source, online_channel)
             vals['sequence'] = sequence_by_source[source.id]
             copy = slide_model.create(vals)
+
+            # Buscar adjuntos asociados a los campos binarios eliminados en la slide origen y copiarlos reasociándolos al slide clonado
+            attachments = self.env['ir.attachment'].sudo().search([
+                ('res_model', '=', 'slide.slide'),
+                ('res_id', '=', source.id),
+                ('res_field', 'in', ['datas', 'document_binary_content', 'image_1920']),
+            ])
+            for attachment in attachments:
+                attachment.sudo().copy({'res_id': copy.id})
+
             # Defensa post-create: website_slides aplica defaults de contenido
             # incluso para secciones; reafirmamos los marcadores estructurales.
             if source.is_category and (
@@ -477,7 +487,7 @@ class SlideChannel(models.Model):
         return (
             'name', 'description', 'slide_category', 'is_category',
             'is_published', 'url', 'document_google_url', 'mime_type',
-            'datas', 'document_binary_content', 'image_1920', 'html_content',
+            'html_content',
             'video_url', 'source_type', 'video_source_type', 'embed_code',
             'completion_time', 'access_token',
             'quiz_first_attempt_reward', 'quiz_second_attempt_reward',
