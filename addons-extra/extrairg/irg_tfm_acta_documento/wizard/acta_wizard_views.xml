@@ -48,7 +48,14 @@
                         <field name="secretary_surnames" placeholder="Apellidos"/>
                     </group>
                 </group>
-                
+
+                <separator string="Resultado"/>
+                <group>
+                    <group>
+                        <field name="apto_status" widget="radio"/>
+                    </group>
+                </group>
+
                 <footer>
                     <button name="action_generate_acta_pdf" string="Generar PDF" type="object" class="btn-primary"/>
                     <button string="Cancelar" class="btn-secondary" special="cancel"/>

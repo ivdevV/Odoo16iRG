@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import logging
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 class OpAdmission(models.Model):
     _inherit = 'op.admission'
@@ -62,28 +65,40 @@ class OpAdmission(models.Model):
 
     def send_mail(self, force):
         if not self.email_send_ok:
-            student_name = self.name
-            if not self.tutor_id:
-                raise UserError('%s - El aplicante necesita un Tutor asignado.' % (student_name))
-            if not self.batch_id.start_date:
-                raise UserError('%s - Necesita establecer fecha de inicio de Clases.' % (student_name))
-            if not self.batch_id:
-                raise UserError('%s - Necesita asignar un grupo.' % (student_name))            
-            
-            # Lógica para seleccionar la plantilla según la modalidad
-            template_id = self.env.ref('isep_elearning_custom.email_op_admission_confirm').id
-            
+            is_online = False
             if self.batch_id.modality_id:
                 modality_name = self.batch_id.modality_id.name.lower()
                 if 'online' in modality_name:
-                    template_id = self.env.ref('irg_elearning_correo_bienvenida_selector.email_op_admission_confirm_online').id
+                    is_online = True
+            
+            # Fallback based on batch code/name
+            if not is_online and self.batch_id:
+                is_online = 'ONL' in (self.batch_id.code or '').upper() or 'ONL' in (self.batch_id.name or '').upper()
 
-            template = self.env['mail.template'].sudo().browse(template_id)
-            self._fix_welcome_password_placeholder(template)
+            if is_online:
+                student_name = self.name
+                if not self.tutor_id:
+                    raise UserError('%s - El aplicante necesita un Tutor asignado.' % (student_name))
+                if not self.batch_id.start_date:
+                    raise UserError('%s - Necesita establecer fecha de inicio de Clases.' % (student_name))
+                if not self.batch_id:
+                    raise UserError('%s - Necesita asignar un grupo.' % (student_name))            
 
-            welcome_ctx = self._welcome_password_context()
-            self.with_context(
-                force_send=force,
-                **welcome_ctx,
-            ).message_post_with_template(template_id, email_layout_xmlid=False)
-            self.email_send_ok = True
+                # Safeguard: if date_start_class is empty in the batch, auto-populate it with start_date
+                if self.batch_id and not self.batch_id.date_start_class and self.batch_id.start_date:
+                    _logger.info("IRG Welcome Email: Auto-populating empty date_start_class with start_date %s for batch %s before sending email", self.batch_id.start_date, self.batch_id.name)
+                    self.batch_id.sudo().write({'date_start_class': self.batch_id.start_date})
+
+                template_id = self.env.ref('irg_elearning_correo_bienvenida_selector.email_op_admission_confirm_online').id
+                template = self.env['mail.template'].sudo().browse(template_id)
+                self._fix_welcome_password_placeholder(template)
+
+                welcome_ctx = self._welcome_password_context()
+                self.with_context(
+                    force_send=force,
+                    **welcome_ctx,
+                ).message_post_with_template(template_id, email_layout_xmlid=False)
+                self.email_send_ok = True
+            else:
+                return super(OpAdmission, self).send_mail(force)
+        return True

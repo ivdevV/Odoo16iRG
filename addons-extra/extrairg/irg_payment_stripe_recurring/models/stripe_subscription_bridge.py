@@ -21,7 +21,8 @@ _logger = logging.getLogger(__name__)
 class SaleOrderStripeBridge(models.Model):
     _inherit = "sale.order"
 
-    stripe_subscription_id = fields.Char(
+    stripe_subscription_id = fields.Many2one(
+        "stripe.subscription",
         string="Stripe Subscription ID",
         copy=False,
         readonly=True,
@@ -181,13 +182,14 @@ class SaleOrderStripeBridge(models.Model):
         """
         self.ensure_one()
 
-        if self.stripe_subscription_id:
+        sub_id = self.stripe_subscription_id.stripe_id if self.stripe_subscription_id else self.stripe_subscription_ref
+        if sub_id:
             _logger.info(
                 "IRG Stripe: Suscripción %s ya tiene sub ID %s, omitiendo creación.",
                 self.name,
-                self.stripe_subscription_id,
+                sub_id,
             )
-            return self.stripe_subscription_id
+            return sub_id
 
         provider = self._irg_get_stripe_provider()
         if not provider:
@@ -311,6 +313,17 @@ class SaleOrderStripeBridge(models.Model):
         if self.stripe_coupon_code:
             payload["coupon"] = self.stripe_coupon_code
 
+        # Cancel at (if end_date is set and in the future)
+        if self.end_date:
+            import datetime
+            if isinstance(self.end_date, datetime.datetime):
+                end_dt = self.end_date
+            else:
+                end_dt = datetime.datetime.combine(self.end_date, datetime.time.min)
+            cancel_at_ts = int(time.mktime(end_dt.timetuple()))
+            if cancel_at_ts > time.time():
+                payload["cancel_at"] = str(cancel_at_ts)
+
         # Billing anchor — align with first schedule date if available.
         # Stripe requires billing_cycle_anchor <= now + 1 interval.
         # For send_invoice mode, never use trial_end — let the invoice go out now.
@@ -346,7 +359,7 @@ class SaleOrderStripeBridge(models.Model):
             response = provider._stripe_make_request(
                 "subscriptions",
                 payload=payload,
-                idempotency_key="irg_sub_%s_%s" % (self.id, int(time.time())),
+                idempotency_key="irg_sub_%s" % self.id,
             )
         except Exception:
             _logger.exception(
@@ -475,7 +488,8 @@ class SaleOrderStripeBridge(models.Model):
     def _irg_cancel_stripe_subscription(self, invoice_now=False):
         """Cancel the Stripe Subscription if one exists."""
         self.ensure_one()
-        if not self.stripe_subscription_id:
+        sub_id = self.stripe_subscription_id.stripe_id if self.stripe_subscription_id else self.stripe_subscription_ref
+        if not sub_id:
             return True
 
         provider = self._irg_get_stripe_provider()
@@ -489,28 +503,29 @@ class SaleOrderStripeBridge(models.Model):
 
         try:
             response = provider._stripe_make_request(
-                "subscriptions/%s" % self.stripe_subscription_id,
+                "subscriptions/%s" % sub_id,
                 payload=payload,
                 method="DELETE",
             )
         except Exception:
             _logger.exception(
                 "IRG Stripe: Error cancelando suscripción %s",
-                self.stripe_subscription_id,
+                sub_id,
             )
             return False
 
         if response.get("status") == "canceled":
             _logger.info(
                 "IRG Stripe: Subscription %s cancelada en Stripe.",
-                self.stripe_subscription_id,
+                sub_id,
             )
         return True
 
     def _irg_pause_stripe_subscription(self):
         """Pause the Stripe Subscription (stop invoice generation)."""
         self.ensure_one()
-        if not self.stripe_subscription_id:
+        sub_id = self.stripe_subscription_id.stripe_id if self.stripe_subscription_id else self.stripe_subscription_ref
+        if not sub_id:
             return True
 
         provider = self._irg_get_stripe_provider()
@@ -519,7 +534,7 @@ class SaleOrderStripeBridge(models.Model):
 
         try:
             provider._stripe_make_request(
-                "subscriptions/%s" % self.stripe_subscription_id,
+                "subscriptions/%s" % sub_id,
                 payload={
                     "pause_collection[behavior]": "void",
                 },
@@ -527,20 +542,21 @@ class SaleOrderStripeBridge(models.Model):
         except Exception:
             _logger.exception(
                 "IRG Stripe: Error pausando suscripción %s",
-                self.stripe_subscription_id,
+                sub_id,
             )
             return False
 
         _logger.info(
             "IRG Stripe: Subscription %s pausada (collection voided).",
-            self.stripe_subscription_id,
+            sub_id,
         )
         return True
 
     def _irg_resume_stripe_subscription(self):
         """Resume a paused Stripe Subscription."""
         self.ensure_one()
-        if not self.stripe_subscription_id:
+        sub_id = self.stripe_subscription_id.stripe_id if self.stripe_subscription_id else self.stripe_subscription_ref
+        if not sub_id:
             return True
 
         provider = self._irg_get_stripe_provider()
@@ -550,7 +566,7 @@ class SaleOrderStripeBridge(models.Model):
         try:
             # First remove pause_collection
             provider._stripe_make_request(
-                "subscriptions/%s" % self.stripe_subscription_id,
+                "subscriptions/%s" % sub_id,
                 payload={
                     "pause_collection": "",
                 },
@@ -558,13 +574,13 @@ class SaleOrderStripeBridge(models.Model):
         except Exception:
             _logger.exception(
                 "IRG Stripe: Error reanudando suscripción %s",
-                self.stripe_subscription_id,
+                sub_id,
             )
             return False
 
         _logger.info(
             "IRG Stripe: Subscription %s reanudada.",
-            self.stripe_subscription_id,
+            sub_id,
         )
         return True
 
@@ -575,10 +591,11 @@ class SaleOrderStripeBridge(models.Model):
     def action_irg_create_stripe_subscription(self):
         """Manual action button to create a Stripe Subscription."""
         self.ensure_one()
-        if self.stripe_subscription_id:
+        sub_id = self.stripe_subscription_id.stripe_id if self.stripe_subscription_id else self.stripe_subscription_ref
+        if sub_id:
             raise UserError(
                 _("Esta suscripción ya tiene un ID de Stripe: %s")
-                % self.stripe_subscription_id
+                % sub_id
             )
         if not self.is_subscription:
             raise UserError(_("Este pedido no es una suscripción."))

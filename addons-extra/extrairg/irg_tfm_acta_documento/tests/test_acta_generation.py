@@ -12,7 +12,7 @@ class TestActaGeneration(TransactionCase):
         # Crear datos de prueba
         cls.student = cls.env['op.student'].create({
             'name': 'Juan García López',
-            'identification_id': '12345678A',
+            'id_number': '12345678A',
         })
 
     def test_wizard_create_tfm_acta(self):
@@ -30,6 +30,7 @@ class TestActaGeneration(TransactionCase):
             'secretary_name': 'Santiago',
             'secretary_surnames': 'Borges Rodríguez',
             'defense_date': fields.Date.today(),
+            'apto_status': 'apto',
         }
         
         wizard = self.env['irg.tfm.acta.wizard'].create(wizard_data)
@@ -63,6 +64,7 @@ class TestActaGeneration(TransactionCase):
             'secretary_name': 'Santiago',
             'secretary_surnames': 'Borges Rodríguez',
             'defense_date': fields.Date.today(),
+            'apto_status': 'no_apto',
         }
         
         wizard = self.env['irg.tfm.acta.wizard'].create(wizard_data)
@@ -90,6 +92,7 @@ class TestActaGeneration(TransactionCase):
             'secretary_name': 'Test',
             'secretary_surnames': 'Secretary',
             'defense_date': fields.Date.today(),
+            'apto_status': 'apto',
         }
         
         wizard = self.env['irg.tfm.acta.wizard'].create(wizard_data)
@@ -117,6 +120,7 @@ class TestActaGeneration(TransactionCase):
             'secretary_name': 'Test',
             'secretary_surnames': 'Test',
             'defense_date': fields.Date.today(),
+            'apto_status': 'apto',
         }
         
         wizard = self.env['irg.tfm.acta.wizard'].create(wizard_data)

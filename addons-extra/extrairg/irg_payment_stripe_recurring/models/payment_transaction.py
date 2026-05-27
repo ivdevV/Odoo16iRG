@@ -122,54 +122,61 @@ class PaymentTransaction(models.Model):
         """
         If the order is configured for ``stripe_subscription_real`` or
         ``payment_link_fallback`` mode, create a native Stripe Subscription
-        after the first successful payment.
+        after the first successful payment using the canonical ``sale.order``
+        bridge method.
         """
         stripe_mode = getattr(order, 'irg_subscription_stripe_mode', False)
         if stripe_mode not in ('stripe_subscription_real', 'payment_link_fallback'):
             return
 
         # Skip if a Stripe Subscription already exists (avoid duplicates)
-        if order.stripe_subscription_ref and order.stripe_subscription_ref.startswith('sub_'):
+        existing_sub_id = (
+            getattr(order, 'stripe_subscription_id', False)
+            or order.stripe_subscription_ref
+        )
+        if existing_sub_id and existing_sub_id.startswith('sub_'):
             _logger.info(
                 "IRG Stripe: order %s already has Stripe subscription %s, skipping",
                 order.name,
-                order.stripe_subscription_ref,
+                existing_sub_id,
             )
             return
 
-        # Extract the Stripe PaymentMethod ID from the token
-        # In Odoo 16 payment_stripe:
-        #   token.provider_ref          = Stripe Customer (cus_xxx)
-        #   token.stripe_payment_method = Stripe PM       (pm_xxx)
-        payment_method_id = tx.token_id.stripe_payment_method
-        if not payment_method_id and stripe_mode != 'payment_link_fallback':
+        token = getattr(tx, 'token_id', False)
+        payment_method_id = token.stripe_payment_method if token else False
+        if stripe_mode == 'stripe_subscription_real' and not payment_method_id:
             _logger.warning(
-                "IRG Stripe: token %s for order %s has no stripe_payment_method, "
-                "cannot create Stripe Subscription",
-                tx.token_id.id,
+                "IRG Stripe: token/payment method missing for order %s, "
+                "cannot create Stripe Subscription in real mode",
                 order.name,
             )
             return
 
-        api = self.env['irg.stripe.api']
-        result = api._create_stripe_subscription(
-            order,
-            payment_method_id=payment_method_id if stripe_mode != 'payment_link_fallback' else None,
-        )
-        if result.get('id'):
+        sub_id = order._irg_create_stripe_subscription()
+        if sub_id:
+            vals = {}
+            if 'stripe_subscription_id' in order._fields and not order.stripe_subscription_id:
+                vals['stripe_subscription_id'] = sub_id
+            if 'stripe_subscription_ref' in order._fields and not order.stripe_subscription_ref:
+                vals['stripe_subscription_ref'] = sub_id
+            if 'irg_stripe_bridge_state' in order._fields:
+                vals['irg_stripe_bridge_state'] = 'active_real_subscription'
+            if vals:
+                order.sudo().write(vals)
+
             _logger.info(
                 "IRG Stripe: native Subscription %s created for order %s",
-                result['id'],
+                sub_id,
                 order.name,
             )
             if hasattr(order, '_irg_log_bridge_event'):
                 order._irg_log_bridge_event(
                     event_type='pending_real_subscription',
-                    description="Stripe Subscription %s created successfully." % result['id'],
+                    description="Stripe Subscription %s created successfully." % sub_id,
                 )
         else:
             _logger.error(
                 "IRG Stripe: failed to create native Subscription for order %s: %s",
                 order.name,
-                result,
+                sub_id,
             )

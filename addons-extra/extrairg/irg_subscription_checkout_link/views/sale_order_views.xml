@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_irg_subscription_checkout_link" model="ir.ui.view">
+        <field name="name">sale.order.form.irg.subscription.checkout.link</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/notebook" position="inside">
+                <page string="Checkout suscripcion" name="irg_subscription_checkout">
+                    <field name="is_subscription" invisible="1"/>
+                    <group string="Enlace publico">
+                        <group>
+                            <field name="irg_subscription_checkout_mode"/>
+                            <field name="irg_subscription_checkout_effective_mode"/>
+                            <field name="irg_checkout_state"/>
+                            <field name="irg_subscription_checkout_token" password="True"/>
+                            <field name="irg_subscription_checkout_url" widget="url"/>
+                        </group>
+                        <group>
+                            <field name="irg_pending_payment_transaction_id"/>
+                            <field name="irg_pending_payment_token_id"/>
+                            <button name="action_irg_generate_subscription_checkout_link"
+                                    type="object"
+                                    string="Generar enlace"
+                                    class="btn-secondary"/>
+                            <button name="action_irg_send_subscription_checkout_link"
+                                    type="object"
+                                    string="Enviar enlace"
+                                    class="btn-primary"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

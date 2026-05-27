@@ -9,6 +9,7 @@
             <tree string="Actas de TFM/TFG">
                 <field name="name"/>
                 <field name="acta_type"/>
+                <field name="apto_status"/>
                 <field name="defense_date"/>
                 <field name="state"/>
                 <field name="created_date"/>
@@ -32,6 +33,7 @@
                             <field name="name"/>
                             <field name="student_id"/>
                             <field name="acta_type"/>
+                            <field name="apto_status"/>
                             <field name="state"/>
                             <field name="created_date"/>
                             <field name="created_by"/>
@@ -127,7 +129,7 @@
     </record>
 
     <!-- Menu Item -->
-    <menuitem id="menu_irg_tfm_acta" name="Actas TFM/TFG" parent="openeducat_core.menu_academic_operations" 
+    <menuitem id="menu_irg_tfm_acta" name="Actas TFM/TFG" 
               action="action_irg_tfm_acta" groups="base.group_user" sequence="100"/>
 
     <!-- Herencia: Botón en la ficha del estudiante (op.student) -->
@@ -136,7 +138,7 @@
         <field name="model">op.student</field>
         <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//header/button[1]" position="after">
+            <xpath expr="//header/button[@name='create_student_user']" position="after">
                 <button name="%(action_irg_tfm_acta_wizard)d" string="Generar Acta TFM/TFG" type="action" class="btn-primary"/>
             </xpath>
         </field>

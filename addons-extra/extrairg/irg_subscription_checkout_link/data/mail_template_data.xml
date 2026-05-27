@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_subscription_checkout_link" model="mail.template">
+        <field name="name">IRG Subscription Checkout Link</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="subject">Enlace de pago - {{ object.name }}</field>
+        <field name="email_from">{{ object.company_id.email_formatted or user.email_formatted }}</field>
+        <field name="email_to">{{ object.partner_id.email or '' }}</field>
+        <field name="auto_delete" eval="False"/>
+        <field name="body_html" type="html">
+            <div>
+                <p>Hola <t t-out="object.partner_id.name or ''"/>,</p>
+                <p>
+                    Puedes completar el pago o guardar tu tarjeta para la suscripcion
+                    desde el siguiente enlace:
+                </p>
+                <p>
+                    <a t-att-href="object.irg_subscription_checkout_url">
+                        Abrir enlace de pago
+                    </a>
+                </p>
+                <p>Gracias.</p>
+            </div>
+        </field>
+    </record>
+</odoo>

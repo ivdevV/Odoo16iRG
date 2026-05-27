@@ -10,7 +10,9 @@ This is an **Odoo 16** deployment for an educational institution (ISEP/IRG). The
 2. **New modules always go in `addons-extra/extrairg/`** with the prefix `irg_` (e.g. `irg_sale_order_override`).
 3. **Target version is Odoo 16.** Follow the official Odoo 16 documentation and API.
 4. **A micro-spec must be written first** (in `doc/micro-specs/`) before implementing any new module. Use the template in `SPECIFICATIONS.md`.
-5. **Emit a clear, concise changelog** at the end of every task.
+5. **Module creation/update always requires documentation.** Whenever creating or updating any module, update its technical documentation under `doc/modules/` using the `Odoo 16 Module Documenter` subagent before finishing.
+6. **Commit and push the full delivered scope.** After module creation/update, include code changes, micro-specs, documentation, and changelog-related files in the same completed delivery, then commit and push the documented changes.
+7. **Emit a clear, concise changelog** at the end of every task.
 
 ## Module Scaffolding Requirements
 
@@ -91,7 +93,9 @@ Before finishing any implementation, verify:
 - [ ] Tests added for critical logic.
 - [ ] All strings translatable with `_()`.
 - [ ] No unsecured endpoints or unjustified `sudo()`.
+- [ ] Module documentation created/updated in `doc/modules/` using the `Odoo 16 Module Documenter` subagent.
 - [ ] Changelog written.
+- [ ] Code, micro-spec, documentation, and related changes committed and pushed together.
 
 ## Micro-spec Template Location
 

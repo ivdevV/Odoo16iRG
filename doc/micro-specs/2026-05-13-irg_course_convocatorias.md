@@ -15,6 +15,7 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 ## 4. Alcance exacto
 
 - Herencia de `slide.channel` para añadir campos calculados de cursos relacionados, modalidades, lotes HomeClass, lotes Online, variante Online y secciones filtradas para ambas modalidades.
+- Corrección de detección para cursos/lotes HomeClass con enlaces de clase cuando la relación académica no llega por asignaturas o la modalidad no contiene literalmente `homeclass`.
 - Reestructuración del notebook principal del formulario para introducir un notebook superior por modalidad.
 - Reutilización de las pestañas existentes del canal dentro de HomeClass y definición de un notebook paralelo para Online.
 - Dependencia explícita de `irg_op_course_modality` e `isep_elearning_custom`.
@@ -34,7 +35,9 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 - La relación `slide.channel` → `op.course` se obtiene por dos vías:
   - asignaturas del canal (`op_subject_ids.course_id` y `subject_ids`)
   - cursos que incluyen el canal en `slide_channel_ids`
+- Además, se incorporan los cursos de los lotes ya asignados en `allowed_batch_ids` de contenidos y secciones del canal, evitando que cursos como Neuropsicología Clínica o Neurodesarrollo queden fuera si no comparten la relación por asignaturas.
 - Los lotes HomeClass/Online se calculan desde `op.batch` de los cursos relacionados y `modality_id`.
+- La detección de HomeClass revisa campos normalizados de `op.batch.modality_id` (`name`, `code`, `new_code`, `analytic_code`), el código del lote y, si no existe marcador Online, acepta lotes con `teams_link` como lotes con enlace de clase HomeClass.
 - La variante Online se obtiene de `course.product_id.product_tmpl_id.product_variant_ids` filtrando por atributo `modalidad = online`.
 - Las secciones HomeClass se calculan sobre `irg_native_section_ids` filtrando `allowed_batch_ids` contra los lotes HomeClass.
 
@@ -45,6 +48,7 @@ La primera aproximación basada en un modelo manual `irg.course.convocatoria` no
 - En `Online > Contenido`, se muestran contenidos nativos `slide.slide` marcados como Online.
 - La subpestaña `Online > Contenido` usa el campo técnico `irg_online_slide_ids`, un `one2many` contra `slide.slide/channel_id` con dominio por modalidad para evitar duplicar `slide_ids` en el mismo formulario.
 - La separación editable del contenido se implementa en `slide.slide` mediante `irg_content_modality`, evitando modelos paralelos y permitiendo añadir secciones, documentos y demás contenidos desde Online sin mezclarlos con HomeClass.
+- El botón `Copiar contenido de HomeClass` clona contenidos y secciones como registros independientes de Online, preserva el orden visual del bloque copiado y reasigna la jerarquía (`category_id`, `parent_slide_id` y sección iRG) a las copias nuevas para evitar vínculos cruzados.
 - El notebook original del formulario se oculta tras mover las pestañas reutilizadas a HomeClass.
 
 ## 6. Dependencias
@@ -61,6 +65,8 @@ Sin impacto destructivo en datos existentes. La UI del canal pasa a reflejar cur
 
 - El formulario de `slide.channel` muestra las pestañas "HomeClass" y "Online" tras instalar el módulo.
 - Si el curso relacionado tiene modalidad HomeClass o lotes HomeClass, la pestaña HomeClass es visible.
+- Los cursos relacionados por lotes asignados en contenidos/secciones se detectan aunque no lleguen por `op_subject_ids`.
+- Los lotes con enlace de clase (`teams_link`) se muestran como HomeClass si no están marcados explícitamente como Online.
 - Si el curso relacionado tiene modalidad Online o lotes Online, la pestaña Online es visible.
 - El formulario de `slide.channel` muestra primero las pestañas superiores `HomeClass` y `Online`.
 - Al entrar en HomeClass, aparecen dentro las subpestañas del canal (`Contenido`, `Descripción`, `Opciones`, `Karma`, `Asignaturas`, `Secciones iRG`).
@@ -68,6 +74,9 @@ Sin impacto destructivo en datos existentes. La UI del canal pasa a reflejar cur
 - La pestaña Online muestra lotes `op.batch` reales filtrados por modalidad Online y la variante Online detectada.
 - La pestaña `Online > Contenido` permite crear contenidos nativos `slide.slide` marcados como Online.
 - La pestaña `Online > Contenido` permite crear secciones nativas marcadas como Online mediante el botón `Añadir sección`.
+- El botón `Copiar contenido de HomeClass` copia secciones y documentos a Online como registros independientes, sin dejar documentos online vinculados a secciones HomeClass.
+- La copia no debe añadir secciones Online a la lista de secciones HomeClass ni alterar el orden visible de HomeClass.
+- Los contenidos copiados a Online deben conservar los datos propios de una copia normal, sin modificar ni reordenar los registros HomeClass originales.
 - Las pestañas de modalidad no muestran ya el diseño plano previo a nivel superior.
 
 ## 9. Rollback plan
@@ -84,4 +93,4 @@ Desinstalar desde Apps > `irg_course_convocatorias`. Las columnas `irg_slide_sec
 
 - Responsable: GitHub Copilot / iRG Dev
 - Implementado: 2026-05-13
-- Versión del módulo: `16.0.1.0.0`
+- Versión del módulo: `16.0.1.4.0`

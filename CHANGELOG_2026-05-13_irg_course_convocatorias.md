@@ -1,5 +1,28 @@
 # Changelog 2026-05-13 — irg_course_convocatorias
 
+## 2026-05-19 — Corrección detección HomeClass en NC y Neurodesarrollo
+
+- Los cursos relacionados del canal ahora también se detectan desde los lotes asignados en `allowed_batch_ids` de contenidos y secciones, no solo desde asignaturas o `slide_channel_ids`.
+- La detección de lotes HomeClass revisa `name`, `code`, `new_code` y `analytic_code` de `op.batch.modality_id`, además del código del lote.
+- Si un lote tiene `teams_link` y no está marcado explícitamente como Online, se considera HomeClass para que aparezcan sus enlaces de clase.
+- Este ajuste evita que cursos como Neuropsicología Clínica y Neurodesarrollo queden sin lotes/secciones HomeClass por diferencias en codificación de modalidad.
+- Versión del módulo actualizada a `16.0.1.4.0`.
+
+## 2026-05-19 — Corrección de copia HomeClass → Online
+
+- El botón `Copiar contenido de HomeClass` crea copias Online independientes conservando nombre, tipo, estado publicado y datos normales de copia.
+- Las secciones/categorías se copian antes internamente para poder remapear `category_id`, `parent_slide_id` e `irg_section_id`, pero la secuencia final conserva el orden visual del bloque HomeClass copiado dentro de Online.
+- `HomeClass > Contenido` mantiene el campo nativo `slide_ids` para compatibilidad con vistas heredadas de otros módulos y aplica dominio/contexto por modalidad HomeClass.
+- La copia ya no reescribe ni limpia `allowed_batch_ids`; no transforma lotes durante una operación cuyo objetivo es copiar contenido.
+- La pestaña de secciones HomeClass filtra por modalidad HomeClass/sin modalidad, evitando que las secciones Online copiadas aparezcan o alteren el orden visible de HomeClass.
+- Versión del módulo actualizada a `16.0.1.3.0`.
+
+## 2026-05-19 — Hotfix actualización de vista
+
+- Se restaura el nombre nativo `slide_ids` en `HomeClass > Contenido` para no romper XPaths de módulos que heredan `website_slides.view_slide_channel_form`, como `connect_chatgpt`.
+- El filtro de modalidad se conserva mediante `domain` y `context`, sin renombrar el campo en la arquitectura final de la vista.
+- Versión del módulo actualizada a `16.0.1.3.0`.
+
 ## Nuevo módulo: `addons-extra/extrairg/irg_course_convocatorias`
 
 ### Qué se hizo

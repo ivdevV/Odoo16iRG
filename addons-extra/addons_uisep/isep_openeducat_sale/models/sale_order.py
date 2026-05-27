@@ -315,6 +315,9 @@ class SaleOrder(models.Model):
                 first_name+=str(name[i])+' '
             last_name = name[-1]
         
+        line = self.order_line.filtered(lambda l: l.product_template_id.id == admission_register_id.course_id.product_template_id.id)[:1]
+        start_date = line.start_date_enroller or fields.Date.today()
+        
         op_admission = op_admission.create({
             'name': self.partner_id.name,
             'first_name': first_name.strip(),
@@ -327,8 +330,8 @@ class SaleOrder(models.Model):
             'partner_id': self.partner_id.id,
             'register_id' : admission_register_id.id,
             'course_id' : admission_register_id.course_id.id,
-            'application_date': fields.datetime.now(),
-            'admission_date': fields.datetime.now(),
+            'application_date': fields.Datetime.now(),
+            'admission_date': start_date,
             'fees_term_id': self.env['op.fees.terms'].search([], limit=1).id,
             'gender': self.gender or self.partner_id.gender or 'o',
             'batch_id': self.get_lot_id(admission_register_id.course_id).id,

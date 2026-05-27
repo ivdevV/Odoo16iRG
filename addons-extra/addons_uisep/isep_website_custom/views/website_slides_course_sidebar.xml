@@ -38,7 +38,7 @@
     </template>
 
     <template id="course_nav_inherit" inherit_id="website_slides.course_nav">
-        <xpath expr="////ol[@class='breadcrumb bg-transparent mb-0 ps-0 py-0 overflow-hidden']" position="replace">       
+        <xpath expr="//ol[contains(@class, 'breadcrumb')]" position="replace">       
 
             <ol class="breadcrumb bg-transparent mb-0 ps-0 py-0 overflow-hidden">
                 <li class="breadcrumb-item">

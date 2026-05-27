@@ -16,8 +16,8 @@
     ],
     'data': [
         'security/ir.model.access.csv',
-        'views/acta_views.xml',
         'wizard/acta_wizard_views.xml',
+        'views/acta_views.xml',
     ],
     'external_dependencies': {
         'python': ['reportlab', 'babel'],

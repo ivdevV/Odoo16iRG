@@ -1,6 +1,7 @@
 import logging
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+from dateutil.relativedelta import relativedelta
 
 _logger = logging.getLogger(__name__)
 
@@ -17,6 +18,21 @@ class OpBatch(models.Model):
     #subject_ids = fields.Many2many('op.subject', string='Subject(s)')
     subject_to_batch_ids = fields.One2many('op.subject.to.batch', 'batch_id', string='Asignaturas en lote')
 
+    def _schedule_onl_subjects(self):
+        for batch in self:
+            is_onl = 'ONL' in (batch.code or '').upper() or 'ONL' in (batch.name or '').upper()
+            if not is_onl or not batch.start_date:
+                continue
+            
+            subjects = batch.subject_to_batch_ids.sorted(key=lambda r: r.id)
+            current_date_from = batch.start_date
+            for subject_line in subjects:
+                subject_line.write({
+                    'date_from': current_date_from,
+                    'date_to': batch.end_date,
+                })
+                current_date_from = current_date_from + relativedelta(days=25)
+
     @api.model
     def create(self, vals):
         record = super(OpBatch, self).create(vals)
@@ -28,6 +44,7 @@ class OpBatch(models.Model):
                     'subject_id': subject.id,
                     'code': subject.code,
                 })
+        record._schedule_onl_subjects()
         return record
 
     def write(self, vals):
@@ -41,7 +58,10 @@ class OpBatch(models.Model):
                         'subject_id': subject.id,
                         'code': subject.code,
                     })
-        return super(OpBatch, self).write(vals)
+        res = super(OpBatch, self).write(vals)
+        if any(f in vals for f in ['course_id', 'start_date', 'end_date']):
+            self._schedule_onl_subjects()
+        return res
         
 
 class OpSubjectToBatch(models.Model):

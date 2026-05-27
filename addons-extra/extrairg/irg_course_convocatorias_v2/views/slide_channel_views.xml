@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit slide.channel form: add HomeClass and Online tabs using dynamic view switcher -->
+    <record id="view_slide_channel_form_convocatorias_v2" model="ir.ui.view">
+        <field name="name">slide.channel.form.convocatorias.v2.irg</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="website_slides.view_slide_channel_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Botón de retorno al canal HomeClass en la cabecera del canal Online clonado -->
+            <xpath expr="//header" position="inside">
+                <button name="action_open_homeclass_channel"
+                        type="object"
+                        string="Volver a HomeClass"
+                        icon="fa-arrow-left"
+                        class="btn btn-secondary"
+                        attrs="{'invisible': [('irg_is_online_clone', '=', False)]}"/>
+            </xpath>
+
+            <!-- Campos técnicos invisibles necesarios para lógica de UI -->
+            <xpath expr="//form/sheet" position="inside">
+                <field name="irg_has_homeclass" invisible="1"/>
+                <field name="irg_has_online" invisible="1"/>
+                <field name="irg_online_batch_ids" invisible="1"/>
+                <field name="irg_online_channel_id" invisible="1"/>
+                <field name="irg_is_online_clone" invisible="1"/>
+            </xpath>
+
+            <!-- Conmutador superior de modalidad (HomeClass / Online) -->
+            <xpath expr="//form/sheet/notebook[1]" position="before">
+                <div class="mb-3" attrs="{'invisible': [('irg_is_online_clone', '=', True)]}">
+                    <field name="irg_active_tab" widget="selection_badge" nolabel="1"/>
+                </div>
+            </xpath>
+
+            <!-- Visibilidad condicional sobre el notebook nativo de Odoo (que representa HomeClass) -->
+            <xpath expr="//form/sheet/notebook[1]" position="attributes">
+                <attribute name="attrs">{'invisible': [('irg_is_online_clone', '=', False), ('irg_active_tab', '!=', 'homeclass')]}</attribute>
+            </xpath>
+
+            <!-- Filtros de modalidad y dominios sobre el contenido nativo (HomeClass) -->
+            <xpath expr="//form/sheet/notebook[1]/page[@name='content']//field[@name='slide_ids']" position="attributes">
+                <attribute name="domain">['|', ('irg_content_modality', '=', False), ('irg_content_modality', '=', 'homeclass')]</attribute>
+                <attribute name="context">{'default_channel_id': active_id, 'default_irg_content_modality': 'homeclass'}</attribute>
+            </xpath>
+
+            <xpath expr="//form/sheet/notebook[1]/page[@name='irg_sections']//field[@name='irg_native_section_ids']" position="attributes">
+                <attribute name="domain">['|', ('irg_content_modality', '=', False), ('irg_content_modality', '=', 'homeclass')]</attribute>
+                <attribute name="context">{'default_channel_id': active_id, 'default_irg_content_modality': 'homeclass', 'default_is_category': True, 'default_slide_category': 'article'}</attribute>
+            </xpath>
+
+            <xpath expr="//form/sheet/notebook[1]/page[@name='content']//field[@name='slide_ids']//tree/field[@name='name']" position="after">
+                <field name="irg_content_modality" invisible="1"/>
+            </xpath>
+
+            <!-- Notebook dedicado a la modalidad Online -->
+            <xpath expr="//form/sheet/notebook[1]" position="after">
+                <notebook name="irg_online_notebook" attrs="{'invisible': ['|', ('irg_is_online_clone', '=', True), ('irg_active_tab', '!=', 'online')]}">
+                    <page string="Contenido" name="irg_online_content">
+                        <div class="mb-3">
+                            <button name="action_copy_homeclass_to_online"
+                                    type="object"
+                                    string="Copiar contenido de HomeClass"
+                                    icon="fa-copy"
+                                    class="btn btn-secondary"
+                                    attrs="{'invisible': [('irg_online_channel_id', '!=', False)]}"
+                                    confirm="¿Clonar el contenido de HomeClass al canal Online independiente? No se elimina ni modifica nada existente. Los lotes permitidos quedarán vacíos en las copias para que los asignes a lotes Online manualmente."/>
+                            <button name="action_open_online_channel"
+                                    type="object"
+                                    string="Abrir contenidos Online (Gestionar)"
+                                    icon="fa-external-link"
+                                    class="btn btn-primary ms-2"
+                                    attrs="{'invisible': [('irg_online_channel_id', '=', False)]}"/>
+                        </div>
+
+                        <div class="alert alert-info text-center" role="alert" attrs="{'invisible': [('irg_online_channel_id', '!=', False)]}">
+                            <i class="fa fa-info-circle me-1"/> 
+                            El canal Online de este curso no está inicializado todavía. Haz clic en <strong>Copiar contenido de HomeClass</strong> para realizar la clonación inicial de contenidos de forma aislada.
+                        </div>
+
+                        <group attrs="{'invisible': [('irg_online_channel_id', '=', False)]}">
+                            <group string="Base académica">
+                                <field name="irg_related_course_ids" widget="many2many_tags" readonly="1"/>
+                                <field name="irg_related_modality_ids" widget="many2many_tags" readonly="1"/>
+                            </group>
+                            <group string="Vinculación online">
+                                <field name="irg_online_channel_id" readonly="1" options="{'no_open': True}"/>
+                                <field name="irg_online_variant_id" readonly="1" options="{'no_open': True}"/>
+                            </group>
+                        </group>
+
+                        <field name="irg_online_slide_ids"
+                               widget="slide_category_one2many"
+                               mode="tree,kanban"
+                               context="{'default_channel_id': irg_online_channel_id}"
+                               readonly="1"
+                               attrs="{'invisible': [('irg_online_channel_id', '=', False)]}">
+                            <tree decoration-muted="is_category" create="0" delete="0" edit="0">
+                                <field name="sequence" widget="handle"/>
+                                <field name="name"/>
+                                <field name="is_category" invisible="1"/>
+                                <field name="irg_content_modality" invisible="1"/>
+                                <field name="slide_category" string="Categoría"/>
+                                <field name="survey_id" string="Certificación" optional="show"/>
+                                <field name="completion_time" string="Duración" widget="float_time"/>
+                                <field name="total_views" string="# Vistas Totales"/>
+                                <field name="is_preview" string="Vista previa"/>
+                                <field name="is_published" string="Publicado"/>
+                            </tree>
+                        </field>
+                    </page>
+
+                    <page string="Descripción" name="irg_online_description" attrs="{'invisible': [('irg_online_channel_id', '=', False)]}">
+                        <field name="irg_online_description_html" widget="html" options="{'safe': True}" nolabel="1"/>
+                    </page>
+
+                    <page string="Opciones" name="irg_online_options" attrs="{'invisible': [('irg_online_channel_id', '=', False)]}">
+                        <group>
+                            <group string="Acceso del Curso">
+                                <field name="irg_online_enroll"/>
+                                <field name="irg_online_enroll_group_ids" widget="many2many_tags" attrs="{'invisible': [('irg_online_enroll', '!=', 'invite')]}"/>
+                                <field name="irg_online_visibility"/>
+                                <field name="irg_online_promote_strategy"/>
+                            </group>
+                            <group string="Derechos de subida">
+                                <field name="irg_online_upload_group_ids" widget="many2many_tags"/>
+                            </group>
+                        </group>
+                        <group string="Mensaje de inscripción" attrs="{'invisible': [('irg_online_enroll', '!=', 'invite')]}">
+                            <field name="irg_online_enroll_msg" widget="html" nolabel="1"/>
+                        </group>
+                    </page>
+
+                    <page string="Karma" name="irg_online_karma" attrs="{'invisible': [('irg_online_channel_id', '=', False)]}">
+                        <group string="Reglas de Karma para Online">
+                            <field name="irg_online_karma_gen_slide_vote"/>
+                            <field name="irg_online_karma_gen_channel_finish"/>
+                            <field name="irg_online_karma_gen_channel_rank"/>
+                        </group>
+                    </page>
+
+                    <page string="Asignaturas" name="irg_online_subjects">
+                        <field name="op_subject_ids">
+                            <tree create="0" delete="0" edit="0">
+                                <field name="code" string="Codigo"/>
+                                <field name="name" string="Nombre de asignatura"/>
+                                <field name="type" string="Tipo"/>
+                                <field name="credit_point" string="Creditos"/>
+                                <field name="course_id" string="Pertenece al curso de"/>
+                            </tree>
+                        </field>
+                    </page>
+
+                    <page string="Secciones iRG" name="irg_online_sections">
+                        <field name="irg_online_section_ids" readonly="1">
+                            <tree create="0" delete="0" edit="0">
+                                <field name="sequence" widget="handle"/>
+                                <field name="name"/>
+                                <field name="allowed_batch_ids" widget="many2many_tags"/>
+                                <field name="scheduled_date"/>
+                                <field name="is_published"/>
+                            </tree>
+                            <form>
+                                <group>
+                                    <field name="name" readonly="1"/>
+                                    <field name="channel_id" readonly="1"/>
+                                    <field name="allowed_batch_ids" widget="many2many_tags" readonly="1"/>
+                                    <field name="scheduled_date" readonly="1"/>
+                                    <field name="is_published" readonly="1"/>
+                                </group>
+                            </form>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

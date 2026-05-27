@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_auto_admission_required_form_quarterly_inh" model="ir.ui.view">
+        <field name="name">auto.admission.required.form.quarterly.inh</field>
+        <field name="model">auto.admission.required</field>
+        <field name="inherit_id" ref="isep_openeducat_sale.view_auto_admission_required_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Convocatorias Online (Trimestrales)">
+                    <field name="quarterly_online_enabled"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

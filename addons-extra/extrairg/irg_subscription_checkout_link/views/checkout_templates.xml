@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="subscription_checkout_page" name="IRG Subscription Checkout">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="container my-5">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <h1 class="h3 mb-3">Pago de suscripcion</h1>
+                            <div class="mb-4">
+                                <p class="mb-1">
+                                    <strong>Pedido:</strong>
+                                    <span t-field="order.name"/>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Alumno:</strong>
+                                    <span t-field="order.partner_id.name"/>
+                                </p>
+                                <p class="mb-1" t-if="mode == 'initial_payment'">
+                                    <strong>Primer plazo:</strong>
+                                    <span t-esc="amount"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    <t t-if="due_date">
+                                        <span> - vencimiento </span>
+                                        <span t-esc="due_date"/>
+                                    </t>
+                                </p>
+                                <p class="mb-1" t-if="mode == 'setup_only'">
+                                    <strong>Operacion:</strong>
+                                    <span>Guardar tarjeta para el primer cobro futuro.</span>
+                                </p>
+                            </div>
+                            <div t-if="providers">
+                                <t t-call="payment.checkout"/>
+                            </div>
+                            <div t-else="" class="alert alert-warning">
+                                No hay metodos de pago disponibles para este pedido.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

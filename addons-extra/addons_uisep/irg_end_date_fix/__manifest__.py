@@ -6,6 +6,7 @@
     'license': 'LGPL-3',
     'depends': [
         'isep_openeducat_sale',
+        'irg_openeducat_sale_online_quarterly',
     ],
     'data': [],
     'installable': True,

@@ -75,6 +75,7 @@ class OpAdmission(models.Model):
         
 
     def send_mail(self, force):
+        res = super(OpAdmission, self).send_mail(force)
         if not self.email_send_ok:           
             template_id = self.env.ref('isep_elearning_custom.email_op_admission_confirm').id
             template = self.env['mail.template'].sudo().browse(template_id)

@@ -1,0 +1,631 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Rediseño del listado de certificados con Pestañas y Vista Premium -->
+        <template id="portal_certificate_list_override" inherit_id="irg_gradebook_certificates.portal_certificate_list">
+            <xpath expr="//div[@class='o_portal_wrap']" position="replace">
+                <div class="o_portal_wrap">
+                    <div class="container py-4">
+                        
+                        <!-- Cabecera del Portal Institucional -->
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+                            <div>
+                                <h2 class="h3 mb-1 text-primary fw-bold">Certificaciones Académicas</h2>
+                                <p class="text-muted mb-0 small">Consulta y descarga tus diplomas oficiales, actas de evaluación y boletines de notas.</p>
+                            </div>
+                            <div>
+                                <a href="/campus/certificates/new" class="btn btn-warning text-dark fw-bold px-4 py-2 shadow-sm rounded-pill hover-lift">
+                                    <i class="fa fa-plus me-2"/>Nueva Solicitud
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Alertas de Estado/Error -->
+                        <t t-if="request.params.get('error') == 'no_pdf'">
+                            <div class="alert alert-warning alert-dismissible fade show border-start border-4 border-warning shadow-sm mb-4" role="alert">
+                                <i class="fa fa-exclamation-triangle me-2 text-warning"/>
+                                <strong>Documento no disponible:</strong> El archivo PDF de esta certificación aún no se ha generado en el sistema. Por favor, contacta con secretaría académica.
+                            </div>
+                        </t>
+                        <t t-if="request.params.get('error') == 'download_error'">
+                            <div class="alert alert-danger alert-dismissible fade show border-start border-4 border-danger shadow-sm mb-4" role="alert">
+                                <i class="fa fa-times-circle me-2 text-danger"/>
+                                <strong>Error de descarga:</strong> Ha ocurrido un error al procesar la descarga de tu documento. Por favor, inténtalo de nuevo o contacta con secretaría.
+                            </div>
+                        </t>
+
+                        <!-- Contenedor Principal con Diseño por Pestañas (Bootstrap 5) -->
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                            <div class="card-header bg-light border-0 p-0">
+                                <ul class="nav nav-tabs nav-justified border-0" id="certsTab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active py-3 fw-bold border-0 rounded-0" id="diplomas-tab" data-bs-toggle="tab" data-bs-target="#diplomas-pane" type="button" role="tab" aria-controls="diplomas-pane" aria-selected="true" style="font-size: 1.05rem;">
+                                            <i class="fa fa-graduation-cap me-2 text-primary"/>Mis Diplomas
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link py-3 fw-bold border-0 rounded-0" id="actas-tab" data-bs-toggle="tab" data-bs-target="#actas-pane" type="button" role="tab" aria-controls="actas-pane" aria-selected="false" style="font-size: 1.05rem;">
+                                            <i class="fa fa-file-text-o me-2 text-primary"/>Actas TFM/TFG
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link py-3 fw-bold border-0 rounded-0" id="solicitudes-tab" data-bs-toggle="tab" data-bs-target="#solicitudes-pane" type="button" role="tab" aria-controls="solicitudes-pane" aria-selected="false" style="font-size: 1.05rem;">
+                                            <i class="fa fa-list-alt me-2 text-primary"/>Solicitudes de Certificados
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-body p-4 bg-white">
+                                <div class="tab-content" id="certsTabContent">
+
+                                    <!-- Pestaña 1: Mis Diplomas -->
+                                    <div class="tab-pane fade show active" id="diplomas-pane" role="tabpanel" aria-labelledby="diplomas-tab">
+                                        <t t-if="not diplomas">
+                                            <div class="text-center py-5 text-muted">
+                                                <i class="fa fa-graduation-cap fa-3x mb-3" style="color: #cbd5e1;"/>
+                                                <p class="mb-0">No se encontraron diplomas emitidos en tu expediente académico.</p>
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle mb-0">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th class="border-0 px-3 py-3">Código de Registro</th>
+                                                            <th class="border-0 py-3">Programa / Curso</th>
+                                                            <th class="border-0 py-3">Fecha de Expedición</th>
+                                                            <th class="border-0 py-3 text-center">Tipo</th>
+                                                            <th class="border-0 px-3 py-3 text-end"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="diplomas" t-as="diploma">
+                                                            <tr>
+                                                                 <td class="px-3 py-3">
+                                                                    <span class="font-monospace fw-bold text-dark" t-out="diploma.registry_number"/>
+                                                                </td>
+                                                                <td class="py-3">
+                                                                    <span class="fw-semibold text-dark" t-out="diploma.student_course_id.course_id.name or 'Curso Académico'"/>
+                                                                </td>
+                                                                <td class="py-3">
+                                                                    <t t-out="diploma.issue_date.strftime('%d/%m/%Y') if diploma.issue_date else ''"/>
+                                                                </td>
+                                                                <td class="py-3 text-center">
+                                                                    <span class="badge rounded-pill bg-light text-primary px-3 py-2 border border-primary-subtle">
+                                                                        <t t-out="dict(diploma.fields_get(['diploma_type'])['diploma_type']['selection']).get(diploma.diploma_type, diploma.diploma_type)"/>
+                                                                    </span>
+                                                                </td>
+                                                                <td class="px-3 py-3 text-end">
+                                                                    <t t-if="diploma.attachment_id">
+                                                                        <a t-attf-href="/campus/certificates/download/diploma/{{ diploma.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 transition-all hover-btn-download">
+                                                                            <i class="fa fa-download me-1"/> Descargar PDF
+                                                                        </a>
+                                                                    </t>
+                                                                    <t t-else="">
+                                                                        <span class="text-muted small"><i class="fa fa-clock-o me-1"/>En trámite</span>
+                                                                    </t>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                    <!-- Pestaña 2: Actas TFM/TFG -->
+                                    <div class="tab-pane fade" id="actas-pane" role="tabpanel" aria-labelledby="actas-tab">
+                                        <t t-if="not actas">
+                                            <div class="text-center py-5 text-muted">
+                                                <i class="fa fa-file-text-o fa-3x mb-3" style="color: #cbd5e1;"/>
+                                                <p class="mb-0">No se encontraron actas de evaluación final registradas.</p>
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle mb-0">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th class="border-0 px-3 py-3">Nombre del Acta</th>
+                                                            <th class="border-0 py-3">Titulación / Programa</th>
+                                                            <th class="border-0 py-3">Fecha Defensa</th>
+                                                            <th class="border-0 py-3 text-center">Resultado</th>
+                                                            <th class="border-0 py-3 text-center">Calificación</th>
+                                                            <th class="border-0 px-3 py-3 text-end"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="actas" t-as="acta">
+                                                            <tr>
+                                                                <td class="px-3 py-3">
+                                                                    <span class="fw-bold text-dark text-nowrap" t-out="acta.name"/>
+                                                                    <div class="text-muted small" t-out="acta.tfm_title"/>
+                                                                </td>
+                                                                <td class="py-3">
+                                                                    <span class="text-dark" t-out="acta.degree_name"/>
+                                                                    <div class="text-muted small">Añ. Académico: <t t-out="acta.academic_year"/></div>
+                                                                </td>
+                                                                <td class="py-3">
+                                                                    <t t-out="acta.defense_date.strftime('%d/%m/%Y') if acta.defense_date else ''"/>
+                                                                </td>
+                                                                <td class="py-3 text-center">
+                                                                    <t t-set="badge_result_class" t-value="'bg-success' if acta.apto_status == 'apto' else 'bg-danger'"/>
+                                                                    <span t-attf-class="badge rounded-pill px-3 py-2 {{ badge_result_class }}">
+                                                                        <t t-out="dict(acta.fields_get(['apto_status'])['apto_status']['selection']).get(acta.apto_status, acta.apto_status)"/>
+                                                                    </span>
+                                                                </td>
+                                                                <td class="py-3 text-center fw-bold text-dark" t-out="acta.grade or '-'"/>
+                                                                <td class="px-3 py-3 text-end">
+                                                                    <t t-if="acta.attachment_id">
+                                                                        <a t-attf-href="/campus/certificates/download/acta/{{ acta.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 transition-all hover-btn-download">
+                                                                            <i class="fa fa-download me-1"/> Descargar PDF
+                                                                        </a>
+                                                                    </t>
+                                                                    <t t-else="">
+                                                                        <span class="text-muted small"><i class="fa fa-spinner fa-spin me-1"/>Generando</span>
+                                                                    </t>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                    <!-- Pestaña 3: Solicitudes de Notas -->
+                                    <div class="tab-pane fade" id="solicitudes-pane" role="tabpanel" aria-labelledby="solicitudes-tab">
+                                        <t t-if="not certs">
+                                            <div class="text-center py-5 text-muted">
+                                                <i class="fa fa-list-alt fa-3x mb-3" style="color: #cbd5e1;"/>
+                                                <p class="mb-3">No tienes ninguna solicitud de certificado registrada.</p>
+                                                <a href="/campus/certificates/new" class="btn btn-sm btn-primary rounded-pill px-4">
+                                                    Crear primera solicitud
+                                                </a>
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover align-middle mb-0">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th class="border-0 px-3 py-3">Referencia</th>
+                                                            <th class="border-0 py-3">Documento</th>
+                                                            <th class="border-0 py-3">Formato</th>
+                                                            <th class="border-0 py-3">Fecha Solicitud</th>
+                                                            <th class="border-0 py-3">Importe</th>
+                                                            <th class="border-0 py-3 text-center">Estado</th>
+                                                            <th class="border-0 px-3 py-3 text-end"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="certs" t-as="cert">
+                                                            <tr>
+                                                                <td class="px-3 py-3">
+                                                                    <span class="fw-bold text-dark" t-out="cert.name"/>
+                                                                </td>
+                                                                <td class="py-3 text-dark">
+                                                                    <span class="fw-semibold">
+                                                                        <t t-out="dict(cert.fields_get(['document_type'])['document_type']['selection']).get(cert.document_type, cert.document_type)"/>
+                                                                    </span>
+                                                                </td>
+                                                                <td class="py-3 text-muted small">
+                                                                    <t t-out="dict(cert.fields_get(['certificate_type'])['certificate_type']['selection']).get(cert.certificate_type, cert.certificate_type)"/>
+                                                                </td>
+                                                                <td class="py-3">
+                                                                    <t t-out="cert.request_date.strftime('%d/%m/%Y') if cert.request_date else ''"/>
+                                                                </td>
+                                                                <td class="py-3 text-dark fw-semibold">
+                                                                    <t t-out="'%.2f €' % cert.price_total"/>
+                                                                </td>
+                                                                <td class="py-3 text-center">
+                                                                    <t t-set="badge_state_class" t-value="'bg-success' if cert.state == 'done' else ('bg-warning text-dark' if cert.state in ('pending_payment', 'paid', 'in_process', 'sent') else ('bg-danger' if cert.state == 'cancelled' else 'bg-secondary'))"/>
+                                                                    <span t-attf-class="badge rounded-pill px-3 py-2 {{ badge_state_class }}">
+                                                                        <t t-out="dict(cert.fields_get(['state'])['state']['selection']).get(cert.state, cert.state)"/>
+                                                                    </span>
+                                                                </td>
+                                                                <td class="px-3 py-3 text-end">
+                                                                    <t t-if="cert.state == 'done' and cert.attachment_id">
+                                                                        <a t-attf-href="/campus/certificates/download/{{ cert.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 transition-all hover-btn-download">
+                                                                            <i class="fa fa-download me-1"/> Descargar PDF
+                                                                        </a>
+                                                                    </t>
+                                                                    <t t-elif="cert.state == 'pending_payment' and cert.payment_link">
+                                                                        <a t-att-href="cert.payment_link" class="btn btn-sm btn-warning rounded-pill px-3 text-dark fw-semibold transition-all hover-btn-payment">
+                                                                            <i class="fa fa-credit-card me-1"/> Completar Pago
+                                                                        </a>
+                                                                    </t>
+                                                                    <t t-elif="cert.state in ('paid', 'in_process')">
+                                                                        <span class="text-muted small">
+                                                                            <i class="fa fa-clock-o me-1"/>En preparación
+                                                                        </span>
+                                                                    </t>
+                                                                    <t t-elif="cert.state == 'sent'">
+                                                                        <span class="text-success small">
+                                                                            <i class="fa fa-truck me-1"/>Enviado
+                                                                            <t t-if="cert.tracking_number">
+                                                                                — <t t-out="cert.tracking_number"/>
+                                                                            </t>
+                                                                        </span>
+                                                                    </t>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Estilos Personalizados Premium -->
+                <style>
+                    .hover-lift {
+                        transition: transform 0.2s ease, box-shadow 0.2s ease;
+                    }
+                    .hover-lift:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+                    }
+                    .nav-tabs .nav-link {
+                        color: #475569;
+                        background-color: #f8fafc;
+                        border-bottom: 2px solid #e2e8f0 !important;
+                        transition: all 0.2s ease;
+                    }
+                    .nav-tabs .nav-link:hover {
+                        color: #0d6efd;
+                        background-color: #f1f5f9;
+                        border-bottom: 2px solid #cbd5e1 !important;
+                    }
+                    .nav-tabs .nav-link.active {
+                        color: #0d6efd;
+                        background-color: #ffffff;
+                        border-bottom: 3px solid #0d6efd !important;
+                    }
+                    .transition-all {
+                        transition: all 0.2s ease;
+                    }
+                    .hover-btn-download:hover {
+                        background-color: #0d6efd;
+                        color: white;
+                        transform: scale(1.03);
+                    }
+                    .hover-btn-payment:hover {
+                        background-color: #ffc107;
+                        transform: scale(1.03);
+                        box-shadow: 0 3px 8px rgba(255, 193, 7, 0.3);
+                    }
+                    .table-hover tbody tr {
+                        transition: background-color 0.15s ease;
+                    }
+                    .table-hover tbody tr:hover {
+                        background-color: #f8fafc;
+                    }
+                </style>
+            </xpath>
+        </template>
+
+        <!-- Rediseño del formulario de nueva solicitud para soporte multidocumento y calculadora -->
+        <template id="portal_certificate_new_override" inherit_id="irg_gradebook_certificates.portal_certificate_new">
+            <xpath expr="//div[@class='o_portal_wrap']" position="replace">
+                <div class="o_portal_wrap">
+                    <div class="container py-4">
+                        
+                        <!-- Breadcrumb and Header -->
+                        <div class="mb-4">
+                            <h2 class="h3 mb-1 text-primary fw-bold">Nueva Solicitud de Certificación</h2>
+                            <p class="text-muted mb-0 small">Completa los datos del formulario para solicitar tu titulación oficial, certificado de asistencia o boletín de notas.</p>
+                        </div>
+
+                        <t t-if="error">
+                            <div class="alert alert-danger alert-dismissible fade show border-start border-4 border-danger shadow-sm mb-4" role="alert">
+                                <i class="fa fa-times-circle me-2 text-danger"/>
+                                <t t-out="error"/>
+                            </div>
+                        </t>
+
+                        <!-- Form with Sidebar Layout -->
+                        <form action="/campus/certificates/new" method="post" class="row">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                            <!-- Left: Form inputs -->
+                            <div class="col-lg-8">
+                                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                                    
+                                    <!-- 1. Document type selector -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold text-dark">
+                                            Tipo de Certificación <span class="text-danger">*</span>
+                                        </label>
+                                        <p class="text-muted small mb-2">Selecciona el tipo de documento oficial que requieres.</p>
+                                        <select name="document_type" id="document_type_select" class="form-select rounded-3 py-2" required="required">
+                                            <t t-foreach="document_types" t-as="dt">
+                                                <option t-att-value="dt[0]" t-att-selected="post.get('document_type') == dt[0] if post.get('document_type') else (dt[0] == 'gradebook')">
+                                                    <t t-out="dt[1]"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <!-- 2. Gradebook / course selector -->
+                                    <div class="mb-4" id="gradebook_block">
+                                        <label class="form-label fw-bold text-dark">
+                                            Programa Académico / Curso <span class="text-danger">*</span>
+                                        </label>
+                                        <p class="text-muted small mb-2">Escoge el programa correspondiente en tu expediente.</p>
+                                        <select name="gradebook_id" id="gradebook_select" class="form-select rounded-3 py-2" required="required">
+                                            <option value="">-- Selecciona tu programa --</option>
+                                            <t t-foreach="gradebooks" t-as="gb">
+                                                <option t-att-value="gb.id"
+                                                        t-att-data-state="gb.state"
+                                                        t-att-selected="'selected' if (str(gb.id) == post.get('gradebook_id') if post.get('gradebook_id') else (str(gb.course_id.id) == request.params.get('course_id') if request.params.get('course_id') else False)) else None">
+                                                    <t t-out="gb.course_id.name or gb.name"/>
+                                                    <t t-if="gb.batch_id"> (<t t-out="gb.batch_id.name"/>)</t>
+                                                    — Estado: <t t-out="'Cerrado/Finalizado' if gb.state == 'done' else 'En curso'"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                        <div id="gradebook_warning" class="alert alert-warning border-start border-3 border-warning mt-2 small py-2 px-3" style="display: none;">
+                                            <i class="fa fa-exclamation-triangle me-1 text-warning"/>
+                                            El programa seleccionado está en curso. Para solicitar <strong>Notas Completo</strong> o <strong>Diploma</strong>, tu programa debe estar finalizado.
+                                        </div>
+                                    </div>
+
+                                    <!-- 3. Format of delivery -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold text-dark">
+                                            Formato de Entrega <span class="text-danger">*</span>
+                                        </label>
+                                        <p class="text-muted small mb-2">Elige si prefieres un archivo digital firmado o el envío físico del documento en papel timbrado.</p>
+                                        <select name="certificate_type" id="cert_type_select" class="form-select rounded-3 py-2" required="required">
+                                            <option value="">-- Selecciona formato --</option>
+                                            <t t-foreach="certificate_types" t-as="ct">
+                                                <option t-att-value="ct[0]" t-att-selected="post.get('certificate_type') == ct[0] if post.get('certificate_type') else None">
+                                                    <t t-out="ct[1]"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <!-- 4. Signer selection (hidden for diplomas) -->
+                                    <div class="mb-4" id="signer_block">
+                                        <label class="form-label fw-bold text-dark">Firmante del Certificado</label>
+                                        <p class="text-muted small mb-2">Selecciona la firma autorizada que debe constar en el documento.</p>
+                                        <div class="d-flex flex-column flex-sm-row gap-3 mt-1">
+                                            <t t-foreach="signer_types" t-as="sg">
+                                                <div class="form-check border rounded-3 p-3 flex-fill bg-light hover-lift-subtle">
+                                                    <input class="form-check-input ms-0 me-2 float-start" type="radio"
+                                                           name="signer"
+                                                           t-att-id="'signer_' + sg[0]"
+                                                           t-att-value="sg[0]"
+                                                           t-att-checked="True if (post.get('signer') == sg[0] if post else sg[0] == 'raimon') else None"/>
+                                                    <label class="form-check-label fw-semibold text-dark pointer-cursor" t-att-for="'signer_' + sg[0]">
+                                                        <t t-out="sg[1]"/>
+                                                    </label>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+
+                                    <!-- 5. Shipping type (conditional for physical format) -->
+                                    <div class="mb-4" id="shipping_block" style="display: none;">
+                                        <label class="form-label fw-bold text-dark">
+                                            Destino del Envío / Mensajería <span class="text-danger">*</span>
+                                        </label>
+                                        <p class="text-muted small mb-2">Indica la zona geográfica para calcular los gastos de envío postal certificado.</p>
+                                        <select name="shipping_type" id="shipping_select" class="form-select rounded-3 py-2">
+                                            <option value="">-- Selecciona destino --</option>
+                                            <t t-foreach="shipping_types" t-as="st">
+                                                <option t-att-value="st[0]" t-att-selected="post.get('shipping_type') == st[0] if post else None">
+                                                    <t t-out="st[1]"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <!-- 6. Custom options and description (conditional for custom format) -->
+                                    <div class="mb-4" id="custom_options_block" style="display: none;">
+                                        <label class="form-label fw-bold text-dark">Opción Adicional Especial</label>
+                                        <select name="custom_options" class="form-select rounded-3 py-2">
+                                            <option value="">-- Ninguna --</option>
+                                            <t t-foreach="custom_options" t-as="co">
+                                                <option t-att-value="co[0]" t-att-selected="post.get('custom_options') == co[0] if post else None">
+                                                    <t t-out="co[1]"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-4" id="custom_desc_block" style="display: none;">
+                                        <label class="form-label fw-bold text-dark">Detalle de Requerimientos a Medida</label>
+                                        <textarea name="custom_description" class="form-control rounded-3" rows="4"
+                                                  placeholder="Indica de forma clara qué firmas, formatos especiales o traducciones requieres para este certificado personalizado..."><t t-out="post.get('custom_description', '') if post else ''"/></textarea>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Right: Price breakdown and CTA -->
+                            <div class="col-lg-4">
+                                <div class="card border-0 shadow-sm rounded-4 bg-light p-4 sticky-top" style="top: 2rem; border-left: 4px solid #002e5d !important;">
+                                    <h5 class="fw-bold mb-3 text-primary">Resumen de la Solicitud</h5>
+                                    
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted small">Documento:</span>
+                                        <span id="summary_document" class="fw-semibold text-dark text-end small">-</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted small">Formato:</span>
+                                        <span id="summary_format" class="fw-semibold text-dark text-end small">-</span>
+                                    </div>
+                                    
+                                    <hr class="my-3"/>
+                                    
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Precio Base:</span>
+                                        <span id="summary_base_price" class="fw-bold text-dark">0.00 €</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3" id="summary_shipping_row" style="display: none !important;">
+                                        <span class="text-muted">Gastos de Envío:</span>
+                                        <span id="summary_shipping_price" class="fw-bold text-dark">0.00 €</span>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                        <span class="fw-bold text-dark h5 mb-0">Total a pagar:</span>
+                                        <span id="summary_total_price" class="fw-bold text-primary h4 mb-0">0.00 €</span>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <button type="submit" id="submit_btn" class="btn btn-primary w-100 rounded-pill py-2.5 fw-bold shadow-sm transition-all hover-btn-primary">
+                                            <i class="fa fa-credit-card me-2"/>Solicitar y Pagar
+                                        </button>
+                                        <a href="/campus/certificates" class="btn btn-outline-secondary w-100 rounded-pill py-2 mt-2 fw-semibold">
+                                            Cancelar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+
+                <!-- JavaScript dinámico para actualizar costes y validaciones -->
+                <script type="text/javascript">
+                    //<![CDATA[
+                    (function () {
+                        var docTypeSel = document.getElementById('document_type_select');
+                        var certTypeSel = document.getElementById('cert_type_select');
+                        var gbSel = document.getElementById('gradebook_select');
+                        var shippingSel = document.getElementById('shipping_select');
+                        
+                        var shipBlock = document.getElementById('shipping_block');
+                        var signerBlock = document.getElementById('signer_block');
+                        var customOptBlock = document.getElementById('custom_options_block');
+                        var customDescBlock = document.getElementById('custom_desc_block');
+                        
+                        var summaryDoc = document.getElementById('summary_document');
+                        var summaryFormat = document.getElementById('summary_format');
+                        var summaryBase = document.getElementById('summary_base_price');
+                        var summaryShippingRow = document.getElementById('summary_shipping_row');
+                        var summaryShipping = document.getElementById('summary_shipping_price');
+                        var summaryTotal = document.getElementById('summary_total_price');
+                        
+                        var gbWarning = document.getElementById('gradebook_warning');
+                        var submitBtn = document.getElementById('submit_btn');
+                        
+                        var PRICE_MAP = {
+                            'digital': 30.0,
+                            'physical': 40.0,
+                            'custom': 40.0,
+                            'physical_apostilled': 120.0
+                        };
+                        var SHIPPING_MAP = {
+                            'national': 20.0,
+                            'international': 60.0
+                        };
+
+                        function updateForm() {
+                            var docType = docTypeSel ? docTypeSel.value : '';
+                            var certType = certTypeSel ? certTypeSel.value : '';
+                            var gbOption = gbSel ? gbSel.options[gbSel.selectedIndex] : null;
+                            var gbState = gbOption ? gbOption.getAttribute('data-state') : '';
+                            var shippingType = shippingSel ? shippingSel.value : '';
+
+                            // 1. Mostrar/ocultar bloques condicionales
+                            var isPhysical = (certType === 'physical' || certType === 'physical_apostilled');
+                            var isCustom = (certType === 'custom');
+                            var isDiploma = (docType === 'diploma');
+
+                            if (shipBlock) {
+                                shipBlock.style.display = isPhysical ? '' : 'none';
+                                var shipInput = shipBlock.querySelector('select');
+                                if (shipInput) {
+                                    if (isPhysical) shipInput.setAttribute('required', 'required');
+                                    else shipInput.removeAttribute('required');
+                                }
+                            }
+                            if (signerBlock) signerBlock.style.display = isDiploma ? 'none' : '';
+                            if (customOptBlock) customOptBlock.style.display = isCustom ? '' : 'none';
+                            if (customDescBlock) customDescBlock.style.display = isCustom ? '' : 'none';
+
+                            // 2. Validar estado de la libreta según tipo de documento
+                            var invalidState = false;
+                            if (gbOption && gbOption.value) {
+                                if ((docType === 'gradebook' || docType === 'diploma') && gbState !== 'done') {
+                                    invalidState = true;
+                                }
+                            }
+                            if (gbWarning) gbWarning.style.display = invalidState ? '' : 'none';
+                            if (submitBtn) {
+                                if (invalidState) {
+                                    submitBtn.setAttribute('disabled', 'disabled');
+                                } else {
+                                    submitBtn.removeAttribute('disabled');
+                                }
+                            }
+
+                            // 3. Actualizar resumen de la solicitud
+                            if (summaryDoc && docTypeSel) {
+                                summaryDoc.textContent = docTypeSel.options[docTypeSel.selectedIndex].text;
+                            }
+                            if (summaryFormat && certTypeSel) {
+                                summaryFormat.textContent = certTypeSel.value ? certTypeSel.options[certTypeSel.selectedIndex].text.split('—')[0].trim() : '-';
+                            }
+
+                            var basePrice = PRICE_MAP[certType] || 0.0;
+                            var shippingPrice = isPhysical ? (SHIPPING_MAP[shippingType] || 0.0) : 0.0;
+                            var total = basePrice + shippingPrice;
+
+                            if (summaryBase) summaryBase.textContent = basePrice.toFixed(2) + ' €';
+                            if (summaryShippingRow) {
+                                summaryShippingRow.style.setProperty('display', isPhysical ? 'flex' : 'none', 'important');
+                            }
+                            if (summaryShipping) summaryShipping.textContent = shippingPrice.toFixed(2) + ' €';
+                            if (summaryTotal) summaryTotal.textContent = total.toFixed(2) + ' €';
+                        }
+
+                        if (docTypeSel) docTypeSel.addEventListener('change', updateForm);
+                        if (certTypeSel) certTypeSel.addEventListener('change', updateForm);
+                        if (gbSel) {
+                            gbSel.addEventListener('change', updateForm);
+                            // Ejecutar una vez al cargar si Odoo ha preseleccionado por parámetro course_id
+                            setTimeout(updateForm, 100);
+                        }
+                        if (shippingSel) shippingSel.addEventListener('change', updateForm);
+
+                        updateForm();
+                    })();
+                    //]]>
+                </script>
+                <style>
+                    .hover-lift-subtle {
+                        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+                    }
+                    .hover-lift-subtle:hover {
+                        transform: translateY(-1px);
+                        border-color: #0d6efd !important;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+                    }
+                    .pointer-cursor {
+                        cursor: pointer;
+                    }
+                    .hover-btn-primary:hover {
+                        background-color: #002e5d !important;
+                        transform: scale(1.02);
+                        box-shadow: 0 4px 10px rgba(0, 46, 93, 0.25);
+                    }
+                </style>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>

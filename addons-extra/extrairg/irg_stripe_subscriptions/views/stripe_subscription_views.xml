@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="stripe_subscription_view_tree" model="ir.ui.view">
+        <field name="name">stripe.subscription.view.tree</field>
+        <field name="model">stripe.subscription</field>
+        <field name="arch" type="xml">
+            <tree string="Suscripciones Stripe" create="false" edit="false">
+                <field name="name"/>
+                <field name="stripe_id"/>
+                <field name="partner_id"/>
+                <field name="status" widget="badge" 
+                       decoration-success="status in ('active', 'trialing')" 
+                       decoration-warning="status in ('past_due', 'paused', 'incomplete')" 
+                       decoration-danger="status in ('canceled', 'incomplete_expired', 'unpaid')"/>
+                <field name="amount"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="interval"/>
+                <field name="current_period_start"/>
+                <field name="current_period_end"/>
+                <field name="cancel_at_period_end" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="stripe_subscription_view_form" model="ir.ui.view">
+        <field name="name">stripe.subscription.view.form</field>
+        <field name="model">stripe.subscription</field>
+        <field name="arch" type="xml">
+            <form string="Suscripción Stripe" create="false">
+                <header>
+                    <button name="action_refresh_from_stripe" string="Sincronizar de Stripe" type="object" class="btn-primary" icon="fa-refresh"/>
+                    <button name="action_cancel_stripe" string="Cancelar en Stripe" type="object" class="btn-danger" icon="fa-times-circle" 
+                            attrs="{'invisible': [('status', '=', 'canceled')]}"
+                            confirm="¿Está seguro de que desea cancelar esta suscripción en Stripe?"/>
+                    <field name="status" widget="statusbar" statusbar_visible="incomplete,trialing,active,past_due,canceled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Detalles de Stripe">
+                            <field name="stripe_id" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="latest_invoice_id" readonly="1"/>
+                            <field name="cancel_at_period_end" readonly="1"/>
+                        </group>
+                        <group string="Plan y Cobro">
+                            <field name="price_id" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                            <label for="amount"/>
+                            <div class="o_row">
+                                <field name="amount" readonly="1"/>
+                                <field name="currency_id" readonly="1" options="{'no_open': True}"/>
+                            </div>
+                            <field name="interval" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Vigencia">
+                            <field name="current_period_start" readonly="1"/>
+                            <field name="current_period_end" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Metadatos Stripe">
+                            <field name="metadata_json" readonly="1" widget="ace" options="{'mode': 'json'}"/>
+                        </page>
+                        <page string="Payload Completo">
+                            <field name="raw_payload" readonly="1" widget="ace" options="{'mode': 'json'}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="stripe_subscription_view_search" model="ir.ui.view">
+        <field name="name">stripe.subscription.view.search</field>
+        <field name="model">stripe.subscription</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Suscripciones Stripe">
+                <field name="name"/>
+                <field name="stripe_id"/>
+                <field name="partner_id"/>
+                <field name="status"/>
+                <filter string="Activas" name="active" domain="[('status', '=', 'active')]"/>
+                <filter string="En Mora (Past Due)" name="past_due" domain="[('status', '=', 'past_due')]"/>
+                <filter string="Canceladas" name="canceled" domain="[('status', '=', 'canceled')]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Cliente" name="group_by_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Estado" name="group_by_status" context="{'group_by': 'status'}"/>
+                    <filter string="Intervalo" name="group_by_interval" context="{'group_by': 'interval'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_stripe_subscription" model="ir.actions.act_window">
+        <field name="name">Suscripciones Stripe</field>
+        <field name="res_model">stripe.subscription</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="stripe_subscription_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No se han encontrado suscripciones de Stripe.
+            </p>
+            <p>
+                Las suscripciones de Stripe se sincronizan automáticamente mediante webhooks.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="menu_stripe_integration_root" 
+              name="Integración Stripe" 
+              parent="sale.menu_sale_config" 
+              sequence="100"/>
+
+    <menuitem id="menu_stripe_subscription" 
+              name="Suscripciones Stripe" 
+              parent="menu_stripe_integration_root" 
+              action="action_stripe_subscription" 
+              sequence="10"/>
+</odoo>

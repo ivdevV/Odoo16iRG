@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_auto_admission_required_form_wizard_inh" model="ir.ui.view">
+        <field name="name">auto.admission.required.form.wizard.inh</field>
+        <field name="model">auto.admission.required</field>
+        <field name="inherit_id" ref="isep_openeducat_sale.view_auto_admission_required_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Confirmacion Manual / Routing Email">
+                    <field name="manual_wizard_enabled"/>
+                    <field name="welcome_template_online_id"/>
+                    <field name="welcome_template_default_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

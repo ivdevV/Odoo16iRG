@@ -133,6 +133,7 @@ class CertificatePortalController(http.Controller):
                     'shipping_map': SHIPPING_MAP,
                     'page_name': 'certificates',
                     'error': post.get('error'),
+                    'post': post,
                 },
             )
 
@@ -193,7 +194,7 @@ class CertificatePortalController(http.Controller):
         student = request.env['op.student'].sudo().search(
             [('partner_id', '=', partner.id)], limit=1
         )
-        if student:
+        if student and hasattr(student, 'get_subscription_data'):
             sub_data = student.get_subscription_data()
             if sub_data.get('t_adeuda') or (sub_data.get('t_amount_due_data') or 0) > 0:
                 return _render_error(_(

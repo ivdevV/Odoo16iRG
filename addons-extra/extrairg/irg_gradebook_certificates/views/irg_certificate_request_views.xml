@@ -59,6 +59,8 @@
                             </group>
                             <group string="Solicitud">
                                 <field name="origin" readonly="1"/>
+                                <field name="document_type"
+                                       attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="certificate_type"
                                        attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="shipping_type"
@@ -129,6 +131,7 @@
                     <field name="name"/>
                     <field name="partner_id"/>
                     <field name="course_id"/>
+                    <field name="document_type"/>
                     <field name="certificate_type"/>
                     <field name="shipping_type" optional="hide"/>
                     <field name="price_total"/>

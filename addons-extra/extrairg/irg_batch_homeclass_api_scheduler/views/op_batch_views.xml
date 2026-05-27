@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_op_batch_form_homeclass_api" model="ir.ui.view">
+            <field name="name">op.batch.form.homeclass.api</field>
+            <field name="model">op.batch</field>
+            <field name="inherit_id" ref="openeducat_core.view_op_batch_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <field name="is_homeclass_batch" invisible="1"/>
+                    <button name="action_sync_homeclass_calendar" string="Sincronizar Calendario HomeClass" type="object" class="btn-primary" attrs="{'invisible': [('is_homeclass_batch', '=', False)]}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -61,7 +61,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_admission_birthdate_edit](./irg_admission_birthdate_edit.md) | Hace editable birth_date en op.admission | `op.admission` | Instalable |
 | [irg_admission_register_export](./irg_admission_register_export.md) | Exportación de admisiones a CSV/XLSX | `irg.admission.export.wizard` (nuevo) | Instalable |
 | [irg_auto_translate](./irg_auto_translate.md) | Auto-traducción de cursos y asignaturas con DeepL/Google | `op.course`, `op.subject` | Instalable |
-| [irg_course_convocatorias](./irg_course_convocatorias.md) | Convocatorias HomeClass y Online por curso eLearning | `irg.course.convocatoria` (nuevo), `slide.channel`, `irg.slide.section` | Instalable |
+| [irg_course_convocatorias](./irg_course_convocatorias.md) | Convocatorias HomeClass y Online por curso eLearning | `irg.course.convocatoria` (nuevo), `slide.channel`, `slide.slide`, `irg.slide.section` | Instalable |
 | [irg_course_portal_tiles](./irg_course_portal_tiles.md) | Tiles de acceso rápido en el campus | — | Instalable |
 | [irg_crm_extensions](./irg_crm_extensions.md) | Comercial anterior y fecha de reactivación en leads | `crm.lead` | Instalable |
 | [irg_crm_gclid](./irg_crm_gclid.md) | Campo GCLID de Google Ads en leads | `crm.lead` | Instalable |
@@ -74,12 +74,14 @@ Los módulos cubren áreas funcionales clave:
 | [irg_invoice_payments_sort](./irg_invoice_payments_sort.md) | Ordena pagos de factura por fecha ascendente | `account.move` | Instalable |
 | [irg_isep_cron_update_guard](./irg_isep_cron_update_guard.md) | Pausa crons pesados durante actualizaciones | — | Instalable |
 | [irg_language_nav](./irg_language_nav.md) | Selector de idioma con ES/EN primero | — | Instalable |
+| [irg_mail_n8n_webhook](./irg_mail_n8n_webhook.md) | Redirige correo saliente a n8n con cola de reintentos | `irg.mail.n8n.delivery` (nuevo), `irg.mail.n8n.service`, `mail.mail`, `base.automation`, `res.config.settings` | Instalable |
 | [irg_op_course_modality](./irg_op_course_modality.md) | Modalidades múltiples de impartición en cursos | `op.course`, `irg.course.modality` | Instalable |
 | [irg_op_course_subjects_manage](./irg_op_course_subjects_manage.md) | Gestión de asignaturas desde el formulario del curso | `op.course` | Instalable |
 | [irg_op_subject_multi_course](./irg_op_subject_multi_course.md) | Asignatura vinculable a múltiples cursos | `op.subject` | Instalable |
 | [irg_op_subject_visibility](./irg_op_subject_visibility.md) | Visibilidad de asignatura por lote | `op.subject`, `slide.channel` | Instalable |
 | [irg_portal_placeholder_safe](./irg_portal_placeholder_safe.md) | Valores por defecto para placeholders del portal | — | Instalable |
 | [irg_practicas_fix](./irg_practicas_fix.md) | user_id relacionado con el alumno en prácticas | Modelo prácticas | Instalable |
+| [irg_practice_center_type_modalities](./irg_practice_center_type_modalities.md) | Modalidades academicas para tipos de centro de practicas | `practice.center.type` | Instalable |
 | [irg_practice_center_restrict](./irg_practice_center_restrict.md) | Oculta centros de prácticas al alumno | — | Instalable |
 | [irg_profile_batch_fix](./irg_profile_batch_fix.md) | Fix nombre de programa y filtro de calendario por lote | — | Instalable |
 | [irg_sign_position_fix](./irg_sign_position_fix.md) | Ajusta posición del bloque de firma en matrícula | `sign.template` | Instalable |

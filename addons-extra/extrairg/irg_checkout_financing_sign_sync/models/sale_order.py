@@ -16,6 +16,29 @@ class SaleOrder(models.Model):
     irg_primer_vencimiento = fields.Date(string='Primer vencimiento (web)', copy=False)
     irg_matricula_pago_inicial = fields.Float(string='Matrícula/Pago inicial (web)', copy=False)
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        orders = super(SaleOrder, self).create(vals_list)
+        if self.env.context.get('skip_financing_recompute'):
+            return orders
+
+        orders_to_check = orders.filtered(lambda r: r.state in ('draft', 'sent'))
+        if orders_to_check:
+            orders_to_check.with_context(skip_financing_recompute=True)._irg_ensure_financing_lines_consistent()
+        return orders
+
+    def write(self, vals):
+        res = super(SaleOrder, self).write(vals)
+        if self.env.context.get('skip_financing_recompute'):
+            return res
+
+        target_fields = {'order_line', 'pricelist_id', 'payment_term_id', 'term_number'}
+        if target_fields & vals.keys():
+            orders_to_check = self.filtered(lambda r: r.state in ('draft', 'sent'))
+            if orders_to_check:
+                orders_to_check.with_context(skip_financing_recompute=True)._irg_ensure_financing_lines_consistent()
+        return res
+
     def _create_payment_transaction(self, vals):
         self.ensure_one()
 
@@ -106,6 +129,10 @@ class SaleOrder(models.Model):
             order.academic_attachment_ids = attachments
             order.academic_attachment_count = len(attachments)
 
+    def action_recalculate_financing(self):
+        self.with_context(skip_financing_recompute=True)._irg_ensure_financing_lines_consistent()
+        return True
+
     def _irg_ensure_financing_lines_consistent(self):
         """
         Safety fallback for checkout pages:
@@ -137,6 +164,24 @@ class SaleOrder(models.Model):
         for order in self:
             start = time.perf_counter()
             try:
+                # 1. Clean up orphan financing/matricula lines (missing or not in order.order_line)
+                orphan_financing = order.order_line.filtered(
+                    lambda l: l.irg_line_type == 'financing'
+                    and (not l.irg_parent_line_id or l.irg_parent_line_id not in order.order_line)
+                )
+                if orphan_financing:
+                    _logger.info("IRG: Unlinking orphan financing lines %s", orphan_financing.ids)
+                    orphan_financing.unlink()
+
+                orphan_matricula = order.order_line.filtered(
+                    lambda l: l.irg_line_type == 'matricula'
+                    and (not l.irg_parent_line_id or l.irg_parent_line_id not in order.order_line)
+                )
+                if orphan_matricula:
+                    _logger.info("IRG: Unlinking orphan matricula lines %s", orphan_matricula.ids)
+                    orphan_matricula.unlink()
+
+                # 2. Process other lines
                 for line in order.order_line.filtered(
                     lambda l: not l.display_type
                     and l.irg_line_type not in ('financing', 'matricula', 'matricula_discount')
@@ -149,9 +194,32 @@ class SaleOrder(models.Model):
 
                     is_financed_plan = bool(plan_ptav and 'contado' not in (plan_ptav.name or '').lower())
                     is_multiterm_master = bool((order.term_number or 0) > 1 and line.irg_line_type == 'master')
-                    if not (is_financed_plan or is_multiterm_master):
+                    
+                    is_currently_financed = is_financed_plan or is_multiterm_master
+                    
+                    if not is_currently_financed:
+                        associated_fin_lines = order.order_line.filtered(
+                            lambda ln: ln.irg_line_type == 'financing' and ln.irg_parent_line_id == line
+                        )
+                        associated_matricula_lines = order.order_line.filtered(
+                            lambda ln: ln.irg_line_type == 'matricula' and ln.irg_parent_line_id == line
+                        )
+                        if associated_fin_lines or associated_matricula_lines or line.irg_line_type == 'master':
+                            _logger.info("IRG: Reverting non-financed line %s to normal", line.id)
+                            if associated_fin_lines:
+                                associated_fin_lines.unlink()
+                            if associated_matricula_lines:
+                                associated_matricula_lines.unlink()
+                            
+                            line.write({
+                                'irg_line_type': False,
+                                'irg_force_price_unit_set': False,
+                                'irg_force_price_unit': 0.0,
+                            })
+                            line._compute_price_unit()
                         continue
 
+                    # If financed, ensure sibling contado exists and check/recreate financing lines
                     sibling_contado = order._irg_get_sibling_contado(line.product_id)
                     if not sibling_contado:
                         continue
@@ -259,6 +327,8 @@ class SaleOrder(models.Model):
                         order.name,
                         line.id,
                     )
+            except Exception as exc:
+                _logger.exception("IRG _irg_ensure_financing_lines_consistent failed for order %s: %s", order.name, exc)
             finally:
                 elapsed = time.perf_counter() - start
                 _logger.info("IRG _irg_ensure_financing_lines_consistent: order %s processed in %.3fs", order.name, elapsed)

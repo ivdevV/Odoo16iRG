@@ -12,7 +12,7 @@
             - Presencial -> PRS
     """,
     'author': 'Instituto Raimon Gaja',
-    'depends': ['isep_openeducat_sale_lote'],
+    'depends': ['isep_openeducat_sale_lote', 'isep_data_master_make'],
     'data': [],
     'installable': True,
     'auto_install': False,

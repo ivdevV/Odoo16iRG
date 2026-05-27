@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_irg_subscription_payment_terms" model="ir.ui.view">
+        <field name="name">sale.order.form.irg.subscription.payment.terms</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="isep_sale_subscription_custom.isep_custom_sale_subscription_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='start_date']" position="attributes">
+                <attribute name="attrs">{'readonly': [('subscription_management', '=', 'renew')]}</attribute>
+            </xpath>
+            <xpath expr="//div[@name='start_date_block']/span" position="attributes">
+                <attribute name="attrs">{'invisible': [('subscription_management', '=', 'upsell')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='end_date']" position="attributes">
+                <attribute name="attrs">{'invisible': [('subscription_management', '=', 'upsell')]}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_order_form_irg_subscription_payment_terms_ext" model="ir.ui.view">
+        <field name="name">sale.order.form.irg.subscription.payment.terms.ext</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="isep_sale_subscription_extension.isep_custom_sale_subscription_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='start_date']" position="attributes">
+                <attribute name="attrs">{'readonly': [('subscription_management', '=', 'renew')]}</attribute>
+            </xpath>
+            <xpath expr="//div[@name='start_date_block']/span" position="attributes">
+                <attribute name="attrs">{'invisible': [('subscription_management', '=', 'upsell')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='end_date']" position="attributes">
+                <attribute name="attrs">{'invisible': [('subscription_management', '=', 'upsell')]}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -34,10 +34,12 @@
     ],
     'assets': {
         'web.assets_frontend': [
-            # prepend = se compila ANTES que Bootstrap y el resto de estilos.
-            # Esto garantiza que $primary, $secondary y demás variables estén
-            # disponibles cuando cualquier otro módulo SCSS las consume.
-            ('prepend', 'irg_website_theme/static/src/scss/irg_theme.scss'),
+            # Variables antes de Bootstrap y el resto de estilos.
+            ('prepend', 'irg_website_theme/static/src/scss/_variables.scss'),
+            # Odoo 16 bloquea @import locales en SCSS custom; cada partial debe
+            # declararse explícitamente en assets.
+            'irg_website_theme/static/src/scss/_components.scss',
+            'irg_website_theme/static/src/scss/_portal.scss',
         ],
     },
     'installable': True,

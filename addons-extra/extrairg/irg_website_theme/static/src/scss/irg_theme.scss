@@ -1,23 +1,12 @@
 // ============================================================
-// IRG Website Theme — Punto de entrada principal
+// IRG Website Theme — Archivo legado sin imports
 //
-// Este es el único archivo referenciado en __manifest__.py
-// con 'prepend'. Importa las partials en orden correcto:
-//   1. _variables  → define variables ANTES de Bootstrap
-//   2. _components → componentes UI (navbar, cards, botones...)
-//   3. _portal     → portal del alumno y campus
+// Odoo 16 bloquea @import locales en SCSS custom por seguridad.
+// Las partials del tema se declaran directamente en __manifest__.py:
+//   1. _variables.scss  → prepend, antes de Bootstrap
+//   2. _components.scss → componentes UI
+//   3. _portal.scss     → portal del alumno y campus
 //
-// IMPORTANTE: Este archivo se carga con 'prepend', por lo que
-// las variables de _variables.scss estarán disponibles para
-// TODOS los módulos SCSS que se carguen después (Bootstrap
-// incluido). Nunca añadir selectores CSS directamente aquí.
+// Mantener este archivo vacío evita romper instalaciones que aún lo tengan
+// cacheado o referenciado, pero no debe contener imports ni selectores.
 // ============================================================
-
-// 1. Variables (deben ser lo primero en compilarse)
-@import 'variables';
-
-// 2. Componentes de UI general
-@import 'components';
-
-// 3. Portal del alumno y campus
-@import 'portal';

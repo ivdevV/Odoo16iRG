@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="practice_center_type_on_site_origin" model="practice.center.type">
+        <field name="type_of_practice">on_site_origin</field>
+        <field name="is_available">True</field>
+    </record>
+
+    <record id="practice_center_type_tfm_validation" model="practice.center.type">
+        <field name="type_of_practice">tfm_validation</field>
+        <field name="is_available">True</field>
+    </record>
+</odoo>
