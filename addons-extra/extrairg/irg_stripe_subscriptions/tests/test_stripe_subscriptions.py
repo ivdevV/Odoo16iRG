@@ -258,7 +258,7 @@ class TestStripeSubscriptions(TransactionCase):
                 self.order.currency_id.name or "EUR"
             )
             self.assertEqual(payload.get('subscription_data[description]'), expected_desc)
-            self.assertTrue('subscription_data[cancel_at]' in payload)
+            self.assertFalse('subscription_data[cancel_at]' in payload)
 
     def test_07_sync_invoice_fallback_mechanism(self):
         """Test that _sync_invoice_paid fetches the subscription from Stripe API as a fallback when not found locally."""
@@ -340,3 +340,90 @@ class TestStripeSubscriptions(TransactionCase):
             self.assertTrue(self.order.stripe_subscription_id)
             self.assertEqual(self.order.stripe_subscription_ref, 'sub_fallback_999')
             self.assertEqual(schedule.payment_state, 'paid')
+
+    def test_08_sync_checkout_session_cancel_at(self):
+        """Test that checkout session completed webhook handles order end_date by updating Stripe subscription with cancel_at."""
+        import datetime
+        import time
+        from unittest.mock import patch
+
+        # Set end_date on order
+        end_date = datetime.date.today() + datetime.timedelta(days=120)
+        self.order.write({
+            'end_date': end_date,
+        })
+
+        provider_vals = {
+            'name': 'Stripe',
+            'code': 'stripe',
+            'state': 'test',
+            'stripe_publishable_key': 'pk_test_mock',
+            'stripe_secret_key': 'sk_test_mock',
+        }
+        provider = self.env['payment.provider'].sudo().search([
+            ('code', '=', 'stripe'),
+        ], limit=1)
+        if not provider:
+            provider = self.env['payment.provider'].create(provider_vals)
+        else:
+            provider.write(provider_vals)
+
+        sub_payload = {
+            'id': 'sub_session_999',
+            'customer': 'cus_test_123',
+            'status': 'active',
+            'current_period_start': 1716654873,
+            'current_period_end': 1719333273,
+            'metadata': {},
+            'items': {
+                'data': [{
+                    'price': {
+                        'id': 'price_fallback_abc',
+                        'product': 'prod_fallback_xyz',
+                        'unit_amount': 10000,
+                        'currency': 'eur',
+                        'recurring': {
+                            'interval': 'month'
+                        }
+                    }
+                }]
+            }
+        }
+
+        def side_effect(endpoint, payload=None, method=None):
+            if endpoint == 'subscriptions/sub_session_999':
+                if not method or method == 'GET':
+                    return sub_payload
+                else:
+                    return {'status': 'active'}
+            return {}
+
+        with patch.object(type(provider), '_stripe_make_request', side_effect=side_effect) as mock_req:
+            session_payload = {
+                'id': 'cs_test_123',
+                'customer': 'cus_test_123',
+                'client_reference_id': f'odoo_order_{self.order.id}',
+                'subscription': 'sub_session_999',
+            }
+
+            self.env['stripe.sync']._sync_checkout_session(session_payload)
+
+            mock_req.assert_any_call('subscriptions/sub_session_999', method='GET')
+            
+            called_update = False
+            for call in mock_req.call_args_list:
+                args, kwargs = call
+                endpoint = args[0] if args else kwargs.get('endpoint')
+                payload = args[1] if len(args) > 1 else kwargs.get('payload')
+                if endpoint == 'subscriptions/sub_session_999' and payload:
+                    called_update = True
+                    self.assertEqual(payload.get('metadata[odoo_order_id]'), str(self.order.id))
+                    end_dt = datetime.datetime.combine(end_date, datetime.time.min)
+                    expected_cancel_at = str(int(time.mktime(end_dt.timetuple())))
+                    self.assertEqual(payload.get('cancel_at'), expected_cancel_at)
+
+            self.assertTrue(called_update, "The POST/update subscription call should have been made.")
+            
+            subscription = self.env['stripe.subscription'].search([('stripe_id', '=', 'sub_session_999')], limit=1)
+            self.assertTrue(subscription)
+            self.assertTrue(subscription.cancel_at_period_end, "The local subscription should have cancel_at_period_end as True")

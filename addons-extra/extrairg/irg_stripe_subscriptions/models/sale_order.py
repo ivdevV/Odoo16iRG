@@ -264,16 +264,7 @@ class SaleOrder(models.Model):
                 "subscription_data[metadata][odoo_order_name]": self.name or "",
                 "subscription_data[description]": description,
             })
-            if self.end_date:
-                import datetime
-                import time
-                if isinstance(self.end_date, datetime.datetime):
-                    end_dt = self.end_date
-                else:
-                    end_dt = datetime.datetime.combine(self.end_date, datetime.time.min)
-                cancel_at_ts = int(time.mktime(end_dt.timetuple()))
-                if cancel_at_ts > time.time():
-                    payload["subscription_data[cancel_at]"] = str(cancel_at_ts)
+
 
         try:
             response = provider._stripe_make_request("payment_links", payload=payload)

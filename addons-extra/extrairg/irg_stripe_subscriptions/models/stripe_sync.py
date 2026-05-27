@@ -320,21 +320,39 @@ class StripeSync(models.AbstractModel):
                 try:
                     sub_res = provider._stripe_make_request(f"subscriptions/{stripe_sub_id}", method='GET')
                     if sub_res and not sub_res.get('error'):
+                        update_payload = {}
+                        
                         # Si encontramos la orden, inyectamos odoo_order_id en los metadatos si no los tenía
                         if order and 'odoo_order_id' not in sub_res.get('metadata', {}):
-                            # Ponemos los metadatos en Stripe también
+                            update_payload["metadata[odoo_order_id]"] = str(order.id)
+                            update_payload["metadata[odoo_order_name]"] = order.name or ""
+                            
+                        # Si la orden asociada tiene configurado 'end_date', calcula el timestamp de cancelación
+                        if order and order.end_date:
+                            import datetime as dt_mod
+                            import time
+                            if isinstance(order.end_date, dt_mod.datetime):
+                                end_dt = order.end_date
+                            else:
+                                end_dt = dt_mod.datetime.combine(order.end_date, dt_mod.time.min)
+                            cancel_at_ts = int(time.mktime(end_dt.timetuple()))
+                            update_payload["cancel_at"] = str(cancel_at_ts)
+                            
+                        if update_payload:
                             try:
                                 provider._stripe_make_request(
                                     f"subscriptions/{stripe_sub_id}",
-                                    payload={
-                                        "metadata[odoo_order_id]": str(order.id),
-                                        "metadata[odoo_order_name]": order.name or "",
-                                    }
+                                    payload=update_payload
                                 )
-                                sub_res['metadata']['odoo_order_id'] = str(order.id)
-                                sub_res['metadata']['odoo_order_name'] = order.name or ""
+                                if "metadata[odoo_order_id]" in update_payload:
+                                    sub_res.setdefault('metadata', {})
+                                    sub_res['metadata']['odoo_order_id'] = str(order.id)
+                                    sub_res['metadata']['odoo_order_name'] = order.name or ""
+                                if "cancel_at" in update_payload:
+                                    sub_res['cancel_at'] = int(update_payload["cancel_at"])
+                                    sub_res['cancel_at_period_end'] = True
                             except Exception:
-                                pass
+                                _logger.exception("Error updating subscription %s in Stripe", stripe_sub_id)
                         
                         # Sincronizamos la suscripción
                         self._sync_subscription_object(sub_res)
