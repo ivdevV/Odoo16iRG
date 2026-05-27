@@ -1,7 +1,7 @@
 # irg_online_subject_portal_visibility
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.1.0
+**Versión:** 16.0.1.2.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG Developer
@@ -63,6 +63,9 @@ Se ha verificado el correcto funcionamiento del módulo mediante la clase de pru
 - `test_clone_redirection_preservation`: Valida que los estudiantes con modalidad online activa que accedan al canal principal (HomeClass) sean redirigidos correctamente al canal clon correspondiente para online.
 
 ## Changelog
+
+### [16.0.1.2.0] - 2026-05-27
+- **Robustez en expiración online**: Modificado `_irg_is_partner_online_student_for_channel` en `slide_channel.py` para usar la fecha de finalización del lote (`batch.end_date`) como fallback de expiración si el campo `due_date` de la admisión individual está vacío. Esto evita falsos positivos de alumnos activos Online en admisiones antiguas y soluciona la redirección errónea de alumnos de HomeClass.
 
 ### [16.0.1.1.0] - 2026-05-23
 - Se agrega dependencia de `irg_course_convocatorias_v2`.
