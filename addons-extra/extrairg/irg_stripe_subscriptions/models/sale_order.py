@@ -231,19 +231,46 @@ class SaleOrder(models.Model):
         if not provider:
             raise UserError(_("No se ha encontrado un proveedor de Stripe activo."))
 
+        if self.is_subscription:
+            if not self.subscription_schedule:
+                self.create_subscription_schedule()
+                self.invalidate_recordset(['subscription_schedule'])
+            if not self.subscription_schedule:
+                raise UserError(_("No se pudo crear el cronograma de pagos para este pedido."))
+
+            expected_amount_cents = self._irg_compute_recurring_amount()
+            if self.stripe_price_id:
+                try:
+                    current_price = provider._stripe_make_request(
+                        "prices/%s" % self.stripe_price_id,
+                        method='GET',
+                    )
+                    if current_price.get('unit_amount') != expected_amount_cents:
+                        self.sudo().write({'stripe_price_id': False})
+                except Exception:
+                    _logger.warning(
+                        "No se pudo validar el Price %s de Stripe para %s; se regenerara.",
+                        self.stripe_price_id,
+                        self.name,
+                    )
+                    self.sudo().write({'stripe_price_id': False})
+
         # 1. Asegurar el precio en Stripe
         price_id = self._irg_ensure_stripe_price(provider=provider)
         if not price_id:
             raise UserError(_("No se pudo generar el precio en Stripe para este pedido."))
 
-        term_number = self.term_number or 1
-        cuota = round(self.amount_total / term_number, 2)
+        schedules = self.subscription_schedule.sorted("date_due")
+        unpaid_schedules = schedules.filtered(lambda schedule: schedule.payment_state != 'paid')
+        reference_schedules = unpaid_schedules or schedules
+        term_number = len(reference_schedules) or self.term_number or 1
+        cuota = self.currency_id.round(reference_schedules[:1].amount_recurring_taxinc) if reference_schedules else round(self.amount_total / term_number, 2)
         currency_name = self.currency_id.name or "EUR"
-        description = "%s - %s cuotas de %s %s (Total: %s %s)" % (
+        description = "%s - primer pago de %s %s (%s cuotas; Total: %s %s)" % (
             self.name or "",
-            term_number,
             cuota,
             currency_name,
+            term_number,
             self.amount_total,
             currency_name
         )

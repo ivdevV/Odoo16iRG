@@ -209,6 +209,27 @@ class TestStripeSubscriptions(TransactionCase):
             'amount_total': 300.0,
             'end_date': datetime.date.today() + datetime.timedelta(days=90),
         })
+        self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-06-25',
+            'date_schedule': '2026-06-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 100.0,
+        })
+        self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-07-25',
+            'date_schedule': '2026-07-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 100.0,
+        })
+        self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-08-25',
+            'date_schedule': '2026-08-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 100.0,
+        })
 
         provider_vals = {
             'name': 'Stripe',
@@ -252,7 +273,7 @@ class TestStripeSubscriptions(TransactionCase):
             self.assertEqual(payload.get('subscription_data[metadata][odoo_order_id]'), str(self.order.id))
             self.assertEqual(payload.get('subscription_data[metadata][odoo_order_name]'), self.order.name or "")
 
-            expected_desc = "%s - 3 cuotas de 100.0 %s (Total: 300.0 %s)" % (
+            expected_desc = "%s - primer pago de 100.0 %s (3 cuotas; Total: 300.0 %s)" % (
                 self.order.name or "",
                 self.order.currency_id.name or "EUR",
                 self.order.currency_id.name or "EUR"
