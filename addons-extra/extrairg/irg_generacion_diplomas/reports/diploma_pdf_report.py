@@ -161,6 +161,49 @@ class DiplomaReportPDF(models.AbstractModel):
                 r.text = ''
         return True
 
+    def _get_libreoffice_executable(self):
+        """Find the LibreOffice or soffice executable path in a robust way."""
+        import shutil
+        
+        # 1. Check System Parameter
+        config_param = self.env['ir.config_parameter'].sudo()
+        param_path = config_param.get_param('irg.libreoffice.path')
+        if param_path and os.path.exists(param_path):
+            return param_path
+
+        # 2. Check for 'libreoffice' in system PATH
+        libreoffice_path = shutil.which('libreoffice')
+        if libreoffice_path:
+            return libreoffice_path
+
+        # 3. Check for 'soffice' in system PATH
+        soffice_path = shutil.which('soffice')
+        if soffice_path:
+            return soffice_path
+
+        # 4. Check common file system paths
+        common_paths = [
+            '/usr/bin/libreoffice',
+            '/usr/bin/soffice',
+            '/usr/local/bin/libreoffice',
+            '/usr/local/bin/soffice',
+            '/Applications/LibreOffice.app/Contents/MacOS/soffice',
+            '/Applications/LibreOffice.app/Contents/MacOS/libreoffice',
+            r'C:\Program Files\LibreOffice\program\soffice.exe',
+            r'C:\Program Files (x86)\LibreOffice\program\soffice.exe',
+        ]
+        
+        for path in common_paths:
+            if os.path.exists(path):
+                return path
+
+        # If not found, raise a clear user error indicating how to configure it
+        raise UserError(_(
+            "No se ha encontrado el ejecutable de LibreOffice o soffice en el sistema.\n"
+            "Por favor, asegúrese de tener LibreOffice instalado y de que sea accesible, "
+            "o defina la ruta absoluta al ejecutable en el parámetro de sistema de Odoo: 'irg.libreoffice.path'."
+        ))
+
     @api.model
     def generate_diploma_pdf(self, data, diploma_type='digital'):
         """Generate the diploma PDF using python-docx and LibreOffice"""
@@ -267,11 +310,12 @@ class DiplomaReportPDF(models.AbstractModel):
             pdf_filename = os.path.basename(temp_docx_path).rsplit('.', 1)[0] + '.pdf'
             pdf_path = os.path.join('/tmp', pdf_filename)
 
-            # Convert to PDF using LibreOffice
+            # Find executable and Convert to PDF using LibreOffice
+            lo_executable = self._get_libreoffice_executable()
             try:
                 subprocess.run(
                     [
-                        'libreoffice', '--headless', '--norestore',
+                        lo_executable, '--headless', '--norestore',
                         '--convert-to', 'pdf',
                         '--outdir', '/tmp',
                         temp_docx_path
