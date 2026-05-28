@@ -255,6 +255,15 @@ class SaleOrder(models.Model):
                     lst_financed = line.product_id.lst_price
                     lst_contado = sibling_contado.lst_price
 
+                    _logger.info(
+                        "IRG ensure_consistent DIAGNOSTIC (order=%s line=%s): "
+                        "financed_price=%s, contado_price=%s, plan_extra=%s, contado_extra=%s, "
+                        "lst_financed=%s, lst_contado=%s",
+                        order.name, line.id,
+                        financed_price, contado_price, plan_extra, contado_extra,
+                        lst_financed, lst_contado
+                    )
+
                     financing_fee_unit = financed_price - contado_price
                     if financing_fee_unit <= 0:
                         financing_fee_unit = plan_extra - contado_extra
