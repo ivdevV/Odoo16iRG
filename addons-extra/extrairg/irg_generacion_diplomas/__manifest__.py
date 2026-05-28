@@ -1,6 +1,6 @@
 {
     'name': 'IRG Generación Diplomas',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'category': 'Education',
     'summary': 'Generación de diplomas físicos y digitales para alumnos',
     'description': """
@@ -17,7 +17,7 @@
         'website',
     ],
     'external_dependencies': {
-        'python': ['qrcode', 'reportlab'],
+        'python': ['qrcode', 'reportlab', 'docx'],
     },
     'data': [
         'security/ir.model.access.csv',
