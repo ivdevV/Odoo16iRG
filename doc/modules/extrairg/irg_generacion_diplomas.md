@@ -16,7 +16,13 @@ Permite generar diplomas físicos y digitales para los alumnos directamente desd
 ## Dependencias de Sistema y Python
 
 - **Librerías Python**: `qrcode`, `python-docx` (declarada en el manifiesto como `docx`), `reportlab`.
-- **Sistema**: Requiere que `libreoffice` esté instalado en el sistema/contenedor para realizar la conversión de documentos Word a PDF en modo headless.
+- **Sistema**: Requiere que `libreoffice` (o `soffice`) esté instalado en el sistema/contenedor para realizar la conversión de documentos Word a PDF en modo headless.
+  - **Búsqueda del Ejecutable**: El módulo busca el ejecutable de forma automática y secuencial:
+    1. A través del parámetro del sistema de Odoo: `irg.libreoffice.path` (ruta absoluta configurable en los Parámetros del Sistema en modo técnico).
+    2. Buscando `'libreoffice'` en el `PATH` del sistema (`shutil.which`).
+    3. Buscando `'soffice'` en el `PATH` del sistema (común en macOS o instalaciones de desarrollo en host).
+    4. Evaluando rutas absolutas predeterminadas comunes para Linux, macOS y Windows (ej. `/usr/bin/libreoffice`, `/Applications/LibreOffice.app/Contents/MacOS/soffice`, etc.).
+  - Si no lo encuentra, lanza un `UserError` indicando los pasos para instalarlo o configurarlo en los parámetros del sistema.
 
 ## Funcionalidades principales
 
