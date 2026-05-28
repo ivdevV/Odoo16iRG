@@ -91,6 +91,64 @@ class StripeSync(models.AbstractModel):
             return {}
 
     @api.model
+    def _amount_from_stripe_minor_units(self, amount, currency):
+        if amount is None:
+            return 0.0
+        decimal_places = currency.decimal_places if currency else 2
+        return amount / float(10 ** decimal_places)
+
+    @api.model
+    def _register_paid_invoice_on_schedule(self, order, schedule, invoice_obj):
+        """Registra el pago externo de Stripe en el plazo para disparar los computes nativos."""
+        invoice_id = invoice_obj.get('id')
+        paid_amount = self._amount_from_stripe_minor_units(
+            invoice_obj.get('amount_paid') or invoice_obj.get('amount_received'),
+            order.currency_id,
+        )
+        if not paid_amount:
+            paid_amount = schedule.amount_recurring_taxinc
+        paid_amount = min(paid_amount, schedule.amount_recurring_taxinc)
+
+        legacy_obj = self.env['sale.note.inv.legacy'].sudo()
+        legacy = legacy_obj.search([
+            ('schedule_id', '=', schedule.id),
+            ('name', '=', invoice_id or 'Stripe'),
+        ], limit=1)
+
+        legacy_vals = {
+            'name': invoice_id or 'Stripe',
+            'schedule_id': schedule.id,
+            'note': 'Pago registrado automaticamente desde Stripe.',
+            'invoice_date': fields.Date.context_today(self),
+            'payment_date': fields.Date.context_today(self),
+            'amount_total_invoice': schedule.amount_recurring_taxinc,
+            'amount_total_payment': paid_amount,
+        }
+        if legacy:
+            legacy.write(legacy_vals)
+        else:
+            legacy_obj.create(legacy_vals)
+
+        schedule.invalidate_recordset(['total_invoiced', 'total_paid', 'total_residual', 'payment_state'])
+        schedule._compute_total_invoiced()
+        schedule.compute_payment_state()
+        order.invalidate_recordset(['amount_due_total'])
+        order._compute_amount_due_total()
+
+        next_unpaid = order.subscription_schedule.filtered(
+            lambda line: line.payment_state != 'paid'
+        ).sorted('date_due')[:1]
+        order_vals = {
+            'next_invoice_date': next_unpaid.date_due if next_unpaid else False,
+        }
+        if invoice_id:
+            order_vals.update({
+                'stripe_last_paid_invoice_id': invoice_id,
+                'stripe_invoice_id': invoice_id,
+            })
+        order.sudo().write(order_vals)
+
+    @api.model
     def _find_partner(self, customer_id, email=False):
         """
         Busca al partner en Odoo con prioridad:
@@ -493,6 +551,17 @@ class StripeSync(models.AbstractModel):
                     invoice_id,
                 )
                 return
+            duplicated_legacy = order.subscription_schedule.mapped('payment_legacy_ids').filtered(
+                lambda legacy: legacy.name == invoice_id
+            ) if invoice_id else False
+            if duplicated_legacy:
+                _logger.info(
+                    "Stripe Webhook (sync): invoice.paid ya registrado en cronograma para la orden %s (invoice=%s).",
+                    order.name,
+                    invoice_id,
+                )
+                order.sudo().write({'stripe_last_paid_invoice_id': invoice_id})
+                return
 
             _logger.info("Stripe Webhook (sync): invoice.paid recibido para la orden %s (Sub: %s)", order.name, subscription_id)
             
@@ -505,15 +574,11 @@ class StripeSync(models.AbstractModel):
             
             # Buscar el plazo del cronograma más antiguo sin pagar en Odoo
             unpaid = order.subscription_schedule.filtered(
-                lambda s: s.payment_state == 'not_paid'
+                lambda s: s.payment_state != 'paid'
             ).sorted('date_due')
             
             if unpaid:
-                unpaid[0].sudo().write({'payment_state': 'paid'})
-                invoice_vals = {'stripe_last_paid_invoice_id': invoice_id}
-                if invoice_id:
-                    invoice_vals['stripe_invoice_id'] = invoice_id
-                order.sudo().write(invoice_vals)
+                self._register_paid_invoice_on_schedule(order, unpaid[0], invoice_obj)
                 _logger.info(
                     "Stripe Webhook (sync): Plazo %s ('%s') marcado como pagado para orden %s debido a cobro en Stripe.",
                     unpaid[0].id, unpaid[0].name or unpaid[0].date_due, order.name

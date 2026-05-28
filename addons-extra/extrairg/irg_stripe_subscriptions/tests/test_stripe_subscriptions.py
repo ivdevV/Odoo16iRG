@@ -166,14 +166,22 @@ class TestStripeSubscriptions(TransactionCase):
         self.order.write({
             'stripe_subscription_id': subscription.id,
             'stripe_subscription_ref': 'sub_to_pay_99',
-            'stripe_subscription_state': 'active'
+            'stripe_subscription_state': 'active',
+            'next_invoice_date': '2026-06-25',
         })
 
-        # Creamos una línea de cronograma de prueba
+        # Creamos líneas de cronograma de prueba
         schedule = self.env['sale.subscription.schedule'].create({
             'order_id': self.order.id,
             'date_due': '2026-06-25',
             'date_schedule': '2026-06-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 360.53
+        })
+        next_schedule = self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-07-25',
+            'date_schedule': '2026-07-25',
             'payment_state': 'not_paid',
             'amount_recurring_taxinc': 360.53
         })
@@ -195,7 +203,14 @@ class TestStripeSubscriptions(TransactionCase):
 
         # Validamos que el plazo pasó a estar pagado
         schedule.refresh()
+        next_schedule.refresh()
+        self.order.refresh()
         self.assertEqual(schedule.payment_state, 'paid', "El plazo del cronograma debería haberse marcado como pagado.")
+        self.assertAlmostEqual(schedule.total_paid, 360.53, places=2)
+        self.assertAlmostEqual(schedule.total_residual, 0.0, places=2)
+        self.assertEqual(next_schedule.payment_state, 'not_paid')
+        self.assertEqual(self.order.next_invoice_date.strftime('%Y-%m-%d'), '2026-07-25')
+        self.assertAlmostEqual(self.order.amount_due_total, 360.53, places=2)
 
     def test_06_payment_link_generation_payload(self):
         """Test that the payment link generation constructs the correct description, metadata, and cancel_at payload."""

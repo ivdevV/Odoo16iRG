@@ -46,6 +46,24 @@ class SaleOrder(models.Model):
         help="ID de la ultima factura Stripe usada para marcar un plazo como pagado."
     )
 
+    @api.depends(
+        'subscription_schedule.amount_recurring_taxinc',
+        'subscription_schedule.total_paid',
+        'subscription_schedule.total_residual',
+        'invoice_ids.amount_residual',
+        'invoice_ids.state',
+    )
+    def _compute_amount_due_total(self):
+        for order in self:
+            if order.subscription_schedule:
+                order.amount_due_total = sum(order.subscription_schedule.mapped('total_residual'))
+            else:
+                amount_due_total = 0.0
+                for invoice in order.invoice_ids:
+                    if invoice.state == 'posted':
+                        amount_due_total += invoice.amount_residual
+                order.amount_due_total = amount_due_total
+
     # ------------------------------------------------------------------
     # Interceptamos Escritura/Creación para mapear String a Many2one ID
     # ------------------------------------------------------------------
