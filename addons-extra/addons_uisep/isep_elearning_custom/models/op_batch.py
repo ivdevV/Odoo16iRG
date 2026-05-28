@@ -31,7 +31,7 @@ class OpBatch(models.Model):
                     'date_from': current_date_from,
                     'date_to': batch.end_date,
                 })
-                current_date_from = current_date_from + relativedelta(days=25)
+                current_date_from = current_date_from + relativedelta(days=30)
 
     @api.model
     def create(self, vals):
