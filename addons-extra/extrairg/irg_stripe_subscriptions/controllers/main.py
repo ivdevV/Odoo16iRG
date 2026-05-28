@@ -59,9 +59,15 @@ class StripeWebhookController(http.Controller):
         
         param_obj = request.env['ir.config_parameter'].sudo()
         webhook_secret = param_obj.get_param('stripe.webhook_secret')
+        if not webhook_secret:
+            provider = request.env['payment.provider'].sudo().search([
+                ('code', '=', 'stripe'),
+                ('state', 'in', ('enabled', 'test')),
+            ], limit=1)
+            webhook_secret = provider.stripe_webhook_secret if provider else False
         
         if not webhook_secret:
-            _logger.error("Stripe Webhook: 'stripe.webhook_secret' no está configurado en los Parámetros del Sistema.")
+            _logger.error("Stripe Webhook: no hay secreto configurado en 'stripe.webhook_secret' ni en el proveedor Stripe.")
             return request.make_response("Webhook secret not configured", status=500)
             
         # Validar la firma nativamente

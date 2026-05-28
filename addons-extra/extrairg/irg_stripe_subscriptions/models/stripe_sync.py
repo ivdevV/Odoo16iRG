@@ -34,12 +34,61 @@ class StripeSync(models.AbstractModel):
             self._sync_subscription_deleted(event_obj)
         elif event_type == 'checkout.session.completed':
             self._sync_checkout_session(event_obj)
-        elif event_type == 'invoice.paid':
+        elif event_type in ('invoice.paid', 'invoice.payment_succeeded'):
             self._sync_invoice_paid(event_obj)
         elif event_type == 'invoice.payment_failed':
             self._sync_invoice_payment_failed(event_obj)
+        elif event_type == 'payment_intent.succeeded':
+            self._sync_payment_intent_succeeded(event_obj)
         else:
             _logger.info("Evento Stripe '%s' no requiere acción de sincronización directa.", event_type)
+
+    @api.model
+    def _extract_subscription_id_from_invoice(self, invoice_obj):
+        """Obtiene el ID de suscripcion desde distintas versiones del payload de Invoice."""
+        subscription = invoice_obj.get('subscription')
+        if isinstance(subscription, dict):
+            subscription = subscription.get('id')
+        if subscription:
+            return subscription
+
+        parent = invoice_obj.get('parent') or {}
+        subscription_details = parent.get('subscription_details') or invoice_obj.get('subscription_details') or {}
+        subscription = subscription_details.get('subscription')
+        if isinstance(subscription, dict):
+            subscription = subscription.get('id')
+        if subscription:
+            return subscription
+
+        lines = invoice_obj.get('lines', {}).get('data', [])
+        for line in lines:
+            subscription = line.get('subscription')
+            if isinstance(subscription, dict):
+                subscription = subscription.get('id')
+            if subscription:
+                return subscription
+            line_parent = line.get('parent') or {}
+            line_details = line_parent.get('subscription_item_details') or line_parent.get('subscription_details') or {}
+            subscription = line_details.get('subscription')
+            if isinstance(subscription, dict):
+                subscription = subscription.get('id')
+            if subscription:
+                return subscription
+        return False
+
+    @api.model
+    def _fetch_invoice_from_stripe(self, invoice_id):
+        if not invoice_id:
+            return {}
+        provider = self._get_stripe_provider()
+        if not provider:
+            return {}
+        try:
+            invoice = provider._stripe_make_request(f"invoices/{invoice_id}", method='GET')
+            return invoice if invoice and not invoice.get('error') else {}
+        except Exception:
+            _logger.warning("No se pudo recuperar la factura %s desde Stripe", invoice_id)
+            return {}
 
     @api.model
     def _find_partner(self, customer_id, email=False):
@@ -403,8 +452,16 @@ class StripeSync(models.AbstractModel):
     @api.model
     def _sync_invoice_paid(self, invoice_obj):
         """Procesa el cobro de una factura en Stripe, marcando el plazo correspondiente en Odoo como pagado."""
-        subscription_id = invoice_obj.get('subscription')
+        invoice_id = invoice_obj.get('id')
+        subscription_id = self._extract_subscription_id_from_invoice(invoice_obj)
+        if not subscription_id and invoice_id:
+            invoice_obj = self._fetch_invoice_from_stripe(invoice_id) or invoice_obj
+            subscription_id = self._extract_subscription_id_from_invoice(invoice_obj)
         if not subscription_id:
+            _logger.warning(
+                "Stripe Webhook (sync): invoice.paid sin suscripcion identificable (invoice=%s).",
+                invoice_id,
+            )
             return
             
         # Buscamos la orden por la suscripción vinculada o referencia string
@@ -429,6 +486,14 @@ class StripeSync(models.AbstractModel):
                     _logger.warning("No se pudo recuperar la suscripción %s desde Stripe para fallback en invoice.paid", subscription_id)
 
         if order:
+            if invoice_id and order.stripe_last_paid_invoice_id == invoice_id:
+                _logger.info(
+                    "Stripe Webhook (sync): invoice.paid duplicado omitido para la orden %s (invoice=%s).",
+                    order.name,
+                    invoice_id,
+                )
+                return
+
             _logger.info("Stripe Webhook (sync): invoice.paid recibido para la orden %s (Sub: %s)", order.name, subscription_id)
             
             # Registrar evento en chatter
@@ -445,6 +510,10 @@ class StripeSync(models.AbstractModel):
             
             if unpaid:
                 unpaid[0].sudo().write({'payment_state': 'paid'})
+                invoice_vals = {'stripe_last_paid_invoice_id': invoice_id}
+                if invoice_id:
+                    invoice_vals['stripe_invoice_id'] = invoice_id
+                order.sudo().write(invoice_vals)
                 _logger.info(
                     "Stripe Webhook (sync): Plazo %s ('%s') marcado como pagado para orden %s debido a cobro en Stripe.",
                     unpaid[0].id, unpaid[0].name or unpaid[0].date_due, order.name
@@ -453,10 +522,33 @@ class StripeSync(models.AbstractModel):
                 _logger.info("Stripe Webhook (sync): No hay plazos pendientes de pago para la orden %s.", order.name)
 
     @api.model
+    def _sync_payment_intent_succeeded(self, payment_intent_obj):
+        """Fallback para pagos de Stripe que llegan como payment_intent.succeeded."""
+        invoice = payment_intent_obj.get('invoice')
+        invoice_id = invoice.get('id') if isinstance(invoice, dict) else invoice
+        if not invoice_id:
+            _logger.info(
+                "Stripe Webhook (sync): payment_intent.succeeded sin invoice asociado (%s).",
+                payment_intent_obj.get('id'),
+            )
+            return
+        invoice_obj = self._fetch_invoice_from_stripe(invoice_id)
+        if invoice_obj:
+            self._sync_invoice_paid(invoice_obj)
+
+    @api.model
     def _sync_invoice_payment_failed(self, invoice_obj):
         """Procesa el fallo de cobro de una factura en Stripe, actualizando la orden de Odoo."""
-        subscription_id = invoice_obj.get('subscription')
+        invoice_id = invoice_obj.get('id')
+        subscription_id = self._extract_subscription_id_from_invoice(invoice_obj)
+        if not subscription_id and invoice_id:
+            invoice_obj = self._fetch_invoice_from_stripe(invoice_id) or invoice_obj
+            subscription_id = self._extract_subscription_id_from_invoice(invoice_obj)
         if not subscription_id:
+            _logger.warning(
+                "Stripe Webhook (sync): invoice.payment_failed sin suscripcion identificable (invoice=%s).",
+                invoice_id,
+            )
             return
             
         order = self.env['sale.order'].sudo().search([

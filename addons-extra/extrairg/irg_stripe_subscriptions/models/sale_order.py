@@ -39,6 +39,13 @@ class SaleOrder(models.Model):
         readonly=True
     )
 
+    stripe_last_paid_invoice_id = fields.Char(
+        string='Ultima factura Stripe pagada',
+        copy=False,
+        readonly=True,
+        help="ID de la ultima factura Stripe usada para marcar un plazo como pagado."
+    )
+
     # ------------------------------------------------------------------
     # Interceptamos Escritura/Creación para mapear String a Many2one ID
     # ------------------------------------------------------------------
