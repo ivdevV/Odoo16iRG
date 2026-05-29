@@ -212,7 +212,7 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- COURSE NAME ---
         y = start_y
-        y -= sp(38)
+        y -= sp(48)
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
 
@@ -293,11 +293,11 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- "a" ---
         # lift the "a" a bit when we've moved elements upward earlier
-        y -= sp(24)
+        y -= sp(14)
         self._draw_centered_text(c, "a", y, font_regular, sf(13), page_width)
         
         # --- STUDENT NAME ---
-        y -= sp(28)
+        y -= sp(22)
         student_name = data.get('student_name', '')
         student_max_width = page_width - (2 * side_margin)
         student_font_size = self._fit_single_line_font_size(
@@ -427,8 +427,8 @@ class DiplomaReportPDF(models.AbstractModel):
             self._draw_text_in_column(c, "Director Acadèmic", right_col_x - sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
             # place the QR a bit above the footer baseline so it does not
             # overlap the registry text; keep registry baseline at footer_y
-            qr_y = footer_y + sp(12)
-            reg_baseline_y = footer_y
+            qr_y = role_y + sp(12)
+            reg_baseline_y = role_y
         else:
             # physical diploma: reserve three signature zones for handwritten
             # users will sign above these labels, so we don't draw images.
@@ -481,7 +481,7 @@ class DiplomaReportPDF(models.AbstractModel):
             # set registry baseline for physical diplomas so the registry
             # text aligns vertically with the 'Interessat/da' label by
             # placing it at the same baseline.
-            reg_baseline_y = role_y - sp(10)
+            reg_baseline_y = role_y
             # place the QR so its bottom sits a few points above the
             # registry text baseline, ensuring the image is directly
             # above "Nº Registro:" for physical diplomas.

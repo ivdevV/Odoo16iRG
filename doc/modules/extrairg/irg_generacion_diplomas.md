@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.1
+**Versión:** 16.0.1.0.2
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,12 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.2 (V2.4)
+- **Ajustes de Maquetación y Alineación**:
+  - **Bajada del Título**: Aumento del margen superior del título a `y -= sp(48)` para centrar y equilibrar verticalmente el bloque de texto superior.
+  - **Compactado de Elementos Centrales**: Ajuste y reducción del espaciado para la preposición "a" (`sp(14)`) y el nombre del estudiante (`sp(22)`) para dar mayor aire al resto de elementos y mejorar la cohesión del diploma.
+  - **Alineación del Registro y Código QR**: Enlace vertical del código QR y su texto de registro ("Nº Registro: ...") con la línea de roles (`role_y`), garantizando una alineación horizontal uniforme tanto para diplomas digitales como físicos.
 
 ### Versión 16.0.1.0.1 (V2.3)
 - **Mejora Estética del Layout**: Se ajustó la posición de renderizado vertical de los nombres de los másteres en el PDF de ReportLab. Se modificó el desplazamiento vertical de `y -= sp(28)` a `y -= sp(38)` en la línea 215 del generador. Esto añade un espaciado visual (aire) de 10 puntos respecto a la cabecera superior. Las posiciones de los elementos subsiguientes se calculan dinámicamente de forma relativa a este desplazamiento, manteniendo la cohesión y previniendo solapamientos en todo el diploma.
