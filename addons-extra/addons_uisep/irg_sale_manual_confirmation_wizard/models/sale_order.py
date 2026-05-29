@@ -51,7 +51,20 @@ class SaleOrder(models.Model):
         }
 
     def _get_line_modality(self, line):
-        if not line or not line.product_id:
+        if not line:
+            return ''
+        categ_code = False
+        if line.product_id and line.product_id.categ_id and line.product_id.categ_id.code:
+            categ_code = line.product_id.categ_id.code
+        elif line.product_template_id and line.product_template_id.categ_id and line.product_template_id.categ_id.code:
+            categ_code = line.product_template_id.categ_id.code
+        elif hasattr(line, 'course_id') and line.course_id and line.course_id.product_template_id and line.course_id.product_template_id.categ_id and line.course_id.product_template_id.categ_id.code:
+            categ_code = line.course_id.product_template_id.categ_id.code
+
+        if categ_code and categ_code.upper().startswith('DI'):
+            return 'HC'
+
+        if not line.product_id:
             return ''
         for ptav in line.product_id.product_template_attribute_value_ids:
             if ptav.attribute_id.name == 'Modalidad':

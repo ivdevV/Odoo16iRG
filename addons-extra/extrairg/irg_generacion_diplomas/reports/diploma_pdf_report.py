@@ -262,9 +262,13 @@ class DiplomaReportPDF(models.AbstractModel):
                 pass
 
         # compute X anchors so that the narrower title block is centred inside
-        # its original column area
-        title_left_x = left_col_x + (col_width - left_title_width) / 2
-        title_right_x = right_col_x + (col_width - right_title_width) / 2
+        # its original column area, or aligned to the inner edges if physical
+        if diploma_type == 'physical':
+            title_left_x = (left_col_x + col_width) - left_title_width
+            title_right_x = right_col_x
+        else:
+            title_left_x = left_col_x + (col_width - left_title_width) / 2
+            title_right_x = right_col_x + (col_width - right_title_width) / 2
 
         # --- INTRO TEXT ---
         # Draw the intro lines inside the same narrower blocks as the titles

@@ -13,7 +13,8 @@
         "website_mail",
         "mail",
         "crm",
-        "sale"
+        "sale",
+        "irg_crm_extended"
         #"voip",
         #"isep_custom",
         #"hspl_user_simulation",

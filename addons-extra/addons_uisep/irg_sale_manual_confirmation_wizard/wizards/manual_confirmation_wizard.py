@@ -155,6 +155,21 @@ class ManualConfirmationWizard(models.TransientModel):
     def _detect_line_modalidad(self, line, course_id):
         if not course_id:
             return ''
+        categ_code = False
+        if line.product_id and line.product_id.categ_id and line.product_id.categ_id.code:
+            categ_code = line.product_id.categ_id.code
+        elif line.product_template_id and line.product_template_id.categ_id and line.product_template_id.categ_id.code:
+            categ_code = line.product_template_id.categ_id.code
+        elif course_id and course_id.product_template_id and course_id.product_template_id.categ_id and course_id.product_template_id.categ_id.code:
+            categ_code = course_id.product_template_id.categ_id.code
+        elif course_id and hasattr(course_id, 'product_template_ids') and course_id.product_template_ids:
+            first_pt = course_id.product_template_ids[0]
+            if first_pt.categ_id and first_pt.categ_id.code:
+                categ_code = first_pt.categ_id.code
+
+        if categ_code and categ_code.upper().startswith('DI'):
+            return 'HC'
+
         for ptav in line.product_id.product_template_attribute_value_ids:
             if ptav.attribute_id.name == 'Modalidad':
                 name = (ptav.product_attribute_value_id.name or '').strip()

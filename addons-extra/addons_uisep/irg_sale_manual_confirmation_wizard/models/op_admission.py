@@ -47,6 +47,19 @@ class OpAdmission(models.Model):
         batch_code = (self.batch_id.code or '').upper()
         is_online_batch = 'ONL' in batch_code
 
+        # Determine if the admission's course is a diplomado
+        categ_code = False
+        if self.course_id:
+            if self.course_id.product_template_id and self.course_id.product_template_id.categ_id:
+                categ_code = self.course_id.product_template_id.categ_id.code
+            elif hasattr(self.course_id, 'product_template_ids') and self.course_id.product_template_ids:
+                first_pt = self.course_id.product_template_ids[0]
+                if first_pt.categ_id:
+                    categ_code = first_pt.categ_id.code
+
+        if categ_code and categ_code.upper().startswith('DI'):
+            is_online_batch = False
+
         template = False
         if is_online_batch:
             template = ad.welcome_template_online_id or self.env.ref(
