@@ -212,7 +212,7 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- COURSE NAME ---
         y = start_y
-        y -= sp(28)
+        y -= sp(38)
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
 
