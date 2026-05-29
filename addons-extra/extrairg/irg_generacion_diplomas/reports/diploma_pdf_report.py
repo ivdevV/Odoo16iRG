@@ -246,12 +246,12 @@ class DiplomaReportPDF(models.AbstractModel):
         left_title_width = default_title_width
         right_title_width = default_title_width
         try:
-            if course_cat and len(course_cat.strip()) < 45:
+            if course_cat and len(course_cat.strip()) < 45 and diploma_type != 'physical':
                 left_title_width = col_width * 0.8
         except Exception:
             pass
         try:
-            if course_es and len(course_es.strip()) < 45:
+            if course_es and len(course_es.strip()) < 45 and diploma_type != 'physical':
                 right_title_width = col_width * 0.8
         except Exception:
             pass

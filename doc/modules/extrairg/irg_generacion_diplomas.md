@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.4
+**Versión:** 16.0.1.0.5
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,11 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.5 (V2.7)
+- **Ajustes de Alineación Horizontal y Ancho de Columnas en Diploma Físico**:
+  - **Unificación de Ancho de Columnas**: Se unificó el ancho de columna del título y las líneas introductorias con el del cuerpo inferior para diplomas físicos, logrando una alineación simétrica y consistente.
+  - **Desactivación de la Compresión para Textos Cortos**: Se desactivó el mecanismo de compresión o reducción de ancho (`left_title_width` / `right_title_width`) para títulos y cabeceras de longitud corta, impidiendo deformaciones tipográficas y mejorando la legibilidad.
 
 ### Versión 16.0.1.0.4 (V2.6)
 - **Ajustes de Alineación y Reducción de Fuentes en Diploma Físico**:
