@@ -243,18 +243,23 @@ class DiplomaReportPDF(models.AbstractModel):
 
         # If a title is short we make its block more narrow so it visually
         # sits closer to the centre; otherwise use the default wider block.
-        left_title_width = default_title_width
-        right_title_width = default_title_width
-        try:
-            if course_cat and len(course_cat.strip()) < 45 and diploma_type != 'physical':
-                left_title_width = col_width * 0.8
-        except Exception:
-            pass
-        try:
-            if course_es and len(course_es.strip()) < 45 and diploma_type != 'physical':
-                right_title_width = col_width * 0.8
-        except Exception:
-            pass
+        # For physical diplomas we assign col_width * 0.82 according to V2.8.
+        if diploma_type == 'physical':
+            left_title_width = col_width * 0.82
+            right_title_width = col_width * 0.82
+        else:
+            left_title_width = default_title_width
+            right_title_width = default_title_width
+            try:
+                if course_cat and len(course_cat.strip()) < 45:
+                    left_title_width = col_width * 0.8
+            except Exception:
+                pass
+            try:
+                if course_es and len(course_es.strip()) < 45:
+                    right_title_width = col_width * 0.8
+            except Exception:
+                pass
 
         # compute X anchors so that the narrower title block is centred inside
         # its original column area
@@ -462,7 +467,7 @@ class DiplomaReportPDF(models.AbstractModel):
             # the director's name; original variable defined above.  shift it
             # slightly right to balance the QR code on the far left.
             left_student_x = left_col_x + sp(12)
-            self._draw_text_in_column(c, student_name, left_student_x, sign_text_y, col_width, font_bold, sf(10), align='center')
+            self._draw_text_in_column(c, student_name, left_student_x, sign_text_y, col_width, font_regular, sf(10), align='center')
             # place Raimon exactly at page centre rather than using a
             # column width; draw_centered_text does the job directly and
             # avoids the extra horizontal offset caused by col_width.
@@ -470,14 +475,14 @@ class DiplomaReportPDF(models.AbstractModel):
                 c,
                 "Raimon Gaja",
                 sign_text_y,
-                font_bold,
+                font_regular,
                 sf(10),
                 page_width,
             )
-            self._draw_text_in_column(c, "Fermín Carrillo", right_col_x, sign_text_y, col_width, font_bold, sf(10), align='center')
+            self._draw_text_in_column(c, "Fermín Carrillo", right_col_x, sign_text_y, col_width, font_regular, sf(10), align='center')
 
             # second row: roles titles/labels (left = interested, centre=Director, right=Acad.)
-            role_y = sign_text_y - sp(18)
+            role_y = sign_text_y - sp(10)
             # split Spanish / Catalan onto two lines instead of one long string
             self._draw_text_in_column(c, "Interesado/a", left_student_x, role_y, col_width, font_regular, sf(9), align='center')
             self._draw_text_in_column(c, "Interessat/da", left_student_x, role_y - sp(10), col_width, font_regular, sf(9), align='center')
@@ -502,10 +507,11 @@ class DiplomaReportPDF(models.AbstractModel):
         qr_image = self._generate_qr(qr_url)
         c.drawImage(qr_image, qr_x, qr_y, width=qr_size, height=qr_size)
 
-        c.setFont(font_bold, sf(8))
+        reg_font = font_regular if diploma_type == 'physical' else font_bold
+        c.setFont(reg_font, sf(8))
         # centre registry text under QR
         reg_text = f"Nº Registro: {registry}"
-        text_width = c.stringWidth(reg_text, font_bold, sf(8))
+        text_width = c.stringWidth(reg_text, reg_font, sf(8))
         text_x = qr_x + (qr_size - text_width) / 2
         # replace final two-digit year in registry text with the year
         # taken from the diploma date (prefer Spanish version). if date isn't
