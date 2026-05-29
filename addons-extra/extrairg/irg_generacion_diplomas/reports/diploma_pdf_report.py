@@ -169,8 +169,12 @@ class DiplomaReportPDF(models.AbstractModel):
 
         logo_width_base = 150
         # aggressively reduce margins/gutter to widen side columns as requested
-        side_margin = page_width * 0.050  # narrower than before
-        gutter = sp(logo_width_base) * 0.80  # even tighter
+        if diploma_type == 'physical':
+            side_margin = page_width * 0.090
+            gutter = sp(logo_width_base) * 0.40
+        else:
+            side_margin = page_width * 0.050
+            gutter = sp(logo_width_base) * 0.80
         col_width = (page_width - (2 * side_margin) - gutter) / 2
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
@@ -322,10 +326,11 @@ class DiplomaReportPDF(models.AbstractModel):
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
+        body_sec_gap = sp(12) if diploma_type == 'physical' else sp(25)
         self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, sf(10), align='right')
         y -= sp(15)
         self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, sf(10), align='right')
-        y -= sp(25)
+        y -= body_sec_gap
         self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, sf(10), align='right')
         y -= sp(15)
         self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, sf(10), align='right')
@@ -340,7 +345,7 @@ class DiplomaReportPDF(models.AbstractModel):
         self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
         y_es -= sp(15)
         self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
-        y_es -= sp(25)
+        y_es -= body_sec_gap
         self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
         y_es -= sp(15)
         self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
@@ -368,7 +373,7 @@ class DiplomaReportPDF(models.AbstractModel):
         #   left_col_x + col_width + gutter/2
         # changing that expression will move only the middle column.
         # move further down to make space and lower the signature area
-        y -= sp(54)
+        y -= sp(34) if diploma_type == 'physical' else sp(54)
 
         # Store Y for images (bottom of signature area). push signatures
         # a bit further down so they sit below the date. increase the

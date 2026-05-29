@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.2
+**Versión:** 16.0.1.0.3
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,12 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.3 (V2.5)
+- **Ajustes de Maquetación para Diplomas Físicos**:
+  - **Reducción de Gutter Horizontal**: Reducción del margen y separación horizontal lateral (gutter) para optimizar el espacio impreso en diplomas físicos.
+  - **Menor Separación entre Párrafos**: Reducción del espaciado vertical entre párrafos de texto para compactar el cuerpo del documento.
+  - **Subida del Bloque de Firmas y QR**: Elevación del bloque inferior (firmas y código QR) decrementando la coordenada vertical condicionalmente.
 
 ### Versión 16.0.1.0.2 (V2.4)
 - **Ajustes de Maquetación y Alineación**:
