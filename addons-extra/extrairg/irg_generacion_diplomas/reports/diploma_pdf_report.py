@@ -264,10 +264,11 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- INTRO TEXT ---
         # Draw the intro lines inside the same narrower blocks as the titles
         y_intro = start_y
+        intro_font_size = sf(9.5) if diploma_type == 'physical' else sf(11)
         self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de",
-                       title_left_x, y_intro, left_title_width, font_regular, sf(11), align='right')
+                       title_left_x, y_intro, left_title_width, font_regular, intro_font_size, align='right')
         self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de",
-                       title_right_x, y_intro, right_title_width, font_regular, sf(11), align='left')
+                       title_right_x, y_intro, right_title_width, font_regular, intro_font_size, align='left')
 
         # --- COURSE NAME ---
         # Draw full title text and let wrapping be controlled only by width.
@@ -321,44 +322,49 @@ class DiplomaReportPDF(models.AbstractModel):
         # for the text area itself, adjust `left_col_x` or add/subtract an extra
         # value here (e.g. left_col_x + sp(5)).
         y -= sp(46)
+        y_start_body = y
+        body_font_size = sf(8.5) if diploma_type == 'physical' else sf(10)
+        body_line_gap = sp(13) if diploma_type == 'physical' else sp(15)
         body_cat_1 = "En reconeixement del rendiment acadèmic i a l'aprofitament"
         body_cat_2 = "dels estudis cursats en el programa del màster."
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
         body_sec_gap = sp(12) if diploma_type == 'physical' else sp(25)
-        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, sf(10), align='right')
-        y -= sp(15)
-        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, body_font_size, align='right')
+        y -= body_line_gap
+        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, body_font_size, align='right')
         y -= body_sec_gap
-        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, sf(10), align='right')
-        y -= sp(15)
-        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, body_font_size, align='right')
+        y -= body_line_gap
+        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, body_font_size, align='right')
         
         # --- BODY TEXT SPANISH ---
-        y_es = y + sp(55)
+        y_es = y_start_body
         body_es_1 = "En reconocimiento al rendimiento académico y al aprovechamiento"
         body_es_2 = "de los estudios cursados en el programa del máster."
         body_es_3 = "Este máster cuenta con el reconocimiento de excelencia académica"
         body_es_4 = "de la European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
-        y_es -= sp(15)
-        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width, font_regular, body_font_size, align='left')
+        y_es -= body_line_gap
+        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width, font_regular, body_font_size, align='left')
         y_es -= body_sec_gap
-        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
-        y_es -= sp(15)
-        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width, font_regular, body_font_size, align='left')
+        y_es -= body_line_gap
+        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width, font_regular, body_font_size, align='left')
+        y = min(y, y_es)
         
         # --- DATES ---
         y -= sp(48)
         date_cat = data.get('date_cat', '')
         date_es = data.get('date_es', '')
         
+        date_font_size = sf(9.5) if diploma_type == 'physical' else sf(11)
         # avoid double "de de" in the left date
         clean_cat = date_cat.replace(' de de ', ' de ')
-        self._draw_text_in_column(c, f"Barcelona, a {clean_cat}", left_col_x, y, col_width, font_regular, sf(11), align='right')
-        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width, font_regular, sf(11), align='left')
+        self._draw_text_in_column(c, f"Barcelona, a {clean_cat}", left_col_x, y, col_width, font_regular, date_font_size, align='right')
+        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width, font_regular, date_font_size, align='left')
         
         
         # --- SIGNATURES ---

@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.3
+**Versión:** 16.0.1.0.4
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,11 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.4 (V2.6)
+- **Ajustes de Alineación y Reducción de Fuentes en Diploma Físico**:
+  - **Alineación Perfecta de Columnas**: Alineación de la coordenada Y inicial del cuerpo de texto legal en catalán y castellano mediante `y_start_body`, igualando `y_es = y_start_body` y unificando el retorno mediante `y = min(y, y_es)` para evitar desfasajes en columnas asimétricas.
+  - **Reducción de Fuentes en Formato Físico**: Disminución del tamaño de la fuente para cabeceras (intro) a `sf(9.5)` (vs `sf(11)`), cuerpo de texto legal a `sf(8.5)` (vs `sf(10)`) con un gap entre líneas reducido a `sp(13)` (vs `sp(15)`), y fechas a `sf(9.5)` (vs `sf(11)`) para prevenir solapamientos e incrementar la holgura visual del diploma impreso.
 
 ### Versión 16.0.1.0.3 (V2.5)
 - **Ajustes de Maquetación para Diplomas Físicos**:
