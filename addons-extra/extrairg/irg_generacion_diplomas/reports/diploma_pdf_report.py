@@ -169,8 +169,12 @@ class DiplomaReportPDF(models.AbstractModel):
 
         logo_width_base = 150
         # aggressively reduce margins/gutter to widen side columns as requested
-        side_margin = page_width * 0.050  # narrower than before
-        gutter = sp(logo_width_base) * 0.80  # even tighter
+        if diploma_type == 'physical':
+            side_margin = page_width * 0.090
+            gutter = sp(logo_width_base) * 0.40
+        else:
+            side_margin = page_width * 0.050
+            gutter = sp(logo_width_base) * 0.80
         col_width = (page_width - (2 * side_margin) - gutter) / 2
         left_col_x = side_margin
         right_col_x = left_col_x + col_width + gutter
@@ -212,7 +216,7 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- COURSE NAME ---
         y = start_y
-        y -= sp(28)
+        y -= sp(48)
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
 
@@ -242,12 +246,12 @@ class DiplomaReportPDF(models.AbstractModel):
         left_title_width = default_title_width
         right_title_width = default_title_width
         try:
-            if course_cat and len(course_cat.strip()) < 45:
+            if course_cat and len(course_cat.strip()) < 45 and diploma_type != 'physical':
                 left_title_width = col_width * 0.8
         except Exception:
             pass
         try:
-            if course_es and len(course_es.strip()) < 45:
+            if course_es and len(course_es.strip()) < 45 and diploma_type != 'physical':
                 right_title_width = col_width * 0.8
         except Exception:
             pass
@@ -260,10 +264,11 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- INTRO TEXT ---
         # Draw the intro lines inside the same narrower blocks as the titles
         y_intro = start_y
+        intro_font_size = sf(9.5) if diploma_type == 'physical' else sf(11)
         self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de",
-                       title_left_x, y_intro, left_title_width, font_regular, sf(11), align='right')
+                       title_left_x, y_intro, left_title_width, font_regular, intro_font_size, align='right')
         self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de",
-                       title_right_x, y_intro, right_title_width, font_regular, sf(11), align='left')
+                       title_right_x, y_intro, right_title_width, font_regular, intro_font_size, align='left')
 
         # --- COURSE NAME ---
         # Draw full title text and let wrapping be controlled only by width.
@@ -293,11 +298,11 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- "a" ---
         # lift the "a" a bit when we've moved elements upward earlier
-        y -= sp(24)
+        y -= sp(14)
         self._draw_centered_text(c, "a", y, font_regular, sf(13), page_width)
         
         # --- STUDENT NAME ---
-        y -= sp(28)
+        y -= sp(22)
         student_name = data.get('student_name', '')
         student_max_width = page_width - (2 * side_margin)
         student_font_size = self._fit_single_line_font_size(
@@ -317,43 +322,49 @@ class DiplomaReportPDF(models.AbstractModel):
         # for the text area itself, adjust `left_col_x` or add/subtract an extra
         # value here (e.g. left_col_x + sp(5)).
         y -= sp(46)
+        y_start_body = y
+        body_font_size = sf(8.5) if diploma_type == 'physical' else sf(10)
+        body_line_gap = sp(13) if diploma_type == 'physical' else sp(15)
         body_cat_1 = "En reconeixement del rendiment acadèmic i a l'aprofitament"
         body_cat_2 = "dels estudis cursats en el programa del màster."
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, sf(10), align='right')
-        y -= sp(15)
-        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, sf(10), align='right')
-        y -= sp(25)
-        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, sf(10), align='right')
-        y -= sp(15)
-        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        body_sec_gap = sp(12) if diploma_type == 'physical' else sp(25)
+        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, body_font_size, align='right')
+        y -= body_line_gap
+        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, body_font_size, align='right')
+        y -= body_sec_gap
+        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, body_font_size, align='right')
+        y -= body_line_gap
+        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, body_font_size, align='right')
         
         # --- BODY TEXT SPANISH ---
-        y_es = y + sp(55)
+        y_es = y_start_body
         body_es_1 = "En reconocimiento al rendimiento académico y al aprovechamiento"
         body_es_2 = "de los estudios cursados en el programa del máster."
         body_es_3 = "Este máster cuenta con el reconocimiento de excelencia académica"
         body_es_4 = "de la European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
-        y_es -= sp(15)
-        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
-        y_es -= sp(25)
-        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
-        y_es -= sp(15)
-        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width, font_regular, body_font_size, align='left')
+        y_es -= body_line_gap
+        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width, font_regular, body_font_size, align='left')
+        y_es -= body_sec_gap
+        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width, font_regular, body_font_size, align='left')
+        y_es -= body_line_gap
+        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width, font_regular, body_font_size, align='left')
+        y = min(y, y_es)
         
         # --- DATES ---
         y -= sp(48)
         date_cat = data.get('date_cat', '')
         date_es = data.get('date_es', '')
         
+        date_font_size = sf(9.5) if diploma_type == 'physical' else sf(11)
         # avoid double "de de" in the left date
         clean_cat = date_cat.replace(' de de ', ' de ')
-        self._draw_text_in_column(c, f"Barcelona, a {clean_cat}", left_col_x, y, col_width, font_regular, sf(11), align='right')
-        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width, font_regular, sf(11), align='left')
+        self._draw_text_in_column(c, f"Barcelona, a {clean_cat}", left_col_x, y, col_width, font_regular, date_font_size, align='right')
+        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width, font_regular, date_font_size, align='left')
         
         
         # --- SIGNATURES ---
@@ -368,12 +379,12 @@ class DiplomaReportPDF(models.AbstractModel):
         #   left_col_x + col_width + gutter/2
         # changing that expression will move only the middle column.
         # move further down to make space and lower the signature area
-        y -= sp(54)
+        y -= sp(34) if diploma_type == 'physical' else sp(54)
 
         # Store Y for images (bottom of signature area). push signatures
         # a bit further down so they sit below the date. increase the
         # offset slightly for digital diplomas so labels won't overlap.
-        y_images = y - sp(12)
+        y_images = y - sp(34) if diploma_type == 'digital' else y - sp(12)
 
         # compute QR coordinates now so that later branches can reference qr_y
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
@@ -427,8 +438,8 @@ class DiplomaReportPDF(models.AbstractModel):
             self._draw_text_in_column(c, "Director Acadèmic", right_col_x - sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
             # place the QR a bit above the footer baseline so it does not
             # overlap the registry text; keep registry baseline at footer_y
-            qr_y = footer_y + sp(12)
-            reg_baseline_y = footer_y
+            qr_y = role_y + sp(12)
+            reg_baseline_y = role_y
         else:
             # physical diploma: reserve three signature zones for handwritten
             # users will sign above these labels, so we don't draw images.
@@ -481,7 +492,7 @@ class DiplomaReportPDF(models.AbstractModel):
             # set registry baseline for physical diplomas so the registry
             # text aligns vertically with the 'Interessat/da' label by
             # placing it at the same baseline.
-            reg_baseline_y = role_y - sp(10)
+            reg_baseline_y = role_y
             # place the QR so its bottom sits a few points above the
             # registry text baseline, ensuring the image is directly
             # above "Nº Registro:" for physical diplomas.

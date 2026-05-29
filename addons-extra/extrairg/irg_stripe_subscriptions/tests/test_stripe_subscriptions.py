@@ -166,14 +166,22 @@ class TestStripeSubscriptions(TransactionCase):
         self.order.write({
             'stripe_subscription_id': subscription.id,
             'stripe_subscription_ref': 'sub_to_pay_99',
-            'stripe_subscription_state': 'active'
+            'stripe_subscription_state': 'active',
+            'next_invoice_date': '2026-06-25',
         })
 
-        # Creamos una línea de cronograma de prueba
+        # Creamos líneas de cronograma de prueba
         schedule = self.env['sale.subscription.schedule'].create({
             'order_id': self.order.id,
             'date_due': '2026-06-25',
             'date_schedule': '2026-06-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 360.53
+        })
+        next_schedule = self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-07-25',
+            'date_schedule': '2026-07-25',
             'payment_state': 'not_paid',
             'amount_recurring_taxinc': 360.53
         })
@@ -195,7 +203,14 @@ class TestStripeSubscriptions(TransactionCase):
 
         # Validamos que el plazo pasó a estar pagado
         schedule.refresh()
+        next_schedule.refresh()
+        self.order.refresh()
         self.assertEqual(schedule.payment_state, 'paid', "El plazo del cronograma debería haberse marcado como pagado.")
+        self.assertAlmostEqual(schedule.total_paid, 360.53, places=2)
+        self.assertAlmostEqual(schedule.total_residual, 0.0, places=2)
+        self.assertEqual(next_schedule.payment_state, 'not_paid')
+        self.assertEqual(self.order.next_invoice_date.strftime('%Y-%m-%d'), '2026-07-25')
+        self.assertAlmostEqual(self.order.amount_due_total, 360.53, places=2)
 
     def test_06_payment_link_generation_payload(self):
         """Test that the payment link generation constructs the correct description, metadata, and cancel_at payload."""
@@ -208,6 +223,27 @@ class TestStripeSubscriptions(TransactionCase):
             'term_number': 3,
             'amount_total': 300.0,
             'end_date': datetime.date.today() + datetime.timedelta(days=90),
+        })
+        self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-06-25',
+            'date_schedule': '2026-06-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 100.0,
+        })
+        self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-07-25',
+            'date_schedule': '2026-07-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 100.0,
+        })
+        self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-08-25',
+            'date_schedule': '2026-08-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 100.0,
         })
 
         provider_vals = {
@@ -252,7 +288,7 @@ class TestStripeSubscriptions(TransactionCase):
             self.assertEqual(payload.get('subscription_data[metadata][odoo_order_id]'), str(self.order.id))
             self.assertEqual(payload.get('subscription_data[metadata][odoo_order_name]'), self.order.name or "")
 
-            expected_desc = "%s - 3 cuotas de 100.0 %s (Total: 300.0 %s)" % (
+            expected_desc = "%s - primer pago de 100.0 %s (3 cuotas; Total: 300.0 %s)" % (
                 self.order.name or "",
                 self.order.currency_id.name or "EUR",
                 self.order.currency_id.name or "EUR"
@@ -427,3 +463,101 @@ class TestStripeSubscriptions(TransactionCase):
             subscription = self.env['stripe.subscription'].search([('stripe_id', '=', 'sub_session_999')], limit=1)
             self.assertTrue(subscription)
             self.assertTrue(subscription.cancel_at_period_end, "The local subscription should have cancel_at_period_end as True")
+
+    def test_09_sync_invoice_paid_with_parent_subscription(self):
+        """Prueba invoice.paid cuando Stripe envia la suscripcion dentro de parent.subscription_details."""
+        subscription = self.env['stripe.subscription'].create({
+            'name': 'Sub parent invoice',
+            'stripe_id': 'sub_parent_invoice_123',
+            'partner_id': self.partner.id,
+            'status': 'active'
+        })
+        self.order.write({
+            'stripe_subscription_id': subscription.id,
+            'stripe_subscription_ref': 'sub_parent_invoice_123',
+            'stripe_subscription_state': 'active'
+        })
+        schedule = self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-06-25',
+            'date_schedule': '2026-06-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 100.0
+        })
+
+        self.env['stripe.sync']._sync_invoice_paid({
+            'id': 'in_parent_test_123',
+            'status': 'paid',
+            'amount_paid': 10000,
+            'parent': {
+                'subscription_details': {
+                    'subscription': 'sub_parent_invoice_123'
+                }
+            }
+        })
+
+        schedule.refresh()
+        self.order.refresh()
+        self.assertEqual(schedule.payment_state, 'paid')
+        self.assertEqual(self.order.stripe_last_paid_invoice_id, 'in_parent_test_123')
+
+    def test_10_payment_intent_succeeded_is_deduplicated_by_invoice(self):
+        """Prueba que payment_intent.succeeded e invoice.paid del mismo invoice no pagan dos plazos."""
+        from unittest.mock import patch
+
+        subscription = self.env['stripe.subscription'].create({
+            'name': 'Sub duplicate invoice',
+            'stripe_id': 'sub_duplicate_invoice_123',
+            'partner_id': self.partner.id,
+            'status': 'active'
+        })
+        self.order.write({
+            'stripe_subscription_id': subscription.id,
+            'stripe_subscription_ref': 'sub_duplicate_invoice_123',
+            'stripe_subscription_state': 'active'
+        })
+        first_schedule = self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-06-25',
+            'date_schedule': '2026-06-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 100.0
+        })
+        second_schedule = self.env['sale.subscription.schedule'].create({
+            'order_id': self.order.id,
+            'date_due': '2026-07-25',
+            'date_schedule': '2026-07-25',
+            'payment_state': 'not_paid',
+            'amount_recurring_taxinc': 100.0
+        })
+
+        provider = self.env['payment.provider'].sudo().search([('code', '=', 'stripe')], limit=1)
+        if not provider:
+            provider = self.env['payment.provider'].create({
+                'name': 'Stripe',
+                'code': 'stripe',
+                'state': 'test',
+                'stripe_publishable_key': 'pk_test_mock',
+                'stripe_secret_key': 'sk_test_mock',
+            })
+        else:
+            provider.write({'state': 'test'})
+
+        invoice_payload = {
+            'id': 'in_duplicate_test_123',
+            'subscription': 'sub_duplicate_invoice_123',
+            'status': 'paid',
+            'amount_paid': 10000,
+        }
+        with patch.object(type(provider), '_stripe_make_request', return_value=invoice_payload):
+            self.env['stripe.sync']._sync_payment_intent_succeeded({
+                'id': 'pi_duplicate_test_123',
+                'invoice': 'in_duplicate_test_123',
+                'status': 'succeeded',
+            })
+            self.env['stripe.sync']._sync_invoice_paid(invoice_payload)
+
+        first_schedule.refresh()
+        second_schedule.refresh()
+        self.assertEqual(first_schedule.payment_state, 'paid')
+        self.assertEqual(second_schedule.payment_state, 'not_paid')
