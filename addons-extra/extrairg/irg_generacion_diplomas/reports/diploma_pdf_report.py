@@ -260,10 +260,12 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- INTRO TEXT ---
         # Draw the intro lines inside the same narrower blocks as the titles
         y_intro = start_y
+        align_intro_cat = 'center' if diploma_type == 'digital' else 'right'
+        align_intro_es = 'center' if diploma_type == 'digital' else 'left'
         self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de",
-                       title_left_x, y_intro, left_title_width, font_regular, sf(11), align='right')
+                       title_left_x, y_intro, left_title_width, font_regular, sf(11), align=align_intro_cat)
         self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de",
-                       title_right_x, y_intro, right_title_width, font_regular, sf(11), align='left')
+                       title_right_x, y_intro, right_title_width, font_regular, sf(11), align=align_intro_es)
 
         # --- COURSE NAME ---
         # Draw full title text and let wrapping be controlled only by width.
@@ -275,7 +277,7 @@ class DiplomaReportPDF(models.AbstractModel):
             left_title_width,
             font_bold,
             course_font_size_cat,
-            align='right',
+            align=align_intro_cat,
         )
         y_next_es = self._draw_wrapped_text_in_column(
             c,
@@ -285,7 +287,7 @@ class DiplomaReportPDF(models.AbstractModel):
             right_title_width,
             font_bold,
             course_font_size_es,
-            align='left',
+            align=align_intro_es,
         )
         
         # Update Y to the lowest point from both columns
@@ -322,13 +324,16 @@ class DiplomaReportPDF(models.AbstractModel):
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        align_cat = 'center' if diploma_type == 'digital' else 'right'
+        align_es = 'center' if diploma_type == 'digital' else 'left'
+
+        self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, sf(10), align=align_cat)
         y -= sp(15)
-        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, sf(10), align=align_cat)
         y -= sp(25)
-        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        self._draw_text_in_column(c, body_cat_3, left_col_x, y, col_width, font_regular, sf(10), align=align_cat)
         y -= sp(15)
-        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, sf(10), align='right')
+        self._draw_text_in_column(c, body_cat_4, left_col_x, y, col_width, font_regular, sf(10), align=align_cat)
         
         # --- BODY TEXT SPANISH ---
         y_es = y + sp(55)
@@ -337,13 +342,13 @@ class DiplomaReportPDF(models.AbstractModel):
         body_es_3 = "Este máster cuenta con el reconocimiento de excelencia académica"
         body_es_4 = "de la European Association of Applied Psychology."
         
-        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_1, right_col_x, y_es, col_width, font_regular, sf(10), align=align_es)
         y_es -= sp(15)
-        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_2, right_col_x, y_es, col_width, font_regular, sf(10), align=align_es)
         y_es -= sp(25)
-        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_3, right_col_x, y_es, col_width, font_regular, sf(10), align=align_es)
         y_es -= sp(15)
-        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width, font_regular, sf(10), align='left')
+        self._draw_text_in_column(c, body_es_4, right_col_x, y_es, col_width, font_regular, sf(10), align=align_es)
         
         # --- DATES ---
         y -= sp(48)
@@ -352,8 +357,8 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # avoid double "de de" in the left date
         clean_cat = date_cat.replace(' de de ', ' de ')
-        self._draw_text_in_column(c, f"Barcelona, a {clean_cat}", left_col_x, y, col_width, font_regular, sf(11), align='right')
-        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width, font_regular, sf(11), align='left')
+        self._draw_text_in_column(c, f"Barcelona, a {clean_cat}", left_col_x, y, col_width, font_regular, sf(11), align=align_cat)
+        self._draw_text_in_column(c, f"Barcelona, a {date_es}", right_col_x, y, col_width, font_regular, sf(11), align=align_es)
         
         
         # --- SIGNATURES ---
@@ -394,11 +399,9 @@ class DiplomaReportPDF(models.AbstractModel):
             if sign_raimon_path and os.path.exists(sign_raimon_path):
                 sig_width = sp(95)
                 sig_height = sp(47)
-                # nudge signatures noticeably towards the centre for digital
-                # diplomas and center them under the date (column centre).
-                sig_shift = sp(48)
+                # Centered under the left date (column center)
                 left_center = left_col_x + col_width / 2
-                sig_x = left_center + sig_shift - (sig_width / 2)
+                sig_x = left_center - (sig_width / 2)
                 c.drawImage(sign_raimon_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
             
             # Signature Grecia (right)
@@ -407,24 +410,23 @@ class DiplomaReportPDF(models.AbstractModel):
             sig_height = sp(47)
             if sign_grecia_path and os.path.exists(sign_grecia_path):
                 right_center = right_col_x + col_width / 2
-                sig_x = right_center - sig_shift - (sig_width / 2)
+                sig_x = right_center - (sig_width / 2)
                 c.drawImage(sign_grecia_path, sig_x, y_images, width=sig_width, height=sig_height, preserveAspectRatio=True, mask='auto')
 
             # Text Names (Aligned) – place labels below the signature images
             # so they do not overlap; compute an explicit label start Y
             label_start_y = y_images - sp(6)
-            # apply same horizontal nudge to text labels so they line up with
-            # the nudged signature images (use column-centred anchors)
-            self._draw_text_in_column(c, "Raimon Gaja", left_col_x + sig_shift, label_start_y, col_width, font_bold, sf(13), align='center')
-            self._draw_text_in_column(c, "Fermín Carrillo", right_col_x - sig_shift, label_start_y, col_width, font_bold, sf(13), align='center')
+            # Centered under column anchors
+            self._draw_text_in_column(c, "Raimon Gaja", left_col_x, label_start_y, col_width, font_bold, sf(13), align='center')
+            self._draw_text_in_column(c, "Fermín Carrillo", right_col_x, label_start_y, col_width, font_bold, sf(13), align='center')
 
             role_y = label_start_y - sp(16)
-            self._draw_text_in_column(c, "Director", left_col_x + sig_shift, role_y, col_width, font_regular, sf(10), align='center')
-            self._draw_text_in_column(c, "Director Académico", right_col_x - sig_shift, role_y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Director", left_col_x, role_y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Director Académico", right_col_x, role_y, col_width, font_regular, sf(10), align='center')
 
             footer_y = role_y - sp(14)
-            self._draw_text_in_column(c, "Fundador", left_col_x + sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
-            self._draw_text_in_column(c, "Director Acadèmic", right_col_x - sig_shift, footer_y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Fundador", left_col_x, footer_y, col_width, font_regular, sf(10), align='center')
+            self._draw_text_in_column(c, "Director Acadèmic", right_col_x, footer_y, col_width, font_regular, sf(10), align='center')
             # place the QR a bit above the footer baseline so it does not
             # overlap the registry text; keep registry baseline at footer_y
             qr_y = footer_y + sp(12)
