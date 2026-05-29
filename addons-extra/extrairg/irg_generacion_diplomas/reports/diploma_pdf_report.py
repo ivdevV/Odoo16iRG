@@ -373,7 +373,7 @@ class DiplomaReportPDF(models.AbstractModel):
         # Store Y for images (bottom of signature area). push signatures
         # a bit further down so they sit below the date. increase the
         # offset slightly for digital diplomas so labels won't overlap.
-        y_images = y - sp(12)
+        y_images = y - sp(34) if diploma_type == 'digital' else y - sp(12)
 
         # compute QR coordinates now so that later branches can reference qr_y
         qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
