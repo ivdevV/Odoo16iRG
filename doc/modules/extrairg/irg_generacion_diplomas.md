@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.5
+**Versión:** 16.0.1.0.6
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,12 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.6 (V2.8)
+- **Refinamiento de Fuentes, Espaciados y Ancho de Títulos en Diploma Físico**:
+  - **Remoción de Negrita**: Se quitó la negrita de los nombres de los firmantes y del número de registro en diplomas físicos, usando la tipografía regular (`font_regular`) para una presentación estética más limpia y elegante.
+  - **Reducción de Gap Vertical**: Se redujo a `sp(10)` el espaciado vertical entre el nombre y el rol/cargo de los firmantes (`role_y = sign_text_y - sp(10)`) en diplomas físicos.
+  - **Limitación de Ancho de Título**: Se limitó el ancho máximo de los títulos en diplomas físicos a `col_width * 0.82` (`left_title_width` / `right_title_width = col_width * 0.82`) para forzar de manera controlada el salto de línea en expresiones específicas como "de la Salut / de la Salud".
 
 ### Versión 16.0.1.0.5 (V2.7)
 - **Ajustes de Alineación Horizontal y Ancho de Columnas en Diploma Físico**:

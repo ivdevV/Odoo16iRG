@@ -1,6 +1,6 @@
 {
     'name': 'IRG Generación Diplomas',
-    'version': '16.0.1.0.5',
+    'version': '16.0.1.0.7',
     'category': 'Education',
     'summary': 'Generación de diplomas físicos y digitales para alumnos',
     'description': """
