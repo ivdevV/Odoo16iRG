@@ -273,7 +273,7 @@ class DiplomaReportPDF(models.AbstractModel):
         # --- INTRO TEXT ---
         # Draw the intro lines inside the same narrower blocks as the titles
         y_intro = start_y
-        intro_font_size = sf(9.5) if diploma_type == 'physical' else sf(11)
+        intro_font_size = sf(10.5) if diploma_type == 'physical' else sf(11)
         self._draw_text_in_column(c, "L'Institut Raimon Gaja atorga el present diploma de",
                        title_left_x, y_intro, left_title_width, font_regular, intro_font_size, align='right')
         self._draw_text_in_column(c, "El Instituto Raimon Gaja otorga el presente diploma de",
@@ -332,8 +332,8 @@ class DiplomaReportPDF(models.AbstractModel):
         # value here (e.g. left_col_x + sp(5)).
         y -= sp(46)
         y_start_body = y
-        body_font_size = sf(8.5) if diploma_type == 'physical' else sf(10)
-        body_line_gap = sp(13) if diploma_type == 'physical' else sp(15)
+        body_font_size = sf(9.5) if diploma_type == 'physical' else sf(10)
+        body_line_gap = sp(14) if diploma_type == 'physical' else sp(15)
         body_cat_1 = "En reconeixement del rendiment acadèmic i a l'aprofitament"
         body_cat_2 = "dels estudis cursats en el programa del màster."
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
