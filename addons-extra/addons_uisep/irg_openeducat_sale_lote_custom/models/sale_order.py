@@ -139,6 +139,9 @@ class SaleOrder(models.Model):
         prefix_011 = course_id.code or ''       
         op_batch = self.env['op.batch']
         
+        if profix_01 and profix_01.upper().startswith('DI'):
+            profix_01 = 'D'
+
         # Constructed code without prefix_06
         code = profix_01 + prefix_011 + prefix_02 +  prefix_05 + prefix_04
         
