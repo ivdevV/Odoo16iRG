@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="forum_forum_online_student_global_rule" model="ir.rule">
+        <field name="name">Forum online students cannot read campus forums</field>
+        <field name="model_id" ref="website_forum.model_forum_forum"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[(1, '=', 1)] if (user.has_group('base.group_system') or not user.irg_forum_online_blocked) else [('visibility_batch_ids', 'not in', user.irg_forum_online_blocked_batch_ids.ids), ('visibility_course_ids', 'not in', user.irg_forum_online_blocked_course_ids.ids)]</field>
+    </record>
+
+    <record id="forum_post_online_student_global_rule" model="ir.rule">
+        <field name="name">Forum online students cannot read campus forum posts</field>
+        <field name="model_id" ref="website_forum.model_forum_post"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[(1, '=', 1)] if (user.has_group('base.group_system') or not user.irg_forum_online_blocked) else [('forum_id.visibility_batch_ids', 'not in', user.irg_forum_online_blocked_batch_ids.ids), ('forum_id.visibility_course_ids', 'not in', user.irg_forum_online_blocked_course_ids.ids)]</field>
+    </record>
+</odoo>
