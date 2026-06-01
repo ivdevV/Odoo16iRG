@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_admission_form_class_start_date" model="ir.ui.view">
+        <field name="name">op.admission.form.class.start.date</field>
+        <field name="model">op.admission</field>
+        <field name="inherit_id" ref="openeducat_admission.view_op_admission_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='due_date']" position="after">
+                <field name="irg_class_start_date"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
