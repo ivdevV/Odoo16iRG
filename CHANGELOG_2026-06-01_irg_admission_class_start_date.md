@@ -11,6 +11,7 @@
 
 - El campo `irg_class_start_date` queda editable desde la admision sin bloqueo especifico por estado.
 - Documentado que la fecha de inicio de clases es independiente del lote y no se sincroniza con `batch_id`.
+- `due_date` ahora se autocompleta automaticamente con `batch_id.end_date` al asignar o cambiar lote.
 
 ## Notes
 
