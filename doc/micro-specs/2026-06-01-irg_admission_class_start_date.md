@@ -27,7 +27,7 @@ El equipo necesita registrar en cada admision una fecha especifica de inicio de 
 - Campo tecnico: `irg_class_start_date`.
 - Etiqueta visible: `Fecha de inicio de clases`.
 - Tipo: `fields.Date`.
-- Comportamiento: `copy=False` y readonly en estado `done`, siguiendo el patron de `admission_date`.
+- Comportamiento: `copy=False`, editable desde la admision y sin relacion ni calculo sobre el lote.
 - Vista heredada: `openeducat_admission.view_op_admission_form`.
 - XPath previsto: insertar el campo despues de `//field[@name='due_date']`, dentro de la pestana `Admission Detail`.
 
@@ -45,7 +45,7 @@ El cambio solo anade una columna nueva opcional en `op.admission`. Las admisione
 - El formulario de admision muestra el campo `Fecha de inicio de clases` despues de `Due Date`.
 - El campo permite seleccionar y guardar una fecha.
 - Al reabrir la admision, la fecha guardada persiste.
-- En admisiones con estado `done`, el campo queda en solo lectura.
+- El campo sigue siendo editable desde la admision aunque la admision este en estado `done`, siempre que el usuario tenga permisos de escritura sobre `op.admission`.
 - El campo no aparece en listados ni en la busqueda de admisiones.
 
 ## 9. Rollback plan

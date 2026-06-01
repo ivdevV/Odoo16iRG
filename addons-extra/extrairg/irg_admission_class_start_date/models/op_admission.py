@@ -8,5 +8,4 @@ class OpAdmission(models.Model):
     irg_class_start_date = fields.Date(
         string='Fecha de inicio de clases',
         copy=False,
-        states={'done': [('readonly', True)]},
     )
