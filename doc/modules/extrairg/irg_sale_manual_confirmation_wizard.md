@@ -37,9 +37,14 @@ Este módulo gestiona la confirmación manual y e-commerce de presupuestos/pedid
   5. **Sincronización de datos:** Actualiza la ficha del partner con los datos básicos de contacto (email, teléfono, móvil) de la admisión si estuviesen vacíos.
 
 ### 4. Soporte y Ruteo de Diplomados
-El módulo incorpora reglas específicas para el procesamiento de **Diplomados** (identificados por productos cuya categoría de producto tiene un código que comienza por `'DI'`, insensible a mayúsculas/minúsculas):
+El módulo incorpora un sistema de detección y procesamiento robusto de **Diplomados** (identificados mediante una estrategia multi-factor):
+*   **Criterio de Identificación:** Se clasifica una línea como Diplomado si se cumple cualquiera de las siguientes condiciones:
+    - La categoría del producto tiene un código que comienza por `'DI'` (insensible a mayúsculas/minúsculas).
+    - La categoría del producto tiene un nombre que contiene la palabra `'DIPLOMADO'` (por ejemplo, "Diplomados Universitarios").
+    - El nombre del producto contiene la palabra `'DIPLOMADO'`.
+*   **Mapeo de Curso Fallback:** Si un producto no está vinculado formalmente a un curso (`op.course`) en la base de datos, el wizard intenta recuperarlo a través del campo `course_id` del presupuesto/pedido de venta (`sale.order`) como fallback, evitando que la previsualización se rompa.
 *   **Detección de Modalidad:** Son clasificados de forma forzada bajo la modalidad HomeClass (`'HC'`), independientemente de otros atributos.
-*   **Formato de Lote Mensual:** Generan lotes mensuales con una estructura de código específica, por ejemplo: `'DIIAHC2606'` (para un Diplomado con código de curso `'IA'` que inicia en Junio de 2026).
+*   **Formato de Lote Mensual:** Generan lotes mensuales con una estructura de código específica, por ejemplo: `'DIIAHC2606'` (para un Diplomado con código de curso `'IA'` que inicia en Junio de 2026). Si la categoría no tiene un código definido pero coincide con la regla de nombre de Diplomados, se autogenera la inicial del lote como `'DI'`.
 *   **Forzado de Plantilla de Correo:** Al ser detectados como modalidad `'HC'`, siempre utilizan la plantilla de correo de bienvenida por defecto (HomeClass), previniendo que se aplique la plantilla online de admisión por error.
 
 ---

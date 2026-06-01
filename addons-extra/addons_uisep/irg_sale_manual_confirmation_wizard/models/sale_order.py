@@ -8,6 +8,37 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    def _is_academic_line(self, line):
+        pt = line.product_template_id
+        if not pt:
+            return False
+        # 1. Standard flags
+        if pt.is_academic_program:
+            return True
+        # 2. Linked to an op.course
+        if self.env['op.course'].search_count([
+            '|',
+            ('product_template_id', '=', pt.id),
+            ('product_template_ids', 'in', pt.id)
+        ]) > 0:
+            return True
+        # 3. Linked to the order's course
+        if line.order_id and line.order_id.course_id:
+            course = line.order_id.course_id
+            if pt.id in (course.product_template_id + course.product_template_ids).ids:
+                return True
+        # 4. Category code starts with DI or category name contains DIPLOMADO (case insensitive)
+        categ = pt.categ_id
+        if categ:
+            if categ.code and categ.code.upper().startswith('DI'):
+                return True
+            if categ.name and 'DIPLOMADO' in categ.name.upper():
+                return True
+        # 5. Product name contains DIPLOMADO (case insensitive)
+        if pt.name and 'DIPLOMADO' in pt.name.upper():
+            return True
+        return False
+
     def action_open_manual_confirmation_wizard(self):
         """Boton manual: abre wizard de validacion antes de confirmar."""
         self.ensure_one()
@@ -15,14 +46,7 @@ class SaleOrder(models.Model):
         self.get_academic_product_template_id()
         
         # Buscar fecha de inicio de la línea de presupuesto
-        academic_lines = self.order_line.filtered(
-            lambda l: (l.product_template_id.is_academic_program and l.product_template_id.recurring_invoice) or
-                      self.env['op.course'].search_count([
-                          '|',
-                          ('product_template_id', '=', l.product_template_id.id),
-                          ('product_template_ids', 'in', l.product_template_id.id)
-                      ]) > 0
-        )
+        academic_lines = self.order_line.filtered(lambda l: self._is_academic_line(l))
         line_start_date = False
         if academic_lines:
             line_start_date = academic_lines[0].start_date_enroller
@@ -53,15 +77,50 @@ class SaleOrder(models.Model):
     def _get_line_modality(self, line):
         if not line:
             return ''
+        
         categ_code = False
-        if line.product_id and line.product_id.categ_id and line.product_id.categ_id.code:
-            categ_code = line.product_id.categ_id.code
-        elif line.product_template_id and line.product_template_id.categ_id and line.product_template_id.categ_id.code:
-            categ_code = line.product_template_id.categ_id.code
-        elif hasattr(line, 'course_id') and line.course_id and line.course_id.product_template_id and line.course_id.product_template_id.categ_id and line.course_id.product_template_id.categ_id.code:
-            categ_code = line.course_id.product_template_id.categ_id.code
+        categ_name = False
+        pt = line.product_template_id
+        if pt and pt.categ_id:
+            categ_code = pt.categ_id.code
+            categ_name = pt.categ_id.name
 
+        is_diplomado = False
         if categ_code and categ_code.upper().startswith('DI'):
+            is_diplomado = True
+        elif categ_name and 'DIPLOMADO' in categ_name.upper():
+            is_diplomado = True
+        elif pt and pt.name and 'DIPLOMADO' in pt.name.upper():
+            is_diplomado = True
+
+        if not is_diplomado:
+            # Fallback check on course categories
+            domain = ['|', 
+                     ('product_template_id', '=', line.product_template_id.id),
+                     ('product_template_ids', 'in', line.product_template_id.id)]
+            course = self.env['op.course'].search(domain, limit=1)
+            if not course and line.order_id and line.order_id.course_id:
+                course = line.order_id.course_id
+            
+            if course:
+                if course.product_template_id and course.product_template_id.categ_id:
+                    ccode = course.product_template_id.categ_id.code
+                    cname = course.product_template_id.categ_id.name
+                    if ccode and ccode.upper().startswith('DI'):
+                        is_diplomado = True
+                    elif cname and 'DIPLOMADO' in cname.upper():
+                        is_diplomado = True
+                if not is_diplomado and hasattr(course, 'product_template_ids') and course.product_template_ids:
+                    for cpt in course.product_template_ids:
+                        if cpt.categ_id:
+                            if cpt.categ_id.code and cpt.categ_id.code.upper().startswith('DI'):
+                                is_diplomado = True
+                                break
+                            if cpt.categ_id.name and 'DIPLOMADO' in cpt.categ_id.name.upper():
+                                is_diplomado = True
+                                break
+
+        if is_diplomado:
             return 'HC'
 
         if not line.product_id:
@@ -249,14 +308,7 @@ class SaleOrder(models.Model):
         # Auto-correct product template flags if academic product is linked to a course but has flags set to False.
         # This guarantees standard admissions logic can find all lines correctly.
         for order in self:
-            academic_lines = order.order_line.filtered(
-                lambda l: (l.product_template_id.is_academic_program and l.product_template_id.recurring_invoice) or
-                          self.env['op.course'].search_count([
-                              '|',
-                              ('product_template_id', '=', l.product_template_id.id),
-                              ('product_template_ids', 'in', l.product_template_id.id)
-                          ]) > 0
-            )
+            academic_lines = order.order_line.filtered(lambda l: self._is_academic_line(l))
             for line in academic_lines:
                 pt = line.product_template_id.sudo()
                 if not pt.is_academic_program or not pt.recurring_invoice:

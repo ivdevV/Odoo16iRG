@@ -45,20 +45,43 @@ class ManualConfirmationWizard(models.TransientModel):
     # Defaults
     # ----------------------------------------------------------------
 
+    def _is_academic_line(self, line):
+        pt = line.product_template_id
+        if not pt:
+            return False
+        # 1. Standard flags
+        if pt.is_academic_program:
+            return True
+        # 2. Linked to an op.course
+        if self.env['op.course'].search_count([
+            '|',
+            ('product_template_id', '=', pt.id),
+            ('product_template_ids', 'in', pt.id)
+        ]) > 0:
+            return True
+        # 3. Linked to the order's course
+        order = line.order_id
+        if order and order.course_id and pt.id in (order.course_id.product_template_id + order.course_id.product_template_ids).ids:
+            return True
+        # 4. Category code starts with DI or category name contains DIPLOMADO (case insensitive)
+        categ = pt.categ_id
+        if categ:
+            if categ.code and categ.code.upper().startswith('DI'):
+                return True
+            if categ.name and 'DIPLOMADO' in categ.name.upper():
+                return True
+        # 5. Product name contains DIPLOMADO (case insensitive)
+        if pt.name and 'DIPLOMADO' in pt.name.upper():
+            return True
+        return False
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
         order_id = res.get('order_id') or self.env.context.get('default_order_id')
         if order_id:
             order = self.env['sale.order'].browse(order_id)
-            academic_lines = order.order_line.filtered(
-                lambda l: (l.product_template_id.is_academic_program and l.product_template_id.recurring_invoice) or
-                          self.env['op.course'].search_count([
-                              '|',
-                              ('product_template_id', '=', l.product_template_id.id),
-                              ('product_template_ids', 'in', l.product_template_id.id)
-                          ]) > 0
-            )
+            academic_lines = order.order_line.filtered(lambda l: self._is_academic_line(l))
             line_start_date = False
             if academic_lines:
                 line_start_date = academic_lines[0].start_date_enroller
@@ -93,14 +116,7 @@ class ManualConfirmationWizard(models.TransientModel):
         if not order:
             return ('', '', '')
 
-        academic_lines = order.order_line.filtered(
-            lambda l: (l.product_template_id.is_academic_program and l.product_template_id.recurring_invoice) or
-                      self.env['op.course'].search_count([
-                          '|',
-                          ('product_template_id', '=', l.product_template_id.id),
-                          ('product_template_ids', 'in', l.product_template_id.id)
-                      ]) > 0
-        )
+        academic_lines = order.order_line.filtered(lambda l: self._is_academic_line(l))
         if not academic_lines:
             return ('', '', '')
 
@@ -150,24 +166,50 @@ class ManualConfirmationWizard(models.TransientModel):
         domain = ['|', 
                  ('product_template_id', '=', line.product_template_id.id),
                  ('product_template_ids', 'in', line.product_template_id.id)]
-        return self.env['op.course'].search(domain, limit=1)
+        course = self.env['op.course'].search(domain, limit=1)
+        if not course and line.order_id and line.order_id.course_id:
+            course = line.order_id.course_id
+        return course
 
     def _detect_line_modalidad(self, line, course_id):
         if not course_id:
+            pt = line.product_template_id
+            is_di = False
+            if pt:
+                if pt.categ_id and ((pt.categ_id.code and pt.categ_id.code.upper().startswith('DI')) or (pt.categ_id.name and 'DIPLOMADO' in pt.categ_id.name.upper())):
+                    is_di = True
+                elif pt.name and 'DIPLOMADO' in pt.name.upper():
+                    is_di = True
+            if is_di:
+                return 'HC'
             return ''
+
         categ_code = False
-        if line.product_id and line.product_id.categ_id and line.product_id.categ_id.code:
+        categ_name = False
+        if line.product_id and line.product_id.categ_id:
             categ_code = line.product_id.categ_id.code
-        elif line.product_template_id and line.product_template_id.categ_id and line.product_template_id.categ_id.code:
+            categ_name = line.product_id.categ_id.name
+        elif line.product_template_id and line.product_template_id.categ_id:
             categ_code = line.product_template_id.categ_id.code
-        elif course_id and course_id.product_template_id and course_id.product_template_id.categ_id and course_id.product_template_id.categ_id.code:
+            categ_name = line.product_template_id.categ_id.name
+        elif course_id and course_id.product_template_id and course_id.product_template_id.categ_id:
             categ_code = course_id.product_template_id.categ_id.code
+            categ_name = course_id.product_template_id.categ_id.name
         elif course_id and hasattr(course_id, 'product_template_ids') and course_id.product_template_ids:
             first_pt = course_id.product_template_ids[0]
-            if first_pt.categ_id and first_pt.categ_id.code:
+            if first_pt.categ_id:
                 categ_code = first_pt.categ_id.code
+                categ_name = first_pt.categ_id.name
 
+        is_diplomado = False
         if categ_code and categ_code.upper().startswith('DI'):
+            is_diplomado = True
+        elif categ_name and 'DIPLOMADO' in categ_name.upper():
+            is_diplomado = True
+        elif line.product_template_id and line.product_template_id.name and 'DIPLOMADO' in line.product_template_id.name.upper():
+            is_diplomado = True
+
+        if is_diplomado:
             return 'HC'
 
         for ptav in line.product_id.product_template_attribute_value_ids:
@@ -193,10 +235,19 @@ class ManualConfirmationWizard(models.TransientModel):
                 profix_01 = course_id.product_template_id.categ_id.code or ''
             elif hasattr(course_id, 'product_template_ids') and course_id.product_template_ids:
                 profix_01 = course_id.product_template_ids[0].categ_id.code or ''
+        
+        if not profix_01:
+            categ_name = line.product_id.categ_id.name or ''
+            if not categ_name and line.product_template_id.categ_id:
+                categ_name = line.product_template_id.categ_id.name or ''
+            if not categ_name and course_id.product_template_id.categ_id:
+                categ_name = course_id.product_template_id.categ_id.name or ''
+            if categ_name and 'DIPLOMADO' in categ_name.upper():
+                profix_01 = 'DI'
 
         # Detect if bonificado (price <= 0) - ONLY FOR ONL modality
         is_bonificado = line.price_unit <= 0 or line.price_subtotal <= 0
-        if is_bonificado and modality == 'ONL' and profix_01.startswith('M'):
+        if is_bonificado and modality == 'ONL' and profix_01 and profix_01.startswith('M'):
             profix_01 = 'MB'
 
         course_code = course_id.code or ''
