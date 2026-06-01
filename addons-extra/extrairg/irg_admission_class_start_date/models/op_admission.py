@@ -18,13 +18,13 @@ class OpAdmission(models.Model):
     @api.model
     def create(self, vals):
         record = super().create(vals)
-        if vals.get('batch_id') and 'due_date' not in vals and record.batch_id and record.batch_id.end_date:
+        if vals.get('batch_id') and record.batch_id and record.batch_id.end_date:
             record.due_date = record.batch_id.end_date
         return record
 
     def write(self, vals):
         res = super().write(vals)
-        if 'batch_id' in vals and 'due_date' not in vals:
+        if 'batch_id' in vals:
             for record in self.filtered(lambda r: r.batch_id and r.batch_id.end_date):
                 record.due_date = record.batch_id.end_date
         return res

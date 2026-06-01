@@ -68,8 +68,8 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ## Consideraciones de sincronizacion de vencimiento
 
 - En formulario (`onchange` de `batch_id`), si el lote tiene `end_date`, `due_date` se sincroniza automaticamente con ese valor.
-- En `create` y `write`, la sincronizacion automatica se aplica cuando se asigna/cambia `batch_id` y no se envia `due_date` explicitamente.
-- Si un proceso envia `due_date` de forma explicita junto con `batch_id` en `create/write`, se respeta el valor recibido.
+- En `create` y `write`, la sincronizacion automatica se aplica siempre que se asigne/cambie `batch_id`, incluso en flujos manuales.
+- Si se informa `batch_id`, el valor final de `due_date` queda forzado a `batch_id.end_date`.
 
 ## Rollback
 

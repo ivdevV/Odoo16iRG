@@ -49,6 +49,7 @@ El cambio solo anade una columna nueva opcional en `op.admission`. Las admisione
 - Al reabrir la admision, la fecha guardada persiste.
 - El campo sigue siendo editable desde la admision aunque la admision este en estado `done`, siempre que el usuario tenga permisos de escritura sobre `op.admission`.
 - Al asignar o cambiar `batch_id`, `due_date` se actualiza automaticamente con `batch_id.end_date`.
+- La sincronizacion de `due_date` con el lote aplica tambien en procesos manuales.
 - El campo no aparece en listados ni en la busqueda de admisiones.
 
 ## 9. Rollback plan
