@@ -11,7 +11,7 @@
 
 ## ¿Qué hace este módulo?
 
-Este módulo gestiona la confirmación manual y e-commerce de presupuestos/pedidos de venta de forma controlada y segura, asegurando la consistencia de las fechas de admisión, y proporcionando salvaguardas para la creación de usuarios de portal y ruteo de correos de bienvenida según modalidad.
+Este módulo gestiona la confirmación manual y e-commerce de presupuestos/pedidos de venta de forma controlada y segura, asegurando la consistencia de las fechas de admisión, y proporcionando salvaguardas para la creación de usuarios de portal, soporte y ruteo de correos de bienvenida según modalidad.
 
 ---
 
@@ -23,8 +23,8 @@ Este módulo gestiona la confirmación manual y e-commerce de presupuestos/pedid
 
 ### 2. Ruteo de Correo de Bienvenida Post-Confirmación
 * Ejecuta la lógica personalizada de ruteo de plantillas de correo de bienvenida de admisión:
-  - Si el código de lote contiene `"ONL"` -> plantilla de bienvenida Online.
-  - En otros casos -> plantilla por defecto.
+  - Si el código de lote contiene `"ONL"` (y no corresponde a un diplomado) -> plantilla de bienvenida Online.
+  - En otros casos -> plantilla por defecto (HomeClass).
 * Las plantillas son configurables globalmente en el singleton de configuración `auto.admission.required`.
 
 ### 3. Salvaguarda de Creación y Vinculación de Usuario Portal (`_ensure_portal_user`)
@@ -36,31 +36,37 @@ Este módulo gestiona la confirmación manual y e-commerce de presupuestos/pedid
   4. **Si no existe usuario en el sistema:** Crea un nuevo usuario portal (`base.group_portal` e `is_student=True`) asociado al partner.
   5. **Sincronización de datos:** Actualiza la ficha del partner con los datos básicos de contacto (email, teléfono, móvil) de la admisión si estuviesen vacíos.
 
+### 4. Soporte y Ruteo de Diplomados
+El módulo incorpora reglas específicas para el procesamiento de **Diplomados** (identificados por productos cuya categoría de producto tiene un código que comienza por `'DI'`, insensible a mayúsculas/minúsculas):
+*   **Detección de Modalidad:** Son clasificados de forma forzada bajo la modalidad HomeClass (`'HC'`), independientemente de otros atributos.
+*   **Formato de Lote Mensual:** Generan lotes mensuales con una estructura de código específica, por ejemplo: `'DIIAHC2606'` (para un Diplomado con código de curso `'IA'` que inicia en Junio de 2026).
+*   **Forzado de Plantilla de Correo:** Al ser detectados como modalidad `'HC'`, siempre utilizan la plantilla de correo de bienvenida por defecto (HomeClass), previniendo que se aplique la plantilla online de admisión por error.
+
 ---
 
 ## Modelos Modificados
 
 | Modelo | Tipo | Campos / Métodos principales | Descripción |
 | :--- | :--- | :--- | :--- |
-| `op.admission` | Herencia | `enroll_student()`, `_ensure_portal_user()`, `send_mail()`, `submit_form()`, `get_student_vals()` | Incorpora la salvaguarda de creación de usuarios portal antes de procesar el enrolado, gestiona el routing del correo de bienvenida y asegura la persistencia de las fechas de nacimiento y admisión. |
+| `op.admission` | Herencia | `enroll_student()`, `_ensure_portal_user()`, `send_mail()`, `submit_form()`, `get_student_vals()` | Incorpora la salvaguarda de creación de usuarios portal, gestiona el ruteo del correo de bienvenida (forzando plantillas default para diplomados) y asegura la persistencia de fechas de nacimiento y admisión. |
+| `sale.order` | Herencia | `_get_line_modality()` | Permite identificar la modalidad de una línea y añade compatibilidad con diplomados (forzando 'HC' para categorías con código que empieza por 'DI'). |
+| `irg.manual.confirmation.wizard` | Nuevo Modelo (Wizard) | `default_get()`, `_compute_preview()`, `_build_preview()`, `_detect_line_modalidad()`, `_build_line_batch_code_preview()`, `action_confirm()` | Interfaz gráfica y lógica de validación de pre-confirmación que calcula la modalidad detectada y el lote correspondiente (soportando mensual trimestral y diplomados). |
 
 ---
 
 ## Pruebas y Test Suite
 
-El módulo dispone de una suite de pruebas unitarias automatizadas que se encuentra en la siguiente ruta:
-* [test_portal_user.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_portal_user.py)
+El módulo dispone de dos suites de pruebas unitarias/de integración automatizadas:
 
-La suite de pruebas valida la salvaguarda cubriendo 3 casos principales:
+1.  **Salvaguardas de Portal Users (`test_portal_user.py`):**
+    *   [test_portal_user.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_portal_user.py)
+    *   **`test_enroll_student_creates_portal_user_if_missing`:** Comprueba la creación de un nuevo usuario de portal para alumnos sin credenciales.
+    *   **`test_enroll_student_links_existing_portal_user`:** Comprueba la vinculación sin duplicidad con usuarios de portal preexistentes en el partner.
+    *   **`test_enroll_student_handles_duplicate_login`:** Comprueba la resolución de conflictos en colisiones de email/login vinculando al partner adecuado.
 
-1. **`test_enroll_student_creates_portal_user_if_missing`:**
-   - **Objetivo:** Comprobar que si se ejecuta el proceso de enrolado con un alumno pre-creado que carece de usuario (`user_id = False`), se le crea automáticamente un usuario de portal con el login correspondiente y se vincula correctamente.
-
-2. **`test_enroll_student_links_existing_portal_user`:**
-   - **Objetivo:** Comprobar que si el partner del alumno ya posee un usuario registrado en el sistema pero el alumno no estaba formalmente vinculado a él, el proceso de enrolado vincula al alumno con dicho usuario preexistente sin intentar duplicarlo.
-
-3. **`test_enroll_student_handles_duplicate_login`:**
-   - **Objetivo:** Validar el comportamiento ante colisiones de login. Si ya existe un usuario registrado con el email del aplicante vinculado a otro partner, el módulo reasigna el partner de la admisión y del estudiante al del usuario existente para mantener consistencia y evitar fallos por restricción única de login en Odoo.
+2.  **Soporte de Diplomados (`test_diplomados_wizard.py`):**
+    *   [test_diplomados_wizard.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/scratch/test_diplomados_wizard.py)
+    *   **Caso de Validación de Asistente:** Crea una categoría temporal con código `'DI'` y un producto/curso con código `'IA'` que inicia en Junio de 2026. Valida que el asistente de confirmación manual detecta correctamente la modalidad como `'HC'` y genera la vista previa de lote `'DIIAHC2606'` de forma exitosa.
 
 ---
 
