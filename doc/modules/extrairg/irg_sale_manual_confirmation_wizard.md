@@ -5,7 +5,7 @@
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** Instituto Raimon Gaja
-**Depende de:** `sale`, `isep_openeducat_sale`, `irg_openeducat_sale_lote_custom`, `irg_elearning_correo_bienvenida_selector`, `isep_sale_order_admissions`, `isep_admission_from_student_field`
+**Depende de:** `sale`, `isep_openeducat_sale`, `irg_openeducat_sale_lote_custom`, `irg_elearning_correo_bienvenida_selector`, `isep_sale_order_admissions`, `isep_admission_from_student_field`, `irg_admission_class_start_date`
 
 ---
 
@@ -47,6 +47,9 @@ El módulo incorpora un sistema de detección y procesamiento robusto de **Diplo
 *   **Formato de Lote Mensual:** Generan lotes mensuales con una estructura de código específica, por ejemplo: `'DIIAHC2606'` (para un Diplomado con código de curso `'IA'` que inicia en Junio de 2026). Si la categoría no tiene un código definido pero coincide con la regla de nombre de Diplomados, se autogenera la inicial del lote como `'DI'`.
 *   **Forzado de Plantilla de Correo:** Al ser detectados como modalidad `'HC'`, siempre utilizan la plantilla de correo de bienvenida por defecto (HomeClass), previniendo que se aplique la plantilla online de admisión por error.
 
+### 5. Autocompletado de Fecha de Inicio de Clases
+*   Al confirmar un pedido de venta (ya sea mediante confirmación manual a través del wizard o por e-commerce), el módulo sincroniza la fecha de inicio de la línea de producto (`start_date_enroller` en `sale.order.line`) con la fecha de inicio de clases (`irg_class_start_date`) de la admisión (`op.admission`) generada.
+
 ---
 
 ## Modelos Modificados
@@ -54,7 +57,7 @@ El módulo incorpora un sistema de detección y procesamiento robusto de **Diplo
 | Modelo | Tipo | Campos / Métodos principales | Descripción |
 | :--- | :--- | :--- | :--- |
 | `op.admission` | Herencia | `enroll_student()`, `_ensure_portal_user()`, `send_mail()`, `submit_form()`, `get_student_vals()` | Incorpora la salvaguarda de creación de usuarios portal, gestiona el ruteo del correo de bienvenida (forzando plantillas default para diplomados) y asegura la persistencia de fechas de nacimiento y admisión. |
-| `sale.order` | Herencia | `_get_line_modality()` | Permite identificar la modalidad de una línea y añade compatibilidad con diplomados (forzando 'HC' para categorías con código que empieza por 'DI'). |
+| `sale.order` | Herencia | `_get_line_modality()`, `_create_or_get_admission()` | Permite identificar la modalidad de una línea y añade compatibilidad con diplomados (forzando 'HC' para categorías con código que empieza por 'DI'). Además, propaga el precio de la línea a `fees`, la fecha de admisión y sincroniza la fecha de inicio de la línea (`start_date_enroller`) con la fecha de inicio de clases (`irg_class_start_date`) en la admisión. |
 | `irg.manual.confirmation.wizard` | Nuevo Modelo (Wizard) | `default_get()`, `_compute_preview()`, `_build_preview()`, `_detect_line_modalidad()`, `_build_line_batch_code_preview()`, `action_confirm()` | Interfaz gráfica y lógica de validación de pre-confirmación que calcula la modalidad detectada y el lote correspondiente (soportando mensual trimestral y diplomados). |
 
 ---
@@ -72,6 +75,10 @@ El módulo dispone de dos suites de pruebas unitarias/de integración automatiza
 2.  **Soporte de Diplomados (`test_diplomados_wizard.py`):**
     *   [test_diplomados_wizard.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/scratch/test_diplomados_wizard.py)
     *   **Caso de Validación de Asistente:** Crea una categoría temporal con código `'DI'` y un producto/curso con código `'IA'` que inicia en Junio de 2026. Valida que el asistente de confirmación manual detecta correctamente la modalidad como `'HC'` y genera la vista previa de lote `'DIIAHC2606'` de forma exitosa.
+
+3.  **Sincronización de Fecha de Inicio de Clases (`test_class_start_date.py`):**
+    *   [test_class_start_date.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/scratch/test_class_start_date.py)
+    *   **Caso de Validación de Sincronización:** Crea un presupuesto de venta con una línea académica que tiene asignada una fecha en `start_date_enroller`. Al confirmar la orden, valida que la admisión generada o recuperada contenga dicho valor exacto en el campo `irg_class_start_date` en la base de datos local.
 
 ---
 

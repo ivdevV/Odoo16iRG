@@ -263,6 +263,19 @@ class ManualConfirmationWizard(models.TransientModel):
             if eff_date.month in (7, 8) or (eff_date.month == 9 and eff_date.day == 1):
                 eff_date = eff_date.replace(month=9, day=1)
 
+        is_diplomado = False
+        categ = line.product_id.categ_id
+        if not categ and course_id.product_template_id:
+            categ = course_id.product_template_id.categ_id
+        if categ:
+            if categ.code and (categ.code.upper().startswith('DI') or categ.code.upper() == 'D'):
+                is_diplomado = True
+            elif categ.name and 'DIPLOMADO' in categ.name.upper():
+                is_diplomado = True
+        
+        if is_diplomado:
+            profix_01 = 'DI'
+
         # Si el modulo quarterly esta activo y modalidad = ONL, preview trimestral
         ad = self.env['auto.admission.required'].search([], limit=1)
         quarterly_active = bool(ad and 'quarterly_online_enabled' in ad._fields and ad.quarterly_online_enabled)

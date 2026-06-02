@@ -33,6 +33,7 @@
         'irg_elearning_correo_bienvenida_selector',
         'isep_sale_order_admissions',
         'isep_admission_from_student_field',
+        'irg_admission_class_start_date',
     ],
     'data': [
         'security/ir.model.access.csv',

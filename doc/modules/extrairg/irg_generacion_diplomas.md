@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.6
+**Versión:** 16.0.1.0.8
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,18 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.8 (V3.0)
+- **Incremento de Tamaños de Fuente y Espaciado en Diplomas Físicos**:
+  - **Fuentes de Cabecera**: Se incrementó el tamaño de la fuente para las líneas introductorias/cabecera a `sf(10.5)` (anteriormente `sf(9.5)`).
+  - **Fuentes de Cuerpo**: Se incrementó el tamaño de la fuente para el cuerpo de texto legal a `sf(9.5)` (anteriormente `sf(8.5)`).
+  - **Espaciado de Línea (body_line_gap)**: Se incrementó el gap entre líneas del cuerpo de texto legal a `sp(14)` (anteriormente `sp(13)`).
+  - Estos ajustes se aplican condicionalmente en `diploma_pdf_report.py` para diplomas de tipo físico (`diploma_type == 'physical'`), mejorando la legibilidad e impacto visual.
+
+### Versión 16.0.1.0.7 (V2.9)
+- **Alineación de Columnas de Título contra el Gutter Central en Diplomas Físicos**:
+  - **Alineación contra el Gutter**: En diplomas físicos (`diploma_type == 'physical'`), se modificó el posicionamiento horizontal del título y la cabecera (intro) para alinearlos contra el canal central (gutter). La columna izquierda se sitúa en `(left_col_x + col_width) - left_title_width` (alineada a la derecha de su espacio) y la columna derecha en `right_col_x` (alineada a la izquierda de su espacio).
+  - **Prevención de Ensanchamiento del Gap**: Esto impide que el centrado individual de los bloques de texto ensanche el gap central, asegurando que la separación central entre columnas se mantenga óptima y no se vea afectada por el tamaño de los títulos.
 
 ### Versión 16.0.1.0.6 (V2.8)
 - **Refinamiento de Fuentes, Espaciados y Ancho de Títulos en Diploma Físico**:

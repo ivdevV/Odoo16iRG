@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_center_form_documents_consistency" model="ir.ui.view">
+        <field name="name">practice.center.form.documents.consistency</field>
+        <field name="model">practice.center</field>
+        <field name="inherit_id" ref="irg_practice_center_documents.view_practice_center_form_documents"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='document_ids' and not(@widget)]" position="replace">
+                <field name="document_display_ids" readonly="1" nolabel="1">
+                    <tree create="0" edit="0" delete="0">
+                        <field name="name" string="Document Name"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+</odoo>

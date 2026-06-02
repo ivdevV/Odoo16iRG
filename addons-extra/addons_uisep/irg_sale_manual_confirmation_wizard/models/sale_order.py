@@ -194,6 +194,9 @@ class SaleOrder(models.Model):
                 )
                 vals['birth_date'] = default_birth
 
+            if line.start_date_enroller:
+                vals['irg_class_start_date'] = line.start_date_enroller
+
             if vals:
                 admission.write(vals)
         return admission
