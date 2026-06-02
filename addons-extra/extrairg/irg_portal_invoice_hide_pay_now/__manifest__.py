@@ -15,6 +15,7 @@
     'depends': [
         'account',
         'account_payment',
+        'account_payment_invoice_online_payment_patch',
     ],
     'data': [
         'views/portal_templates.xml',

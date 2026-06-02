@@ -20,4 +20,23 @@
         </xpath>
     </template>
 
+    <template id="portal_my_invoices_hide_pay_now_patch"
+              name="Hide Pay Now from Invoices List (Patch)"
+              inherit_id="account_payment_invoice_online_payment_patch.portal_my_invoices_payment">
+        <xpath expr="//t[@t-foreach='invoices']/tr/td[last()]" position="replace">
+            <td class="text-center"></td>
+        </xpath>
+    </template>
+
+    <template id="portal_invoice_page_hide_pay_now_patch"
+              name="Hide Pay Now from Invoice Detail (Patch)"
+              inherit_id="account_payment_invoice_online_payment_patch.portal_invoice_page_inherit_payment">
+        <xpath expr="//div[@id='portal_pay']" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+        <xpath expr="//t[@t-call='portal.portal_record_sidebar']//div[hasclass('d-grid')]//a[starts-with(@href, '#')]" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
+    </template>
+
 </odoo>
