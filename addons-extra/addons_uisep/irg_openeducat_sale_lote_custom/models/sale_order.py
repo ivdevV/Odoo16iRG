@@ -139,8 +139,18 @@ class SaleOrder(models.Model):
         prefix_011 = course_id.code or ''       
         op_batch = self.env['op.batch']
         
-        if profix_01 and profix_01.upper().startswith('DI'):
-            profix_01 = 'D'
+        is_diplomado = False
+        categ = matching_line.product_id.categ_id if matching_line else False
+        if not categ and course_id.product_template_id:
+            categ = course_id.product_template_id.categ_id
+        if categ:
+            if categ.code and (categ.code.upper().startswith('DI') or categ.code.upper() == 'D'):
+                is_diplomado = True
+            elif categ.name and 'DIPLOMADO' in categ.name.upper():
+                is_diplomado = True
+        
+        if is_diplomado:
+            profix_01 = 'DI'
 
         # Constructed code without prefix_06
         code = profix_01 + prefix_011 + prefix_02 +  prefix_05 + prefix_04

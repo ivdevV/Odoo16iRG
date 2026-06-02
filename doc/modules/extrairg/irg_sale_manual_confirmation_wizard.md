@@ -44,7 +44,7 @@ El módulo incorpora un sistema de detección y procesamiento robusto de **Diplo
     - El nombre del producto contiene la palabra `'DIPLOMADO'`.
 *   **Mapeo de Curso Fallback:** Si un producto no está vinculado formalmente a un curso (`op.course`) en la base de datos, el wizard intenta recuperarlo a través del campo `course_id` del presupuesto/pedido de venta (`sale.order`) como fallback, evitando que la previsualización se rompa.
 *   **Detección de Modalidad:** Son clasificados de forma forzada bajo la modalidad HomeClass (`'HC'`), independientemente de otros atributos.
-*   **Formato de Lote Mensual:** Generan lotes mensuales con una estructura de código específica, por ejemplo: `'DIAHC2606'` (para un Diplomado con código de curso `'IA'` que inicia en Junio de 2026). Si la categoría no tiene un código definido pero coincide con la regla de nombre de Diplomados, se autogenera la inicial del lote como `'D'`.
+*   **Formato de Lote Mensual:** Generan lotes mensuales con una estructura de código específica, por ejemplo: `'DIIAHC2606'` (para un Diplomado con código de curso `'IA'` que inicia en Junio de 2026). Si la categoría no tiene un código definido pero coincide con la regla de nombre de Diplomados, se autogenera la inicial del lote como `'DI'`.
 *   **Forzado de Plantilla de Correo:** Al ser detectados como modalidad `'HC'`, siempre utilizan la plantilla de correo de bienvenida por defecto (HomeClass), previniendo que se aplique la plantilla online de admisión por error.
 
 ### 5. Autocompletado de Fecha de Inicio de Clases
@@ -74,7 +74,7 @@ El módulo dispone de dos suites de pruebas unitarias/de integración automatiza
 
 2.  **Soporte de Diplomados (`test_diplomados_wizard.py`):**
     *   [test_diplomados_wizard.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/scratch/test_diplomados_wizard.py)
-    *   **Caso de Validación de Asistente:** Crea una categoría temporal con código `'DI'` y un producto/curso con código `'IA'` que inicia en Junio de 2026. Valida que el asistente de confirmación manual detecta correctamente la modalidad como `'HC'` y genera la vista previa de lote `'DIAHC2606'` de forma exitosa.
+    *   **Caso de Validación de Asistente:** Crea una categoría temporal con código `'DI'` y un producto/curso con código `'IA'` que inicia en Junio de 2026. Valida que el asistente de confirmación manual detecta correctamente la modalidad como `'HC'` y genera la vista previa de lote `'DIIAHC2606'` de forma exitosa.
 
 3.  **Sincronización de Fecha de Inicio de Clases (`test_class_start_date.py`):**
     *   [test_class_start_date.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/scratch/test_class_start_date.py)
