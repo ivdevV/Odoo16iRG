@@ -76,6 +76,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_language_nav](./irg_language_nav.md) | Selector de idioma con ES/EN primero | — | Instalable |
 | [irg_mail_n8n_webhook](./irg_mail_n8n_webhook.md) | Redirige correo saliente a n8n con cola de reintentos | `irg.mail.n8n.delivery` (nuevo), `irg.mail.n8n.service`, `mail.mail`, `base.automation`, `res.config.settings` | Instalable |
 | [irg_op_course_modality](./irg_op_course_modality.md) | Modalidades múltiples de impartición en cursos | `op.course`, `irg.course.modality` | Instalable |
+| [irg_openeducat_sale_lote_custom](./irg_openeducat_sale_lote_custom.md) | Generación personalizada de lotes académicos por categoría, curso, modalidad y fecha | `sale.order`, `op.batch` | Instalado |
 | [irg_op_course_subjects_manage](./irg_op_course_subjects_manage.md) | Gestión de asignaturas desde el formulario del curso | `op.course` | Instalable |
 | [irg_op_subject_multi_course](./irg_op_subject_multi_course.md) | Asignatura vinculable a múltiples cursos | `op.subject` | Instalable |
 | [irg_op_subject_visibility](./irg_op_subject_visibility.md) | Visibilidad de asignatura por lote | `op.subject`, `slide.channel` | Instalable |

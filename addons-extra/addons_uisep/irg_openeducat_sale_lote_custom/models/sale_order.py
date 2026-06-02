@@ -151,6 +151,7 @@ class SaleOrder(models.Model):
         
         if is_diplomado:
             profix_01 = 'DI'
+            prefix_02 = 'HC'
 
         # Constructed code without prefix_06
         code = profix_01 + prefix_011 + prefix_02 +  prefix_05 + prefix_04
