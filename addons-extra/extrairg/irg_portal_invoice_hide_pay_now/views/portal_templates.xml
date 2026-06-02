@@ -4,7 +4,7 @@
     <template id="portal_my_invoices_hide_pay_now"
               name="Hide Pay Now from Invoices List"
               inherit_id="account_payment.portal_my_invoices_payment">
-        <xpath expr="//t[@t-foreach='invoices']/tr/td[last()]" position="replace">
+        <xpath expr="//t[@t-foreach='invoices']/tr/td[count(t)=2]" position="replace">
             <td class="text-center"></td>
         </xpath>
     </template>
@@ -23,7 +23,7 @@
     <template id="portal_my_invoices_hide_pay_now_patch"
               name="Hide Pay Now from Invoices List (Patch)"
               inherit_id="account_payment_invoice_online_payment_patch.portal_my_invoices_payment">
-        <xpath expr="//t[@t-foreach='invoices']/tr/td[last()]" position="replace">
+        <xpath expr="//t[@t-foreach='invoices']/tr/td[count(t)=2]" position="replace">
             <td class="text-center"></td>
         </xpath>
     </template>
