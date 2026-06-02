@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="portal_my_invoices_hide_pay_now"
+              name="Hide Pay Now from Invoices List"
+              inherit_id="account_payment.portal_my_invoices_payment">
+        <xpath expr="//t[@t-foreach='invoices']/tr/td[last()]" position="replace">
+            <td class="text-center"></td>
+        </xpath>
+    </template>
+
+    <template id="portal_invoice_page_hide_pay_now"
+              name="Hide Pay Now from Invoice Detail"
+              inherit_id="account_payment.portal_invoice_page_inherit_payment">
+        <xpath expr="//t[@t-call='portal.portal_record_sidebar']//div[hasclass('o_download_pdf')]/preceding-sibling::div[hasclass('d-grid')]" position="replace">
+            <div class="d-grid"></div>
+        </xpath>
+        <xpath expr="//div[@id='portal_pay']" position="replace">
+            <div id="portal_pay" style="display:none;"></div>
+        </xpath>
+    </template>
+
+</odoo>
