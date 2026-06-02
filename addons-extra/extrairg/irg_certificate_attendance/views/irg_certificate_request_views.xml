@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_irg_certificate_request_form_attendance" model="ir.ui.view">
+            <field name="name">irg.certificate.request.form.attendance</field>
+            <field name="model">irg.certificate.request</field>
+            <field name="inherit_id" ref="irg_gradebook_certificates.view_irg_certificate_request_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='document_type']" position="after">
+                    <field name="session_id"
+                           attrs="{
+                               'invisible': [('document_type', '!=', 'attendance')],
+                               'required': [('document_type', '=', 'attendance')],
+                               'readonly': [('state', '!=', 'draft')]
+                           }"
+                           domain="[('batch_id', '=', batch_id)]"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
