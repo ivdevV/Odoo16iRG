@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="auto.admission.required" name="action_irg_ensure_diplomado_welcome_template" eval="[[]]"/>
+</odoo>
