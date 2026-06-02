@@ -11,7 +11,8 @@ Crear un modulo nuevo en `addons-extra/extrairg/` para rutear los correos de bie
 - Heredar `op.admission.send_mail()` para conservar el comportamiento de `irg_sale_manual_confirmation_wizard` cuando `manual_wizard_enabled` esta activo.
 - Detectar Diplomados cuando el codigo de lote empieza por `DI` o cuando la categoria del curso/producto empieza por `DI`.
 - Resolver plantilla de Diplomados en este orden: configuracion, plantilla copiada del modulo, plantilla por defecto existente.
-- Crear una copia editable de `isep_elearning_custom.email_op_admission_confirm` en `post_init_hook` con external id propio, sin sobrescribirla en actualizaciones, y asignarla en la configuracion si no hay plantilla de Diplomados definida.
+- Crear una copia editable de `isep_elearning_custom.email_op_admission_confirm` con external id propio, sin sobrescribirla en actualizaciones, y asignarla en la configuracion si no hay plantilla de Diplomados definida.
+- Asegurar que esa creacion/asignacion se ejecuta tanto en instalacion como en actualizacion del modulo.
 - Anadir pruebas `TransactionCase` para helpers de deteccion y resolucion de plantilla.
 
 ## Fuera De Alcance

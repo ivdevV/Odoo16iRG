@@ -2,7 +2,7 @@
 
 {
     'name': 'IRG Welcome Diplomado Template Selector',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Education',
     'summary': 'Ruteo de bienvenida para Diplomados con plantilla editable propia',
     'author': 'Instituto Raimon Gaja',
@@ -13,6 +13,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/auto_admission_required_views.xml',
+        'data/welcome_template_diplomado.xml',
     ],
     'post_init_hook': 'post_init_hook',
     'installable': True,
