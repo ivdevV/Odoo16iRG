@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="portal_certificate_new_attendance" inherit_id="irg_campus_certificates_portal.portal_certificate_new_override">
+            <xpath expr="//div[@id='gradebook_block']" position="after">
+                <!-- Bloque del selector de sesión para certificado de asistencia -->
+                <div class="mb-4" id="session_block" style="display: none;">
+                    <label class="form-label fw-bold text-dark">
+                        Sesión de Clase en Directo <span class="text-danger">*</span>
+                    </label>
+                    <p class="text-muted small mb-2">Selecciona la sesión a la que asististe.</p>
+                    <select name="session_id" id="session_select" class="form-select rounded-3 py-2">
+                        <option value="">-- Selecciona una sesión --</option>
+                    </select>
+                </div>
+            </xpath>
+
+            <xpath expr="//script[contains(text(), 'updateForm')]" position="after">
+                <script type="text/javascript">
+                    //<![CDATA[
+                    (function() {
+                        var docTypeSel = document.getElementById('document_type_select');
+                        var gbSel = document.getElementById('gradebook_select');
+                        var sessionBlock = document.getElementById('session_block');
+                        var sessionSel = document.getElementById('session_select');
+
+                        function loadSessions() {
+                            if (!docTypeSel || !gbSel || !sessionBlock || !sessionSel) return;
+                            var docType = docTypeSel.value;
+                            var gbId = gbSel.value;
+
+                            if (docType === 'attendance' && gbId) {
+                                fetch('/campus/certificates/sessions', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        jsonrpc: "2.0",
+                                        method: "call",
+                                        params: {
+                                            gradebook_id: parseInt(gbId)
+                                        }
+                                    })
+                                })
+                                .then(function(res) { return res.json(); })
+                                .then(function(data) {
+                                    sessionSel.innerHTML = '<option value="">-- Selecciona una sesión --</option>';
+                                    if (data.result && data.result.sessions) {
+                                        data.result.sessions.forEach(function(s) {
+                                            var opt = document.createElement('option');
+                                            opt.value = s.id;
+                                            var dateStr = s.date;
+                                            if (dateStr) {
+                                                var parts = dateStr.split('-');
+                                                if (parts.length === 3) {
+                                                    dateStr = parts[2] + '/' + parts[1] + '/' + parts[0];
+                                                }
+                                            }
+                                            opt.textContent = (dateStr ? dateStr + ' — ' : '') + s.class_title + ' (' + s.subject_name + ')';
+                                            sessionSel.appendChild(opt);
+                                        });
+                                    }
+                                    sessionBlock.style.display = '';
+                                    sessionSel.setAttribute('required', 'required');
+                                })
+                                .catch(function(err) { console.error("Error al cargar sesiones:", err); });
+                            } else {
+                                sessionBlock.style.display = 'none';
+                                sessionSel.removeAttribute('required');
+                                sessionSel.value = '';
+                            }
+                        }
+
+                        if (docTypeSel) docTypeSel.addEventListener('change', loadSessions);
+                        if (gbSel) gbSel.addEventListener('change', loadSessions);
+
+                        setTimeout(loadSessions, 250);
+                    })();
+                    //]]>
+                </script>
+            </xpath>
+        </template>
+    </data>
+</odoo>

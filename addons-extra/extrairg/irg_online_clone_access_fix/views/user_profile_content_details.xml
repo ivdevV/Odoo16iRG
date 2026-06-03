@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="user_profile_online_clone_access_fix"
+              name="IRG Online Clone Access Fix - Portal Subject Tiles"
+              inherit_id="irg_subject_fix.user_profile_content_details_irg_fix"
+              priority="24">
+        <xpath expr="//div[@t-foreach='subject_ids' and @t-as='subject']" position="replace">
+            <div class="col-12 col-lg-6" t-foreach="subject_ids" t-as="subject">
+                <div class="card mb-2">
+                    <t t-set="slide_channel" t-value="subject.irg_get_effective_slide_channel(user.partner_id, student_admission)"/>
+                    <t t-set="slide_id" t-value="slide_channel.id if slide_channel else False"/>
+                    <t t-set="can_be_taken" t-value="subject.can_be_taken(user.id)"/>
+                    <div class="card-body o_wprofile_slides_course_card_body p-0 d-flex"
+                         t-attf-style="#{'pointer-events: none;cursor: default;' if not can_be_taken or not (slide_id in slide_channel_active_ids) else ''}"
+                         t-attf-onclick="#{'location.href=\'/slides/%s\'' % slide_id if can_be_taken and (slide_id in slide_channel_active_ids) else ''}">
+                        <div class="o_wslides_background_image ps-5 pe-4 rounded-start" t-if="icon_course"
+                             t-attf-style="#{'filter: grayscale(0.7);' if not can_be_taken or not (slide_id in slide_channel_active_ids) else ''} height: 72px; background-image: url(#{website.image_url(icon_course, 'image')});"/>
+                        <div class="p-2 w-100" style="font-size: 13px;font-weight: 600;">
+                            <span class="mt-0 mb-1" t-field="subject.name"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

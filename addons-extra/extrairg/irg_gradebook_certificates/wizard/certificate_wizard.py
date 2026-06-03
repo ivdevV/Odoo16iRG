@@ -36,6 +36,18 @@ class IrgCertificateWizard(models.TransientModel):
         related='gradebook_student_id.course_id.name',
         readonly=True,
     )
+    document_type = fields.Selection(
+        selection=[
+            ('gradebook', 'Certificado de Notas Completo'),
+            ('gradebook_partial', 'Certificado de Notas Parcial'),
+            ('diploma', 'Diploma'),
+            ('attendance', 'Certificado de Asistencia'),
+            ('enrollment', 'Certificado de Matrícula'),
+        ],
+        string='Tipo de Documento',
+        default='gradebook',
+        required=True,
+    )
     certificate_type = fields.Selection(
         selection=CERTIFICATE_TYPES,
         string='Tipo de Certificado',
@@ -83,11 +95,20 @@ class IrgCertificateWizard(models.TransientModel):
                     _('El tipo de envío es obligatorio para certificados físicos.')
                 )
 
+    @api.constrains('document_type', 'gradebook_student_id')
+    def _check_gradebook_state(self):
+        for rec in self:
+            if rec.document_type in ('gradebook', 'diploma') and rec.gradebook_student_id.state != 'done':
+                raise ValidationError(
+                    _("Para solicitar un Certificado de Notas Completo o un Diploma, la libreta académica debe estar finalizada (estado 'Finalizado').")
+                )
+
     def action_generate(self):
         """Create the certificate, generate the PDF and return a download action."""
         self.ensure_one()
         cert = self.env['irg.certificate.request'].create({
             'gradebook_student_id': self.gradebook_student_id.id,
+            'document_type': self.document_type,
             'certificate_type': self.certificate_type,
             'shipping_type': self.shipping_type or False,
             'custom_description': self.custom_description or False,

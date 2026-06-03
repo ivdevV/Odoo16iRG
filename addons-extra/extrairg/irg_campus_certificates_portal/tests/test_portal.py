@@ -14,6 +14,12 @@ class TestCampusCertificatesPortal(HttpCase):
         leftover_users = cls.env['res.users'].sudo().search([('login', 'in', ('student_portal_certificates', 'other_student'))])
         leftover_partners = leftover_users.partner_id
         
+        if 'op.session' in cls.env:
+            cls.env['op.session'].sudo().search([('name', '=', 'Test Session')]).unlink()
+            cls.env['op.session'].sudo().search([('subject_id.code', 'in', ('TS01', 'TSPORTAL'))]).unlink()
+        if 'op.faculty' in cls.env:
+            cls.env['op.faculty'].sudo().search([('name', '=', 'Faculty Test')]).unlink()
+        cls.env['op.subject'].sudo().search([('code', 'in', ('TS01', 'TSPORTAL'))]).unlink()
         cls.env['irg.certificate.request'].sudo().search([('gradebook_student_id.course_id.name', 'in', ('Test Course Portal', 'Test Course Portal Done'))]).unlink()
         cls.env['app.gradebook.student'].sudo().search([('course_id.name', 'in', ('Test Course Portal', 'Test Course Portal Done'))]).unlink()
         cls.env['irg.tfm.acta'].sudo().search([('degree_name', '=', 'Máster de Prueba')]).unlink()
@@ -22,7 +28,7 @@ class TestCampusCertificatesPortal(HttpCase):
         cls.env['op.admission'].sudo().search([('name', 'in', ('ADM-TEST-PORTAL', 'ADM-TEST-PORTAL-DONE'))]).unlink()
         cls.env['op.admission.register'].sudo().search([('name', 'in', ('Test Register Portal', 'Test Register Portal Done'))]).unlink()
         cls.env['product.product'].sudo().search([('name', '=', 'Test Course Product Portal')]).unlink()
-        cls.env['op.batch'].sudo().search([('name', 'in', ('Batch Portal', 'Batch Portal Done'))]).unlink()
+        cls.env['op.batch'].sudo().search([('name', 'in', ('Batch Portal HC', 'Batch Portal Done'))]).unlink()
         cls.env['op.course'].sudo().search([('name', 'in', ('Test Course Portal', 'Test Course Portal Done'))]).unlink()
         cls.env['op.student'].sudo().search([('first_name', '=', 'Test'), ('last_name', '=', 'Student')]).unlink()
         
@@ -53,8 +59,8 @@ class TestCampusCertificatesPortal(HttpCase):
         # Create course and batch for gradebook
         cls.course = cls.env['op.course'].create({'name': 'Test Course Portal', 'code': 'TCP01'})
         cls.batch = cls.env['op.batch'].create({
-            'name': 'Batch Portal',
-            'code': 'BP',
+            'name': 'Batch Portal HC',
+            'code': 'BPHC',
             'course_id': cls.course.id,
             'start_date': '2026-01-01',
             'end_date': '2026-12-31',
@@ -76,6 +82,7 @@ class TestCampusCertificatesPortal(HttpCase):
             'name': 'ADM-TEST-PORTAL',
             'partner_id': cls.portal_user.partner_id.id,
             'course_id': cls.course.id,
+            'batch_id': cls.batch.id,
             'register_id': cls.register.id,
             'gender': 'm',
             'first_name': 'Test',
@@ -88,6 +95,31 @@ class TestCampusCertificatesPortal(HttpCase):
             'admission_id': cls.admission.id,
             'state': 'in_progress',
         })
+        
+        # Create a session to use for attendance certificate tests
+        if 'op.session' in cls.env:
+            faculty = cls.env['op.faculty'].create({
+                'name': 'Faculty Test',
+                'first_name': 'Faculty',
+                'last_name': 'Test',
+                'birth_date': '2000-01-01',
+                'gender': 'male',
+            })
+            subject = cls.env['op.subject'].create({
+                'name': 'Test Subject',
+                'code': 'TSPORTAL',
+                'course_id': cls.course.id,
+            })
+            cls.op_session = cls.env['op.session'].create({
+                'name': 'Test Session',
+                'course_id': cls.course.id,
+                'batch_id': cls.batch.id,
+                'subject_id': subject.id,
+                'start_datetime': '2026-06-03 10:00:00',
+                'end_datetime': '2026-06-03 11:00:00',
+                'state': 'confirm',
+                'faculty_id': faculty.id,
+            })
         
         # Create second course and batch for gradebook_done
         cls.course_done = cls.env['op.course'].create({'name': 'Test Course Portal Done', 'code': 'TCP02'})
@@ -111,6 +143,7 @@ class TestCampusCertificatesPortal(HttpCase):
             'name': 'ADM-TEST-PORTAL-DONE',
             'partner_id': cls.portal_user.partner_id.id,
             'course_id': cls.course_done.id,
+            'batch_id': cls.batch_done.id,
             'register_id': cls.register_done.id,
             'gender': 'm',
             'first_name': 'Test',
@@ -175,18 +208,32 @@ class TestCampusCertificatesPortal(HttpCase):
 
     @classmethod
     def tearDownClass(cls):
+        # Rollback local transaction to start a fresh one and see HTTP thread commits
+        cls.env.cr.rollback()
+
         # Clean up records from DB
+        if 'op.session' in cls.env:
+            cls.env['op.session'].sudo().search([('name', '=', 'Test Session')]).unlink()
+            cls.env['op.session'].sudo().search([('subject_id.code', 'in', ('TS01', 'TSPORTAL'))]).unlink()
+        if 'op.faculty' in cls.env:
+            cls.env['op.faculty'].sudo().search([('name', '=', 'Faculty Test')]).unlink()
+        cls.env['op.subject'].sudo().search([('code', 'in', ('TS01', 'TSPORTAL'))]).unlink()
         cls.env['irg.tfm.acta'].sudo().search([('degree_name', '=', 'Máster de Prueba')]).unlink()
         cls.env['irg.diploma.registry'].sudo().search([('registry_number', '=', 'TEST-DIPLOMA-01')]).unlink()
         cls.env['ir.attachment'].sudo().search([('name', '=', 'test_cert.pdf')]).unlink()
         
+        cls.env['irg.certificate.request'].sudo().search([
+            '|',
+            ('partner_id', '=', cls.portal_user.partner_id.id),
+            ('gradebook_student_id', 'in', [cls.gradebook.id, cls.gradebook_done.id])
+        ]).unlink()
+
         cls.env['app.gradebook.student'].sudo().search([('partner_id', '=', cls.portal_user.partner_id.id)]).unlink()
         cls.env['op.admission'].sudo().search([('name', 'in', ('ADM-TEST-PORTAL', 'ADM-TEST-PORTAL-DONE'))]).unlink()
         cls.env['op.admission.register'].sudo().search([('name', 'in', ('Test Register Portal', 'Test Register Portal Done'))]).unlink()
         cls.env['product.product'].sudo().search([('name', '=', 'Test Course Product Portal')]).unlink()
-        cls.env['op.batch'].sudo().search([('name', 'in', ('Batch Portal', 'Batch Portal Done'))]).unlink()
+        cls.env['op.batch'].sudo().search([('name', 'in', ('Batch Portal HC', 'Batch Portal Done'))]).unlink()
         cls.env['op.course'].sudo().search([('name', 'in', ('Test Course Portal', 'Test Course Portal Done'))]).unlink()
-        cls.env['irg.certificate.request'].sudo().search([('partner_id', '=', cls.portal_user.partner_id.id)]).unlink()
 
         cls.env['op.student'].sudo().search([('first_name', '=', 'Test'), ('last_name', '=', 'Student')]).unlink()
         
@@ -310,8 +357,12 @@ class TestCampusCertificatesPortal(HttpCase):
 
         # 3. Requesting 'attendance' on an in-progress gradebook should succeed
         post_data['document_type'] = 'attendance'
+        if hasattr(self, 'op_session'):
+            post_data['session_id'] = str(self.op_session.id)
         response_post3 = self.url_open('/campus/certificates/new', data=post_data)
         self.assertEqual(response_post3.status_code, 200)
+        if '/campus/certificates/confirm/' not in response_post3.url:
+            raise AssertionError("Assertion failed. URL: %s, Response text: %s" % (response_post3.url, response_post3.text))
         self.assertTrue('/campus/certificates/confirm/' in response_post3.url)
 
         # 4. Requesting 'enrollment' on an in-progress gradebook should succeed

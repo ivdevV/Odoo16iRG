@@ -16,6 +16,7 @@
                         <field name="course_name" readonly="1" string="Programa"/>
                     </group>
                     <group string="Tipo de Certificado">
+                        <field name="document_type"/>
                         <field name="certificate_type"/>
                         <field name="shipping_type"
                                attrs="{
