@@ -95,6 +95,14 @@ class IrgCertificateWizard(models.TransientModel):
                     _('El tipo de envío es obligatorio para certificados físicos.')
                 )
 
+    @api.constrains('document_type', 'gradebook_student_id')
+    def _check_gradebook_state(self):
+        for rec in self:
+            if rec.document_type in ('gradebook', 'diploma') and rec.gradebook_student_id.state != 'done':
+                raise ValidationError(
+                    _("Para solicitar un Certificado de Notas Completo o un Diploma, la libreta académica debe estar finalizada (estado 'Finalizado').")
+                )
+
     def action_generate(self):
         """Create the certificate, generate the PDF and return a download action."""
         self.ensure_one()

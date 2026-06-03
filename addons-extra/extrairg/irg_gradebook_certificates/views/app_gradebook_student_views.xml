@@ -16,7 +16,7 @@
                             type="object"
                             class="btn-secondary"
                             icon="fa-file-text-o"
-                            attrs="{'invisible': [('state', '!=', 'done')]}"/>
+                            attrs="{'invisible': [('state', '=', 'draft')]}"/>
                 </xpath>
 
                 <!-- 2. Add stat button box before oe_title -->
