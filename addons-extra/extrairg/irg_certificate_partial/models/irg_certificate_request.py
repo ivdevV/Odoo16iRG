@@ -4,6 +4,7 @@ import tempfile
 import logging
 from copy import deepcopy
 from docx import Document as DocxDocument
+from docx.shared import Pt
 from docx.oxml.ns import qn
 
 from odoo import models, fields, api, _
@@ -143,28 +144,41 @@ class IrgCertificateRequest(models.Model):
 
         target_text = 'Que <<NombreAlumno>> con <<DocumentoIdentidad>> matriculado/a en el <<nombreCurso>> impartido en la modalidad presencial durante el periodo académico <<añoCurso>> con una carga lectiva de <<Etcs>>, ha obtenido las calificaciones siguientes:'
 
+        # Modificar "CERTIFICA" a "CERTIFICA:" para coincidir con el diseño solicitado
+        for para in list(doc.paragraphs):
+            full_text = ''.join(r.text for r in para.runs).strip()
+            if full_text == 'CERTIFICA':
+                para.text = 'CERTIFICA:'
+
         for para in list(doc.paragraphs):
             full_text = ''.join(r.text for r in para.runs)
             if target_text in full_text:
-                # Reemplazar el primer párrafo con la primera frase y alineación a la izquierda
+                # Reemplazar el primer párrafo con la primera frase, alineación a la izquierda y espaciado
                 para.text = sentence_1
                 para.alignment = 0 # WD_ALIGN_PARAGRAPH.LEFT
+                para.paragraph_format.space_after = Pt(12)
                 
-                # Crear el segundo párrafo con alineación a la izquierda
+                # Crear el segundo párrafo copiando estilo, márgenes y alineación a la izquierda
                 p_2 = doc.add_paragraph(sentence_2)
                 p_2.style = para.style
                 p_2.alignment = 0
+                p_2.paragraph_format.left_indent = para.paragraph_format.left_indent
+                p_2.paragraph_format.right_indent = para.paragraph_format.right_indent
+                p_2.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
                 p_2.paragraph_format.space_before = para.paragraph_format.space_before
-                p_2.paragraph_format.space_after = para.paragraph_format.space_after
+                p_2.paragraph_format.space_after = Pt(12)
                 p_2.paragraph_format.line_spacing = para.paragraph_format.line_spacing
                 para._p.addnext(p_2._p)
                 
-                # Crear el tercer párrafo con alineación a la izquierda
+                # Crear el tercer párrafo copiando estilo, márgenes y alineación a la izquierda
                 p_3 = doc.add_paragraph(sentence_3)
                 p_3.style = para.style
                 p_3.alignment = 0
+                p_3.paragraph_format.left_indent = para.paragraph_format.left_indent
+                p_3.paragraph_format.right_indent = para.paragraph_format.right_indent
+                p_3.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
                 p_3.paragraph_format.space_before = para.paragraph_format.space_before
-                p_3.paragraph_format.space_after = para.paragraph_format.space_after
+                p_3.paragraph_format.space_after = Pt(12)
                 p_3.paragraph_format.line_spacing = para.paragraph_format.line_spacing
                 p_2._p.addnext(p_3._p)
                 break
