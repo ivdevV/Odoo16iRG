@@ -60,9 +60,9 @@ class IrgCertificateRequest(models.Model):
             exam_results = subj.gradebook_result_ids.filtered(lambda r: r.survey_type == 'exam')
             
             # Si una asignatura no tiene exámenes calificados (exam_results vacío) 
-            # o la cantidad de exámenes es inferior al qty configurado, se escribe PENDIENTE
+            # o la cantidad de exámenes es inferior al qty configurado, se escribe Pendiente
             if not exam_results or len(exam_results) < qty_configured:
-                note_str = 'PENDIENTE'
+                note_str = 'Pendiente'
             else:
                 note_str = '%.2f' % (subj.final_subject_note or 0.0)
                 valid_notes.append(subj.final_subject_note or 0.0)
@@ -77,7 +77,7 @@ class IrgCertificateRequest(models.Model):
         if valid_notes:
             nota_media = '%.2f' % (sum(valid_notes) / len(valid_notes))
         else:
-            nota_media = 'PENDIENTE'
+            nota_media = 'Pendiente'
 
         # Fecha corta DD/MM/YYYY y fecha larga
         fecha = (
@@ -106,7 +106,46 @@ class IrgCertificateRequest(models.Model):
         end_year = start_year + (2 if is_mnc else 1)
         periodo_str = '%d-%d' % (start_year, end_year)
 
+        # Determinar género del estudiante para "matriculado/a"
+        gender_word = 'consta matriculado/a'
+        student = self.gradebook_student_id.student_id
+        if student and student.gender:
+            if student.gender == 'f':
+                gender_word = 'consta matriculada'
+            elif student.gender == 'm':
+                gender_word = 'consta matriculado'
+
+        # Formatear el tipo de documento de identidad
+        id_label = 'DNI/Pasaporte'
+        if partner.l10n_latam_identification_type_id:
+            id_name = partner.l10n_latam_identification_type_id.name.lower()
+            if 'pasaporte' in id_name or 'passport' in id_name:
+                id_label = 'pasaporte'
+            elif 'dni' in id_name:
+                id_label = 'DNI'
+            elif 'nie' in id_name:
+                id_label = 'NIE'
+        documento_formateado = '%s %s' % (id_label, partner.vat or '')
+
+        ects_detallado = '90 ECTS, equivalentes a 2250 horas de estudio' if is_mnc else '60 ECTS, equivalentes a 1500 horas de estudio'
+
+        target_text = 'Que <<NombreAlumno>> con <<DocumentoIdentidad>> matriculado/a en el <<nombreCurso>> impartido en la modalidad presencial durante el periodo académico <<añoCurso>> con una carga lectiva de <<Etcs>>, ha obtenido las calificaciones siguientes:'
+
+        replacement_text = (
+            'Que %s con %s %s en el %s durante el período académico %s.\n\n'
+            'Que, el Máster consta de %s, distribuidas entre horas de clases y horas destinadas a otras actividades académicas.\n\n'
+            'Las calificaciones obtenidas son:'
+        ) % (
+            partner.name or '',
+            documento_formateado,
+            gender_word,
+            course_name,
+            periodo_str,
+            ects_detallado
+        )
+
         replacements = {
+            target_text: replacement_text,
             '<<NombreAlumno>>': partner.name or '',
             '<<DocumentoIdentidad>>': documento,
             '<<nombreCurso>>': course_name,
@@ -114,7 +153,6 @@ class IrgCertificateRequest(models.Model):
             '<<Etcs>>': ects_str,
             '<<fechaLarga>>': fecha_larga,
             '<<fecha>>': fecha,
-            'en la modalidad presencial ': '',
             '<<nombreAlumno>>': partner.name or '',
             '<<documento>>': documento,
             '<<curso>>': course_name,
