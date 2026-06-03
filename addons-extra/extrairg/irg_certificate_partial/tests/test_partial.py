@@ -10,10 +10,10 @@ class TestIrgCertificatePartial(TransactionCase):
         super().setUpClass()
         # Create student and course
         cls.partner = cls.env['res.partner'].create({'name': 'Test Student Partial'})
-        cls.course = cls.env['op.course'].create({'name': 'Test Course Partial', 'code': 'TCP01'})
+        cls.course = cls.env['op.course'].create({'name': 'Test Course Partial', 'code': 'TCPART01'})
         cls.batch = cls.env['op.batch'].create({
             'name': 'Batch Partial',
-            'code': 'BP',
+            'code': 'BPPART',
             'course_id': cls.course.id,
             'start_date': fields.Date.today(),
             'end_date': fields.Date.today(),

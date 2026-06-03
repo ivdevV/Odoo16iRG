@@ -17,5 +17,21 @@
                 </xpath>
             </field>
         </record>
+
+        <record id="view_irg_certificate_wizard_form_attendance" model="ir.ui.view">
+            <field name="name">irg.certificate.wizard.form.attendance</field>
+            <field name="model">irg.certificate.wizard</field>
+            <field name="inherit_id" ref="irg_gradebook_certificates.view_irg_certificate_wizard_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='document_type']" position="after">
+                    <field name="gradebook_batch_id" invisible="1"/>
+                    <field name="session_id"
+                           attrs="{
+                               'invisible': [('document_type', '!=', 'attendance')],
+                               'required': [('document_type', '=', 'attendance')]
+                           }"/>
+                </xpath>
+            </field>
+        </record>
     </data>
 </odoo>

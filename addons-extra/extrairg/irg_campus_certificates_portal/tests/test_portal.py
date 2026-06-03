@@ -175,18 +175,26 @@ class TestCampusCertificatesPortal(HttpCase):
 
     @classmethod
     def tearDownClass(cls):
+        # Rollback local transaction to start a fresh one and see HTTP thread commits
+        cls.env.cr.rollback()
+
         # Clean up records from DB
         cls.env['irg.tfm.acta'].sudo().search([('degree_name', '=', 'Máster de Prueba')]).unlink()
         cls.env['irg.diploma.registry'].sudo().search([('registry_number', '=', 'TEST-DIPLOMA-01')]).unlink()
         cls.env['ir.attachment'].sudo().search([('name', '=', 'test_cert.pdf')]).unlink()
         
+        cls.env['irg.certificate.request'].sudo().search([
+            '|',
+            ('partner_id', '=', cls.portal_user.partner_id.id),
+            ('gradebook_student_id', 'in', [cls.gradebook.id, cls.gradebook_done.id])
+        ]).unlink()
+
         cls.env['app.gradebook.student'].sudo().search([('partner_id', '=', cls.portal_user.partner_id.id)]).unlink()
         cls.env['op.admission'].sudo().search([('name', 'in', ('ADM-TEST-PORTAL', 'ADM-TEST-PORTAL-DONE'))]).unlink()
         cls.env['op.admission.register'].sudo().search([('name', 'in', ('Test Register Portal', 'Test Register Portal Done'))]).unlink()
         cls.env['product.product'].sudo().search([('name', '=', 'Test Course Product Portal')]).unlink()
         cls.env['op.batch'].sudo().search([('name', 'in', ('Batch Portal', 'Batch Portal Done'))]).unlink()
         cls.env['op.course'].sudo().search([('name', 'in', ('Test Course Portal', 'Test Course Portal Done'))]).unlink()
-        cls.env['irg.certificate.request'].sudo().search([('partner_id', '=', cls.portal_user.partner_id.id)]).unlink()
 
         cls.env['op.student'].sudo().search([('first_name', '=', 'Test'), ('last_name', '=', 'Student')]).unlink()
         

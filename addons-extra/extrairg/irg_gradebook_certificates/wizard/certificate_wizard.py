@@ -36,6 +36,18 @@ class IrgCertificateWizard(models.TransientModel):
         related='gradebook_student_id.course_id.name',
         readonly=True,
     )
+    document_type = fields.Selection(
+        selection=[
+            ('gradebook', 'Certificado de Notas Completo'),
+            ('gradebook_partial', 'Certificado de Notas Parcial'),
+            ('diploma', 'Diploma'),
+            ('attendance', 'Certificado de Asistencia'),
+            ('enrollment', 'Certificado de Matrícula'),
+        ],
+        string='Tipo de Documento',
+        default='gradebook',
+        required=True,
+    )
     certificate_type = fields.Selection(
         selection=CERTIFICATE_TYPES,
         string='Tipo de Certificado',
@@ -88,6 +100,7 @@ class IrgCertificateWizard(models.TransientModel):
         self.ensure_one()
         cert = self.env['irg.certificate.request'].create({
             'gradebook_student_id': self.gradebook_student_id.id,
+            'document_type': self.document_type,
             'certificate_type': self.certificate_type,
             'shipping_type': self.shipping_type or False,
             'custom_description': self.custom_description or False,
