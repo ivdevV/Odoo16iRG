@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_channel_form_online_clone_access_fix" model="ir.ui.view">
+        <field name="name">slide.channel.form.online.clone.access.fix</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="irg_course_convocatorias_v2.view_slide_channel_form_convocatorias_v2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_open_online_channel']" position="after">
+                <button name="action_repair_online_clone_documents"
+                        type="object"
+                        string="Reparar documentos Online"
+                        icon="fa-wrench"
+                        class="btn btn-secondary ms-2"
+                        attrs="{'invisible': [('irg_online_channel_id', '=', False)]}"
+                        confirm="Se copiaran al canal Online los documentos/binarios que falten en slides ya duplicados. No se sobrescribiran documentos existentes en Online."/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
