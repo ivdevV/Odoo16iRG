@@ -129,23 +129,47 @@ class IrgCertificateRequest(models.Model):
 
         ects_detallado = '90 ECTS, equivalentes a 2250 horas de estudio' if is_mnc else '60 ECTS, equivalentes a 1500 horas de estudio'
 
-        target_text = 'Que <<NombreAlumno>> con <<DocumentoIdentidad>> matriculado/a en el <<nombreCurso>> impartido en la modalidad presencial durante el periodo académico <<añoCurso>> con una carga lectiva de <<Etcs>>, ha obtenido las calificaciones siguientes:'
-
-        replacement_text = (
-            'Que %s con %s %s en el %s durante el período académico %s.\n\n'
-            'Que, el Máster consta de %s, distribuidas entre horas de clases y horas destinadas a otras actividades académicas.\n\n'
-            'Las calificaciones obtenidas son:'
-        ) % (
+        sentence_1 = 'Que %s con %s %s en el %s durante el período académico %s.' % (
             partner.name or '',
             documento_formateado,
             gender_word,
             course_name,
-            periodo_str,
+            periodo_str
+        )
+        sentence_2 = 'Que, el Máster consta de %s, distribuidas entre horas de clases y horas destinadas a otras actividades académicas.' % (
             ects_detallado
         )
+        sentence_3 = 'Las calificaciones obtenidas son:'
+
+        target_text = 'Que <<NombreAlumno>> con <<DocumentoIdentidad>> matriculado/a en el <<nombreCurso>> impartido en la modalidad presencial durante el periodo académico <<añoCurso>> con una carga lectiva de <<Etcs>>, ha obtenido las calificaciones siguientes:'
+
+        for para in list(doc.paragraphs):
+            full_text = ''.join(r.text for r in para.runs)
+            if target_text in full_text:
+                # Reemplazar el primer párrafo con la primera frase y alineación a la izquierda
+                para.text = sentence_1
+                para.alignment = 0 # WD_ALIGN_PARAGRAPH.LEFT
+                
+                # Crear el segundo párrafo con alineación a la izquierda
+                p_2 = doc.add_paragraph(sentence_2)
+                p_2.style = para.style
+                p_2.alignment = 0
+                p_2.paragraph_format.space_before = para.paragraph_format.space_before
+                p_2.paragraph_format.space_after = para.paragraph_format.space_after
+                p_2.paragraph_format.line_spacing = para.paragraph_format.line_spacing
+                para._p.addnext(p_2._p)
+                
+                # Crear el tercer párrafo con alineación a la izquierda
+                p_3 = doc.add_paragraph(sentence_3)
+                p_3.style = para.style
+                p_3.alignment = 0
+                p_3.paragraph_format.space_before = para.paragraph_format.space_before
+                p_3.paragraph_format.space_after = para.paragraph_format.space_after
+                p_3.paragraph_format.line_spacing = para.paragraph_format.line_spacing
+                p_2._p.addnext(p_3._p)
+                break
 
         replacements = {
-            target_text: replacement_text,
             '<<NombreAlumno>>': partner.name or '',
             '<<DocumentoIdentidad>>': documento,
             '<<nombreCurso>>': course_name,
