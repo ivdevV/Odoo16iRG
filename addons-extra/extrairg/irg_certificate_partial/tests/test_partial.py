@@ -21,6 +21,23 @@ class TestIrgCertificatePartial(TransactionCase):
         self.assertIn('B-603323', document_xml)
         self.assertIn('w:val="10"', document_xml)
 
+    def _assert_bottom_right_arcs_are_visible_in_xml(self, res_file):
+        with ZipFile(res_file) as docx_zip:
+            document_xml = docx_zip.read('word/document.xml').decode(
+                'utf-8', errors='ignore'
+            )
+            rels_xml = docx_zip.read('word/_rels/document.xml.rels').decode(
+                'utf-8', errors='ignore'
+            )
+            package_names = set(docx_zip.namelist())
+
+        self.assertIn('name="Corner Arcs"', document_xml)
+        self.assertIn('behindDoc="1"', document_xml)
+        self.assertIn('relativeFrom="page"><wp:align>right</wp:align>', document_xml)
+        self.assertIn('relativeFrom="page"><wp:align>bottom</wp:align>', document_xml)
+        self.assertIn('Target="media/image1.png"', rels_xml)
+        self.assertIn('word/media/image1.png', package_names)
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -154,6 +171,7 @@ class TestIrgCertificatePartial(TransactionCase):
 
         res_file = cert._fill_template()
         self._assert_vertical_legal_text_is_visible_in_xml(res_file)
+        self._assert_bottom_right_arcs_are_visible_in_xml(res_file)
         document = DocxDocument(res_file)
         paragraph = next(
             (
