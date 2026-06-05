@@ -19,6 +19,7 @@ class TestIrgCertificatePartial(TransactionCase):
 
         self.assertIn('B56488687', document_xml)
         self.assertIn('B-603323', document_xml)
+        self.assertIn('w:val="10"', document_xml)
 
     @classmethod
     def setUpClass(cls):

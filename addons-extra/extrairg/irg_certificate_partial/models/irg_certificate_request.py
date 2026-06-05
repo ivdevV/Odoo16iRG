@@ -134,13 +134,18 @@ class IrgCertificateRequest(models.Model):
             )
             if 'Instituto Raimon' not in text or 'B56488687' not in text:
                 continue
-            for size in shape.xpath('.//*[local-name()="sz" or local-name()="szCs"]'):
-                size.set(qn('w:val'), '14')
-            for spacing in shape.xpath('.//*[local-name()="spacing"]'):
-                spacing.set(qn('w:before'), '0')
-                spacing.set(qn('w:after'), '0')
-            for indent in shape.xpath('.//*[local-name()="ind"]'):
-                indent.set(qn('w:left'), '0')
+            IrgCertificateRequest._compact_vertical_legal_textbox(shape)
+
+    @staticmethod
+    def _compact_vertical_legal_textbox(shape):
+        """Fit legal text lines inside the narrow vertical textbox."""
+        for size in shape.xpath('.//*[local-name()="sz" or local-name()="szCs"]'):
+            size.set(qn('w:val'), '10')
+        for spacing in shape.xpath('.//*[local-name()="spacing"]'):
+            spacing.set(qn('w:before'), '0')
+            spacing.set(qn('w:after'), '0')
+        for indent in shape.xpath('.//*[local-name()="ind"]'):
+            indent.set(qn('w:left'), '0')
 
     @staticmethod
     def _restore_vertical_legal_text(tpl_path, docx_path):
@@ -180,6 +185,8 @@ class IrgCertificateRequest(models.Model):
             len(first_paragraph) and etree.QName(first_paragraph[0]).localname == 'pPr'
         ) else 0
         for legal_run in legal_runs:
+            for shape in legal_run.xpath('.//*[local-name()="txbxContent"]'):
+                IrgCertificateRequest._compact_vertical_legal_textbox(shape)
             first_paragraph.insert(insert_index, deepcopy(legal_run))
             insert_index += 1
 
