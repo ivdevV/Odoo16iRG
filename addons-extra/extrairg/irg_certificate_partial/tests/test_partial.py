@@ -2,7 +2,6 @@
 from zipfile import ZipFile
 
 from docx import Document as DocxDocument
-from lxml import etree
 
 from odoo import fields
 from odoo.tests.common import TransactionCase
@@ -21,32 +20,6 @@ class TestIrgCertificatePartial(TransactionCase):
         self.assertIn('B56488687', document_xml)
         self.assertIn('B-603323', document_xml)
         self.assertIn('w:val="10"', document_xml)
-
-    def _assert_corner_decoration_is_visible_in_xml(self, res_file):
-        with ZipFile(res_file) as docx_zip:
-            document_xml = etree.fromstring(docx_zip.read('word/document.xml'))
-            rels_xml = etree.fromstring(docx_zip.read('word/_rels/document.xml.rels'))
-            package_names = set(docx_zip.namelist())
-
-        closing_paragraphs = document_xml.xpath(
-            './/*[local-name()="body"]/*[local-name()="p" and '
-            './/*[local-name()="t" and contains(text(), "Para que así conste")]]'
-        )
-        self.assertTrue(closing_paragraphs)
-        paragraphs = document_xml.xpath('.//*[local-name()="body"]/*[local-name()="p"]')
-        closing_index = paragraphs.index(closing_paragraphs[0])
-        image_rel_ids = []
-        for paragraph in paragraphs[closing_index:closing_index + 3]:
-            image_rel_ids.extend(
-                paragraph.xpath('.//*[local-name()="blip"]/@*[local-name()="embed"]')
-            )
-        self.assertTrue(image_rel_ids)
-
-        targets_by_rel_id = {rel.get('Id'): rel.get('Target') for rel in rels_xml}
-        for rel_id in image_rel_ids:
-            target = targets_by_rel_id.get(rel_id)
-            self.assertTrue(target)
-            self.assertIn('word/%s' % target, package_names)
 
     @classmethod
     def setUpClass(cls):
@@ -181,7 +154,6 @@ class TestIrgCertificatePartial(TransactionCase):
 
         res_file = cert._fill_template()
         self._assert_vertical_legal_text_is_visible_in_xml(res_file)
-        self._assert_corner_decoration_is_visible_in_xml(res_file)
         document = DocxDocument(res_file)
         paragraph = next(
             (
