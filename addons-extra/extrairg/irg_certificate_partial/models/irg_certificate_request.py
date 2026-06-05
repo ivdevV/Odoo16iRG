@@ -65,6 +65,21 @@ class IrgCertificateRequest(models.Model):
             paragraph.alignment = 3  # WD_ALIGN_PARAGRAPH.JUSTIFY
         return paragraph
 
+    def _format_partial_signature_paragraph(self, paragraph):
+        """Normalize signature lines to the same left-aligned text grid."""
+        normalized_text = ' '.join(paragraph.text.split())
+        if normalized_text == 'Departamento Académico Instituto Raimon Gaja':
+            paragraph.text = 'Departamento Académico\nInstituto Raimon Gaja'
+        self._format_partial_body_paragraph(paragraph, justify=False)
+        paragraph.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
+        paragraph.paragraph_format.first_line_indent = None
+        paragraph.paragraph_format.tab_stops.clear_all()
+        for run in paragraph.runs:
+            if run.text:
+                run.text = run.text.lstrip()
+                break
+        return paragraph
+
     def _replace_dpto_academico_intro(self, doc):
         """Apply the requested issuer sentence for academic department signer."""
         if self.signer != 'dpto_academico':
@@ -100,10 +115,11 @@ class IrgCertificateRequest(models.Model):
             if (
                 text == 'CERTIFICA:'
                 or any(marker in text for marker in signer_intro_markers)
-                or any(marker in text for marker in signature_markers)
             ):
                 self._format_partial_body_paragraph(para, justify=False)
                 para.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
+            if any(marker in text for marker in signature_markers):
+                self._format_partial_signature_paragraph(para)
 
     @staticmethod
     def _compact_vertical_legal_text(doc):

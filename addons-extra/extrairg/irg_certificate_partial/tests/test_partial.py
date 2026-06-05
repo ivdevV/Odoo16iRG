@@ -203,6 +203,14 @@ class TestIrgCertificatePartial(TransactionCase):
             ),
             None,
         )
+        signature_paragraph = next(
+            (
+                para for para in document.paragraphs
+                if 'Departamento Académico' in para.text
+                and 'Instituto Raimon Gaja' in para.text
+            ),
+            None,
+        )
 
         self.assertIsNotNone(intro)
         self.assertEqual(
@@ -219,6 +227,14 @@ class TestIrgCertificatePartial(TransactionCase):
             self.assertEqual(paragraph.alignment, 3)
             self.assertEqual(paragraph.paragraph_format.left_indent.twips, -172)
             self.assertEqual(paragraph.paragraph_format.right_indent.twips, -783)
+        self.assertIsNotNone(signature_paragraph)
+        self.assertEqual(
+            signature_paragraph.text.splitlines(),
+            ['Departamento Académico', 'Instituto Raimon Gaja'],
+        )
+        self.assertEqual(signature_paragraph.alignment, 0)
+        self.assertEqual(signature_paragraph.paragraph_format.left_indent.twips, -172)
+        self.assertEqual(signature_paragraph.paragraph_format.right_indent.twips, -783)
 
     def test_04_partial_gradebook_raimon_intro_certifica_and_signature_align_with_table(self):
         """Raimon signer header, CERTIFICA and signature use the same text grid."""
