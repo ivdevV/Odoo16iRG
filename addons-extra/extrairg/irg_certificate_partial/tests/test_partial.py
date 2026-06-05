@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from zipfile import ZipFile
+
 from docx import Document as DocxDocument
 
 from odoo import fields
@@ -6,6 +8,17 @@ from odoo.tests.common import TransactionCase
 
 
 class TestIrgCertificatePartial(TransactionCase):
+
+    def _assert_vertical_legal_text_is_visible_in_xml(self, res_file):
+        with ZipFile(res_file) as docx_zip:
+            document_xml = ''.join(
+                docx_zip.read(name).decode('utf-8', errors='ignore')
+                for name in docx_zip.namelist()
+                if name.endswith('.xml')
+            )
+
+        self.assertIn('B56488687', document_xml)
+        self.assertIn('B-603323', document_xml)
 
     @classmethod
     def setUpClass(cls):
@@ -139,6 +152,7 @@ class TestIrgCertificatePartial(TransactionCase):
         })
 
         res_file = cert._fill_template()
+        self._assert_vertical_legal_text_is_visible_in_xml(res_file)
         document = DocxDocument(res_file)
         paragraph = next(
             (

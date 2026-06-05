@@ -38,7 +38,7 @@ El módulo `irg_certificate_partial` implementa la lógica específica para la g
   - **Texto antes y después de la tabla:** Los párrafos descriptivos, la frase de introducción de calificaciones y el cierre se constriñen al ancho de la tabla oficial de notas y se justifican para mantener una caja visual uniforme con dicha tabla.
   - **Espaciado de Párrafos (`Pt(12)`):** Se define un margen inferior (`space_after`) de `Pt(12)` en cada uno de los tres nuevos párrafos explicativos para garantizar un espaciado vertical armónico.
   - **Réplica de Márgenes y Sangrías:** Para asegurar que los párrafos adicionales mantengan la coherencia con el diseño del documento, se copian las propiedades de formato de márgenes e indentación del párrafo original: `first_line_indent`, `space_before` y `line_spacing`, y se normaliza el ancho de caja contra la tabla de notas.
-  - **Texto legal vertical:** Se compacta el bloque legal vertical reduciendo tamaño de fuente, espaciado e indentación para evitar que la última línea quede recortada en la conversión a PDF.
+  - **Texto legal vertical:** Se conserva el bloque legal vertical de la plantilla Word. Si `python-docx` lo elimina durante el guardado del `.docx`, el módulo lo restaura explícitamente desde la plantilla original antes de devolver el documento generado.
 
 ---
 
@@ -65,7 +65,7 @@ Hereda el modelo base `irg.certificate.request` para modularizar la lógica de r
   - Normaliza los bloques fijos de la plantilla (`firmante`, `CERTIFICA:` y firma textual) con `_format_partial_static_paragraphs()` para que usen la misma sangría y ancho de caja que la tabla de notas. Las líneas de firma usan `_format_partial_signature_paragraph()` solo si el párrafo completo coincide con la firma esperada; esta restricción preserva el texto legal vertical y otros textos que contienen `Instituto Raimon Gaja`. El helper fuerza alineación izquierda, convierte la separación horizontal entre departamento e instituto en salto de línea real, limpia tabuladores explícitos y elimina sangría de primera línea.
   - Si el firmante seleccionado es `dpto_academico`, reemplaza la frase de emisor por: `"El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona."`.
   - Justifica el cierre `"Para que así conste..."` y lo constriñe al mismo ancho de la tabla de notas mediante `_format_partial_closing_paragraphs()`.
-  - Compacta el texto legal vertical del lateral con `_compact_vertical_legal_text()` para evitar recortes en la conversión final a PDF.
+  - Conserva el texto legal vertical del lateral con `_compact_vertical_legal_text()` y `_restore_vertical_legal_text()`. El segundo helper reinyecta el textbox legal desde la plantilla original si el guardado con `python-docx` lo pierde, comprobando los marcadores `B56488687` y `B-603323`.
   - Lee el tipo de documento de identidad de forma compatible con bases que no tengan instalado el campo `l10n_latam_identification_type_id`, manteniendo `DNI/Pasaporte` como valor por defecto.
 
 ### 2. Formato de la primera frase descriptiva
@@ -83,7 +83,7 @@ El resto de la frase conserva el estilo normal de la plantilla. La segmentación
 
 El módulo incluye un set de pruebas en `tests/test_partial.py`:
 - `test_01_partial_gradebook_fill_template`: Crea un estudiante con dos asignaturas obligatorias. Una completa (2/2 exámenes calificados) y otra incompleta (1/2 exámenes). Valida que se genere el certificado parcial, que la asignatura completa tenga su nota numérica, la incompleta aparezca como `"Pendiente"`, y la nota media final sea igual a la nota de la asignatura completa.
-- `test_02_partial_gradebook_first_sentence_has_bold_student_and_course`: Genera el certificado parcial y abre el `.docx` resultante para validar que la primera frase contiene el alumno y el curso esperados, y que ambos aparecen en runs independientes con `bold == True`.
+- `test_02_partial_gradebook_first_sentence_has_bold_student_and_course`: Genera el certificado parcial y abre el `.docx` resultante para validar que la primera frase contiene el alumno y el curso esperados, y que ambos aparecen en runs independientes con `bold == True`. También comprueba en el XML final del `.docx` que el texto legal vertical conserva los marcadores `B56488687` y `B-603323`.
 - `test_03_partial_gradebook_dpto_intro_and_layout_are_adjusted`: Genera el certificado parcial con firmante `dpto_academico` y valida que la frase de emisor se sustituye por la dirección fiscal solicitada, que la introducción queda alineada a la retícula de tabla, que la primera frase y el cierre quedan justificados con la sangría esperada, y que `Instituto Raimon Gaja` queda en la línea inferior a `Departamento Académico` con alineación izquierda y la sangría esperada.
 - `test_04_partial_gradebook_raimon_intro_certifica_and_signature_align_with_table`: Genera el certificado parcial con firmante `raimon` y valida que la línea del firmante, `CERTIFICA:` y la firma textual comparten la misma sangría y ancho de caja que la tabla de notas.
 - `test_05_partial_gradebook_all_pending_fill_template`: Comprueba el comportamiento del módulo en casos límites donde todas las asignaturas obligatorias están pendientes. Valida que el certificado se cree correctamente y que la nota media final se imprima como `"Pendiente"`.
@@ -95,13 +95,13 @@ Validación realizada sobre los cambios de negritas, frase de departamento acad�
 ```bash
 python3 -m py_compile addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
 git diff --check -- addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py doc/modules/extrairg/irg_certificate_partial.md
-docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_certificate_partial_vertical_fix_20260605 --test-enable --stop-after-init -i irg_certificate_partial --test-tags /irg_certificate_partial --http-port=8099 --log-level=test
+docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_certificate_partial_restore_textbox_20260605 --test-enable --stop-after-init -i irg_certificate_partial --test-tags /irg_certificate_partial --http-port=8099 --log-level=test
 ```
 
 Los comandos finalizaron correctamente. La validación Odoo reportó:
 
 ```text
-odoo.tests.result: 0 failed, 0 error(s) of 5 tests when loading database 'test_irg_certificate_partial_vertical_fix_20260605'
+odoo.tests.result: 0 failed, 0 error(s) of 5 tests when loading database 'test_irg_certificate_partial_restore_textbox_20260605'
 ```
 
 ---
@@ -120,6 +120,7 @@ docker exec -it odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i ir
 ### [16.0.1.0.0] - 2026-06-05
 - **Corrección de firma:** En certificados parciales firmados por `dpto_academico`, la separación horizontal de plantilla entre `Departamento Académico` e `Instituto Raimon Gaja` se convierte en un salto de línea real para que el instituto quede inmediatamente debajo y no desplazado al extremo derecho.
 - **Corrección de alcance:** La normalización de firma se limita a los párrafos exactos de firma para no modificar textos legales/institucionales, incluido el texto legal vertical del certificado.
+- **Restauración de texto legal:** El `.docx` generado vuelve a conservar el texto legal vertical de la plantilla; si `python-docx` descarta el textbox al guardar, se reinyecta desde la plantilla original antes de entregar el archivo.
 - **Corrección de formato:** En el certificado parcial de notas, la primera frase descriptiva del `.docx` ahora aplica negrita solo al nombre del alumno y al nombre del curso/máster mediante runs segmentados.
 - **Corrección de diseño:** Los textos antes y después de la tabla se justifican y se ajustan a la amplitud de la tabla de notas; la línea del firmante, `CERTIFICA:` y la firma textual también se alinean a la misma retícula; el texto legal vertical se compacta para evitar recortes en PDF.
 - **Cambio condicional por firmante:** Cuando el firmante seleccionado es `dpto_academico`, la frase inicial del emisor pasa a ser `"El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona."`.

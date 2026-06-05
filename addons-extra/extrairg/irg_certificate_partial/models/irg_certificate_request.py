@@ -2,10 +2,12 @@
 import os
 import tempfile
 import logging
+from zipfile import ZipFile, ZIP_DEFLATED
 from copy import deepcopy
 from docx import Document as DocxDocument
 from docx.shared import Pt, Twips
 from docx.oxml.ns import qn
+from lxml import etree
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
@@ -125,7 +127,7 @@ class IrgCertificateRequest(models.Model):
 
     @staticmethod
     def _compact_vertical_legal_text(doc):
-        """Reduce the vertical legal text font to avoid clipping in the PDF."""
+        """Keep the vertical legal text visible while avoiding margin clipping."""
         for shape in doc.element.xpath('.//*[local-name()="txbxContent"]'):
             text = ''.join(
                 node.text or '' for node in shape.xpath('.//*[local-name()="t"]')
@@ -133,14 +135,76 @@ class IrgCertificateRequest(models.Model):
             if 'Instituto Raimon' not in text or 'B56488687' not in text:
                 continue
             for size in shape.xpath('.//*[local-name()="sz" or local-name()="szCs"]'):
-                size.set(qn('w:val'), '10')
+                size.set(qn('w:val'), '14')
             for spacing in shape.xpath('.//*[local-name()="spacing"]'):
                 spacing.set(qn('w:before'), '0')
                 spacing.set(qn('w:after'), '0')
             for indent in shape.xpath('.//*[local-name()="ind"]'):
                 indent.set(qn('w:left'), '0')
-            for run_spacing in shape.xpath('.//*[local-name()="rPr"]/*[local-name()="spacing"]'):
-                run_spacing.set(qn('w:val'), '-8')
+
+    @staticmethod
+    def _restore_vertical_legal_text(tpl_path, docx_path):
+        """Restore the legal text box if python-docx drops it on save."""
+        with ZipFile(tpl_path) as template_zip:
+            template_xml = etree.fromstring(
+                template_zip.read('word/document.xml')
+            )
+        with ZipFile(docx_path) as output_zip:
+            output_xml_bytes = output_zip.read('word/document.xml')
+
+        if b'B56488687' in output_xml_bytes and b'B-603323' in output_xml_bytes:
+            return
+
+        legal_runs = []
+        legal_paragraphs = template_xml.xpath(
+            './/*[local-name()="body"]/*[local-name()="p" and '
+            './/*[local-name()="t" and contains(text(), "B56488687")]]'
+        )
+        if legal_paragraphs:
+            legal_runs = [
+                child for child in legal_paragraphs[0]
+                if etree.QName(child).localname == 'r'
+                and child.xpath('.//*[local-name()="txbxContent"]')
+            ]
+
+        if not legal_runs:
+            return
+
+        output_xml = etree.fromstring(output_xml_bytes)
+        first_paragraphs = output_xml.xpath('.//*[local-name()="body"]/*[local-name()="p"]')
+        if not first_paragraphs:
+            return
+
+        first_paragraph = first_paragraphs[0]
+        insert_index = 1 if (
+            len(first_paragraph) and etree.QName(first_paragraph[0]).localname == 'pPr'
+        ) else 0
+        for legal_run in legal_runs:
+            first_paragraph.insert(insert_index, deepcopy(legal_run))
+            insert_index += 1
+
+        tmp_zip = tempfile.NamedTemporaryFile(
+            suffix='.docx', delete=False, prefix='cert_partial_legal_'
+        )
+        tmp_zip.close()
+        try:
+            with ZipFile(docx_path) as source_zip, ZipFile(
+                tmp_zip.name, 'w', ZIP_DEFLATED
+            ) as target_zip:
+                for item in source_zip.infolist():
+                    data = source_zip.read(item.filename)
+                    if item.filename == 'word/document.xml':
+                        data = etree.tostring(
+                            output_xml,
+                            xml_declaration=True,
+                            encoding='UTF-8',
+                            standalone=True,
+                        )
+                    target_zip.writestr(item, data)
+            os.replace(tmp_zip.name, docx_path)
+        finally:
+            if os.path.exists(tmp_zip.name):
+                os.unlink(tmp_zip.name)
 
     def _get_template_path(self):
         if self.document_type == 'gradebook_partial':
@@ -458,4 +522,5 @@ class IrgCertificateRequest(models.Model):
         )
         doc.save(tmp_docx.name)
         tmp_docx.close()
+        self._restore_vertical_legal_text(tpl_path, tmp_docx.name)
         return tmp_docx.name
