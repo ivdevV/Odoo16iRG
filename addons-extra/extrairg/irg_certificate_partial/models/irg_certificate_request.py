@@ -4,7 +4,7 @@ import tempfile
 import logging
 from copy import deepcopy
 from docx import Document as DocxDocument
-from docx.shared import Pt
+from docx.shared import Pt, Twips
 from docx.oxml.ns import qn
 
 from odoo import models, fields, api, _
@@ -15,6 +15,17 @@ _logger = logging.getLogger(__name__)
 
 class IrgCertificateRequest(models.Model):
     _inherit = 'irg.certificate.request'
+
+    _PARTIAL_TEXT_INDENT = Twips(-172)
+    _PARTIAL_TABLE_WIDTH = Twips(9010)
+    _PARTIAL_PAGE_TEXT_WIDTH = Twips(8055)
+    _PARTIAL_TEXT_RIGHT_INDENT = (
+        _PARTIAL_PAGE_TEXT_WIDTH - _PARTIAL_TEXT_INDENT - _PARTIAL_TABLE_WIDTH
+    )
+    _DPTO_ACADEMICO_INTRO = (
+        'El Instituto Raimon Gaja, con CIF B-56488687 en calle '
+        'Córcega 213, 1º 2ª, 08036 Barcelona.'
+    )
 
     @staticmethod
     def _replace_paragraph_text_with_bold_segments(paragraph, segments):
@@ -40,6 +51,56 @@ class IrgCertificateRequest(models.Model):
                 run._r.insert(0, deepcopy(base_rpr))
             run.bold = bool(bold)
 
+    def _format_partial_body_paragraph(self, paragraph, justify=True):
+        """Align body text with the grade table width.
+
+        The official notes table has a fixed width and a small negative table
+        indent. Matching the surrounding paragraphs to that geometry keeps the
+        text visually constrained to the same amplitude as the table.
+        """
+        fmt = paragraph.paragraph_format
+        fmt.left_indent = self._PARTIAL_TEXT_INDENT
+        fmt.right_indent = self._PARTIAL_TEXT_RIGHT_INDENT
+        if justify:
+            paragraph.alignment = 3  # WD_ALIGN_PARAGRAPH.JUSTIFY
+        return paragraph
+
+    def _replace_dpto_academico_intro(self, doc):
+        """Apply the requested issuer sentence for academic department signer."""
+        if self.signer != 'dpto_academico':
+            return
+        for para in doc.paragraphs:
+            text = ''.join(run.text for run in para.runs).strip()
+            if text == 'El Departamento Académico del Instituto Raimon Gaja, S.L.':
+                para.text = self._DPTO_ACADEMICO_INTRO
+                self._format_partial_body_paragraph(para, justify=True)
+                break
+
+    def _format_partial_closing_paragraphs(self, doc):
+        """Justify closing text and constrain it to the grade table width."""
+        for para in doc.paragraphs:
+            if 'Para que así conste' in para.text:
+                self._format_partial_body_paragraph(para, justify=True)
+
+    @staticmethod
+    def _compact_vertical_legal_text(doc):
+        """Reduce the vertical legal text font to avoid clipping in the PDF."""
+        for shape in doc.element.xpath('.//*[local-name()="txbxContent"]'):
+            text = ''.join(
+                node.text or '' for node in shape.xpath('.//*[local-name()="t"]')
+            )
+            if 'Instituto Raimon' not in text or 'B56488687' not in text:
+                continue
+            for size in shape.xpath('.//*[local-name()="sz" or local-name()="szCs"]'):
+                size.set(qn('w:val'), '10')
+            for spacing in shape.xpath('.//*[local-name()="spacing"]'):
+                spacing.set(qn('w:before'), '0')
+                spacing.set(qn('w:after'), '0')
+            for indent in shape.xpath('.//*[local-name()="ind"]'):
+                indent.set(qn('w:left'), '0')
+            for run_spacing in shape.xpath('.//*[local-name()="rPr"]/*[local-name()="spacing"]'):
+                run_spacing.set(qn('w:val'), '-8')
+
     def _get_template_path(self):
         if self.document_type == 'gradebook_partial':
             signer_suffix = 'dpto' if self.signer == 'dpto_academico' else 'raimon'
@@ -62,12 +123,15 @@ class IrgCertificateRequest(models.Model):
 
         doc = DocxDocument(tpl_path)
         self._scale_document_fonts(doc, percent=75)
+        self._replace_dpto_academico_intro(doc)
+        self._compact_vertical_legal_text(doc)
 
         # --- Collect data ---------------------------------------------------
         partner = self.partner_id
+        identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
         id_label = (
-            partner.l10n_latam_identification_type_id.name
-            if partner.l10n_latam_identification_type_id
+            identification_type.name
+            if identification_type
             else 'DNI/Pasaporte'
         )
         documento = '%s %s' % (id_label, partner.vat or '')
@@ -142,8 +206,9 @@ class IrgCertificateRequest(models.Model):
 
         # Formatear el tipo de documento de identidad
         id_label = 'DNI/Pasaporte'
-        if partner.l10n_latam_identification_type_id:
-            id_name = partner.l10n_latam_identification_type_id.name.lower()
+        identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
+        if identification_type:
+            id_name = identification_type.name.lower()
             if 'pasaporte' in id_name or 'passport' in id_name:
                 id_label = 'pasaporte'
             elif 'dni' in id_name:
@@ -185,27 +250,23 @@ class IrgCertificateRequest(models.Model):
                     (course_name, True),
                     (' durante el período académico %s.' % periodo_str, False),
                 ])
-                para.alignment = 0 # WD_ALIGN_PARAGRAPH.LEFT
+                self._format_partial_body_paragraph(para, justify=True)
                 para.paragraph_format.space_after = Pt(12)
                 
-                # Crear el segundo párrafo copiando estilo, márgenes y alineación a la izquierda
+                # Crear el segundo párrafo copiando estilo, márgenes y alineación justificada
                 p_2 = doc.add_paragraph(sentence_2)
                 p_2.style = para.style
-                p_2.alignment = 0
-                p_2.paragraph_format.left_indent = para.paragraph_format.left_indent
-                p_2.paragraph_format.right_indent = para.paragraph_format.right_indent
+                self._format_partial_body_paragraph(p_2, justify=True)
                 p_2.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
                 p_2.paragraph_format.space_before = para.paragraph_format.space_before
                 p_2.paragraph_format.space_after = Pt(12)
                 p_2.paragraph_format.line_spacing = para.paragraph_format.line_spacing
                 para._p.addnext(p_2._p)
                 
-                # Crear el tercer párrafo copiando estilo, márgenes y alineación a la izquierda
+                # Crear el tercer párrafo copiando estilo, márgenes y alineación justificada
                 p_3 = doc.add_paragraph(sentence_3)
                 p_3.style = para.style
-                p_3.alignment = 0
-                p_3.paragraph_format.left_indent = para.paragraph_format.left_indent
-                p_3.paragraph_format.right_indent = para.paragraph_format.right_indent
+                self._format_partial_body_paragraph(p_3, justify=True)
                 p_3.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
                 p_3.paragraph_format.space_before = para.paragraph_format.space_before
                 p_3.paragraph_format.space_after = Pt(12)
@@ -231,6 +292,7 @@ class IrgCertificateRequest(models.Model):
         for para in doc.paragraphs:
             for old, new in replacements.items():
                 self._replace_in_paragraph(para, old, new)
+        self._format_partial_closing_paragraphs(doc)
         for section in doc.sections:
             for para in section.header.paragraphs:
                 for old, new in replacements.items():
