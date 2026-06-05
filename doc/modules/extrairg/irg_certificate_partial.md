@@ -34,6 +34,7 @@ El módulo `irg_certificate_partial` implementa la lógica específica para la g
 - **Cálculo de la Nota Media:** La Nota Media final reflejada en el certificado se calcula de forma dinámica, promediando única y exclusivamente aquellas asignaturas que dispongan de calificaciones completas (los valores float) y excluyendo los registros marcados como `"Pendiente"`. Si todas las asignaturas obligatorias están pendientes, la Nota Media final se reporta como `"Pendiente"`.
 - **Ajustes de Diseño en Plantilla Word:**
   - **Adición de Dos Puntos en "CERTIFICA":** Se busca dinámicamente el bloque de texto exacto `"CERTIFICA"` en los párrafos de la plantilla Word y se reemplaza por `"CERTIFICA:"` para alinearse a las directrices formales.
+  - **Alineación de bloques fijos:** La línea del firmante, `CERTIFICA:` y el bloque textual de firma se ajustan a la misma retícula de la tabla de notas para evitar que queden desplazados respecto al cuerpo del certificado.
   - **Texto antes y después de la tabla:** Los párrafos descriptivos, la frase de introducción de calificaciones y el cierre se constriñen al ancho de la tabla oficial de notas y se justifican para mantener una caja visual uniforme con dicha tabla.
   - **Espaciado de Párrafos (`Pt(12)`):** Se define un margen inferior (`space_after`) de `Pt(12)` en cada uno de los tres nuevos párrafos explicativos para garantizar un espaciado vertical armónico.
   - **Réplica de Márgenes y Sangrías:** Para asegurar que los párrafos adicionales mantengan la coherencia con el diseño del documento, se copian las propiedades de formato de márgenes e indentación del párrafo original: `first_line_indent`, `space_before` y `line_spacing`, y se normaliza el ancho de caja contra la tabla de notas.
@@ -61,6 +62,7 @@ Hereda el modelo base `irg.certificate.request` para modularizar la lógica de r
   - Genera dinámicamente la tabla XML del documento docx reemplazando los textos de código, nombre y nota.
   - Sobrescribe la celda del pie de tabla ("Nota Media") para mostrar el promedio dinámico calculado o `"Pendiente"` si corresponde.
   - Corrige el texto del párrafo `"CERTIFICA"` agregándole los dos puntos (`"CERTIFICA:"`).
+  - Normaliza los bloques fijos de la plantilla (`firmante`, `CERTIFICA:` y firma textual) con `_format_partial_static_paragraphs()` para que usen la misma sangría y ancho de caja que la tabla de notas.
   - Si el firmante seleccionado es `dpto_academico`, reemplaza la frase de emisor por: `"El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona."`.
   - Justifica el cierre `"Para que así conste..."` y lo constriñe al mismo ancho de la tabla de notas mediante `_format_partial_closing_paragraphs()`.
   - Compacta el texto legal vertical del lateral con `_compact_vertical_legal_text()` para evitar recortes en la conversión final a PDF.
@@ -82,8 +84,9 @@ El resto de la frase conserva el estilo normal de la plantilla. La segmentación
 El módulo incluye un set de pruebas en `tests/test_partial.py`:
 - `test_01_partial_gradebook_fill_template`: Crea un estudiante con dos asignaturas obligatorias. Una completa (2/2 exámenes calificados) y otra incompleta (1/2 exámenes). Valida que se genere el certificado parcial, que la asignatura completa tenga su nota numérica, la incompleta aparezca como `"Pendiente"`, y la nota media final sea igual a la nota de la asignatura completa.
 - `test_02_partial_gradebook_first_sentence_has_bold_student_and_course`: Genera el certificado parcial y abre el `.docx` resultante para validar que la primera frase contiene el alumno y el curso esperados, y que ambos aparecen en runs independientes con `bold == True`.
-- `test_03_partial_gradebook_dpto_intro_and_layout_are_adjusted`: Genera el certificado parcial con firmante `dpto_academico` y valida que la frase de emisor se sustituye por la dirección fiscal solicitada, además de comprobar que la introducción, la primera frase y el cierre quedan justificados con la sangría de tabla esperada.
-- `test_04_partial_gradebook_all_pending_fill_template`: Comprueba el comportamiento del módulo en casos límites donde todas las asignaturas obligatorias están pendientes. Valida que el certificado se cree correctamente y que la nota media final se imprima como `"Pendiente"`.
+- `test_03_partial_gradebook_dpto_intro_and_layout_are_adjusted`: Genera el certificado parcial con firmante `dpto_academico` y valida que la frase de emisor se sustituye por la dirección fiscal solicitada, que la introducción queda alineada a la retícula de tabla y que la primera frase y el cierre quedan justificados con la sangría esperada.
+- `test_04_partial_gradebook_raimon_intro_certifica_and_signature_align_with_table`: Genera el certificado parcial con firmante `raimon` y valida que la línea del firmante, `CERTIFICA:` y la firma textual comparten la misma sangría y ancho de caja que la tabla de notas.
+- `test_05_partial_gradebook_all_pending_fill_template`: Comprueba el comportamiento del módulo en casos límites donde todas las asignaturas obligatorias están pendientes. Valida que el certificado se cree correctamente y que la nota media final se imprima como `"Pendiente"`.
 
 ### Validación documentada de los cambios de formato
 
@@ -92,13 +95,13 @@ Validación realizada sobre los cambios de negritas, frase de departamento acad�
 ```bash
 python3 -m py_compile addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
 git diff --check -- addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py doc/modules/extrairg/irg_certificate_partial.md
-docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_certificate_partial_target5 --test-enable --stop-after-init -i irg_certificate_partial --test-tags /irg_certificate_partial --http-port=8099 --log-level=test
+docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_certificate_partial_align_full2 --test-enable --stop-after-init -i irg_certificate_partial --test-tags /irg_certificate_partial --http-port=8099 --log-level=test
 ```
 
 Los comandos finalizaron correctamente. La validación Odoo reportó:
 
 ```text
-odoo.tests.result: 0 failed, 0 error(s) of 4 tests when loading database 'test_irg_certificate_partial_target5'
+odoo.tests.result: 0 failed, 0 error(s) of 5 tests when loading database 'test_irg_certificate_partial_align_full2'
 ```
 
 ---
@@ -116,7 +119,7 @@ docker exec -it odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i ir
 
 ### [16.0.1.0.0] - 2026-06-05
 - **Corrección de formato:** En el certificado parcial de notas, la primera frase descriptiva del `.docx` ahora aplica negrita solo al nombre del alumno y al nombre del curso/máster mediante runs segmentados.
-- **Corrección de diseño:** Los textos antes y después de la tabla se justifican y se ajustan a la amplitud de la tabla de notas; el texto legal vertical se compacta para evitar recortes en PDF.
+- **Corrección de diseño:** Los textos antes y después de la tabla se justifican y se ajustan a la amplitud de la tabla de notas; la línea del firmante, `CERTIFICA:` y la firma textual también se alinean a la misma retícula; el texto legal vertical se compacta para evitar recortes en PDF.
 - **Cambio condicional por firmante:** Cuando el firmante seleccionado es `dpto_academico`, la frase inicial del emisor pasa a ser `"El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona."`.
 - **Calidad:** Añadidos tests automatizados para verificar negritas de alumno/curso, frase del departamento académico, formato de anchura/justificación y generación Odoo del certificado parcial.
 - **Compatibilidad:** El formateo de documento de identidad ahora tolera bases sin `l10n_latam_identification_type_id`, usando `DNI/Pasaporte` por defecto.

@@ -82,6 +82,29 @@ class IrgCertificateRequest(models.Model):
             if 'Para que así conste' in para.text:
                 self._format_partial_body_paragraph(para, justify=True)
 
+    def _format_partial_static_paragraphs(self, doc):
+        """Align fixed template paragraphs with the notes table grid."""
+        signer_intro_markers = (
+            'Raimon Gaja Jaumeandreu, con DNI',
+            self._DPTO_ACADEMICO_INTRO,
+        )
+        signature_markers = (
+            'Raimon Gaja Jaumeandreu',
+            'Departamento Académico',
+            'Instituto Raimon Gaja',
+        )
+        for para in doc.paragraphs:
+            text = para.text.strip()
+            if not text:
+                continue
+            if (
+                text == 'CERTIFICA:'
+                or any(marker in text for marker in signer_intro_markers)
+                or any(marker in text for marker in signature_markers)
+            ):
+                self._format_partial_body_paragraph(para, justify=False)
+                para.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
+
     @staticmethod
     def _compact_vertical_legal_text(doc):
         """Reduce the vertical legal text font to avoid clipping in the PDF."""
@@ -238,6 +261,8 @@ class IrgCertificateRequest(models.Model):
             full_text = ''.join(r.text for r in para.runs).strip()
             if full_text == 'CERTIFICA':
                 para.text = 'CERTIFICA:'
+                self._format_partial_body_paragraph(para, justify=False)
+                para.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
 
         for para in list(doc.paragraphs):
             full_text = ''.join(r.text for r in para.runs)
@@ -293,6 +318,7 @@ class IrgCertificateRequest(models.Model):
             for old, new in replacements.items():
                 self._replace_in_paragraph(para, old, new)
         self._format_partial_closing_paragraphs(doc)
+        self._format_partial_static_paragraphs(doc)
         for section in doc.sections:
             for para in section.header.paragraphs:
                 for old, new in replacements.items():

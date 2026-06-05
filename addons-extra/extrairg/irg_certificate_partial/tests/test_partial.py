@@ -210,12 +210,56 @@ class TestIrgCertificatePartial(TransactionCase):
             'El Instituto Raimon Gaja, con CIF B-56488687 en calle '
             'Córcega 213, 1º 2ª, 08036 Barcelona.',
         )
-        for paragraph in (intro, first_sentence, closing):
+        self.assertIsNotNone(intro)
+        self.assertEqual(intro.alignment, 0)
+        self.assertEqual(intro.paragraph_format.left_indent.twips, -172)
+        self.assertEqual(intro.paragraph_format.right_indent.twips, -783)
+        for paragraph in (first_sentence, closing):
             self.assertIsNotNone(paragraph)
             self.assertEqual(paragraph.alignment, 3)
             self.assertEqual(paragraph.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(paragraph.paragraph_format.right_indent.twips, -783)
 
-    def test_04_partial_gradebook_all_pending_fill_template(self):
+    def test_04_partial_gradebook_raimon_intro_certifica_and_signature_align_with_table(self):
+        """Raimon signer header, CERTIFICA and signature use the same text grid."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'signer': 'raimon',
+            'state': 'draft',
+        })
+
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+
+        signer_intro = next(
+            (
+                para for para in document.paragraphs
+                if 'Raimon Gaja Jaumeandreu' in para.text
+                and 'Director General' in para.text
+            ),
+            None,
+        )
+        certifica = next(
+            (para for para in document.paragraphs if para.text.strip() == 'CERTIFICA:'),
+            None,
+        )
+        signature_name = next(
+            (
+                para for para in document.paragraphs
+                if 'Raimon Gaja Jaumeandreu' in para.text
+                and 'Instituto Raimon Gaja' in para.text
+            ),
+            None,
+        )
+
+        for paragraph in (signer_intro, certifica, signature_name):
+            self.assertIsNotNone(paragraph)
+            self.assertEqual(paragraph.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(paragraph.paragraph_format.right_indent.twips, -783)
+
+    def test_05_partial_gradebook_all_pending_fill_template(self):
         """Check template filling logic when all compulsory subjects are pending."""
         # Unlink results for Subject A to make it pending too
         self.gb_subj_a.gradebook_result_ids.unlink()
