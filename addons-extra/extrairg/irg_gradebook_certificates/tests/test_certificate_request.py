@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from zipfile import ZipFile
+
 from odoo import fields
 from odoo.tests.common import TransactionCase
 from odoo.exceptions import ValidationError, UserError
@@ -6,6 +8,23 @@ from odoo.exceptions import ValidationError, UserError
 
 class TestIrgCertificateRequest(TransactionCase):
     """Basic integration tests for irg.certificate.request."""
+
+    def _assert_bottom_right_arcs_are_visible_in_xml(self, res_file):
+        with ZipFile(res_file) as docx_zip:
+            document_xml = docx_zip.read('word/document.xml').decode(
+                'utf-8', errors='ignore'
+            )
+            rels_xml = docx_zip.read('word/_rels/document.xml.rels').decode(
+                'utf-8', errors='ignore'
+            )
+            package_names = set(docx_zip.namelist())
+
+        self.assertIn('name="Bottom Right Arcs"', document_xml)
+        self.assertIn('behindDoc="1"', document_xml)
+        self.assertIn('relativeFrom="page"><wp:align>right</wp:align>', document_xml)
+        self.assertIn('relativeFrom="page"><wp:align>bottom</wp:align>', document_xml)
+        self.assertIn('Target="media/bottom_right_arcs.png"', rels_xml)
+        self.assertIn('word/media/bottom_right_arcs.png', package_names)
 
     @classmethod
     def setUpClass(cls):
@@ -41,6 +60,8 @@ class TestIrgCertificateRequest(TransactionCase):
             'gender': 'm',
             'first_name': 'Test',
             'last_name': 'Student',
+            'email': 'test.certificate@example.com',
+            'birth_date': '1990-01-01',
         })
         cls.gradebook = cls.env['app.gradebook.student'].create({
             'partner_id': cls.partner.id,
@@ -146,3 +167,14 @@ class TestIrgCertificateRequest(TransactionCase):
         })
         self.gradebook.invalidate_recordset(['certificate_count'])
         self.assertEqual(self.gradebook.certificate_count, initial_count + 1)
+
+    def test_09_bottom_right_arcs_are_added_to_base_word_certificates(self):
+        for document_type in ('gradebook', 'attendance', 'enrollment'):
+            cert = self.env['irg.certificate.request'].create({
+                'gradebook_student_id': self.gradebook.id,
+                'certificate_type': 'digital',
+                'document_type': document_type,
+                'state': 'draft',
+            })
+            res_file = cert._fill_template()
+            self._assert_bottom_right_arcs_are_visible_in_xml(res_file)

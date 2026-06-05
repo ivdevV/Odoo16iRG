@@ -532,4 +532,5 @@ class IrgCertificateRequest(models.Model):
         doc.save(tmp_docx.name)
         tmp_docx.close()
         self._restore_vertical_legal_text(tpl_path, tmp_docx.name)
+        self._ensure_bottom_right_arcs(tmp_docx.name)
         return tmp_docx.name

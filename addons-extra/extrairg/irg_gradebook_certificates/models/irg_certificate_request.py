@@ -4,10 +4,12 @@ import logging
 import os
 import subprocess
 import tempfile
+from zipfile import ZipFile, ZIP_DEFLATED
 
 from docx import Document as DocxDocument
 from docx.oxml.ns import qn
 from copy import deepcopy
+from lxml import etree
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
@@ -469,6 +471,147 @@ class IrgCertificateRequest(models.Model):
                         new_val = max(0, int(round(int(raw) * percent / 100)))
                         el.set(attr, str(new_val))
 
+    @staticmethod
+    def _next_relationship_id(rels_xml):
+        used_numbers = []
+        for rel in rels_xml:
+            rel_id = rel.get('Id', '')
+            if rel_id.startswith('rId') and rel_id[3:].isdigit():
+                used_numbers.append(int(rel_id[3:]))
+        return 'rId%s' % ((max(used_numbers) if used_numbers else 0) + 1)
+
+    @staticmethod
+    def _next_docpr_id(document_xml):
+        ids = []
+        for docpr in document_xml.xpath('.//*[local-name()="docPr"]'):
+            raw_id = docpr.get('id')
+            if raw_id and raw_id.isdigit():
+                ids.append(int(raw_id))
+        return (max(ids) if ids else 0) + 1
+
+    def _ensure_bottom_right_arcs(self, docx_path):
+        """Add the global blue arcs decoration at the page bottom-right."""
+        module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        source_image = os.path.join(module_path, 'static', 'src', 'img', 'RCOS.png')
+        if not os.path.isfile(source_image):
+            return
+
+        rel_ns = 'http://schemas.openxmlformats.org/package/2006/relationships'
+        rel_embed = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed'
+        media_name = 'word/media/bottom_right_arcs.png'
+        rel_target = 'media/bottom_right_arcs.png'
+
+        with open(source_image, 'rb') as image_file:
+            image_data = image_file.read()
+        with ZipFile(docx_path) as output_zip:
+            output_xml = etree.fromstring(output_zip.read('word/document.xml'))
+            output_rels = etree.fromstring(
+                output_zip.read('word/_rels/document.xml.rels')
+            )
+
+        if output_xml.xpath('.//*[local-name()="docPr" and @name="Bottom Right Arcs"]'):
+            return
+
+        output_rel = next(
+            (rel for rel in output_rels if rel.get('Target') == rel_target),
+            None,
+        )
+        if output_rel is None:
+            rel_id = self._next_relationship_id(output_rels)
+            output_rel = etree.Element('{%s}Relationship' % rel_ns)
+            output_rel.set('Id', rel_id)
+            output_rel.set(
+                'Type',
+                'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image',
+            )
+            output_rel.set('Target', rel_target)
+            output_rels.append(output_rel)
+        else:
+            rel_id = output_rel.get('Id')
+
+        docpr_id = self._next_docpr_id(output_xml)
+        drawing_run = etree.fromstring(('''
+<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+     xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+     xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+     xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+     xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <w:drawing>
+    <wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0"
+               relativeHeight="0" behindDoc="1" locked="0" layoutInCell="1"
+               allowOverlap="1">
+      <wp:simplePos x="0" y="0"/>
+      <wp:positionH relativeFrom="page"><wp:align>right</wp:align></wp:positionH>
+      <wp:positionV relativeFrom="page"><wp:align>bottom</wp:align></wp:positionV>
+      <wp:extent cx="3200000" cy="2820000"/>
+      <wp:effectExtent l="0" t="0" r="0" b="0"/>
+      <wp:wrapNone/>
+      <wp:docPr id="%s" name="Bottom Right Arcs"/>
+      <wp:cNvGraphicFramePr/>
+      <a:graphic>
+        <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+          <pic:pic>
+            <pic:nvPicPr>
+              <pic:cNvPr id="%s" name="Bottom Right Arcs"/>
+              <pic:cNvPicPr/>
+              <pic:nvPr/>
+            </pic:nvPicPr>
+            <pic:blipFill rotWithShape="1">
+              <a:blip r:embed="%s"/>
+              <a:stretch><a:fillRect/></a:stretch>
+            </pic:blipFill>
+            <pic:spPr bwMode="auto">
+              <a:xfrm><a:off x="0" y="0"/><a:ext cx="3200000" cy="2820000"/></a:xfrm>
+              <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+            </pic:spPr>
+          </pic:pic>
+        </a:graphicData>
+      </a:graphic>
+    </wp:anchor>
+  </w:drawing>
+</w:r>
+''' % (docpr_id, docpr_id, rel_id)).encode('utf-8'))
+
+        body_paragraphs = output_xml.xpath(
+            './/*[local-name()="body"]/*[local-name()="p"]'
+        )
+        if not body_paragraphs:
+            return
+        body_paragraphs[-1].append(drawing_run)
+
+        tmp_zip = tempfile.NamedTemporaryFile(
+            suffix='.docx', delete=False, prefix='cert_arcs_'
+        )
+        tmp_zip.close()
+        try:
+            with ZipFile(docx_path) as source_zip, ZipFile(
+                tmp_zip.name, 'w', ZIP_DEFLATED
+            ) as target_zip:
+                existing_names = set(source_zip.namelist())
+                for item in source_zip.infolist():
+                    data = source_zip.read(item.filename)
+                    if item.filename == 'word/document.xml':
+                        data = etree.tostring(
+                            output_xml,
+                            xml_declaration=True,
+                            encoding='UTF-8',
+                            standalone=True,
+                        )
+                    elif item.filename == 'word/_rels/document.xml.rels':
+                        data = etree.tostring(
+                            output_rels,
+                            xml_declaration=True,
+                            encoding='UTF-8',
+                            standalone=True,
+                        )
+                    target_zip.writestr(item, data)
+                if media_name not in existing_names:
+                    target_zip.writestr(media_name, image_data)
+            os.replace(tmp_zip.name, docx_path)
+        finally:
+            if os.path.exists(tmp_zip.name):
+                os.unlink(tmp_zip.name)
+
     def _fill_template(self):
         """Open the .docx template, fill placeholders and table, return bytes."""
         self.ensure_one()
@@ -483,9 +626,10 @@ class IrgCertificateRequest(models.Model):
 
         # --- Collect data ---------------------------------------------------
         partner = self.partner_id
+        identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
         id_label = (
-            partner.l10n_latam_identification_type_id.name
-            if partner.l10n_latam_identification_type_id
+            identification_type.name
+            if identification_type
             else 'DNI/Pasaporte'
         )
         documento = '%s %s' % (id_label, partner.vat or '')
@@ -566,6 +710,7 @@ class IrgCertificateRequest(models.Model):
             )
             doc.save(tmp_docx.name)
             tmp_docx.close()
+            self._ensure_bottom_right_arcs(tmp_docx.name)
             return tmp_docx.name
 
         # --- Fill the grades table (table index 0) --------------------------
@@ -692,6 +837,7 @@ class IrgCertificateRequest(models.Model):
         )
         doc.save(tmp_docx.name)
         tmp_docx.close()
+        self._ensure_bottom_right_arcs(tmp_docx.name)
         return tmp_docx.name
 
     @staticmethod
