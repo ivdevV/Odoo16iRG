@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_child_elements_bin_size" model="ir.ui.view">
+        <field name="name">slide.slide.form.child.elements.bin.size.irg</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="irg_elearning_editable_sections.view_slide_slide_form_child_elements"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='child_slide_ids']" position="attributes">
+                <attribute name="context">{'default_channel_id': channel_id, 'default_parent_slide_id': id, 'default_inherit_limitations_from_parent': True, 'bin_size': True}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

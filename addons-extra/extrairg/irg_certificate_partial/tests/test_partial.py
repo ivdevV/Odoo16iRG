@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from docx import Document as DocxDocument
+
 from odoo import fields
 from odoo.tests.common import TransactionCase
 
@@ -41,6 +43,8 @@ class TestIrgCertificatePartial(TransactionCase):
             'gender': 'm',
             'first_name': 'Test',
             'last_name': 'Student',
+            'email': 'test.partial@example.com',
+            'birth_date': '1990-01-01',
         })
 
         # Gradebook template config
@@ -125,7 +129,153 @@ class TestIrgCertificatePartial(TransactionCase):
         res_file = cert._fill_template()
         self.assertTrue(res_file)
 
-    def test_02_partial_gradebook_all_pending_fill_template(self):
+    def test_02_partial_gradebook_first_sentence_has_bold_student_and_course(self):
+        """Student and course names are bold in the first descriptive line."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+        paragraph = next(
+            (
+                para for para in document.paragraphs
+                if 'Test Student Partial' in para.text
+                and 'Test Course Partial' in para.text
+            ),
+            None,
+        )
+
+        self.assertIsNotNone(paragraph)
+        self.assertIn(
+            'Que Test Student Partial con DNI/Pasaporte  consta matriculado/a en '
+            'el Test Course Partial durante el período académico',
+            paragraph.text,
+        )
+        self.assertTrue(
+            any(
+                run.text == 'Test Student Partial' and run.bold is True
+                for run in paragraph.runs
+            )
+        )
+        self.assertTrue(
+            any(
+                run.text == 'Test Course Partial' and run.bold is True
+                for run in paragraph.runs
+            )
+        )
+
+    def test_03_partial_gradebook_dpto_intro_and_layout_are_adjusted(self):
+        """Department signer uses requested issuer text and table-width layout."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'signer': 'dpto_academico',
+            'state': 'draft',
+        })
+
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+
+        intro = next(
+            (
+                para for para in document.paragraphs
+                if 'El Instituto Raimon Gaja, con CIF B-56488687' in para.text
+            ),
+            None,
+        )
+        first_sentence = next(
+            (
+                para for para in document.paragraphs
+                if 'Test Student Partial' in para.text
+                and 'Test Course Partial' in para.text
+            ),
+            None,
+        )
+        closing = next(
+            (
+                para for para in document.paragraphs
+                if 'Para que así conste' in para.text
+            ),
+            None,
+        )
+        signature_paragraph = next(
+            (
+                para for para in document.paragraphs
+                if 'Departamento Académico' in para.text
+                and 'Instituto Raimon Gaja' in para.text
+            ),
+            None,
+        )
+
+        self.assertIsNotNone(intro)
+        self.assertEqual(
+            intro.text,
+            'El Instituto Raimon Gaja, con CIF B-56488687 en calle '
+            'Córcega 213, 1º 2ª, 08036 Barcelona.',
+        )
+        self.assertIsNotNone(intro)
+        self.assertEqual(intro.alignment, 0)
+        self.assertEqual(intro.paragraph_format.left_indent.twips, -172)
+        self.assertEqual(intro.paragraph_format.right_indent.twips, -783)
+        for paragraph in (first_sentence, closing):
+            self.assertIsNotNone(paragraph)
+            self.assertEqual(paragraph.alignment, 3)
+            self.assertEqual(paragraph.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(paragraph.paragraph_format.right_indent.twips, -783)
+        self.assertIsNotNone(signature_paragraph)
+        self.assertEqual(
+            signature_paragraph.text.splitlines(),
+            ['Departamento Académico', 'Instituto Raimon Gaja'],
+        )
+        self.assertEqual(signature_paragraph.alignment, 0)
+        self.assertEqual(signature_paragraph.paragraph_format.left_indent.twips, -172)
+        self.assertEqual(signature_paragraph.paragraph_format.right_indent.twips, -783)
+
+    def test_04_partial_gradebook_raimon_intro_certifica_and_signature_align_with_table(self):
+        """Raimon signer header, CERTIFICA and signature use the same text grid."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'signer': 'raimon',
+            'state': 'draft',
+        })
+
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+
+        signer_intro = next(
+            (
+                para for para in document.paragraphs
+                if 'Raimon Gaja Jaumeandreu' in para.text
+                and 'Director General' in para.text
+            ),
+            None,
+        )
+        certifica = next(
+            (para for para in document.paragraphs if para.text.strip() == 'CERTIFICA:'),
+            None,
+        )
+        signature_name = next(
+            (
+                para for para in document.paragraphs
+                if 'Raimon Gaja Jaumeandreu' in para.text
+                and 'Instituto Raimon Gaja' in para.text
+            ),
+            None,
+        )
+
+        for paragraph in (signer_intro, certifica, signature_name):
+            self.assertIsNotNone(paragraph)
+            self.assertEqual(paragraph.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(paragraph.paragraph_format.right_indent.twips, -783)
+
+    def test_05_partial_gradebook_all_pending_fill_template(self):
         """Check template filling logic when all compulsory subjects are pending."""
         # Unlink results for Subject A to make it pending too
         self.gb_subj_a.gradebook_result_ids.unlink()
