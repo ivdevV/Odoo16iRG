@@ -23,6 +23,7 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 - Generación de PDF QWeb del certificado de notas.
 - Wizard de generación desde el backend.
 - Decoración global de arcos azules en la esquina inferior derecha de los certificados Word/PDF generados.
+- Formato alineado del certificado final de notas, equivalente al certificado parcial: bloques estáticos alineados a la retícula de tabla, `CERTIFICA:`, cierre justificado, firma en dos líneas y texto legal vertical compacto.
 - Tienda online para pedido de certificados por el alumno (con pago).
 - Cron para procesar solicitudes pendientes.
 - Plantillas de email para notificaciones de estado.
@@ -46,19 +47,20 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 - Requiere `security/ir.model.access.csv` y `security/record_rules.xml`.
 - Usa `data/sequence_data.xml`, `data/product_data.xml`, `data/mail_templates.xml`, `data/cron_data.xml`.
 - El helper `_ensure_bottom_right_arcs()` inserta `static/src/img/RCOS.png` en el `.docx` generado como `word/media/bottom_right_arcs.png`, con anclaje de página `right/bottom` y `behindDoc="1"`, para que no desplace texto, cierre ni firma. Se aplica a certificados completos, asistencia, matrícula y es reutilizado por el certificado parcial.
+- El certificado final de notas (`document_type == 'gradebook'`) aplica `_format_gradebook_static_paragraphs()`, `_compact_gradebook_vertical_legal_text()` y `_restore_gradebook_vertical_legal_text()` para mantener la estructura visual equivalente al certificado parcial. La firma `Departamento Académico Instituto Raimon Gaja` se convierte en dos líneas, el cierre se justifica con el ancho de la tabla, y el texto legal vertical se fuerza a 5 pt (`w:val="10"`) para evitar saltos de línea.
 
 ## Validación
 
 ```bash
 python3 -m py_compile addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
 git diff --check -- addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py doc/modules/extrairg/irg_gradebook_certificates.md doc/modules/extrairg/irg_certificate_partial.md
-docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_certificate_arcs_global_ok3_20260605 --test-enable --stop-after-init -i irg_gradebook_certificates,irg_certificate_partial --test-tags /irg_gradebook_certificates,/irg_certificate_partial --http-port=8099 --log-level=test
+docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_gradebook_final_partial_layout_20260605 --test-enable --stop-after-init -i irg_gradebook_certificates,irg_certificate_partial --test-tags /irg_gradebook_certificates,/irg_certificate_partial --http-port=8099 --log-level=test
 ```
 
 Resultado esperado:
 
 ```text
-odoo.tests.result: 0 failed, 0 error(s) of 14 tests when loading database 'test_irg_certificate_arcs_global_ok3_20260605'
+odoo.tests.result: 0 failed, 0 error(s) of 15 tests when loading database 'test_irg_gradebook_final_partial_layout_20260605'
 ```
 
 ## Instalación / Actualización

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from zipfile import ZipFile
 
+from docx import Document as DocxDocument
+
 from odoo import fields
 from odoo.tests.common import TransactionCase
 from odoo.exceptions import ValidationError, UserError
@@ -25,6 +27,18 @@ class TestIrgCertificateRequest(TransactionCase):
         self.assertIn('relativeFrom="page"><wp:align>bottom</wp:align>', document_xml)
         self.assertIn('Target="media/bottom_right_arcs.png"', rels_xml)
         self.assertIn('word/media/bottom_right_arcs.png', package_names)
+
+    def _assert_vertical_legal_text_is_visible_in_xml(self, res_file):
+        with ZipFile(res_file) as docx_zip:
+            document_xml = ''.join(
+                docx_zip.read(name).decode('utf-8', errors='ignore')
+                for name in docx_zip.namelist()
+                if name.endswith('.xml')
+            )
+
+        self.assertIn('B56488687', document_xml)
+        self.assertIn('B-603323', document_xml)
+        self.assertIn('w:val="10"', document_xml)
 
     @classmethod
     def setUpClass(cls):
@@ -178,3 +192,55 @@ class TestIrgCertificateRequest(TransactionCase):
             })
             res_file = cert._fill_template()
             self._assert_bottom_right_arcs_are_visible_in_xml(res_file)
+
+    def test_10_final_gradebook_layout_matches_partial_structure(self):
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'certificate_type': 'digital',
+            'document_type': 'gradebook',
+            'signer': 'dpto_academico',
+            'state': 'draft',
+        })
+
+        res_file = cert._fill_template()
+        self._assert_vertical_legal_text_is_visible_in_xml(res_file)
+        document = DocxDocument(res_file)
+
+        certifica = next(
+            (para for para in document.paragraphs if para.text.strip() == 'CERTIFICA:'),
+            None,
+        )
+        closing = next(
+            (
+                para for para in document.paragraphs
+                if 'Para que así conste' in para.text
+            ),
+            None,
+        )
+        signature_paragraph = next(
+            (
+                para for para in document.paragraphs
+                if para.text.splitlines() == [
+                    'Departamento Académico',
+                    'Instituto Raimon Gaja',
+                ]
+            ),
+            None,
+        )
+
+        self.assertIsNotNone(certifica)
+        self.assertEqual(certifica.alignment, 0)
+        self.assertEqual(certifica.paragraph_format.left_indent.twips, -172)
+        self.assertEqual(certifica.paragraph_format.right_indent.twips, -783)
+        self.assertIsNotNone(closing)
+        self.assertEqual(closing.alignment, 3)
+        self.assertEqual(closing.paragraph_format.left_indent.twips, -172)
+        self.assertEqual(closing.paragraph_format.right_indent.twips, -783)
+        self.assertIsNotNone(signature_paragraph)
+        self.assertEqual(
+            signature_paragraph.text.splitlines(),
+            ['Departamento Académico', 'Instituto Raimon Gaja'],
+        )
+        self.assertEqual(signature_paragraph.alignment, 0)
+        self.assertEqual(signature_paragraph.paragraph_format.left_indent.twips, -172)
+        self.assertEqual(signature_paragraph.paragraph_format.right_indent.twips, -783)
