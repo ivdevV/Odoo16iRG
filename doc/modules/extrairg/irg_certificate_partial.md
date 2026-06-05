@@ -62,13 +62,40 @@ Hereda el modelo base `irg.certificate.request` para modularizar la lógica de r
   - Corrige el texto del párrafo `"CERTIFICA"` agregándole los dos puntos (`"CERTIFICA:"`).
   - Duplica el formato original del párrafo principal (indentaciones izquierda/derecha, primera línea, espaciado interlineal, etc.) en los párrafos inyectados para el Máster y ECTS, y añade un espaciado inferior (`space_after`) de `Pt(12)` en cada párrafo.
 
+### 2. Formato de la primera frase descriptiva
+
+En el certificado parcial (`document_type == 'gradebook_partial'`), la primera frase descriptiva del `.docx` se reconstruye mediante runs segmentados para aplicar negrita únicamente a los datos nominales principales:
+
+- Nombre del alumno: `partner.name`.
+- Nombre del curso o máster: `course_name`.
+
+El resto de la frase conserva el estilo normal de la plantilla. La segmentación se realiza con el helper `_replace_paragraph_text_with_bold_segments()`, que reemplaza el contenido del párrafo por runs nuevos y preserva las propiedades del primer run original cuando existen. Esta lógica evita aplicar negrita al párrafo completo y mantiene el formato base de la plantilla Word.
+
 ---
 
 ## Suite de Pruebas Automatizadas
 
 El módulo incluye un set de pruebas en `tests/test_partial.py`:
 - `test_01_partial_gradebook_fill_template`: Crea un estudiante con dos asignaturas obligatorias. Una completa (2/2 exámenes calificados) y otra incompleta (1/2 exámenes). Valida que se genere el certificado parcial, que la asignatura completa tenga su nota numérica, la incompleta aparezca como `"Pendiente"`, y la nota media final sea igual a la nota de la asignatura completa.
-- `test_02_partial_gradebook_all_pending_fill_template`: Comprueba el comportamiento del módulo en casos límites donde todas las asignaturas obligatorias están pendientes. Valida que el certificado se cree correctamente y que la nota media final se imprima como `"Pendiente"`.
+- `test_02_partial_gradebook_first_sentence_has_bold_student_and_course`: Genera el certificado parcial y abre el `.docx` resultante para validar que la primera frase contiene el alumno y el curso esperados, y que ambos aparecen en runs independientes con `bold == True`.
+- `test_03_partial_gradebook_all_pending_fill_template`: Comprueba el comportamiento del módulo en casos límites donde todas las asignaturas obligatorias están pendientes. Valida que el certificado se cree correctamente y que la nota media final se imprima como `"Pendiente"`.
+
+### Validación documentada del cambio de negritas
+
+Validación realizada sobre el cambio de formato de la primera frase:
+
+```bash
+python3 -m py_compile addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
+git diff --check -- addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
+```
+
+Ambos comandos finalizaron correctamente.
+
+Limitación conocida: no se ejecutó el test Odoo local porque el daemon de Docker no estaba activo en el entorno de validación. La comprobación de contenedores devolvió:
+
+```text
+Cannot connect to the Docker daemon at unix:///Users/ivrogo/.docker/run/docker.sock. Is the docker daemon running?
+```
 
 ---
 
@@ -82,6 +109,10 @@ docker exec -it odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i ir
 ---
 
 ## Historial de Cambios (Changelog)
+
+### [16.0.1.0.0] - 2026-06-05
+- **Corrección de formato:** En el certificado parcial de notas, la primera frase descriptiva del `.docx` ahora aplica negrita solo al nombre del alumno y al nombre del curso/máster mediante runs segmentados.
+- **Calidad:** Añadido test automatizado para verificar que alumno y curso/máster se generan en runs con `bold == True`; validación local limitada por Docker daemon inactivo.
 
 ### [16.0.1.0.0] - 2026-06-03
 - **Mejora:** Implementación inicial de la lógica de Certificados de Notas Parciales.

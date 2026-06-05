@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from docx import Document as DocxDocument
+
 from odoo import fields
 from odoo.tests.common import TransactionCase
 
@@ -125,7 +127,46 @@ class TestIrgCertificatePartial(TransactionCase):
         res_file = cert._fill_template()
         self.assertTrue(res_file)
 
-    def test_02_partial_gradebook_all_pending_fill_template(self):
+    def test_02_partial_gradebook_first_sentence_has_bold_student_and_course(self):
+        """Student and course names are bold in the first descriptive line."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+        paragraph = next(
+            (
+                para for para in document.paragraphs
+                if 'Test Student Partial' in para.text
+                and 'Test Course Partial' in para.text
+            ),
+            None,
+        )
+
+        self.assertIsNotNone(paragraph)
+        self.assertIn(
+            'Que Test Student Partial con DNI/Pasaporte  consta matriculado en '
+            'el Test Course Partial durante el período académico',
+            paragraph.text,
+        )
+        self.assertTrue(
+            any(
+                run.text == 'Test Student Partial' and run.bold is True
+                for run in paragraph.runs
+            )
+        )
+        self.assertTrue(
+            any(
+                run.text == 'Test Course Partial' and run.bold is True
+                for run in paragraph.runs
+            )
+        )
+
+    def test_03_partial_gradebook_all_pending_fill_template(self):
         """Check template filling logic when all compulsory subjects are pending."""
         # Unlink results for Subject A to make it pending too
         self.gb_subj_a.gradebook_result_ids.unlink()

@@ -16,6 +16,30 @@ _logger = logging.getLogger(__name__)
 class IrgCertificateRequest(models.Model):
     _inherit = 'irg.certificate.request'
 
+    @staticmethod
+    def _replace_paragraph_text_with_bold_segments(paragraph, segments):
+        """Replace paragraph text with runs, preserving first-run style.
+
+        ``segments`` is an iterable of ``(text, bold)`` pairs. Empty text
+        fragments are ignored so the resulting paragraph only contains the
+        content that must be rendered.
+        """
+        base_run = paragraph.runs[0] if paragraph.runs else None
+        base_rpr = None
+        if base_run is not None and base_run._r.rPr is not None:
+            base_rpr = deepcopy(base_run._r.rPr)
+
+        for run in list(paragraph.runs):
+            paragraph._p.remove(run._r)
+
+        for text, bold in segments:
+            if not text:
+                continue
+            run = paragraph.add_run(text)
+            if base_rpr is not None:
+                run._r.insert(0, deepcopy(base_rpr))
+            run.bold = bool(bold)
+
     def _get_template_path(self):
         if self.document_type == 'gradebook_partial':
             signer_suffix = 'dpto' if self.signer == 'dpto_academico' else 'raimon'
@@ -154,7 +178,13 @@ class IrgCertificateRequest(models.Model):
             full_text = ''.join(r.text for r in para.runs)
             if target_text in full_text:
                 # Reemplazar el primer párrafo con la primera frase, alineación a la izquierda y espaciado
-                para.text = sentence_1
+                self._replace_paragraph_text_with_bold_segments(para, [
+                    ('Que ', False),
+                    (partner.name or '', True),
+                    (' con %s %s en el ' % (documento_formateado, gender_word), False),
+                    (course_name, True),
+                    (' durante el período académico %s.' % periodo_str, False),
+                ])
                 para.alignment = 0 # WD_ALIGN_PARAGRAPH.LEFT
                 para.paragraph_format.space_after = Pt(12)
                 
