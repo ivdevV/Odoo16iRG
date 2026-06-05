@@ -70,6 +70,8 @@ class IrgCertificateRequest(models.Model):
         normalized_text = ' '.join(paragraph.text.split())
         if normalized_text == 'Departamento Académico Instituto Raimon Gaja':
             paragraph.text = 'Departamento Académico\nInstituto Raimon Gaja'
+        elif normalized_text == 'Raimon Gaja Jaumeandreu Instituto Raimon Gaja':
+            paragraph.text = 'Raimon Gaja Jaumeandreu\nInstituto Raimon Gaja'
         self._format_partial_body_paragraph(paragraph, justify=False)
         paragraph.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
         paragraph.paragraph_format.first_line_indent = None
@@ -103,13 +105,13 @@ class IrgCertificateRequest(models.Model):
             'Raimon Gaja Jaumeandreu, con DNI',
             self._DPTO_ACADEMICO_INTRO,
         )
-        signature_markers = (
-            'Raimon Gaja Jaumeandreu',
-            'Departamento Académico',
-            'Instituto Raimon Gaja',
+        signature_texts = (
+            'Raimon Gaja Jaumeandreu Instituto Raimon Gaja',
+            'Departamento Académico Instituto Raimon Gaja',
         )
         for para in doc.paragraphs:
             text = para.text.strip()
+            normalized_text = ' '.join(text.split())
             if not text:
                 continue
             if (
@@ -118,7 +120,7 @@ class IrgCertificateRequest(models.Model):
             ):
                 self._format_partial_body_paragraph(para, justify=False)
                 para.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
-            if any(marker in text for marker in signature_markers):
+            if normalized_text in signature_texts:
                 self._format_partial_signature_paragraph(para)
 
     @staticmethod
