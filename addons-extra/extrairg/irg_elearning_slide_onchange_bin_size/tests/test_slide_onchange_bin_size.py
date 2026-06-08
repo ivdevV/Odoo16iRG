@@ -16,6 +16,14 @@ class TestSlideOnchangeBinSize(unittest.TestCase):
         self.assertIn("self.env.context.get('bin_size')", self.source)
         self.assertIn('super', self.source)
 
+    def test_onchange_filters_binary_field_onchange_entries(self):
+        self.assertIn('_filter_binary_field_onchange', self.source)
+        self.assertIn('field_onchange.items()', self.source)
+        self.assertIn("name.split('.')[-1]", self.source)
+        self.assertIn('BINARY_FIELD_ONCHANGE_NAMES', self.source)
+        self.assertIn("'binary_content'", self.source)
+        self.assertIn("'image_binary_content'", self.source)
+
 
 if __name__ == '__main__':
     unittest.main()
