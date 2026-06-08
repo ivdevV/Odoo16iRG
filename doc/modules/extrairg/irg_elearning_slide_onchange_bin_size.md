@@ -22,6 +22,7 @@ Aunque `bin_size: True` este configurado en campos `x2many`, ese contexto puede 
   - `irg_elearning_child_bin_size_fix`
 - Hereda `slide.slide`.
 - Sobrescribe `onchange(self, values, field_name, field_onchange)`.
+- Filtra una copia de `field_onchange` antes del `super` para retirar campos binarios de `slide.slide` cuando lleguen como claves directas o rutas con punto, por ejemplo `child_slide_ids.binary_content`.
 - Si el contexto ya trae `bin_size`, no lo modifica.
 - Si no lo trae, llama al `super` con `self.with_context(bin_size=True)`.
 
@@ -70,4 +71,5 @@ Si tras instalar este modulo el error persistiera con otro modelo o campo, habri
 
 ## Changelog
 
+- **2026-06-08:** filtrado preventivo de `field_onchange` para excluir campos binarios (`binary_content`, `image_binary_content`, `document_binary_content`, `datas`, `image_1920`) antes de que Odoo cree el snapshot del `onchange`.
 - **2026-06-05:** creado modulo heredado para forzar `bin_size: True` en `slide.slide.onchange` y evitar `MemoryError` con registros virtuales `NewId origin` al editar batches en secciones iRG.
