@@ -4,10 +4,13 @@ import logging
 import os
 import subprocess
 import tempfile
+from zipfile import ZipFile, ZIP_DEFLATED
 
 from docx import Document as DocxDocument
 from docx.oxml.ns import qn
+from docx.shared import Twips
 from copy import deepcopy
+from lxml import etree
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
@@ -89,6 +92,13 @@ class IrgCertificateRequest(models.Model):
     _description = 'Solicitud de Certificado de Notas'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'id desc'
+
+    _GRADEBOOK_TEXT_INDENT = Twips(-172)
+    _GRADEBOOK_TABLE_WIDTH = Twips(9010)
+    _GRADEBOOK_PAGE_TEXT_WIDTH = Twips(8055)
+    _GRADEBOOK_TEXT_RIGHT_INDENT = (
+        _GRADEBOOK_PAGE_TEXT_WIDTH - _GRADEBOOK_TEXT_INDENT - _GRADEBOOK_TABLE_WIDTH
+    )
 
     # ------------------------------------------------------------------
     # Identity
@@ -469,6 +479,290 @@ class IrgCertificateRequest(models.Model):
                         new_val = max(0, int(round(int(raw) * percent / 100)))
                         el.set(attr, str(new_val))
 
+    def _format_gradebook_body_paragraph(self, paragraph, justify=True):
+        """Align gradebook text blocks with the notes table grid."""
+        fmt = paragraph.paragraph_format
+        fmt.left_indent = self._GRADEBOOK_TEXT_INDENT
+        fmt.right_indent = self._GRADEBOOK_TEXT_RIGHT_INDENT
+        if justify:
+            paragraph.alignment = 3  # WD_ALIGN_PARAGRAPH.JUSTIFY
+        return paragraph
+
+    def _format_gradebook_signature_paragraph(self, paragraph):
+        """Stack signer and institute lines without altering unrelated text."""
+        normalized_text = ' '.join(paragraph.text.split())
+        if normalized_text == 'Departamento Académico Instituto Raimon Gaja':
+            paragraph.text = 'Departamento Académico\nInstituto Raimon Gaja'
+        elif normalized_text == 'Raimon Gaja Jaumeandreu Instituto Raimon Gaja':
+            paragraph.text = 'Raimon Gaja Jaumeandreu\nInstituto Raimon Gaja'
+        self._format_gradebook_body_paragraph(paragraph, justify=False)
+        paragraph.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
+        paragraph.paragraph_format.first_line_indent = None
+        paragraph.paragraph_format.tab_stops.clear_all()
+        for run in paragraph.runs:
+            if run.text:
+                run.text = run.text.lstrip()
+                break
+        return paragraph
+
+    def _format_gradebook_static_paragraphs(self, doc):
+        """Normalize fixed certificate blocks to match the partial layout."""
+        signer_intro_markers = (
+            'Raimon Gaja Jaumeandreu, con DNI',
+            'El Departamento Académico del Instituto Raimon Gaja, S.L.',
+        )
+        signature_texts = (
+            'Raimon Gaja Jaumeandreu Instituto Raimon Gaja',
+            'Departamento Académico Instituto Raimon Gaja',
+        )
+        for para in doc.paragraphs:
+            text = para.text.strip()
+            normalized_text = ' '.join(text.split())
+            if not text:
+                continue
+            if text == 'CERTIFICA':
+                para.text = 'CERTIFICA:'
+                text = para.text.strip()
+            if (
+                text == 'CERTIFICA:'
+                or any(marker in text for marker in signer_intro_markers)
+            ):
+                self._format_gradebook_body_paragraph(para, justify=False)
+                para.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
+            if 'Para que así conste' in text:
+                self._format_gradebook_body_paragraph(para, justify=True)
+            if normalized_text in signature_texts:
+                self._format_gradebook_signature_paragraph(para)
+
+    @staticmethod
+    def _compact_gradebook_vertical_legal_textbox(shape):
+        """Fit legal text lines inside the narrow vertical textbox."""
+        for size in shape.xpath('.//*[local-name()="sz" or local-name()="szCs"]'):
+            size.set(qn('w:val'), '10')
+        for spacing in shape.xpath('.//*[local-name()="spacing"]'):
+            spacing.set(qn('w:before'), '0')
+            spacing.set(qn('w:after'), '0')
+        for indent in shape.xpath('.//*[local-name()="ind"]'):
+            indent.set(qn('w:left'), '0')
+
+    @staticmethod
+    def _compact_gradebook_vertical_legal_text(doc):
+        """Keep the vertical legal text visible while avoiding wrapping."""
+        for shape in doc.element.xpath('.//*[local-name()="txbxContent"]'):
+            text = ''.join(
+                node.text or '' for node in shape.xpath('.//*[local-name()="t"]')
+            )
+            if 'Instituto Raimon' not in text or 'B56488687' not in text:
+                continue
+            IrgCertificateRequest._compact_gradebook_vertical_legal_textbox(shape)
+
+    @staticmethod
+    def _restore_gradebook_vertical_legal_text(tpl_path, docx_path):
+        """Restore the legal textbox if python-docx drops it on save."""
+        with ZipFile(tpl_path) as template_zip:
+            template_xml = etree.fromstring(
+                template_zip.read('word/document.xml')
+            )
+        with ZipFile(docx_path) as output_zip:
+            output_xml_bytes = output_zip.read('word/document.xml')
+
+        if b'B56488687' in output_xml_bytes and b'B-603323' in output_xml_bytes:
+            return
+
+        legal_paragraphs = template_xml.xpath(
+            './/*[local-name()="body"]/*[local-name()="p" and '
+            './/*[local-name()="t" and contains(text(), "B56488687")]]'
+        )
+        if not legal_paragraphs:
+            return
+
+        legal_runs = [
+            child for child in legal_paragraphs[0]
+            if etree.QName(child).localname == 'r'
+            and child.xpath('.//*[local-name()="txbxContent"]')
+        ]
+        if not legal_runs:
+            return
+
+        output_xml = etree.fromstring(output_xml_bytes)
+        first_paragraphs = output_xml.xpath('.//*[local-name()="body"]/*[local-name()="p"]')
+        if not first_paragraphs:
+            return
+
+        first_paragraph = first_paragraphs[0]
+        insert_index = 1 if (
+            len(first_paragraph) and etree.QName(first_paragraph[0]).localname == 'pPr'
+        ) else 0
+        for legal_run in legal_runs:
+            for shape in legal_run.xpath('.//*[local-name()="txbxContent"]'):
+                IrgCertificateRequest._compact_gradebook_vertical_legal_textbox(shape)
+            first_paragraph.insert(insert_index, deepcopy(legal_run))
+            insert_index += 1
+
+        tmp_zip = tempfile.NamedTemporaryFile(
+            suffix='.docx', delete=False, prefix='cert_gradebook_legal_'
+        )
+        tmp_zip.close()
+        try:
+            with ZipFile(docx_path) as source_zip, ZipFile(
+                tmp_zip.name, 'w', ZIP_DEFLATED
+            ) as target_zip:
+                for item in source_zip.infolist():
+                    data = source_zip.read(item.filename)
+                    if item.filename == 'word/document.xml':
+                        data = etree.tostring(
+                            output_xml,
+                            xml_declaration=True,
+                            encoding='UTF-8',
+                            standalone=True,
+                        )
+                    target_zip.writestr(item, data)
+            os.replace(tmp_zip.name, docx_path)
+        finally:
+            if os.path.exists(tmp_zip.name):
+                os.unlink(tmp_zip.name)
+
+    @staticmethod
+    def _next_relationship_id(rels_xml):
+        used_numbers = []
+        for rel in rels_xml:
+            rel_id = rel.get('Id', '')
+            if rel_id.startswith('rId') and rel_id[3:].isdigit():
+                used_numbers.append(int(rel_id[3:]))
+        return 'rId%s' % ((max(used_numbers) if used_numbers else 0) + 1)
+
+    @staticmethod
+    def _next_docpr_id(document_xml):
+        ids = []
+        for docpr in document_xml.xpath('.//*[local-name()="docPr"]'):
+            raw_id = docpr.get('id')
+            if raw_id and raw_id.isdigit():
+                ids.append(int(raw_id))
+        return (max(ids) if ids else 0) + 1
+
+    def _ensure_bottom_right_arcs(self, docx_path):
+        """Add the global blue arcs decoration at the page bottom-right."""
+        module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        source_image = os.path.join(module_path, 'static', 'src', 'img', 'RCOS.png')
+        if not os.path.isfile(source_image):
+            return
+
+        rel_ns = 'http://schemas.openxmlformats.org/package/2006/relationships'
+        rel_embed = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed'
+        media_name = 'word/media/bottom_right_arcs.png'
+        rel_target = 'media/bottom_right_arcs.png'
+
+        with open(source_image, 'rb') as image_file:
+            image_data = image_file.read()
+        with ZipFile(docx_path) as output_zip:
+            output_xml = etree.fromstring(output_zip.read('word/document.xml'))
+            output_rels = etree.fromstring(
+                output_zip.read('word/_rels/document.xml.rels')
+            )
+
+        if output_xml.xpath('.//*[local-name()="docPr" and @name="Bottom Right Arcs"]'):
+            return
+
+        output_rel = next(
+            (rel for rel in output_rels if rel.get('Target') == rel_target),
+            None,
+        )
+        if output_rel is None:
+            rel_id = self._next_relationship_id(output_rels)
+            output_rel = etree.Element('{%s}Relationship' % rel_ns)
+            output_rel.set('Id', rel_id)
+            output_rel.set(
+                'Type',
+                'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image',
+            )
+            output_rel.set('Target', rel_target)
+            output_rels.append(output_rel)
+        else:
+            rel_id = output_rel.get('Id')
+
+        docpr_id = self._next_docpr_id(output_xml)
+        drawing_run = etree.fromstring(('''
+<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+     xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+     xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+     xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+     xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <w:drawing>
+    <wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0"
+               relativeHeight="0" behindDoc="1" locked="0" layoutInCell="1"
+               allowOverlap="1">
+      <wp:simplePos x="0" y="0"/>
+      <wp:positionH relativeFrom="page"><wp:align>right</wp:align></wp:positionH>
+      <wp:positionV relativeFrom="page"><wp:align>bottom</wp:align></wp:positionV>
+      <wp:extent cx="3200000" cy="2820000"/>
+      <wp:effectExtent l="0" t="0" r="0" b="0"/>
+      <wp:wrapNone/>
+      <wp:docPr id="%s" name="Bottom Right Arcs"/>
+      <wp:cNvGraphicFramePr/>
+      <a:graphic>
+        <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+          <pic:pic>
+            <pic:nvPicPr>
+              <pic:cNvPr id="%s" name="Bottom Right Arcs"/>
+              <pic:cNvPicPr/>
+              <pic:nvPr/>
+            </pic:nvPicPr>
+            <pic:blipFill rotWithShape="1">
+              <a:blip r:embed="%s"/>
+              <a:stretch><a:fillRect/></a:stretch>
+            </pic:blipFill>
+            <pic:spPr bwMode="auto">
+              <a:xfrm><a:off x="0" y="0"/><a:ext cx="3200000" cy="2820000"/></a:xfrm>
+              <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+            </pic:spPr>
+          </pic:pic>
+        </a:graphicData>
+      </a:graphic>
+    </wp:anchor>
+  </w:drawing>
+</w:r>
+''' % (docpr_id, docpr_id, rel_id)).encode('utf-8'))
+
+        body_paragraphs = output_xml.xpath(
+            './/*[local-name()="body"]/*[local-name()="p"]'
+        )
+        if not body_paragraphs:
+            return
+        body_paragraphs[-1].append(drawing_run)
+
+        tmp_zip = tempfile.NamedTemporaryFile(
+            suffix='.docx', delete=False, prefix='cert_arcs_'
+        )
+        tmp_zip.close()
+        try:
+            with ZipFile(docx_path) as source_zip, ZipFile(
+                tmp_zip.name, 'w', ZIP_DEFLATED
+            ) as target_zip:
+                existing_names = set(source_zip.namelist())
+                for item in source_zip.infolist():
+                    data = source_zip.read(item.filename)
+                    if item.filename == 'word/document.xml':
+                        data = etree.tostring(
+                            output_xml,
+                            xml_declaration=True,
+                            encoding='UTF-8',
+                            standalone=True,
+                        )
+                    elif item.filename == 'word/_rels/document.xml.rels':
+                        data = etree.tostring(
+                            output_rels,
+                            xml_declaration=True,
+                            encoding='UTF-8',
+                            standalone=True,
+                        )
+                    target_zip.writestr(item, data)
+                if media_name not in existing_names:
+                    target_zip.writestr(media_name, image_data)
+            os.replace(tmp_zip.name, docx_path)
+        finally:
+            if os.path.exists(tmp_zip.name):
+                os.unlink(tmp_zip.name)
+
     def _fill_template(self):
         """Open the .docx template, fill placeholders and table, return bytes."""
         self.ensure_one()
@@ -480,12 +774,15 @@ class IrgCertificateRequest(models.Model):
 
         doc = DocxDocument(tpl_path)
         self._scale_document_fonts(doc, percent=75)
+        if self.document_type == 'gradebook':
+            self._compact_gradebook_vertical_legal_text(doc)
 
         # --- Collect data ---------------------------------------------------
         partner = self.partner_id
+        identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
         id_label = (
-            partner.l10n_latam_identification_type_id.name
-            if partner.l10n_latam_identification_type_id
+            identification_type.name
+            if identification_type
             else 'DNI/Pasaporte'
         )
         documento = '%s %s' % (id_label, partner.vat or '')
@@ -566,6 +863,7 @@ class IrgCertificateRequest(models.Model):
             )
             doc.save(tmp_docx.name)
             tmp_docx.close()
+            self._ensure_bottom_right_arcs(tmp_docx.name)
             return tmp_docx.name
 
         # --- Fill the grades table (table index 0) --------------------------
@@ -686,12 +984,18 @@ class IrgCertificateRequest(models.Model):
                 r_el.append(t_el)
                 target_p.append(r_el)
 
+        if self.document_type == 'gradebook':
+            self._format_gradebook_static_paragraphs(doc)
+
         # Save filled document to a temp file
         tmp_docx = tempfile.NamedTemporaryFile(
             suffix='.docx', delete=False, prefix='cert_'
         )
         doc.save(tmp_docx.name)
         tmp_docx.close()
+        if self.document_type == 'gradebook':
+            self._restore_gradebook_vertical_legal_text(tpl_path, tmp_docx.name)
+        self._ensure_bottom_right_arcs(tmp_docx.name)
         return tmp_docx.name
 
     @staticmethod
