@@ -67,7 +67,7 @@ class SaleOrder(models.Model):
 
     def _irg_diplomado_batch_code(self, course, base_date):
         start_date, _end_date = self._irg_diplomado_fixed_dates(base_date)
-        return 'DI%sHC%s09' % ((course.code or ''), start_date.strftime('%y'))
+        return 'DI%sHC%s06' % ((course.code or ''), start_date.strftime('%y'))
 
     def _get_line_modality(self, line):
         if line:

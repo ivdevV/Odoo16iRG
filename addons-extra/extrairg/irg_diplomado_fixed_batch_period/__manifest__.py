@@ -9,6 +9,7 @@
     'license': 'LGPL-3',
     'depends': [
         'irg_sale_manual_confirmation_wizard',
+        'irg_openeducat_sale_lote_custom',
     ],
     'data': [],
     'installable': True,

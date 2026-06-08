@@ -76,5 +76,5 @@ class ManualConfirmationWizard(models.TransientModel):
     def _build_line_batch_code_preview(self, line, course_id, modality, date):
         if course_id and self._irg_is_diplomado_line(line, course_id):
             start_date, _end_date = self._irg_diplomado_fixed_dates(date)
-            return 'DI%sHC%s09' % ((course_id.code or ''), start_date.strftime('%y'))
+            return 'DI%sHC%s06' % ((course_id.code or ''), start_date.strftime('%y'))
         return super()._build_line_batch_code_preview(line, course_id, modality, date)

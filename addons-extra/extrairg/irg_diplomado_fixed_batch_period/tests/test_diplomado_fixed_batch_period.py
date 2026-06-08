@@ -47,14 +47,14 @@ class TestDiplomadoFixedBatchPeriod(TransactionCase):
         })
 
         self.assertEqual(wizard.modalidad_detected, 'Diplomado')
-        self.assertIn('DINEHC2609', wizard.batch_preview)
+        self.assertIn('DINEHC2606', wizard.batch_preview)
         self.assertNotIn('dia', wizard.warning_message or '')
 
     def test_get_lot_id_creates_fixed_diplomado_period(self):
         batch = self.order.with_context(irg_get_lot_line_id=self.line.id).get_lot_id(self.course)
 
         self.assertEqual(self.order._get_line_modality(self.line), 'GE')
-        self.assertEqual(batch.code, 'DINEHC2609')
+        self.assertEqual(batch.code, 'DINEHC2606')
         self.assertEqual(batch.start_date, date(2026, 6, 28))
         self.assertEqual(batch.end_date, date(2026, 9, 30))
         self.assertEqual(batch.date_start_class, date(2026, 6, 28))
@@ -96,7 +96,7 @@ class TestDiplomadoFixedBatchPeriod(TransactionCase):
         })
 
         self.assertNotEqual(wizard.modalidad_detected, 'Diplomado')
-        self.assertNotIn('DIMHHC2609', wizard.batch_preview)
+        self.assertNotIn('DIMHHC2606', wizard.batch_preview)
 
     def test_header_diplomado_course_does_not_contaminate_other_line(self):
         other_category = self.env['product.category'].create({
