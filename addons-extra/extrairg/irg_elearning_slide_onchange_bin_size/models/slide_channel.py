@@ -50,8 +50,12 @@ class SlideChannel(models.Model):
                 field_onchange,
             )
         if self.env.context.get('bin_size'):
-            return super().onchange(values, field_name, field_onchange)
-        return super(SlideChannel, self.with_context(bin_size=True)).onchange(
+            return super(SlideChannel, self.with_context(irg_in_onchange=True)).onchange(
+                values,
+                field_name,
+                field_onchange,
+            )
+        return super(SlideChannel, self.with_context(bin_size=True).with_context(irg_in_onchange=True)).onchange(
             values,
             field_name,
             field_onchange,

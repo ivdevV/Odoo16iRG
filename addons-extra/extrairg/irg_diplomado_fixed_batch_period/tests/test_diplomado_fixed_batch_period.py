@@ -19,6 +19,7 @@ class TestDiplomadoFixedBatchPeriod(TransactionCase):
             'recurring_invoice': True,
             'categ_id': self.category.id,
             'list_price': 1000.0,
+            'course_type': 'online',
         })
         self.product = self.env['product.product'].search([
             ('product_tmpl_id', '=', self.product_tmpl.id),
@@ -126,3 +127,22 @@ class TestDiplomadoFixedBatchPeriod(TransactionCase):
         line = order.order_line[:1]
 
         self.assertFalse(order._irg_is_diplomado_line(line, order.course_id))
+
+    def test_bonificado_recurring_order_without_recurrence_confirms(self):
+        from dateutil.relativedelta import relativedelta
+        from odoo import fields
+        # Create a sale order with a recurring product, price_unit = 0, and no recurrence_id
+        bonificado_order = self.env['sale.order'].create({
+            'partner_id': self.partner.id,
+            'course_id': self.course.id,
+            'admission_date': fields.Date.today() + relativedelta(months=6),
+            'recurrence_id': False,
+            'order_line': [(0, 0, {
+                'product_id': self.product.id,
+                'product_uom_qty': 1,
+                'price_unit': 0.0,
+            })],
+        })
+        # Confirming the order transitions the state and triggers the constraint
+        bonificado_order.action_confirm()
+        self.assertIn(bonificado_order.state, ['sale', 'done'])

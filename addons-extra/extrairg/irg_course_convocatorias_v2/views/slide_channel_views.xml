@@ -42,12 +42,12 @@
             <!-- Filtros de modalidad y dominios sobre el contenido nativo (HomeClass) -->
             <xpath expr="//form/sheet/notebook[1]/page[@name='content']//field[@name='slide_ids']" position="attributes">
                 <attribute name="domain">['|', ('irg_content_modality', '=', False), ('irg_content_modality', '=', 'homeclass')]</attribute>
-                <attribute name="context">{'default_channel_id': active_id, 'default_irg_content_modality': 'homeclass'}</attribute>
+                <attribute name="context">{'default_channel_id': active_id, 'default_irg_content_modality': 'homeclass', 'bin_size': True}</attribute>
             </xpath>
 
             <xpath expr="//form/sheet/notebook[1]/page[@name='irg_sections']//field[@name='irg_native_section_ids']" position="attributes">
                 <attribute name="domain">['|', ('irg_content_modality', '=', False), ('irg_content_modality', '=', 'homeclass')]</attribute>
-                <attribute name="context">{'default_channel_id': active_id, 'default_irg_content_modality': 'homeclass', 'default_is_category': True, 'default_slide_category': 'article'}</attribute>
+                <attribute name="context">{'default_channel_id': active_id, 'default_irg_content_modality': 'homeclass', 'default_is_category': True, 'default_slide_category': 'article', 'bin_size': True}</attribute>
             </xpath>
 
             <xpath expr="//form/sheet/notebook[1]/page[@name='content']//field[@name='slide_ids']//tree/field[@name='name']" position="after">
@@ -93,7 +93,7 @@
                         <field name="irg_online_slide_ids"
                                widget="slide_category_one2many"
                                mode="tree,kanban"
-                               context="{'default_channel_id': irg_online_channel_id}"
+                               context="{'default_channel_id': irg_online_channel_id, 'bin_size': True}"
                                readonly="1"
                                attrs="{'invisible': [('irg_online_channel_id', '=', False)]}">
                             <tree decoration-muted="is_category" create="0" delete="0" edit="0">
@@ -153,7 +153,7 @@
                     </page>
 
                     <page string="Secciones iRG" name="irg_online_sections">
-                        <field name="irg_online_section_ids" readonly="1">
+                        <field name="irg_online_section_ids" readonly="1" context="{'bin_size': True}">
                             <tree create="0" delete="0" edit="0">
                                 <field name="sequence" widget="handle"/>
                                 <field name="name"/>

@@ -111,6 +111,7 @@ Con esto, las secciones copiadas a Online quedan fuera del flujo HomeClass aunqu
 - El árbol de `Online > Contenido` aplica `decoration-muted="is_category"` para marcar visualmente las filas que son categorías/secciones sin cambiar su comportamiento funcional.
 - `HomeClass > Contenido` mantiene el campo nativo `slide_ids` para que otros módulos puedan seguir heredando sus anclas XPath, y aplica un dominio para mostrar solo contenidos sin modalidad o con modalidad HomeClass.
 - Aplica un dominio en `HomeClass > Secciones iRG` para mostrar secciones sin modalidad o con modalidad HomeClass, evitando que las secciones Online copiadas se mezclen en el listado HomeClass.
+- Los listados editables de contenidos y secciones iRG se cargan con `bin_size: True` en contexto para que los `onchange` de limitación por lotes no lean adjuntos binarios pesados (`image_binary_content`, `binary_content`) durante el snapshot del formulario.
 - `views/irg_course_convocatoria_views.xml` define además:
   - vista lista del nuevo modelo,
   - vista formulario con notebook de secciones,
@@ -140,7 +141,7 @@ Con esto, las secciones copiadas a Online quedan fuera del flujo HomeClass aunqu
 ## Riesgos y notas técnicas
 
 - El `xpath` depende de que `irg_elearning_editable_sections` siga aportando la página `name="irg_sections"`. Si esa vista cambia, la inserción de las pestañas HomeClass y Online dejará de aplicarse.
-- La detección de HomeClass depende del nombre de `op.batch.modality_id` y la detección de Online usa nombre de modalidad o patrón `ONL` en código de lote, excluyendo `MONL`.
+- La detección de HomeClass usa `op.batch.modality_id` cuando el campo existe; si no está presente en la base, degrada de forma defensiva y mantiene la detección por alternativas como el código del lote. La detección de Online usa nombre de modalidad o patrón `ONL` en código de lote, excluyendo `MONL`.
 - La variante Online se detecta por atributo de producto; si el producto del curso no usa ese esquema de atributos, el campo quedará vacío.
 - El bootstrap `action_copy_homeclass_to_online` conserva el estado de publicación porque `is_published` está en la whitelist; los lotes permitidos se vacían deliberadamente y deben asignarse a mano.
 - La reasignación de `category_id`, `parent_slide_id` e `irg_section_id` se hace en un pase separado contra el mapa de copias completo; si el original no tiene equivalente Online, la referencia queda vacía.
@@ -158,11 +159,29 @@ El módulo incluye `tests/test_bootstrap_online.py` (`TransactionCase`, tag `irg
 - `test_bootstrap_clones_all_irg_sections`: verifica que se clonan todas las `irg.slide.section` del canal (incluidas las vacías), duplicando el conteo total.
 - `test_bootstrap_empty_when_no_homeclass`: verifica que un canal sin HomeClass devuelve una notificación `warning` y no crea slides.
 - `test_bootstrap_idempotent_append`: verifica que dos ejecuciones consecutivas duplican el número de slides Online sin tocar el primer bloque.
+- `test_slide_channel_views_bin_size.py`: verifica estáticamente que los campos editables de contenidos/secciones iRG incluyen `bin_size: True` en contexto y conservan los defaults de creación necesarios.
+
+Validación local de la corrección de secciones iRG por lotes:
+
+```bash
+python3 addons-extra/extrairg/irg_course_convocatorias/tests/test_slide_channel_views_bin_size.py
+docker compose -f docker-compose.local.yml run --rm odoo_local \
+  odoo -c /etc/odoo/odoo.conf \
+  -d validation_bin_size_legacy_20260605 \
+  --stop-after-init \
+  --init irg_course_convocatorias \
+  --test-enable \
+  --test-tags /irg_course_convocatorias \
+  --log-level=test
+```
+
+Resultado: `irg_course_convocatorias` ejecutó 8 tests en Odoo local, con 0 fallos y 0 errores.
 
 ## Historial reciente
 
 - **2026-05-19 — `16.0.1.3.0`:** primera versión del botón `Copiar contenido de HomeClass`, con copia mediante `slide.slide.copy()` y reasignación posterior de jerarquía. Hotfix de vistas para mantener `slide_ids` como ancla.
 - **`16.0.2.0.0`:** reescritura completa de `action_copy_homeclass_to_online` como bootstrap manual 1:1. Se elimina el uso de `copy()` y se introduce la whitelist `_irg_bootstrap_slide_clone_fields()`, el clonado completo de secciones iRG (`_irg_bootstrap_clone_irg_sections`), el cálculo de base de secuencia (`_irg_bootstrap_base_sequence`), la replicación de quizzes (`_irg_bootstrap_clone_quizzes`) y la centralización de la notificación (`_irg_bootstrap_notification`). Se activa `irg_skip_parent_propagation=True` durante todo el bootstrap para suspender los hooks de `irg_elearning_editable_sections`. Las copias quedan siempre al final del listado Online, con `allowed_batch_ids` vacío y referencias jerárquicas remapeadas. El texto del botón `confirm` se actualiza para reflejar este comportamiento. Se añade la carpeta `tests/` con `test_bootstrap_online.py`.
+- **2026-06-05:** corrección preventiva de `MemoryError` al limitar por lotes en secciones iRG. Se añade `bin_size: True` a los contextos de contenidos/secciones para impedir la carga de binarios grandes durante `onchange`, se añade test estático de regresión y se hace defensiva la lectura de `op.batch.modality_id`.
 
 Artefactos relacionados:
 

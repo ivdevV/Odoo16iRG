@@ -157,7 +157,7 @@ class SlideChannel(models.Model):
 
     def _irg_get_batch_modality_tokens(self, batch):
         token_values = []
-        modality = batch.modality_id
+        modality = batch.modality_id if 'modality_id' in batch._fields else False
         if modality:
             for field_name in ('name', 'code', 'new_code', 'analytic_code'):
                 if field_name in modality._fields:

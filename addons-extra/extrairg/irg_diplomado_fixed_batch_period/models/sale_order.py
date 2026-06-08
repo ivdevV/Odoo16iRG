@@ -2,7 +2,7 @@
 import logging
 from datetime import date as date_cls
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -145,3 +145,15 @@ class SaleOrder(models.Model):
 
         _logger.info('IRG Diplomado Fixed Batch: creating fixed annual batch %s with values %s', code, values)
         return self.env['op.batch'].create(values)
+
+    @api.constrains('recurrence_id', 'state', 'is_subscription')
+    def _constraint_subscription_recurrence(self):
+        orders_to_check = self.env['sale.order']
+        for so in self:
+            recurring_lines = so.order_line.filtered(lambda l: l.product_id.recurring_invoice)
+            if recurring_lines and all(line.price_unit <= 0.0 for line in recurring_lines):
+                continue
+            orders_to_check |= so
+
+        if orders_to_check:
+            super(SaleOrder, orders_to_check)._constraint_subscription_recurrence()

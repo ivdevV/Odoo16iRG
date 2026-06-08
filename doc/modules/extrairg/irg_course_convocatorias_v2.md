@@ -115,6 +115,32 @@ Se reestructuró el proceso de duplicación de diapositivas para realizarlo sin 
 
 ---
 
+## Optimización de Edición de Secciones iRG por Lotes
+
+### Descripción del Incidente (`MemoryError` en `onchange`)
+Al editar el apartado **Secciones iRG** y limitar contenidos por lotes, Odoo puede ejecutar un `onchange` sobre relaciones `x2many` de `slide.slide`. Durante el cálculo interno del snapshot (`models.onchange -> Snapshot.diff`), Odoo lee los campos binarios relacionados de las diapositivas, como `image_binary_content` y `binary_content`.
+
+En cursos con adjuntos grandes, esa lectura acaba consultando `ir.attachment.datas` y serializando el fichero completo en base64 (`base64.b64encode(attach.raw)`). Si el adjunto es demasiado grande para la memoria disponible del worker, el servidor falla con `MemoryError` antes de guardar la limitación por lotes.
+
+### Solución Aplicada
+Las vistas de `slide.channel` añaden ahora `bin_size: True` en los contextos de las relaciones editables de contenidos y secciones iRG:
+
+- `slide_ids`
+- `irg_native_section_ids`
+- `irg_online_slide_ids`
+- `irg_online_section_ids`
+
+Con `bin_size: True`, Odoo no devuelve el contenido binario real durante la lectura generada por el `onchange`; devuelve una representación ligera/tamaño del binario. Esto evita que el snapshot cargue adjuntos pesados al modificar restricciones por lote.
+
+Los defaults existentes de creación se conservan, incluyendo `default_channel_id`, `default_irg_content_modality`, `default_is_category` y `default_slide_category` cuando aplican.
+
+### Compatibilidad con `op.batch` sin `modality_id`
+Durante la validación se detectó que algunas bases de prueba tienen `op.batch` sin el campo opcional `modality_id`. La detección de tokens de modalidad ahora comprueba defensivamente si el campo existe antes de leerlo y continúa usando alternativas como `batch.code` cuando están disponibles.
+
+Este comportamiento evita un `AttributeError` en instalaciones donde la modalidad directa del lote no está instalada, sin cambiar la lógica de clasificación cuando `modality_id` sí existe.
+
+---
+
 ## Validación y Suite de Pruebas
 
 La suite de pruebas del módulo valida el correcto comportamiento de la elevación de privilegios y el flujo de bootstrap.
@@ -137,3 +163,34 @@ odoo-bin -c odoo.conf -d test_irg_db -i irg_course_convocatorias_v2 --test-enabl
 * **Estado:** Exitoso.
 * **Tests pasados:** 10/10.
 * **Errores/Fallos:** 0.
+
+### Validación de la corrección `bin_size` / secciones iRG
+
+La regresión del `MemoryError` se cubre con tests estáticos que parsean la vista XML y verifican que los campos `x2many` de contenidos/secciones incluyen `bin_size: True` sin perder sus defaults de creación.
+
+Comandos ejecutados en local:
+
+```bash
+python3 addons-extra/extrairg/irg_course_convocatorias_v2/tests/test_slide_channel_views_bin_size.py
+python3 -m compileall -q \
+  addons-extra/extrairg/irg_course_convocatorias_v2 \
+  addons-extra/extrairg/irg_course_convocatorias \
+  addons-extra/addons_uisep/irg_elearning_editable_sections
+docker compose -f docker-compose.local.yml run --rm odoo_local \
+  odoo -c /etc/odoo/odoo.conf \
+  -d validation_bin_size_v2_20260605 \
+  --stop-after-init \
+  --init irg_course_convocatorias_v2 \
+  --test-enable \
+  --test-tags /irg_course_convocatorias_v2 \
+  --log-level=test
+```
+
+Resultado Odoo local:
+
+- `irg_course_convocatorias_v2`: 12 tests ejecutados, 0 fallos, 0 errores.
+- La validación confirmó que el bloqueo previo por `op.batch.modality_id` ya no aparece.
+
+### Changelog
+
+- **2026-06-05:** se añade `bin_size: True` a los contextos de contenidos y secciones iRG para evitar que los `onchange` de limitación por lotes carguen adjuntos binarios grandes y provoquen `MemoryError`. Se añade test estático de regresión para la vista. Se refuerza `_irg_get_batch_modality_tokens()` para soportar bases donde `op.batch` no incluye `modality_id`.
