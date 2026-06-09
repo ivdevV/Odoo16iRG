@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.11
+**Versión:** 16.0.1.0.12
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,14 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.12 (V3.4)
+- **Unificación de comportamiento de conectores**: Eliminación del salto forzado de la conjunción `i` específico para el diploma físico, permitiendo que tanto en el formato físico como digital el conector quede al final de la primera línea de manera consistente.
+- **Formateo robusto mediante expresiones regulares**: Uso de expresiones regulares (`re.sub` con `re.IGNORECASE`) para aplicar los saltos de línea en los títulos de manera insensible a mayúsculas/minúsculas.
+- **Escalado dinámico de fuente en títulos**: Implementación de `_fit_single_line_font_size` para ajustar dinámicamente la fuente basándose en la longitud de la línea más larga de los títulos, previniendo que auto-envolturas inesperadas de ReportLab modifiquen la visualización del conector `i`.
+
+### Validación 16.0.1.0.12
+- La tercera tanda de validaciones locales con Docker transcurrió sin errores.
 
 ### Versión 16.0.1.0.11 (V3.3)
 - **Alineación cuadrada de columnas en formato digital**: Alineación de las columnas de título y cabecera con el bloque inferior en el diseño del diploma digital.

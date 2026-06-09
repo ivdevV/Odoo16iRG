@@ -222,20 +222,13 @@ class DiplomaReportPDF(models.AbstractModel):
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
 
-        # Forzar salto de línea en catalán: "i" al final de la primera línea
-        if ' i de la Salut' in course_cat:
-            course_cat = course_cat.replace(' i de la Salut', ' i\nde la Salut')
-        elif ' i de la salut' in course_cat:
-            course_cat = course_cat.replace(' i de la salut', ' i\nde la salut')
+        import re
+        course_cat = re.sub(r'\s+[iI]\s+de\s+la\s+Salut', ' i\nde la Salut', course_cat, flags=re.IGNORECASE)
 
         # Forzar salto de línea en castellano: "y" al inicio de la segunda línea
-        if ' y de la Salud' in course_es:
-            course_es = course_es.replace(' y de la Salud', '\ny de la Salud')
-        elif ' y de la salud' in course_es:
-            course_es = course_es.replace(' y de la salud', '\ny de la salud')
+        course_es = re.sub(r'\s+[yY]\s+de\s+la\s+Salud', '\ny de la Salud', course_es, flags=re.IGNORECASE)
 
-        if diploma_type == 'physical' and ' i ' in course_cat:
-            course_cat = course_cat.replace(' i ', '\ni ', 1)
+
 
         # Base course title sizes for each language; reduce if very long
         course_font_size_cat = sf(19)
@@ -268,6 +261,25 @@ class DiplomaReportPDF(models.AbstractModel):
         else:
             left_title_width = col_width
             right_title_width = col_width
+
+        # Ajustar dinámicamente el tamaño de la fuente para que la línea más larga quepa sin auto-envoltura
+        try:
+            lines_cat = [l.strip() for l in course_cat.split('\n') if l.strip()]
+            longest_line_cat = max(lines_cat, key=len) if lines_cat else ""
+            course_font_size_cat = self._fit_single_line_font_size(
+                c, longest_line_cat, font_bold, course_font_size_cat, sf(8), left_title_width
+            )
+        except Exception:
+            pass
+
+        try:
+            lines_es = [l.strip() for l in course_es.split('\n') if l.strip()]
+            longest_line_es = max(lines_es, key=len) if lines_es else ""
+            course_font_size_es = self._fit_single_line_font_size(
+                c, longest_line_es, font_bold, course_font_size_es, sf(8), right_title_width
+            )
+        except Exception:
+            pass
 
         # compute X anchors so that the narrower title block is centred inside
         # its original column area, or aligned to the inner edges if physical
