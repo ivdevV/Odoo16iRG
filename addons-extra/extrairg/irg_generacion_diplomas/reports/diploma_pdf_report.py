@@ -269,8 +269,9 @@ class DiplomaReportPDF(models.AbstractModel):
         # compute X anchors so that the narrower title block is centred inside
         # its original column area, or aligned to the inner edges if physical
         if diploma_type == 'physical':
-            title_left_x = (left_col_x + col_width) - left_title_width
-            title_right_x = right_col_x
+            upper_gap_reduction = min(gutter * 0.35, sp(36))
+            title_left_x = ((left_col_x + col_width) - left_title_width) + upper_gap_reduction
+            title_right_x = right_col_x - upper_gap_reduction
         else:
             title_left_x = left_col_x + (col_width - left_title_width) / 2
             title_right_x = right_col_x + (col_width - right_title_width) / 2

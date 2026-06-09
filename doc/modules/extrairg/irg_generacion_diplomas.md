@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.9
+**Versión:** 16.0.1.0.10
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,20 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.10 (V3.2)
+- **Corrección efectiva del hueco superior en diplomas físicos**:
+  - Se desplazan los anclajes superiores de título e introducción hacia el centro mediante `upper_gap_reduction`, reduciendo el espacio real entre las dos columnas superiores.
+  - El ajuste se limita a diplomas físicos y no modifica el bloque inferior, orientación, firmas, QR ni tamaño de página.
+
+### Validación 16.0.1.0.10
+
+```bash
+python3 -m py_compile addons-extra/extrairg/irg_generacion_diplomas/reports/diploma_pdf_report.py
+git diff --check -- addons-extra/extrairg/irg_generacion_diplomas/reports/diploma_pdf_report.py addons-extra/extrairg/irg_generacion_diplomas/__manifest__.py doc/modules/extrairg/irg_generacion_diplomas.md
+```
+
+Resultado: correcto.
 
 ### Versión 16.0.1.0.9 (V3.1)
 - **Ajuste de separación superior en diplomas físicos**:
