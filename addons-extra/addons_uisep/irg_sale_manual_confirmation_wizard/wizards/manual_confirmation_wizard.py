@@ -46,6 +46,8 @@ class ManualConfirmationWizard(models.TransientModel):
     # ----------------------------------------------------------------
 
     def _is_academic_line(self, line):
+        if line.price_unit < 0 or line.price_subtotal < 0:
+            return False
         pt = line.product_template_id
         if not pt:
             return False

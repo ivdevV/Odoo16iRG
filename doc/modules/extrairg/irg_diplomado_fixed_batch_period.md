@@ -1,7 +1,7 @@
 # irg_diplomado_fixed_batch_period
 
 **Categoria:** Education  
-**Version:** 16.0.1.2.0  
+**Version:** 16.0.1.3.0  
 **Licencia:** LGPL-3  
 **Instalable:** Si  
 **Autor:** Instituto Raimon Gaja  
@@ -31,6 +31,10 @@ Una linea se considera Diplomado si cumple alguno de estos criterios:
 - Categoria cuyo nombre contiene `DIPLOMADO`.
 - Producto cuyo nombre contiene `DIPLOMADO`.
 
+### Exclusión de Líneas con Precio Negativo
+
+Las líneas de presupuesto que tengan un precio unitario negativo (`price_unit < 0`) o subtotal negativo (`price_subtotal < 0`) (por ejemplo, líneas correspondientes a descuentos aplicados) son excluidas explícitamente y no se consideran líneas académicas. Esto evita que productos de descuento como "Dcto. Diplomado" o "Descuento Máster" sean clasificados erróneamente como programas académicos e intenten generar admisiones o lotes.
+
 ## Alcance tecnico
 
 El modulo hereda:
@@ -54,9 +58,11 @@ Incluye pruebas en `addons-extra/extrairg/irg_diplomado_fixed_batch_period/tests
 - Previsualizacion del wizard para Diplomado 2026.
 - Creacion/busqueda de lote fijo con fechas exactas.
 - No regresion basica para producto Master no Diplomado.
+- Exclusión de líneas de descuento con precio unitario o subtotal negativo, validado en la prueba `test_discount_line_ignored_by_academic_lines`.
 
 ## Changelog
 
+- 16.0.1.3.0: Exclusión de líneas con precio negativo para evitar tratar productos de descuento como líneas académicas en el wizard y en el modelo `sale.order`. Se añade la prueba unitaria `test_discount_line_ignored_by_academic_lines` para verificar este comportamiento.
 - 16.0.1.2.0: Permitir la confirmación de presupuestos bonificados (precio 0 o menor) omitiendo la restricción de recurrencia en `sale_subscription`.
 - 16.0.1.1.0: Corrección del sufijo del código de lote a `06` (antes `09`) para Diplomados. Adición de la dependencia `'irg_openeducat_sale_lote_custom'` en el manifest para corregir el orden de resolución de métodos (MRO) de Odoo, asegurando que `get_lot_id` personalizado prevalezca sobre los módulos base.
 - 16.0.1.0.0: Modulo inicial. Anade regla de lote fijo anual para Diplomados y evita que se procesen como masteres HC/ONL.

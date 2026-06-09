@@ -1,7 +1,7 @@
 # irg_sale_manual_confirmation_wizard
 
 **Categoría:** Sales (Ventas)
-**Versión:** 16.0.1.0.0
+**Versión:** 16.0.1.1.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** Instituto Raimon Gaja
@@ -50,6 +50,10 @@ El módulo incorpora un sistema de detección y procesamiento robusto de **Diplo
 ### 5. Autocompletado de Fecha de Inicio de Clases
 *   Al confirmar un pedido de venta (ya sea mediante confirmación manual a través del wizard o por e-commerce), el módulo sincroniza la fecha de inicio de la línea de producto (`start_date_enroller` en `sale.order.line`) con la fecha de inicio de clases (`irg_class_start_date`) de la admisión (`op.admission`) generada.
 
+### 6. Exclusión de Líneas de Descuento (Precios Negativos)
+*   **Problema:** En presupuestos con productos de descuento (como `Descuento Máster` o `Dcto. Diplomado`), estos productos pueden marcarse como programas académicos o tener nombres que coincidan con los criterios de detección, provocando que Odoo intente tratarlos como líneas de programa académico principales, asignándoles lotes o generando admisiones independientes.
+*   **Solución:** Se implementa un filtro explícito en la detección de líneas académicas (`_is_academic_line`). Si una línea tiene un precio unitario negativo (`price_unit < 0`) o un subtotal negativo (`price_subtotal < 0`), se descarta automáticamente de la lógica de confirmación y asignación de lotes, evitando errores y previniendo que los productos de descuento sean interpretados erróneamente como programas formativos reales.
+
 ---
 
 ## Modelos Modificados
@@ -57,8 +61,8 @@ El módulo incorpora un sistema de detección y procesamiento robusto de **Diplo
 | Modelo | Tipo | Campos / Métodos principales | Descripción |
 | :--- | :--- | :--- | :--- |
 | `op.admission` | Herencia | `enroll_student()`, `_ensure_portal_user()`, `send_mail()`, `submit_form()`, `get_student_vals()` | Incorpora la salvaguarda de creación de usuarios portal, gestiona el ruteo del correo de bienvenida (forzando plantillas default para diplomados) y asegura la persistencia de fechas de nacimiento y admisión. |
-| `sale.order` | Herencia | `_get_line_modality()`, `_create_or_get_admission()` | Permite identificar la modalidad de una línea y añade compatibilidad con diplomados (forzando 'HC' para categorías con código que empieza por 'DI'). Además, propaga el precio de la línea a `fees`, la fecha de admisión y sincroniza la fecha de inicio de la línea (`start_date_enroller`) con la fecha de inicio de clases (`irg_class_start_date`) en la admisión. |
-| `irg.manual.confirmation.wizard` | Nuevo Modelo (Wizard) | `default_get()`, `_compute_preview()`, `_build_preview()`, `_detect_line_modalidad()`, `_build_line_batch_code_preview()`, `action_confirm()` | Interfaz gráfica y lógica de validación de pre-confirmación que calcula la modalidad detectada y el lote correspondiente (soportando mensual trimestral y diplomados). |
+| `sale.order` | Herencia | `_is_academic_line()`, `_get_line_modality()`, `_create_or_get_admission()` | Permite identificar la modalidad de una línea y añade compatibilidad con diplomados (forzando 'HC' para categorías con código que empieza por 'DI'). Además, propaga el precio de la línea a `fees`, la fecha de admisión y sincroniza la fecha de inicio de la línea (`start_date_enroller`) con la fecha de inicio de clases (`irg_class_start_date`) en la admisión. También excluye líneas con precio negativo para evitar procesar descuentos como cursos. |
+| `irg.manual.confirmation.wizard` | Nuevo Modelo (Wizard) | `_is_academic_line()`, `default_get()`, `_compute_preview()`, `_build_preview()`, `_detect_line_modalidad()`, `_build_line_batch_code_preview()`, `action_confirm()` | Interfaz gráfica y lógica de validación de pre-confirmación que calcula la modalidad detectada y el lote correspondiente (soportando mensual trimestral y diplomados), ignorando líneas de descuento con precios negativos. |
 
 ---
 
@@ -97,3 +101,10 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf \
     -d test_irg_db -u irg_sale_manual_confirmation_wizard \
     --stop-after-init
 ```
+
+---
+
+## Changelog
+
+*   **16.0.1.1.0**: Exclusión de líneas con precios negativos (`price_unit < 0` o `price_subtotal < 0`) en la detección de líneas académicas para ignorar los productos de tipo descuento (por ejemplo, `Descuento Máster` o `Dcto. Diplomado`) y evitar que sean tratados como programas académicos independientes.
+*   **16.0.1.0.0**: Versión inicial con el wizard de pre-confirmación manual, routing de correos de bienvenida post-confirmación y salvaguardas de creación de usuario portal.
