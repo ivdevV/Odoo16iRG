@@ -95,3 +95,17 @@ class TestStudentInvoicePaymentLink(TransactionCase):
         self.assertEqual(action['res_model'], 'account.payment')
         self.assertEqual(action['domain'], [('id', 'in', expected_payments.ids)])
         self.assertEqual(self.student.irg_payment_count, len(expected_payments))
+
+    def test_backfill_links_existing_sale_invoices(self):
+        __, invoice = self._create_invoiced_order()
+        self.env.cr.execute(
+            "UPDATE account_move SET irg_student_partner_id = NULL WHERE id = %s",
+            [invoice.id],
+        )
+        invoice.invalidate_recordset(['irg_student_partner_id'])
+
+        updated_count = self.env['account.move'].irg_backfill_student_partner_id()
+        invoice.invalidate_recordset(['irg_student_partner_id'])
+
+        self.assertGreaterEqual(updated_count, 1)
+        self.assertEqual(invoice.irg_student_partner_id, self.student_partner)

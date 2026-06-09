@@ -5,7 +5,7 @@
 | Propiedad | Valor |
 | --- | --- |
 | Nombre tecnico | `irg_student_invoice_payment_link` |
-| Version | `16.0.1.0.0` |
+| Version | `16.0.1.1.0` |
 | Categoria | Education |
 | Licencia | LGPL-3 |
 | Autor | iRG |
@@ -27,6 +27,7 @@ Permite que la ficha `op.student` vea facturas y pagos academicos aunque el titu
 ### `account.move`
 
 - `irg_student_partner_id`: Many2one almacenado e indexado a `res.partner`. Se calcula desde `invoice_line_ids.sale_line_ids.order_id.student_id` y tambien se propone desde `sale.order._prepare_invoice()` al crear facturas desde ventas.
+- `irg_backfill_student_partner_id()`: metodo de mantenimiento que rellena el alumno academico en facturas existentes creadas desde pedidos con `student_id`.
 
 ### `sale.order`
 
@@ -51,6 +52,28 @@ Permite que la ficha `op.student` vea facturas y pagos academicos aunque el titu
 - Generar la factura desde la venta; el modulo copia el alumno a `irg_student_partner_id` sin cambiar el titular contable.
 - Abrir la ficha `op.student` del alumno para consultar el smart button de facturas academicas.
 - Usar el smart button `Pagos` para revisar pagos reconciliados con esas facturas.
+
+## Datos Existentes
+
+El modulo cubre facturas anteriores mediante dos mecanismos:
+
+- `post_init_hook`: se ejecuta al instalar el modulo por primera vez y rellena `irg_student_partner_id` en facturas de cliente/rectificativas con lineas de venta enlazadas a pedidos que tengan `student_id`.
+- Migracion `16.0.1.1.0`: se ejecuta al actualizar el modulo si ya estaba instalado previamente.
+
+Comando recomendado para actualizar una base existente:
+
+```bash
+docker compose -f docker-compose.local.yml run --rm odoo_local \
+  odoo -c /etc/odoo/odoo.conf \
+  -d <db> -u irg_student_invoice_payment_link \
+  --stop-after-init
+```
+
+Si se necesita forzar manualmente desde shell:
+
+```python
+env['account.move'].irg_backfill_student_partner_id()
+```
 
 ## Decisiones De Diseno
 
@@ -87,7 +110,7 @@ Resultado:
 - Compilacion Python correcta.
 - XML correcto.
 - Instalacion del modulo correcta.
-- Tests del modulo: 3 ejecutados, 0 fallos, 0 errores.
+- Tests del modulo: 4 ejecutados, 0 fallos, 0 errores.
 
 ## Limitaciones Conocidas
 
@@ -97,3 +120,4 @@ Resultado:
 ## Changelog
 
 - **2026-06-09:** Creacion del modulo con vinculo academico factura-alumno, acciones de facturas/pagos en `op.student`, vistas heredadas y tests transaccionales.
+- **2026-06-09:** Version `16.0.1.1.0`: backfill de facturas existentes via `post_init_hook`, migracion de actualizacion y metodo manual.
