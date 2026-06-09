@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.10
+**Versión:** 16.0.1.0.11
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,20 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.11 (V3.3)
+- **Alineación cuadrada de columnas en formato digital**: Alineación de las columnas de título y cabecera con el bloque inferior en el diseño del diploma digital.
+- **Control y forzado de conectores**: Ubicación forzada del conector `i` al final de la primera línea en la versión en catalán y de la `y` al inicio de la segunda línea en la versión en castellano.
+- **Mayor separación de la preposición 'a'**: Elevación vertical del conector/preposición `a` con respecto al nombre del estudiante para mejorar el aire visual.
+- **Modificaciones visuales en el diploma físico**:
+  - **Alineación simétrica de columnas**: Se alinean simétricamente las columnas superiores de cabecera y título con el bloque inferior de texto, eliminando `upper_gap_reduction`.
+  - **Espaciado del nombre del alumno**: Incremento del espacio vertical del nombre del alumno respecto a la preposición "a" (`sp(34)`).
+  - **Separación entre párrafos**: Aumento del espacio de separación entre párrafos legales (`body_sec_gap = sp(25)`) para crear una línea de separación nítida.
+  - **Alineación del pie de firmas**: Alineación horizontal exacta en el pie de firmas de "Fundador" y "Director Acadèmic" con la etiqueta "Interessat/da" en la misma coordenada Y (`footer_y = role_y - sp(10)`).
+
+### Validación 16.0.1.0.11
+- Carga exitosa en base de datos local y ejecución de tests sintácticos del módulo.
+- La segunda tanda de validaciones locales con Docker transcurrió sin errores.
 
 ### Versión 16.0.1.0.10 (V3.2)
 - **Corrección efectiva del hueco superior en diplomas físicos**:
