@@ -222,8 +222,9 @@ class DiplomaReportPDF(models.AbstractModel):
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
 
+        # Forzar salto de línea en catalán: "i" al inicio de la segunda línea
         import re
-        course_cat = re.sub(r'\s+[iI]\s+de\s+la\s+Salut', ' i\nde la Salut', course_cat, flags=re.IGNORECASE)
+        course_cat = re.sub(r'\s+[iI]\s+de\s+la\s+Salut', '\ni de la Salut', course_cat, flags=re.IGNORECASE)
 
         # Forzar salto de línea en castellano: "y" al inicio de la segunda línea
         course_es = re.sub(r'\s+[yY]\s+de\s+la\s+Salud', '\ny de la Salud', course_es, flags=re.IGNORECASE)
