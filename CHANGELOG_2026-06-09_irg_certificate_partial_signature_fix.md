@@ -59,3 +59,12 @@ El código se encuentra verificado, estable y la documentación de referencia t�
 - [irg_certificate_partial.md](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/doc/modules/extrairg/irg_certificate_partial.md)
 
 El cambio queda listo para revisión y el posterior merge según el flujo establecido en el proyecto.
+
+---
+
+## 5. Corrección de Maquetación de la Firma de Departamento Académico (Segundo Cambio)
+
+*   **Corrección de Maquetación de la Firma de Departamento Académico:** Se ha modificado la plantilla base `Plantilla-certificado-notas-dpto.docx` original para cambiar el anclaje de la imagen de la firma de flotante (`wp:anchor` con envoltura estrecha) a en línea con el texto (`wp:inline`) en un párrafo independiente vacío (`P13`). Esto soluciona de raíz la colisión con la frase de cierre y evita que el texto "Departamento Académico" sea desplazado hacia el lado derecho debido a la envoltura de la imagen.
+*   **Regeneración de Plantillas:** Se ha ejecutado el script `prepare_templates.py` para regenerar y sincronizar la maquetación corregida en los templates derivados de asistencia y matrícula de departamento académico.
+*   **Actualización de Tests:** Se ha corregido la aserción en `test_partial.py` para comprobar el dibujo de firma inline en el párrafo independiente vacío.
+
