@@ -75,11 +75,11 @@ La vista backend de `irg.certificate.request` anade:
 
 ### Contactos
 
-La ficha de `res.partner` muestra un smart button `Solicitudes` cuando existen solicitudes vinculadas.
+La ficha de `res.partner` muestra siempre un smart button `Solicitudes`, incluso cuando el contador es `0`, para permitir acceder al historial filtrado desde el contacto.
 
 ### Estudiantes
 
-La ficha de `op.student` muestra un smart button `Solicitudes` cuando existen solicitudes vinculadas.
+La ficha de `op.student` muestra siempre un smart button `Solicitudes`, incluso cuando el contador es `0`, para permitir acceder al historial filtrado desde el estudiante.
 
 ## Decisiones De Diseno
 
@@ -128,3 +128,4 @@ Resultado:
 ## Changelog
 
 - **2026-06-09:** Creacion del modulo de Fase 1 con trazabilidad de solicitudes academicas, campos de evidencia Stripe y smart buttons en contacto/estudiante.
+- **2026-06-09:** Ajuste de visibilidad para mostrar siempre el smart button `Solicitudes` en contactos y estudiantes.

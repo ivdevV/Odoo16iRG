@@ -10,8 +10,7 @@
                     <button name="action_view_academic_requests"
                             type="object"
                             class="oe_stat_button"
-                            icon="fa-file-text-o"
-                            attrs="{'invisible': [('academic_request_count', '=', 0)]}">
+                            icon="fa-file-text-o">
                         <field name="academic_request_count"
                                widget="statinfo"
                                string="Solicitudes"/>
