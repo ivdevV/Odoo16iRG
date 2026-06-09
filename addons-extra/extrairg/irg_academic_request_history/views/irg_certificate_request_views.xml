@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_irg_certificate_request_form_history" model="ir.ui.view">
+            <field name="name">irg.certificate.request.form.history</field>
+            <field name="model">irg.certificate.request</field>
+            <field name="inherit_id" ref="irg_gradebook_certificates.view_irg_certificate_request_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="student_id" readonly="1"/>
+                </xpath>
+                <xpath expr="//page[@name='page_documents']//group" position="inside">
+                    <field name="diploma_registry_id" readonly="1"
+                           attrs="{'invisible': [('document_type', '!=', 'diploma')]}"/>
+                </xpath>
+                <xpath expr="//notebook" position="inside">
+                    <page string="Pago Stripe" name="page_stripe_payment">
+                        <group>
+                            <group string="Resumen de Pago">
+                                <field name="payment_concept" readonly="1"/>
+                                <field name="payment_amount" readonly="1"/>
+                                <field name="payment_currency_id" readonly="1"/>
+                                <field name="payment_success_date" readonly="1"/>
+                                <field name="stripe_payment_status" readonly="1"/>
+                            </group>
+                            <group string="Evidencia Stripe">
+                                <field name="stripe_checkout_session_id" readonly="1"/>
+                                <field name="stripe_payment_intent_id" readonly="1"/>
+                                <field name="stripe_invoice_id" readonly="1"/>
+                                <field name="stripe_invoice_url" readonly="1" widget="url"/>
+                                <field name="stripe_invoice_pdf" readonly="1" widget="url"/>
+                                <field name="stripe_receipt_url" readonly="1" widget="url"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_irg_certificate_request_list_history" model="ir.ui.view">
+            <field name="name">irg.certificate.request.list.history</field>
+            <field name="model">irg.certificate.request</field>
+            <field name="inherit_id" ref="irg_gradebook_certificates.view_irg_certificate_request_list"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="student_id" optional="hide"/>
+                </xpath>
+                <xpath expr="//field[@name='price_total']" position="after">
+                    <field name="payment_success_date" optional="hide"/>
+                    <field name="stripe_payment_status" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_irg_certificate_request_search_history" model="ir.ui.view">
+            <field name="name">irg.certificate.request.search.history</field>
+            <field name="model">irg.certificate.request</field>
+            <field name="inherit_id" ref="irg_gradebook_certificates.view_irg_certificate_request_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="student_id" string="Estudiante"/>
+                    <field name="stripe_checkout_session_id" string="Stripe Session"/>
+                    <field name="stripe_payment_intent_id" string="PaymentIntent"/>
+                </xpath>
+                <xpath expr="//filter[@name='filter_pending']" position="after">
+                    <filter name="filter_stripe_paid" string="Pagado Stripe"
+                            domain="[('payment_success_date', '!=', False)]"/>
+                </xpath>
+                <xpath expr="//filter[@name='group_course']" position="after">
+                    <filter name="group_student" string="Estudiante"
+                            context="{'group_by': 'student_id'}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
