@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_op_student_form_invoice_payment_link" model="ir.ui.view">
+            <field name="name">op.student.form.invoice.payment.link</field>
+            <field name="model">op.student</field>
+            <field name="inherit_id" ref="openeducat_fees.view_op_student_form_fees_inherit"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_view_invoice']" position="attributes">
+                    <attribute name="string">Facturas</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_view_invoice']/field" position="attributes">
+                    <attribute name="name">irg_invoice_count</attribute>
+                    <attribute name="string">Facturas</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_view_invoice']" position="after">
+                    <button name="action_view_academic_payments"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-credit-card">
+                        <field name="irg_payment_count" widget="statinfo" string="Pagos"/>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
