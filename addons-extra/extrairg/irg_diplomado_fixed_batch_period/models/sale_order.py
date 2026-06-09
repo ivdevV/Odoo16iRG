@@ -19,6 +19,8 @@ class SaleOrder(models.Model):
         return bool('product_template_ids' in course._fields and pt in course.product_template_ids)
 
     def _is_academic_line(self, line):
+        if line.price_unit < 0 or line.price_subtotal < 0:
+            return False
         pt = line.product_template_id
         if not pt:
             return False

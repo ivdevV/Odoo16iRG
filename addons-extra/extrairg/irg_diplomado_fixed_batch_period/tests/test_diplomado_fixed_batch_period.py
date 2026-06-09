@@ -146,3 +146,57 @@ class TestDiplomadoFixedBatchPeriod(TransactionCase):
         # Confirming the order transitions the state and triggers the constraint
         bonificado_order.action_confirm()
         self.assertIn(bonificado_order.state, ['sale', 'done'])
+
+    def test_discount_line_ignored_by_academic_lines(self):
+        # Create a discount product named 'Dcto. Diplomado' with a negative price
+        discount_category = self.env['product.category'].create({
+            'name': 'Descuentos',
+            'code': 'DESC',
+        })
+        discount_tmpl = self.env['product.template'].create({
+            'name': 'Dcto. Diplomado',
+            'is_academic_program': True,
+            'recurring_invoice': False,
+            'categ_id': discount_category.id,
+            'list_price': -100.0,
+        })
+        discount_product = self.env['product.product'].search([
+            ('product_tmpl_id', '=', discount_tmpl.id),
+        ], limit=1)
+
+        # Create a sale order with an academic product (positive price) and the discount line (negative price)
+        order = self.env['sale.order'].create({
+            'partner_id': self.partner.id,
+            'course_id': self.course.id,
+            'admission_date': date(2026, 6, 28),
+            'order_line': [
+                (0, 0, {
+                    'product_id': self.product.id,
+                    'product_uom_qty': 1,
+                    'price_unit': 1000.0,
+                }),
+                (0, 0, {
+                    'product_id': discount_product.id,
+                    'product_uom_qty': 1,
+                    'price_unit': -100.0,
+                })
+            ],
+        })
+
+        discount_line = order.order_line.filtered(lambda l: l.product_id == discount_product)
+        academic_line = order.order_line.filtered(lambda l: l.product_id == self.product)
+
+        # Assert that the discount line is ignored by _is_academic_line
+        self.assertFalse(order._is_academic_line(discount_line))
+        # Assert that the academic line is NOT ignored
+        self.assertTrue(order._is_academic_line(academic_line))
+
+        # Check wizard logic
+        wizard = self.env['irg.manual.confirmation.wizard'].create({
+            'order_id': order.id,
+            'admission_date': date(2026, 6, 28),
+        })
+        # Assert that the wizard ignores the discount line in its _is_academic_line check
+        self.assertFalse(wizard._is_academic_line(discount_line))
+        self.assertTrue(wizard._is_academic_line(academic_line))
+

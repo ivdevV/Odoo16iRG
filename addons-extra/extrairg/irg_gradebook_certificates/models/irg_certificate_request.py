@@ -434,7 +434,8 @@ class IrgCertificateRequest(models.Model):
         if paragraph.runs:
             paragraph.runs[0].text = full
             for r in paragraph.runs[1:]:
-                r.text = ''
+                for t in r._element.xpath('.//w:t'):
+                    t.text = ''
 
     @staticmethod
     def _scale_document_fonts(doc, percent=75):

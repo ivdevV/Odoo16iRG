@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.8
+**Versión:** 16.0.1.0.13
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -59,6 +59,65 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 
 ## Historial de Cambios
 
+### Versión 16.0.1.0.13 (V3.5)
+- **Elevación de la sección inferior de firmas**: Reducción del margen vertical antes de la sección de firmas y código QR de `sp(54)` a `sp(40)` únicamente en los diplomas en formato digital. Esto reduce el hueco inferior excesivo y sube simétricamente las firmas, los nombres de directores y el código QR.
+
+### Validación 16.0.1.0.13
+- La quinta tanda de validaciones locales con Docker transcurrió sin errores.
+
+### Versión 16.0.1.0.12 (V3.4)
+- **Simetría y unificación de conectores**: Se unifica el comportamiento del conector en catalán y castellano tanto en formato digital como en físico. El salto de línea (`\n`) se coloca **antes** de la conjunción `i` (quedando al inicio de la segunda línea como `\ni de la Salut`), logrando simetría total con la composición en castellano (`\ny de la Salud`).
+- **Formateo robusto mediante expresiones regulares**: Uso de expresiones regulares (`re.sub` con `re.IGNORECASE`) para aplicar los saltos de línea en los títulos de manera insensible a mayúsculas/minúsculas.
+- **Escalado dinámico de fuente en títulos**: Implementación de `_fit_single_line_font_size` para ajustar dinámicamente la fuente basándose en la longitud de la línea más larga de los títulos, previniendo que auto-envolturas inesperadas de ReportLab modifiquen la visualización del conector `i`.
+
+### Validación 16.0.1.0.12
+- La cuarta tanda de validaciones locales con Docker transcurrió sin errores.
+
+### Versión 16.0.1.0.11 (V3.3)
+- **Alineación cuadrada de columnas en formato digital**: Alineación de las columnas de título y cabecera con el bloque inferior en el diseño del diploma digital.
+- **Control y forzado de conectores**: Ubicación forzada del conector `i` al final de la primera línea en la versión en catalán y de la `y` al inicio de la segunda línea en la versión en castellano.
+- **Mayor separación de la preposición 'a'**: Elevación vertical del conector/preposición `a` con respecto al nombre del estudiante para mejorar el aire visual.
+- **Modificaciones visuales en el diploma físico**:
+  - **Alineación simétrica de columnas**: Se alinean simétricamente las columnas superiores de cabecera y título con el bloque inferior de texto, eliminando `upper_gap_reduction`.
+  - **Espaciado del nombre del alumno**: Incremento del espacio vertical del nombre del alumno respecto a la preposición "a" (`sp(34)`).
+  - **Separación entre párrafos**: Aumento del espacio de separación entre párrafos legales (`body_sec_gap = sp(25)`) para crear una línea de separación nítida.
+  - **Alineación del pie de firmas**: Alineación horizontal exacta en el pie de firmas de "Fundador" y "Director Acadèmic" con la etiqueta "Interessat/da" en la misma coordenada Y (`footer_y = role_y - sp(10)`).
+
+### Validación 16.0.1.0.11
+- Carga exitosa en base de datos local y ejecución de tests sintácticos del módulo.
+- La segunda tanda de validaciones locales con Docker transcurrió sin errores.
+
+### Versión 16.0.1.0.10 (V3.2)
+- **Corrección efectiva del hueco superior en diplomas físicos**:
+  - Se desplazan los anclajes superiores de título e introducción hacia el centro mediante `upper_gap_reduction`, reduciendo el espacio real entre las dos columnas superiores.
+  - El ajuste se limita a diplomas físicos y no modifica el bloque inferior, orientación, firmas, QR ni tamaño de página.
+
+### Validación 16.0.1.0.10
+
+```bash
+python3 -m py_compile addons-extra/extrairg/irg_generacion_diplomas/reports/diploma_pdf_report.py
+git diff --check -- addons-extra/extrairg/irg_generacion_diplomas/reports/diploma_pdf_report.py addons-extra/extrairg/irg_generacion_diplomas/__manifest__.py doc/modules/extrairg/irg_generacion_diplomas.md
+```
+
+Resultado: correcto.
+
+### Versión 16.0.1.0.9 (V3.1)
+- **Ajuste de separación superior en diplomas físicos**:
+  - El bloque superior de títulos e introducciones usa ahora el ancho completo de columna en diplomas físicos, igualando el espacio central con el bloque inferior de texto.
+  - En el título catalán físico, el salto antes de la conjunción `i` se fuerza explícitamente para que `i de la Salut` quede en segunda línea, equivalente a la composición castellana `y de la Salud`.
+  - La preposición central `a` se eleva ligeramente solo en diplomas físicos para aumentar la separación respecto al nombre del alumno.
+  - No se modifica orientación, tamaño de página, columnas inferiores, firmas, QR ni estilos tipográficos.
+
+### Validación 16.0.1.0.9
+
+```bash
+python3 -m py_compile addons-extra/extrairg/irg_generacion_diplomas/reports/diploma_pdf_report.py
+```
+
+Resultado: correcto.
+
+La validación Odoo local con `docker-compose.local.yml` no pudo ejecutarse porque Docker no estaba disponible en la máquina (`docker.sock` inaccesible).
+
 ### Versión 16.0.1.0.8 (V3.0)
 - **Incremento de Tamaños de Fuente y Espaciado en Diplomas Físicos**:
   - **Fuentes de Cabecera**: Se incrementó el tamaño de la fuente para las líneas introductorias/cabecera a `sf(10.5)` (anteriormente `sf(9.5)`).
@@ -101,4 +160,3 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 
 ### Versión 16.0.1.0.1 (V2.3)
 - **Mejora Estética del Layout**: Se ajustó la posición de renderizado vertical de los nombres de los másteres en el PDF de ReportLab. Se modificó el desplazamiento vertical de `y -= sp(28)` a `y -= sp(38)` en la línea 215 del generador. Esto añade un espaciado visual (aire) de 10 puntos respecto a la cabecera superior. Las posiciones de los elementos subsiguientes se calculan dinámicamente de forma relativa a este desplazamiento, manteniendo la cohesión y previniendo solapamientos en todo el diploma.
-

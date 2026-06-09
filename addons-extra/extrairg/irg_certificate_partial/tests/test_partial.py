@@ -269,6 +269,18 @@ class TestIrgCertificatePartial(TransactionCase):
         self.assertEqual(signature_paragraph.paragraph_format.left_indent.twips, -172)
         self.assertEqual(signature_paragraph.paragraph_format.right_indent.twips, -783)
 
+        # Verificar que la firma (el dibujo) existe en el cuerpo en un párrafo vacío (inline)
+        has_signature_drawing = False
+        for p in document.paragraphs:
+            drawings = p._element.xpath('.//w:drawing')
+            if drawings and not p.text.strip():
+                has_signature_drawing = True
+                break
+        self.assertTrue(
+            has_signature_drawing,
+            "La firma del departamento académico no se encuentra en un párrafo independiente vacío en el documento final."
+        )
+
     def test_04_partial_gradebook_raimon_intro_certifica_and_signature_align_with_table(self):
         """Raimon signer header, CERTIFICA and signature use the same text grid."""
         cert = self.env['irg.certificate.request'].create({

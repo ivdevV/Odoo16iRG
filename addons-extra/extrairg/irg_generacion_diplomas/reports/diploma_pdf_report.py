@@ -90,7 +90,9 @@ class DiplomaReportPDF(models.AbstractModel):
             leading = font_size * 1.2
             
         c.setFont(font_name, font_size)
-        lines = simpleSplit(text, font_name, font_size, width)
+        lines = []
+        for paragraph in (text or '').split('\n'):
+            lines.extend(simpleSplit(paragraph, font_name, font_size, width))
         
         current_y = y
         for line in lines:
@@ -220,6 +222,15 @@ class DiplomaReportPDF(models.AbstractModel):
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
 
+        # Forzar salto de línea en catalán: "i" al inicio de la segunda línea
+        import re
+        course_cat = re.sub(r'\s+[iI]\s+de\s+la\s+Salut', '\ni de la Salut', course_cat, flags=re.IGNORECASE)
+
+        # Forzar salto de línea en castellano: "y" al inicio de la segunda línea
+        course_es = re.sub(r'\s+[yY]\s+de\s+la\s+Salud', '\ny de la Salud', course_es, flags=re.IGNORECASE)
+
+
+
         # Base course title sizes for each language; reduce if very long
         course_font_size_cat = sf(19)
         course_font_size_es = sf(19)
@@ -243,32 +254,43 @@ class DiplomaReportPDF(models.AbstractModel):
 
         # If a title is short we make its block more narrow so it visually
         # sits closer to the centre; otherwise use the default wider block.
-        # For physical diplomas we assign col_width * 0.82 according to V2.8.
+        # For physical diplomas use the full column width so the upper central
+        # gap matches the lower text columns.
         if diploma_type == 'physical':
-            left_title_width = col_width * 0.82
-            right_title_width = col_width * 0.82
+            left_title_width = col_width
+            right_title_width = col_width
         else:
-            left_title_width = default_title_width
-            right_title_width = default_title_width
-            try:
-                if course_cat and len(course_cat.strip()) < 45:
-                    left_title_width = col_width * 0.8
-            except Exception:
-                pass
-            try:
-                if course_es and len(course_es.strip()) < 45:
-                    right_title_width = col_width * 0.8
-            except Exception:
-                pass
+            left_title_width = col_width
+            right_title_width = col_width
+
+        # Ajustar dinámicamente el tamaño de la fuente para que la línea más larga quepa sin auto-envoltura
+        try:
+            lines_cat = [l.strip() for l in course_cat.split('\n') if l.strip()]
+            longest_line_cat = max(lines_cat, key=len) if lines_cat else ""
+            course_font_size_cat = self._fit_single_line_font_size(
+                c, longest_line_cat, font_bold, course_font_size_cat, sf(8), left_title_width
+            )
+        except Exception:
+            pass
+
+        try:
+            lines_es = [l.strip() for l in course_es.split('\n') if l.strip()]
+            longest_line_es = max(lines_es, key=len) if lines_es else ""
+            course_font_size_es = self._fit_single_line_font_size(
+                c, longest_line_es, font_bold, course_font_size_es, sf(8), right_title_width
+            )
+        except Exception:
+            pass
 
         # compute X anchors so that the narrower title block is centred inside
         # its original column area, or aligned to the inner edges if physical
         if diploma_type == 'physical':
-            title_left_x = (left_col_x + col_width) - left_title_width
-            title_right_x = right_col_x
+            upper_gap_reduction = sp(0)
+            title_left_x = ((left_col_x + col_width) - left_title_width) + upper_gap_reduction
+            title_right_x = right_col_x - upper_gap_reduction
         else:
-            title_left_x = left_col_x + (col_width - left_title_width) / 2
-            title_right_x = right_col_x + (col_width - right_title_width) / 2
+            title_left_x = left_col_x
+            title_right_x = right_col_x
 
         # --- INTRO TEXT ---
         # Draw the intro lines inside the same narrower blocks as the titles
@@ -307,11 +329,11 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- "a" ---
         # lift the "a" a bit when we've moved elements upward earlier
-        y -= sp(14)
-        self._draw_centered_text(c, "a", y, font_regular, sf(13), page_width)
+        y_a = y - (sp(4) if diploma_type == 'physical' else sp(6))
+        self._draw_centered_text(c, "a", y_a, font_regular, sf(13), page_width)
         
         # --- STUDENT NAME ---
-        y -= sp(22)
+        y = y_a - (sp(34) if diploma_type == 'physical' else sp(30))
         student_name = data.get('student_name', '')
         student_max_width = page_width - (2 * side_margin)
         student_font_size = self._fit_single_line_font_size(
@@ -339,7 +361,7 @@ class DiplomaReportPDF(models.AbstractModel):
         body_cat_3 = "Aquest màster té el reconeixement d'excel·lència acadèmica"
         body_cat_4 = "de l'European Association of Applied Psychology."
         
-        body_sec_gap = sp(12) if diploma_type == 'physical' else sp(25)
+        body_sec_gap = sp(25)
         self._draw_text_in_column(c, body_cat_1, left_col_x, y, col_width, font_regular, body_font_size, align='right')
         y -= body_line_gap
         self._draw_text_in_column(c, body_cat_2, left_col_x, y, col_width, font_regular, body_font_size, align='right')
@@ -388,7 +410,7 @@ class DiplomaReportPDF(models.AbstractModel):
         #   left_col_x + col_width + gutter/2
         # changing that expression will move only the middle column.
         # move further down to make space and lower the signature area
-        y -= sp(34) if diploma_type == 'physical' else sp(54)
+        y -= sp(34) if diploma_type == 'physical' else sp(40)
 
         # Store Y for images (bottom of signature area). push signatures
         # a bit further down so they sit below the date. increase the
@@ -495,7 +517,7 @@ class DiplomaReportPDF(models.AbstractModel):
             self._draw_text_in_column(c, "Director Académico", right_col_x, role_y, col_width, font_regular, sf(9), align='center')
 
             # third row: footer names (keep them lower to allow signing above)
-            footer_y = role_y - sp(12)
+            footer_y = role_y - sp(10)
             self._draw_centered_text(c, "Fundador", footer_y, font_regular, sf(9), page_width)
             self._draw_text_in_column(c, "Director Acadèmic", right_col_x, footer_y, col_width, font_regular, sf(9), align='center')
             # set registry baseline for physical diplomas so the registry
