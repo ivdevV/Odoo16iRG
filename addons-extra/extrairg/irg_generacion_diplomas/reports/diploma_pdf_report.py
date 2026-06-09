@@ -90,7 +90,9 @@ class DiplomaReportPDF(models.AbstractModel):
             leading = font_size * 1.2
             
         c.setFont(font_name, font_size)
-        lines = simpleSplit(text, font_name, font_size, width)
+        lines = []
+        for paragraph in (text or '').split('\n'):
+            lines.extend(simpleSplit(paragraph, font_name, font_size, width))
         
         current_y = y
         for line in lines:
@@ -219,6 +221,8 @@ class DiplomaReportPDF(models.AbstractModel):
         y -= sp(48)
         course_cat = self._normalize_catalan_course_name(data.get('course_name_cat', ''))
         course_es = data.get('course_name_es', '')
+        if diploma_type == 'physical' and ' i ' in course_cat:
+            course_cat = course_cat.replace(' i ', '\ni ', 1)
 
         # Base course title sizes for each language; reduce if very long
         course_font_size_cat = sf(19)
@@ -243,10 +247,11 @@ class DiplomaReportPDF(models.AbstractModel):
 
         # If a title is short we make its block more narrow so it visually
         # sits closer to the centre; otherwise use the default wider block.
-        # For physical diplomas we assign col_width * 0.82 according to V2.8.
+        # For physical diplomas use the full column width so the upper central
+        # gap matches the lower text columns.
         if diploma_type == 'physical':
-            left_title_width = col_width * 0.82
-            right_title_width = col_width * 0.82
+            left_title_width = col_width
+            right_title_width = col_width
         else:
             left_title_width = default_title_width
             right_title_width = default_title_width
@@ -307,7 +312,7 @@ class DiplomaReportPDF(models.AbstractModel):
         
         # --- "a" ---
         # lift the "a" a bit when we've moved elements upward earlier
-        y -= sp(14)
+        y -= sp(8) if diploma_type == 'physical' else sp(14)
         self._draw_centered_text(c, "a", y, font_regular, sf(13), page_width)
         
         # --- STUDENT NAME ---
