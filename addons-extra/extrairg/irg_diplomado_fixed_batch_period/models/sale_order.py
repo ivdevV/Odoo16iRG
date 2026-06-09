@@ -153,9 +153,29 @@ class SaleOrder(models.Model):
         orders_to_check = self.env['sale.order']
         for so in self:
             recurring_lines = so.order_line.filtered(lambda l: l.product_id.recurring_invoice)
-            if recurring_lines and all(line.price_unit <= 0.0 for line in recurring_lines):
-                continue
+            if recurring_lines:
+                if so.amount_total <= 0.0:
+                    continue
+                recurring_and_discount = so.order_line.filtered(
+                    lambda l: l.product_id.recurring_invoice or l.price_unit < 0.0 or l.price_subtotal < 0.0
+                )
+                if sum(recurring_and_discount.mapped('price_subtotal')) <= 0.0:
+                    continue
+                if all(line.price_unit <= 0.0 for line in recurring_lines):
+                    continue
             orders_to_check |= so
 
         if orders_to_check:
             super(SaleOrder, orders_to_check)._constraint_subscription_recurrence()
+
+    def create_subscription_schedule(self):
+        orders_to_process = self.env['sale.order']
+        for order in self:
+            if order.amount_total <= 0.0 or order.amount_recurring_taxinc <= 0.0:
+                _logger.info("IRG Diplomado Fixed Batch: Omitiendo cronograma de pagos para orden bonificada/gratuita %s", order.name)
+                continue
+            orders_to_process |= order
+        
+        if orders_to_process:
+            return super(SaleOrder, orders_to_process).create_subscription_schedule()
+        return True

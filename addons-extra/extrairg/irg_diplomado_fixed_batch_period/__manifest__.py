@@ -2,7 +2,7 @@
 
 {
     'name': 'IRG Diplomado Fixed Batch Period',
-    'version': '16.0.1.3.0',
+    'version': '16.0.1.4.0',
     'category': 'Education',
     'summary': 'Periodo fijo anual para lotes de Diplomados sin alterar masteres HC/ONL',
     'author': 'Instituto Raimon Gaja',
