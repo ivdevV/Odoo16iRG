@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.12
+**Versión:** 16.0.1.0.13
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,12 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.13 (V3.5)
+- **Elevación de la sección inferior de firmas**: Reducción del margen vertical antes de la sección de firmas y código QR de `sp(54)` a `sp(40)` únicamente en los diplomas en formato digital. Esto reduce el hueco inferior excesivo y sube simétricamente las firmas, los nombres de directores y el código QR.
+
+### Validación 16.0.1.0.13
+- La quinta tanda de validaciones locales con Docker transcurrió sin errores.
 
 ### Versión 16.0.1.0.12 (V3.4)
 - **Simetría y unificación de conectores**: Se unifica el comportamiento del conector en catalán y castellano tanto en formato digital como en físico. El salto de línea (`\n`) se coloca **antes** de la conjunción `i` (quedando al inicio de la segunda línea como `\ni de la Salut`), logrando simetría total con la composición en castellano (`\ny de la Salud`).

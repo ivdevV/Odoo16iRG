@@ -410,7 +410,7 @@ class DiplomaReportPDF(models.AbstractModel):
         #   left_col_x + col_width + gutter/2
         # changing that expression will move only the middle column.
         # move further down to make space and lower the signature area
-        y -= sp(34) if diploma_type == 'physical' else sp(54)
+        y -= sp(34) if diploma_type == 'physical' else sp(40)
 
         # Store Y for images (bottom of signature area). push signatures
         # a bit further down so they sit below the date. increase the
