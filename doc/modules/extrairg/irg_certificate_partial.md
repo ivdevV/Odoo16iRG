@@ -86,7 +86,7 @@ El resto de la frase conserva el estilo normal de la plantilla. La segmentación
 El módulo incluye un set de pruebas en `tests/test_partial.py`:
 - `test_01_partial_gradebook_fill_template`: Crea un estudiante con dos asignaturas obligatorias. Una completa (2/2 exámenes calificados) y otra incompleta (1/2 exámenes). Valida que se genere el certificado parcial, que la asignatura completa tenga su nota numérica, la incompleta aparezca como `"Pendiente"`, y la nota media final sea igual a la nota de la asignatura completa.
 - `test_02_partial_gradebook_first_sentence_has_bold_student_and_course`: Genera el certificado parcial y abre el `.docx` resultante para validar que la primera frase contiene el alumno y el curso esperados, y que ambos aparecen en runs independientes con `bold == True`. También comprueba en el XML final del `.docx` que el texto legal vertical conserva los marcadores `B56488687` y `B-603323`, que el textbox usa tamaño compacto `w:val="10"` y que la decoración inferior derecha conserva su relación de imagen y archivo `word/media`.
-- `test_03_partial_gradebook_dpto_intro_and_layout_are_adjusted`: Genera el certificado parcial con firmante `dpto_academico` y valida que la frase de emisor se sustituye por la dirección fiscal solicitada, que la introducción queda alineada a la retícula de tabla, que la primera frase y el cierre quedan justificados con la sangría esperada, y que `Instituto Raimon Gaja` queda en la línea inferior a `Departamento Académico` con alineación izquierda y la sangría esperada.
+- `test_03_partial_gradebook_dpto_intro_and_layout_are_adjusted`: Genera el certificado parcial con firmante `dpto_academico` y valida que la frase de emisor se sustituye por la dirección fiscal solicitada, que la introducción queda alineada a la retícula de tabla, que la primera frase y el cierre quedan justificados con la sangría esperada, y que `Instituto Raimon Gaja` queda en la línea inferior a `Departamento Académico` con alineación izquierda y la sangría esperada. También valida que la firma gráfica del departamento académico (elemento `<w:drawing>`) no se pierda en el párrafo de cierre tras la sustitución de placeholders.
 - `test_04_partial_gradebook_raimon_intro_certifica_and_signature_align_with_table`: Genera el certificado parcial con firmante `raimon` y valida que la línea del firmante, `CERTIFICA:` y la firma textual comparten la misma sangría y ancho de caja que la tabla de notas.
 - `test_05_partial_gradebook_all_pending_fill_template`: Comprueba el comportamiento del módulo en casos límites donde todas las asignaturas obligatorias están pendientes. Valida que el certificado se cree correctamente y que la nota media final se imprima como `"Pendiente"`.
 
@@ -118,6 +118,10 @@ docker exec -it odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i ir
 ---
 
 ## Historial de Cambios (Changelog)
+
+### [16.0.1.0.1] - 2026-06-09
+- **Corrección de pérdida de firma:** Se ha solucionado el problema por el cual la firma gráfica del departamento académico (representada por un elemento `<w:drawing>`) se perdía en el párrafo de cierre al realizar la sustitución de placeholders. Ahora, `_replace_in_paragraph` realiza una limpieza selectiva vaciando únicamente el texto de las etiquetas `<w:t>` de los runs secundarios, preservando otros elementos gráficos.
+- **Calidad y pruebas:** Se ha añadido una aserción en el test unitario `test_03_partial_gradebook_dpto_intro_and_layout_are_adjusted` para validar de forma automatizada que el elemento `<w:drawing>` de la firma permanece intacto tras el procesamiento de la plantilla Word.
 
 ### [16.0.1.0.0] - 2026-06-05
 - **Corrección de firma:** En certificados parciales firmados por `dpto_academico`, la separación horizontal de plantilla entre `Departamento Académico` e `Instituto Raimon Gaja` se convierte en un salto de línea real para que el instituto quede inmediatamente debajo y no desplazado al extremo derecho.

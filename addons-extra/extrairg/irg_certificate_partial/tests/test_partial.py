@@ -269,6 +269,13 @@ class TestIrgCertificatePartial(TransactionCase):
         self.assertEqual(signature_paragraph.paragraph_format.left_indent.twips, -172)
         self.assertEqual(signature_paragraph.paragraph_format.right_indent.twips, -783)
 
+        closing_drawings = closing._element.xpath('.//w:drawing')
+        self.assertEqual(
+            len(closing_drawings), 
+            1, 
+            "La firma del departamento académico se ha perdido tras el reemplazo de los placeholders"
+        )
+
     def test_04_partial_gradebook_raimon_intro_certifica_and_signature_align_with_table(self):
         """Raimon signer header, CERTIFICA and signature use the same text grid."""
         cert = self.env['irg.certificate.request'].create({

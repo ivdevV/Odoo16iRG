@@ -48,6 +48,7 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 - Usa `data/sequence_data.xml`, `data/product_data.xml`, `data/mail_templates.xml`, `data/cron_data.xml`.
 - El helper `_ensure_bottom_right_arcs()` inserta `static/src/img/RCOS.png` en el `.docx` generado como `word/media/bottom_right_arcs.png`, con anclaje de página `right/bottom` y `behindDoc="1"`, para que no desplace texto, cierre ni firma. Se aplica a certificados completos, asistencia, matrícula y es reutilizado por el certificado parcial.
 - El certificado final de notas (`document_type == 'gradebook'`) aplica `_format_gradebook_static_paragraphs()`, `_compact_gradebook_vertical_legal_text()` y `_restore_gradebook_vertical_legal_text()` para mantener la estructura visual equivalente al certificado parcial. La firma `Departamento Académico Instituto Raimon Gaja` se convierte en dos líneas, el cierre se justifica con el ancho de la tabla, y el texto legal vertical se fuerza a 5 pt (`w:val="10"`) para evitar saltos de línea.
+- El método `_replace_in_paragraph(paragraph, old, new)` realiza una sustitución segura de placeholders en párrafos cuyos runs han sido divididos por Word. Para evitar la pérdida de firmas digitalizadas u otros elementos multimedia representados como elementos gráficos (`<w:drawing>`), el método ahora recorre y limpia exclusivamente las etiquetas de texto `<w:t>` dentro de los runs secundarios, en lugar de vaciar el run completo.
 
 ## Validación
 
