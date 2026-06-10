@@ -1,7 +1,7 @@
 # irg_sale_manual_confirmation_wizard
 
 **Categoría:** Sales (Ventas)
-**Versión:** 16.0.1.1.0
+**Versión:** 16.0.1.2.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** Instituto Raimon Gaja
@@ -54,6 +54,10 @@ El módulo incorpora un sistema de detección y procesamiento robusto de **Diplo
 *   **Problema:** En presupuestos con productos de descuento (como `Descuento Máster` o `Dcto. Diplomado`), estos productos pueden marcarse como programas académicos o tener nombres que coincidan con los criterios de detección, provocando que Odoo intente tratarlos como líneas de programa académico principales, asignándoles lotes o generando admisiones independientes.
 *   **Solución:** Se implementa un filtro explícito en la detección de líneas académicas (`_is_academic_line`). Si una línea tiene un precio unitario negativo (`price_unit < 0`) o un subtotal negativo (`price_subtotal < 0`), se descarta automáticamente de la lógica de confirmación y asignación de lotes, evitando errores y previniendo que los productos de descuento sean interpretados erróneamente como programas formativos reales.
 
+### 7. Búsqueda Inteligente y Salvaguarda de Fechas en Registros
+*   **Reutilización por variación de formato de período:** El método `_find_or_create_register` incorpora una búsqueda robusta que asocia períodos con y sin ceros a la izquierda (ej. `'2026-02'` frente a `'2026-2'`), garantizando que se reutilicen los registros de admisión existentes para el mismo curso y período, independientemente de variaciones sintácticas menores en el formato del período.
+*   **Salvaguarda para períodos vencidos:** Si se confirma una admisión para un período cuya fecha límite de registro (`gat_date_max_register`) ya ha expirado respecto a la fecha actual (`today > end_date`), el sistema pre-crea automáticamente el registro de admisión forzando tanto la fecha de inicio (`start_date`) como la fecha de fin (`end_date`) al último día del período correspondiente (`end_date`). Esto previene fallos por restricciones de validación temporal y permite procesar admisiones históricas de forma segura.
+
 ---
 
 ## Modelos Modificados
@@ -61,14 +65,14 @@ El módulo incorpora un sistema de detección y procesamiento robusto de **Diplo
 | Modelo | Tipo | Campos / Métodos principales | Descripción |
 | :--- | :--- | :--- | :--- |
 | `op.admission` | Herencia | `enroll_student()`, `_ensure_portal_user()`, `send_mail()`, `submit_form()`, `get_student_vals()` | Incorpora la salvaguarda de creación de usuarios portal, gestiona el ruteo del correo de bienvenida (forzando plantillas default para diplomados) y asegura la persistencia de fechas de nacimiento y admisión. |
-| `sale.order` | Herencia | `_is_academic_line()`, `_get_line_modality()`, `_create_or_get_admission()` | Permite identificar la modalidad de una línea y añade compatibilidad con diplomados (forzando 'HC' para categorías con código que empieza por 'DI'). Además, propaga el precio de la línea a `fees`, la fecha de admisión y sincroniza la fecha de inicio de la línea (`start_date_enroller`) con la fecha de inicio de clases (`irg_class_start_date`) en la admisión. También excluye líneas con precio negativo para evitar procesar descuentos como cursos. |
+| `sale.order` | Herencia | `_is_academic_line()`, `_get_line_modality()`, `_create_or_get_admission()`, `_find_or_create_register()` | Permite identificar la modalidad de una línea y añade compatibilidad con diplomados. Propaga el precio a `fees`, sincroniza `start_date_enroller` con `irg_class_start_date`. Excluye líneas con precio negativo (descuentos). Implementa la búsqueda robusta de registros por variación de formato de período y la salvaguarda de fecha de inicio/fin en períodos vencidos. |
 | `irg.manual.confirmation.wizard` | Nuevo Modelo (Wizard) | `_is_academic_line()`, `default_get()`, `_compute_preview()`, `_build_preview()`, `_detect_line_modalidad()`, `_build_line_batch_code_preview()`, `action_confirm()` | Interfaz gráfica y lógica de validación de pre-confirmación que calcula la modalidad detectada y el lote correspondiente (soportando mensual trimestral y diplomados), ignorando líneas de descuento con precios negativos. |
 
 ---
 
 ## Pruebas y Test Suite
 
-El módulo dispone de dos suites de pruebas unitarias/de integración automatizadas:
+El módulo dispone de varias suites de pruebas unitarias/de integración automatizadas:
 
 1.  **Salvaguardas de Portal Users (`test_portal_user.py`):**
     *   [test_portal_user.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_portal_user.py)
@@ -83,6 +87,11 @@ El módulo dispone de dos suites de pruebas unitarias/de integración automatiza
 3.  **Sincronización de Fecha de Inicio de Clases (`test_class_start_date.py`):**
     *   [test_class_start_date.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/scratch/test_class_start_date.py)
     *   **Caso de Validación de Sincronización:** Crea un presupuesto de venta con una línea académica que tiene asignada una fecha en `start_date_enroller`. Al confirmar la orden, valida que la admisión generada o recuperada contenga dicho valor exacto en el campo `irg_class_start_date` en la base de datos local.
+
+4.  **Búsqueda de Registros y Salvaguarda de Fechas (`test_register_date_validation.py`):**
+    *   [test_register_date_validation.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_register_date_validation.py)
+    *   **`test_search_matches_alternative_period_format`:** Verifica que la consulta encuentre registros que coincidan con formatos alternativos de período (por ejemplo, buscar `'2026-02'` encuentra el registro guardado como `'2026-2'` y viceversa).
+    *   **`test_date_safeguard_for_past_periods`:** Valida que al crear un registro de admisión para un período cuya fecha límite ya ha expirado, no se produzca ningún error y se asigne de forma segura la fecha de finalización (`end_date`) tanto a `start_date` como a `end_date` del registro.
 
 ---
 
@@ -106,5 +115,6 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf \
 
 ## Changelog
 
+*   **16.0.1.2.0**: Implementación de lógica inteligente de búsqueda y reutilización de registros de admisión con variantes de formato en el período (ej. ceros a la izquierda), así como una salvaguarda de seguridad para pre-crear registros de admisión en períodos vencidos forzando las fechas al límite del período para evitar fallas por restricciones de validación temporal. Adición de la suite de pruebas unitarias correspondiente.
 *   **16.0.1.1.0**: Exclusión de líneas con precios negativos (`price_unit < 0` o `price_subtotal < 0`) en la detección de líneas académicas para ignorar los productos de tipo descuento (por ejemplo, `Descuento Máster` o `Dcto. Diplomado`) y evitar que sean tratados como programas académicos independientes.
 *   **16.0.1.0.0**: Versión inicial con el wizard de pre-confirmación manual, routing de correos de bienvenida post-confirmación y salvaguardas de creación de usuario portal.
