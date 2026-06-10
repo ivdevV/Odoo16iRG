@@ -245,6 +245,58 @@ class SaleOrder(models.Model):
                     "IRG Manual Wizard: Recalculando período del registro a %s para línea %s",
                     period, line.id
                 )
+        Register = self.env['op.admission.register']
+        periods = [period]
+        if '-' in period:
+            parts = period.split('-')
+            if len(parts) == 2:
+                year, term_code = parts
+                if term_code.startswith('0') and len(term_code) > 1:
+                    periods.append(f"{year}-{term_code[1:]}")
+                elif not term_code.startswith('0'):
+                    periods.append(f"{year}-0{term_code}")
+
+        reg = Register.search([
+            ('course_id', '=', course.id),
+            ('period', 'in', periods),
+            ('state', 'in', ['confirm', 'application', 'admission']),
+        ], limit=1)
+
+        if reg:
+            if reg.state == 'confirm':
+                reg.start_application()
+            _logger.info(
+                "IRG Manual Wizard: Reutilizando registro de admision existente %s para curso %s y periodo %s (buscado con %s)",
+                reg.name, course.name, reg.period, period
+            )
+            return reg
+
+        try:
+            end_date = self.gat_date_max_register(period)
+            today = fields.Date.today()
+            if end_date and today > end_date:
+                _logger.warning(
+                    "IRG Manual Wizard: Creando registro de admision anticipadamente para periodo vencido %s. "
+                    "Fecha fin (%s) anterior a hoy (%s). Forzando start_date = end_date.",
+                    period, end_date, today
+                )
+                reg = Register.create({
+                    'course_id': course.id,
+                    'name': f"{period} {course.name}",
+                    'min_count': 1,
+                    'max_count': 500,
+                    'period': period,
+                    'start_date': end_date,
+                    'end_date': end_date,
+                    'product_template_id': product_template.id,
+                })
+                reg.start_application()
+                return reg
+        except Exception as e:
+            _logger.warning(
+                "IRG Manual Wizard: Fallo al pre-crear registro de admision para evitar ValidationError: %s", e
+            )
+
         return super()._find_or_create_register(period=period, product_template=product_template, course=course)
 
 

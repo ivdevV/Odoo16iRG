@@ -40,6 +40,11 @@ class ManualConfirmationWizard(models.TransientModel):
         compute='_compute_preview',
         store=False,
     )
+    detected_registers_preview = fields.Text(
+        string='Registros de admision previstos',
+        compute='_compute_preview',
+        store=False,
+    )
 
     # ----------------------------------------------------------------
     # Defaults
@@ -106,24 +111,26 @@ class ManualConfirmationWizard(models.TransientModel):
     @api.depends('admission_date', 'order_id')
     def _compute_preview(self):
         for wiz in self:
-            modalidad, batch_code, warnings = wiz._build_preview()
+            modalidad, batch_code, warnings, registers = wiz._build_preview()
             wiz.modalidad_detected = modalidad
             wiz.batch_preview = batch_code
             wiz.warning_message = warnings
+            wiz.detected_registers_preview = registers
 
     def _build_preview(self):
         self.ensure_one()
         order = self.order_id
         warnings = []
         if not order:
-            return ('', '', '')
+            return ('', '', '', '')
 
         academic_lines = order.order_line.filtered(lambda l: self._is_academic_line(l))
         if not academic_lines:
-            return ('', '', '')
+            return ('', '', '', '')
 
         modalities = []
         batch_previews = []
+        register_previews = []
         today = fields.Date.today()
         date = self.admission_date or today
 
@@ -158,11 +165,82 @@ class ManualConfirmationWizard(models.TransientModel):
                 modalities.append(modality)
             batch_previews.append(f"{line.product_template_id.name}: {batch_code}")
 
+            period = self._get_line_period(line, date)
+            if period:
+                reg = self._find_matching_register(period, course_id)
+                if reg:
+                    register_previews.append(f"{line.product_template_id.name}: {reg.name}")
+                else:
+                    register_previews.append(f"{line.product_template_id.name}: (Se creará un nuevo registro)")
+            else:
+                register_previews.append(f"{line.product_template_id.name}: (No se pudo determinar el periodo)")
+
         warning_html = ''
         if warnings:
             warning_html = '<ul>' + ''.join('<li>%s</li>' % w for w in warnings) + '</ul>'
 
-        return (', '.join(modalities), '\n'.join(batch_previews), warning_html)
+        return (', '.join(modalities), '\n'.join(batch_previews), warning_html, '\n'.join(register_previews))
+
+    def _get_line_period(self, line, date):
+        """Calculate period for a line based on line.start_date_enroller or fallback date."""
+        line_date = line.start_date_enroller or date
+        if not line_date:
+            return False
+
+        # Modality shift logic
+        course_id = self._find_course_for_line(line)
+        modality = self._detect_line_modalidad(line, course_id)
+        today = fields.Date.today()
+        if modality in ('HC', 'PRS') and today.day > 7 and line_date.month == today.month and line_date.year == today.year:
+            line_date = line_date + relativedelta(months=1)
+
+        # Summer rule
+        if modality == 'HC':
+            if line_date.month in (7, 8) or (line_date.month == 9 and line_date.day == 1):
+                line_date = line_date.replace(month=9, day=1)
+
+        if 'code' in self.env['op.academic.term']._fields:
+            term = self.env['op.academic.term'].search([
+                ('term_start_date', '<=', line_date),
+                ('term_end_date', '>=', line_date)
+            ], limit=1)
+            if term:
+                return f"{term.academic_year_id.name}-{term.code}"
+
+        # Fallback to standard isep_openeducat_sale logic
+        year = line_date.year
+        month = line_date.month
+        if month in (1, 2, 3, 4):
+            return f'{year}-01'
+        elif month in (5, 6, 7):
+            return f'{year}-02'
+        elif month in (8, 9, 10, 11, 12):
+            return f'{year}-03'
+        return False
+
+    def _find_matching_register(self, period, course_id):
+        """Find an existing admission register matching the period and course.
+        Supports variations of period format (e.g. '2026-02' vs '2026-2').
+        """
+        if not period or not course_id:
+            return self.env['op.admission.register']
+        Register = self.env['op.admission.register']
+        periods = [period]
+        if '-' in period:
+            parts = period.split('-')
+            if len(parts) == 2:
+                year, term_code = parts
+                if term_code.startswith('0') and len(term_code) > 1:
+                    periods.append(f"{year}-{term_code[1:]}")
+                elif not term_code.startswith('0'):
+                    periods.append(f"{year}-0{term_code}")
+
+        reg = Register.search([
+            ('course_id', '=', course_id.id),
+            ('period', 'in', periods),
+            ('state', 'in', ['confirm', 'application', 'admission']),
+        ], limit=1)
+        return reg
 
     def _find_course_for_line(self, line):
         domain = ['|', 
