@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_isep_generate_password_wizard_back_office,access.isep.generate.password.wizard.back.office,isep_update_pass_user_ext.model_isep_generate_password_wizard,openeducat_core.group_op_back_office,1,1,1,1
