@@ -109,3 +109,10 @@ class TestVacation30DayCap(TransactionCase):
         self._create_vacation_days(self.employee, date(2026, 1, 5), 30)
 
         self._create_leave(self.employee, self.vacation_type, date(2027, 1, 4))
+
+    def test_max_leaves_can_be_manually_edited(self):
+        self.vacation_type.max_leaves = 30.0
+
+        self.assertTrue(self.vacation_type.irg_use_manual_max_leaves)
+        self.assertEqual(self.vacation_type.irg_manual_max_leaves, 30.0)
+        self.assertEqual(self.vacation_type.max_leaves, 30.0)

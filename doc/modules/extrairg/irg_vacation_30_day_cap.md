@@ -20,7 +20,7 @@ El modulo depende tecnicamente solo de `hr_holidays`. La integracion con `nomina
 - Cuenta vacaciones existentes en estado `validate` y `validate1`.
 - Excluye el registro actual al recalcular el acumulado durante modificaciones o validaciones.
 - No reescribe asignaciones existentes.
-- No cambia el maximo mostrado en la interfaz de Odoo.
+- Permite editar manualmente el campo `max_leaves` mostrado como "Maximo permitido" en el tipo de ausencia.
 - No cambia la configuracion del tipo de ausencia; solo bloquea el consumo o validacion por encima del limite anual.
 - No fuerza la instalacion de `nomina_cfdi_extras_ee` ni de `nomina_cfdi_ee`.
 
@@ -32,9 +32,12 @@ El modulo hereda el modelo Odoo:
 
 ```text
 hr.leave
+hr.leave.type
 ```
 
 La validacion se implementa sobre las operaciones de creacion, escritura y cambio de estado de ausencias.
+
+La edicion manual del maximo permitido se implementa heredando `hr.leave.type`, haciendo editable `max_leaves` y guardando el valor manual en los campos tecnicos `irg_manual_max_leaves` e `irg_use_manual_max_leaves`.
 
 ### Constantes
 
@@ -139,7 +142,7 @@ Este bloqueo corresponde al entorno o a la dependencia `nomina_cfdi_ee`; no es u
 ## Limitaciones
 
 - No reescribe asignaciones de vacaciones existentes.
-- No cambia el maximo mostrado en la interfaz de Odoo.
+- El campo `max_leaves` puede editarse manualmente y se conserva mediante un override tecnico del modulo.
 - Bloquea consumo, aprobacion o validacion por encima de 30 dias; no modifica saldos historicos.
 - El periodo de control es el ano natural.
 - La regla depende funcionalmente de que exista el external ID `nomina_cfdi_extras_ee.hr_holidays_status_vac`; si no existe, el modulo se instala pero no bloquea ausencias.
@@ -155,3 +158,4 @@ Este bloqueo corresponde al entorno o a la dependencia `nomina_cfdi_ee`; no es u
 - Corregida la dependencia dura de `nomina_cfdi_extras_ee` para evitar que la instalacion del modulo arrastre el fallo de `nomina_cfdi_ee/data/res.bank.csv`.
 - Ajustado el bloqueo para aplicar tambien en solicitudes creadas o modificadas antes de aprobacion.
 - Ajustado el calculo de dias para usar el solape de fechas solicitadas en lugar del valor dependiente de calendario `number_of_days`.
+- Anadio edicion manual persistente del campo `max_leaves` en tipos de ausencia.
