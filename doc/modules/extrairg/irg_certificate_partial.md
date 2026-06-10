@@ -68,7 +68,7 @@ Hereda el modelo base `irg.certificate.request` para modularizar la lógica de r
   - Justifica el cierre `"Para que así conste..."` y lo constriñe al mismo ancho de la tabla de notas mediante `_format_partial_closing_paragraphs()`.
   - Conserva el texto legal vertical del lateral con `_compact_vertical_legal_text()` y `_restore_vertical_legal_text()`. El segundo helper reinyecta el textbox legal desde la plantilla original si el guardado con `python-docx` lo pierde, comprobando los marcadores `B56488687` y `B-603323`. La compactación se aplica tanto al documento procesado como al textbox restaurado, fijando `w:val="10"` (5 pt) y eliminando espaciados/sangrías internas.
   - Inserta la decoración de esquina inferior derecha con `_ensure_bottom_right_arcs()` heredado de `irg_gradebook_certificates`. El helper usa `static/src/img/RCOS.png`, crea una relación a `media/bottom_right_arcs.png` cuando hace falta y añade un anclaje de página con `behindDoc="1"`, alineado a derecha e inferior de la hoja para no modificar la distribución del contenido.
-  - Lee el tipo de documento de identidad de forma compatible con bases que no tengan instalado el campo `l10n_latam_identification_type_id`, manteniendo `DNI/Pasaporte` como valor por defecto.
+  - Lee el tipo de documento de identidad de forma compatible con bases que no tengan instalado el campo `l10n_latam_identification_type_id`, manteniendo `DNI/Pasaporte` como valor por defecto. Cuando el partner tiene tipo de identificación, el certificado parcial imprime exactamente el nombre configurado en `res.partner.l10n_latam_identification_type_id.name`, igual que el certificado de notas final.
 
 ### 2. Formato de la primera frase descriptiva
 
@@ -89,6 +89,7 @@ El módulo incluye un set de pruebas en `tests/test_partial.py`:
 - `test_03_partial_gradebook_dpto_intro_and_layout_are_adjusted`: Genera el certificado parcial con firmante `dpto_academico` y valida que la frase de emisor se sustituye por la dirección fiscal solicitada, que la introducción queda alineada a la retícula de tabla, que la primera frase y el cierre quedan justificados con la sangría esperada, y que `Instituto Raimon Gaja` queda en la línea inferior a `Departamento Académico` con alineación izquierda y la sangría esperada. También valida que la firma gráfica del departamento académico (elemento `<w:drawing>`) no se pierda tras la sustitución de placeholders y comprueba que esté en línea con el texto (`inline`) en su párrafo independiente vacío.
 - `test_04_partial_gradebook_raimon_intro_certifica_and_signature_align_with_table`: Genera el certificado parcial con firmante `raimon` y valida que la línea del firmante, `CERTIFICA:` y la firma textual comparten la misma sangría y ancho de caja que la tabla de notas.
 - `test_05_partial_gradebook_all_pending_fill_template`: Comprueba el comportamiento del módulo en casos límites donde todas las asignaturas obligatorias están pendientes. Valida que el certificado se cree correctamente y que la nota media final se imprima como `"Pendiente"`.
+- `test_06_partial_gradebook_uses_partner_identification_type_name`: Comprueba que la primera frase del certificado parcial usa el nombre real del tipo de identificación del partner, por ejemplo `VAT`, `Pasaporte` o `Cédula`, en lugar de normalizarlo a una lista fija.
 
 ### Validación documentada de los cambios de formato
 
@@ -118,6 +119,11 @@ docker exec -it odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i ir
 ---
 
 ## Historial de Cambios (Changelog)
+
+### [16.0.1.0.2] - 2026-06-10
+- **Corrección de tipo de identificación:** El certificado parcial de notas usa ahora el valor real de `res.partner.l10n_latam_identification_type_id.name` al construir la primera frase del documento, manteniendo el mismo comportamiento del certificado de notas final.
+- **Alcance limitado:** No se modifica la maquetación, estructura de párrafos, negritas, tablas, firma ni elementos visuales del certificado parcial.
+- **Calidad:** Añadido test de regresión para verificar que el `.docx` generado contiene el tipo de identificación exacto del alumno/persona.
 
 ### [16.0.1.0.1] - 2026-06-09
 - **Corrección de pérdida de firma:** Se ha solucionado el problema por el cual la firma gráfica del departamento académico (representada por un elemento `<w:drawing>`) se perdía en el párrafo de cierre al realizar la sustitución de placeholders. Ahora, `_replace_in_paragraph` realiza una limpieza selectiva vaciando únicamente el texto de las etiquetas `<w:t>` de los runs secundarios, preservando otros elementos gráficos.
