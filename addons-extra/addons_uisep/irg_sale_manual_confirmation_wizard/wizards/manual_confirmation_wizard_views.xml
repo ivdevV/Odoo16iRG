@@ -14,6 +14,7 @@
                     <group string="Previsualizacion">
                         <field name="modalidad_detected" readonly="1"/>
                         <field name="batch_preview" readonly="1"/>
+                        <field name="detected_registers_preview" readonly="1"/>
                     </group>
                     <separator string="Avisos" attrs="{'invisible': [('warning_message', '=', False)]}"/>
                     <group col="1" attrs="{'invisible': [('warning_message', '=', False)]}" class="w-100">

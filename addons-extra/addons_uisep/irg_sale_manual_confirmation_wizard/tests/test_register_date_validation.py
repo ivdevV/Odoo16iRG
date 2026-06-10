@@ -106,3 +106,59 @@ class TestRegisterDateValidation(TransactionCase):
         self.assertEqual(res_register.start_date, expected_end_date)
         self.assertEqual(res_register.end_date, expected_end_date)
         self.assertEqual(res_register.state, 'application')
+
+    def test_wizard_shows_detected_register_name(self):
+        """Test that the wizard's detected_registers_preview field details the matched register's name
+        or indicates that a new one will be created.
+        """
+        # Create a sale order
+        sale_order = self.env['sale.order'].create({
+            'partner_id': self.env.ref('base.partner_admin').id,
+        })
+
+        # Get or create the product variant for our academic product template
+        product = self.product_template.product_variant_id or self.env['product.product'].search([
+            ('product_tmpl_id', '=', self.product_template.id)
+        ], limit=1)
+        if not product:
+            product = self.env['product.product'].create({
+                'product_tmpl_id': self.product_template.id,
+            })
+
+        # Create order line
+        self.env['sale.order.line'].create({
+            'order_id': sale_order.id,
+            'product_id': product.id,
+            'name': product.name,
+            'price_unit': 100.0,
+            'product_uom_qty': 1.0,
+        })
+
+        # Create wizard with an admission date
+        wizard = self.env['irg.manual.confirmation.wizard'].create({
+            'order_id': sale_order.id,
+            'admission_date': fields.Date.to_date('2026-02-01'),
+        })
+
+        # Calculate period fallback: month=2 -> period='2026-01'
+        # Check that it initially indicates a new one will be created
+        wizard._compute_preview()
+        expected_no_register = f"{self.product_template.name}: (Se creará un nuevo registro)"
+        self.assertEqual(wizard.detected_registers_preview, expected_no_register)
+
+        # Now create the matching register
+        register = self.env['op.admission.register'].create({
+            'name': 'Matching Register 2026-01',
+            'course_id': self.course.id,
+            'period': '2026-01',
+            'start_date': '2026-01-01',
+            'end_date': '2026-03-31',
+            'min_count': 1,
+            'max_count': 500,
+        })
+        register.write({'state': 'application'})
+
+        # Re-compute preview and check that it details the matched register's name
+        wizard._compute_preview()
+        expected_with_register = f"{self.product_template.name}: Matching Register 2026-01"
+        self.assertEqual(wizard.detected_registers_preview, expected_with_register)
