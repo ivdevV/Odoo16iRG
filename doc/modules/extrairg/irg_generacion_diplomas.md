@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.13
+**Versión:** 16.0.1.0.14
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,12 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.14 (V3.6)
+- **Condicionamiento del escalado de fuente**: Se limitó el uso de la función de escalado `_fit_single_line_font_size` solo a los títulos que poseen un salto de línea explícito (`\n`). Esto corrige el problema por el cual el resto de los másteres estándar se mostraban en tamaños de letra pequeños al ser forzados a caber en una sola línea, permitiendo ahora su envoltura natural con tamaño normal (`sf(19)`).
+
+### Validación 16.0.1.0.14
+- La sexta tanda de validaciones locales con Docker transcurrió sin errores.
 
 ### Versión 16.0.1.0.13 (V3.5)
 - **Elevación de la sección inferior de firmas**: Reducción del margen vertical antes de la sección de firmas y código QR de `sp(54)` a `sp(40)` únicamente en los diplomas en formato digital. Esto reduce el hueco inferior excesivo y sube simétricamente las firmas, los nombres de directores y el código QR.

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_inherit_reset_password" model="ir.ui.view">
+        <field name="name">op.student.form.inherit.reset.password</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="reset_password" string="Restablecer contraseña" groups="openeducat_core.group_op_back_office">
+                    <div class="alert alert-warning" role="alert" style="margin-bottom: 20px;" attrs="{'invisible': [('user_id', '=', False)]}">
+                        <h4 class="alert-heading"><i class="fa fa-warning"/> ¡Advertencia importante!</h4>
+                        <p class="mb-0">
+                            Al hacer clic en el botón inferior, se generará de inmediato una contraseña nueva y aleatoria para este estudiante. 
+                            La contraseña actual dejará de funcionar y se desplegará una ventana emergente con los nuevos accesos del usuario.
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-info" role="alert" style="margin-bottom: 20px;" attrs="{'invisible': [('user_id', '!=', False)]}">
+                        <h4 class="alert-heading"><i class="fa fa-info-circle"/> Información</h4>
+                        <p class="mb-0">
+                            Este estudiante no tiene un usuario de Odoo vinculado. El restablecimiento de contraseña solo está disponible para estudiantes con una cuenta de usuario asignada.
+                        </p>
+                    </div>
+
+                    <group attrs="{'invisible': [('user_id', '=', False)]}">
+                        <button name="action_generate_password" 
+                                string="Generar y actualizar contraseña" 
+                                type="object" 
+                                class="oe_highlight" 
+                                confirm="¿Está seguro de que desea regenerar la contraseña para el usuario de este estudiante? Esta acción no se puede deshacer."/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

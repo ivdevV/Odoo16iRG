@@ -200,3 +200,52 @@ class TestDiplomadoFixedBatchPeriod(TransactionCase):
         self.assertFalse(wizard._is_academic_line(discount_line))
         self.assertTrue(wizard._is_academic_line(academic_line))
 
+    def test_discount_zero_total_order_confirms(self):
+        from odoo import fields
+        from dateutil.relativedelta import relativedelta
+
+        discount_category = self.env['product.category'].create({
+            'name': 'Descuentos',
+            'code': 'DESC',
+        })
+        discount_tmpl = self.env['product.template'].create({
+            'name': 'Descuento 100%',
+            'is_academic_program': False,
+            'recurring_invoice': False,
+            'categ_id': discount_category.id,
+            'list_price': -1000.0,
+            'course_type': 'none',
+        })
+        discount_product = self.env['product.product'].search([
+            ('product_tmpl_id', '=', discount_tmpl.id),
+        ], limit=1)
+
+        # Create a sale order with one positive recurring line (1000 €) and one negative discount line (-1000 €) without recurrence_id
+        order = self.env['sale.order'].create({
+            'partner_id': self.partner.id,
+            'course_id': self.course.id,
+            'admission_date': fields.Date.today() + relativedelta(months=6),
+            'recurrence_id': False,
+            'order_line': [
+                (0, 0, {
+                    'product_id': self.product.id,
+                    'product_uom_qty': 1,
+                    'price_unit': 1000.0,
+                }),
+                (0, 0, {
+                    'product_id': discount_product.id,
+                    'product_uom_qty': 1,
+                    'price_unit': -1000.0,
+                })
+            ],
+        })
+
+        # Confirm the order
+        order.action_confirm()
+
+        # Verify it confirms successfully
+        self.assertIn(order.state, ['sale', 'done'])
+
+        # Verify no payment schedules are created
+        self.assertEqual(len(order.subscription_schedule), 0)
+

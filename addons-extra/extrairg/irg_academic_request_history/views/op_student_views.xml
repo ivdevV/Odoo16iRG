@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_op_student_form_academic_requests" model="ir.ui.view">
+            <field name="name">op.student.form.academic.requests</field>
+            <field name="model">op.student</field>
+            <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_academic_requests"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-file-text-o">
+                        <field name="academic_request_count"
+                               widget="statinfo"
+                               string="Solicitudes"/>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

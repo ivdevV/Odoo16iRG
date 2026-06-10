@@ -1,7 +1,7 @@
 # irg_diplomado_fixed_batch_period
 
 **Categoria:** Education  
-**Version:** 16.0.1.3.0  
+**Version:** 16.0.1.4.0  
 **Licencia:** LGPL-3  
 **Instalable:** Si  
 **Autor:** Instituto Raimon Gaja  
@@ -41,7 +41,11 @@ El modulo hereda:
 
 - `sale.order`: intercepta `get_lot_id()` solo cuando la linea es Diplomado; si no lo es, delega en `super()`.
 - **MRO (Method Resolution Order):** Se añade la dependencia de `irg_openeducat_sale_lote_custom` en el manifest (`depends`) para corregir el orden de resolución de métodos en Odoo. Esto garantiza que nuestra lógica personalizada `get_lot_id` para Diplomados se ejecute en primer lugar, sobrescribiendo la generación de lotes personalizada de los módulos base.
-- `sale.order`: sobrescribe la restricción `_constraint_subscription_recurrence` para permitir confirmar y guardar presupuestos que contienen productos recurrentes sin un plan de recurrencia asignado, siempre y cuando todas las líneas recurrentes tengan un precio igual o inferior a cero (es decir, estén bonificadas).
+- `sale.order`: sobrescribe la restricción `_constraint_subscription_recurrence` para permitir confirmar y guardar presupuestos que contienen productos recurrentes sin un plan de recurrencia asignado, en los siguientes escenarios:
+  - Presupuestos totalmente bonificados (`price_unit <= 0` para todas las líneas recurrentes).
+  - Presupuestos con importe total igual o inferior a cero (`amount_total <= 0.0`).
+  - Presupuestos donde el total neto de las líneas recurrentes y las líneas de descuento (con precio unitario o subtotal negativo) es igual o menor a cero (`sum(price_subtotal) <= 0.0`).
+- `sale.order`: sobrescribe `create_subscription_schedule` para evitar la generación automática de cronogramas de pago de 0 € cuando el importe total del pedido (`amount_total <= 0.0`) o el importe recurrente con impuestos (`amount_recurring_taxinc <= 0.0`) es igual o menor a cero, previniendo errores en las suscripciones gratuitas o totalmente descontadas.
 - `sale.order`: devuelve modalidad interna `GE` para Diplomados, evitando que las reglas HC/PRS desplacen fechas de admision. La previsualizacion del wizard muestra `Diplomado` para el usuario.
 - `sale.order` y `irg.manual.confirmation.wizard`: reimplementan la deteccion de linea academica con dominios `in` de lista para evitar errores de compatibilidad en Odoo 16.
 - La categoria del curso solo participa en la deteccion si la linea pertenece realmente a ese curso, evitando contagios en presupuestos con lineas academicas distintas.
@@ -59,9 +63,11 @@ Incluye pruebas en `addons-extra/extrairg/irg_diplomado_fixed_batch_period/tests
 - Creacion/busqueda de lote fijo con fechas exactas.
 - No regresion basica para producto Master no Diplomado.
 - Exclusión de líneas de descuento con precio unitario o subtotal negativo, validado en la prueba `test_discount_line_ignored_by_academic_lines`.
+- Confirmación de pedidos con suscripción recurrente y descuento del 100% (importe total neto de 0 €) sin plan de recurrencia y verificando que no se generen cronogramas de pago, validado en la prueba `test_discount_zero_total_order_confirms`.
 
 ## Changelog
 
+- 16.0.1.4.0: Permite la confirmación de pedidos con productos recurrentes y planes de descuento que dejen el total neto a cero (o menor) omitiendo la validación de recurrencia. Se anula la creación de cronogramas de facturación/pago de 0 € a través del método `create_subscription_schedule`. Adición de la prueba unitaria `test_discount_zero_total_order_confirms` para validar este flujo de confirmación con importes netos cero.
 - 16.0.1.3.0: Exclusión de líneas con precio negativo para evitar tratar productos de descuento como líneas académicas en el wizard y en el modelo `sale.order`. Se añade la prueba unitaria `test_discount_line_ignored_by_academic_lines` para verificar este comportamiento.
 - 16.0.1.2.0: Permitir la confirmación de presupuestos bonificados (precio 0 o menor) omitiendo la restricción de recurrencia en `sale_subscription`.
 - 16.0.1.1.0: Corrección del sufijo del código de lote a `06` (antes `09`) para Diplomados. Adición de la dependencia `'irg_openeducat_sale_lote_custom'` en el manifest para corregir el orden de resolución de métodos (MRO) de Odoo, asegurando que `get_lot_id` personalizado prevalezca sobre los módulos base.
