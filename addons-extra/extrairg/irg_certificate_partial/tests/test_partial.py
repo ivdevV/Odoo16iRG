@@ -183,9 +183,14 @@ class TestIrgCertificatePartial(TransactionCase):
         )
 
         self.assertIsNotNone(paragraph)
+        expected_id_label = 'DNI/Pasaporte'
+        if 'l10n_latam_identification_type_id' in self.partner._fields:
+            identification_type = self.partner.l10n_latam_identification_type_id
+            if identification_type:
+                expected_id_label = identification_type.name
         self.assertIn(
-            'Que Test Student Partial con DNI/Pasaporte  consta matriculado/a en '
-            'el Test Course Partial durante el período académico',
+            'Que Test Student Partial con %s  consta matriculado/a en '
+            'el Test Course Partial durante el período académico' % expected_id_label,
             paragraph.text,
         )
         self.assertTrue(
@@ -335,3 +340,32 @@ class TestIrgCertificatePartial(TransactionCase):
         })
         res_file = cert._fill_template()
         self.assertTrue(res_file)
+
+    def test_06_partial_gradebook_uses_partner_identification_type_name(self):
+        """Partial gradebook must print the exact partner identification type."""
+        if 'l10n_latam_identification_type_id' not in self.partner._fields:
+            self.skipTest('l10n_latam identification type field is not available.')
+
+        identification_type = self.env.ref(
+            'l10n_latam_base.it_vat', raise_if_not_found=False
+        )
+        if not identification_type:
+            identification_type = self.env['l10n_latam.identification.type'].create({
+                'name': 'VAT',
+            })
+        self.partner.with_context(no_vat_validation=True).write({
+            'l10n_latam_identification_type_id': identification_type.id,
+            'vat': 'ID-123456',
+        })
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+        paragraph_text = '\n'.join(para.text for para in document.paragraphs)
+
+        self.assertIn('%s ID-123456' % identification_type.name, paragraph_text)

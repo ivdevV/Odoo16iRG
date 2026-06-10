@@ -318,18 +318,8 @@ class IrgCertificateRequest(models.Model):
             elif student.gender == 'm':
                 gender_word = 'consta matriculado'
 
-        # Formatear el tipo de documento de identidad
-        id_label = 'DNI/Pasaporte'
-        identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
-        if identification_type:
-            id_name = identification_type.name.lower()
-            if 'pasaporte' in id_name or 'passport' in id_name:
-                id_label = 'pasaporte'
-            elif 'dni' in id_name:
-                id_label = 'DNI'
-            elif 'nie' in id_name:
-                id_label = 'NIE'
-        documento_formateado = '%s %s' % (id_label, partner.vat or '')
+        # Match the final gradebook certificate: print the exact partner ID type.
+        documento_formateado = documento
 
         ects_detallado = '90 ECTS, equivalentes a 2250 horas de estudio' if is_mnc else '60 ECTS, equivalentes a 1500 horas de estudio'
 

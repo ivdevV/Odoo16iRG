@@ -134,6 +134,10 @@
             <td style="padding: 5px 10px;">{{ object.batch_id.name or '' }}</td>
         </tr>
         <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Tipo de documento</td>
+            <td style="padding: 5px 10px;">{{ dict(object.fields_get(['document_type'])['document_type']['selection']).get(object.document_type, '') }}</td>
+        </tr>
+        <tr>
             <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Tipo de certificado</td>
             <td style="padding: 5px 10px;">{{ dict(object.fields_get(['certificate_type'])['certificate_type']['selection']).get(object.certificate_type, '') }}</td>
         </tr>
@@ -145,6 +149,22 @@
             <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Persona que firma</td>
             <td style="padding: 5px 10px;">{{ dict(object.fields_get(['signer'])['signer']['selection']).get(object.signer, '') }}</td>
         </tr>
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Dirección de envío</td>
+            <td style="padding: 5px 10px;">
+                {{ object.partner_id.street or '' }}
+                % if object.partner_id.street2:
+                <br/>{{ object.partner_id.street2 }}
+                % endif
+                <br/>{{ object.partner_id.zip or '' }} {{ object.partner_id.city or '' }}
+                % if object.partner_id.state_id:
+                <br/>{{ object.partner_id.state_id.name }}
+                % endif
+                % if object.partner_id.country_id:
+                <br/>{{ object.partner_id.country_id.name }}
+                % endif
+            </td>
+        </tr>
         % if object.custom_description:
         <tr>
             <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Peticiones adicionales</td>
@@ -155,11 +175,41 @@
             <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Importe cobrado</td>
             <td style="padding: 5px 10px;"><strong>{{ '%.2f' % object.price_total }} €</strong></td>
         </tr>
+        % if object.stripe_checkout_session_id:
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Stripe Checkout Session</td>
+            <td style="padding: 5px 10px;">{{ object.stripe_checkout_session_id }}</td>
+        </tr>
+        % endif
+        % if object.stripe_payment_intent_id:
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Stripe Payment Intent</td>
+            <td style="padding: 5px 10px;">{{ object.stripe_payment_intent_id }}</td>
+        </tr>
+        % endif
+        % if object.stripe_invoice_id:
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Factura Stripe</td>
+            <td style="padding: 5px 10px;">
+                {{ object.stripe_invoice_id }}
+                % if object.stripe_invoice_pdf:
+                (<a href="{{ object.stripe_invoice_pdf }}" target="_blank">Descargar PDF</a>)
+                % endif
+            </td>
+        </tr>
+        % endif
+        % if object.stripe_receipt_url:
+        <tr>
+            <td style="padding: 5px 10px; background: #f5f5f5; font-weight: bold;">Recibo Stripe</td>
+            <td style="padding: 5px 10px;"><a href="{{ object.stripe_receipt_url }}" target="_blank">Ver Recibo</a></td>
+        </tr>
+        % endif
     </table>
     <p style="margin-top: 16px;">
-        Accede al backend de Odoo para marcar esta solicitud como
-        <em>En Proceso</em> una vez generado el certificado,
-        y como <em>Enviado</em> cuando se despache.
+        <a href="{{ object.get_base_url() }}/web#id={{ object.id }}&model=irg.certificate.request&view_type=form"
+           style="background-color:#875A7B;color:#fff;padding:8px 16px;border-radius:4px;text-decoration:none;font-weight:bold;">
+            Ver Solicitud en Odoo
+        </a>
     </p>
     <p>—<br/>Sistema de Gestión Académica — {{ object.env.company.name }}</p>
 </div>

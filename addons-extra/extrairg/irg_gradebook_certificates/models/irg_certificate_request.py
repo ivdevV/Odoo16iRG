@@ -8,7 +8,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 from docx import Document as DocxDocument
 from docx.oxml.ns import qn
-from docx.shared import Twips
+from docx.shared import Pt, Twips
 from copy import deepcopy
 from lxml import etree
 
@@ -438,6 +438,25 @@ class IrgCertificateRequest(models.Model):
                     t.text = ''
 
     @staticmethod
+    def _replace_paragraph_text_with_bold_segments(paragraph, segments):
+        """Replace paragraph text with runs, preserving first-run style."""
+        base_run = paragraph.runs[0] if paragraph.runs else None
+        base_rpr = None
+        if base_run is not None and base_run._r.rPr is not None:
+            base_rpr = deepcopy(base_run._r.rPr)
+
+        for run in list(paragraph.runs):
+            paragraph._p.remove(run._r)
+
+        for text, bold in segments:
+            if not text:
+                continue
+            run = paragraph.add_run(text)
+            if base_rpr is not None:
+                run._r.insert(0, deepcopy(base_rpr))
+            run.bold = bool(bold)
+
+    @staticmethod
     def _scale_document_fonts(doc, percent=75):
         """Scale font sizes and paragraph spacing in the Word document.
 
@@ -534,6 +553,58 @@ class IrgCertificateRequest(models.Model):
                 self._format_gradebook_body_paragraph(para, justify=True)
             if normalized_text in signature_texts:
                 self._format_gradebook_signature_paragraph(para)
+
+    def _replace_gradebook_description_paragraph(
+        self, doc, partner, documento, course_name, periodo_str, ects_detallado
+    ):
+        """Use the partial certificate body wording in the final gradebook."""
+        gender_word = 'consta matriculado/a'
+        student = self.gradebook_student_id.student_id
+        if student and student.gender:
+            if student.gender == 'f':
+                gender_word = 'consta matriculada'
+            elif student.gender == 'm':
+                gender_word = 'consta matriculado'
+
+        sentence_2 = (
+            'Que, el Máster consta de %s, distribuidas entre horas de clases '
+            'y horas destinadas a otras actividades académicas.'
+        ) % ects_detallado
+        sentence_3 = 'Las calificaciones obtenidas son:'
+
+        for para in list(doc.paragraphs):
+            full_text = ''.join(r.text for r in para.runs)
+            if 'ha obtenido las calificaciones siguientes:' not in full_text:
+                continue
+
+            self._replace_paragraph_text_with_bold_segments(para, [
+                ('Que ', False),
+                (partner.name or '', True),
+                (' con %s %s en el ' % (documento, gender_word), False),
+                (course_name, True),
+                (' durante el período académico %s.' % periodo_str, False),
+            ])
+            self._format_gradebook_body_paragraph(para, justify=True)
+            para.paragraph_format.space_after = Pt(12)
+
+            p_2 = doc.add_paragraph(sentence_2)
+            p_2.style = para.style
+            self._format_gradebook_body_paragraph(p_2, justify=True)
+            p_2.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
+            p_2.paragraph_format.space_before = para.paragraph_format.space_before
+            p_2.paragraph_format.space_after = Pt(12)
+            p_2.paragraph_format.line_spacing = para.paragraph_format.line_spacing
+            para._p.addnext(p_2._p)
+
+            p_3 = doc.add_paragraph(sentence_3)
+            p_3.style = para.style
+            self._format_gradebook_body_paragraph(p_3, justify=True)
+            p_3.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
+            p_3.paragraph_format.space_before = para.paragraph_format.space_before
+            p_3.paragraph_format.space_after = Pt(12)
+            p_3.paragraph_format.line_spacing = para.paragraph_format.line_spacing
+            p_2._p.addnext(p_3._p)
+            break
 
     @staticmethod
     def _compact_gradebook_vertical_legal_textbox(shape):
@@ -812,6 +883,11 @@ class IrgCertificateRequest(models.Model):
         course_name = self.course_id.name or ''
         is_mnc = _MNC_KEYWORD in course_name
         ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
+        ects_detallado = (
+            '90 ECTS, equivalentes a 2250 horas de estudio'
+            if is_mnc
+            else '60 ECTS, equivalentes a 1500 horas de estudio'
+        )
 
         # Academic year range from batch start_date
         batch = self.gradebook_student_id.batch_id
@@ -856,6 +932,11 @@ class IrgCertificateRequest(models.Model):
                     for para in cell.paragraphs:
                         for old, new in replacements.items():
                             self._replace_in_paragraph(para, old, new)
+
+        if self.document_type == 'gradebook':
+            self._replace_gradebook_description_paragraph(
+                doc, partner, documento, course_name, periodo_str, ects_detallado
+            )
 
         # For non-gradebook types (attendance, enrollment), skip table editing
         if self.document_type not in ('gradebook', 'gradebook_partial'):

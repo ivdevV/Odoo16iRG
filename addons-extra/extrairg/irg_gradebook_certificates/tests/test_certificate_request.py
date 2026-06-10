@@ -194,53 +194,94 @@ class TestIrgCertificateRequest(TransactionCase):
             self._assert_bottom_right_arcs_are_visible_in_xml(res_file)
 
     def test_10_final_gradebook_layout_matches_partial_structure(self):
-        cert = self.env['irg.certificate.request'].create({
-            'gradebook_student_id': self.gradebook.id,
-            'certificate_type': 'digital',
-            'document_type': 'gradebook',
-            'signer': 'dpto_academico',
-            'state': 'draft',
-        })
+        for signer, signature_lines in (
+            ('raimon', ['Raimon Gaja Jaumeandreu', 'Instituto Raimon Gaja']),
+            ('dpto_academico', ['Departamento Académico', 'Instituto Raimon Gaja']),
+        ):
+            cert = self.env['irg.certificate.request'].create({
+                'gradebook_student_id': self.gradebook.id,
+                'certificate_type': 'digital',
+                'document_type': 'gradebook',
+                'signer': signer,
+                'state': 'draft',
+            })
 
-        res_file = cert._fill_template()
-        self._assert_vertical_legal_text_is_visible_in_xml(res_file)
-        document = DocxDocument(res_file)
+            res_file = cert._fill_template()
+            self._assert_vertical_legal_text_is_visible_in_xml(res_file)
+            document = DocxDocument(res_file)
 
-        certifica = next(
-            (para for para in document.paragraphs if para.text.strip() == 'CERTIFICA:'),
-            None,
-        )
-        closing = next(
-            (
-                para for para in document.paragraphs
-                if 'Para que así conste' in para.text
-            ),
-            None,
-        )
-        signature_paragraph = next(
-            (
-                para for para in document.paragraphs
-                if para.text.splitlines() == [
-                    'Departamento Académico',
-                    'Instituto Raimon Gaja',
-                ]
-            ),
-            None,
-        )
+            certifica = next(
+                (para for para in document.paragraphs if para.text.strip() == 'CERTIFICA:'),
+                None,
+            )
+            closing = next(
+                (
+                    para for para in document.paragraphs
+                    if 'Para que así conste' in para.text
+                ),
+                None,
+            )
+            signature_paragraph = next(
+                (
+                    para for para in document.paragraphs
+                    if para.text.splitlines() == signature_lines
+                ),
+                None,
+            )
+            first_body = next(
+                (
+                    para for para in document.paragraphs
+                    if para.text.startswith('Que Test Student Portal con')
+                ),
+                None,
+            )
+            second_body = next(
+                (
+                    para for para in document.paragraphs
+                    if para.text.startswith('Que, el Máster consta de')
+                ),
+                None,
+            )
+            third_body = next(
+                (
+                    para for para in document.paragraphs
+                    if para.text == 'Las calificaciones obtenidas son:'
+                ),
+                None,
+            )
 
-        self.assertIsNotNone(certifica)
-        self.assertEqual(certifica.alignment, 0)
-        self.assertEqual(certifica.paragraph_format.left_indent.twips, -172)
-        self.assertEqual(certifica.paragraph_format.right_indent.twips, -783)
-        self.assertIsNotNone(closing)
-        self.assertEqual(closing.alignment, 3)
-        self.assertEqual(closing.paragraph_format.left_indent.twips, -172)
-        self.assertEqual(closing.paragraph_format.right_indent.twips, -783)
-        self.assertIsNotNone(signature_paragraph)
-        self.assertEqual(
-            signature_paragraph.text.splitlines(),
-            ['Departamento Académico', 'Instituto Raimon Gaja'],
-        )
-        self.assertEqual(signature_paragraph.alignment, 0)
-        self.assertEqual(signature_paragraph.paragraph_format.left_indent.twips, -172)
-        self.assertEqual(signature_paragraph.paragraph_format.right_indent.twips, -783)
+            self.assertIsNotNone(certifica)
+            self.assertEqual(certifica.alignment, 0)
+            self.assertEqual(certifica.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(certifica.paragraph_format.right_indent.twips, -783)
+            self.assertIsNotNone(first_body)
+            self.assertIn(' consta matriculado/a en el ', first_body.text)
+            self.assertIn('durante el período académico', first_body.text)
+            self.assertNotIn('ha obtenido las calificaciones siguientes', first_body.text)
+            self.assertEqual(first_body.alignment, 3)
+            self.assertEqual(first_body.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(first_body.paragraph_format.right_indent.twips, -783)
+            bold_runs = [run.text for run in first_body.runs if run.bold]
+            self.assertIn('Test Student Portal', bold_runs)
+            self.assertIn('Test Course', bold_runs)
+            self.assertIsNotNone(second_body)
+            self.assertIn(
+                '60 ECTS, equivalentes a 1500 horas de estudio',
+                second_body.text,
+            )
+            self.assertEqual(second_body.alignment, 3)
+            self.assertEqual(second_body.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(second_body.paragraph_format.right_indent.twips, -783)
+            self.assertIsNotNone(third_body)
+            self.assertEqual(third_body.alignment, 3)
+            self.assertEqual(third_body.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(third_body.paragraph_format.right_indent.twips, -783)
+            self.assertIsNotNone(closing)
+            self.assertEqual(closing.alignment, 3)
+            self.assertEqual(closing.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(closing.paragraph_format.right_indent.twips, -783)
+            self.assertIsNotNone(signature_paragraph)
+            self.assertEqual(signature_paragraph.text.splitlines(), signature_lines)
+            self.assertEqual(signature_paragraph.alignment, 0)
+            self.assertEqual(signature_paragraph.paragraph_format.left_indent.twips, -172)
+            self.assertEqual(signature_paragraph.paragraph_format.right_indent.twips, -783)
