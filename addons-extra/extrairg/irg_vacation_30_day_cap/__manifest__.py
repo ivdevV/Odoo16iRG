@@ -9,7 +9,6 @@
     "license": "AGPL-3",
     "depends": [
         "hr_holidays",
-        "nomina_cfdi_extras_ee",
     ],
     "installable": True,
     "application": False,

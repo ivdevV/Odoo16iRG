@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 
 from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
@@ -12,7 +12,21 @@ class TestVacation30DayCap(TransactionCase):
         super().setUpClass()
         cls.Leave = cls.env["hr.leave"]
         cls.Employee = cls.env["hr.employee"]
-        cls.vacation_type = cls.env.ref("nomina_cfdi_extras_ee.hr_holidays_status_vac")
+        cls.vacation_type = cls.env.ref(
+            "nomina_cfdi_extras_ee.hr_holidays_status_vac", raise_if_not_found=False
+        )
+        if not cls.vacation_type:
+            cls.vacation_type = cls.env["hr.leave.type"].create(
+                {"name": "Vacaciones", "requires_allocation": "no"}
+            )
+            cls.env["ir.model.data"].sudo().create(
+                {
+                    "module": "nomina_cfdi_extras_ee",
+                    "name": "hr_holidays_status_vac",
+                    "model": "hr.leave.type",
+                    "res_id": cls.vacation_type.id,
+                }
+            )
         cls.other_type = cls.env["hr.leave.type"].create(
             {"name": "Permiso sin limite", "requires_allocation": "no"}
         )
@@ -29,16 +43,20 @@ class TestVacation30DayCap(TransactionCase):
         return days
 
     def _create_leave(self, employee, leave_type, day, state="validate"):
-        return self.Leave.create(
+        leave = self.Leave.create(
             {
                 "name": "Ausencia de prueba",
                 "employee_id": employee.id,
                 "holiday_status_id": leave_type.id,
                 "request_date_from": day,
                 "request_date_to": day,
-                "state": state,
+                "date_from": datetime.combine(day, time(8, 0)),
+                "date_to": datetime.combine(day, time(17, 0)),
             }
         )
+        if state == "validate":
+            leave.action_validate()
+        return leave
 
     def _create_vacation_days(self, employee, start, count):
         for day in self._business_days(start, count):
@@ -49,22 +67,24 @@ class TestVacation30DayCap(TransactionCase):
 
     def test_31st_vacation_day_is_blocked_on_validation(self):
         days = self._business_days(date(2026, 1, 5), 31)
-        for day in days[:30]:
-            self._create_leave(self.employee, self.vacation_type, day)
-
         leave = self._create_leave(
             self.employee, self.vacation_type, days[30], state="confirm"
         )
+        for day in days[:30]:
+            self._create_leave(self.employee, self.vacation_type, day)
+
         with self.assertRaises(UserError):
             leave.action_validate()
 
-    def test_31st_validated_vacation_day_is_blocked_on_create(self):
+    def test_31st_vacation_day_is_blocked_on_create(self):
         days = self._business_days(date(2026, 1, 5), 31)
         for day in days[:30]:
             self._create_leave(self.employee, self.vacation_type, day)
 
         with self.assertRaises(UserError):
-            self._create_leave(self.employee, self.vacation_type, days[30])
+            self._create_leave(
+                self.employee, self.vacation_type, days[30], state="confirm"
+            )
 
     def test_write_to_vacation_type_is_blocked_above_limit(self):
         days = self._business_days(date(2026, 1, 5), 31)

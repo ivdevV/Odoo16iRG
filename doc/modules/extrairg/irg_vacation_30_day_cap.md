@@ -12,14 +12,17 @@ nomina_cfdi_extras_ee.hr_holidays_status_vac
 
 El modulo no modifica otros tipos de ausencia ni otras reglas de recursos humanos.
 
+El modulo depende tecnicamente solo de `hr_holidays`. La integracion con `nomina_cfdi_extras_ee` es opcional en el manifest para evitar que la instalacion fuerce la carga de modulos de nomina mexicana. Si el external ID de vacaciones no existe en la base, la regla no se aplica hasta que exista.
+
 ## Alcance funcional
 
-- Bloquea solicitudes o validaciones de vacaciones que superen 30 dias acumulados en el mismo ano natural para el mismo empleado.
+- Bloquea solicitudes, modificaciones o validaciones de vacaciones que superen 30 dias acumulados en el mismo ano natural para el mismo empleado.
 - Cuenta vacaciones existentes en estado `validate` y `validate1`.
 - Excluye el registro actual al recalcular el acumulado durante modificaciones o validaciones.
 - No reescribe asignaciones existentes.
 - No cambia el maximo mostrado en la interfaz de Odoo.
 - No cambia la configuracion del tipo de ausencia; solo bloquea el consumo o validacion por encima del limite anual.
+- No fuerza la instalacion de `nomina_cfdi_extras_ee` ni de `nomina_cfdi_ee`.
 
 ## Diseno tecnico
 
@@ -41,18 +44,22 @@ El diseno usa constantes para centralizar:
 - El limite anual permitido: 30 dias.
 - Los estados computables para el acumulado: `validate` y `validate1`.
 
+La busqueda del tipo de vacaciones usa `env.ref(..., raise_if_not_found=False)`. Esto permite instalar el modulo aunque la nomina mexicana no este instalada o aunque una dependencia externa falle durante su carga.
+
 ### Ganchos de validacion
 
 La regla se comprueba en los siguientes puntos del ciclo de vida de `hr.leave`:
 
-- `create`: valida nuevas solicitudes de vacaciones.
-- `write`: valida cambios que puedan alterar empleado, tipo de ausencia, fechas, duracion o estado.
+- `create`: valida nuevas solicitudes de vacaciones, incluso antes de aprobacion.
+- `write`: valida cambios que puedan alterar empleado, tipo de ausencia, fechas, duracion o estado, incluso antes de aprobacion.
 - `action_approve`: valida antes de aprobar cuando la ausencia pasa por aprobacion intermedia.
 - `action_validate`: valida antes de confirmar definitivamente la ausencia.
 
 ### Calculo del acumulado
 
 Para cada solicitud afectada, el modulo calcula los dias de vacaciones ya existentes del empleado dentro del ano natural correspondiente.
+
+El conteo se realiza por dias de calendario cubiertos por `request_date_from` y `request_date_to`, aplicando solo el tramo que solapa con el ano natural evaluado.
 
 El acumulado considera:
 
@@ -66,6 +73,8 @@ El calculo excluye el registro actual para evitar doble conteo cuando se edita o
 ## Instalacion y actualizacion
 
 Ejecutar los comandos desde la raiz del repositorio.
+
+El modulo no instala automaticamente `nomina_cfdi_extras_ee`. Para que la regla tenga efecto, la base debe tener disponible el external ID `nomina_cfdi_extras_ee.hr_holidays_status_vac`.
 
 ### Instalar el modulo en una base local
 
@@ -123,6 +132,7 @@ Las pruebas cubren la regla de limite anual, bloqueos en validacion, creacion y 
 - `python3 -m py_compile` paso correctamente para el codigo Python del modulo.
 - Se intento ejecutar el comando de pruebas Odoo mediante `docker-compose.local.yml`.
 - La ejecucion quedo bloqueada antes de llegar a las pruebas del modulo por una dependencia externa: `nomina_cfdi_ee` falla al cargar `data/res.bank.csv` por validacion invalida de BIC/SEPA.
+- Se corrigio el manifest para que `irg_vacation_30_day_cap` no fuerce la instalacion de `nomina_cfdi_extras_ee` ni arrastre el fallo de carga de `nomina_cfdi_ee`.
 
 Este bloqueo corresponde al entorno o a la dependencia `nomina_cfdi_ee`; no es un fallo de pruebas de `irg_vacation_30_day_cap`.
 
@@ -132,7 +142,7 @@ Este bloqueo corresponde al entorno o a la dependencia `nomina_cfdi_ee`; no es u
 - No cambia el maximo mostrado en la interfaz de Odoo.
 - Bloquea consumo, aprobacion o validacion por encima de 30 dias; no modifica saldos historicos.
 - El periodo de control es el ano natural.
-- Depende de que exista el external ID `nomina_cfdi_extras_ee.hr_holidays_status_vac`.
+- La regla depende funcionalmente de que exista el external ID `nomina_cfdi_extras_ee.hr_holidays_status_vac`; si no existe, el modulo se instala pero no bloquea ausencias.
 - Solo aplica al tipo de ausencia de vacaciones identificado por ese external ID.
 
 ## Changelog
@@ -142,3 +152,6 @@ Este bloqueo corresponde al entorno o a la dependencia `nomina_cfdi_ee`; no es u
 - Version inicial de la documentacion del modulo `irg_vacation_30_day_cap`.
 - Documentado el limite anual de 30 dias de vacaciones por empleado y ano natural.
 - Documentados diseno tecnico, comandos de instalacion/actualizacion, comportamiento de uso, validacion realizada, cobertura de pruebas y limitaciones conocidas.
+- Corregida la dependencia dura de `nomina_cfdi_extras_ee` para evitar que la instalacion del modulo arrastre el fallo de `nomina_cfdi_ee/data/res.bank.csv`.
+- Ajustado el bloqueo para aplicar tambien en solicitudes creadas o modificadas antes de aprobacion.
+- Ajustado el calculo de dias para usar el solape de fechas solicitadas en lugar del valor dependiente de calendario `number_of_days`.

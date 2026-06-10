@@ -12,16 +12,17 @@ class HrLeave(models.Model):
 
     IRG_VACATION_CAP_DAYS = 30.0
     IRG_VALIDATED_STATES = ("validate", "validate1")
+    IRG_VACATION_TYPE_XMLID = "nomina_cfdi_extras_ee.hr_holidays_status_vac"
 
     @api.model_create_multi
     def create(self, vals_list):
         leaves = super().create(vals_list)
-        leaves._irg_check_vacation_30_day_cap()
+        leaves._irg_check_vacation_30_day_cap(include_current=True)
         return leaves
 
     def write(self, vals):
         result = super().write(vals)
-        self._irg_check_vacation_30_day_cap()
+        self._irg_check_vacation_30_day_cap(include_current=True)
         return result
 
     def action_approve(self):
@@ -33,7 +34,12 @@ class HrLeave(models.Model):
         return super().action_validate()
 
     def _irg_check_vacation_30_day_cap(self, include_current=False):
-        vacation_type = self.env.ref("nomina_cfdi_extras_ee.hr_holidays_status_vac")
+        vacation_type = self.env.ref(
+            self.IRG_VACATION_TYPE_XMLID, raise_if_not_found=False
+        )
+        if not vacation_type:
+            return
+
         leaves = self.filtered(
             lambda leave: leave.employee_id and leave.holiday_status_id == vacation_type
         )
@@ -102,9 +108,6 @@ class HrLeave(models.Model):
         overlap_end = min(date_to, year_end)
         if overlap_start > overlap_end:
             return 0.0
-
-        if date_from.year == date_to.year and self.number_of_days:
-            return self.number_of_days
 
         overlap_days = (overlap_end - overlap_start).days + 1
         return float(overlap_days)
