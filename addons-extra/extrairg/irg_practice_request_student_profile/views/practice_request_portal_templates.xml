@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template
+        id="practice_request_form_student_profile"
+        inherit_id="isep_practices_2.practice_request_form_template"
+        name="IRG - Perfil del alumno en solicitud de práctica"
+    >
+        <xpath expr="//select[@id='course_id']/ancestor::div[hasclass('form-group')][1]" position="after">
+            <section id="irg_student_profile" class="card mt-4 mb-4">
+                <style>
+                    #irg_student_profile .irg-profile-step.d-none { display: none !important; }
+                    #irg_student_profile .irg-step-indicator { font-size: 0.875rem; }
+                    #irg_student_profile textarea { min-height: 92px; }
+                </style>
+                <div class="card-header bg-light">
+                    <strong>Perfil del alumno</strong>
+                    <span class="text-muted ml-2 irg-step-indicator" id="irg_profile_step_label">Paso 1 de 3</span>
+                </div>
+                <div class="card-body">
+                    <t t-set="profile_values" t-value="request.params"/>
+                    <div class="irg-profile-step" data-step="1">
+                        <h5>Datos académicos</h5>
+                        <div class="form-group mt-3">
+                            <label for="irg_age">Edad</label>
+                            <input type="number" min="1" name="irg_age" id="irg_age" class="form-control" required="required" t-att-value="profile_values.get('irg_age') or ''"/>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="irg_academic_degrees">¿Qué grados académicos has obtenido? Indica institución y año.</label>
+                            <textarea name="irg_academic_degrees" id="irg_academic_degrees" class="form-control" rows="3" required="required"><t t-esc="profile_values.get('irg_academic_degrees') or ''"/></textarea>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="irg_postgraduate_training">¿Has realizado otra formación de posgrado? Indica programa, institución y año.</label>
+                            <textarea name="irg_postgraduate_training" id="irg_postgraduate_training" class="form-control" rows="3" required="required"><t t-esc="profile_values.get('irg_postgraduate_training') or ''"/></textarea>
+                        </div>
+                    </div>
+                    <div class="irg-profile-step d-none" data-step="2">
+                        <h5>Experiencia profesional</h5>
+                        <div class="form-group mt-3">
+                            <label for="irg_related_work_experience">Describe tu experiencia laboral, voluntariado o investigación relacionada con el área del Máster.</label>
+                            <textarea name="irg_related_work_experience" id="irg_related_work_experience" class="form-control" rows="3" required="required"><t t-esc="profile_values.get('irg_related_work_experience') or ''"/></textarea>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="irg_currently_working">¿Trabajas actualmente? Indica puesto, empresa y sector.</label>
+                            <textarea name="irg_currently_working" id="irg_currently_working" class="form-control" rows="3" required="required"><t t-esc="profile_values.get('irg_currently_working') or ''"/></textarea>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="irg_current_job_related_to_master">¿Tu empleo actual se relaciona con el tema del Máster?</label>
+                            <select name="irg_current_job_related_to_master" id="irg_current_job_related_to_master" class="form-control" required="required">
+                                <option value="">Selecciona una opción</option>
+                                <option value="yes" t-att-selected="profile_values.get('irg_current_job_related_to_master') == 'yes'">Sí</option>
+                                <option value="no" t-att-selected="profile_values.get('irg_current_job_related_to_master') == 'no'">No</option>
+                                <option value="partial" t-att-selected="profile_values.get('irg_current_job_related_to_master') == 'partial'">Parcialmente</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="irg-profile-step d-none" data-step="3">
+                        <h5>Motivación y objetivos</h5>
+                        <div class="form-group mt-3">
+                            <label for="irg_master_motivation">¿Cuál es tu motivación principal para cursar este Máster?</label>
+                            <textarea name="irg_master_motivation" id="irg_master_motivation" class="form-control" rows="3" required="required"><t t-esc="profile_values.get('irg_master_motivation') or ''"/></textarea>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="irg_master_expectations">¿Qué expectativas tienes sobre el Máster?</label>
+                            <textarea name="irg_master_expectations" id="irg_master_expectations" class="form-control" rows="3" required="required"><t t-esc="profile_values.get('irg_master_expectations') or ''"/></textarea>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="irg_long_term_professional_goals">¿Cuáles son tus objetivos profesionales a largo plazo?</label>
+                            <textarea name="irg_long_term_professional_goals" id="irg_long_term_professional_goals" class="form-control" rows="3" required="required"><t t-esc="profile_values.get('irg_long_term_professional_goals') or ''"/></textarea>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="irg_topics_to_deepen">¿Qué temas te gustaría profundizar durante la práctica?</label>
+                            <textarea name="irg_topics_to_deepen" id="irg_topics_to_deepen" class="form-control" rows="3" required="required"><t t-esc="profile_values.get('irg_topics_to_deepen') or ''"/></textarea>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="irg_future_training_interest">¿Qué formación futura te interesaría realizar?</label>
+                            <textarea name="irg_future_training_interest" id="irg_future_training_interest" class="form-control" rows="3" required="required"><t t-esc="profile_values.get('irg_future_training_interest') or ''"/></textarea>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-secondary" id="irg_profile_prev" disabled="disabled">Anterior</button>
+                        <button type="button" class="btn btn-primary" id="irg_profile_next">Siguiente</button>
+                    </div>
+                </div>
+                <script type="text/javascript">
+                    document.addEventListener('DOMContentLoaded', function () {
+                        var root = document.getElementById('irg_student_profile');
+                        if (!root) { return; }
+                        var currentStep = 1;
+                        var steps = root.querySelectorAll('.irg-profile-step');
+                        var prev = document.getElementById('irg_profile_prev');
+                        var next = document.getElementById('irg_profile_next');
+                        var label = document.getElementById('irg_profile_step_label');
+                        var followingElements = [];
+                        var profileCompleted = false;
+
+                        var sibling = root.nextElementSibling;
+                        while (sibling) {
+                            if (sibling.tagName !== 'SCRIPT') {
+                                followingElements.push(sibling);
+                            }
+                            sibling = sibling.nextElementSibling;
+                        }
+
+                        function setFollowingVisible(visible) {
+                            followingElements.forEach(function (item) {
+                                item.classList.toggle('d-none', !visible);
+                            });
+                        }
+
+                        function showStep(step) {
+                            steps.forEach(function (item) {
+                                item.classList.toggle('d-none', item.getAttribute('data-step') !== String(step));
+                            });
+                            prev.disabled = step === 1;
+                            next.textContent = step === steps.length ? 'Revisar resto del formulario' : 'Siguiente';
+                            label.textContent = 'Paso ' + step + ' de ' + steps.length;
+                        }
+
+                        function validateStep(step) {
+                            var activeStep = root.querySelector('.irg-profile-step[data-step="' + step + '"]');
+                            if (!activeStep) { return true; }
+                            var fields = activeStep.querySelectorAll('input[required], textarea[required], select[required]');
+                            for (var i = 0; i &lt; fields.length; i += 1) {
+                                if (!fields[i].checkValidity()) {
+                                    fields[i].reportValidity();
+                                    fields[i].focus();
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+
+                        prev.addEventListener('click', function () {
+                            profileCompleted = false;
+                            setFollowingVisible(false);
+                            currentStep = Math.max(1, currentStep - 1);
+                            showStep(currentStep);
+                        });
+                        next.addEventListener('click', function () {
+                            if (!validateStep(currentStep)) { return; }
+                            if (currentStep &lt; steps.length) {
+                                currentStep += 1;
+                                showStep(currentStep);
+                            } else {
+                                profileCompleted = true;
+                                setFollowingVisible(true);
+                                var practiceType = document.getElementById('practice_center_type_id');
+                                if (practiceType) { practiceType.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+                            }
+                        });
+                        root.addEventListener('input', function () {
+                            if (!profileCompleted) { return; }
+                            profileCompleted = false;
+                            setFollowingVisible(false);
+                        });
+                        root.addEventListener('change', function () {
+                            if (!profileCompleted) { return; }
+                            profileCompleted = false;
+                            setFollowingVisible(false);
+                        });
+                        root.addEventListener('invalid', function (event) {
+                            var step = event.target.closest('.irg-profile-step');
+                            if (!step) { return; }
+                            profileCompleted = false;
+                            setFollowingVisible(false);
+                            currentStep = Number(step.getAttribute('data-step')) || currentStep;
+                            showStep(currentStep);
+                        }, true);
+                        setFollowingVisible(false);
+                        showStep(currentStep);
+                    });
+                </script>
+            </section>
+        </xpath>
+    </template>
+</odoo>
