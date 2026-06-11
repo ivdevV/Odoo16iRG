@@ -569,14 +569,6 @@ class IrgCertificateRequest(models.Model):
         self, doc, partner, documento, course_name, periodo_str, ects_detallado
     ):
         """Use the partial certificate body wording in the final gradebook."""
-        gender_word = 'consta matriculado/a'
-        student = self.gradebook_student_id.student_id
-        if student and student.gender:
-            if student.gender == 'f':
-                gender_word = 'consta matriculada'
-            elif student.gender == 'm':
-                gender_word = 'consta matriculado'
-
         sentence_2 = (
             'Que, el Máster consta de %s, distribuidas entre horas de clases '
             'y horas destinadas a otras actividades académicas.'
@@ -591,7 +583,7 @@ class IrgCertificateRequest(models.Model):
             self._replace_paragraph_text_with_bold_segments(para, [
                 ('Que ', False),
                 (partner.name or '', True),
-                (' con %s %s en el ' % (documento, gender_word), False),
+                (' con %s ha realizado y superado el ' % documento, False),
                 (course_name, True),
                 (' durante el período académico %s.' % periodo_str, False),
             ])

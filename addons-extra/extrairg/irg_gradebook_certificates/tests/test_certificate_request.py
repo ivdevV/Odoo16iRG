@@ -254,13 +254,15 @@ class TestIrgCertificateRequest(TransactionCase):
             self._assert_bottom_right_arcs_are_visible_in_xml(res_file)
 
     def test_10_final_gradebook_layout_matches_partial_structure(self):
-        for signer, signature_lines in (
-            ('raimon', ['Raimon Gaja Jaumeandreu', 'Instituto Raimon Gaja']),
-            ('dpto_academico', ['Departamento Académico', 'Instituto Raimon Gaja']),
+        for certificate_type, signer, signature_lines in (
+            ('digital', 'raimon', ['Raimon Gaja Jaumeandreu', 'Instituto Raimon Gaja']),
+            ('digital', 'dpto_academico', ['Departamento Académico', 'Instituto Raimon Gaja']),
+            ('physical', 'raimon', ['Raimon Gaja Jaumeandreu', 'Instituto Raimon Gaja']),
         ):
             cert = self.env['irg.certificate.request'].create({
                 'gradebook_student_id': self.gradebook.id,
-                'certificate_type': 'digital',
+                'certificate_type': certificate_type,
+                'shipping_type': 'national' if certificate_type == 'physical' else False,
                 'document_type': 'gradebook',
                 'signer': signer,
                 'state': 'draft',
@@ -315,7 +317,8 @@ class TestIrgCertificateRequest(TransactionCase):
             self.assertEqual(certifica.paragraph_format.left_indent.twips, -172)
             self.assertEqual(certifica.paragraph_format.right_indent.twips, -783)
             self.assertIsNotNone(first_body)
-            self.assertIn(' consta matriculado/a en el ', first_body.text)
+            self.assertIn(' ha realizado y superado el ', first_body.text)
+            self.assertNotIn('consta matriculado', first_body.text)
             self.assertIn('durante el período académico', first_body.text)
             self.assertNotIn('ha obtenido las calificaciones siguientes', first_body.text)
             self.assertEqual(first_body.alignment, 3)
@@ -669,7 +672,6 @@ class TestIrgCertificateRequest(TransactionCase):
         )
         self.assertIsNotNone(second_body, "120 ECTS text not found in generated document.")
         self.assertIn('120 ECTS, equivalentes a 3000 horas de estudio', second_body.text)
-
 
 
 
