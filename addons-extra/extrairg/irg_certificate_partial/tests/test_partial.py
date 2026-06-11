@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
+import hashlib
 from zipfile import ZipFile
+from lxml import etree
 
 from docx import Document as DocxDocument
 
@@ -369,3 +372,305 @@ class TestIrgCertificatePartial(TransactionCase):
         paragraph_text = '\n'.join(para.text for para in document.paragraphs)
 
         self.assertIn('%s ID-123456' % identification_type.name, paragraph_text)
+
+    def _assert_bottom_right_arcs_are_absent_in_xml(self, res_file):
+        with ZipFile(res_file) as docx_zip:
+            document_xml = docx_zip.read('word/document.xml').decode(
+                'utf-8', errors='ignore'
+            )
+            rels_xml = docx_zip.read('word/_rels/document.xml.rels').decode(
+                'utf-8', errors='ignore'
+            )
+            package_names = set(docx_zip.namelist())
+
+        self.assertNotIn('name="Bottom Right Arcs"', document_xml)
+        self.assertNotIn('Target="media/bottom_right_arcs.png"', rels_xml)
+        self.assertNotIn('word/media/bottom_right_arcs.png', package_names)
+
+    def _assert_header_logo_is_removed_in_xml(self, res_file):
+        header_name = 'word/header1.xml'
+        with ZipFile(res_file) as docx_zip:
+            if header_name not in docx_zip.namelist():
+                return
+            header_xml = etree.fromstring(docx_zip.read(header_name))
+        
+        runs_with_drawings = []
+        for r in header_xml.xpath('.//*[local-name()="r"]'):
+            if r.xpath('.//*[local-name()="drawing" or local-name()="AlternateContent" or local-name()="pict"]'):
+                runs_with_drawings.append(r)
+        self.assertEqual(len(runs_with_drawings), 0, "Header logo drawings were not removed.")
+
+    def _assert_header_logo_is_present_in_xml(self, res_file):
+        header_name = 'word/header1.xml'
+        with ZipFile(res_file) as docx_zip:
+            if header_name not in docx_zip.namelist():
+                self.fail("Header XML not found in document.")
+            header_xml = etree.fromstring(docx_zip.read(header_name))
+        
+        runs_with_drawings = []
+        for r in header_xml.xpath('.//*[local-name()="r"]'):
+            if r.xpath('.//*[local-name()="drawing" or local-name()="AlternateContent" or local-name()="pict"]'):
+                runs_with_drawings.append(r)
+        self.assertTrue(len(runs_with_drawings) > 0, "Header logo drawings were removed but should be present.")
+
+    def test_07_partial_physical_omits_logo_and_arcs(self):
+        """Physical/apostilled partial gradebook certificates must omit the header logo and decorative arcs."""
+        for cert_type in ('physical', 'physical_apostilled'):
+            cert = self.env['irg.certificate.request'].create({
+                'gradebook_student_id': self.gradebook.id,
+                'document_type': 'gradebook_partial',
+                'certificate_type': cert_type,
+                'shipping_type': 'national',
+                'state': 'draft',
+            })
+            res_file = cert._fill_template()
+            self._assert_bottom_right_arcs_are_absent_in_xml(res_file)
+            self._assert_header_logo_is_removed_in_xml(res_file)
+
+    def test_08_partial_non_physical_retains_logo_and_arcs(self):
+        """Digital/custom partial gradebook certificates must retain the header logo and decorative arcs."""
+        for cert_type in ('digital', 'custom'):
+            cert = self.env['irg.certificate.request'].create({
+                'gradebook_student_id': self.gradebook.id,
+                'document_type': 'gradebook_partial',
+                'certificate_type': cert_type,
+                'state': 'draft',
+            })
+            res_file = cert._fill_template()
+            self._assert_bottom_right_arcs_are_visible_in_xml(res_file)
+            self._assert_header_logo_is_present_in_xml(res_file)
+
+    def _assert_table_font_sizes_match_top_font_size(self, res_file):
+        doc = DocxDocument(res_file)
+        top_font_size = None
+        for para in doc.paragraphs:
+            if para.text.strip():
+                for r in para.runs:
+                    if r.font and r.font.size:
+                        top_font_size = r.font.size
+                        break
+            if top_font_size:
+                break
+        self.assertIsNotNone(top_font_size, "Could not find top font size in document.")
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        for run in para.runs:
+                            self.assertEqual(
+                                run.font.size,
+                                top_font_size,
+                                "Table run font size does not match calculated top font size."
+                            )
+
+    def _assert_signature_logo_is_present_and_referenced(self, res_file):
+        from odoo.modules.module import get_module_resource
+        logo_path = get_module_resource('irg_gradebook_certificates', 'static', 'src', 'img', 'logodesgastado.png')
+        self.assertTrue(logo_path and os.path.isfile(logo_path), "Expected signature logo does not exist in irg_gradebook_certificates module.")
+        with open(logo_path, 'rb') as f:
+            expected_md5 = hashlib.md5(f.read()).hexdigest()
+
+        with ZipFile(res_file) as z:
+            matching_media_file = None
+            for name in z.namelist():
+                if name.startswith('word/media/'):
+                    data = z.read(name)
+                    if hashlib.md5(data).hexdigest() == expected_md5:
+                        matching_media_file = name
+                        break
+            self.assertIsNotNone(matching_media_file, "logodesgastado.png not found by MD5 hash inside ZIP media.")
+            
+            doc_xml = z.read('word/document.xml').decode('utf-8', errors='ignore')
+            rels_xml = z.read('word/_rels/document.xml.rels').decode('utf-8', errors='ignore')
+            
+        relative_target = matching_media_file.replace('word/', '')
+        import re
+        r_ids = re.findall(rf'Id="([^"]+)"[^>]+Target="{re.escape(relative_target)}"', rels_xml)
+        self.assertTrue(len(r_ids) > 0, f"Relationship for {relative_target} not found in document.xml.rels")
+        
+        referenced = any(r_id in doc_xml for r_id in r_ids)
+        self.assertTrue(referenced, f"Relationship ID(s) {r_ids} for signature logo not referenced in document.xml")
+
+        # Validate that the signature logo is placed in the same paragraph containing the handwritten signature, having at least 2 drawing elements
+        doc = DocxDocument(res_file)
+        sig_rel_id = None
+        for rel_id, rel in doc.part.rels.items():
+            target = getattr(rel, 'target_ref', '').lower()
+            if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
+                sig_rel_id = rel_id
+                break
+        self.assertIsNotNone(sig_rel_id, "Handwritten signature rel_id not found")
+
+        paragraphs_to_search = list(doc.paragraphs)
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    paragraphs_to_search.extend(cell.paragraphs)
+
+        sig_para = None
+        for para in paragraphs_to_search:
+            for r in para.runs:
+                embed_nodes = r._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % sig_rel_id)
+                if embed_nodes:
+                    sig_para = para
+                    break
+            if sig_para:
+                break
+
+        self.assertIsNotNone(sig_para, "Paragraph containing the handwritten signature not found")
+        drawing_runs = [r for r in sig_para.runs if r._r.xpath('.//*[local-name()="drawing" or local-name()="pict"]')]
+        self.assertTrue(len(drawing_runs) >= 2, "Paragraph containing the handwritten signature does not contain at least 2 drawings")
+
+    def test_09_partial_table_font_sizes_match_top_font_size(self):
+        """Verify that table cell font size matches the top font size for partial gradebooks."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+        res_file = cert._fill_template()
+        self._assert_table_font_sizes_match_top_font_size(res_file)
+
+        cert_phys = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'physical',
+            'shipping_type': 'national',
+            'state': 'draft',
+        })
+        res_file_phys = cert_phys._fill_template()
+        self._assert_table_font_sizes_match_top_font_size(res_file_phys)
+
+    def test_10_partial_signature_logo_present_for_raimon_signer(self):
+        """Verify that Raimon Gaja's signature logo is present and referenced in partial certificates."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'signer': 'raimon',
+            'state': 'draft',
+        })
+        res_file = cert._fill_template()
+        self._assert_signature_logo_is_present_and_referenced(res_file)
+
+    def _assert_table_data_row_heights_are_315_atleast(self, res_file):
+        from docx.oxml.ns import qn
+        doc = DocxDocument(res_file)
+        table = doc.tables[0]
+        rows = list(table.rows)
+        self.assertTrue(len(rows) > 2, "Table should have header, data, and footer rows")
+        
+        data_rows = rows[1:-1]
+        for idx, row in enumerate(data_rows):
+            trPr = row._tr.find(qn('w:trPr'))
+            self.assertIsNotNone(trPr, f"Row {idx+1} is missing trPr")
+            trHeight = trPr.find(qn('w:trHeight'))
+            self.assertIsNotNone(trHeight, f"Row {idx+1} is missing trHeight")
+            
+            val = trHeight.get(qn('w:val'))
+            hRule = trHeight.get(qn('w:hRule'))
+            
+            self.assertEqual(val, '315', f"Row {idx+1} height val is {val}, expected '315'")
+            self.assertEqual(hRule, 'atLeast', f"Row {idx+1} height hRule is {hRule}, expected 'atLeast'")
+
+    def test_11_partial_table_data_row_heights_are_315_atleast(self):
+        """Verify that all data rows in the grades table for partial gradebooks have height=315 dxa and hRule=atLeast."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+        res_file = cert._fill_template()
+        self._assert_table_data_row_heights_are_315_atleast(res_file)
+
+        cert_phys = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'physical',
+            'shipping_type': 'national',
+            'state': 'draft',
+        })
+        res_file_phys = cert_phys._fill_template()
+        self._assert_table_data_row_heights_are_315_atleast(res_file_phys)
+
+    def test_12_partial_gradebook_course_id_4_ects_text(self):
+        """Verify ECTS text and detailed text when course ID is 4 for partial gradebooks."""
+        course_4 = self.env['op.course'].browse(4)
+        if not course_4.exists():
+            course_tmp = self.env['op.course'].create({
+                'name': 'Special Course 4',
+                'code': 'SC04',
+            })
+            self.env.cr.execute("UPDATE op_course SET id = 4 WHERE id = %s", (course_tmp.id,))
+            self.env.registry.clear_cache()
+            course_4 = self.env['op.course'].browse(4)
+        
+        course_4.write({'gradebook_id': self.gradebook_tmpl.id})
+        
+        batch_4 = self.env['op.batch'].search([('course_id', '=', course_4.id)], limit=1)
+        if not batch_4:
+            batch_4 = self.env['op.batch'].create({
+                'name': 'Batch 4',
+                'code': 'B4',
+                'course_id': course_4.id,
+                'start_date': fields.Date.today(),
+                'end_date': fields.Date.today(),
+            })
+        
+        register_4 = self.env['op.admission.register'].create({
+            'name': 'Register 4',
+            'course_id': course_4.id,
+            'start_date': fields.Date.today(),
+            'end_date': fields.Date.today(),
+            'min_count': 1,
+            'max_count': 100,
+            'product_id': self.product.id,
+        })
+        
+        admission_4 = self.env['op.admission'].create({
+            'name': 'ADM-TEST-4',
+            'partner_id': self.partner.id,
+            'course_id': course_4.id,
+            'register_id': register_4.id,
+            'gender': 'm',
+            'first_name': 'Test4',
+            'last_name': 'Student4',
+            'email': 'test4@example.com',
+            'birth_date': '1990-01-01',
+        })
+        
+        gradebook_4 = self.env['app.gradebook.student'].create({
+            'partner_id': self.partner.id,
+            'course_id': course_4.id,
+            'batch_id': batch_4.id,
+            'admission_id': admission_4.id,
+        })
+        
+        self.env['app.gradebook.subject'].create({
+            'gradebook_student_id': gradebook_4.id,
+            'op_subject_id': self.subject_normal.id,
+        })
+        
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': gradebook_4.id,
+            'certificate_type': 'digital',
+            'document_type': 'gradebook_partial',
+            'state': 'draft',
+        })
+        
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+        
+        second_body = next(
+            (
+                para for para in document.paragraphs
+                if '120 ECTS' in para.text
+            ),
+            None,
+        )
+        self.assertIsNotNone(second_body, "120 ECTS text not found in generated document.")
+        self.assertIn('120 ECTS, equivalentes a 3000 horas de estudio', second_body.text)
+
+

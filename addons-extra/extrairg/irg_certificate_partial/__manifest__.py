@@ -7,7 +7,6 @@
     'author': 'Antigravity / iRG',
     'depends': [
         'irg_gradebook_certificates',
-        'irg_campus_certificates_portal',
     ],
     'data': [],
     'installable': True,

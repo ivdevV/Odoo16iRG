@@ -99,6 +99,17 @@ class IrgCertificateRequest(models.Model):
     _GRADEBOOK_TEXT_RIGHT_INDENT = (
         _GRADEBOOK_PAGE_TEXT_WIDTH - _GRADEBOOK_TEXT_INDENT - _GRADEBOOK_TABLE_WIDTH
     )
+    _DPTO_ACADEMICO_INTRO = 'El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona.'
+
+    def _replace_dpto_academico_intro(self, doc):
+        """Replace the default Dpto Académico intro in document paragraphs."""
+        if self.signer != 'dpto_academico':
+            return
+        for paragraph in doc.paragraphs:
+            if paragraph.text.strip() == 'El Departamento Académico del Instituto Raimon Gaja, S.L.':
+                self._replace_in_paragraph(paragraph, 'El Departamento Académico del Instituto Raimon Gaja, S.L.', self._DPTO_ACADEMICO_INTRO)
+                self._format_gradebook_body_paragraph(paragraph, justify=True)
+                break
 
     # ------------------------------------------------------------------
     # Identity
@@ -529,7 +540,7 @@ class IrgCertificateRequest(models.Model):
         """Normalize fixed certificate blocks to match the partial layout."""
         signer_intro_markers = (
             'Raimon Gaja Jaumeandreu, con DNI',
-            'El Departamento Académico del Instituto Raimon Gaja, S.L.',
+            self._DPTO_ACADEMICO_INTRO,
         )
         signature_texts = (
             'Raimon Gaja Jaumeandreu Instituto Raimon Gaja',
@@ -558,14 +569,6 @@ class IrgCertificateRequest(models.Model):
         self, doc, partner, documento, course_name, periodo_str, ects_detallado
     ):
         """Use the partial certificate body wording in the final gradebook."""
-        gender_word = 'consta matriculado/a'
-        student = self.gradebook_student_id.student_id
-        if student and student.gender:
-            if student.gender == 'f':
-                gender_word = 'consta matriculada'
-            elif student.gender == 'm':
-                gender_word = 'consta matriculado'
-
         sentence_2 = (
             'Que, el Máster consta de %s, distribuidas entre horas de clases '
             'y horas destinadas a otras actividades académicas.'
@@ -580,7 +583,7 @@ class IrgCertificateRequest(models.Model):
             self._replace_paragraph_text_with_bold_segments(para, [
                 ('Que ', False),
                 (partner.name or '', True),
-                (' con %s %s en el ' % (documento, gender_word), False),
+                (' con %s ha realizado y superado el ' % documento, False),
                 (course_name, True),
                 (' durante el período académico %s.' % periodo_str, False),
             ])
@@ -711,6 +714,96 @@ class IrgCertificateRequest(models.Model):
             if raw_id and raw_id.isdigit():
                 ids.append(int(raw_id))
         return (max(ids) if ids else 0) + 1
+
+    def _ensure_signature_logo(self, docx_path):
+        """Add the logodesgastado.png signature logo next to Raimon Gaja's signature."""
+        if self.signer != 'raimon':
+            return
+        module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        source_image = os.path.join(module_path, 'static', 'src', 'img', 'logodesgastado.png')
+        if not os.path.isfile(source_image):
+            return
+
+        doc = DocxDocument(docx_path)
+        sig_rel_id = None
+        for rel_id, rel in doc.part.rels.items():
+            target = getattr(rel, 'target_ref', '').lower()
+            if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
+                sig_rel_id = rel_id
+                break
+
+        if not sig_rel_id:
+            return
+
+        paragraphs_to_search = list(doc.paragraphs)
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    paragraphs_to_search.extend(cell.paragraphs)
+
+        sig_para = None
+        for para in paragraphs_to_search:
+            for r in para.runs:
+                embed_nodes = r._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % sig_rel_id)
+                if embed_nodes:
+                    sig_para = para
+                    break
+            if sig_para:
+                break
+
+        if sig_para is not None:
+            drawing_runs = [r for r in sig_para.runs if r._r.xpath('.//*[local-name()="drawing" or local-name()="pict"]')]
+            if len(drawing_runs) < 2:
+                sig_para.add_run('       ')
+                run_logo = sig_para.add_run()
+                run_logo.add_picture(source_image, width=Pt(100))
+                doc.save(docx_path)
+
+    def _remove_header_logo(self, docx_path):
+        """Remove the header logo/image in word/header1.xml."""
+        header_name = 'word/header1.xml'
+        with ZipFile(docx_path) as source_zip:
+            if header_name not in source_zip.namelist():
+                return
+            header_xml = etree.fromstring(source_zip.read(header_name))
+
+        runs_to_remove = []
+        for r in header_xml.xpath('.//*[local-name()="r"]'):
+            if r.xpath('.//*[local-name()="drawing" or local-name()="AlternateContent" or local-name()="pict"]'):
+                runs_to_remove.append(r)
+
+        if not runs_to_remove:
+            return
+
+        for r in runs_to_remove:
+            parent = r.getparent()
+            if parent is not None:
+                parent.remove(r)
+
+        tmp_zip = tempfile.NamedTemporaryFile(
+            suffix='.docx', delete=False, prefix='cert_header_logo_'
+        )
+        tmp_zip.close()
+        try:
+            with ZipFile(docx_path) as source_zip, ZipFile(
+                tmp_zip.name, 'w', ZIP_DEFLATED
+            ) as target_zip:
+                for item in source_zip.infolist():
+                    data = source_zip.read(item.filename)
+                    if item.filename == header_name:
+                        data = etree.tostring(
+                            header_xml,
+                            xml_declaration=True,
+                            encoding='UTF-8',
+                            standalone=True,
+                        )
+                    target_zip.writestr(item, data)
+            os.replace(tmp_zip.name, docx_path)
+        except Exception as e:
+            _logger.error("Failed to remove header logo: %s", e)
+        finally:
+            if os.path.exists(tmp_zip.name):
+                os.unlink(tmp_zip.name)
 
     def _ensure_bottom_right_arcs(self, docx_path):
         """Add the global blue arcs decoration at the page bottom-right."""
@@ -846,6 +939,18 @@ class IrgCertificateRequest(models.Model):
 
         doc = DocxDocument(tpl_path)
         self._scale_document_fonts(doc, percent=75)
+        self._replace_dpto_academico_intro(doc)
+
+        top_font_size = None
+        for para in doc.paragraphs:
+            if para.text.strip():
+                for r in para.runs:
+                    if r.font and r.font.size:
+                        top_font_size = r.font.size
+                        break
+            if top_font_size:
+                break
+
         if self.document_type == 'gradebook':
             self._compact_gradebook_vertical_legal_text(doc)
 
@@ -882,12 +987,16 @@ class IrgCertificateRequest(models.Model):
         # --- ECTS and duration (depend on whether course is MNC) ------------
         course_name = self.course_id.name or ''
         is_mnc = _MNC_KEYWORD in course_name
-        ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
-        ects_detallado = (
-            '90 ECTS, equivalentes a 2250 horas de estudio'
-            if is_mnc
-            else '60 ECTS, equivalentes a 1500 horas de estudio'
-        )
+        if self.course_id.id == 4:
+            ects_str = '120 ECTS (3000 horas)'
+            ects_detallado = '120 ECTS, equivalentes a 3000 horas de estudio'
+        else:
+            ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
+            ects_detallado = (
+                '90 ECTS, equivalentes a 2250 horas de estudio'
+                if is_mnc
+                else '60 ECTS, equivalentes a 1500 horas de estudio'
+            )
 
         # Academic year range from batch start_date
         batch = self.gradebook_student_id.batch_id
@@ -895,7 +1004,11 @@ class IrgCertificateRequest(models.Model):
             start_year = batch.start_date.year
         else:
             start_year = (self.request_date or fields.Datetime.now()).year - 1
-        end_year = start_year + (2 if is_mnc else 1)
+
+        if self.course_id.id == 4:
+            end_year = start_year + 2
+        else:
+            end_year = start_year + (2 if is_mnc else 1)
         periodo_str = '%d-%d' % (start_year, end_year)
 
         # --- Replace simple placeholders ------------------------------------
@@ -940,11 +1053,21 @@ class IrgCertificateRequest(models.Model):
 
         # For non-gradebook types (attendance, enrollment), skip table editing
         if self.document_type not in ('gradebook', 'gradebook_partial'):
+            if top_font_size:
+                for tbl in doc.tables:
+                    for row in tbl.rows:
+                        for cell in row.cells:
+                            for para in cell.paragraphs:
+                                for r in para.runs:
+                                    if r.font:
+                                        r.font.size = top_font_size
             tmp_docx = tempfile.NamedTemporaryFile(
                 suffix='.docx', delete=False, prefix='cert_'
             )
             doc.save(tmp_docx.name)
             tmp_docx.close()
+            if self.signer == 'raimon':
+                self._ensure_signature_logo(tmp_docx.name)
             self._ensure_bottom_right_arcs(tmp_docx.name)
             return tmp_docx.name
 
@@ -961,6 +1084,19 @@ class IrgCertificateRequest(models.Model):
         for idx, row_xml in enumerate(data_rows):
             cells = row_xml.findall(qn('w:tc'))
             if idx < len(subjects):
+                # Normalize row height to 315 dxa with hRule="atLeast"
+                trPr = row_xml.find(qn('w:trPr'))
+                if trPr is None:
+                    trPr = row_xml.makeelement(qn('w:trPr'), {})
+                    row_xml.insert(0, trPr)
+                for h in trPr.findall(qn('w:trHeight')):
+                    trPr.remove(h)
+                trHeight = trPr.makeelement(qn('w:trHeight'), {
+                    qn('w:val'): '315',
+                    qn('w:hRule'): 'atLeast',
+                })
+                trPr.append(trHeight)
+
                 subj = subjects[idx]
                 cell_values = [
                     subj.op_subject_id.code or '',
@@ -999,6 +1135,18 @@ class IrgCertificateRequest(models.Model):
             for idx in range(len(data_rows), len(subjects)):
                 subj = subjects[idx]
                 new_row = deepcopy(ref_row)
+                # Normalize row height to 315 dxa with hRule="atLeast"
+                trPr = new_row.find(qn('w:trPr'))
+                if trPr is None:
+                    trPr = new_row.makeelement(qn('w:trPr'), {})
+                    new_row.insert(0, trPr)
+                for h in trPr.findall(qn('w:trHeight')):
+                    trPr.remove(h)
+                trHeight = trPr.makeelement(qn('w:trHeight'), {
+                    qn('w:val'): '315',
+                    qn('w:hRule'): 'atLeast',
+                })
+                trPr.append(trHeight)
                 cells = new_row.findall(qn('w:tc'))
                 cell_values = [
                     subj.op_subject_id.code or '',
@@ -1069,6 +1217,15 @@ class IrgCertificateRequest(models.Model):
         if self.document_type == 'gradebook':
             self._format_gradebook_static_paragraphs(doc)
 
+        if top_font_size:
+            for tbl in doc.tables:
+                for row in tbl.rows:
+                    for cell in row.cells:
+                        for para in cell.paragraphs:
+                            for r in para.runs:
+                                if r.font:
+                                    r.font.size = top_font_size
+
         # Save filled document to a temp file
         tmp_docx = tempfile.NamedTemporaryFile(
             suffix='.docx', delete=False, prefix='cert_'
@@ -1077,7 +1234,12 @@ class IrgCertificateRequest(models.Model):
         tmp_docx.close()
         if self.document_type == 'gradebook':
             self._restore_gradebook_vertical_legal_text(tpl_path, tmp_docx.name)
-        self._ensure_bottom_right_arcs(tmp_docx.name)
+        if self.signer == 'raimon':
+            self._ensure_signature_logo(tmp_docx.name)
+        if self.document_type == 'gradebook' and self.certificate_type in PHYSICAL_TYPES:
+            self._remove_header_logo(tmp_docx.name)
+        else:
+            self._ensure_bottom_right_arcs(tmp_docx.name)
         return tmp_docx.name
 
     @staticmethod

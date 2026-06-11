@@ -237,6 +237,17 @@ class IrgCertificateRequest(models.Model):
 
         doc = DocxDocument(tpl_path)
         self._scale_document_fonts(doc, percent=75)
+
+        top_font_size = None
+        for para in doc.paragraphs:
+            if para.text.strip():
+                for r in para.runs:
+                    if r.font and r.font.size:
+                        top_font_size = r.font.size
+                        break
+            if top_font_size:
+                break
+
         self._replace_dpto_academico_intro(doc)
         self._compact_vertical_legal_text(doc)
 
@@ -299,14 +310,23 @@ class IrgCertificateRequest(models.Model):
 
         course_name = self.course_id.name or ''
         is_mnc = 'MNC' in course_name
-        ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
+        if self.course_id.id == 4:
+            ects_str = '120 ECTS (3000 horas)'
+            ects_detallado = '120 ECTS, equivalentes a 3000 horas de estudio'
+        else:
+            ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
+            ects_detallado = '90 ECTS, equivalentes a 2250 horas de estudio' if is_mnc else '60 ECTS, equivalentes a 1500 horas de estudio'
 
         batch = self.gradebook_student_id.batch_id
         if batch and batch.start_date:
             start_year = batch.start_date.year
         else:
             start_year = (self.request_date or fields.Datetime.now()).year - 1
-        end_year = start_year + (2 if is_mnc else 1)
+
+        if self.course_id.id == 4:
+            end_year = start_year + 2
+        else:
+            end_year = start_year + (2 if is_mnc else 1)
         periodo_str = '%d-%d' % (start_year, end_year)
 
         # Determinar género del estudiante para "matriculado/a"
@@ -320,8 +340,6 @@ class IrgCertificateRequest(models.Model):
 
         # Match the final gradebook certificate: print the exact partner ID type.
         documento_formateado = documento
-
-        ects_detallado = '90 ECTS, equivalentes a 2250 horas de estudio' if is_mnc else '60 ECTS, equivalentes a 1500 horas de estudio'
 
         sentence_1 = 'Que %s con %s %s en el %s durante el período académico %s.' % (
             partner.name or '',
@@ -421,6 +439,19 @@ class IrgCertificateRequest(models.Model):
         for idx, row_xml in enumerate(data_rows):
             cells = row_xml.findall(qn('w:tc'))
             if idx < len(subject_notes):
+                # Normalize row height to 315 dxa with hRule="atLeast"
+                trPr = row_xml.find(qn('w:trPr'))
+                if trPr is None:
+                    trPr = row_xml.makeelement(qn('w:trPr'), {})
+                    row_xml.insert(0, trPr)
+                for h in trPr.findall(qn('w:trHeight')):
+                    trPr.remove(h)
+                trHeight = trPr.makeelement(qn('w:trHeight'), {
+                    qn('w:val'): '315',
+                    qn('w:hRule'): 'atLeast',
+                })
+                trPr.append(trHeight)
+
                 subj_data = subject_notes[idx]
                 cell_values = [
                     subj_data['code'],
@@ -456,6 +487,18 @@ class IrgCertificateRequest(models.Model):
             for idx in range(len(data_rows), len(subject_notes)):
                 subj_data = subject_notes[idx]
                 new_row = deepcopy(ref_row)
+                # Normalize row height to 315 dxa with hRule="atLeast"
+                trPr = new_row.find(qn('w:trPr'))
+                if trPr is None:
+                    trPr = new_row.makeelement(qn('w:trPr'), {})
+                    new_row.insert(0, trPr)
+                for h in trPr.findall(qn('w:trHeight')):
+                    trPr.remove(h)
+                trHeight = trPr.makeelement(qn('w:trHeight'), {
+                    qn('w:val'): '315',
+                    qn('w:hRule'): 'atLeast',
+                })
+                trPr.append(trHeight)
                 cells = new_row.findall(qn('w:tc'))
                 cell_values = [
                     subj_data['code'],
@@ -516,11 +559,25 @@ class IrgCertificateRequest(models.Model):
                 r_el.append(t_el)
                 target_p.append(r_el)
 
+        if top_font_size:
+            for tbl in doc.tables:
+                for row in tbl.rows:
+                    for cell in row.cells:
+                        for para in cell.paragraphs:
+                            for r in para.runs:
+                                if r.font:
+                                    r.font.size = top_font_size
+
         tmp_docx = tempfile.NamedTemporaryFile(
             suffix='.docx', delete=False, prefix='cert_partial_'
         )
         doc.save(tmp_docx.name)
         tmp_docx.close()
         self._restore_vertical_legal_text(tpl_path, tmp_docx.name)
-        self._ensure_bottom_right_arcs(tmp_docx.name)
+        if self.signer == 'raimon':
+            self._ensure_signature_logo(tmp_docx.name)
+        if self.certificate_type in ('physical', 'physical_apostilled'):
+            self._remove_header_logo(tmp_docx.name)
+        else:
+            self._ensure_bottom_right_arcs(tmp_docx.name)
         return tmp_docx.name
