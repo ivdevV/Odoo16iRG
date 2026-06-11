@@ -1,7 +1,7 @@
 # irg_sale_manual_confirmation_wizard
 
 **Categoría:** Sales (Ventas)
-**Versión:** 16.0.1.3.0
+**Versión:** 16.0.1.4.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** Instituto Raimon Gaja
@@ -60,15 +60,20 @@ El módulo incorpora un sistema de detección y procesamiento robusto de **Diplo
 *   **Reutilización por variación de formato de período:** El método `_find_or_create_register` incorpora una búsqueda robusta que asocia períodos con y sin ceros a la izquierda (ej. `'2026-02'` frente a `'2026-2'`), garantizando que se reutilicen los registros de admisión existentes para el mismo curso y período, independientemente de variaciones sintácticas menores en el formato del período.
 *   **Salvaguarda para períodos vencidos:** Si se confirma una admisión para un período cuya fecha límite de registro (`gat_date_max_register`) ya ha expirado respecto a la fecha actual (`today > end_date`), el sistema pre-crea automáticamente el registro de admisión forzando tanto la fecha de inicio (`start_date`) como la fecha de fin (`end_date`) al último día del período correspondiente (`end_date`). Esto previene fallos por restricciones de validación temporal y permite procesar admisiones históricas de forma segura.
 
+### 8. Comportamiento de la Confirmación Nativa para España (es_ES)
+*   **Anulación de automatrícula automática:** Cuando se confirma un presupuesto de venta de manera nativa (por ejemplo, desde el botón nativo de Odoo "Confirmar" o por flujo e-commerce) y el idioma del curso asociado es español de España (`es_ES`), el sistema **no realiza la matriculación automática** ni envía el correo de bienvenida.
+*   **Estado Borrador:** En su lugar, el registro de admisión (`op.admission`) correspondiente se crea y permanece en estado **Borrador** (`draft`), permitiendo su posterior revisión y procesamiento manual por el equipo gestor.
+*   **Proceso Exclusivo del Asistente:** La matriculación definitiva (paso a estado `done` y el envío automático de correos de bienvenida) es un **proceso exclusivo** del Asistente de Confirmación Manual (`irg.manual.confirmation.wizard`). Al procesar la confirmación a través de este wizard, se fuerza la promoción de estados y el envío del email a través del contexto (`irg_manual_wizard_passed=True`).
+
 ---
 
 ## Modelos Modificados
 
-| Modelo | Tipo | Campos / Métodos principales | Descripción |
-| :--- | :--- | :--- | :--- |
-| `op.admission` | Herencia | `enroll_student()`, `_ensure_portal_user()`, `send_mail()`, `submit_form()`, `get_student_vals()` | Incorpora la salvaguarda de creación de usuarios portal, gestiona el ruteo del correo de bienvenida (forzando plantillas default para diplomados) y asegura la persistencia de fechas de nacimiento y admisión. |
-| `sale.order` | Herencia | `_is_academic_line()`, `_get_line_modality()`, `_create_or_get_admission()`, `_find_or_create_register()` | Permite identificar la modalidad de una línea y añade compatibilidad con diplomados. Propaga el precio a `fees`, sincroniza `start_date_enroller` con `irg_class_start_date`. Excluye líneas con precio negativo (descuentos). Implementa la búsqueda robusta de registros por variación de formato de período y la salvaguarda de fecha de inicio/fin en períodos vencidos. |
-| `irg.manual.confirmation.wizard` | Nuevo Modelo (Wizard) | `detected_registers_preview`, `_get_line_period()`, `_find_matching_register()`, `_is_academic_line()`, `default_get()`, `_compute_preview()`, `_build_preview()`, `_detect_line_modalidad()`, `_build_line_batch_code_preview()`, `action_confirm()` | Interfaz gráfica y lógica de validación de pre-confirmación que calcula la modalidad detectada, el lote correspondiente (soportando mensual trimestral y diplomados), y los registros de admisión pre-existentes/nuevos, ignorando líneas de descuento con precios negativos. |
+| Modelo | Archivo | Tipo | Campos / Métodos principales | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| `op.admission` | [op_admission.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/models/op_admission.py) | Herencia | `enroll_student()`, `_ensure_portal_user()`, `send_mail()`, `submit_form()`, `get_student_vals()` | Incorpora la salvaguarda de creación de usuarios portal, gestiona el ruteo del correo de bienvenida (forzando plantillas default para diplomados) y asegura la persistencia de fechas de nacimiento y admisión. |
+| `sale.order` | [sale_order.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/models/sale_order.py) | Herencia | `_is_academic_line()`, `_get_line_modality()`, `_create_or_get_admission()`, `_find_or_create_register()`, `auto_ad_active()` | Permite identificar la modalidad de una línea y añade compatibilidad con diplomados. Propaga el precio a `fees`, sincroniza `start_date_enroller` con `irg_class_start_date`. Excluye líneas con precio negativo (descuentos). Implementa la búsqueda robusta de registros por variación de formato de período y la salvaguarda de fecha de inicio/fin en períodos vencidos. Desactiva la matriculación automática para España (`es_ES`). |
+| `irg.manual.confirmation.wizard` | [manual_confirmation_wizard.py](file:///Users/ivrogo/Workspace/Proyectos%20iRG/Odoo16iRG/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/wizards/manual_confirmation_wizard.py) | Nuevo Wizard | `detected_registers_preview`, `_get_line_period()`, `_find_matching_register()`, `_is_academic_line()`, `default_get()`, `_compute_preview()`, `_build_preview()`, `_detect_line_modalidad()`, `_build_line_batch_code_preview()`, `action_confirm()` | Interfaz gráfica y lógica de validación de pre-confirmación que calcula la modalidad detectada, el lote correspondiente (soportando mensual trimestral y diplomados), y los registros de admisión pre-existentes/nuevos, ignorando líneas de descuento con precios negativos. |
 
 ---
 
@@ -95,6 +100,7 @@ El módulo dispone de varias suites de pruebas unitarias/de integración automat
     *   **`test_search_matches_alternative_period_format`:** Verifica que la consulta encuentre registros que coincidan con formatos alternativos de período (por ejemplo, buscar `'2026-02'` encuentra el registro guardado como `'2026-2'` y viceversa).
     *   **`test_date_safeguard_for_past_periods`:** Valida que al crear un registro de admisión para un período cuya fecha límite ya ha expirado, no se produzca ningún error y se asigne de forma segura la fecha de finalización (`end_date`) tanto a `start_date` como a `end_date` del registro.
     *   **`test_wizard_shows_detected_register_name`:** Valida que el campo calculado en el wizard `detected_registers_preview` liste correctamente los nombres de los registros de admisión emparejados para las líneas del pedido, o bien indique si se creará uno nuevo.
+    *   **`test_es_ES_academic_confirmation_routing`:** Verifica que al confirmar un presupuesto con un curso en idioma `es_ES`: (A) de forma nativa (sin el contexto del asistente manual), se crea la admisión pero permanece en estado borrador (`draft` o `application`) y no se envía el email de bienvenida; (B) mediante el asistente de confirmación manual, se fuerza la promoción de estados a `done` (matriculado) y el envío del correo electrónico.
 
 ---
 
@@ -118,6 +124,7 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf \
 
 ## Changelog
 
+*   **16.0.1.4.0**: Anulación del proceso de automatrícula automática desde el botón de confirmar nativo para España (es_ES), manteniendo la creación de la admisión en estado borrador (draft) y haciendo que la matriculación y envío de correos sea un proceso exclusivo del asistente de confirmación manual.
 *   **16.0.1.3.0**: Adición del campo computado `detected_registers_preview` al wizard de confirmación manual, que lista de forma amigable los registros de admisión que se asignarán o pre-crearán al confirmar la orden de venta. Implementación de helpers para resolución robusta de períodos de inicio y emparejado de registros, y agregado del caso de prueba correspondiente.
 *   **16.0.1.2.0**: Implementación de lógica inteligente de búsqueda y reutilización de registros de admisión con variantes de formato en el período (ej. ceros a la izquierda), así como una salvaguarda de seguridad para pre-crear registros de admisión en períodos vencidos forzando las fechas al límite del período para evitar fallas por restricciones de validación temporal. Adición de la suite de pruebas unitarias correspondiente.
 *   **16.0.1.1.0**: Exclusión de líneas con precios negativos (`price_unit < 0` o `price_subtotal < 0`) en la detección de líneas académicas para ignorar los productos de tipo descuento (por ejemplo, `Descuento Máster` o `Dcto. Diplomado`) y evitar que sean tratados como programas académicos independientes.

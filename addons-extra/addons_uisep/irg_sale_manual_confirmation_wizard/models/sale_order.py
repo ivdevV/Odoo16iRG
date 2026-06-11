@@ -379,4 +379,13 @@ class SaleOrder(models.Model):
                     })
         return super()._action_confirm()
 
+    def auto_ad_active(self, course=None):
+        """Desactiva la automatrícula si el idioma del curso es es_ES (España)."""
+        res = super().auto_ad_active(course)
+        lang = course.lang if course else (self.course_id.lang if self.course_id else False)
+        if lang == 'es_ES':
+            return False
+        return res
+
+
 
