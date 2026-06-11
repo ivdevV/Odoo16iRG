@@ -568,4 +568,108 @@ class TestIrgCertificateRequest(TransactionCase):
         res_file_phys = cert_phys._fill_template()
         self._assert_table_data_row_heights_are_315_atleast(res_file_phys)
 
+    def test_16_gradebook_dpto_academico_intro_replacement(self):
+        """Verify that when using 'dpto_academico' signer, the introduction paragraph is replaced correctly."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'certificate_type': 'digital',
+            'document_type': 'gradebook',
+            'signer': 'dpto_academico',
+            'state': 'draft',
+        })
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+        intro = next(
+            (
+                para for para in document.paragraphs
+                if 'El Instituto Raimon Gaja, con CIF B-56488687' in para.text
+            ),
+            None,
+        )
+        self.assertIsNotNone(intro, "Introduction paragraph not found for dpto_academico signer.")
+        self.assertEqual(
+            intro.text.strip(),
+            'El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona.'
+        )
+
+    def test_17_gradebook_course_id_4_ects_text(self):
+        """Verify ECTS text and detailed text when course ID is 4 for gradebook."""
+        course_4 = self.env['op.course'].browse(4)
+        if not course_4.exists():
+            course_tmp = self.env['op.course'].create({
+                'name': 'Special Course 4',
+                'code': 'SC04',
+            })
+            self.env.cr.execute("UPDATE op_course SET id = 4 WHERE id = %s", (course_tmp.id,))
+            self.env.registry.clear_cache()
+            course_4 = self.env['op.course'].browse(4)
+        
+        course_4.write({'gradebook_id': self.gradebook_tmpl.id})
+        
+        batch_4 = self.env['op.batch'].search([('course_id', '=', course_4.id)], limit=1)
+        if not batch_4:
+            batch_4 = self.env['op.batch'].create({
+                'name': 'Batch 4',
+                'code': 'B4',
+                'course_id': course_4.id,
+                'start_date': fields.Date.today(),
+                'end_date': fields.Date.today(),
+            })
+        
+        register_4 = self.env['op.admission.register'].create({
+            'name': 'Register 4',
+            'course_id': course_4.id,
+            'start_date': fields.Date.today(),
+            'end_date': fields.Date.today(),
+            'min_count': 1,
+            'max_count': 100,
+            'product_id': self.product.id,
+        })
+        
+        admission_4 = self.env['op.admission'].create({
+            'name': 'ADM-TEST-4',
+            'partner_id': self.partner.id,
+            'course_id': course_4.id,
+            'register_id': register_4.id,
+            'gender': 'm',
+            'first_name': 'Test4',
+            'last_name': 'Student4',
+            'email': 'test4@example.com',
+            'birth_date': '1990-01-01',
+        })
+        
+        gradebook_4 = self.env['app.gradebook.student'].create({
+            'partner_id': self.partner.id,
+            'course_id': course_4.id,
+            'batch_id': batch_4.id,
+            'admission_id': admission_4.id,
+        })
+        
+        self.env['app.gradebook.subject'].create({
+            'gradebook_student_id': gradebook_4.id,
+            'op_subject_id': self.subject_normal.id,
+        })
+        
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': gradebook_4.id,
+            'certificate_type': 'digital',
+            'document_type': 'gradebook',
+            'state': 'draft',
+        })
+        
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+        
+        second_body = next(
+            (
+                para for para in document.paragraphs
+                if '120 ECTS' in para.text
+            ),
+            None,
+        )
+        self.assertIsNotNone(second_body, "120 ECTS text not found in generated document.")
+        self.assertIn('120 ECTS, equivalentes a 3000 horas de estudio', second_body.text)
+
+
+
 

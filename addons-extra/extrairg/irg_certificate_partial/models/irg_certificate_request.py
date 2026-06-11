@@ -310,14 +310,23 @@ class IrgCertificateRequest(models.Model):
 
         course_name = self.course_id.name or ''
         is_mnc = 'MNC' in course_name
-        ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
+        if self.course_id.id == 4:
+            ects_str = '120 ECTS (3000 horas)'
+            ects_detallado = '120 ECTS, equivalentes a 3000 horas de estudio'
+        else:
+            ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
+            ects_detallado = '90 ECTS, equivalentes a 2250 horas de estudio' if is_mnc else '60 ECTS, equivalentes a 1500 horas de estudio'
 
         batch = self.gradebook_student_id.batch_id
         if batch and batch.start_date:
             start_year = batch.start_date.year
         else:
             start_year = (self.request_date or fields.Datetime.now()).year - 1
-        end_year = start_year + (2 if is_mnc else 1)
+
+        if self.course_id.id == 4:
+            end_year = start_year + 2
+        else:
+            end_year = start_year + (2 if is_mnc else 1)
         periodo_str = '%d-%d' % (start_year, end_year)
 
         # Determinar género del estudiante para "matriculado/a"
@@ -331,8 +340,6 @@ class IrgCertificateRequest(models.Model):
 
         # Match the final gradebook certificate: print the exact partner ID type.
         documento_formateado = documento
-
-        ects_detallado = '90 ECTS, equivalentes a 2250 horas de estudio' if is_mnc else '60 ECTS, equivalentes a 1500 horas de estudio'
 
         sentence_1 = 'Que %s con %s %s en el %s durante el período académico %s.' % (
             partner.name or '',

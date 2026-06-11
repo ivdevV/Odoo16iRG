@@ -99,6 +99,17 @@ class IrgCertificateRequest(models.Model):
     _GRADEBOOK_TEXT_RIGHT_INDENT = (
         _GRADEBOOK_PAGE_TEXT_WIDTH - _GRADEBOOK_TEXT_INDENT - _GRADEBOOK_TABLE_WIDTH
     )
+    _DPTO_ACADEMICO_INTRO = 'El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona.'
+
+    def _replace_dpto_academico_intro(self, doc):
+        """Replace the default Dpto Académico intro in document paragraphs."""
+        if self.signer != 'dpto_academico':
+            return
+        for paragraph in doc.paragraphs:
+            if paragraph.text.strip() == 'El Departamento Académico del Instituto Raimon Gaja, S.L.':
+                self._replace_in_paragraph(paragraph, 'El Departamento Académico del Instituto Raimon Gaja, S.L.', self._DPTO_ACADEMICO_INTRO)
+                self._format_gradebook_body_paragraph(paragraph, justify=True)
+                break
 
     # ------------------------------------------------------------------
     # Identity
@@ -529,7 +540,7 @@ class IrgCertificateRequest(models.Model):
         """Normalize fixed certificate blocks to match the partial layout."""
         signer_intro_markers = (
             'Raimon Gaja Jaumeandreu, con DNI',
-            'El Departamento Académico del Instituto Raimon Gaja, S.L.',
+            self._DPTO_ACADEMICO_INTRO,
         )
         signature_texts = (
             'Raimon Gaja Jaumeandreu Instituto Raimon Gaja',
@@ -936,6 +947,7 @@ class IrgCertificateRequest(models.Model):
 
         doc = DocxDocument(tpl_path)
         self._scale_document_fonts(doc, percent=75)
+        self._replace_dpto_academico_intro(doc)
 
         top_font_size = None
         for para in doc.paragraphs:
@@ -983,12 +995,16 @@ class IrgCertificateRequest(models.Model):
         # --- ECTS and duration (depend on whether course is MNC) ------------
         course_name = self.course_id.name or ''
         is_mnc = _MNC_KEYWORD in course_name
-        ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
-        ects_detallado = (
-            '90 ECTS, equivalentes a 2250 horas de estudio'
-            if is_mnc
-            else '60 ECTS, equivalentes a 1500 horas de estudio'
-        )
+        if self.course_id.id == 4:
+            ects_str = '120 ECTS (3000 horas)'
+            ects_detallado = '120 ECTS, equivalentes a 3000 horas de estudio'
+        else:
+            ects_str = '90 ECTS (2250 horas)' if is_mnc else '60 ECTS (1500 horas)'
+            ects_detallado = (
+                '90 ECTS, equivalentes a 2250 horas de estudio'
+                if is_mnc
+                else '60 ECTS, equivalentes a 1500 horas de estudio'
+            )
 
         # Academic year range from batch start_date
         batch = self.gradebook_student_id.batch_id
@@ -996,7 +1012,11 @@ class IrgCertificateRequest(models.Model):
             start_year = batch.start_date.year
         else:
             start_year = (self.request_date or fields.Datetime.now()).year - 1
-        end_year = start_year + (2 if is_mnc else 1)
+
+        if self.course_id.id == 4:
+            end_year = start_year + 2
+        else:
+            end_year = start_year + (2 if is_mnc else 1)
         periodo_str = '%d-%d' % (start_year, end_year)
 
         # --- Replace simple placeholders ------------------------------------
