@@ -80,12 +80,69 @@ class TestIrgCertificateRequest(TransactionCase):
             'email': 'test.certificate@example.com',
             'birth_date': '1990-01-01',
         })
+        # Gradebook template config
+        cls.gradebook_tmpl = cls.env['app.gradebook'].create({
+            'name': 'Gradebook Template Test',
+            'gradebook_template_ids': [(0, 0, {
+                'type': 'exam',
+                'qty': 2,
+                'weight': 100,
+            })]
+        })
+        # Link template to course
+        cls.course.write({'gradebook_id': cls.gradebook_tmpl.id})
+
         cls.gradebook = cls.env['app.gradebook.student'].create({
             'partner_id': cls.partner.id,
             'course_id': cls.course.id,
             'batch_id': cls.batch.id,
             'admission_id': cls.admission.id,
         })
+
+        # Subjects
+        cls.subject_normal = cls.env['op.subject'].create({
+            'name': 'Subject Compulsory A',
+            'code': 'SCA',
+            'course_id': cls.course.id,
+            'subject_type': 'compulsory',
+        })
+        cls.subject_pending = cls.env['op.subject'].create({
+            'name': 'Subject Compulsory B',
+            'code': 'SCB',
+            'course_id': cls.course.id,
+            'subject_type': 'compulsory',
+        })
+
+        # Link subjects to student gradebook
+        cls.gb_subj_a = cls.env['app.gradebook.subject'].create({
+            'gradebook_student_id': cls.gradebook.id,
+            'op_subject_id': cls.subject_normal.id,
+        })
+        cls.gb_subj_b = cls.env['app.gradebook.subject'].create({
+            'gradebook_student_id': cls.gradebook.id,
+            'op_subject_id': cls.subject_pending.id,
+        })
+
+        # Create results for Subject A
+        cls.env['app.gradebook.result'].create({
+            'gradebook_subject_id': cls.gb_subj_a.id,
+            'survey_type': 'exam',
+            'scoring_total': 8.5,
+        })
+        cls.env['app.gradebook.result'].create({
+            'gradebook_subject_id': cls.gb_subj_a.id,
+            'survey_type': 'exam',
+            'scoring_total': 9.5,
+        })
+        cls.gb_subj_a.compute_final_subject_note()
+
+        # Create results for Subject B
+        cls.env['app.gradebook.result'].create({
+            'gradebook_subject_id': cls.gb_subj_b.id,
+            'survey_type': 'exam',
+            'scoring_total': 7.0,
+        })
+        cls.gb_subj_b.compute_final_subject_note()
 
     # ------------------------------------------------------------------
     # Sequence
@@ -469,5 +526,46 @@ class TestIrgCertificateRequest(TransactionCase):
         })
         res_file = cert._fill_template()
         self._assert_signature_logo_is_present_and_referenced(res_file)
+
+    def _assert_table_data_row_heights_are_315_atleast(self, res_file):
+        from docx.oxml.ns import qn
+        doc = DocxDocument(res_file)
+        table = doc.tables[0]
+        rows = list(table.rows)
+        self.assertTrue(len(rows) > 2, "Table should have header, data, and footer rows")
+        
+        data_rows = rows[1:-1]
+        for idx, row in enumerate(data_rows):
+            trPr = row._tr.find(qn('w:trPr'))
+            self.assertIsNotNone(trPr, f"Row {idx+1} is missing trPr")
+            trHeight = trPr.find(qn('w:trHeight'))
+            self.assertIsNotNone(trHeight, f"Row {idx+1} is missing trHeight")
+            
+            val = trHeight.get(qn('w:val'))
+            hRule = trHeight.get(qn('w:hRule'))
+            
+            self.assertEqual(val, '315', f"Row {idx+1} height val is {val}, expected '315'")
+            self.assertEqual(hRule, 'atLeast', f"Row {idx+1} height hRule is {hRule}, expected 'atLeast'")
+
+    def test_15_table_data_row_heights_are_315_atleast(self):
+        """Verify that all data rows in the grades table have height=315 dxa and hRule=atLeast."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'certificate_type': 'digital',
+            'document_type': 'gradebook',
+            'state': 'draft',
+        })
+        res_file = cert._fill_template()
+        self._assert_table_data_row_heights_are_315_atleast(res_file)
+
+        cert_phys = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'certificate_type': 'physical',
+            'shipping_type': 'national',
+            'document_type': 'gradebook',
+            'state': 'draft',
+        })
+        res_file_phys = cert_phys._fill_template()
+        self._assert_table_data_row_heights_are_315_atleast(res_file_phys)
 
 

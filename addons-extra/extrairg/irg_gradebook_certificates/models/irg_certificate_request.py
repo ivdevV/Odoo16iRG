@@ -1072,6 +1072,19 @@ class IrgCertificateRequest(models.Model):
         for idx, row_xml in enumerate(data_rows):
             cells = row_xml.findall(qn('w:tc'))
             if idx < len(subjects):
+                # Normalize row height to 315 dxa with hRule="atLeast"
+                trPr = row_xml.find(qn('w:trPr'))
+                if trPr is None:
+                    trPr = row_xml.makeelement(qn('w:trPr'), {})
+                    row_xml.insert(0, trPr)
+                for h in trPr.findall(qn('w:trHeight')):
+                    trPr.remove(h)
+                trHeight = trPr.makeelement(qn('w:trHeight'), {
+                    qn('w:val'): '315',
+                    qn('w:hRule'): 'atLeast',
+                })
+                trPr.append(trHeight)
+
                 subj = subjects[idx]
                 cell_values = [
                     subj.op_subject_id.code or '',
@@ -1110,6 +1123,18 @@ class IrgCertificateRequest(models.Model):
             for idx in range(len(data_rows), len(subjects)):
                 subj = subjects[idx]
                 new_row = deepcopy(ref_row)
+                # Normalize row height to 315 dxa with hRule="atLeast"
+                trPr = new_row.find(qn('w:trPr'))
+                if trPr is None:
+                    trPr = new_row.makeelement(qn('w:trPr'), {})
+                    new_row.insert(0, trPr)
+                for h in trPr.findall(qn('w:trHeight')):
+                    trPr.remove(h)
+                trHeight = trPr.makeelement(qn('w:trHeight'), {
+                    qn('w:val'): '315',
+                    qn('w:hRule'): 'atLeast',
+                })
+                trPr.append(trHeight)
                 cells = new_row.findall(qn('w:tc'))
                 cell_values = [
                     subj.op_subject_id.code or '',

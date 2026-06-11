@@ -553,3 +553,44 @@ class TestIrgCertificatePartial(TransactionCase):
         })
         res_file = cert._fill_template()
         self._assert_signature_logo_is_present_and_referenced(res_file)
+
+    def _assert_table_data_row_heights_are_315_atleast(self, res_file):
+        from docx.oxml.ns import qn
+        doc = DocxDocument(res_file)
+        table = doc.tables[0]
+        rows = list(table.rows)
+        self.assertTrue(len(rows) > 2, "Table should have header, data, and footer rows")
+        
+        data_rows = rows[1:-1]
+        for idx, row in enumerate(data_rows):
+            trPr = row._tr.find(qn('w:trPr'))
+            self.assertIsNotNone(trPr, f"Row {idx+1} is missing trPr")
+            trHeight = trPr.find(qn('w:trHeight'))
+            self.assertIsNotNone(trHeight, f"Row {idx+1} is missing trHeight")
+            
+            val = trHeight.get(qn('w:val'))
+            hRule = trHeight.get(qn('w:hRule'))
+            
+            self.assertEqual(val, '315', f"Row {idx+1} height val is {val}, expected '315'")
+            self.assertEqual(hRule, 'atLeast', f"Row {idx+1} height hRule is {hRule}, expected 'atLeast'")
+
+    def test_11_partial_table_data_row_heights_are_315_atleast(self):
+        """Verify that all data rows in the grades table for partial gradebooks have height=315 dxa and hRule=atLeast."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+        res_file = cert._fill_template()
+        self._assert_table_data_row_heights_are_315_atleast(res_file)
+
+        cert_phys = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'physical',
+            'shipping_type': 'national',
+            'state': 'draft',
+        })
+        res_file_phys = cert_phys._fill_template()
+        self._assert_table_data_row_heights_are_315_atleast(res_file_phys)
