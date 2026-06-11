@@ -17,6 +17,7 @@ class TestRegisterDateValidation(TransactionCase):
             'type': 'service',
             'is_academic_program': True,
             'recurring_invoice': True,
+            'course_type': 'classroom',
         })
 
         # Create a course linked to the product template
@@ -162,3 +163,155 @@ class TestRegisterDateValidation(TransactionCase):
         wizard._compute_preview()
         expected_with_register = f"{self.product_template.name}: Matching Register 2026-01"
         self.assertEqual(wizard.detected_registers_preview, expected_with_register)
+
+    def test_es_ES_academic_confirmation_routing(self):
+        """Test that confirming a sale order with an academic product and course lang 'es_ES':
+        - Natively (without wizard context) creates the admission but does NOT auto-enroll it (state is draft/application, email_send_ok is False).
+        - With wizard context (irg_manual_wizard_passed=True) forces full enrollment (state is done, email_send_ok is True).
+        """
+        # Ensure es_ES lang exists and is active
+        lang_code = 'es_ES'
+        lang = self.env['res.lang'].with_context(active_test=False).search([('code', '=', lang_code)])
+        if lang:
+            if not lang.active:
+                lang.write({'active': True})
+        else:
+            self.env['res.lang'].create({
+                'name': 'Spanish (ES)',
+                'code': lang_code,
+                'iso_code': 'es',
+                'direction': 'ltr',
+            })
+
+        # Set course language to es_ES
+        self.course.write({'lang': lang_code})
+
+        # Ensure we have at least one recurrence plan for the sale orders
+        recurrence = self.env['sale.temporal.recurrence'].search([], limit=1)
+        if not recurrence:
+            recurrence = self.env['sale.temporal.recurrence'].create({
+                'duration': 1,
+                'unit': 'month',
+            })
+
+        # Ensure we have at least one fees term
+        if not self.env['op.fees.terms'].search([], limit=1):
+            self.env['op.fees.terms'].create({'name': 'Test Fees Term'})
+
+        # Ensure auto.admission.required exists and is configured
+        ad = self.env['auto.admission.required'].search([], limit=1)
+        if not ad:
+            self.env['auto.admission.required'].create({
+                'manual_wizard_enabled': True,
+                'mx_active': True,
+                'mx_state_admission_done': True,
+                'mx_auto_email_welcome': True,
+            })
+        else:
+            ad.write({
+                'manual_wizard_enabled': True,
+                'mx_active': True,
+                'mx_state_admission_done': True,
+                'mx_auto_email_welcome': True,
+            })
+
+        # Ensure the mail template exists to prevent ref lookup error
+        xml_id = 'isep_elearning_custom.email_op_admission_confirm'
+        try:
+            self.env.ref(xml_id)
+        except ValueError:
+            admission_model = self.env['ir.model'].search([('model', '=', 'op.admission')], limit=1)
+            template = self.env['mail.template'].create({
+                'name': 'Test Admission Confirmation Template',
+                'model_id': admission_model.id,
+                'subject': 'Confirmación de Admisión',
+                'body_html': 'Hola ${object.new_password_user}',
+            })
+            module, name = xml_id.split('.')
+            self.env['ir.model.data'].create({
+                'name': name,
+                'module': module,
+                'model': 'mail.template',
+                'res_id': template.id,
+                'noupdate': True,
+            })
+
+        # Set email, phone, and recurrence on native sale order
+        self.sale_order.write({
+            'recurrence_id': recurrence.id,
+            'start_date': fields.Date.to_date('2026-02-01'),
+            'end_date': fields.Date.to_date('2026-03-01'),
+        })
+        self.sale_order.partner_id.write({
+            'email': 'test_student@example.com',
+            'phone': '123456789',
+        })
+
+        # Get the product variant
+        product = self.product_template.product_variant_id or self.env['product.product'].search([
+            ('product_tmpl_id', '=', self.product_template.id)
+        ], limit=1)
+        if not product:
+            product = self.env['product.product'].create({
+                'product_tmpl_id': self.product_template.id,
+            })
+
+        # Add line to native sale order
+        self.env['sale.order.line'].create({
+            'order_id': self.sale_order.id,
+            'product_id': product.id,
+            'name': product.name,
+            'price_unit': 100.0,
+            'product_uom_qty': 1.0,
+            'start_date_enroller': fields.Date.to_date('2026-02-01'),
+        })
+
+        # Pre-create admission registers spanning today to avoid "Application Date should be between Start Date & End Date" error.
+        from datetime import timedelta
+        today = fields.Date.today()
+        for p in ['2026-01', '2026-02']:
+            reg = self.env['op.admission.register'].create({
+                'name': f'Pre-created Register {p}',
+                'course_id': self.course.id,
+                'period': p,
+                'start_date': today - timedelta(days=10),
+                'end_date': today + timedelta(days=30),
+                'min_count': 1,
+                'max_count': 500,
+                'product_template_id': self.product_template.id,
+            })
+            reg.write({'state': 'application'})
+
+        # Case A: Confirm native sale order (without manual wizard context)
+        self.sale_order.action_confirm()
+
+        # Check native admission
+        native_admission = self.env['op.admission'].search([('sale_id', '=', self.sale_order.id)])
+        self.assertTrue(native_admission, "An admission should have been created natively")
+        self.assertIn(native_admission.state, ['draft', 'application'], "The native admission state must not be promoted to 'done'")
+        self.assertFalse(native_admission.email_send_ok, "The native admission email_send_ok must be False")
+
+        # Case B: Confirm wizard sale order (with irg_manual_wizard_passed = True)
+        sale_order_wizard = self.env['sale.order'].create({
+            'partner_id': self.sale_order.partner_id.id,
+            'recurrence_id': recurrence.id,
+            'start_date': fields.Date.to_date('2026-02-01'),
+            'end_date': fields.Date.to_date('2026-03-01'),
+        })
+        self.env['sale.order.line'].create({
+            'order_id': sale_order_wizard.id,
+            'product_id': product.id,
+            'name': product.name,
+            'price_unit': 100.0,
+            'product_uom_qty': 1.0,
+            'start_date_enroller': fields.Date.to_date('2026-02-01'),
+        })
+
+        sale_order_wizard.with_context(irg_manual_wizard_passed=True).action_confirm()
+
+        # Check wizard admission
+        wizard_admission = self.env['op.admission'].search([('sale_id', '=', sale_order_wizard.id)])
+        self.assertTrue(wizard_admission, "An admission should have been created via the wizard context")
+        self.assertEqual(wizard_admission.state, 'done', "The wizard admission state must be 'done'")
+        self.assertTrue(wizard_admission.email_send_ok, "The wizard admission email_send_ok must be True")
+
