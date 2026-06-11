@@ -18,6 +18,11 @@
                     <group string="Tipo de Certificado">
                         <field name="document_type"/>
                         <field name="certificate_type"/>
+                        <field name="signer"
+                               attrs="{
+                                   'invisible': [('certificate_type', 'not in', ('digital', 'physical', 'physical_apostilled'))],
+                                   'required': [('certificate_type', 'in', ('digital', 'physical', 'physical_apostilled'))]
+                               }"/>
                         <field name="shipping_type"
                                attrs="{
                                    'invisible': [('certificate_type', 'not in', ('physical', 'physical_apostilled'))],
@@ -25,11 +30,6 @@
                                }"/>
                         <field name="custom_options"
                                attrs="{'invisible': [('certificate_type', '!=', 'custom')]}"/>
-                        <field name="signer"
-                               attrs="{
-                                   'invisible': [('certificate_type', '!=', 'digital')],
-                                   'required': [('certificate_type', '=', 'digital')]
-                               }"/>
                     </group>
                     <group string="Descripción a Medida"
                            attrs="{'invisible': [('certificate_type', '!=', 'custom')]}">

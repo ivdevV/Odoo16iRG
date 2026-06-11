@@ -24,6 +24,7 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 - Wizard de generación desde el backend.
 - Decoración global de arcos azules en la esquina inferior derecha de los certificados Word/PDF generados.
 - Formato alineado del certificado final de notas, equivalente al certificado parcial: bloque descriptivo inicial en tres párrafos, alumno y curso en negrita, bloques estáticos alineados a la retícula de tabla, `CERTIFICA:`, cierre justificado, firma en dos líneas y texto legal vertical compacto.
+- En el wizard backend, la selección de persona firmante aparece antes del tipo de envío también para certificados físicos y físicos apostillados.
 - Tienda online para pedido de certificados por el alumno (con pago).
 - Cron para procesar solicitudes pendientes.
 - Plantillas de email para notificaciones de estado.
@@ -61,6 +62,7 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 ## Changelog
 
 - **2026-06-11:**
+  - **Wizard backend:** Reordenado el formulario de generación para mostrar `Persona que Firma` antes de `Tipo de Envío` en certificados físicos, evitando que el envío sustituya visualmente la línea de firmante.
   - **Unificación del texto del emisor:** Modificado el certificado final de notas firmado por el Departamento Académico para unificar su primera línea con la del parcial: `'El Instituto Raimon Gaja, con CIF B-56488687...'`.
   - **Carga lectiva del Máster ID 4:** Personalizados los placeholders de ECTS (120 ECTS), horas lectivas (3000 horas) y período de duración (2 años) de forma específica para el Máster con ID 4 (*Neuropsicología Clínica basada en la Evidencia*).
   - **Pruebas de regresión:** Añadidos tests de integración para verificar el reemplazo de la cabecera del Departamento Académico y los valores de 120 ECTS / 3000 horas en el Máster ID 4.
@@ -73,6 +75,15 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 ## Validación
 
 ```bash
+python3 - <<'PY'
+from lxml import etree
+etree.parse('addons-extra/extrairg/irg_gradebook_certificates/wizard/certificate_wizard_views.xml')
+print('XML OK')
+PY
+python3 -m py_compile addons-extra/extrairg/irg_gradebook_certificates/wizard/certificate_wizard.py
+git diff --check -- addons-extra/extrairg/irg_gradebook_certificates/wizard/certificate_wizard_views.xml doc/modules/extrairg/irg_gradebook_certificates.md
+docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_gradebook_wizard_view_20260611 --test-enable --stop-after-init -i irg_gradebook_certificates --test-tags /irg_gradebook_certificates --http-port=8099 --log-level=test
+
 python3 -m py_compile addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
 git diff --check -- addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py doc/modules/extrairg/irg_gradebook_certificates.md doc/modules/extrairg/irg_certificate_partial.md
 docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_gradebook_final_partial_layout_20260605 --test-enable --stop-after-init -i irg_gradebook_certificates,irg_certificate_partial --test-tags /irg_gradebook_certificates,/irg_certificate_partial --http-port=8099 --log-level=test
@@ -81,6 +92,8 @@ docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/
 Resultado esperado:
 
 ```text
+XML OK
+odoo.tests.result: 0 failed, 0 error(s) of 17 tests when loading database 'test_irg_gradebook_wizard_view_20260611'
 odoo.tests.result: 0 failed, 0 error(s) of 15 tests when loading database 'test_irg_gradebook_final_partial_layout_20260605'
 ```
 
