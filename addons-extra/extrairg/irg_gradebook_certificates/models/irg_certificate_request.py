@@ -712,6 +712,42 @@ class IrgCertificateRequest(models.Model):
                 ids.append(int(raw_id))
         return (max(ids) if ids else 0) + 1
 
+    def _ensure_signature_logo(self, docx_path):
+        """Add the logodesgastado.png signature logo next to Raimon Gaja's signature."""
+        if self.signer != 'raimon':
+            return
+        module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        source_image = os.path.join(module_path, 'static', 'src', 'img', 'logodesgastado.png')
+        if not os.path.isfile(source_image):
+            return
+
+        doc = DocxDocument(docx_path)
+        paragraphs_to_search = list(doc.paragraphs)
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    paragraphs_to_search.extend(cell.paragraphs)
+
+        target_para = None
+        for para in paragraphs_to_search:
+            text = para.text.strip()
+            normalized_text = ' '.join(text.split())
+            if 'Raimon Gaja' in normalized_text and 'Instituto Raimon' in normalized_text:
+                target_para = para
+                break
+
+        if target_para is not None:
+            # Check if signature logo is already added to avoid duplication
+            logo_already_present = False
+            for run in target_para.runs:
+                if run._r.xpath('.//*[local-name()="drawing" or local-name()="pict"]'):
+                    logo_already_present = True
+                    break
+            if not logo_already_present:
+                run = target_para.add_run('   ')
+                run.add_picture(source_image, width=Pt(120))
+                doc.save(docx_path)
+
     def _remove_header_logo(self, docx_path):
         """Remove the header logo/image in word/header1.xml."""
         header_name = 'word/header1.xml'
@@ -892,6 +928,17 @@ class IrgCertificateRequest(models.Model):
 
         doc = DocxDocument(tpl_path)
         self._scale_document_fonts(doc, percent=75)
+
+        top_font_size = None
+        for para in doc.paragraphs:
+            if para.text.strip():
+                for r in para.runs:
+                    if r.font and r.font.size:
+                        top_font_size = r.font.size
+                        break
+            if top_font_size:
+                break
+
         if self.document_type == 'gradebook':
             self._compact_gradebook_vertical_legal_text(doc)
 
@@ -986,11 +1033,21 @@ class IrgCertificateRequest(models.Model):
 
         # For non-gradebook types (attendance, enrollment), skip table editing
         if self.document_type not in ('gradebook', 'gradebook_partial'):
+            if top_font_size:
+                for tbl in doc.tables:
+                    for row in tbl.rows:
+                        for cell in row.cells:
+                            for para in cell.paragraphs:
+                                for r in para.runs:
+                                    if r.font:
+                                        r.font.size = top_font_size
             tmp_docx = tempfile.NamedTemporaryFile(
                 suffix='.docx', delete=False, prefix='cert_'
             )
             doc.save(tmp_docx.name)
             tmp_docx.close()
+            if self.signer == 'raimon':
+                self._ensure_signature_logo(tmp_docx.name)
             self._ensure_bottom_right_arcs(tmp_docx.name)
             return tmp_docx.name
 
@@ -1115,6 +1172,15 @@ class IrgCertificateRequest(models.Model):
         if self.document_type == 'gradebook':
             self._format_gradebook_static_paragraphs(doc)
 
+        if top_font_size:
+            for tbl in doc.tables:
+                for row in tbl.rows:
+                    for cell in row.cells:
+                        for para in cell.paragraphs:
+                            for r in para.runs:
+                                if r.font:
+                                    r.font.size = top_font_size
+
         # Save filled document to a temp file
         tmp_docx = tempfile.NamedTemporaryFile(
             suffix='.docx', delete=False, prefix='cert_'
@@ -1123,6 +1189,8 @@ class IrgCertificateRequest(models.Model):
         tmp_docx.close()
         if self.document_type == 'gradebook':
             self._restore_gradebook_vertical_legal_text(tpl_path, tmp_docx.name)
+        if self.signer == 'raimon':
+            self._ensure_signature_logo(tmp_docx.name)
         if self.document_type == 'gradebook' and self.certificate_type in PHYSICAL_TYPES:
             self._remove_header_logo(tmp_docx.name)
         else:

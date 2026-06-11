@@ -237,6 +237,17 @@ class IrgCertificateRequest(models.Model):
 
         doc = DocxDocument(tpl_path)
         self._scale_document_fonts(doc, percent=75)
+
+        top_font_size = None
+        for para in doc.paragraphs:
+            if para.text.strip():
+                for r in para.runs:
+                    if r.font and r.font.size:
+                        top_font_size = r.font.size
+                        break
+            if top_font_size:
+                break
+
         self._replace_dpto_academico_intro(doc)
         self._compact_vertical_legal_text(doc)
 
@@ -516,12 +527,23 @@ class IrgCertificateRequest(models.Model):
                 r_el.append(t_el)
                 target_p.append(r_el)
 
+        if top_font_size:
+            for tbl in doc.tables:
+                for row in tbl.rows:
+                    for cell in row.cells:
+                        for para in cell.paragraphs:
+                            for r in para.runs:
+                                if r.font:
+                                    r.font.size = top_font_size
+
         tmp_docx = tempfile.NamedTemporaryFile(
             suffix='.docx', delete=False, prefix='cert_partial_'
         )
         doc.save(tmp_docx.name)
         tmp_docx.close()
         self._restore_vertical_legal_text(tpl_path, tmp_docx.name)
+        if self.signer == 'raimon':
+            self._ensure_signature_logo(tmp_docx.name)
         if self.certificate_type in ('physical', 'physical_apostilled'):
             self._remove_header_logo(tmp_docx.name)
         else:

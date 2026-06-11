@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+import hashlib
 from zipfile import ZipFile
 from lxml import etree
 
@@ -225,7 +227,7 @@ class TestIrgCertificateRequest(TransactionCase):
             signature_paragraph = next(
                 (
                     para for para in document.paragraphs
-                    if para.text.splitlines() == signature_lines
+                    if [line.strip() for line in para.text.splitlines()] == signature_lines
                 ),
                 None,
             )
@@ -282,7 +284,7 @@ class TestIrgCertificateRequest(TransactionCase):
             self.assertEqual(closing.paragraph_format.left_indent.twips, -172)
             self.assertEqual(closing.paragraph_format.right_indent.twips, -783)
             self.assertIsNotNone(signature_paragraph)
-            self.assertEqual(signature_paragraph.text.splitlines(), signature_lines)
+            self.assertEqual([line.strip() for line in signature_paragraph.text.splitlines()], signature_lines)
             self.assertEqual(signature_paragraph.alignment, 0)
             self.assertEqual(signature_paragraph.paragraph_format.left_indent.twips, -172)
             self.assertEqual(signature_paragraph.paragraph_format.right_indent.twips, -783)
@@ -353,4 +355,89 @@ class TestIrgCertificateRequest(TransactionCase):
             res_file = cert._fill_template()
             self._assert_bottom_right_arcs_are_visible_in_xml(res_file)
             self._assert_header_logo_is_present_in_xml(res_file)
+
+    def _assert_table_font_sizes_match_top_font_size(self, res_file):
+        doc = DocxDocument(res_file)
+        top_font_size = None
+        for para in doc.paragraphs:
+            if para.text.strip():
+                for r in para.runs:
+                    if r.font and r.font.size:
+                        top_font_size = r.font.size
+                        break
+            if top_font_size:
+                break
+        self.assertIsNotNone(top_font_size, "Could not find top font size in document.")
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        for run in para.runs:
+                            self.assertEqual(
+                                run.font.size,
+                                top_font_size,
+                                "Table run font size does not match calculated top font size."
+                            )
+
+    def _assert_signature_logo_is_present_and_referenced(self, res_file):
+        module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        logo_path = os.path.join(module_path, 'static', 'src', 'img', 'logodesgastado.png')
+        self.assertTrue(os.path.isfile(logo_path), "Expected signature logo does not exist in module path.")
+        with open(logo_path, 'rb') as f:
+            expected_md5 = hashlib.md5(f.read()).hexdigest()
+
+        with ZipFile(res_file) as z:
+            matching_media_file = None
+            for name in z.namelist():
+                if name.startswith('word/media/'):
+                    data = z.read(name)
+                    if hashlib.md5(data).hexdigest() == expected_md5:
+                        matching_media_file = name
+                        break
+            self.assertIsNotNone(matching_media_file, "logodesgastado.png not found by MD5 hash inside ZIP media.")
+            
+            doc_xml = z.read('word/document.xml').decode('utf-8', errors='ignore')
+            rels_xml = z.read('word/_rels/document.xml.rels').decode('utf-8', errors='ignore')
+            
+        relative_target = matching_media_file.replace('word/', '')
+        import re
+        r_ids = re.findall(rf'Id="([^"]+)"[^>]+Target="{re.escape(relative_target)}"', rels_xml)
+        self.assertTrue(len(r_ids) > 0, f"Relationship for {relative_target} not found in document.xml.rels")
+        
+        referenced = any(r_id in doc_xml for r_id in r_ids)
+        self.assertTrue(referenced, f"Relationship ID(s) {r_ids} for signature logo not referenced in document.xml")
+
+    def test_13_table_font_sizes_match_top_font_size(self):
+        """Verify that table cell font size matches the top font size for all document formats."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'certificate_type': 'digital',
+            'document_type': 'gradebook',
+            'state': 'draft',
+        })
+        res_file = cert._fill_template()
+        self._assert_table_font_sizes_match_top_font_size(res_file)
+
+        cert_phys = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'certificate_type': 'physical',
+            'shipping_type': 'national',
+            'document_type': 'gradebook',
+            'state': 'draft',
+        })
+        res_file_phys = cert_phys._fill_template()
+        self._assert_table_font_sizes_match_top_font_size(res_file_phys)
+
+    def test_14_signature_logo_present_for_raimon_signer(self):
+        """Verify that Raimon Gaja's signature logo is present in the ZIP and referenced in document.xml."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'certificate_type': 'digital',
+            'document_type': 'gradebook',
+            'signer': 'raimon',
+            'state': 'draft',
+        })
+        res_file = cert._fill_template()
+        self._assert_signature_logo_is_present_and_referenced(res_file)
+
 
