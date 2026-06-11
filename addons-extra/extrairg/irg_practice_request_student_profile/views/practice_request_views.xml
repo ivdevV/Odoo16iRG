@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_request_form_student_profile" model="ir.ui.view">
+        <field name="name">practice.request.form.student.profile</field>
+        <field name="model">practice.request</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_request_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group[1]" position="after">
+                <notebook>
+                    <page string="Perfil del alumno">
+                        <group>
+                            <group string="Datos académicos">
+                                <field name="irg_age"/>
+                                <field name="irg_academic_degrees"/>
+                                <field name="irg_postgraduate_training"/>
+                            </group>
+                            <group string="Experiencia profesional">
+                                <field name="irg_related_work_experience"/>
+                                <field name="irg_currently_working"/>
+                                <field name="irg_current_job_related_to_master"/>
+                            </group>
+                        </group>
+                        <group string="Motivación y objetivos">
+                            <field name="irg_master_motivation"/>
+                            <field name="irg_master_expectations"/>
+                            <field name="irg_long_term_professional_goals"/>
+                            <field name="irg_topics_to_deepen"/>
+                            <field name="irg_future_training_interest"/>
+                        </group>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+</odoo>
