@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia de la vista de lista/árbol de asistencias -->
+    <record id="view_attendance_tree_inherit_irg" model="ir.ui.view">
+        <field name="name">hr.attendance.tree.inherit.irg</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='worked_hours']" position="after">
+                <field name="irg_weekly_hours_total" widget="float_time"/>
+                <field name="irg_monthly_hours_total" widget="float_time"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Herencia de la vista de formulario de asistencias -->
+    <record id="hr_attendance_view_form_inherit_irg" model="ir.ui.view">
+        <field name="name">hr.attendance.form.inherit.irg</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='check_out']" position="after">
+                <field name="irg_weekly_hours_total" widget="float_time"/>
+                <field name="irg_monthly_hours_total" widget="float_time"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
