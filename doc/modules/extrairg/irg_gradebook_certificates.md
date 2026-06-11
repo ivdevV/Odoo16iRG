@@ -23,7 +23,7 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 - Generación de PDF QWeb del certificado de notas.
 - Wizard de generación desde el backend.
 - Decoración global de arcos azules en la esquina inferior derecha de los certificados Word/PDF generados.
-- Formato alineado del certificado final de notas, equivalente al certificado parcial: bloques estáticos alineados a la retícula de tabla, `CERTIFICA:`, cierre justificado, firma en dos líneas y texto legal vertical compacto.
+- Formato alineado del certificado final de notas, equivalente al certificado parcial: bloque descriptivo inicial en tres párrafos, alumno y curso en negrita, bloques estáticos alineados a la retícula de tabla, `CERTIFICA:`, cierre justificado, firma en dos líneas y texto legal vertical compacto.
 - Tienda online para pedido de certificados por el alumno (con pago).
 - Cron para procesar solicitudes pendientes.
 - Plantillas de email para notificaciones de estado.
@@ -47,8 +47,16 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 - Requiere `security/ir.model.access.csv` y `security/record_rules.xml`.
 - Usa `data/sequence_data.xml`, `data/product_data.xml`, `data/mail_templates.xml`, `data/cron_data.xml`.
 - El helper `_ensure_bottom_right_arcs()` inserta `static/src/img/RCOS.png` en el `.docx` generado como `word/media/bottom_right_arcs.png`, con anclaje de página `right/bottom` y `behindDoc="1"`, para que no desplace texto, cierre ni firma. Se aplica a certificados completos, asistencia, matrícula y es reutilizado por el certificado parcial.
+- El helper `_remove_header_logo(docx_path)` elimina las imágenes o gráficos de la cabecera del documento Word. Descomprime el archivo `.docx` (formato ZIP), analiza `word/header1.xml`, localiza los elementos XML `<w:r>` que contienen dibujos, imágenes o gráficos flotantes (`<w:drawing>`, `<w:AlternateContent>`, o `<w:pict>`), los elimina del árbol XML, y regenera el ZIP.
+- Para los certificados físicos (físico y físico apostillado), se excluye el logo de la cabecera aplicando `_remove_header_logo()` y se omiten los arcos decorativos inferiores (no se ejecuta `_ensure_bottom_right_arcs()`), con el fin de no interferir con el diseño del papel timbrado preimpreso.
 - El certificado final de notas (`document_type == 'gradebook'`) aplica `_format_gradebook_static_paragraphs()`, `_compact_gradebook_vertical_legal_text()` y `_restore_gradebook_vertical_legal_text()` para mantener la estructura visual equivalente al certificado parcial. La firma `Departamento Académico Instituto Raimon Gaja` se convierte en dos líneas, el cierre se justifica con el ancho de la tabla, y el texto legal vertical se fuerza a 5 pt (`w:val="10"`) para evitar saltos de línea. Además, la plantilla base `Plantilla-certificado-notas-dpto.docx` fue remaquetada para cambiar el anclaje de la imagen de la firma de flotante (`wp:anchor`) a en línea con el texto (`wp:inline`) dentro de un párrafo vacío independiente para prevenir colisiones de maquetación.
+- El helper `_replace_gradebook_description_paragraph()` reconstruye el primer bloque descriptivo del certificado final para que sea un calco del certificado parcial: primera frase con nombre del alumno y curso en negrita, segunda frase de ECTS detallados, y tercera frase `Las calificaciones obtenidas son:`. Los tres párrafos usan la misma retícula de anchura que la tabla y espaciado inferior de 12 pt.
 - El método `_replace_in_paragraph(paragraph, old, new)` realiza una sustitución segura de placeholders en párrafos cuyos runs han sido divididos por Word. Para evitar la pérdida de firmas digitalizadas u otros elementos multimedia representados como elementos gráficos (`<w:drawing>`), el método ahora recorre y limpia exclusivamente las etiquetas de texto `<w:t>` dentro de los runs secundarios, en lugar de vaciar el run completo. Además, se actualizó la aserción en los tests de certificados parciales para validar que el dibujo se encuentre inline en el párrafo independiente.
+
+## Changelog
+
+- **2026-06-11:** Implementada la exclusión de logos y arcos decorativos en los certificados físicos. Se añadió el helper `_remove_header_logo()` para eliminar las imágenes de la cabecera (`word/header1.xml`) y se condicionó la aplicación de los arcos azules inferiores (`_ensure_bottom_right_arcs()`) para que solo se ejecute en certificados no físicos.
+- **2026-06-10:** El certificado final de notas replica el bloque textual inicial del certificado parcial para ambos firmantes (`raimon` y `dpto_academico`): tres párrafos independientes, alumno/curso en negrita y anchura/espaciado equivalente al parcial.
 
 ## Validación
 

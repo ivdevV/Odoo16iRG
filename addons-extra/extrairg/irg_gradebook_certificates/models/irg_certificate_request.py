@@ -712,6 +712,52 @@ class IrgCertificateRequest(models.Model):
                 ids.append(int(raw_id))
         return (max(ids) if ids else 0) + 1
 
+    def _remove_header_logo(self, docx_path):
+        """Remove the header logo/image in word/header1.xml."""
+        header_name = 'word/header1.xml'
+        with ZipFile(docx_path) as source_zip:
+            if header_name not in source_zip.namelist():
+                return
+            header_xml = etree.fromstring(source_zip.read(header_name))
+
+        runs_to_remove = []
+        for r in header_xml.xpath('.//*[local-name()="r"]'):
+            if r.xpath('.//*[local-name()="drawing" or local-name()="AlternateContent" or local-name()="pict"]'):
+                runs_to_remove.append(r)
+
+        if not runs_to_remove:
+            return
+
+        for r in runs_to_remove:
+            parent = r.getparent()
+            if parent is not None:
+                parent.remove(r)
+
+        tmp_zip = tempfile.NamedTemporaryFile(
+            suffix='.docx', delete=False, prefix='cert_header_logo_'
+        )
+        tmp_zip.close()
+        try:
+            with ZipFile(docx_path) as source_zip, ZipFile(
+                tmp_zip.name, 'w', ZIP_DEFLATED
+            ) as target_zip:
+                for item in source_zip.infolist():
+                    data = source_zip.read(item.filename)
+                    if item.filename == header_name:
+                        data = etree.tostring(
+                            header_xml,
+                            xml_declaration=True,
+                            encoding='UTF-8',
+                            standalone=True,
+                        )
+                    target_zip.writestr(item, data)
+            os.replace(tmp_zip.name, docx_path)
+        except Exception as e:
+            _logger.error("Failed to remove header logo: %s", e)
+        finally:
+            if os.path.exists(tmp_zip.name):
+                os.unlink(tmp_zip.name)
+
     def _ensure_bottom_right_arcs(self, docx_path):
         """Add the global blue arcs decoration at the page bottom-right."""
         module_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -1077,7 +1123,10 @@ class IrgCertificateRequest(models.Model):
         tmp_docx.close()
         if self.document_type == 'gradebook':
             self._restore_gradebook_vertical_legal_text(tpl_path, tmp_docx.name)
-        self._ensure_bottom_right_arcs(tmp_docx.name)
+        if self.document_type == 'gradebook' and self.certificate_type in PHYSICAL_TYPES:
+            self._remove_header_logo(tmp_docx.name)
+        else:
+            self._ensure_bottom_right_arcs(tmp_docx.name)
         return tmp_docx.name
 
     @staticmethod

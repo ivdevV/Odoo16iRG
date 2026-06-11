@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from zipfile import ZipFile
+from lxml import etree
 
 from docx import Document as DocxDocument
 
@@ -285,3 +286,71 @@ class TestIrgCertificateRequest(TransactionCase):
             self.assertEqual(signature_paragraph.alignment, 0)
             self.assertEqual(signature_paragraph.paragraph_format.left_indent.twips, -172)
             self.assertEqual(signature_paragraph.paragraph_format.right_indent.twips, -783)
+
+    def _assert_bottom_right_arcs_are_absent_in_xml(self, res_file):
+        with ZipFile(res_file) as docx_zip:
+            document_xml = docx_zip.read('word/document.xml').decode(
+                'utf-8', errors='ignore'
+            )
+            rels_xml = docx_zip.read('word/_rels/document.xml.rels').decode(
+                'utf-8', errors='ignore'
+            )
+            package_names = set(docx_zip.namelist())
+
+        self.assertNotIn('name="Bottom Right Arcs"', document_xml)
+        self.assertNotIn('Target="media/bottom_right_arcs.png"', rels_xml)
+        self.assertNotIn('word/media/bottom_right_arcs.png', package_names)
+
+    def _assert_header_logo_is_removed_in_xml(self, res_file):
+        header_name = 'word/header1.xml'
+        with ZipFile(res_file) as docx_zip:
+            if header_name not in docx_zip.namelist():
+                return
+            header_xml = etree.fromstring(docx_zip.read(header_name))
+        
+        runs_with_drawings = []
+        for r in header_xml.xpath('.//*[local-name()="r"]'):
+            if r.xpath('.//*[local-name()="drawing" or local-name()="AlternateContent" or local-name()="pict"]'):
+                runs_with_drawings.append(r)
+        self.assertEqual(len(runs_with_drawings), 0, "Header logo drawings were not removed.")
+
+    def _assert_header_logo_is_present_in_xml(self, res_file):
+        header_name = 'word/header1.xml'
+        with ZipFile(res_file) as docx_zip:
+            if header_name not in docx_zip.namelist():
+                self.fail("Header XML not found in document.")
+            header_xml = etree.fromstring(docx_zip.read(header_name))
+        
+        runs_with_drawings = []
+        for r in header_xml.xpath('.//*[local-name()="r"]'):
+            if r.xpath('.//*[local-name()="drawing" or local-name()="AlternateContent" or local-name()="pict"]'):
+                runs_with_drawings.append(r)
+        self.assertTrue(len(runs_with_drawings) > 0, "Header logo drawings were removed but should be present.")
+
+    def test_11_physical_gradebook_omits_logo_and_arcs(self):
+        """Physical/apostilled gradebook certificates must omit the header logo and decorative arcs."""
+        for cert_type in ('physical', 'physical_apostilled'):
+            cert = self.env['irg.certificate.request'].create({
+                'gradebook_student_id': self.gradebook.id,
+                'document_type': 'gradebook',
+                'certificate_type': cert_type,
+                'shipping_type': 'national',
+                'state': 'draft',
+            })
+            res_file = cert._fill_template()
+            self._assert_bottom_right_arcs_are_absent_in_xml(res_file)
+            self._assert_header_logo_is_removed_in_xml(res_file)
+
+    def test_12_non_physical_gradebook_retains_logo_and_arcs(self):
+        """Digital/custom gradebook certificates must retain the header logo and decorative arcs."""
+        for cert_type in ('digital', 'custom'):
+            cert = self.env['irg.certificate.request'].create({
+                'gradebook_student_id': self.gradebook.id,
+                'document_type': 'gradebook',
+                'certificate_type': cert_type,
+                'state': 'draft',
+            })
+            res_file = cert._fill_template()
+            self._assert_bottom_right_arcs_are_visible_in_xml(res_file)
+            self._assert_header_logo_is_present_in_xml(res_file)
+
