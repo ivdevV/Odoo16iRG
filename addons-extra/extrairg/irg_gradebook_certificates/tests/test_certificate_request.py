@@ -407,6 +407,36 @@ class TestIrgCertificateRequest(TransactionCase):
         referenced = any(r_id in doc_xml for r_id in r_ids)
         self.assertTrue(referenced, f"Relationship ID(s) {r_ids} for signature logo not referenced in document.xml")
 
+        # Validate that the signature logo is placed in the same paragraph containing the handwritten signature, having at least 2 drawing elements
+        doc = DocxDocument(res_file)
+        sig_rel_id = None
+        for rel_id, rel in doc.part.rels.items():
+            target = getattr(rel, 'target_ref', '').lower()
+            if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
+                sig_rel_id = rel_id
+                break
+        self.assertIsNotNone(sig_rel_id, "Handwritten signature rel_id not found")
+
+        paragraphs_to_search = list(doc.paragraphs)
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    paragraphs_to_search.extend(cell.paragraphs)
+
+        sig_para = None
+        for para in paragraphs_to_search:
+            for r in para.runs:
+                embed_nodes = r._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % sig_rel_id)
+                if embed_nodes:
+                    sig_para = para
+                    break
+            if sig_para:
+                break
+
+        self.assertIsNotNone(sig_para, "Paragraph containing the handwritten signature not found")
+        drawing_runs = [r for r in sig_para.runs if r._r.xpath('.//*[local-name()="drawing" or local-name()="pict"]')]
+        self.assertTrue(len(drawing_runs) >= 2, "Paragraph containing the handwritten signature does not contain at least 2 drawings")
+
     def test_13_table_font_sizes_match_top_font_size(self):
         """Verify that table cell font size matches the top font size for all document formats."""
         cert = self.env['irg.certificate.request'].create({

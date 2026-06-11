@@ -722,30 +722,38 @@ class IrgCertificateRequest(models.Model):
             return
 
         doc = DocxDocument(docx_path)
+        sig_rel_id = None
+        for rel_id, rel in doc.part.rels.items():
+            target = getattr(rel, 'target_ref', '').lower()
+            if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
+                sig_rel_id = rel_id
+                break
+
+        if not sig_rel_id:
+            return
+
         paragraphs_to_search = list(doc.paragraphs)
         for tbl in doc.tables:
             for row in tbl.rows:
                 for cell in row.cells:
                     paragraphs_to_search.extend(cell.paragraphs)
 
-        target_para = None
+        sig_para = None
         for para in paragraphs_to_search:
-            text = para.text.strip()
-            normalized_text = ' '.join(text.split())
-            if 'Raimon Gaja' in normalized_text and 'Instituto Raimon' in normalized_text:
-                target_para = para
+            for r in para.runs:
+                embed_nodes = r._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % sig_rel_id)
+                if embed_nodes:
+                    sig_para = para
+                    break
+            if sig_para:
                 break
 
-        if target_para is not None:
-            # Check if signature logo is already added to avoid duplication
-            logo_already_present = False
-            for run in target_para.runs:
-                if run._r.xpath('.//*[local-name()="drawing" or local-name()="pict"]'):
-                    logo_already_present = True
-                    break
-            if not logo_already_present:
-                run = target_para.add_run('   ')
-                run.add_picture(source_image, width=Pt(120))
+        if sig_para is not None:
+            drawing_runs = [r for r in sig_para.runs if r._r.xpath('.//*[local-name()="drawing" or local-name()="pict"]')]
+            if len(drawing_runs) < 2:
+                sig_para.add_run('       ')
+                run_logo = sig_para.add_run()
+                run_logo.add_picture(source_image, width=Pt(100))
                 doc.save(docx_path)
 
     def _remove_header_logo(self, docx_path):
