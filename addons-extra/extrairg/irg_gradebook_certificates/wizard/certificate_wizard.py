@@ -2,7 +2,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from ..models.irg_certificate_request import (
-    CERTIFICATE_TYPES,
     SHIPPING_TYPES,
     CUSTOM_OPTIONS,
     PRICE_MAP,
@@ -10,6 +9,19 @@ from ..models.irg_certificate_request import (
     PHYSICAL_TYPES,
     SIGNER_SELECTION,
 )
+
+
+WIZARD_DOCUMENT_TYPES = [
+    ('gradebook', 'Certificado de Notas Completo'),
+    ('gradebook_partial', 'Certificado de Notas Parcial'),
+]
+
+WIZARD_CERTIFICATE_TYPES = [
+    ('digital', 'Digital'),
+    ('physical', 'Físico'),
+    ('custom', 'A Medida'),
+    ('physical_apostilled', 'Físico Apostillado'),
+]
 
 
 class IrgCertificateWizard(models.TransientModel):
@@ -37,19 +49,13 @@ class IrgCertificateWizard(models.TransientModel):
         readonly=True,
     )
     document_type = fields.Selection(
-        selection=[
-            ('gradebook', 'Certificado de Notas Completo'),
-            ('gradebook_partial', 'Certificado de Notas Parcial'),
-            ('diploma', 'Diploma'),
-            ('attendance', 'Certificado de Asistencia'),
-            ('enrollment', 'Certificado de Matrícula'),
-        ],
+        selection=WIZARD_DOCUMENT_TYPES,
         string='Tipo de Documento',
         default='gradebook',
         required=True,
     )
     certificate_type = fields.Selection(
-        selection=CERTIFICATE_TYPES,
+        selection=WIZARD_CERTIFICATE_TYPES,
         string='Tipo de Certificado',
         required=True,
         default='digital',
@@ -98,9 +104,9 @@ class IrgCertificateWizard(models.TransientModel):
     @api.constrains('document_type', 'gradebook_student_id')
     def _check_gradebook_state(self):
         for rec in self:
-            if rec.document_type in ('gradebook', 'diploma') and rec.gradebook_student_id.state != 'done':
+            if rec.document_type == 'gradebook' and rec.gradebook_student_id.state != 'done':
                 raise ValidationError(
-                    _("Para solicitar un Certificado de Notas Completo o un Diploma, la libreta académica debe estar finalizada (estado 'Finalizado').")
+                    _("Para solicitar un Certificado de Notas Completo, la libreta académica debe estar finalizada (estado 'Finalizado').")
                 )
 
     def action_generate(self):

@@ -22,6 +22,7 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 - Modelo de solicitud de certificado con estado y flujo de aprobación.
 - Generación de PDF QWeb del certificado de notas.
 - Wizard de generación desde el backend.
+- El wizard backend limita el tipo de documento a certificados de notas (`Completo` y `Parcial`) y muestra tipos de certificado simplificados: `Digital`, `Físico`, `A Medida` y `Físico Apostillado`.
 - Decoración global de arcos azules en la esquina inferior derecha de los certificados Word/PDF generados.
 - Formato alineado del certificado final de notas, equivalente al certificado parcial: bloque descriptivo inicial en tres párrafos, alumno y curso en negrita, bloques estáticos alineados a la retícula de tabla, `CERTIFICA:`, cierre justificado, firma en dos líneas y texto legal vertical compacto.
 - En el wizard backend, la selección de persona firmante aparece antes del tipo de envío también para certificados físicos y físicos apostillados.
@@ -62,6 +63,7 @@ Tipos de certificado disponibles: Digital (30€), Físico (40€), A Medida (40
 ## Changelog
 
 - **2026-06-11:**
+  - **Opciones del wizard backend:** Limitado `Tipo de Documento` a certificados de notas completo/parcial y simplificadas las etiquetas de `Tipo de Certificado` a `Digital`, `Físico`, `A Medida` y `Físico Apostillado`.
   - **Redacción del certificado completo:** Cambiada la primera frase del bloque descriptivo para certificados de notas completos digitales y físicos: deja de usar `consta matriculado/a en el` y pasa a `ha realizado y superado el <programa>`.
   - **Wizard backend:** Reordenado el formulario de generación para mostrar `Persona que Firma` antes de `Tipo de Envío` en certificados físicos, evitando que el envío sustituya visualmente la línea de firmante.
   - **Unificación del texto del emisor:** Modificado el certificado final de notas firmado por el Departamento Académico para unificar su primera línea con la del parcial: `'El Instituto Raimon Gaja, con CIF B-56488687...'`.

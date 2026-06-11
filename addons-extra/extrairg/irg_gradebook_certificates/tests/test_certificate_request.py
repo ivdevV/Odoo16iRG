@@ -242,6 +242,28 @@ class TestIrgCertificateRequest(TransactionCase):
         self.gradebook.invalidate_recordset(['certificate_count'])
         self.assertEqual(self.gradebook.certificate_count, initial_count + 1)
 
+    def test_08b_backend_wizard_selection_labels_are_simplified(self):
+        fields_info = self.env['irg.certificate.wizard'].fields_get([
+            'document_type',
+            'certificate_type',
+        ])
+        self.assertEqual(
+            fields_info['document_type']['selection'],
+            [
+                ('gradebook', 'Certificado de Notas Completo'),
+                ('gradebook_partial', 'Certificado de Notas Parcial'),
+            ],
+        )
+        self.assertEqual(
+            fields_info['certificate_type']['selection'],
+            [
+                ('digital', 'Digital'),
+                ('physical', 'Físico'),
+                ('custom', 'A Medida'),
+                ('physical_apostilled', 'Físico Apostillado'),
+            ],
+        )
+
     def test_09_bottom_right_arcs_are_added_to_base_word_certificates(self):
         for document_type in ('gradebook', 'attendance', 'enrollment'):
             cert = self.env['irg.certificate.request'].create({
@@ -672,6 +694,5 @@ class TestIrgCertificateRequest(TransactionCase):
         )
         self.assertIsNotNone(second_body, "120 ECTS text not found in generated document.")
         self.assertIn('120 ECTS, equivalentes a 3000 horas de estudio', second_body.text)
-
 
 
