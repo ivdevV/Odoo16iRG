@@ -10,6 +10,7 @@ Ampliar el formulario portal de solicitud de prácticas con un perfil académico
 - Extender `practice.request` con campos `irg_*` para edad, formación académica, experiencia laboral, motivaciones, expectativas, objetivos y necesidades formativas.
 - Heredar el formulario portal de `isep_practices_2` para insertar las preguntas después de `Curso` y antes de `Tipo de práctica`.
 - Mostrar las preguntas de forma progresiva, evitando presentar todo el bloque de golpe.
+- Mantener oculto el resto del formulario hasta que el bloque `Perfil del alumno` esté completado.
 - Heredar el controlador de `irg_practice_center_restrict` para conservar el flujo sin selección obligatoria de centro y guardar las respuestas nuevas.
 - Validar en servidor que todas las preguntas del perfil estén respondidas antes de crear la solicitud.
 - Mostrar los campos en backend dentro de la solicitud de prácticas.
@@ -24,6 +25,7 @@ Ampliar el formulario portal de solicitud de prácticas con un perfil académico
 
 - El portal muestra el bloque `Perfil del alumno` entre `Curso` y `Tipo de práctica`.
 - El alumno navega el bloque por pasos con botones `Anterior` y `Siguiente`.
+- Los campos posteriores al perfil no se muestran hasta completar correctamente todos los pasos del perfil.
 - No se puede enviar una solicitud portal si falta alguna pregunta del perfil.
 - Un POST manual incompleto no crea la solicitud y devuelve error al formulario.
 - Las respuestas se guardan en `practice.request`.

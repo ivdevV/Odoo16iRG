@@ -9,6 +9,7 @@ Extiende las solicitudes de prácticas (`practice.request`) con un perfil acadé
 - Añade campos `irg_*` al modelo `practice.request` para edad, formación, experiencia, empleo actual, motivación, expectativas y objetivos.
 - Inserta una página de backend `Perfil del alumno` en la vista `isep_practices_2.view_practice_request_form`.
 - Hereda la plantilla portal `isep_practices_2.practice_request_form_template` e inserta una interfaz progresiva de 3 pasos después del campo `course_id`.
+- Oculta el resto del formulario hasta que el alumno complete correctamente el bloque `Perfil del alumno`.
 - Hereda el controlador `IrgPracticeRequestRestrict` y conserva su comportamiento de creación sin centro obligatorio para alumnos portal, añadiendo los nuevos valores al `create`.
 - Obliga a responder todas las preguntas del perfil en el portal mediante validación HTML y validación servidor antes de crear la solicitud.
 
@@ -27,4 +28,4 @@ Instalar el módulo `irg_practice_request_student_profile`. Los alumnos deben co
 
 ## Changelog
 
-- `16.0.1.0.0`: módulo inicial con campos de perfil, vistas backend/portal, controlador portal, obligatoriedad en portal y tests.
+- `16.0.1.0.0`: módulo inicial con campos de perfil, vistas backend/portal, controlador portal, obligatoriedad en portal, ocultación progresiva del resto del formulario y tests.

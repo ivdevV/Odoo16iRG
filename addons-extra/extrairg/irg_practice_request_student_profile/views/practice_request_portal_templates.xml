@@ -90,6 +90,22 @@
                         var prev = document.getElementById('irg_profile_prev');
                         var next = document.getElementById('irg_profile_next');
                         var label = document.getElementById('irg_profile_step_label');
+                        var followingElements = [];
+                        var profileCompleted = false;
+
+                        var sibling = root.nextElementSibling;
+                        while (sibling) {
+                            if (sibling.tagName !== 'SCRIPT') {
+                                followingElements.push(sibling);
+                            }
+                            sibling = sibling.nextElementSibling;
+                        }
+
+                        function setFollowingVisible(visible) {
+                            followingElements.forEach(function (item) {
+                                item.classList.toggle('d-none', !visible);
+                            });
+                        }
 
                         function showStep(step) {
                             steps.forEach(function (item) {
@@ -115,6 +131,8 @@
                         }
 
                         prev.addEventListener('click', function () {
+                            profileCompleted = false;
+                            setFollowingVisible(false);
                             currentStep = Math.max(1, currentStep - 1);
                             showStep(currentStep);
                         });
@@ -124,16 +142,31 @@
                                 currentStep += 1;
                                 showStep(currentStep);
                             } else {
+                                profileCompleted = true;
+                                setFollowingVisible(true);
                                 var practiceType = document.getElementById('practice_center_type_id');
                                 if (practiceType) { practiceType.scrollIntoView({behavior: 'smooth', block: 'start'}); }
                             }
                         });
+                        root.addEventListener('input', function () {
+                            if (!profileCompleted) { return; }
+                            profileCompleted = false;
+                            setFollowingVisible(false);
+                        });
+                        root.addEventListener('change', function () {
+                            if (!profileCompleted) { return; }
+                            profileCompleted = false;
+                            setFollowingVisible(false);
+                        });
                         root.addEventListener('invalid', function (event) {
                             var step = event.target.closest('.irg-profile-step');
                             if (!step) { return; }
+                            profileCompleted = false;
+                            setFollowingVisible(false);
                             currentStep = Number(step.getAttribute('data-step')) || currentStep;
                             showStep(currentStep);
                         }, true);
+                        setFollowingVisible(false);
                         showStep(currentStep);
                     });
                 </script>
