@@ -1,7 +1,7 @@
 # irg_generacion_diplomas
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.14
+**Versión:** 16.0.1.0.15
 **Licencia:** AGPL-3
 **Instalable:** Sí
 **Autor:** ISEP / iRG
@@ -58,6 +58,13 @@ docker exec odoo_latest odoo -c /etc/odoo/odoo.conf \
 ```
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.15 (V3.7)
+- **Eliminación de restricción de visibilidad**: Se removió el atributo `attrs` de visibilidad dinámica del botón "Generar Diploma" en la cabecera de la ficha del alumno (`op_student_views.xml`), haciéndolo siempre visible (Opción B aprobada).
+- **Desvinculación de las Acciones**: El flujo de generación de diplomas queda desvinculado del menú "Acciones" (implementado en el módulo `irg_diploma_sheet_verification`) para centralizarse únicamente en el botón de cabecera de la ficha del alumno.
+
+### Validación 16.0.1.0.15
+- Carga de Odoo exitosa localmente. Se verificó que el botón "Generar Diploma" aparece visible siempre en la cabecera del formulario de `op.student`, independientemente del estado del estudiante, y que al pulsarlo abre correctamente el wizard de generación.
 
 ### Versión 16.0.1.0.14 (V3.6)
 - **Condicionamiento del escalado de fuente**: Se limitó el uso de la función de escalado `_fit_single_line_font_size` solo a los títulos que poseen un salto de línea explícito (`\n`). Esto corrige el problema por el cual el resto de los másteres estándar se mostraban en tamaños de letra pequeños al ser forzados a caber en una sola línea, permitiendo ahora su envoltura natural con tamaño normal (`sf(19)`).

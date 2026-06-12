@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_isep_gradebook_inherit" inherit_id="isep_gradebook.report_isep_gradebook">
+        <xpath expr="//t[@t-as='subject']/tr" position="attributes">
+            <attribute name="t-if">not (subject.op_subject_id.code or '').upper().startswith('NLEX')</attribute>
+        </xpath>
+    </template>
+</odoo>

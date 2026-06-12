@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="view_op_student_form_hide_certifies" model="ir.ui.view">
+            <field name="name">op.student.form.hide.certifies.button</field>
+            <field name="model">op.student</field>
+            <field name="inherit_id" ref="isep_openeducat_reports.view_op_student_form_extended"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='%(isep_openeducat_reports.diplomas_certifies_wizard)d']" position="replace"/>
+            </field>
+        </record>
+
+    </data>
+</odoo>
