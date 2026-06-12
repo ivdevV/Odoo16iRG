@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="app_gradebook_student_form_editable_template" model="ir.ui.view">
+            <field name="name">app.gradebook.student.form.editable.template</field>
+            <field name="model">app.gradebook.student</field>
+            <field name="inherit_id" ref="isep_gradebook.app_gradebook_student_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/group//field[@name='gradebook_id']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state','=','done')]}</attribute>
+                    <attribute name="force_save">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
