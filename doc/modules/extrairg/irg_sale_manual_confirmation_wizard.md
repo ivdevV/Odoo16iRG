@@ -1,7 +1,7 @@
 # irg_sale_manual_confirmation_wizard
 
 **Categoría:** Sales (Ventas)
-**Versión:** 16.0.1.4.0
+**Versión:** 16.0.1.5.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** Instituto Raimon Gaja
@@ -11,7 +11,7 @@
 
 ## ¿Qué hace este módulo?
 
-Este módulo gestiona la confirmación manual y e-commerce de presupuestos/pedidos de venta de forma controlada y segura, asegurando la consistencia de las fechas de admisión, y proporcionando salvaguardas para la creación de usuarios de portal, soporte y ruteo de correos de bienvenida según modalidad.
+Este módulo gestiona la confirmación manual y e-commerce de presupuestos/pedidos de venta de forma controlada y segura, asegurando la consistencia de las fechas de admisión, y proporcionando salvaguardas para la creación de usuarios de portal, soporte y ruteo de correos de bienvenida según modalidad. Además, anula el proceso de automatrícula automática y envío de correos desde el botón de confirmar nativo para España (es_ES), de modo que las admisiones se crean en estado borrador (draft) y solo se procesan por completo a través del asistente de confirmación manual.
 
 ---
 
@@ -124,6 +124,7 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf \
 
 ## Changelog
 
+*   **16.0.1.5.0**: Corrección de la propagación de la bandera de contexto `irg_no_create_batch` en las admisiones de España (`es_ES`) para evitar la creación de lotes innecesarios en segundo plano durante confirmación nativa, y adición de bypass cuando el flujo es ejecutado desde el asistente de confirmación manual (`irg_manual_wizard_passed = True`) para evitar violaciones de clave nula en base de datos. Adición de suite de pruebas unitarias correspondientes.
 *   **16.0.1.4.0**: Anulación del proceso de automatrícula automática desde el botón de confirmar nativo para España (es_ES), manteniendo la creación de la admisión en estado borrador (draft) y haciendo que la matriculación y envío de correos sea un proceso exclusivo del asistente de confirmación manual.
 *   **16.0.1.3.0**: Adición del campo computado `detected_registers_preview` al wizard de confirmación manual, que lista de forma amigable los registros de admisión que se asignarán o pre-crearán al confirmar la orden de venta. Implementación de helpers para resolución robusta de períodos de inicio y emparejado de registros, y agregado del caso de prueba correspondiente.
 *   **16.0.1.2.0**: Implementación de lógica inteligente de búsqueda y reutilización de registros de admisión con variantes de formato en el período (ej. ceros a la izquierda), así como una salvaguarda de seguridad para pre-crear registros de admisión en períodos vencidos forzando las fechas al límite del período para evitar fallas por restricciones de validación temporal. Adición de la suite de pruebas unitarias correspondiente.

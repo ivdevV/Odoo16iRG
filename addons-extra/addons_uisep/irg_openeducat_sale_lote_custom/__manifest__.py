@@ -1,6 +1,6 @@
 {
     'name': 'ISEP OpenEducat Sale Lote Custom',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Sales',
     'summary': 'Customization for Lot Generation in Sale Orders',
     'description': """

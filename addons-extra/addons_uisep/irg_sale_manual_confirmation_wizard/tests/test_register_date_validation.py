@@ -315,3 +315,169 @@ class TestRegisterDateValidation(TransactionCase):
         self.assertEqual(wizard_admission.state, 'done', "The wizard admission state must be 'done'")
         self.assertTrue(wizard_admission.email_send_ok, "The wizard admission email_send_ok must be True")
 
+    def test_master_batch_prefix_normalization(self):
+        """Test master batch code formatting and prefix normalization logic in get_lot_id:
+        - Category code starting with M / name containing 'Master' gets MO (for Oficial) or MP (otherwise).
+        - Course code starting with M has the prefix 'M' sliced if the category is master.
+        """
+        # Create product category with code 'MOM'
+        master_category = self.env['product.category'].create({
+            'name': 'Master Category',
+            'code': 'MOM',
+        })
+
+        # Course 1: Máster Oficial en Sexología Clínica (code: MSC_MO)
+        course_oficial = self.env['op.course'].create({
+            'name': 'Máster Oficial en Sexología Clínica',
+            'code': 'MSC_MO',
+        })
+        pt_oficial = self.env['product.template'].create({
+            'name': 'Test Academic Program Product Oficial',
+            'type': 'service',
+            'is_academic_program': True,
+            'recurring_invoice': True,
+            'categ_id': master_category.id,
+            'course_type': 'classroom',
+        })
+        course_oficial.write({'product_template_id': pt_oficial.id})
+
+        # Create a dummy sale order
+        sale_order = self.env['sale.order'].create({
+            'partner_id': self.env.ref('base.partner_admin').id,
+        })
+
+        # Test Case A: Oficial Course batch code starts with 'MOSC'
+        batch_oficial = sale_order.get_lot_id(course_oficial)
+        self.assertTrue(batch_oficial, "Should have created or found the batch for oficial course")
+        self.assertTrue(batch_oficial.code.startswith('MOSC'), f"Expected code to start with MOSC, got {batch_oficial.code}")
+
+        # Course 2: Máster en Sexología Clínica (code: MSC_MP)
+        course_master = self.env['op.course'].create({
+            'name': 'Máster en Sexología Clínica',
+            'code': 'MSC_MP',
+        })
+        pt_master = self.env['product.template'].create({
+            'name': 'Test Academic Program Product Master',
+            'type': 'service',
+            'is_academic_program': True,
+            'recurring_invoice': True,
+            'categ_id': master_category.id,
+            'course_type': 'classroom',
+        })
+        course_master.write({'product_template_id': pt_master.id})
+
+        # Test Case B: Regular Master Course batch code starts with 'MPSC'
+        batch_master = sale_order.get_lot_id(course_master)
+        self.assertTrue(batch_master, "Should have created or found the batch for regular master course")
+        self.assertTrue(batch_master.code.startswith('MPSC'), f"Expected code to start with MPSC, got {batch_master.code}")
+
+    def test_native_confirmation_es_ES_no_batch_creation(self):
+        """Test that native confirmation of a sale order with an es_ES course:
+        - Creates the admission in 'draft' or 'application' state.
+        - Does NOT create any batch record in the database.
+        - The admission batch_id is False.
+        """
+        # Ensure es_ES lang exists and is active
+        lang_code = 'es_ES'
+        lang = self.env['res.lang'].with_context(active_test=False).search([('code', '=', lang_code)])
+        if lang:
+            if not lang.active:
+                lang.write({'active': True})
+        else:
+            self.env['res.lang'].create({
+                'name': 'Spanish (ES)',
+                'code': lang_code,
+                'iso_code': 'es',
+                'direction': 'ltr',
+            })
+
+        # Create a course with code 'SC_ES' and language 'es_ES'
+        course = self.env['op.course'].create({
+            'name': 'Sexología Clínica España',
+            'code': 'SC_ES',
+            'lang': lang_code,
+        })
+
+        # Create product template and link to course
+        product_template = self.env['product.template'].create({
+            'name': 'Sexología Clínica Product',
+            'type': 'service',
+            'is_academic_program': True,
+            'recurring_invoice': True,
+            'course_type': 'classroom',
+        })
+        course.write({'product_template_id': product_template.id})
+
+        # Ensure we have a recurrence plan
+        recurrence = self.env['sale.temporal.recurrence'].search([], limit=1)
+        if not recurrence:
+            recurrence = self.env['sale.temporal.recurrence'].create({
+                'duration': 1,
+                'unit': 'month',
+                'name': 'Monthly Recurrence',
+            })
+
+        # Create a sale order
+        sale_order = self.env['sale.order'].create({
+            'partner_id': self.env.ref('base.partner_admin').id,
+            'recurrence_id': recurrence.id,
+            'start_date': fields.Date.to_date('2026-02-01'),
+            'end_date': fields.Date.to_date('2026-03-01'),
+        })
+        sale_order.partner_id.write({
+            'email': 'es_student@example.com',
+            'phone': '987654321',
+        })
+
+        # Get product variant
+        product = product_template.product_variant_id or self.env['product.product'].search([
+            ('product_tmpl_id', '=', product_template.id)
+        ], limit=1)
+        if not product:
+            product = self.env['product.product'].create({
+                'product_tmpl_id': product_template.id,
+            })
+
+        # Add line to sale order
+        self.env['sale.order.line'].create({
+            'order_id': sale_order.id,
+            'product_id': product.id,
+            'name': product.name,
+            'price_unit': 100.0,
+            'product_uom_qty': 1.0,
+            'start_date_enroller': fields.Date.to_date('2026-02-01'),
+        })
+
+        # Pre-create admission register spanning today (period maps to 2026-01 due to month=2)
+        from datetime import timedelta
+        today = fields.Date.today()
+        reg = self.env['op.admission.register'].create({
+            'name': 'Pre-created SC Register',
+            'course_id': course.id,
+            'period': '2026-01',
+            'start_date': today - timedelta(days=10),
+            'end_date': today + timedelta(days=30),
+            'min_count': 1,
+            'max_count': 500,
+            'product_template_id': product_template.id,
+        })
+        reg.write({'state': 'application'})
+
+        # Verify no batches exist for this course before confirmation
+        batches_before = self.env['op.batch'].search([('course_id', '=', course.id)])
+        self.assertEqual(len(batches_before), 0, "No batches should exist for this course initially")
+
+        # Confirm the sale order natively (without context)
+        sale_order.action_confirm()
+
+        # Check admission is created in draft/application state
+        admission = self.env['op.admission'].search([('sale_id', '=', sale_order.id)])
+        self.assertTrue(admission, "An admission should have been created")
+        self.assertIn(admission.state, ['draft', 'application'], "The admission state must remain in draft/application")
+
+        # Check that no batch has been created in the database for this course
+        batches_after = self.env['op.batch'].search([('course_id', '=', course.id)])
+        self.assertEqual(len(batches_after), 0, "No batch should have been created during native confirmation")
+        self.assertFalse(admission.batch_id, "The admission batch_id must be empty/False")
+
+

@@ -74,8 +74,32 @@ class SaleOrder(models.Model):
             if profix_01.startswith('M'):
                 profix_01 = 'MB'
 
+        is_master = False
+        categ = matching_line.product_id.categ_id if matching_line else False
+        if not categ and course_id.product_template_id:
+            categ = course_id.product_template_id.categ_id
+        categ_name = (categ.name or '').lower() if categ else ''
+        if (profix_01 and profix_01.startswith('M') and profix_01 != 'MB') or 'master' in categ_name or 'máster' in categ_name:
+            is_master = True
+
+        if is_master:
+            course_name = (course_id.name or '').lower()
+            product_name = (matching_line.product_id.name or '').lower() if (matching_line and matching_line.product_id) else ''
+            template_name = (matching_line.product_id.product_tmpl_id.name or '').lower() if (matching_line and matching_line.product_id and matching_line.product_id.product_tmpl_id) else ''
+            if not template_name and course_id.product_template_id:
+                template_name = (course_id.product_template_id.name or '').lower()
+
+            combined_names = f"{course_name} {product_name} {template_name}"
+            if 'oficial' in combined_names:
+                profix_01 = 'MO'
+            else:
+                profix_01 = 'MP'
+
         prefix_011 = course_id.code or ''
         prefix_02 = 'ONL'
+
+        if profix_01 and profix_01.startswith('M') and prefix_011 and prefix_011.startswith('M'):
+            prefix_011 = prefix_011[1:]
 
         quarter_letter, quarter_start_month = QUARTER_MAP[date.month]
         year = date.strftime("%y")
@@ -107,6 +131,10 @@ class SaleOrder(models.Model):
                     _logger.info("IRG Quarterly: auto-completando tutor/profesor/coordinador del lote existente %s con: %s", lot_id.name, vals_to_write)
                     lot_id.write(vals_to_write)
             return lot_id
+
+        if self.env.context.get('irg_no_create_batch'):
+            _logger.info("IRG Quarterly: irg_no_create_batch is True and batch does not exist. Returning empty recordset.")
+            return self.env['op.batch']
 
         # Crear lote nuevo con valores del singleton segun idioma
         lot_values = {}

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG OpenEducat Sale Online Quarterly Batches',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Sales',
     'summary': 'Convocatorias trimestrales para lotes Online (A/B/C/D)',
     'description': """

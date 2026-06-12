@@ -146,7 +146,16 @@ class SaleOrder(models.Model):
         se propaguen al registro de admisión cuando este es creado o recuperado.
         Asegura además que birth_date tenga un valor válido (evitando fallas de tipo al matricular).
         """
-        admission = super(SaleOrder, self.with_context(irg_get_lot_line_id=line.id))._create_or_get_admission(line)
+        domain = ['|', 
+                 ('product_template_id', '=', line.product_template_id.id),
+                 ('product_template_ids', 'in', line.product_template_id.id)]
+        course = self.env['op.course'].search(domain, limit=1)
+
+        ctx = {'irg_get_lot_line_id': line.id}
+        if not self.auto_ad_active(course) and not self.env.context.get('irg_manual_wizard_passed'):
+            ctx['irg_no_create_batch'] = True
+
+        admission = super(SaleOrder, self.with_context(**ctx))._create_or_get_admission(line)
         if admission:
             vals = {}
             # Priorizamos la fecha de inicio de la línea (line.start_date_enroller),
@@ -180,7 +189,7 @@ class SaleOrder(models.Model):
             vals['fees'] = line.price_subtotal
 
             # Recalcular el lote correcto para esta línea específica usando su producto, fecha y precio.
-            correct_batch = self.with_context(irg_get_lot_line_id=line.id).get_lot_id(admission.course_id)
+            correct_batch = self.with_context(**ctx).get_lot_id(admission.course_id)
             if correct_batch and admission.batch_id != correct_batch:
                 _logger.info(
                     "IRG Manual Wizard: Corrigiendo batch del default %s al específico de la línea %s",

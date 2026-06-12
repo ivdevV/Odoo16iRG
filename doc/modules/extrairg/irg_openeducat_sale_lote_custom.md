@@ -46,7 +46,13 @@ Ejemplo: `DINEHC2606`.
 
 ## Changelog
 
-### 2026-06-02
+### 2026-06-12 (16.0.1.1.0)
+
+- **Normalización de categoría de Masters**: Si la categoría del producto empieza por `M` (y no es `MB`) o contiene la palabra "master"/"máster", el prefijo de la categoría se normaliza a `MO` si el nombre de curso o producto contiene "oficial", y `MP` en caso contrario.
+- **Limpieza de duplicidad de M en códigos de curso**: Si el prefijo de la categoría empieza por `M` y el código del curso también empieza por `M` (ej. `MSC` de Sexología), se limpia la `M` del código del curso (dejando `SC`) para evitar códigos redundantes como `MPMSCONL...` o `MOMSCONL...` (generando correctamente `MPSCONL...` y `MOSCONL...`).
+- **Control de creación de lotes en borrador**: Soporte para la bandera de contexto `irg_no_create_batch` para retornar un recordset vacío `self.env['op.batch']` si el lote no existe y no se desea forzar su creación.
+
+### 2026-06-02 (16.0.1.0.0)
 
 - Se fuerza la modalidad `HC` en la generacion real de lotes cuando la linea o curso corresponde a un diplomado.
 - Caso corregido: `DINEGE2606` ahora se genera como `DINEHC2606`.

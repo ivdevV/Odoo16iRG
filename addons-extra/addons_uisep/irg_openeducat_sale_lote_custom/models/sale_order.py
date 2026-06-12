@@ -139,10 +139,28 @@ class SaleOrder(models.Model):
         prefix_011 = course_id.code or ''       
         op_batch = self.env['op.batch']
         
-        is_diplomado = False
+        is_master = False
         categ = matching_line.product_id.categ_id if matching_line else False
         if not categ and course_id.product_template_id:
             categ = course_id.product_template_id.categ_id
+        categ_name = (categ.name or '').lower() if categ else ''
+        if (profix_01 and profix_01.startswith('M') and profix_01 != 'MB') or 'master' in categ_name or 'máster' in categ_name:
+            is_master = True
+
+        if is_master:
+            course_name = (course_id.name or '').lower()
+            product_name = (matching_line.product_id.name or '').lower() if (matching_line and matching_line.product_id) else ''
+            template_name = (matching_line.product_id.product_tmpl_id.name or '').lower() if (matching_line and matching_line.product_id and matching_line.product_id.product_tmpl_id) else ''
+            if not template_name and course_id.product_template_id:
+                template_name = (course_id.product_template_id.name or '').lower()
+
+            combined_names = f"{course_name} {product_name} {template_name}"
+            if 'oficial' in combined_names:
+                profix_01 = 'MO'
+            else:
+                profix_01 = 'MP'
+
+        is_diplomado = False
         if categ:
             if categ.code and (categ.code.upper().startswith('DI') or categ.code.upper() == 'D'):
                 is_diplomado = True
@@ -153,6 +171,9 @@ class SaleOrder(models.Model):
             profix_01 = 'DI'
             prefix_02 = 'HC'
 
+        if profix_01 and profix_01.startswith('M') and prefix_011 and prefix_011.startswith('M'):
+            prefix_011 = prefix_011[1:]
+
         # Constructed code without prefix_06
         code = profix_01 + prefix_011 + prefix_02 +  prefix_05 + prefix_04
         
@@ -160,7 +181,11 @@ class SaleOrder(models.Model):
         
         lot_id = op_batch.search([('code','=',code)])        
     
-        if not lot_id:            
+        if not lot_id:
+            if self.env.context.get('irg_no_create_batch'):
+                _logger.info("IRG Custom Logic: irg_no_create_batch is True and batch does not exist. Returning empty recordset.")
+                return self.env['op.batch']
+
             ad = self.env['auto.admission.required'].search([], limit=1)        
             lot_values = {}
             if course_id.lang == 'pt_BR':     
