@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Gradebook Certificates',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Education',
     'summary': 'Solicitud y generación de certificados de notas (backend y portal con pago)',
     'description': """

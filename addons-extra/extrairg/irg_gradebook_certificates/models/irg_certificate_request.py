@@ -928,6 +928,14 @@ class IrgCertificateRequest(models.Model):
             if os.path.exists(tmp_zip.name):
                 os.unlink(tmp_zip.name)
 
+    def _get_certificate_subjects(self):
+        """Subjects listed on grade certificates. Extension hook so other
+        modules can filter out subjects (e.g. NLEX exemptions)."""
+        self.ensure_one()
+        return self.gradebook_student_id.gradebook_subject_ids.filtered(
+            lambda s: s.op_subject_id.subject_type == 'compulsory'
+        )
+
     def _fill_template(self):
         """Open the .docx template, fill placeholders and table, return bytes."""
         self.ensure_one()
@@ -964,9 +972,7 @@ class IrgCertificateRequest(models.Model):
         )
         documento = '%s %s' % (id_label, partner.vat or '')
 
-        subjects = self.gradebook_student_id.gradebook_subject_ids.filtered(
-            lambda s: s.op_subject_id.subject_type == 'compulsory'
-        )
+        subjects = self._get_certificate_subjects()
         nota_media = '%.2f' % (self.gradebook_student_id.total_final or 0.0)
 
         # Fecha corta DD/MM/YYYY y fecha larga "25 de marzo de 2026"

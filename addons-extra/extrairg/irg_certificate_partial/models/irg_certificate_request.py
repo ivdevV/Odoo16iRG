@@ -261,10 +261,8 @@ class IrgCertificateRequest(models.Model):
         )
         documento = '%s %s' % (id_label, partner.vat or '')
 
-        # Filtrar asignaturas obligatorias
-        subjects = self.gradebook_student_id.gradebook_subject_ids.filtered(
-            lambda s: s.op_subject_id.subject_type == 'compulsory'
-        )
+        # Filtrar asignaturas obligatorias (hook extensible, p.ej. exclusion NLEX)
+        subjects = self._get_certificate_subjects()
 
         subject_notes = []
         valid_notes = []

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Certificados de Notas Parciales (iRG)',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Academic',
     'summary': 'Módulo para la generación de certificados de notas parciales.',
     'author': 'Antigravity / iRG',

@@ -8,10 +8,7 @@
                     <t t-set="id_type_name"
                        t-value="o.partner_id.l10n_latam_identification_type_id.name if o.partner_id.l10n_latam_identification_type_id else False"/>
                     <t t-set="id_number" t-value="o.partner_id.vat or ''"/>
-                    <t t-set="subjects"
-                       t-value="o.gradebook_student_id.gradebook_subject_ids.filtered(
-                           lambda s: s.op_subject_id.subject_type == 'compulsory'
-                       )"/>
+                    <t t-set="subjects" t-value="o._get_certificate_subjects()"/>
 
                     <div class="article"
                          style="font-family: Calibri, 'Segoe UI', Arial, sans-serif;

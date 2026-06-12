@@ -174,3 +174,15 @@ class TestNlexGradeExemption(TransactionCase):
         # Subject lines in dec document should only contain the regular subject
         self.assertEqual(len(dec_doc.asignaturas_line), 1, "DEC Document should have exactly 1 subject line.")
         self.assertEqual(dec_doc.asignaturas_line[0].clave_asignatura, 'MATREG01')
+
+    def test_certificate_subjects_exclude_nlex(self):
+        """Grade certificates (irg.certificate.request) must not include NLEX subjects."""
+        cert = self.env['irg.certificate.request'].sudo().create({
+            'gradebook_student_id': self.gradebook_student.id,
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+        subjects = cert._get_certificate_subjects()
+        codes = subjects.mapped('op_subject_id.code')
+        self.assertIn('MATREG01', codes, "Regular subject must appear in the certificate.")
+        self.assertNotIn('NLEX01', codes, "NLEX subject must be excluded from the certificate.")

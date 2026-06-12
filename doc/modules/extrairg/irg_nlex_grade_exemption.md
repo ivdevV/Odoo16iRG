@@ -1,11 +1,11 @@
 # irg_nlex_grade_exemption
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.0
+**Versión:** 16.0.1.1.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
-**Depende de:** `isep_gradebook`, `isep_control_escolar`, `dec_document`, `isep_openeducat_reports`, `l10n_mx_edi_extended`
+**Depende de:** `isep_gradebook`, `isep_control_escolar`, `dec_document`, `isep_openeducat_reports`, `l10n_mx_edi_extended`, `irg_gradebook_certificates`
 
 ---
 
@@ -32,9 +32,19 @@ Excluye las asignaturas cuyo código comience con la palabra `NLEX` (insensible 
 - **Modelos:**
   - `models/app_gradebook_student.py` — hereda `app.gradebook.student` para sobrescribir validaciones, promedios y exportaciones DEC.
   - `models/ap_gradebook_summary.py` — hereda `ap.gradebook.summary` para ajustar los promedios cuatrimestrales.
+  - `models/irg_certificate_request.py` — hereda `irg.certificate.request` y sobrescribe el hook `_get_certificate_subjects()` para excluir asignaturas NLEX de los certificados de calificaciones.
 - **Vistas QWeb:**
   - `views/report_gradebook.xml` — hereda el reporte QWeb de la libreta para omitir filas de asignaturas NLEX.
   - `views/certified_diploma.xml` — hereda el reporte QWeb de diploma certificado para omitir materias NLEX.
+
+## Integración con certificados (v16.0.1.1.0)
+
+Los certificados de calificaciones se generan por código Python (plantillas Word), no solo por QWeb. Para cubrirlos:
+
+- `irg_gradebook_certificates` (v16.0.1.0.1) expone el hook `_get_certificate_subjects()` (filtro base: asignaturas `compulsory`), usado por su generación docx (`_fill_template`) y por su plantilla QWeb `report_certificate_document`.
+- `irg_certificate_partial` (v16.0.1.0.1) reutiliza el mismo hook en su `_fill_template()`; la nota media del certificado parcial se calcula sobre las asignaturas ya filtradas, por lo que tampoco computan las NLEX.
+- Este módulo sobrescribe el hook para excluir códigos que empiecen por `NLEX` (case-insensitive).
+- Nueva dependencia en el manifest: `irg_gradebook_certificates`. (`irg_certificate_partial` no es dependencia: si está instalado, hereda la exclusión automáticamente al compartir el hook.)
 
 ## Instalación / Actualización
 

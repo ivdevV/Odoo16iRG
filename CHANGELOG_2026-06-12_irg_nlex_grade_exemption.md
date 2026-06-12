@@ -55,3 +55,27 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db \
   -u irg_nlex_grade_exemption --test-enable --test-tags=/irg_nlex_grade_exemption --stop-after-init
 ```
 * **Resultado del test**: `0 failed, 0 error(s)` (Pruebas pasadas correctamente).
+
+---
+
+## v16.0.1.1.0 — Fix: exclusión NLEX en certificados de calificaciones (2026-06-12, tarde)
+
+**Bug detectado:** las asignaturas NLEX seguían apareciendo en los certificados de calificaciones. La v1.0.0 solo parcheó las plantillas QWeb de `isep_gradebook` e `isep_openeducat_reports`, pero los certificados reales se generan por código Python en `irg_gradebook_certificates` e `irg_certificate_partial`, que filtraban asignaturas con su propia lambda (`subject_type == 'compulsory'`) sin exclusión NLEX.
+
+**Cambios:**
+* `irg_gradebook_certificates` (→ v16.0.1.0.1): nuevo hook `_get_certificate_subjects()` en `irg.certificate.request`; `_fill_template()` y la plantilla QWeb `report_certificate_document` lo usan en lugar del filtro inline.
+* `irg_certificate_partial` (→ v16.0.1.0.1): `_fill_template()` reutiliza el hook (la nota media del parcial se calcula ya sobre asignaturas filtradas).
+* `irg_nlex_grade_exemption` (→ v16.0.1.1.0): nuevo `models/irg_certificate_request.py` que sobrescribe el hook excluyendo códigos `NLEX*`; nueva dependencia `irg_gradebook_certificates`.
+
+**Pruebas (TDD):**
+* Test nuevo `test_certificate_subjects_exclude_nlex`: RED confirmado (AttributeError, hook inexistente) → GREEN tras implementación.
+* Suite completa de los 3 módulos: `0 failed, 0 error(s) of 32 tests` en BD clonada `test_nlex_cert_tdd`.
+
+```bash
+docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_nlex_cert_tdd \
+  -u irg_nlex_grade_exemption,irg_gradebook_certificates,irg_certificate_partial \
+  --test-enable --test-tags=/irg_nlex_grade_exemption,/irg_gradebook_certificates,/irg_certificate_partial \
+  --stop-after-init
+```
+
+**Despliegue:** actualizar los 3 módulos (`-u irg_nlex_grade_exemption,irg_gradebook_certificates,irg_certificate_partial`).
