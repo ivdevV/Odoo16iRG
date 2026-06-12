@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="irg_user_profile_content_details_diplomado_hide" inherit_id="irg_course_portal_tiles.irg_user_profile_content_details_inherit">
+        <xpath expr="//div[t[@t-if='practicas_link']]" position="attributes">
+            <attribute name="t-if">not course_id.is_diplomado()</attribute>
+        </xpath>
+        <xpath expr="//div[a[contains(@t-attf-href, 'tfm')]]" position="attributes">
+            <attribute name="t-if">not course_id.is_diplomado()</attribute>
+        </xpath>
+    </template>
+
+</odoo>
