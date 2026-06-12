@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Sale Manual Confirmation Wizard',
-    'version': '16.0.1.4.0',
+    'version': '16.0.1.5.0',
     'category': 'Sales',
     'summary': 'Wizard pre-confirmacion para presupuestos manuales + routing email bienvenida por modalidad',
     'description': """
@@ -24,6 +24,9 @@
            - welcome_template_online_id (Many2one mail.template)
            - welcome_template_default_id (Many2one mail.template)
            - manual_wizard_enabled (Boolean) - on/off del routing personalizado
+
+        4) Comportamiento para España (es_ES):
+           - Anulación del proceso de automatrícula automática desde el botón de confirmar nativo para España (es_ES), manteniendo la creación de la admisión en estado borrador (draft) y haciendo que la matriculación y envío de correos sea un proceso exclusivo del asistente de confirmación manual.
     """,
     'author': 'Instituto Raimon Gaja',
     'depends': [
