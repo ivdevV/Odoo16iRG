@@ -13,6 +13,11 @@
                     <group attrs="{'invisible': [('irg_featured_section_enabled', '=', False)]}">
                         <field name="irg_featured_section_title" attrs="{'required': [('irg_featured_section_enabled', '=', True)]}"/>
                         <field name="irg_featured_section_body" widget="html" options="{'safe': True}" nolabel="1"/>
+                        <group string="Código embebido">
+                            <field name="irg_featured_section_embed_code"
+                                   nolabel="1"
+                                   placeholder="&lt;iframe src=&quot;https://...&quot;&gt;&lt;/iframe&gt;"/>
+                        </group>
                         <group string="Botón opcional">
                             <field name="irg_featured_section_url" placeholder="https://..."/>
                             <field name="irg_featured_section_button_label" attrs="{'invisible': [('irg_featured_section_url', '=', False)]}"/>

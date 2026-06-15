@@ -34,12 +34,17 @@ class SlideChannel(models.Model):
         course = self.irg_get_featured_course()
         if not course:
             return {}
-        if not (course.irg_featured_section_title or course.irg_featured_section_body):
+        if not (
+            course.irg_featured_section_title
+            or course.irg_featured_section_body
+            or course.irg_featured_section_embed_code
+        ):
             return {}
         return {
             'course': course,
             'title': course.irg_featured_section_title,
             'body': Markup(course.irg_featured_section_body or ''),
+            'embed_code': Markup(course.irg_featured_section_embed_code or ''),
             'url': course.irg_featured_section_url,
             'button_label': course.irg_featured_section_button_label or 'Ver más',
         }

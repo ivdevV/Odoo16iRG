@@ -13,6 +13,8 @@ La relacion usada por el portal entre curso academico y asignaturas eLearning es
 
 Para configurar un bloque comun a todas las asignaturas de un curso, no se debe duplicar contenido en cada `slide.channel`. Se configura el contenido en `op.course` y `slide.channel` resuelve su curso relacionado mediante `op_subject_ids`, con fallback a `slide_channel_ids` para complementarios.
 
+Para iframes o codigo de insercion, no usar `fields.Html` con editor HTML porque el saneado/editor puede eliminar tags embebidos. Usar un `fields.Text` dedicado y renderizarlo con `Markup` solo para contenido configurado desde backend por usuarios de confianza.
+
 ## Gotcha
 
 `slide.channel` no tiene un `course_id` directo fiable en esta instancia. Cualquier feature global por curso debe resolver el curso desde `op.subject` o desde `op.course.slide_channel_ids`.

@@ -12,6 +12,7 @@
                             </span>
                             <h2 class="h4 mb-3" t-esc="irg_featured_section['title']"/>
                             <div t-if="irg_featured_section['body']" class="o_irg_featured_section_body text-muted" t-out="irg_featured_section['body']"/>
+                            <div t-if="irg_featured_section['embed_code']" class="o_irg_featured_section_embed mt-3" t-out="irg_featured_section['embed_code']"/>
                         </div>
                         <div t-if="irg_featured_section['url']" class="o_irg_featured_section_action flex-shrink-0 align-self-md-end">
                             <a class="btn btn-primary" t-att-href="irg_featured_section['url']">

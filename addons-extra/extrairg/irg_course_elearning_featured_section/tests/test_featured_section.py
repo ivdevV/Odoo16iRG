@@ -35,6 +35,7 @@ class TestCourseElearningFeaturedSection(TransactionCase):
             'irg_featured_section_enabled': True,
             'irg_featured_section_title': 'Bienvenida global',
             'irg_featured_section_body': '<p>Mensaje para todas las asignaturas.</p>',
+            'irg_featured_section_embed_code': '<iframe src="https://example.com/embed"></iframe>',
             'irg_featured_section_url': 'https://example.com/directo',
             'irg_featured_section_button_label': 'Abrir recurso',
         })
@@ -44,14 +45,27 @@ class TestCourseElearningFeaturedSection(TransactionCase):
         self.assertEqual(values['course'], self.course)
         self.assertEqual(values['title'], 'Bienvenida global')
         self.assertIn('Mensaje para todas las asignaturas', values['body'])
+        self.assertIn('<iframe src="https://example.com/embed"></iframe>', values['embed_code'])
         self.assertEqual(values['url'], 'https://example.com/directo')
         self.assertEqual(values['button_label'], 'Abrir recurso')
+
+    def test_enabled_course_with_only_embed_code_returns_featured_values(self):
+        self.course.write({
+            'irg_featured_section_enabled': True,
+            'irg_featured_section_title': False,
+            'irg_featured_section_body': False,
+            'irg_featured_section_embed_code': '<iframe src="https://example.com/embed-only"></iframe>',
+        })
+
+        values = self.channel.irg_get_featured_section_values()
+        self.assertIn('embed-only', values['embed_code'])
 
     def test_enabled_course_without_content_returns_no_featured_values(self):
         self.course.write({
             'irg_featured_section_enabled': True,
             'irg_featured_section_title': False,
             'irg_featured_section_body': False,
+            'irg_featured_section_embed_code': False,
         })
 
         self.assertEqual(self.channel.irg_get_featured_section_values(), {})

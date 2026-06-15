@@ -19,6 +19,10 @@ class OpCourse(models.Model):
         sanitize=True,
         translate=True,
     )
+    irg_featured_section_embed_code = fields.Text(
+        string='Código embebido',
+        help='Código HTML de inserción opcional, por ejemplo un iframe. Solo debe configurarlo personal de confianza.',
+    )
     irg_featured_section_url = fields.Char(
         string='URL del botón',
         help='Enlace opcional para el botón del bloque destacado.',
