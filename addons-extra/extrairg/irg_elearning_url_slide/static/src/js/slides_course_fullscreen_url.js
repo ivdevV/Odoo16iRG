@@ -2,7 +2,6 @@ odoo.define('irg_elearning_url_slide.fullscreen_url', function (require) {
     'use strict';
 
     const core = require('web.core');
-    const QWeb = core.qweb;
     const Fullscreen = require('@website_slides/js/slides_course_fullscreen_player')[Symbol.for('default')];
 
     const getUrlFromEmbedCode = function (embedCode) {
@@ -33,20 +32,13 @@ odoo.define('irg_elearning_url_slide.fullscreen_url', function (require) {
             return res;
         },
 
-        _renderSlide: function () {
-            const def = this._super.apply(this, arguments);
-            const $content = this.$('.o_wslides_fs_content');
-            const slide = this.get('slide');
-
-            if (slide.category === 'url') {
-                if (slide.url) {
-                    window.location.href = slide.url;
-                } else {
-                    $content.html(QWeb.render('website.slides.fullscreen.content', {widget: this}));
-                }
+        _onClickTab: function (ev) {
+            const slideData = $(ev.currentTarget).closest('.o_wslides_fs_sidebar_list_item').data();
+            if (slideData.category === 'url' && slideData.url) {
+                window.location.href = slideData.url;
+                return;
             }
-
-            return Promise.all([def]);
+            return this._super.apply(this, arguments);
         },
     });
 });

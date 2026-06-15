@@ -1,0 +1,22 @@
+Static validation:
+- python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide: passed
+- XML parse for backend views, QWeb templates and frontend XML: passed
+- node --check addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js: passed
+
+Odoo validation using docker-compose.local.yml:
+- Command: docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d validation_url_slide_20260615_c -u irg_elearning_url_slide --test-enable --test-tags /irg_elearning_url_slide --stop-after-init --without-demo=all
+- Database: validation_url_slide_20260615_c
+- Result: passed
+- Evidence summary: module updated; TestUrlSlide.test_url_slide_requires_http_url and TestUrlSlide.test_url_slide_type executed; 0 failed, 0 error(s) of 2 tests.
+
+Behavior changed:
+- Course list links for URL slides point directly to `slide.irg_url`.
+- Lesson card image/title links for URL slides point directly to `slide.irg_url`.
+- Training sidebar links for URL slides point directly to `slide.irg_url`.
+- Previous/next navigation points directly to `slide.irg_url` when the target slide is URL.
+- Fullscreen sidebar items include `data-url` and redirect directly from the click handler.
+
+Validation notes:
+- Initial validation failed on a strict XPath for the training sidebar; fixed by targeting the dynamic class expression.
+- Second validation failed because `website_slides.slide_nav` does not exist in this Odoo 16 build; fixed by inheriting `website_slides.slide_content_detailed`.
+- Remaining warnings about unrelated manifests without license and local HTTP port already in use are not caused by this module.

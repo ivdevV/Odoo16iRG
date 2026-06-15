@@ -19,3 +19,9 @@ Para anadir nuevas categorias de contenido a `website_slides` en Odoo 16 no bast
 ## Validacion
 
 La mision `irg_elearning_url_slide` valido instalacion y tests enfocados en base limpia `validation_url_slide_20260615_c` con `docker-compose.local.yml`.
+
+## Enlaces Directos
+
+Para que un slide URL no se renderice dentro de Odoo, no basta con redirigir al renderizar fullscreen. Hay que cambiar los `href` generados por QWeb en listados/tarjetas/sidebar y anadir `data-url` en el sidebar fullscreen para que el click JS navegue antes de intentar renderizar el slide.
+
+En esta version se evita un redirect incondicional en controller porque podria saltarse restricciones previas de acceso, prerrequisitos, lote o visibilidad. La redireccion se aplica sobre enlaces que Odoo ya muestra al usuario cuando tiene acceso.

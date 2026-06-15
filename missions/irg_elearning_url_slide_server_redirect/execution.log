@@ -1,0 +1,9 @@
+2026-06-15 - Mision creada para mover redireccion de slides URL a servidor.
+2026-06-15 - Revisadas herencias custom de /slides/slide/<slide> y templates nativos de website_slides.
+2026-06-15 - Se descarto redirect incondicional en controller para no saltar restricciones de acceso existentes.
+2026-06-15 - Actualizadas plantillas de listado/sidebar/navegacion para que los href de slides URL apunten directamente a irg_url.
+2026-06-15 - Actualizado JS fullscreen para redirigir desde data-url al clicar el item del sidebar, no al renderizar contenido intermedio.
+2026-06-15 - Validacion Odoo fallo por XPath de sidebar que buscaba clase estatica; corregido para usar t-attf-class.
+2026-06-15 - Validacion Odoo fallo por inherit_id inexistente website_slides.slide_nav; corregido a website_slides.slide_content_detailed.
+2026-06-15 - Validacion final pasada: compileall, parse XML, node --check y actualizacion del modulo con tests enfocados: 0 failed, 0 errors de 2 tests.
+2026-06-15 - README actualizado con changelog de navegacion directa.

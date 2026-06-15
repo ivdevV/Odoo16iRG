@@ -1,0 +1,236 @@
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/README.md b/addons-extra/extrairg/irg_elearning_url_slide/README.md
+index d3a59d0d..80f06891 100644
+--- a/addons-extra/extrairg/irg_elearning_url_slide/README.md
++++ b/addons-extra/extrairg/irg_elearning_url_slide/README.md
+@@ -14,3 +14,4 @@ El alumno vera el contenido como un slide normal con un boton de acceso. El enla
+ ## Changelog
+
+ - `16.0.1.0.0`: tipo de contenido URL, validacion de URL, vista backend, render frontend, icono y soporte fullscreen.
++- `16.0.1.0.1`: los enlaces visibles a slides URL navegan directamente a la URL configurada sin render intermedio dentro de Odoo.
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js b/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js
+index 72880d7c..39566026 100644
+--- a/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js
++++ b/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js
+@@ -2,7 +2,6 @@ odoo.define('irg_elearning_url_slide.fullscreen_url', function (require) {
+     'use strict';
+
+     const core = require('web.core');
+-    const QWeb = core.qweb;
+     const Fullscreen = require('@website_slides/js/slides_course_fullscreen_player')[Symbol.for('default')];
+
+     const getUrlFromEmbedCode = function (embedCode) {
+@@ -33,20 +32,13 @@ odoo.define('irg_elearning_url_slide.fullscreen_url', function (require) {
+             return res;
+         },
+
+-        _renderSlide: function () {
+-            const def = this._super.apply(this, arguments);
+-            const $content = this.$('.o_wslides_fs_content');
+-            const slide = this.get('slide');
+-
+-            if (slide.category === 'url') {
+-                if (slide.url) {
+-                    window.location.href = slide.url;
+-                } else {
+-                    $content.html(QWeb.render('website.slides.fullscreen.content', {widget: this}));
+-                }
++        _onClickTab: function (ev) {
++            const slideData = $(ev.currentTarget).closest('.o_wslides_fs_sidebar_list_item').data();
++            if (slideData.category === 'url' && slideData.url) {
++                window.location.href = slideData.url;
++                return;
+             }
+-
+-            return Promise.all([def]);
++            return this._super.apply(this, arguments);
+         },
+     });
+ });
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/views/website_slides_templates.xml b/addons-extra/extrairg/irg_elearning_url_slide/views/website_slides_templates.xml
+index 46120c6c..fb288525 100644
+--- a/addons-extra/extrairg/irg_elearning_url_slide/views/website_slides_templates.xml
++++ b/addons-extra/extrairg/irg_elearning_url_slide/views/website_slides_templates.xml
+@@ -24,6 +24,46 @@
+     <template id="slide_fullscreen_sidebar_category_irg_url" inherit_id="website_slides.slide_fullscreen_sidebar_category" name="Fullscreen Sidebar - IRG URL" priority="110">
+         <xpath expr="//li[contains(@t-attf-class, 'o_wslides_fs_sidebar_list_item')]" position="attributes">
+             <attribute name="t-att-data-embed-code">slide.embed_code if slide.slide_category in ['video', 'document', 'infographic', 'local_external', 'bunny', 'scorm', 'url'] else False</attribute>
++            <attribute name="t-att-data-url">slide.irg_url if slide.slide_category == 'url' else False</attribute>
++        </xpath>
++    </template>
++
++    <template id="course_slides_list_slide_irg_url" inherit_id="website_slides.course_slides_list_slide" name="Course Slide List - IRG URL">
++        <xpath expr="//a[hasclass('o_wslides_js_slides_list_slide_link')]" position="attributes">
++            <attribute name="t-att-href">slide.irg_url if slide.slide_category == 'url' and slide.irg_url else '/slides/slide/%s' % slug(slide)</attribute>
++            <attribute name="t-attf-href"/>
++        </xpath>
++    </template>
++
++    <template id="lesson_card_irg_url" inherit_id="website_slides.lesson_card" name="Lesson Card - IRG URL">
++        <xpath expr="//a[@t-title='slide.name']" position="attributes">
++            <attribute name="t-att-href">slide.irg_url if slide.slide_category == 'url' and slide.irg_url else '/slides/slide/%s%s' % (slug(slide), query_string)</attribute>
++            <attribute name="t-attf-href"/>
++        </xpath>
++        <xpath expr="//a[hasclass('card-title')]" position="attributes">
++            <attribute name="t-att-href">slide.irg_url if slide.slide_category == 'url' and slide.irg_url else '/slides/slide/%s%s' % (slug(slide), query_string)</attribute>
++            <attribute name="t-attf-href"/>
++        </xpath>
++    </template>
++
++    <template id="slide_aside_training_category_irg_url" inherit_id="website_slides.slide_aside_training_category" name="Training Sidebar - IRG URL">
++        <xpath expr="//a[contains(@t-attf-class, 'd-flex') and contains(@t-att-href, '/slides/slide/')]" position="attributes">
++            <attribute name="t-att-href">aside_slide.irg_url if can_access and aside_slide.slide_category == 'url' and aside_slide.irg_url else ('/slides/slide/%s' % (slug(aside_slide)) if can_access else '#')</attribute>
++        </xpath>
++    </template>
++
++    <template id="slide_nav_irg_url" inherit_id="website_slides.slide_content_detailed" name="Slide Navigation - IRG URL">
++        <xpath expr="//a[contains(@t-att-href, 'previous_slide')]" position="attributes">
++            <attribute name="t-att-href">previous_slide.irg_url if previous_slide and previous_slide.slide_category == 'url' and previous_slide.irg_url else ('/slides/slide/%s' % (slug(previous_slide)) if previous_slide else '#')</attribute>
++        </xpath>
++        <xpath expr="//a[contains(@t-att-href, 'next_slide')]" position="attributes">
++            <attribute name="t-att-href">next_slide.irg_url if next_slide and next_slide.slide_category == 'url' and next_slide.irg_url else ('/slides/slide/%s' % (slug(next_slide)) if next_slide else '#')</attribute>
++        </xpath>
++    </template>
++
++    <template id="lesson_content_quiz_irg_url" inherit_id="website_slides.lesson_content_quiz" name="Lesson Quiz Next URL - IRG URL">
++        <xpath expr="//div[hasclass('o_wslides_js_lesson_quiz')]" position="attributes">
++            <attribute name="t-att-data-next-slide-url">next_slide.irg_url if next_slide and next_slide.slide_category == 'url' and next_slide.irg_url else ('/slides/slide/%s' % (slug(next_slide)) if next_slide else None)</attribute>
+         </xpath>
+     </template>
+ </odoo>
+diff --git a/.agents/knowledge/odoo_development_modding/artifacts/irg_elearning_url_slide.md b/.agents/knowledge/odoo_development_modding/artifacts/irg_elearning_url_slide.md
+index f528c8ee..55a48300 100644
+--- a/.agents/knowledge/odoo_development_modding/artifacts/irg_elearning_url_slide.md
++++ b/.agents/knowledge/odoo_development_modding/artifacts/irg_elearning_url_slide.md
+@@ -19,3 +19,9 @@ Para anadir nuevas categorias de contenido a `website_slides` en Odoo 16 no bast
+ ## Validacion
+
+ La mision `irg_elearning_url_slide` valido instalacion y tests enfocados en base limpia `validation_url_slide_20260615_c` con `docker-compose.local.yml`.
++
++## Enlaces Directos
++
++Para que un slide URL no se renderice dentro de Odoo, no basta con redirigir al renderizar fullscreen. Hay que cambiar los `href` generados por QWeb en listados/tarjetas/sidebar y anadir `data-url` en el sidebar fullscreen para que el click JS navegue antes de intentar renderizar el slide.
++
++En esta version se evita un redirect incondicional en controller porque podria saltarse restricciones previas de acceso, prerrequisitos, lote o visibilidad. La redireccion se aplica sobre enlaces que Odoo ya muestra al usuario cuando tiene acceso.
+diff --git a/missions/irg_elearning_url_slide_server_redirect/plan.md b/missions/irg_elearning_url_slide_server_redirect/plan.md
+new file mode 100644
+index 00000000..89ed3cfb
+--- /dev/null
++++ b/missions/irg_elearning_url_slide_server_redirect/plan.md
+@@ -0,0 +1,32 @@
++# irg_elearning_url_slide_server_redirect
++
++## Alcance
++
++Hacer que los slides de tipo `URL` redirijan directamente a la URL configurada antes de renderizar cualquier vista/player de Odoo cuando el usuario los clica desde listados, sidebar, fullscreen o navegacion anterior/siguiente.
++
++## Diagnostico
++
++La redireccion JS al renderizar el contenido no garantiza el comportamiento esperado porque el usuario ya entra en la pantalla de Odoo. El requisito es que al clicar el slide URL se navegue directamente al destino, sin embebido ni pantalla intermedia.
++
++No se implementa un redirect incondicional en controller para no saltar restricciones existentes de acceso, lote, prerrequisitos o visibilidad; se modifican los enlaces visibles que Odoo genera cuando el usuario ya tiene acceso.
++
++## Clasificacion de Complejidad
++
++Tier: `standard`.
++
++Justificacion: cambio acotado en assets y QWeb de `website_slides`, con varias superficies de click pero sin cambios de datos ni seguridad.
++
++## Plan
++
++1. Localizar templates y JS de `website_slides` que generan clicks hacia slides.
++2. Cambiar href de listados, sidebar y navegacion prev/next para slides URL.
++3. Anadir `data-url` al sidebar fullscreen y redirigir desde el handler JS antes de renderizar.
++4. Mantener comportamiento nativo para cualquier otro tipo o si falta URL.
++5. Validar sintaxis y actualizacion del modulo en Docker local con tests enfocados.
++
++## Criterios de Aceptacion
++
++- Al clicar un slide URL desde el curso, sidebar, fullscreen o navegacion, el navegador sale directamente a la URL destino.
++- No se renderiza el slide dentro de Odoo.
++- No se abre pestana nueva.
++- Documentos, videos y otros tipos mantienen comportamiento nativo.
+diff --git a/missions/irg_elearning_url_slide_server_redirect/execution.log b/missions/irg_elearning_url_slide_server_redirect/execution.log
+new file mode 100644
+index 00000000..ee2226f3
+--- /dev/null
++++ b/missions/irg_elearning_url_slide_server_redirect/execution.log
+@@ -0,0 +1,9 @@
++2026-06-15 - Mision creada para mover redireccion de slides URL a servidor.
++2026-06-15 - Revisadas herencias custom de /slides/slide/<slide> y templates nativos de website_slides.
++2026-06-15 - Se descarto redirect incondicional en controller para no saltar restricciones de acceso existentes.
++2026-06-15 - Actualizadas plantillas de listado/sidebar/navegacion para que los href de slides URL apunten directamente a irg_url.
++2026-06-15 - Actualizado JS fullscreen para redirigir desde data-url al clicar el item del sidebar, no al renderizar contenido intermedio.
++2026-06-15 - Validacion Odoo fallo por XPath de sidebar que buscaba clase estatica; corregido para usar t-attf-class.
++2026-06-15 - Validacion Odoo fallo por inherit_id inexistente website_slides.slide_nav; corregido a website_slides.slide_content_detailed.
++2026-06-15 - Validacion final pasada: compileall, parse XML, node --check y actualizacion del modulo con tests enfocados: 0 failed, 0 errors de 2 tests.
++2026-06-15 - README actualizado con changelog de navegacion directa.
+diff --git a/missions/irg_elearning_url_slide_server_redirect/verification.json b/missions/irg_elearning_url_slide_server_redirect/verification.json
+new file mode 100644
+index 00000000..3e699ac6
+--- /dev/null
++++ b/missions/irg_elearning_url_slide_server_redirect/verification.json
+@@ -0,0 +1,36 @@
++{
++  "status": "passed",
++  "task": "irg_elearning_url_slide_server_redirect",
++  "checks": [
++    {
++      "name": "python_compile",
++      "result": "pass",
++      "detail": "python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide completed successfully"
++    },
++    {
++      "name": "xml_parse",
++      "result": "pass",
++      "detail": "Backend XML, QWeb XML and frontend XML parsed successfully"
++    },
++    {
++      "name": "javascript_syntax",
++      "result": "pass",
++      "detail": "node --check slides_course_fullscreen_url.js completed successfully"
++    },
++    {
++      "name": "odoo_module_update",
++      "result": "pass",
++      "detail": "Module updated in validation_url_slide_20260615_c using docker-compose.local.yml"
++    },
++    {
++      "name": "odoo_tests",
++      "result": "pass",
++      "detail": "0 failed, 0 errors of 2 focused tests for irg_elearning_url_slide"
++    }
++  ],
++  "evidence": [
++    "missions/irg_elearning_url_slide_server_redirect/artifacts/validation-output.log"
++  ],
++  "model_tier_used": "standard",
++  "escalations": 0
++}
+diff --git a/missions/irg_elearning_url_slide_server_redirect/artifacts/validation-output.log b/missions/irg_elearning_url_slide_server_redirect/artifacts/validation-output.log
+new file mode 100644
+index 00000000..6605af25
+--- /dev/null
++++ b/missions/irg_elearning_url_slide_server_redirect/artifacts/validation-output.log
+@@ -0,0 +1,22 @@
++Static validation:
++- python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide: passed
++- XML parse for backend views, QWeb templates and frontend XML: passed
++- node --check addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js: passed
++
++Odoo validation using docker-compose.local.yml:
++- Command: docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d validation_url_slide_20260615_c -u irg_elearning_url_slide --test-enable --test-tags /irg_elearning_url_slide --stop-after-init --without-demo=all
++- Database: validation_url_slide_20260615_c
++- Result: passed
++- Evidence summary: module updated; TestUrlSlide.test_url_slide_requires_http_url and TestUrlSlide.test_url_slide_type executed; 0 failed, 0 error(s) of 2 tests.
++
++Behavior changed:
++- Course list links for URL slides point directly to `slide.irg_url`.
++- Lesson card image/title links for URL slides point directly to `slide.irg_url`.
++- Training sidebar links for URL slides point directly to `slide.irg_url`.
++- Previous/next navigation points directly to `slide.irg_url` when the target slide is URL.
++- Fullscreen sidebar items include `data-url` and redirect directly from the click handler.
++
++Validation notes:
++- Initial validation failed on a strict XPath for the training sidebar; fixed by targeting the dynamic class expression.
++- Second validation failed because `website_slides.slide_nav` does not exist in this Odoo 16 build; fixed by inheriting `website_slides.slide_content_detailed`.
++- Remaining warnings about unrelated manifests without license and local HTTP port already in use are not caused by this module.

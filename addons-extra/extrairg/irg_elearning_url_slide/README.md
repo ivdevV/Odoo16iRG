@@ -14,3 +14,4 @@ El alumno vera el contenido como un slide normal con un boton de acceso. El enla
 ## Changelog
 
 - `16.0.1.0.0`: tipo de contenido URL, validacion de URL, vista backend, render frontend, icono y soporte fullscreen.
+- `16.0.1.0.1`: los enlaces visibles a slides URL navegan directamente a la URL configurada sin render intermedio dentro de Odoo.
