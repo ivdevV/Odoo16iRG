@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "task": "refine-irg-diplomados-pdf-position",
+  "checks": [
+    {
+      "name": "xml_syntax",
+      "result": "pass",
+      "detail": "xmllint --noout passed for reports/diplomado_templates.xml"
+    },
+    {
+      "name": "diff_whitespace",
+      "result": "pass",
+      "detail": "git diff --check passed for reports/diplomado_templates.xml"
+    },
+    {
+      "name": "local_compose_status",
+      "result": "pass",
+      "detail": "docker-compose.local.yml services odoo_local, pgodoo_local and redisodoo_local were running"
+    },
+    {
+      "name": "odoo_module_update",
+      "result": "pass",
+      "detail": "Odoo command completed on odoo_test_diplomado with 0 failed, 0 errors; selected test tag executed 0 tests"
+    }
+  ],
+  "evidence": [
+    "artifacts/validation.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

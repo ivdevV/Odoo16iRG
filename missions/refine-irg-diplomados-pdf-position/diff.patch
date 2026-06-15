@@ -1,0 +1,46 @@
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+@@
+-                            left: 106mm;
+-                            top: 8mm;
+-                            width: 85mm;
++                            left: 112.5mm;
++                            top: 16mm;
++                            width: 72mm;
+@@
+-                            top: 176.8mm;
++                            top: 191mm;
+@@
+-                            top: 139.2mm;
++                            top: 151mm;
+@@
+-                            top: 138.0mm;
++                            top: 150mm;
+@@
+-                            top: 91.8mm;
++                            top: 103mm;
+@@
+-                            top: 41.5mm;
++                            top: 58mm;
+@@
+-                        <!-- El instituto Raimon Gaja -->
+-                        <div class="center-text" style="top: 40.1mm; font-size: 17pt; font-weight: bold; color: #235F94; text-transform: none;">
+-                            El instituto Raimon Gaja
+-                        </div>
+-
+                         <!-- Hace constar que -->
+-                        <div class="center-text" style="top: 49.5mm; font-size: 12pt; color: #727F77; font-style: italic;">
++                        <div class="center-text" style="top: 58mm; font-size: 12pt; color: #727F77; font-style: italic;">
+@@
+-                        <div class="center-text" style="top: 57.5mm; font-size: 24pt; font-weight: bold; color: #000; letter-spacing: 1px;">
++                        <div class="center-text" style="top: 67mm; font-size: 24pt; font-weight: bold; color: #000; letter-spacing: 1px;">
+@@
+-                        <div class="center-text" style="left: 30mm; width: 237mm; top: 73.0mm; font-size: 11.5pt; color: #6C7A71; line-height: 1.5; font-family: 'Helvetica', 'Arial', sans-serif;">
++                        <div class="center-text" style="left: 30mm; width: 237mm; top: 84mm; font-size: 11.5pt; color: #6C7A71; line-height: 1.5; font-family: 'Helvetica', 'Arial', sans-serif;">
+@@
+-                        <div class="center-text" style="top: 112.5mm; font-size: 11.5pt; color: #6C7A71; font-style: italic;">
++                        <div class="center-text" style="top: 125mm; font-size: 11.5pt; color: #6C7A71; font-style: italic;">
+@@
+-                        <div class="center-text" style="top: 123.5mm; font-size: 11.5pt; color: #6C7A71;">
++                        <div class="center-text" style="top: 137mm; font-size: 11.5pt; color: #6C7A71;">

@@ -57,9 +57,9 @@
                         }
                         .top-logo {
                             position: absolute;
-                            left: 106mm;
-                            top: 8mm;
-                            width: 85mm;
+                            left: 112.5mm;
+                            top: 16mm;
+                            width: 72mm;
                             height: auto;
                             z-index: 2;
                         }
@@ -74,7 +74,7 @@
                             position: absolute;
                             left: 35mm;
                             width: 80mm;
-                            top: 176.8mm;
+                            top: 191mm;
                             text-align: center;
                             font-size: 10pt;
                             line-height: 1.3;
@@ -84,7 +84,7 @@
                             position: absolute;
                             left: 182mm;
                             width: 80mm;
-                            top: 176.8mm;
+                            top: 191mm;
                             text-align: center;
                             font-size: 10pt;
                             line-height: 1.3;
@@ -93,7 +93,7 @@
                         .signature-img-left {
                             position: absolute;
                             left: 56mm;
-                            top: 139.2mm;
+                            top: 151mm;
                             width: 37mm;
                             height: 36mm;
                             z-index: 2;
@@ -101,7 +101,7 @@
                         .signature-img-right {
                             position: absolute;
                             left: 185mm;
-                            top: 138.0mm;
+                            top: 150mm;
                             width: 45mm;
                             height: auto;
                             z-index: 2;
@@ -109,7 +109,7 @@
                         .diplomado-title {
                             left: 28mm;
                             width: 241mm;
-                            top: 91.8mm;
+                            top: 103mm;
                             font-size: 15pt;
                             font-weight: bold;
                             color: #000;
@@ -119,7 +119,7 @@
                         .back-content {
                             position: absolute;
                             left: 39mm;
-                            top: 41.5mm;
+                            top: 58mm;
                             width: 219mm;
                             z-index: 2;
                             text-align: center;
@@ -154,23 +154,18 @@
                         <!-- Logo Superior -->
                         <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
 
-                        <!-- El instituto Raimon Gaja -->
-                        <div class="center-text" style="top: 40.1mm; font-size: 17pt; font-weight: bold; color: #235F94; text-transform: none;">
-                            El instituto Raimon Gaja
-                        </div>
-
                         <!-- Hace constar que -->
-                        <div class="center-text" style="top: 49.5mm; font-size: 12pt; color: #727F77; font-style: italic;">
+                        <div class="center-text" style="top: 58mm; font-size: 12pt; color: #727F77; font-style: italic;">
                             Hace constar que
                         </div>
 
                         <!-- Nombre del Alumno -->
-                        <div class="center-text" style="top: 57.5mm; font-size: 24pt; font-weight: bold; color: #000; letter-spacing: 1px;">
+                        <div class="center-text" style="top: 67mm; font-size: 24pt; font-weight: bold; color: #000; letter-spacing: 1px;">
                             <span t-field="o.student_name"/>
                         </div>
 
                         <!-- Texto de Aprobación -->
-                        <div class="center-text" style="left: 30mm; width: 237mm; top: 73.0mm; font-size: 11.5pt; color: #6C7A71; line-height: 1.5; font-family: 'Helvetica', 'Arial', sans-serif;">
+                        <div class="center-text" style="left: 30mm; width: 237mm; top: 84mm; font-size: 11.5pt; color: #6C7A71; line-height: 1.5; font-family: 'Helvetica', 'Arial', sans-serif;">
                             ha aprobado los estudios correspondientes al programa de contenidos que figura en el dorso, celebrado del 
                             <strong><span t-field="o.start_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong> al 
                             <strong><span t-field="o.end_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong>, con una duración de 
@@ -186,12 +181,12 @@
                         </div>
 
                         <!-- que acredita haber superado con aprovechamiento... -->
-                        <div class="center-text" style="top: 112.5mm; font-size: 11.5pt; color: #6C7A71; font-style: italic;">
+                        <div class="center-text" style="top: 125mm; font-size: 11.5pt; color: #6C7A71; font-style: italic;">
                             que acredita haber superado con aprovechamiento las mencionadas enseñanzas.
                         </div>
 
                         <!-- Barcelona, a ... -->
-                        <div class="center-text" style="top: 123.5mm; font-size: 11.5pt; color: #6C7A71;">
+                        <div class="center-text" style="top: 137mm; font-size: 11.5pt; color: #6C7A71;">
                             Barcelona, a <span t-field="o.issue_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/>
                         </div>
 
