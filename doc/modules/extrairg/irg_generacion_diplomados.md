@@ -46,7 +46,7 @@ Las asignaturas que figurarán en el diplomado son configurables a nivel de curs
 
 - `views/op_subject_views.xml` — Añade la modalidad (Presencial/Online) al formulario de asignatura.
 - `views/op_course_views.xml` — Añade la pestaña "Asignaturas Diplomado" para configurar las asignaturas por defecto.
-- `views/op_student_views.xml` — Añade el botón inteligente "Diplomados" (acceso directo al histórico de ese estudiante) y el botón de cabecera "Generar Diplomado".
+- `views/op_student_views.xml` — Añade el botón inteligente "Diplomados" (acceso directo al histórico de ese estudiante), el botón de cabecera "Generar Diplomado" y el botón para desarrolladores "Generar Diplomado (Debug)".
 - `views/diplomado_registry_views.xml` — Lista, formulario de solo lectura, búsqueda del histórico de diplomas y menú de acceso en *Educación / Registro de Diplomados*.
 - `wizard/diplomado_wizard_views.xml` — Formulario emergente para la configuración de la impresión.
 
@@ -95,6 +95,11 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_ge
 ---
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.2
+- **Adición del botón de depuración**:
+  - Incorporación del botón **"Generar Diplomado (Debug)"** en la cabecera de la ficha del estudiante.
+  - Restricción del botón al grupo `base.group_no_one` (Modo Desarrollador), permitiendo a administradores y técnicos generar/probar el formato de maquetación de diplomas con cualquier alumno sin requerir que su curso esté finalizado al 100%.
 
 ### Versión 16.0.1.0.1
 - **Corrección de ParseError en instalación limpia**:

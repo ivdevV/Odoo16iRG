@@ -12,6 +12,11 @@
                         type="object"
                         class="oe_highlight"
                         attrs="{'invisible': [('can_generate_diplomado', '=', False)]}"/>
+                <button name="action_open_diplomado_wizard"
+                        string="Generar Diplomado (Debug)"
+                        type="object"
+                        class="btn-secondary"
+                        groups="base.group_no_one"/>
             </xpath>
         </field>
     </record>
