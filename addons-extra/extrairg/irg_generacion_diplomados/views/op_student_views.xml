@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_inherit_irg" model="ir.ui.view">
+        <field name="name">op.student.form.inherit.irg</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="can_generate_diplomado" invisible="1"/>
+                <button name="action_open_diplomado_wizard"
+                        string="Generar Diplomado"
+                        type="object"
+                        class="oe_highlight"
+                        attrs="{'invisible': [('can_generate_diplomado', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

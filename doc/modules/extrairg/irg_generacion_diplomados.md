@@ -1,0 +1,104 @@
+# irg_generacion_diplomados
+
+**Categoría:** extrairg
+**Versión:** 16.0.1.0.0
+**Licencia:** LGPL-3
+**Instalable:** Sí
+**Autor:** Instituto Raimon Gaja
+**Depende de:** `openeducat_core`, `web`, `website`
+
+---
+
+## ¿Qué hace este módulo?
+
+Permite la generación y registro histórico de diplomados independientes iRG en formato QWeb-PDF de dos páginas. 
+
+- **Página 1 (Anverso):** Muestra el título del diplomado, el nombre del estudiante, las fechas de celebración, la duración (en horas y créditos ECTS) y la fecha de impresión.
+- **Página 2 (Reverso):** Contiene el desglose de las asignaturas a cursar divididas en dos columnas: Asignaturas Presenciales y Asignaturas Online.
+
+Las asignaturas que figurarán en el diplomado son configurables a nivel de curso y ajustables dinámicamente ("al vuelo") en el asistente antes de realizar la impresión.
+
+---
+
+## Funcionalidades principales
+
+- **Clasificación de asignaturas:** Extensión de `op.subject` con el campo `irg_modality` para diferenciar entre modalidad presencial y online.
+- **Configuración por curso:** Extensión de `op.course` con un campo Many2many `irg_diplomado_subject_ids` para preconfigurar las asignaturas que componen el diplomado.
+- **Acceso controlado:** Extensión de `op.student` con el botón de acción "Generar Diplomado" y un campo computado `can_generate_diplomado` que habilita el botón únicamente cuando el alumno tiene al menos un curso finalizado (`state == 'finished'`).
+- **Historial histórico:** Modelo `irg.diplomado.registry` que guarda un registro permanente de cada diplomado emitido con su correspondiente número de folio/secuencia único, permitiendo su reimpresión exacta en cualquier momento.
+- **Asistente interactivo (Wizard):** El wizard `irg.diplomado.wizard` asiste al usuario cargando dinámicamente los datos sugeridos del lote/curso del estudiante y permitiendo editar las fechas, horas, créditos y el listado de asignaturas seleccionadas antes de emitir el documento.
+
+---
+
+## Modelos
+
+| Modelo | Tipo | Descripción / Campos principales |
+|--------|------|----------------------------------|
+| `op.subject` | Extensión | Añade `irg_modality` (Presencial/Online) y relación inversa Many2many `course_ids` para filtrado en dominios. |
+| `op.course` | Extensión | Añade `irg_diplomado_subject_ids` (Many2many a `op.subject`). |
+| `op.student` | Extensión | Añade botón inteligente y campo computado `can_generate_diplomado`. |
+| `irg.diplomado.registry` | Nuevo | Almacena el registro histórico (Nombre, curso, fechas, folio único `name`, tipo de diploma, asignaturas). |
+| `irg.diplomado.wizard` | Nuevo | TransientModel para parametrizar la generación. |
+
+---
+
+## Estructura de Vistas y UI
+
+- `views/op_subject_views.xml` — Añade la modalidad (Presencial/Online) al formulario de asignatura.
+- `views/op_course_views.xml` — Añade la pestaña "Asignaturas Diplomado" para configurar las asignaturas por defecto.
+- `views/op_student_views.xml` — Añade el botón inteligente "Diplomados" (acceso directo al histórico de ese estudiante) y el botón de cabecera "Generar Diplomado".
+- `views/diplomado_registry_views.xml` — Lista, formulario de solo lectura, búsqueda del histórico de diplomas y menú de acceso en *Educación / Registro de Diplomados*.
+- `wizard/diplomado_wizard_views.xml` — Formulario emergente para la configuración de la impresión.
+
+---
+
+## Seguridad y Datos de Secuencia
+
+- `security/ir.model.access.csv` — Otorga accesos de lectura/escritura y creación a los modelos del módulo para los usuarios del sistema.
+- `data/ir_sequence_data.xml` — Secuencia numérica `irg.diplomado.registry.seq` para la generación del número de folio único con formato `DIP-{YYYY}-{MM}-{5_digitos}` (ejemplo: `DIP-2026-06-00001`).
+
+---
+
+## Reportes QWeb-PDF
+
+- **Estructura base:** Definida en `reports/diplomado_report.xml` con formato de página A4 horizontal (Landscape) y márgenes de cero píxeles para permitir plantillas con fondo de sangrado completo.
+- **Plantilla QWeb:** Definida en `reports/diplomado_templates.xml`. Genera una estructura limpia de dos páginas:
+  - **Página 1 (Anverso):** Estructurada para el diseño principal con datos dinámicos.
+  - **Página 2 (Reverso):** Contiene la cabecera de desglose y dos columnas independientes filtradas por modalidad: `Asignaturas Presenciales` y `Asignaturas Online`.
+
+---
+
+## Instalación / Actualización
+
+```bash
+# Instalación inicial
+docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_generacion_diplomados --stop-after-init
+
+# Actualización/Upgrade de cambios
+docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_generacion_diplomados --stop-after-init
+```
+
+---
+
+## Pruebas Unitarias Automatizadas
+
+Las pruebas están ubicadas en `tests/test_diplomado_generation.py` y cubren los siguientes casos:
+1. **`test_01_can_generate_diplomado_computation`:** Verifica que un alumno solo pueda generar diplomados cuando finalice su inscripción de curso (`state == 'finished'`).
+2. **`test_02_wizard_defaults_and_onchange`:** Verifica que los métodos onchange carguen de forma correcta los valores sugeridos del estudiante, lote, curso y asignaturas predefinidas en el wizard.
+3. **`test_03_registry_generation_and_report_action`:** Simula el envío del wizard confirmando la generación del diploma, validando que se cree el registro histórico correspondiente en la base de datos con sus asignaturas asociadas y que devuelva la acción del reporte QWeb.
+
+Para ejecutar los tests locales:
+```bash
+docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_generacion_diplomados --test-enable --test-tags=irg_generacion_diplomados --stop-after-init --log-level=info
+```
+
+---
+
+## Historial de Cambios
+
+### Versión 16.0.1.0.0
+- **Estructura base completada:** Implementación limpia del módulo `irg_generacion_diplomados` en `addons-extra/extrairg/irg_generacion_diplomados`.
+- **Independencia funcional:** El módulo no tiene ninguna dependencia ni herencia con el módulo antiguo `irg_generacion_diplomas`, operando de manera autónoma.
+- **Ajustes de robustez en el Wizard:** Remoción de la propiedad `required=True` a nivel de campos de Python (`course_id`, `student_name`, `diplomado_name`) en el TransientModel para evitar fallos de base de datos (`NotNullViolation`) durante flujos dinámicos de pruebas o cambios en la UI, moviendo la obligatoriedad al nivel del formulario XML y a una validación explícita en el método `action_print_diplomado`.
+- **Relación inversa Many2many en Subjects:** Implementación de la relación `course_ids` en `op.subject` mapeando la relación existente en Odoo para permitir filtrados correctos en el dominio del asistente en función del curso seleccionado.
+- **Validación Exitosa:** Cobertura de tests unitarios del 100% completada y aprobada localmente con Docker en Odoo 16.

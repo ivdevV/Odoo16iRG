@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_course_form_inherit_irg" model="ir.ui.view">
+        <field name="name">op.course.form.inherit.irg</field>
+        <field name="model">op.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_course_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Asignaturas Diplomado" name="diplomado_subjects">
+                    <field name="irg_diplomado_subject_ids" placeholder="Añada las asignaturas que aparecerán en el reverso del diplomado para este curso.">
+                        <tree string="Asignaturas del Diplomado">
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="irg_modality"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

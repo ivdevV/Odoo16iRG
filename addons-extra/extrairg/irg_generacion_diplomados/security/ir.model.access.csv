@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_diplomado_registry_user,irg.diplomado.registry,model_irg_diplomado_registry,base.group_user,1,1,1,1
+access_irg_diplomado_wizard_user,irg.diplomado.wizard,model_irg_diplomado_wizard,base.group_user,1,1,1,1

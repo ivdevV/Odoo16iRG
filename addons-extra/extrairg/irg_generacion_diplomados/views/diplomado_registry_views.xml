@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Vista List/Tree -->
+        <record id="view_irg_diplomado_registry_tree" model="ir.ui.view">
+            <field name="name">irg.diplomado.registry.tree</field>
+            <field name="model">irg.diplomado.registry</field>
+            <field name="arch" type="xml">
+                <tree string="Registro de Diplomados" create="false" edit="false">
+                    <field name="name"/>
+                    <field name="student_name"/>
+                    <field name="diplomado_name"/>
+                    <field name="issue_date"/>
+                    <field name="diploma_type"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Form -->
+        <record id="view_irg_diplomado_registry_form" model="ir.ui.view">
+            <field name="name">irg.diplomado.registry.form</field>
+            <field name="model">irg.diplomado.registry</field>
+            <field name="arch" type="xml">
+                <form string="Registro de Diplomado" create="false">
+                    <header>
+                        <button name="action_reprint" string="Reimprimir Diploma" type="object" class="oe_highlight"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Datos del Estudiante y Curso">
+                                <field name="student_id" readonly="1" options="{'no_open': True}"/>
+                                <field name="student_name" readonly="1"/>
+                                <field name="course_id" readonly="1" options="{'no_open': True}"/>
+                                <field name="diplomado_name" readonly="1"/>
+                            </group>
+                            <group string="Detalles del Diplomado">
+                                <field name="start_date" readonly="1"/>
+                                <field name="end_date" readonly="1"/>
+                                <field name="duration_hours" readonly="1"/>
+                                <field name="duration_ects" readonly="1"/>
+                                <field name="issue_date" readonly="1"/>
+                                <field name="diploma_type" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Asignaturas Incluidas" name="subjects">
+                                <field name="subject_ids" readonly="1">
+                                    <tree string="Asignaturas">
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                        <field name="irg_modality"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista de Búsqueda -->
+        <record id="view_irg_diplomado_registry_search" model="ir.ui.view">
+            <field name="name">irg.diplomado.registry.search</field>
+            <field name="model">irg.diplomado.registry</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Registro">
+                    <field name="name" string="Número de Registro o Alumno" filter_domain="['|', ('name', 'ilike', self), ('student_name', 'ilike', self)]"/>
+                    <field name="diplomado_name" string="Diplomado"/>
+                    <filter string="Digital" name="digital_diplomas" domain="[('diploma_type', '=', 'digital')]"/>
+                    <filter string="Físico" name="physical_diplomas" domain="[('diploma_type', '=', 'physical')]"/>
+                    <group expand="0" string="Agrupar por">
+                        <filter string="Estudiante" name="group_student" context="{'group_by':'student_id'}"/>
+                        <filter string="Curso" name="group_course" context="{'group_by':'course_id'}"/>
+                        <filter string="Fecha de Expedición" name="group_issue_date" context="{'group_by':'issue_date'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción de Ventana -->
+        <record id="action_irg_diplomado_registry" model="ir.actions.act_window">
+            <field name="name">Registro de Diplomados</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">irg.diplomado.registry</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_irg_diplomado_registry_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay ningún diplomado registrado.
+                </p>
+                <p>
+                    Los registros se crean automáticamente al generar un diplomado desde la ficha del estudiante.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú del Registro de Diplomados -->
+        <menuitem id="menu_irg_diplomado_registry"
+                  name="Registro de Diplomados"
+                  parent="openeducat_core.menu_op_general_main"
+                  action="action_irg_diplomado_registry"
+                  sequence="50"/>
+    </data>
+</odoo>
