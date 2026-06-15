@@ -1,0 +1,3 @@
+2026-06-15 - Mision creada para cambiar slides URL a redireccion directa en fullscreen.
+2026-06-15 - Implementado parser de href desde embedCode y redireccion por window.location.href para slides categoria url.
+2026-06-15 - Validacion pasada: compileall, XML parse, node --check y actualizacion del modulo con tests enfocados: 0 failed, 0 errors de 2 tests.

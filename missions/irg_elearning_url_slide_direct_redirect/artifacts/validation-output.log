@@ -1,0 +1,15 @@
+Static validation:
+- python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide: passed
+- XML parse for backend views, QWeb templates and frontend XML: passed
+- node --check addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js: passed
+
+Odoo validation using docker-compose.local.yml:
+- Command: docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d validation_url_slide_20260615_c -u irg_elearning_url_slide --test-enable --test-tags /irg_elearning_url_slide --stop-after-init --without-demo=all
+- Database: validation_url_slide_20260615_c
+- Result: passed
+- Evidence summary: module updated; TestUrlSlide.test_url_slide_requires_http_url and TestUrlSlide.test_url_slide_type executed; 0 failed, 0 error(s) of 2 tests.
+
+Behavior changed:
+- URL slides in fullscreen now extract the configured href from embedCode during preprocessing.
+- When a URL slide is rendered, the player navigates with window.location.href to the configured URL in the same browser tab.
+- If no URL can be extracted, the previous intermediate render remains as fallback.
