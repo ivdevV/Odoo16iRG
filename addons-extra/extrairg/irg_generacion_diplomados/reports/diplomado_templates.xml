@@ -12,9 +12,6 @@
                         html, body, body.container, #wrapwrap, main, .article, .page {
                             margin: 0 !important;
                             padding: 0 !important;
-                            width: 297mm !important;
-                            max-width: 297mm !important;
-                            min-width: 297mm !important;
                             background-color: transparent !important;
                             border: none !important;
                         }
@@ -23,10 +20,7 @@
                             -webkit-print-color-adjust: exact;
                             background-color: #ffffff !important;
                         }
-                        .article {
-                            height: 210mm !important;
-                        }
-                        .page-container {
+                        .diploma-page {
                             position: relative;
                             width: 297mm;
                             height: 210mm;
@@ -36,22 +30,19 @@
                             overflow: hidden;
                             box-sizing: border-box;
                         }
-                        .page-container-back {
-                            position: relative;
-                            width: 297mm;
-                            height: 210mm;
-                            margin: 0;
-                            padding: 0;
+                        .diploma-page.back {
                             page-break-after: avoid;
-                            overflow: hidden;
-                            box-sizing: border-box;
                         }
                         .bg-image {
                             position: absolute;
+                            inset: 0;
                             top: 0;
+                            right: 0;
+                            bottom: 0;
                             left: 0;
-                            width: 297mm;
-                            height: 210mm;
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
                             z-index: 0;
                             display: block;
                         }
@@ -110,10 +101,10 @@
                             left: 28mm;
                             width: 241mm;
                             top: 103mm;
-                            font-size: 15pt;
+                            font-size: 17pt;
                             font-weight: bold;
                             color: #000;
-                            line-height: 1.18;
+                            line-height: 1.12;
                             letter-spacing: 0.3px;
                         }
                         .back-content {
@@ -156,7 +147,7 @@
                     </style>
 
                     <!-- Página 1: Anverso del Diploma -->
-                    <div class="page-container">
+                    <div class="page diploma-page">
                         <!-- Fondo a hoja completa (Full Bleed) -->
                         <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
                         
@@ -215,7 +206,7 @@
                     </div>
 
                     <!-- Página 2: Reverso del Diploma (Desglose de asignaturas) -->
-                    <div class="page-container-back">
+                    <div class="page diploma-page back">
                         <!-- Fondo a hoja completa (Full Bleed) -->
                         <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
                         
