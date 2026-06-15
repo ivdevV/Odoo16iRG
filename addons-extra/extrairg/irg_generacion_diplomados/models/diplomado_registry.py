@@ -74,6 +74,11 @@ class IrgDiplomadoRegistry(models.Model):
         string='Asignaturas Online',
         help=_("Listado de asignaturas online que figurarán en el reverso.")
     )
+    attachment_id = fields.Many2one(
+        'ir.attachment',
+        string='Archivo PDF',
+        help=_("Archivo PDF adjunto que contiene el diplomado generado.")
+    )
 
     @api.model
     def create(self, vals):
@@ -83,5 +88,41 @@ class IrgDiplomadoRegistry(models.Model):
 
     def action_reprint(self):
         self.ensure_one()
-        report = self.env.ref('irg_generacion_diplomados.action_report_diplomado')
-        return report.report_action(self)
+        if not self.attachment_id:
+            # Regenerar el PDF si no existiera (por ejemplo, registros creados anteriormente)
+            start_date_str = self.start_date.strftime('%d/%m/%Y') if self.start_date else ''
+            end_date_str = self.end_date.strftime('%d/%m/%Y') if self.end_date else ''
+            issue_date_str = self.issue_date.strftime('%d/%m/%Y') if self.issue_date else ''
+
+            data = {
+                'student_name': self.student_name,
+                'diplomado_name': self.diplomado_name,
+                'start_date': start_date_str,
+                'end_date': end_date_str,
+                'duration_hours': self.duration_hours,
+                'duration_ects': self.duration_ects,
+                'issue_date': issue_date_str,
+                'diploma_type': self.diploma_type,
+                'subjects_presencial': self.subjects_presencial or '',
+                'subjects_online': self.subjects_online or '',
+            }
+
+            pdf_content = self.env['report.irg_generacion_diplomados.diplomado_pdf'].generate_diplomado_pdf(data)
+
+            import base64
+            attachment_name = "Diplomado_%s.pdf" % self.student_name.replace(' ', '_')
+            attachment = self.env['ir.attachment'].create({
+                'name': attachment_name,
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_content),
+                'res_model': 'irg.diplomado.registry',
+                'res_id': self.id,
+                'mimetype': 'application/pdf',
+            })
+            self.write({'attachment_id': attachment.id})
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/web/content/%s?download=true' % self.attachment_id.id,
+            'target': 'self',
+        }

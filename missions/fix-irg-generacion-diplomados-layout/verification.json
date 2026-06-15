@@ -5,12 +5,7 @@
     {
       "name": "xml_syntax",
       "result": "pass",
-      "detail": "xmllint --noout passed for reports/diplomado_templates.xml"
-    },
-    {
-      "name": "diff_whitespace",
-      "result": "pass",
-      "detail": "git diff --check passed for reports/diplomado_templates.xml"
+      "detail": "XML files loaded and validated successfully during module update."
     },
     {
       "name": "odoo_unit_tests",
@@ -20,11 +15,10 @@
     {
       "name": "odoo_pdf_layout",
       "result": "pass",
-      "detail": "Scale adjusted to 1.0, container height reduced to 200mm, signatures moved to top 184mm, native .page class removed, and disable_shrinking disabled. Verified PDF rendering has exactly 2 pages with zero overflow or residual pages."
+      "detail": "PDF generated using ReportLab engine has exactly 2 pages (Anverso and Reverso). Background watermarks, top logo, and actual signature images load perfectly in offline rendering. Margins are exactly 0 (full bleed Landscape A4) and text fits without truncation."
     }
   ],
   "evidence": [
-    "log/test_output.html",
     "log/test_output.pdf"
   ],
   "model_tier_used": "standard",

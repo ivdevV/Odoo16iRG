@@ -115,9 +115,9 @@ class TestDiplomadoGeneration(TransactionCase):
         
         action = wizard.action_print_diplomado()
         
-        # Comprobar retorno de acción de reporte
-        self.assertEqual(action['type'], 'ir.actions.report')
-        self.assertEqual(action['report_name'], 'irg_generacion_diplomados.report_diplomado_template')
+        # Comprobar retorno de acción de descarga de URL (act_url)
+        self.assertEqual(action['type'], 'ir.actions.act_url')
+        self.assertTrue(action['url'].startswith('/web/content/'))
         
         # Buscar si el registro en la base de datos se creó
         registry = self.env['irg.diplomado.registry'].search([('student_id', '=', self.student.id)])
@@ -131,6 +131,10 @@ class TestDiplomadoGeneration(TransactionCase):
         self.assertEqual(registry.subjects_presencial, 'Prácticas Presenciales 1')
         self.assertEqual(registry.subjects_online, 'Módulos Online 1\nMódulos Online 2')
         
+        # Comprobar que el registro tiene el archivo PDF adjunto
+        self.assertTrue(registry.attachment_id, "El registro debería tener un archivo PDF adjunto.")
+        
         # Probar el método de reimpresión del registro
         reprint_action = registry.action_reprint()
-        self.assertEqual(reprint_action['type'], 'ir.actions.report')
+        self.assertEqual(reprint_action['type'], 'ir.actions.act_url')
+        self.assertEqual(reprint_action['url'], '/web/content/%s?download=true' % registry.attachment_id.id)

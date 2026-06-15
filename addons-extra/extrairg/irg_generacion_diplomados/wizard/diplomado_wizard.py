@@ -119,6 +119,46 @@ class IrgDiplomadoWizard(models.TransientModel):
         }
         registry = self.env['irg.diplomado.registry'].create(registry_vals)
 
-        # Disparar la acción de reporte QWeb para el registro creado
-        report = self.env.ref('irg_generacion_diplomados.action_report_diplomado')
-        return report.report_action(registry)
+        # Formatear fechas en formato dd/mm/yyyy
+        start_date_str = self.start_date.strftime('%d/%m/%Y') if self.start_date else ''
+        end_date_str = self.end_date.strftime('%d/%m/%Y') if self.end_date else ''
+        issue_date_str = self.issue_date.strftime('%d/%m/%Y') if self.issue_date else ''
+
+        # Construir el diccionario de datos
+        data = {
+            'student_name': self.student_name,
+            'diplomado_name': self.diplomado_name,
+            'start_date': start_date_str,
+            'end_date': end_date_str,
+            'duration_hours': self.duration_hours,
+            'duration_ects': self.duration_ects,
+            'issue_date': issue_date_str,
+            'diploma_type': self.diploma_type,
+            'subjects_presencial': self.subjects_presencial or '',
+            'subjects_online': self.subjects_online or '',
+        }
+
+        # Generar el contenido en binario mediante ReportLab
+        pdf_content = self.env['report.irg_generacion_diplomados.diplomado_pdf'].generate_diplomado_pdf(data)
+
+        # Crear un ir.attachment binario
+        import base64
+        attachment_name = "Diplomado_%s.pdf" % self.student_name.replace(' ', '_')
+        attachment = self.env['ir.attachment'].create({
+            'name': attachment_name,
+            'type': 'binary',
+            'datas': base64.b64encode(pdf_content),
+            'res_model': 'irg.diplomado.registry',
+            'res_id': registry.id,
+            'mimetype': 'application/pdf',
+        })
+
+        # Vincular el attachment_id en el registro del histórico
+        registry.write({'attachment_id': attachment.id})
+
+        # Retornar la acción ir.actions.act_url para descargar el PDF directamente
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/web/content/%s?download=true' % attachment.id,
+            'target': 'self',
+        }

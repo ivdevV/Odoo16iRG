@@ -1,31 +1,32 @@
 # irg_generacion_diplomados
 
-**Categoría:** extrairg
-**Versión:** 16.0.1.0.4
-**Licencia:** LGPL-3
-**Instalable:** Sí
-**Autor:** Instituto Raimon Gaja
-**Depende de:** `openeducat_core`, `web`, `website`
+**Categoría:** extrairg  
+**Versión:** 16.0.1.0.4  
+**Licencia:** LGPL-3  
+**Instalable:** Sí  
+**Autor:** Instituto Raimon Gaja  
+**Depende de:** `openeducat_core`, `web`, `website`  
 
 ---
 
 ## ¿Qué hace este módulo?
 
-Permite la generación y registro histórico de diplomados independientes iRG en formato QWeb-PDF de dos páginas. 
+Permite la generación y registro histórico de diplomados independientes iRG en formato PDF de dos páginas generadas programáticamente en el servidor utilizando **ReportLab**.
 
-- **Página 1 (Anverso):** Muestra el título del diplomado, el nombre del estudiante, las fechas de celebración, la duración (en horas y créditos ECTS) y la fecha de impresión.
-- **Página 2 (Reverso):** Contiene el desglose de las asignaturas a cursar divididas en dos secciones independientes: Módulos Presenciales y Módulos Online.
+- **Página 1 (Anverso):** Muestra el título del diplomado, el nombre del estudiante, las fechas de celebración, la duración (en horas y créditos ECTS) y la fecha de impresión. En la variante digital se dibuja un fondo de sangrado completo, el logotipo institucional superior y las firmas y cargos correspondientes.
+- **Página 2 (Reverso):** Contiene el desglose de las asignaturas a cursar divididas en dos secciones independientes: Módulos Presenciales y Módulos Online. Las asignaturas se distribuyen de forma equilibrada en dos columnas por bloque.
 
-Las asignaturas que figurarán en el diplomado se configuran como texto libre (campos de texto plano independientes) a nivel de curso y son editables directamente ("al vuelo") en el asistente antes de realizar la impresión.
+Las asignaturas que figurarán en el diplomado se configuran como texto libre (campos de texto plano independientes con salto de línea) a nivel de curso y son editables directamente ("al vuelo") en el asistente antes de realizar la impresión.
 
 ---
 
 ## Funcionalidades principales
 
-- **Configuración por curso:** Extensión de `op.course` con campos de texto plano (`irg_diplomado_subjects_presencial` e `irg_diplomado_subjects_online`) para preconfigurar los bloques de asignaturas que componen el diplomado de forma libre.
+- **Configuración por curso:** Extensión de `op.course` con campos de texto plano (`irg_diplomado_subjects_presencial` e `irg_diplomado_subjects_online`) para preconfigurar los bloques de asignaturas del diplomado de forma libre.
 - **Acceso controlado:** Extensión de `op.student` con el botón de acción "Generar Diplomado" y un campo computado `can_generate_diplomado` que habilita el botón únicamente cuando el alumno tiene al menos un curso finalizado (`state == 'finished'`).
-- **Historial histórico:** Modelo `irg.diplomado.registry` que guarda un registro permanente de cada diplomado emitido (incluyendo los textos exactos de las asignaturas en los campos `subjects_presencial` y `subjects_online`) con su correspondiente número de folio/secuencia único, permitiendo su reimpresión exacta en cualquier momento.
+- **Historial histórico:** Modelo `irg.diplomado.registry` que guarda un registro permanente de cada diplomado emitido (incluyendo los textos exactos de las asignaturas en los campos `subjects_presencial` y `subjects_online`) con su correspondiente número de folio/secuencia único, permitiendo su reimpresión exacta en cualquier momento mediante la descarga directa del archivo adjunto generado.
 - **Asistente interactivo (Wizard):** El wizard `irg.diplomado.wizard` asiste al usuario cargando dinámicamente los datos sugeridos del lote/curso del estudiante y permitiendo editar las fechas, horas, créditos y modificar de forma textual los bloques de asignaturas presenciales y online antes de emitir el documento.
+- **Arquitectura de Impresión ReportLab:** Generación robusta del PDF en memoria en el servidor, persistencia del documento en `ir.attachment` y redirección inmediata a descarga directa vía URL, evitando dependencias del motor local de wkhtmltopdf.
 
 ---
 
@@ -35,8 +36,8 @@ Las asignaturas que figurarán en el diplomado se configuran como texto libre (c
 |--------|------|----------------------------------|
 | `op.course` | Extensión | Añade `irg_diplomado_subjects_presencial` y `irg_diplomado_subjects_online` (campos de texto plano). |
 | `op.student` | Extensión | Añade botón inteligente y campo computado `can_generate_diplomado`. |
-| `irg.diplomado.registry` | Nuevo | Almacena el registro histórico (Nombre, curso, fechas, folio único `name`, tipo de diploma, y campos de texto plano `subjects_presencial` y `subjects_online` con el contenido exacto emitido). |
-| `irg.diplomado.wizard` | Nuevo | TransientModel para parametrizar la generación, con campos editables `subjects_presencial` y `subjects_online` cargados por defecto del curso. |
+| `irg.diplomado.registry` | Nuevo | Almacena el registro histórico (Nombre, curso, fechas, folio único `name`, tipo de diploma, relación `attachment_id` con el PDF generado, y campos de texto plano `subjects_presencial` y `subjects_online`). |
+| `irg.diplomado.wizard` | Nuevo | TransientModel para parametrizar la generación, con campos editables `subjects_presencial` y `subjects_online` cargados por defecto del curso. Retorna la acción de descarga directa. |
 
 ---
 
@@ -56,19 +57,29 @@ Las asignaturas que figurarán en el diplomado se configuran como texto libre (c
 
 ---
 
-## Reportes QWeb-PDF
+## Generación de PDF con ReportLab
 
-- **Estructura base:** Definida en `reports/diplomado_report.xml` que establece un formato de página (`report.paperformat`) A4 horizontal (Landscape) sin márgenes (`margin_top = 0`, `margin_bottom = 0`, `margin_left = 0`, `margin_right = 0`).
-- **Maquetación Full Bleed (Hoja completa sin márgenes):** Implementada en `reports/diplomado_templates.xml` (desde la versión 16.0.1.0.4) para permitir un fondo de sangrado completo en la impresión y visualización exacta del PDF. 
-  - Se omiten las plantillas de diseño estándar de Odoo (como `web.basic_layout` o `div.article`) y se utiliza únicamente `web.html_container` en la raíz para evitar que el framework añada elementos HTML/CSS y márgenes predeterminados que rompan el flujo.
-  - Se remueven márgenes predeterminados de Odoo mediante CSS y directivas globales `@page { size: A4 landscape; margin: 0 !important; }` sobre los divs contenedores de la plantilla (`html, body, body.container, #wrapwrap, main, .article, .page`).
-  - Se elimina el uso de la clase `.page` de Odoo en los contenedores del anverso y reverso para evitar paddings impuestos por Bootstrap.
-  - La escala se fija estrictamente en `1.0` (sin multiplicadores como `1.08`) para mantener una relación de aspecto 1:1.
-  - Para tolerar errores de redondeo de píxeles/milímetros en el motor `wkhtmltopdf` y evitar saltos de página erróneos, las dimensiones del lienzo se configuran a `297mm x 200mm` (dejando `10mm` de tolerancia vertical frente a los `210mm` del formato A4 físico).
-  - Los elementos del pie de página (como las firmas y sus imágenes) se posicionan con seguridad a una altura máxima de `184mm` vertical (`top: 184mm;`).
-- **Plantilla QWeb:** Genera una estructura de dos páginas:
-  - **Página 1 (Anverso):** Logotipos, firmas y datos principales posicionados con precisión sobre el fondo de sangrado completo.
-  - **Página 2 (Reverso):** Cabecera y listado secuencial de los bloques de asignaturas cargados de los campos textuales `subjects_presencial` y `subjects_online`.
+La maquetación y generación del diplomado se realiza a través de **ReportLab** en el archivo `reports/diplomado_pdf_report.py`. 
+
+### Diseño y Maquetación (A4 Landscape sin márgenes):
+- **Dimensiones:** Lienzo a tamaño exacto A4 horizontal (297mm de ancho por 210mm de alto) sin márgenes.
+- **Acceso Local a Recursos:** El fondo (`diploma_background.jpg`), el logotipo superior (`logo_instituto.jpg`) y las firmas de la dirección (`firma_izquierda.jpg`, `firma_derecha.jpg`) se resuelven a nivel de disco local de Odoo usando `modules.get_module_resource` en lugar de peticiones HTTP externas. Esto garantiza que las firmas y logotipos nunca aparezcan como imágenes rotas.
+- **Página 1 (Anverso):**
+  - Dibujo de textos principales alineados verticalmente.
+  - El texto de aprobación utiliza la clase `Paragraph` con la hoja de estilos `ParagraphStyle` configurada con soporte para envoltura automática de texto (`wrapOn`) a un ancho máximo de `257mm` y posicionamiento con `drawOn`. Admite formato HTML básico en línea (como `<b>`).
+  - Las firmas y sus cargos asociados se dibujan en la parte inferior, posicionándose a una altura segura de `193mm` respecto al margen superior del A4.
+- **Página 2 (Reverso):**
+  - Se genera dinámicamente llamando a `canvas.showPage()`.
+  - Los bloques de "Módulos Presenciales" y "Módulos Online" leen los campos de texto plano.
+  - El texto libre se divide por saltos de línea y se distribuye de forma automática y equilibrada en 2 columnas (izquierda a `35mm` y derecha a `154mm`) usando envoltorios `Paragraph` de ReportLab.
+  - Si un bloque no tiene asignaturas registradas, se renderiza un mensaje por defecto indicando que no se registran módulos.
+
+### Persistencia y Descarga:
+1. El wizard de impresión llama a `generate_diplomado_pdf(data)`.
+2. ReportLab escribe el binario en un búfer de memoria (`io.BytesIO`).
+3. El wizard guarda el binario en base64 en un registro de tipo `ir.attachment` asociado al modelo `irg.diplomado.registry` y actualiza la relación `attachment_id` en el histórico.
+4. El wizard retorna una acción `ir.actions.act_url` que apunta a `/web/content/<attachment_id>?download=true`, iniciando la descarga directa e inmediata en el navegador del usuario.
+5. El registro histórico ofrece el botón "Reimprimir" que descarga directamente el adjunto previamente almacenado, asegurando la inmutabilidad y consistencia exacta del diplomado emitido a lo largo del tiempo.
 
 ---
 
@@ -89,7 +100,7 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_ge
 Las pruebas están ubicadas en `tests/test_diplomado_generation.py` y cubren los siguientes casos:
 1. **`test_01_can_generate_diplomado_computation`:** Verifica que un alumno solo pueda generar diplomados cuando finalice su inscripción de curso (`state == 'finished'`).
 2. **`test_02_wizard_defaults_and_onchange`:** Verifica que los métodos onchange carguen de forma correcta los valores sugeridos del estudiante, lote, curso y textos por defecto de las asignaturas en el wizard.
-3. **`test_03_registry_generation_and_report_action`:** Simula el envío del wizard confirmando la generación del diploma, validando que se cree el registro histórico correspondiente en la base de datos con sus textos de asignaturas asociados y que devuelva la acción del reporte QWeb.
+3. **`test_03_registry_generation_and_report_action`:** Simula el envío del wizard confirmando la generación del diploma, validando que se cree el registro histórico correspondiente en la base de datos con sus textos de asignaturas asociados, que genere el binario en ReportLab persistiendo el adjunto `attachment_id`, y que devuelva la acción `ir.actions.act_url` para descarga directa. También verifica el método de reimpresión de un registro histórico.
 
 Para ejecutar los tests locales:
 ```bash
@@ -101,14 +112,15 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_ge
 ## Historial de Cambios
 
 ### Versión 16.0.1.0.4
+- **Migración a ReportLab (Generación de PDF en Servidor)**:
+  - Remoción completa del reporte QWeb-PDF basado en XML (`diplomado_templates.xml`) y su motor `wkhtmltopdf` debido a inestabilidades en el dibujado a sangre completa sin márgenes (Full Bleed).
+  - Creación del generador `report.irg_generacion_diplomados.diplomado_pdf` basado en ReportLab para posicionamiento vectorial A4 horizontal exacto (297x210 mm).
+  - Carga local de assets de imagen (fondos, firmas) desde el sistema de archivos del servidor en lugar de resoluciones de red HTTP.
+  - Almacenamiento persistente del PDF generado como archivo adjunto (`ir.attachment`) en el histórico del diplomado (`irg.diplomado.registry`).
+  - Redirección automática de la UI para la descarga del PDF a través de la acción `ir.actions.act_url` apuntando a `/web/content/`.
 - **Reemplazo de Many2many por campos de Texto Plano**:
   - Remoción completa del uso de `op.subject` y sus relaciones Many2many en `op.course` (añadiendo `irg_diplomado_subjects_presencial` e `irg_diplomado_subjects_online`), en el wizard `irg.diplomado.wizard` (campos `subjects_presencial` y `subjects_online`) y en el registro histórico `irg.diplomado.registry` (campos `subjects_presencial` y `subjects_online`).
   - Posibilidad de definir y editar directamente el plan de estudios del diplomado como texto libre sin restricciones de modelos relacionados.
-- **Resolución de problemas de maquetación Full Bleed sin Márgenes**:
-  - Configuración del formato de página A4 Landscape a 0 márgenes en `report.paperformat`.
-  - Reemplazo del layout `web.basic_layout` por una estructura directa con `web.html_container` para evitar la doble anidación HTML generada por Odoo.
-  - Remoción de la clase `.page` de las páginas del reporte y sobrescritura de estilos CSS de contenedores para anular la limitación de ancho de Bootstrap.
-  - Configuración de escala a `1.0` y reducción de altura útil de página a `200mm` (tolerancia de 10mm) con reubicación vertical de firmas a `184mm` para evitar la generación de una tercera página en blanco por desbordamiento con `wkhtmltopdf`.
 
 ### Versión 16.0.1.0.3
 - **Adición del botón de depuración**:

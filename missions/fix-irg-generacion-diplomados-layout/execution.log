@@ -24,3 +24,13 @@
   - Se actualizó el módulo y regeneró el reporte en Docker.
   - La verificación física del PDF final confirma que tiene **exactamente 2 páginas** (anverso completo en pág 1 con firmas perfectas, reverso en pág 2 sin páginas residuales en blanco).
   - Verificación formal del estado del reporte cambiada a **PASSED**.
+2026-06-15 - Implementada la generación de diplomas con ReportLab: creado reports/diplomado_pdf_report.py, registrados los inits correspondientes, modificado el wizard/diplomado_wizard.py para guardar el PDF como ir.attachment y retornar act_url, añadido el campo attachment_id a irg.diplomado.registry, y actualizados los tests unitarios.
+2026-06-15 - Validación de la implementación con ReportLab en contenedor Docker:
+  - Pruebas unitarias de Odoo completadas con éxito (0 fallos, 0 errores en 3 tests).
+  - Regenerado PDF local `test_output.pdf` usando `scratch/generate_pdf.py`.
+  - La inspección visual del PDF confirma que:
+    1. Las imágenes de fondo (filigranas), logo de cabecera y firmas físicas reales se cargan a la perfección (ya que al usar Python se resuelven directamente sobre las rutas de archivo del sistema en el contenedor local sin depender del servidor HTTP).
+    2. El PDF tiene exactamente 2 páginas (anverso y reverso) sin páginas vacías intermedias ni al final.
+    3. No existen márgenes ni bordes blancos (full-bleed Landscape A4).
+    4. Los textos se encuentran perfectamente posicionados y sin solaparse ni cortarse.
+  - Verificación formal final declarada como **PASSED**.

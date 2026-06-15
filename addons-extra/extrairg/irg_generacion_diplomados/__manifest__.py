@@ -7,7 +7,7 @@
         Módulo para la generación y registro de diplomados iRG.
         Permite configurar las asignaturas a imprimir en los diplomados,
         clasificándolas según modalidad presencial u online, e imprimiendo
-        el reporte QWeb de dos páginas correspondiente.
+        el PDF de dos páginas correspondiente mediante ReportLab.
     """,
     'author': 'Instituto Raimon Gaja',
     'website': 'https://www.institutografologia.com',
