@@ -1,0 +1,556 @@
+diff --git a/doc/micro-specs/2026-06-15-irg_elearning_url_slide.md b/doc/micro-specs/2026-06-15-irg_elearning_url_slide.md
+new file mode 100644
+index 00000000..71160fe7
+--- /dev/null
++++ b/doc/micro-specs/2026-06-15-irg_elearning_url_slide.md
+@@ -0,0 +1,61 @@
++# irg_elearning_url_slide
++
++## 1. Titulo Corto
++
++Tipo de contenido URL para eLearning.
++
++## 2. Resumen Objetivo
++
++Anadir una opcion `URL` al campo `Tipo de contenido` de los slides de eLearning para crear contenidos que enlacen a clases o recursos externos.
++
++## 3. Motivo / Justificacion
++
++La funcionalidad nativa y los tipos custom actuales cubren documentos, videos, Bunny, video externo MP4 y Scorm, pero no un tipo generico de enlace. Se implementa mediante un modulo extra para no tocar core ni modulos existentes.
++
++## 4. Alcance Exacto
++
++- Modelo: herencia de `slide.slide`.
++- Vistas backend: herencia de `website_slides.view_slide_slide_form`.
++- Templates frontend: herencia de `website_slides.slide_content_detailed`, `website_slides.slide_icon` y `website_slides.slide_fullscreen_sidebar_category`.
++- Assets frontend: extension del player fullscreen para renderizar categoria `url`.
++
++## 5. Diseno Tecnico
++
++- Modulo: `addons-extra/extrairg/irg_elearning_url_slide`.
++- `slide_category`: `selection_add=[('url', 'URL')]`.
++- `slide_type`: `selection_add=[('url', 'URL')]` con compute heredado.
++- Campos nuevos:
++  - `irg_url`: URL destino.
++  - `irg_url_button_label`: texto del boton.
++- Validacion: `irg_url` obligatorio si `slide_category == 'url'` y esquema `http(s)`.
++- Render: tarjeta simple con boton que navega en la misma ventana.
++
++## 6. Dependencias
++
++- `website_slides`
++- `website`
++- `web`
++
++## 7. Backwards-Compatibility / Migracion
++
++No requiere migracion de datos. El nuevo valor de seleccion solo aplica a contenidos creados despues de instalar el modulo.
++
++## 8. Casos de Prueba / Criterios de Aceptacion
++
++- Instalar/actualizar modulo sin errores.
++- Crear slide con `Tipo de contenido = URL`.
++- Verificar que URL es obligatoria para ese tipo.
++- Verificar que `http://` y `https://` son aceptados.
++- Verificar que esquemas no permitidos fallan.
++- Verificar render en vista normal y fullscreen.
++- Verificar que el enlace se abre en la misma ventana.
++
++## 9. Rollback Plan
++
++Desinstalar el modulo `irg_elearning_url_slide`. Si existen slides con `slide_category = 'url'`, cambiarlos antes a otro tipo compatible o eliminarlos para evitar valores de seleccion inexistentes tras la desinstalacion.
++
++## 10. Estimacion y Responsable
++
++Estimacion: 1 jornada corta incluyendo validacion local.
++
++Responsable: iRG / agente de desarrollo Odoo 16.
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/__init__.py b/addons-extra/extrairg/irg_elearning_url_slide/__init__.py
+new file mode 100644
+index 00000000..cde864ba
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/__init__.py
+@@ -0,0 +1,3 @@
++# -*- coding: utf-8 -*-
++
++from . import models
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/__manifest__.py b/addons-extra/extrairg/irg_elearning_url_slide/__manifest__.py
+new file mode 100644
+index 00000000..3ee3a3c8
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/__manifest__.py
+@@ -0,0 +1,32 @@
++# -*- coding: utf-8 -*-
++{
++    'name': 'IRG eLearning URL Slide',
++    'version': '16.0.1.0.0',
++    'category': 'Website/eLearning',
++    'summary': 'Add URL content type to eLearning slides',
++    'description': """
++        Adds a URL content type to website_slides so courses can include
++        normal slides that link to classes or external learning resources.
++    """,
++    'author': 'iRG',
++    'website': '',
++    'depends': [
++        'website_slides',
++        'website',
++        'web',
++    ],
++    'data': [
++        'views/slide_slide_views.xml',
++        'views/website_slides_templates.xml',
++    ],
++    'assets': {
++        'web.assets_frontend': [
++            'irg_elearning_url_slide/static/src/xml/website_slides_fullscreen_url.xml',
++            'irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js',
++        ],
++    },
++    'installable': True,
++    'application': False,
++    'auto_install': False,
++    'license': 'LGPL-3',
++}
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/models/__init__.py b/addons-extra/extrairg/irg_elearning_url_slide/models/__init__.py
+new file mode 100644
+index 00000000..5141aec1
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/models/__init__.py
+@@ -0,0 +1,3 @@
++# -*- coding: utf-8 -*-
++
++from . import slide_slide
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/models/slide_slide.py b/addons-extra/extrairg/irg_elearning_url_slide/models/slide_slide.py
+new file mode 100644
+index 00000000..8cb6f048
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/models/slide_slide.py
+@@ -0,0 +1,71 @@
++# -*- coding: utf-8 -*-
++from urllib.parse import urlparse
++
++from markupsafe import Markup
++
++from odoo import _, api, fields, models
++from odoo.exceptions import ValidationError
++
++
++class SlideChannel(models.Model):
++    _inherit = 'slide.channel'
++
++    nbr_url = fields.Integer(string='URL', store=True)
++
++
++class SlideSlide(models.Model):
++    _inherit = 'slide.slide'
++
++    slide_category = fields.Selection(
++        selection_add=[('url', 'URL')],
++        ondelete={'url': 'set default'},
++    )
++    slide_type = fields.Selection(
++        selection_add=[('url', 'URL')],
++        ondelete={'url': 'set null'},
++        compute='_compute_slide_type',
++        store=True,
++    )
++    irg_url = fields.Char(string='URL')
++    irg_url_button_label = fields.Char(
++        string='Texto del boton',
++        default='Ir al contenido',
++        translate=True,
++    )
++
++    @api.depends('slide_category', 'source_type', 'video_source_type')
++    def _compute_slide_type(self):
++        res = super()._compute_slide_type()
++        for slide in self:
++            if slide.slide_category == 'url':
++                slide.slide_type = 'url'
++        return res
++
++    @api.depends('slide_category', 'irg_url', 'irg_url_button_label')
++    def _compute_embed_code(self):
++        res = super()._compute_embed_code()
++        for slide in self:
++            if slide.slide_category == 'url' and slide.irg_url:
++                label = slide.irg_url_button_label or _('Ir al contenido')
++                slide.embed_code = Markup(
++                    '<div class="o_irg_url_slide card border-0 shadow-sm">'
++                    '<div class="card-body text-center p-4">'
++                    '<i class="fa fa-link fa-2x text-primary mb-3" aria-hidden="true"></i>'
++                    '<h4 class="mb-3">%s</h4>'
++                    '<a class="btn btn-primary" href="%s">%s</a>'
++                    '</div>'
++                    '</div>'
++                ) % (slide.name or _('Contenido URL'), slide.irg_url, label)
++                slide.embed_code_external = slide.embed_code
++        return res
++
++    @api.constrains('slide_category', 'irg_url')
++    def _check_irg_url(self):
++        for slide in self:
++            if slide.slide_category != 'url':
++                continue
++            if not slide.irg_url:
++                raise ValidationError(_('Debe indicar una URL para el tipo de contenido URL.'))
++            parsed_url = urlparse(slide.irg_url)
++            if parsed_url.scheme not in ('http', 'https') or not parsed_url.netloc:
++                raise ValidationError(_('La URL debe empezar por http:// o https://.'))
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/views/slide_slide_views.xml b/addons-extra/extrairg/irg_elearning_url_slide/views/slide_slide_views.xml
+new file mode 100644
+index 00000000..ed28ba30
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/views/slide_slide_views.xml
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <record id="view_slide_slide_form_irg_url" model="ir.ui.view">
++        <field name="name">slide.slide.form.irg.url</field>
++        <field name="model">slide.slide</field>
++        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
++        <field name="arch" type="xml">
++            <xpath expr="//field[@name='document_binary_content']" position="after">
++                <field name="irg_url"
++                       placeholder="https://..."
++                       attrs="{'invisible': [('slide_category', '!=', 'url')], 'required': [('slide_category', '=', 'url')]}"/>
++                <field name="irg_url_button_label"
++                       attrs="{'invisible': [('slide_category', '!=', 'url')]}"/>
++            </xpath>
++        </field>
++    </record>
++</odoo>
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/views/website_slides_templates.xml b/addons-extra/extrairg/irg_elearning_url_slide/views/website_slides_templates.xml
+new file mode 100644
+index 00000000..46120c6c
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/views/website_slides_templates.xml
+@@ -0,0 +1,29 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <template id="slide_content_detailed_irg_url" inherit_id="website_slides.slide_content_detailed" name="Slide Content Detailed - IRG URL">
++        <xpath expr="//div[hasclass('ratio')][1]" position="before">
++            <div t-if="slide.slide_category == 'url'" class="o_irg_url_slide card border-0 shadow-sm my-3">
++                <div class="card-body text-center p-4 p-md-5">
++                    <i class="fa fa-link fa-2x text-primary mb-3" aria-hidden="true"/>
++                    <h3 class="mb-3" t-esc="slide.name"/>
++                    <p class="text-muted mb-4" t-if="slide.description" t-field="slide.description"/>
++                    <a class="btn btn-primary btn-lg" t-att-href="slide.irg_url">
++                        <t t-esc="slide.irg_url_button_label or 'Ir al contenido'"/>
++                    </a>
++                </div>
++            </div>
++        </xpath>
++    </template>
++
++    <template id="slide_icon_irg_url" inherit_id="website_slides.slide_icon" name="Slide Icon - IRG URL">
++        <xpath expr="//i[@t-if=&quot;slide.slide_type == 'quiz'&quot;]" position="after">
++            <i t-if="slide.slide_type == 'url'" t-att-class="'fa fa-link %s' % icon_class"/>
++        </xpath>
++    </template>
++
++    <template id="slide_fullscreen_sidebar_category_irg_url" inherit_id="website_slides.slide_fullscreen_sidebar_category" name="Fullscreen Sidebar - IRG URL" priority="110">
++        <xpath expr="//li[contains(@t-attf-class, 'o_wslides_fs_sidebar_list_item')]" position="attributes">
++            <attribute name="t-att-data-embed-code">slide.embed_code if slide.slide_category in ['video', 'document', 'infographic', 'local_external', 'bunny', 'scorm', 'url'] else False</attribute>
++        </xpath>
++    </template>
++</odoo>
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js b/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js
+new file mode 100644
+index 00000000..b19217fd
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js
+@@ -0,0 +1,40 @@
++odoo.define('irg_elearning_url_slide.fullscreen_url', function (require) {
++    'use strict';
++
++    const core = require('web.core');
++    const QWeb = core.qweb;
++    const Fullscreen = require('@website_slides/js/slides_course_fullscreen_player')[Symbol.for('default')];
++
++    Fullscreen.include({
++        xmlDependencies: (Fullscreen.prototype.xmlDependencies || []).concat([
++            '/irg_elearning_url_slide/static/src/xml/website_slides_fullscreen_url.xml',
++        ]),
++
++        _preprocessSlideData: function (slidesDataList) {
++            const res = this._super.apply(this, arguments);
++
++            slidesDataList.forEach(function (slideData) {
++                if (slideData.category === 'url') {
++                    slideData.hasQuestion = !!slideData.hasQuestion;
++                    if (!slideData.hasQuestion) {
++                        slideData._autoSetDone = true;
++                    }
++                }
++            });
++
++            return res;
++        },
++
++        _renderSlide: function () {
++            const def = this._super.apply(this, arguments);
++            const $content = this.$('.o_wslides_fs_content');
++            const slide = this.get('slide');
++
++            if (slide.category === 'url') {
++                $content.html(QWeb.render('website.slides.fullscreen.content', {widget: this}));
++            }
++
++            return Promise.all([def]);
++        },
++    });
++});
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/static/src/xml/website_slides_fullscreen_url.xml b/addons-extra/extrairg/irg_elearning_url_slide/static/src/xml/website_slides_fullscreen_url.xml
+new file mode 100644
+index 00000000..2484104e
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/static/src/xml/website_slides_fullscreen_url.xml
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<templates id="template" xml:space="preserve">
++    <t t-extend="website.slides.fullscreen.content">
++        <t t-jquery="t:last" t-operation="after">
++            <t t-if="widget.get('slide').category === 'url'">
++                <div class="o_irg_url_slide_fullscreen d-flex align-items-center justify-content-center h-100 p-4">
++                    <t t-raw="widget.get('slide').embedCode"/>
++                </div>
++            </t>
++        </t>
++    </t>
++</templates>
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/tests/__init__.py b/addons-extra/extrairg/irg_elearning_url_slide/tests/__init__.py
+new file mode 100644
+index 00000000..ebd6951a
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/tests/__init__.py
+@@ -0,0 +1,3 @@
++# -*- coding: utf-8 -*-
++
++from . import test_link_slide
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/tests/test_link_slide.py b/addons-extra/extrairg/irg_elearning_url_slide/tests/test_link_slide.py
+new file mode 100644
+index 00000000..e503334b
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/tests/test_link_slide.py
+@@ -0,0 +1,34 @@
++# -*- coding: utf-8 -*-
++from odoo.exceptions import ValidationError
++from odoo.tests.common import TransactionCase
++
++
++class TestUrlSlide(TransactionCase):
++
++    @classmethod
++    def setUpClass(cls):
++        super().setUpClass()
++        cls.channel = cls.env['slide.channel'].create({
++            'name': 'URL Test Course',
++            'channel_type': 'training',
++        })
++
++    def test_url_slide_type(self):
++        slide = self.env['slide.slide'].create({
++            'name': 'Live Class',
++            'channel_id': self.channel.id,
++            'slide_category': 'url',
++            'irg_url': 'https://example.com/class',
++        })
++
++        self.assertEqual(slide.slide_type, 'url')
++        self.assertIn('https://example.com/class', slide.embed_code)
++
++    def test_url_slide_requires_http_url(self):
++        with self.assertRaises(ValidationError):
++            self.env['slide.slide'].create({
++                'name': 'Invalid Class',
++                'channel_id': self.channel.id,
++                'slide_category': 'url',
++                'irg_url': 'javascript:alert(1)',
++            })
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/README.md b/addons-extra/extrairg/irg_elearning_url_slide/README.md
+new file mode 100644
+index 00000000..d3a59d0d
+--- /dev/null
++++ b/addons-extra/extrairg/irg_elearning_url_slide/README.md
+@@ -0,0 +1,16 @@
++# IRG eLearning URL Slide
++
++Anade un tipo de contenido `URL` a eLearning (`website_slides`) para crear slides normales que enlacen a clases o recursos externos.
++
++## Uso
++
++1. Crear o editar un contenido dentro de un curso eLearning.
++2. Seleccionar `URL` en `Tipo de contenido`.
++3. Completar el campo `URL` con una direccion `http://` o `https://`.
++4. Opcionalmente cambiar `Texto del boton`.
++
++El alumno vera el contenido como un slide normal con un boton de acceso. El enlace se abre en la misma ventana.
++
++## Changelog
++
++- `16.0.1.0.0`: tipo de contenido URL, validacion de URL, vista backend, render frontend, icono y soporte fullscreen.
+diff --git a/.agents/knowledge/odoo_development_modding/artifacts/irg_elearning_url_slide.md b/.agents/knowledge/odoo_development_modding/artifacts/irg_elearning_url_slide.md
+new file mode 100644
+index 00000000..ab83c501
+--- /dev/null
++++ b/.agents/knowledge/odoo_development_modding/artifacts/irg_elearning_url_slide.md
+@@ -0,0 +1,20 @@
++# irg_elearning_url_slide
++
++## Contexto
++
++Para anadir nuevas categorias de contenido a `website_slides` en Odoo 16 no basta con extender `slide.slide.slide_category` y `slide.slide.slide_type`.
++
++## Gotcha
++
++`website_slides` calcula estadisticas de `slide.channel` usando campos con patron `nbr_<slide_category>`. Si se anade una categoria `url`, tambien debe existir `slide.channel.nbr_url`; de lo contrario aparece `KeyError: 'nbr_url'` durante recomputos de `_compute_slides_statistics`.
++
++## Patron Aplicado
++
++- Anadir `selection_add` en `slide.slide.slide_category`.
++- Anadir `selection_add` en `slide.slide.slide_type` y ajustar `_compute_slide_type`.
++- Anadir contador `slide.channel.nbr_<categoria>`.
++- Si se requiere fullscreen, anadir `slide.embed_code` y extender el player JS/XML de `website_slides`.
++
++## Validacion
++
++La mision `irg_elearning_url_slide` valido instalacion y tests enfocados en base limpia `validation_url_slide_20260615_c` con `docker-compose.local.yml`.
+diff --git a/missions/irg_elearning_url_slide/plan.md b/missions/irg_elearning_url_slide/plan.md
+new file mode 100644
+index 00000000..d5a3ed6c
+--- /dev/null
++++ b/missions/irg_elearning_url_slide/plan.md
+@@ -0,0 +1,58 @@
++# irg_elearning_url_slide
++
++## Alcance
++
++Crear un modulo nuevo para Odoo 16 que anada un tipo de contenido `URL` a eLearning (`website_slides`) sin modificar modulos existentes.
++
++El nuevo tipo debe aparecer en el desplegable `Tipo de contenido` de `slide.slide`, permitir configurar una URL y renderizarse como un slide normal del curso con un enlace de acceso en la misma ventana.
++
++## Descomposicion
++
++1. Crear micro-spec obligatoria en `doc/micro-specs/`.
++2. Crear modulo `addons-extra/extrairg/irg_elearning_url_slide`.
++3. Extender `slide.slide` con `slide_category = url`, `slide_type = url`, campos URL y validaciones.
++4. Heredar vista de formulario para mostrar campos URL solo para el tipo `URL`.
++5. Heredar templates de `website_slides` para render, icono y soporte en sidebar/fullscreen.
++6. Anadir asset JS/XML para que el fullscreen reconozca el contenido URL.
++7. Validar sintaxis Python/XML y registrar evidencia.
++8. Documentar README/changelog y knowledge reutilizable.
++
++## Clasificacion de Complejidad
++
++Tier: `standard`.
++
++Justificacion: afecta a 2-5 areas del modulo nuevo (modelo, vistas backend, QWeb frontend, assets y tests/documentacion), con logica acotada y sin tocar autenticacion, concurrencia, migraciones de datos, secretos, despliegue ni borrado historico.
++
++## Modelos Elegidos
++
++- Orquestador / Plan: modelo de razonamiento alto disponible.
++- Implementacion: tier `standard`, modelo intermedio fuerte de codigo.
++- Validacion: tier `standard`, verificacion local con evidencia.
++- Documentacion: modelo ligero suficiente.
++
++## Dependencias
++
++- `website_slides`
++- `website`
++- `web`
++
++## Knowledge Consultada
++
++- `.agents/knowledge/odoo_development_modding/artifacts/modding_rules_and_email_analysis.md`
++- `.agents/workflows/odoo16_codebase_knowledge.md`
++- `SPECIFICATIONS.md`
++
++## Riesgos
++
++- El player fullscreen de `website_slides` requiere asset especifico para categorias custom.
++- Algunos modulos custom existentes sobrescriben `t-att-data-embed-code`; el nuevo tipo debe anadirse con herencia de baja agresividad y depender de `website_slides` solamente.
++- La URL se abrira en la misma ventana segun requisito del usuario; esto puede sacar al alumno del campus si el destino es externo.
++
++## Criterios de Aceptacion
++
++- `URL` aparece como opcion en `Tipo de contenido`.
++- Al seleccionar `URL`, se muestra y exige el campo URL.
++- Un slide URL se renderiza en la vista de contenido como un enlace/boton de acceso.
++- El enlace no usa `target="_blank"`.
++- El tipo tiene icono en listados/sidebar.
++- Sintaxis Python/XML valida.
+diff --git a/missions/irg_elearning_url_slide/execution.log b/missions/irg_elearning_url_slide/execution.log
+new file mode 100644
+index 00000000..24f6de1c
+--- /dev/null
++++ b/missions/irg_elearning_url_slide/execution.log
+@@ -0,0 +1,10 @@
++2026-06-15 - Plan creado antes de tocar codigo.
++2026-06-15 - Micro-spec creada segun SPECIFICATIONS.md.
++2026-06-15 - Implementado modulo inicial irg_elearning_url_slide.
++2026-06-15 - Validacion Odoo con --test-enable fallo por KeyError 'nbr_url' en slide.channel._compute_slides_statistics.
++2026-06-15 - Correccion aplicada: anadido campo slide.channel.nbr_url requerido por estadisticas de categorias de website_slides.
++2026-06-15 - Instalacion enfocada del modulo en validation_url_slide_20260615_b cargo sin errores, pero no ejecuto tests por falta de import en tests/__init__.py.
++2026-06-15 - Correccion aplicada: import de tests y reemplazo de XPath contains(@class) por hasclass().
++2026-06-15 - Validacion estatica final pasada: compileall y parse XML.
++2026-06-15 - Validacion Odoo final pasada en validation_url_slide_20260615_c con --test-tags /irg_elearning_url_slide: 0 failed, 0 errors de 2 tests.
++2026-06-15 - Documentacion README y knowledge base actualizadas.
+diff --git a/missions/irg_elearning_url_slide/verification.json b/missions/irg_elearning_url_slide/verification.json
+new file mode 100644
+index 00000000..e943b733
+--- /dev/null
++++ b/missions/irg_elearning_url_slide/verification.json
+@@ -0,0 +1,31 @@
++{
++  "status": "passed",
++  "task": "irg_elearning_url_slide",
++  "checks": [
++    {
++      "name": "python_compile",
++      "result": "pass",
++      "detail": "python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide completed successfully"
++    },
++    {
++      "name": "xml_parse",
++      "result": "pass",
++      "detail": "Backend XML, QWeb XML and frontend XML parsed successfully"
++    },
++    {
++      "name": "odoo_module_install",
++      "result": "pass",
++      "detail": "Module installed in validation_url_slide_20260615_c using docker-compose.local.yml"
++    },
++    {
++      "name": "odoo_tests",
++      "result": "pass",
++      "detail": "0 failed, 0 errors of 2 focused tests for irg_elearning_url_slide"
++    }
++  ],
++  "evidence": [
++    "missions/irg_elearning_url_slide/artifacts/validation-output.log"
++  ],
++  "model_tier_used": "standard",
++  "escalations": 0
++}
+diff --git a/missions/irg_elearning_url_slide/artifacts/validation-output.log b/missions/irg_elearning_url_slide/artifacts/validation-output.log
+new file mode 100644
+index 00000000..050c0e60
+--- /dev/null
++++ b/missions/irg_elearning_url_slide/artifacts/validation-output.log
+@@ -0,0 +1,14 @@
++Static validation:
++- python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide: passed
++- XML parse for backend views, QWeb templates and frontend XML: passed
++
++Odoo validation using docker-compose.local.yml:
++- Command: docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d validation_url_slide_20260615_c -i irg_elearning_url_slide --test-enable --test-tags /irg_elearning_url_slide --stop-after-init --without-demo=all
++- Database: validation_url_slide_20260615_c
++- Result: passed
++- Evidence summary: irg_elearning_url_slide loaded; TestUrlSlide.test_url_slide_requires_http_url and TestUrlSlide.test_url_slide_type started; 0 failed, 0 error(s) of 2 tests.
++
++Earlier failed validation:
++- Database: validation_url_slide_20260615
++- Result: failed due to KeyError 'nbr_url' in website_slides slide channel statistics.
++- Fix: added slide.channel.nbr_url field.

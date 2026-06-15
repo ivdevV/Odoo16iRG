@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="slide_content_detailed_irg_url" inherit_id="website_slides.slide_content_detailed" name="Slide Content Detailed - IRG URL">
+        <xpath expr="//div[hasclass('ratio')][1]" position="before">
+            <div t-if="slide.slide_category == 'url'" class="o_irg_url_slide card border-0 shadow-sm my-3">
+                <div class="card-body text-center p-4 p-md-5">
+                    <i class="fa fa-link fa-2x text-primary mb-3" aria-hidden="true"/>
+                    <h3 class="mb-3" t-esc="slide.name"/>
+                    <p class="text-muted mb-4" t-if="slide.description" t-field="slide.description"/>
+                    <a class="btn btn-primary btn-lg" t-att-href="slide.irg_url">
+                        <t t-esc="slide.irg_url_button_label or 'Ir al contenido'"/>
+                    </a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="slide_icon_irg_url" inherit_id="website_slides.slide_icon" name="Slide Icon - IRG URL">
+        <xpath expr="//i[@t-if=&quot;slide.slide_type == 'quiz'&quot;]" position="after">
+            <i t-if="slide.slide_type == 'url'" t-att-class="'fa fa-link %s' % icon_class"/>
+        </xpath>
+    </template>
+
+    <template id="slide_fullscreen_sidebar_category_irg_url" inherit_id="website_slides.slide_fullscreen_sidebar_category" name="Fullscreen Sidebar - IRG URL" priority="110">
+        <xpath expr="//li[contains(@t-attf-class, 'o_wslides_fs_sidebar_list_item')]" position="attributes">
+            <attribute name="t-att-data-embed-code">slide.embed_code if slide.slide_category in ['video', 'document', 'infographic', 'local_external', 'bunny', 'scorm', 'url'] else False</attribute>
+        </xpath>
+    </template>
+</odoo>

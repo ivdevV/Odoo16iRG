@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_irg_url" model="ir.ui.view">
+        <field name="name">slide.slide.form.irg.url</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='document_binary_content']" position="after">
+                <field name="irg_url"
+                       placeholder="https://..."
+                       attrs="{'invisible': [('slide_category', '!=', 'url')], 'required': [('slide_category', '=', 'url')]}"/>
+                <field name="irg_url_button_label"
+                       attrs="{'invisible': [('slide_category', '!=', 'url')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
