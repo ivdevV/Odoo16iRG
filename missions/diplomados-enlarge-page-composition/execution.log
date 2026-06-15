@@ -1,0 +1,6 @@
+2026-06-15 - Plan creado antes de modificar codigo.
+2026-06-15 - Analisis delegado a subagente `explore`: concluye que la pagina/fondo ya llegan al borde y el problema es composicion interna pequena.
+2026-06-15 - Implementacion delegada a subagente codificador `general`.
+2026-06-15 - Codificador modifico solo `reports/diplomado_templates.xml`: logo del anverso a 86mm, textos principales ampliados, titulo de diplomado a 23pt, firmas e imagenes ampliadas, reverso sin cambios directos.
+2026-06-15 - Validacion delegada a subagente tester `general` usando `docker-compose.local.yml`.
+2026-06-15 - Tester valido XML, whitespace, servicios compose, carga del modulo en `odoo_test_diplomado` y reviso que el reverso no tuviera cambios directos.
