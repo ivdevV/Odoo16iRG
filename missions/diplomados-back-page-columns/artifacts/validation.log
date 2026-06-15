@@ -1,0 +1,27 @@
+Validation date: 2026-06-15
+
+Validated by subagent tester (`general`).
+
+Checks:
+
+- XML syntax: PASS
+  Command: `xmllint --noout "addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml"`
+  Detail: no output; XML is well formed.
+
+- Diff whitespace: PASS
+  Command: `git diff --check -- "addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml"`
+  Detail: no output; no whitespace errors detected.
+
+- Local compose services: PASS
+  Command: `docker compose -f docker-compose.local.yml ps`
+  Detail: `odoo_local`, `pgodoo_local` and `redisodoo_local` were Up.
+
+- Odoo module load/update: PASS with warnings
+  Command: `docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d odoo_test_diplomado -u irg_generacion_diplomados --test-enable --stop-after-init --test-tags /irg_generacion_diplomados`
+  Detail: registry loaded and shutdown completed; Odoo reported `0 failed, 0 error(s) of 0 tests when loading database 'odoo_test_diplomado'`.
+
+Residual risks:
+
+- Odoo reported `OSError: [Errno 98] Address already in use` for the HTTP thread because the running service already owns the port. It did not block registry load or module update.
+- The selected Odoo test tag executed 0 tests.
+- Final visual confirmation still requires regenerating the diploma PDF from Odoo.
