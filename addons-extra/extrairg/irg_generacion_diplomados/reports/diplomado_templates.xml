@@ -5,212 +5,203 @@
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.basic_layout">
                     <style>
-                        .diploma-page {
+                        @page {
+                            size: A4 landscape;
+                            margin: 0 !important;
+                        }
+                        html, body, body.container, #wrapwrap, main, .article {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            width: 297mm !important;
+                            max-width: 297mm !important;
+                            min-width: 297mm !important;
+                            background-color: transparent !important;
+                            border: none !important;
+                        }
+                        body {
+                            font-family: 'Helvetica', 'Arial', sans-serif;
+                            -webkit-print-color-adjust: exact;
+                            background-color: #ffffff !important;
+                        }
+                        .page-container {
                             position: relative;
                             width: 297mm;
-                            height: 209mm;
-                            box-sizing: border-box;
-                            padding: 20mm;
+                            height: 210mm;
+                            margin: 0;
+                            padding: 0;
                             page-break-after: always;
-                            font-family: 'Helvetica', 'Arial', sans-serif;
+                            overflow: hidden;
+                            box-sizing: border-box;
                         }
-                        .diploma-back-page {
+                        .page-container-back {
                             position: relative;
                             width: 297mm;
-                            height: 209mm;
-                            box-sizing: border-box;
-                            padding: 20mm;
-                            font-family: 'Helvetica', 'Arial', sans-serif;
-                        }
-                        .diploma-title {
-                            font-size: 32px;
-                            font-weight: bold;
-                            text-align: center;
-                            margin-top: 30px;
-                        }
-                        .student-name {
-                            font-size: 28px;
-                            font-weight: bold;
-                            text-align: center;
-                            margin-top: 20px;
-                        }
-                        .details-text {
-                            font-size: 16px;
-                            text-align: center;
-                            margin-top: 15px;
-                            line-height: 1.5;
-                        }
-                        .subjects-table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            font-size: 12px;
-                            margin-top: 10px;
-                        }
-                        .subjects-table th, .subjects-table td {
-                            border: 1px solid #ddd;
-                            padding: 6px 10px;
-                            text-align: left;
-                        }
-                        .subjects-table th {
-                            background-color: #f8f9fa;
-                            font-weight: bold;
-                        }
-                        .column-half {
-                            width: 48%;
-                            float: left;
+                            height: 210mm;
+                            margin: 0;
+                            padding: 0;
+                            page-break-after: avoid;
+                            overflow: hidden;
                             box-sizing: border-box;
                         }
-                        .column-spacer {
-                            width: 4%;
-                            float: left;
-                            height: 10px;
-                        }
-                        .clearfix::after {
-                            content: "";
-                            clear: both;
-                            display: table;
-                        }
-                        .direction-seal {
-                            margin-top: 40px;
-                            text-align: center;
-                            font-size: 14px;
+                        .bg-image {
                             position: absolute;
-                            bottom: 20mm;
-                            width: 100%;
+                            top: 0;
                             left: 0;
-                            padding: 0 20mm;
-                            box-sizing: border-box;
+                            width: 297mm;
+                            height: 210mm;
+                            z-index: -10;
+                            display: block;
+                        }
+                        .top-logo {
+                            position: absolute;
+                            left: 106mm;
+                            top: 8mm;
+                            width: 85mm;
+                            height: auto;
+                            z-index: 10;
+                        }
+                        .center-text {
+                            position: absolute;
+                            left: 0;
+                            width: 297mm;
+                            text-align: center;
+                        }
+                        .signature-container-left {
+                            position: absolute;
+                            left: 35mm;
+                            width: 80mm;
+                            top: 176.8mm;
+                            text-align: center;
+                            font-size: 10pt;
+                            line-height: 1.3;
+                        }
+                        .signature-container-right {
+                            position: absolute;
+                            left: 182mm;
+                            width: 80mm;
+                            top: 176.8mm;
+                            text-align: center;
+                            font-size: 10pt;
+                            line-height: 1.3;
+                        }
+                        .signature-img-left {
+                            position: absolute;
+                            left: 56mm;
+                            top: 139.2mm;
+                            width: 37mm;
+                            height: 36mm;
+                            z-index: 5;
+                        }
+                        .signature-img-right {
+                            position: absolute;
+                            left: 185mm;
+                            top: 138.0mm;
+                            width: 45mm;
+                            height: auto;
+                            z-index: 5;
                         }
                     </style>
 
                     <!-- Página 1: Anverso del Diploma -->
-                    <div class="diploma-page">
-                        <t t-if="o.diploma_type == 'digital'">
-                            <!-- Marco decorativo solo para el diploma digital -->
-                            <div style="position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 4px double #8B0000; pointer-events: none;"/>
-                            <div style="position: absolute; top: 12mm; left: 12mm; right: 12mm; bottom: 12mm; border: 1px solid #8B0000; pointer-events: none;"/>
-                        </t>
+                    <div class="page-container">
+                        <!-- Fondo a hoja completa (Full Bleed) -->
+                        <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
                         
-                        <div style="text-align: center; margin-top: 15px;">
-                            <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" style="max-height: 70px;" alt="Logo"/>
+                        <!-- Logo Superior -->
+                        <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
+
+                        <!-- El instituto Raimon Gaja -->
+                        <div class="center-text" style="top: 40.1mm; font-size: 17pt; font-weight: bold; color: #235F94; text-transform: none;">
+                            El instituto Raimon Gaja
                         </div>
-                        
-                        <div class="diploma-title" style="color: #4A4A4A; text-transform: uppercase; letter-spacing: 2px;">
-                            Diploma de Especialización
+
+                        <!-- Hace constar que -->
+                        <div class="center-text" style="top: 49.5mm; font-size: 12pt; color: #727F77; font-style: italic;">
+                            Hace constar que
                         </div>
-                        
-                        <div class="details-text" style="color: #666; font-style: italic;">
-                            El Instituto Raimon Gaja certifica que:
-                        </div>
-                        
-                        <div class="student-name" style="color: #8B0000; font-size: 34px; margin-top: 10px; letter-spacing: 1px;">
+
+                        <!-- Nombre del Alumno -->
+                        <div class="center-text" style="top: 57.5mm; font-size: 24pt; font-weight: bold; color: #000; letter-spacing: 1px;">
                             <span t-field="o.student_name"/>
                         </div>
-                        
-                        <div class="details-text" style="color: #666;">
-                            ha cursado y superado satisfactoriamente los estudios correspondientes al Diplomado en:
-                        </div>
-                        
-                        <div class="diploma-title" style="font-size: 26px; color: #111; margin-top: 5px; text-transform: uppercase;">
-                            <span t-field="o.diplomado_name"/>
-                        </div>
-                        
-                        <div class="details-text" style="margin-top: 15px; font-size: 15px;">
-                            Estudios realizados desde el 
-                            <strong><span t-field="o.start_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong> 
-                            hasta el 
-                            <strong><span t-field="o.end_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong>.
-                        </div>
-                        
-                        <div class="details-text" style="margin-top: 10px; font-size: 15px;">
-                            Con una carga académica de 
+
+                        <!-- Texto de Aprobación -->
+                        <div class="center-text" style="left: 30mm; width: 237mm; top: 73.0mm; font-size: 11.5pt; color: #6C7A71; line-height: 1.5; font-family: 'Helvetica', 'Arial', sans-serif;">
+                            ha aprobado los estudios correspondientes al programa de contenidos que figura en el dorso, celebrado del 
+                            <strong><span t-field="o.start_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong> al 
+                            <strong><span t-field="o.end_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong>, con una duración de 
                             <strong><span t-field="o.duration_hours"/> horas</strong>
                             <t t-if="o.duration_ects">
-                                equivalentes a <strong><span t-field="o.duration_ects"/> ECTS</strong>
-                            </t>.
+                                (equivalente a <strong><span t-field="o.duration_ects"/> ECTS</strong>)
+                            </t>, por lo que se expide el presente diploma:
                         </div>
-                        
-                        <!-- Pie de página con firmas y registro -->
-                        <div class="direction-seal">
-                            <div class="clearfix" style="width: 100%;">
-                                <div style="float: left; width: 35%; text-align: left;">
-                                    <strong>Registro Nº:</strong> <span t-field="o.name"/><br/>
-                                    <strong>Fecha de expedición:</strong> <span t-field="o.issue_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/>
-                                </div>
-                                <div style="float: left; width: 30%; text-align: center; height: 50px;">
-                                    <!-- Espacio para sello -->
-                                </div>
-                                <div style="float: right; width: 35%; text-align: right; margin-top: 10px;">
-                                    <strong>Firma de la Dirección</strong>
-                                    <div style="margin-top: 25px; border-top: 1px solid #8B0000; width: 200px; float: right;"/>
-                                </div>
-                            </div>
+
+                        <!-- Nombre del Diplomado -->
+                        <div class="center-text" style="top: 94.2mm; font-size: 18pt; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 1px;">
+                            <span t-field="o.diplomado_name"/>
+                        </div>
+
+                        <!-- que acredita haber superado con aprovechamiento... -->
+                        <div class="center-text" style="top: 107.1mm; font-size: 11.5pt; color: #6C7A71; font-style: italic;">
+                            que acredita haber superado con aprovechamiento las mencionadas enseñanzas.
+                        </div>
+
+                        <!-- Barcelona, a ... -->
+                        <div class="center-text" style="top: 119.3mm; font-size: 11.5pt; color: #6C7A71;">
+                            Barcelona, a <span t-field="o.issue_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/>
+                        </div>
+
+                        <!-- Firmas e Imágenes -->
+                        <img class="signature-img-left" src="/irg_generacion_diplomados/static/src/img/firma_izquierda.jpg"/>
+                        <img class="signature-img-right" src="/irg_generacion_diplomados/static/src/img/firma_derecha.jpg"/>
+
+                        <div class="signature-container-left">
+                            <strong>Raimon Gaja Jaumeandreu</strong><br/>
+                            <span style="color: #666; font-size: 9pt;">Director General iRG</span>
+                        </div>
+
+                        <div class="signature-container-right">
+                            <strong>Fermín Carrillo González</strong><br/>
+                            <span style="color: #666; font-size: 9pt;">Director de Relaciones Internacionales</span>
                         </div>
                     </div>
 
                     <!-- Página 2: Reverso del Diploma (Desglose de asignaturas) -->
-                    <div class="diploma-back-page">
-                        <t t-if="o.diploma_type == 'digital'">
-                            <div style="position: absolute; top: 10mm; left: 10mm; right: 10mm; bottom: 10mm; border: 1px solid #ccc; pointer-events: none;"/>
-                        </t>
+                    <div class="page-container-back">
+                        <!-- Fondo a hoja completa (Full Bleed) -->
+                        <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
                         
-                        <div class="diploma-title" style="font-size: 22px; text-transform: uppercase; margin-top: 10px; color: #4A4A4A; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-                            Anexo Académico - Programa de Asignaturas
-                        </div>
-                        
-                        <div class="details-text" style="font-size: 13px; text-align: left; margin-top: 10px; margin-bottom: 25px; color: #555;">
-                            Certificación de las materias y asignaturas cursadas por el alumno <strong><span t-field="o.student_name"/></strong> en el diplomado <strong><span t-field="o.diplomado_name"/></strong>:
+                        <!-- Logo Superior -->
+                        <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
+
+                        <!-- Módulos Presenciales Header -->
+                        <div class="center-text" style="top: 41.2mm; font-size: 13pt; font-weight: bold; color: #033DAA; text-transform: uppercase; letter-spacing: 1px;">
+                            Módulos Presenciales
                         </div>
 
-                        <div class="clearfix" style="width: 100%;">
-                            <!-- Columna de Módulos Presenciales -->
-                            <div class="column-half">
-                                <h5 style="border-bottom: 2px solid #8B0000; padding-bottom: 5px; color: #8B0000; font-weight: bold; font-size: 14px;">
-                                    Módulos Presenciales
-                                </h5>
-                                <t t-if="o.subjects_presencial">
-                                    <div style="white-space: pre-line; text-align: left; font-size: 12px; line-height: 1.6; color: #333; margin-top: 10px;">
-                                        <span t-field="o.subjects_presencial"/>
-                                    </div>
-                                </t>
-                                <t t-else="">
-                                    <p class="text-muted" style="font-size: 12px; font-style: italic; margin-top: 10px;">
-                                        No se registran módulos en modalidad presencial.
-                                    </p>
-                                </t>
-                            </div>
-
-                            <!-- Espacio central entre columnas -->
-                            <div class="column-spacer"/>
-
-                            <!-- Columna de Módulos Online -->
-                            <div class="column-half">
-                                <h5 style="border-bottom: 2px solid #00008B; padding-bottom: 5px; color: #00008B; font-weight: bold; font-size: 14px;">
-                                    Módulos Online / Virtuales
-                                </h5>
-                                <t t-if="o.subjects_online">
-                                    <div style="white-space: pre-line; text-align: left; font-size: 12px; line-height: 1.6; color: #333; margin-top: 10px;">
-                                        <span t-field="o.subjects_online"/>
-                                    </div>
-                                </t>
-                                <t t-else="">
-                                    <p class="text-muted" style="font-size: 12px; font-style: italic; margin-top: 10px;">
-                                        No se registran módulos en modalidad online / virtual.
-                                    </p>
-                                </t>
-                            </div>
+                        <!-- Módulos Presenciales List -->
+                        <div class="center-text" style="left: 30mm; width: 237mm; top: 53.0mm; font-size: 12pt; color: #333; line-height: 1.6; white-space: pre-line;">
+                            <t t-if="o.subjects_presencial">
+                                <span t-field="o.subjects_presencial"/>
+                            </t>
+                            <t t-else="">
+                                <span class="text-muted" style="font-style: italic;">No se registran módulos en modalidad presencial.</span>
+                            </t>
                         </div>
-                        
-                        <!-- Pie del reverso -->
-                        <div style="position: absolute; bottom: 20mm; width: 100%; left: 0; padding: 0 20mm; box-sizing: border-box; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 10px; margin-top: 30px;">
-                            <div class="clearfix">
-                                <div style="float: left; width: 50%;">
-                                    Documento emitido de forma automatizada por el registro histórico de diplomados.
-                                </div>
-                                <div style="float: right; width: 50%; text-align: right;">
-                                    <strong>ID Registro:</strong> <span t-field="o.name"/>
-                                </div>
-                            </div>
+
+                        <!-- Módulos Online Header -->
+                        <div class="center-text" style="top: 151.6mm; font-size: 13pt; font-weight: bold; color: #033DAA; text-transform: uppercase; letter-spacing: 1px;">
+                            Módulos Online
+                        </div>
+
+                        <!-- Módulos Online List -->
+                        <div class="center-text" style="left: 30mm; width: 237mm; top: 162.3mm; font-size: 12pt; color: #333; line-height: 1.6; white-space: pre-line;">
+                            <t t-if="o.subjects_online">
+                                <span t-field="o.subjects_online"/>
+                            </t>
+                            <t t-else="">
+                                <span class="text-muted" style="font-style: italic;">No se registran módulos en modalidad online / virtual.</span>
+                            </t>
                         </div>
                     </div>
                 </t>
