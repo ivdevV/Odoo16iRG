@@ -1,120 +1,109 @@
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_report.xml b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_report.xml
+index 039fd951..596f3147 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_report.xml
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_report.xml
+@@ -13,6 +13,7 @@
+         <field name="header_line" eval="False"/>
+         <field name="header_spacing">0</field>
+         <field name="dpi">90</field>
++        <field name="disable_shrinking" eval="False"/>
+     </record>
+ 
+     <!-- Acción de Reporte -->
 diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+index c307b791..50b5f7f6 100644
 --- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
 +++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
-@@
--                        html, body, body.container, #wrapwrap, main, .article {
-+                        html, body, body.container, #wrapwrap, main, .article, .page {
-@@
-+                        .article {
-+                            height: 210mm !important;
-+                        }
-@@
--                            z-index: -10;
-+                            z-index: 0;
-@@
--                            z-index: 10;
-+                            z-index: 2;
-@@
-+                            z-index: 2;
-@@
-+                        .diplomado-title {
-+                            left: 28mm;
-+                            width: 241mm;
-+                            top: 91.8mm;
-+                            font-size: 15pt;
-+                            font-weight: bold;
-+                            color: #000;
-+                            line-height: 1.18;
-+                            letter-spacing: 0.3px;
-+                        }
-+                        .back-content {
-+                            position: absolute;
-+                            left: 39mm;
-+                            top: 41.5mm;
-+                            width: 219mm;
-+                            z-index: 2;
-+                            text-align: center;
-+                            color: #333;
-+                            font-size: 10.5pt;
-+                            line-height: 1.55;
-+                        }
-+                        .module-section {
-+                            margin: 0 0 8mm 0;
-+                        }
-+                        .module-title {
-+                            margin: 0 0 4mm 0;
-+                            font-size: 12pt;
-+                            font-weight: bold;
-+                            color: #033DAA;
-+                        }
-+                        .module-list {
-+                            white-space: pre-line;
-+                            margin: 0;
-+                        }
-+                        .module-empty {
-+                            color: #777;
-+                            font-style: italic;
-+                        }
-@@
--                        <div class="center-text" style="top: 94.2mm; font-size: 18pt; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 1px;">
-+                        <div class="center-text diplomado-title">
-@@
--                        <div class="center-text" style="top: 107.1mm; font-size: 11.5pt; color: #6C7A71; font-style: italic;">
-+                        <div class="center-text" style="top: 112.5mm; font-size: 11.5pt; color: #6C7A71; font-style: italic;">
-@@
--                        <div class="center-text" style="top: 119.3mm; font-size: 11.5pt; color: #6C7A71;">
-+                        <div class="center-text" style="top: 123.5mm; font-size: 11.5pt; color: #6C7A71;">
-@@
--                        <!-- Módulos Presenciales Header -->
--                        <div class="center-text" style="top: 41.2mm; font-size: 13pt; font-weight: bold; color: #033DAA; text-transform: uppercase; letter-spacing: 1px;">
--                            Módulos Presenciales
--                        </div>
--
--                        <!-- Módulos Presenciales List -->
--                        <div class="center-text" style="left: 30mm; width: 237mm; top: 53.0mm; font-size: 12pt; color: #333; line-height: 1.6; white-space: pre-line;">
--                            <t t-if="o.subjects_presencial">
--                                <span t-field="o.subjects_presencial"/>
--                            </t>
--                            <t t-else="">
--                                <span class="text-muted" style="font-style: italic;">No se registran módulos en modalidad presencial.</span>
--                            </t>
--                        </div>
--
--                        <!-- Módulos Online Header -->
--                        <div class="center-text" style="top: 151.6mm; font-size: 13pt; font-weight: bold; color: #033DAA; text-transform: uppercase; letter-spacing: 1px;">
--                            Módulos Online
--                        </div>
--
--                        <!-- Módulos Online List -->
--                        <div class="center-text" style="left: 30mm; width: 237mm; top: 162.3mm; font-size: 12pt; color: #333; line-height: 1.6; white-space: pre-line;">
--                            <t t-if="o.subjects_online">
--                                <span t-field="o.subjects_online"/>
--                            </t>
--                            <t t-else="">
--                                <span class="text-muted" style="font-style: italic;">No se registran módulos en modalidad online / virtual.</span>
--                            </t>
-+                        <div class="back-content">
-+                            <div class="module-section">
-+                                <div class="module-title">Módulos Presenciales</div>
-+                                <div class="module-list">
-+                                    <t t-if="o.subjects_presencial">
-+                                        <span t-field="o.subjects_presencial"/>
-+                                    </t>
-+                                    <t t-else="">
-+                                        <span class="module-empty">No se registran módulos en modalidad presencial.</span>
-+                                    </t>
-+                                </div>
-+                            </div>
-+
-+                            <div class="module-section">
-+                                <div class="module-title">Módulos Online</div>
-+                                <div class="module-list">
-+                                    <t t-if="o.subjects_online">
-+                                        <span t-field="o.subjects_online"/>
-+                                    </t>
-+                                    <t t-else="">
-+                                        <span class="module-empty">No se registran módulos en modalidad online / virtual.</span>
-+                                    </t>
-+                                </div>
-+                            </div>
-                         </div>
+@@ -1,8 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <odoo>
+     <template id="report_diplomado_template">
+-        <t t-foreach="docs" t-as="o">
+-            <t t-call="web.basic_layout">
++        <t t-call="web.html_container">
++            <head>
++                <meta charset="UTF-8"/>
++                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
++            </head>
+                     <style>
+                         @page {
+                             size: A4 landscape;
+@@ -25,7 +28,7 @@
+                         .diploma-page {
+                             position: relative;
+                             width: 297mm;
+-                            height: 210mm;
++                            height: 200mm;
+                             margin: 0;
+                             padding: 0;
+                             page-break-after: always;
+@@ -40,10 +43,10 @@
+                             left: 50%;
+                             top: 50%;
+                             width: 297mm;
+-                            height: 210mm;
++                            height: 200mm;
+                             margin-left: -148.5mm;
+-                            margin-top: -105mm;
+-                            transform: scale(1.08);
++                            margin-top: -100mm;
++                            transform: scale(1.0);
+                             transform-origin: center center;
+                         }
+                         .bg-image {
+@@ -83,7 +86,7 @@
+                             position: absolute;
+                             left: 25mm;
+                             width: 95mm;
+-                            top: 193mm;
++                            top: 184mm;
+                             text-align: center;
+                             font-size: 10.5pt;
+                             line-height: 1.15;
+@@ -93,7 +96,7 @@
+                             position: absolute;
+                             left: 177mm;
+                             width: 95mm;
+-                            top: 193mm;
++                            top: 184mm;
+                             text-align: center;
+                             font-size: 10.5pt;
+                             line-height: 1.15;
+@@ -102,7 +105,7 @@
+                         .diploma-page.front .signature-img-left {
+                             position: absolute;
+                             left: 54mm;
+-                            top: 166mm;
++                            top: 157mm;
+                             width: 37mm;
+                             height: auto;
+                             z-index: 2;
+@@ -110,7 +113,7 @@
+                         .diploma-page.front .signature-img-right {
+                             position: absolute;
+                             left: 203mm;
+-                            top: 165mm;
++                            top: 156mm;
+                             width: 43mm;
+                             height: auto;
+                             z-index: 2;
+@@ -164,8 +167,9 @@
+                         }
+                     </style>
+ 
++            <t t-foreach="docs" t-as="o">
+                     <!-- Página 1: Anverso del Diploma -->
+-                    <div class="page diploma-page front">
++                    <div class="diploma-page front">
+                         <div class="diploma-scale">
+                             <!-- Fondo a hoja completa (Full Bleed) -->
+                             <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
+@@ -226,7 +230,7 @@
+                     </div>
+ 
+                     <!-- Página 2: Reverso del Diploma (Desglose de asignaturas) -->
+-                    <div class="page diploma-page back">
++                    <div class="diploma-page back">
+                         <div class="diploma-scale">
+                             <!-- Fondo a hoja completa (Full Bleed) -->
+                             <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>

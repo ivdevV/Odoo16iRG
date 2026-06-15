@@ -60,8 +60,12 @@ Las asignaturas que figurarán en el diplomado se configuran como texto libre (c
 
 - **Estructura base:** Definida en `reports/diplomado_report.xml` que establece un formato de página (`report.paperformat`) A4 horizontal (Landscape) sin márgenes (`margin_top = 0`, `margin_bottom = 0`, `margin_left = 0`, `margin_right = 0`).
 - **Maquetación Full Bleed (Hoja completa sin márgenes):** Implementada en `reports/diplomado_templates.xml` (desde la versión 16.0.1.0.4) para permitir un fondo de sangrado completo en la impresión y visualización exacta del PDF. 
-  - Se remueven márgenes predeterminados de Odoo mediante CSS inline y directivas globales `@page { size: A4 landscape; margin: 0 !important; }` sobre los divs contenedores de la plantilla (`html, body, body.container, #wrapwrap, main, .article`).
-  - Las dimensiones se fijan exactamente a `297mm x 210mm` para el anverso y reverso, asegurando un encuadre perfecto.
+  - Se omiten las plantillas de diseño estándar de Odoo (como `web.basic_layout` o `div.article`) y se utiliza únicamente `web.html_container` en la raíz para evitar que el framework añada elementos HTML/CSS y márgenes predeterminados que rompan el flujo.
+  - Se remueven márgenes predeterminados de Odoo mediante CSS y directivas globales `@page { size: A4 landscape; margin: 0 !important; }` sobre los divs contenedores de la plantilla (`html, body, body.container, #wrapwrap, main, .article, .page`).
+  - Se elimina el uso de la clase `.page` de Odoo en los contenedores del anverso y reverso para evitar paddings impuestos por Bootstrap.
+  - La escala se fija estrictamente en `1.0` (sin multiplicadores como `1.08`) para mantener una relación de aspecto 1:1.
+  - Para tolerar errores de redondeo de píxeles/milímetros en el motor `wkhtmltopdf` y evitar saltos de página erróneos, las dimensiones del lienzo se configuran a `297mm x 200mm` (dejando `10mm` de tolerancia vertical frente a los `210mm` del formato A4 físico).
+  - Los elementos del pie de página (como las firmas y sus imágenes) se posicionan con seguridad a una altura máxima de `184mm` vertical (`top: 184mm;`).
 - **Plantilla QWeb:** Genera una estructura de dos páginas:
   - **Página 1 (Anverso):** Logotipos, firmas y datos principales posicionados con precisión sobre el fondo de sangrado completo.
   - **Página 2 (Reverso):** Cabecera y listado secuencial de los bloques de asignaturas cargados de los campos textuales `subjects_presencial` y `subjects_online`.
@@ -98,11 +102,13 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_ge
 
 ### Versión 16.0.1.0.4
 - **Reemplazo de Many2many por campos de Texto Plano**:
-  - Remoción completa del uso de `op.subject` y sus relaciones Many2many en `op.course`, el wizard `irg.diplomado.wizard` y el registro histórico `irg.diplomado.registry`.
-  - Implementación de campos de texto libre (`subjects_presencial` y `subjects_online`) para definir y editar directamente de forma textual y sin restricciones el plan de estudios del diplomado.
-- **Maquetación Full Bleed sin Márgenes**:
+  - Remoción completa del uso de `op.subject` y sus relaciones Many2many en `op.course` (añadiendo `irg_diplomado_subjects_presencial` e `irg_diplomado_subjects_online`), en el wizard `irg.diplomado.wizard` (campos `subjects_presencial` y `subjects_online`) y en el registro histórico `irg.diplomado.registry` (campos `subjects_presencial` y `subjects_online`).
+  - Posibilidad de definir y editar directamente el plan de estudios del diplomado como texto libre sin restricciones de modelos relacionados.
+- **Resolución de problemas de maquetación Full Bleed sin Márgenes**:
   - Configuración del formato de página A4 Landscape a 0 márgenes en `report.paperformat`.
-  - Sobrescritura del CSS del reporte para eliminar los paddings y márgenes automáticos de Odoo en la visualización e impresión PDF.
+  - Reemplazo del layout `web.basic_layout` por una estructura directa con `web.html_container` para evitar la doble anidación HTML generada por Odoo.
+  - Remoción de la clase `.page` de las páginas del reporte y sobrescritura de estilos CSS de contenedores para anular la limitación de ancho de Bootstrap.
+  - Configuración de escala a `1.0` y reducción de altura útil de página a `200mm` (tolerancia de 10mm) con reubicación vertical de firmas a `184mm` para evitar la generación de una tercera página en blanco por desbordamiento con `wkhtmltopdf`.
 
 ### Versión 16.0.1.0.3
 - **Adición del botón de depuración**:

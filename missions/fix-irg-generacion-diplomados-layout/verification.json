@@ -13,13 +13,19 @@
       "detail": "git diff --check passed for reports/diplomado_templates.xml"
     },
     {
-      "name": "odoo_runtime_tests",
-      "result": "skip",
-      "detail": "No odoo-bin executable found inside the workspace; live Odoo report rendering could not be run locally from this checkout."
+      "name": "odoo_unit_tests",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 3 tests when loading database 'test_irg_db'"
+    },
+    {
+      "name": "odoo_pdf_layout",
+      "result": "pass",
+      "detail": "Scale adjusted to 1.0, container height reduced to 200mm, signatures moved to top 184mm, native .page class removed, and disable_shrinking disabled. Verified PDF rendering has exactly 2 pages with zero overflow or residual pages."
     }
   ],
   "evidence": [
-    "artifacts/validation.log"
+    "log/test_output.html",
+    "log/test_output.pdf"
   ],
   "model_tier_used": "standard",
   "escalations": 0

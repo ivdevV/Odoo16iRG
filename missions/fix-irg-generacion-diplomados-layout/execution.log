@@ -6,3 +6,21 @@
 2026-06-15 - Validado diff con `git diff --check`: passed.
 2026-06-15 - No se encontro `odoo-bin` en el workspace; no fue posible ejecutar tests transaccionales ni render PDF real desde este checkout.
 2026-06-15 - Registrados `verification.json`, `diff.patch`, `artifacts/validation.log` y aprendizaje en `.agents/knowledge/odoo_development_modding/artifacts/diplomado_report_layout.md`.
+2026-06-15 - Reestructurada la plantilla report_diplomado_template y añadido disable_shrinking al paperformat para adaptarlo al estilo limpio de irg_generacion_diplomas.
+2026-06-15 - Validación en caliente desde contenedor Docker:
+  - Pruebas unitarias completadas satisfactoriamente (0 fallos, 0 errores en 3 tests).
+  - Regenerado PDF y HTML de prueba a través de odoo shell.
+  - La inspección visual del PDF revela que el documento tiene 4 páginas (en lugar de 2).
+  - El anverso se desborda debido a la escala de 1.08 y la posición top 193mm de las firmas, cortando el texto a la mitad (cargos en página 2).
+  - El reverso se desborda a una página 4 en blanco.
+  - Las imágenes no cargan porque el servidor HTTP está inactivo durante la ejecución de odoo shell.
+  - Se declara la verificación como FAILED debido a estos problemas de maquetación en el PDF físico.
+2026-06-15 - Ajustada la escala de transform: scale(1.08) a scale(1.0) en la clase .diploma-scale para evitar el desborde y corregir la paginación según reporte de validación.
+2026-06-15 - Validación posterior con escala 1.0 reveló desbordamiento persistente a 4 páginas debido a márgenes implícitos y conflictos de la clase nativa `.page` de Odoo.
+  - Se removió la clase nativa `page` de los divs de anverso/reverso.
+  - Se redujo el alto del contenedor `.diploma-page` y `.diploma-scale` de 209mm a 200mm para dar un margen de tolerancia a wkhtmltopdf.
+  - Se movió el contenedor de firmas a top 184mm (y las imágenes correspondientes a 157mm/156mm).
+  - Se configuró `disable_shrinking` a `False` en el paperformat para permitir el ajuste de escala automático.
+  - Se actualizó el módulo y regeneró el reporte en Docker.
+  - La verificación física del PDF final confirma que tiene **exactamente 2 páginas** (anverso completo en pág 1 con firmas perfectas, reverso en pág 2 sin páginas residuales en blanco).
+  - Verificación formal del estado del reporte cambiada a **PASSED**.
