@@ -1,8 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <template id="report_diplomado_template">
-        <t t-foreach="docs" t-as="o">
-            <t t-call="web.basic_layout">
+<!DOCTYPE html>
+        <html lang="en-US" web-base-url="http://127.0.0.1:8069">
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="initial-scale=1"/>
+                <title>Odoo Report</title>
+                <link type="text/css" rel="stylesheet" href="/web/assets/3140-6d8ddbd/web.report_assets_common.min.css" data-asset-bundle="web.report_assets_common" data-asset-version="6d8ddbd"/>
+                
+                
+                <script type="text/javascript">
+                    window.odoo = {};
+                    window.odoo.__session_info__ = {is_report: true};
+                </script>
+                <script type="text/javascript" src="/web/assets/2097-c13a66b/web.assets_common.min.js" data-asset-bundle="web.assets_common" data-asset-version="c13a66b"></script>
+                <script type="text/javascript" src="/web/assets/3141-6d8ddbd/web.report_assets_common.min.js" data-asset-bundle="web.report_assets_common" data-asset-version="6d8ddbd"></script>
+            </head>
+            <body class="container" dir="ltr">
+                <div id="wrapwrap">
+                    <main>
+                        
+            
+            <div class="article" data-oe-model="irg.diplomado.registry" data-oe-id="8" data-oe-lang="en_US">
+                
                     <style>
                         @page {
                             size: A4 landscape;
@@ -161,52 +179,50 @@
                         }
                     </style>
 
-                    <!-- Página 1: Anverso del Diploma -->
+                    
                     <div class="page diploma-page front">
                         <div class="diploma-scale">
-                            <!-- Fondo a hoja completa (Full Bleed) -->
+                            
                             <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
 
-                            <!-- Logo Superior -->
+                            
                             <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
 
-                            <!-- Hace constar que -->
+                            
                             <div class="center-text" style="top: 58mm; font-size: 14pt; color: #727F77; font-style: italic;">
                                 Hace constar que
                             </div>
 
-                            <!-- Nombre del Alumno -->
+                            
                             <div class="center-text" style="top: 69mm; font-size: 29pt; line-height: 1.05; font-weight: bold; color: #000; letter-spacing: 1px;">
-                                <span t-field="o.student_name"/>
+                                <span>Juan Pérez</span>
                             </div>
 
-                            <!-- Texto de Aprobación -->
-                            <div class="center-text" style="left: 20mm; width: 257mm; top: 91mm; font-size: 13pt; color: #6C7A71; line-height: 1.32; font-family: 'Helvetica', 'Arial', sans-serif;">
+                            
+                            <div class="center-text" style="left: 20mm; width: 257mm; top: 91mm; font-size: 13pt; color: #6C7A71; line-height: 1.32; font-family: &#39;Helvetica&#39;, &#39;Arial&#39;, sans-serif;">
                                 ha aprobado los estudios correspondientes al programa de contenidos que figura en el dorso, celebrado del
-                                <strong><span t-field="o.start_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong> al
-                                <strong><span t-field="o.end_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong>, con una duración de
-                                <strong><span t-field="o.duration_hours"/> horas</strong>
-                                <t t-if="o.duration_ects">
-                                    (equivalente a <strong><span t-field="o.duration_ects"/> ECTS</strong>)
-                                </t>, por lo que se expide el presente diploma:
+                                <strong><span>1/01/2026</span></strong> al
+                                <strong><span>30/06/2026</span></strong>, con una duración de
+                                <strong><span>150</span> horas</strong>
+                                    (equivalente a <strong><span>6.0</span> ECTS</strong>), por lo que se expide el presente diploma:
                             </div>
 
-                            <!-- Nombre del Diplomado -->
+                            
                             <div class="center-text diplomado-title">
-                                <span t-field="o.diplomado_name"/>
+                                <span>DIPLOMADO EN PSICOLOGÍA CLÍNICA</span>
                             </div>
 
-                            <!-- que acredita haber superado con aprovechamiento... -->
+                            
                             <div class="center-text" style="top: 144mm; font-size: 13pt; color: #6C7A71; font-style: italic;">
                                 que acredita haber superado con aprovechamiento las mencionadas enseñanzas.
                             </div>
 
-                            <!-- Barcelona, a ... -->
+                            
                             <div class="center-text" style="top: 158mm; font-size: 13pt; color: #6C7A71;">
-                                Barcelona, a <span t-field="o.issue_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/>
+                                Barcelona, a <span>15/06/2026</span>
                             </div>
 
-                            <!-- Firmas e Imágenes -->
+                            
                             <img class="signature-img-left" src="/irg_generacion_diplomados/static/src/img/firma_izquierda.jpg"/>
                             <img class="signature-img-right" src="/irg_generacion_diplomados/static/src/img/firma_derecha.jpg"/>
 
@@ -222,43 +238,40 @@
                         </div>
                     </div>
 
-                    <!-- Página 2: Reverso del Diploma (Desglose de asignaturas) -->
+                    
                     <div class="page diploma-page back">
                         <div class="diploma-scale">
-                            <!-- Fondo a hoja completa (Full Bleed) -->
+                            
                             <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
 
-                            <!-- Logo Superior -->
+                            
                             <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
 
                             <div class="back-content">
                                 <div class="module-section">
                                     <div class="module-title">Módulos Presenciales</div>
                                     <div class="module-list">
-                                        <t t-if="o.subjects_presencial">
-                                            <span t-field="o.subjects_presencial"/>
-                                        </t>
-                                        <t t-else="">
-                                            <span class="module-empty">No se registran módulos en modalidad presencial.</span>
-                                        </t>
+                                            <span>Módulo 1: Introducción a la Psicopatología<br>
+Módulo 2: Evaluación Clínica<br>
+Módulo 3: Psicoterapia Integradora</span>
                                     </div>
                                 </div>
 
                                 <div class="module-section">
                                     <div class="module-title">Módulos Online</div>
                                     <div class="module-list">
-                                        <t t-if="o.subjects_online">
-                                            <span t-field="o.subjects_online"/>
-                                        </t>
-                                        <t t-else="">
-                                            <span class="module-empty">No se registran módulos en modalidad online / virtual.</span>
-                                        </t>
+                                            <span>Módulo 4: Farmacología Clínica<br>
+Módulo 5: Ética en Psicología</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-            </t>
-        </t>
-    </template>
-</odoo>
+            
+            </div>
+        
+        
+                    </main>
+                </div>
+            </body>
+        </html>

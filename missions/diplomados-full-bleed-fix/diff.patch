@@ -1,0 +1,24 @@
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+index e21e6fe7..9172a5ad 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+@@ -1,9 +1,8 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <odoo>
+     <template id="report_diplomado_template">
+-        <t t-call="web.html_container">
+-            <t t-foreach="docs" t-as="o">
+-                <t t-call="web.basic_layout">
++        <t t-foreach="docs" t-as="o">
++            <t t-call="web.basic_layout">
+                     <style>
+                         @page {
+                             size: A4 landscape;
+@@ -259,7 +258,6 @@
+                             </div>
+                         </div>
+                     </div>
+-                </t>
+             </t>
+         </t>
+     </template>
