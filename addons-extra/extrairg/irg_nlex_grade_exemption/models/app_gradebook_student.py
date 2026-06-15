@@ -11,10 +11,9 @@ class AppGradebookStudent(models.Model):
             if not rec.gradebook_id:
                 raise UserError(_('"Calificaciones template" es obligatorio.'))
             for subject in rec.gradebook_subject_ids:
-                code = subject.op_subject_id.code
-                if code and code.upper().startswith('NLEX'):
+                if subject.op_subject_id.irg_is_grade_exempt():
                     continue
-                
+
                 gradebook = subject._get_gradebook_info(subject)
                 if gradebook:
                     qty_examn = len(subject.gradebook_result_ids.filtered(lambda x: x.survey_type == 'exam'))
@@ -40,8 +39,7 @@ class AppGradebookStudent(models.Model):
         for order in self:
             compulsory_notes = []
             for line in order.gradebook_subject_ids:
-                code = line.op_subject_id.code
-                if code and code.upper().startswith('NLEX'):
+                if line.op_subject_id.irg_is_grade_exempt():
                     continue
                 if line.op_subject_id.subject_type == 'compulsory' and line.final_subject_note is not None:
                     compulsory_notes.append(line.final_subject_note)
@@ -53,8 +51,8 @@ class AppGradebookStudent(models.Model):
     def compute_avg_score(self):
         for rec in self:
             subject_ids = rec.gradebook_subject_ids.filtered(
-                lambda r: r.op_subject_id.subject_type == 'compulsory' and 
-                          not (r.op_subject_id.code and r.op_subject_id.code.upper().startswith('NLEX'))
+                lambda r: r.op_subject_id.subject_type == 'compulsory' and
+                          not r.op_subject_id.irg_is_grade_exempt()
             )
             sum_score = 0.0
             s_index = 0
@@ -72,9 +70,9 @@ class AppGradebookStudent(models.Model):
             if not responsable_id:
                 raise ValidationError(_('Se requiere configurar el responsable DEC en ajustes.'))
             
-            # Exclude compulsory subjects whose code starts with 'NLEX'
+            # Exclude exempt compulsory subjects (code contains 'EX')
             total_subjects = record.course_id.subject_ids.filtered(
-                lambda s: s.subject_type == 'compulsory' and not (s.code and s.code.upper().startswith('NLEX'))
+                lambda s: s.subject_type == 'compulsory' and not s.irg_is_grade_exempt()
             )
             total = len(total_subjects)
             total_creditos = sum(total_subjects.mapped('credit_point'))
@@ -106,7 +104,7 @@ class AppGradebookStudent(models.Model):
             new_certificate = new_records.create(certificate_vals)
             
             for subject in record.gradebook_subject_ids.filtered(
-                lambda s: s.op_subject_id.subject_type == 'compulsory' and not (s.op_subject_id.code and s.op_subject_id.code.upper().startswith('NLEX'))
+                lambda s: s.op_subject_id.subject_type == 'compulsory' and not s.op_subject_id.irg_is_grade_exempt()
             ):
                 new_line = new_lines.create({
                     'dec_id': new_certificate.id,

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'NLEX Grade Exemption',
-    'version': '16.0.1.1.0',
+    'version': '16.0.1.2.0',
     'summary': 'Excludes subjects with NLEX code from grades, certificates, and DEC export.',
     'description': """
         Excludes subjects with NLEX code from:

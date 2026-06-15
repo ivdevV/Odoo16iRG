@@ -2,7 +2,7 @@
 <odoo>
     <template id="report_isep_gradebook_inherit" inherit_id="isep_gradebook.report_isep_gradebook">
         <xpath expr="//t[@t-as='subject']/tr" position="attributes">
-            <attribute name="t-if">not (subject.op_subject_id.code or '').upper().startswith('NLEX')</attribute>
+            <attribute name="t-if">not subject.op_subject_id.irg_is_grade_exempt()</attribute>
         </xpath>
     </template>
 </odoo>

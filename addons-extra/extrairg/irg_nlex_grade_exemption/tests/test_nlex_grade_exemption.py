@@ -186,3 +186,33 @@ class TestNlexGradeExemption(TransactionCase):
         codes = subjects.mapped('op_subject_id.code')
         self.assertIn('MATREG01', codes, "Regular subject must appear in the certificate.")
         self.assertNotIn('NLEX01', codes, "NLEX subject must be excluded from the certificate.")
+
+    def test_exempt_rule_matches_any_ex_code(self):
+        """Exemption applies to any subject whose code contains 'EX', not only NLEX."""
+        subj_ex = self.env['op.subject'].sudo().create({
+            'name': 'Materia Exenta Generica',
+            'code': 'MATEX01',
+            'subject_type': 'compulsory',
+            'credit_point': 3.0,
+        })
+        self.env['app.gradebook.subject'].sudo().create({
+            'gradebook_student_id': self.gradebook_student.id,
+            'op_subject_id': subj_ex.id,
+        })
+
+        # Helper on op.subject is the single source of truth.
+        self.assertTrue(subj_ex.irg_is_grade_exempt(),
+                        "Code containing 'EX' must be exempt.")
+        self.assertTrue(self.subject_nlex.irg_is_grade_exempt(),
+                        "NLEX code must stay exempt (contains 'EX').")
+        self.assertFalse(self.subject_regular.irg_is_grade_exempt(),
+                         "Regular code without 'EX' must not be exempt.")
+
+        cert = self.env['irg.certificate.request'].sudo().create({
+            'gradebook_student_id': self.gradebook_student.id,
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+        codes = cert._get_certificate_subjects().mapped('op_subject_id.code')
+        self.assertNotIn('MATEX01', codes,
+                         "Generic EX subject must be excluded from the certificate.")

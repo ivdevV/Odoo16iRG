@@ -1,7 +1,7 @@
 # irg_nlex_grade_exemption
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.1.0
+**Versión:** 16.0.1.2.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
@@ -11,7 +11,11 @@
 
 ## ¿Qué hace este módulo?
 
-Excluye las asignaturas cuyo código comience con la palabra `NLEX` (insensible a mayúsculas/minúsculas, por ejemplo, `NLEX01`, `nlex02`) de las libretas de calificaciones, actas digitales, certificadosSEP (DEC) e impresiones de certificados. Esto permite que no aparezcan en documentos finales y que no impidan el cierre de libretas de alumnos aunque estas no tengan calificación asignada.
+Excluye las asignaturas **exentas** de las libretas de calificaciones, actas digitales, certificados SEP (DEC) e impresiones de certificados. Esto permite que no aparezcan en documentos finales y que no impidan el cierre de libretas de alumnos aunque estas no tengan calificación asignada.
+
+**Regla de exención (v16.0.1.2.0):** una asignatura es exenta cuando su código **contiene** la marca `EX` (insensible a mayúsculas/minúsculas), por ejemplo `NLEX01`, `MATEX02`, `ex03`. La regla anterior (solo prefijo `NLEX`) queda cubierta porque `NLEX` contiene `EX`. La lógica vive en un único helper `op.subject.irg_is_grade_exempt()` reutilizado por toda la cadena (Python y QWeb).
+
+> ⚠️ Al usar "contiene EX", evita códigos de asignatura no exentas que lleven la subcadena `EX` (p.ej. `TEXTO01`, `FLEX02`); se marcarían como exentas por error.
 
 ## Funcionalidades principales
 
@@ -32,7 +36,8 @@ Excluye las asignaturas cuyo código comience con la palabra `NLEX` (insensible 
 - **Modelos:**
   - `models/app_gradebook_student.py` — hereda `app.gradebook.student` para sobrescribir validaciones, promedios y exportaciones DEC.
   - `models/ap_gradebook_summary.py` — hereda `ap.gradebook.summary` para ajustar los promedios cuatrimestrales.
-  - `models/irg_certificate_request.py` — hereda `irg.certificate.request` y sobrescribe el hook `_get_certificate_subjects()` para excluir asignaturas NLEX de los certificados de calificaciones.
+  - `models/op_subject.py` — hereda `op.subject` y define el helper `irg_is_grade_exempt()`, **única fuente de verdad** de la regla de exención (código contiene `EX`). Llamado desde Python y QWeb.
+  - `models/irg_certificate_request.py` — hereda `irg.certificate.request` y sobrescribe el hook `_get_certificate_subjects()` para excluir asignaturas exentas de los certificados de calificaciones.
 - **Vistas QWeb:**
   - `views/report_gradebook.xml` — hereda el reporte QWeb de la libreta para omitir filas de asignaturas NLEX.
   - `views/certified_diploma.xml` — hereda el reporte QWeb de diploma certificado para omitir materias NLEX.
