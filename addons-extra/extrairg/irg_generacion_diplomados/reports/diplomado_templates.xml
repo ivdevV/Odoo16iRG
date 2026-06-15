@@ -33,6 +33,17 @@
                         .diploma-page.back {
                             page-break-after: avoid;
                         }
+                        .diploma-scale {
+                            position: absolute;
+                            left: 50%;
+                            top: 50%;
+                            width: 297mm;
+                            height: 210mm;
+                            margin-left: -148.5mm;
+                            margin-top: -105mm;
+                            transform: scale(1.08);
+                            transform-origin: center center;
+                        }
                         .bg-image {
                             position: absolute;
                             inset: 0;
@@ -153,93 +164,97 @@
 
                     <!-- Página 1: Anverso del Diploma -->
                     <div class="page diploma-page front">
-                        <!-- Fondo a hoja completa (Full Bleed) -->
-                        <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
-                        
-                        <!-- Logo Superior -->
-                        <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
+                        <div class="diploma-scale">
+                            <!-- Fondo a hoja completa (Full Bleed) -->
+                            <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
 
-                        <!-- Hace constar que -->
-                        <div class="center-text" style="top: 58mm; font-size: 14pt; color: #727F77; font-style: italic;">
-                            Hace constar que
-                        </div>
+                            <!-- Logo Superior -->
+                            <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
 
-                        <!-- Nombre del Alumno -->
-                        <div class="center-text" style="top: 69mm; font-size: 29pt; line-height: 1.05; font-weight: bold; color: #000; letter-spacing: 1px;">
-                            <span t-field="o.student_name"/>
-                        </div>
+                            <!-- Hace constar que -->
+                            <div class="center-text" style="top: 58mm; font-size: 14pt; color: #727F77; font-style: italic;">
+                                Hace constar que
+                            </div>
 
-                        <!-- Texto de Aprobación -->
-                        <div class="center-text" style="left: 20mm; width: 257mm; top: 91mm; font-size: 13pt; color: #6C7A71; line-height: 1.32; font-family: 'Helvetica', 'Arial', sans-serif;">
-                            ha aprobado los estudios correspondientes al programa de contenidos que figura en el dorso, celebrado del 
-                            <strong><span t-field="o.start_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong> al 
-                            <strong><span t-field="o.end_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong>, con una duración de 
-                            <strong><span t-field="o.duration_hours"/> horas</strong>
-                            <t t-if="o.duration_ects">
-                                (equivalente a <strong><span t-field="o.duration_ects"/> ECTS</strong>)
-                            </t>, por lo que se expide el presente diploma:
-                        </div>
+                            <!-- Nombre del Alumno -->
+                            <div class="center-text" style="top: 69mm; font-size: 29pt; line-height: 1.05; font-weight: bold; color: #000; letter-spacing: 1px;">
+                                <span t-field="o.student_name"/>
+                            </div>
 
-                        <!-- Nombre del Diplomado -->
-                        <div class="center-text diplomado-title">
-                            <span t-field="o.diplomado_name"/>
-                        </div>
+                            <!-- Texto de Aprobación -->
+                            <div class="center-text" style="left: 20mm; width: 257mm; top: 91mm; font-size: 13pt; color: #6C7A71; line-height: 1.32; font-family: 'Helvetica', 'Arial', sans-serif;">
+                                ha aprobado los estudios correspondientes al programa de contenidos que figura en el dorso, celebrado del
+                                <strong><span t-field="o.start_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong> al
+                                <strong><span t-field="o.end_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong>, con una duración de
+                                <strong><span t-field="o.duration_hours"/> horas</strong>
+                                <t t-if="o.duration_ects">
+                                    (equivalente a <strong><span t-field="o.duration_ects"/> ECTS</strong>)
+                                </t>, por lo que se expide el presente diploma:
+                            </div>
 
-                        <!-- que acredita haber superado con aprovechamiento... -->
-                        <div class="center-text" style="top: 144mm; font-size: 13pt; color: #6C7A71; font-style: italic;">
-                            que acredita haber superado con aprovechamiento las mencionadas enseñanzas.
-                        </div>
+                            <!-- Nombre del Diplomado -->
+                            <div class="center-text diplomado-title">
+                                <span t-field="o.diplomado_name"/>
+                            </div>
 
-                        <!-- Barcelona, a ... -->
-                        <div class="center-text" style="top: 158mm; font-size: 13pt; color: #6C7A71;">
-                            Barcelona, a <span t-field="o.issue_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/>
-                        </div>
+                            <!-- que acredita haber superado con aprovechamiento... -->
+                            <div class="center-text" style="top: 144mm; font-size: 13pt; color: #6C7A71; font-style: italic;">
+                                que acredita haber superado con aprovechamiento las mencionadas enseñanzas.
+                            </div>
 
-                        <!-- Firmas e Imágenes -->
-                        <img class="signature-img-left" src="/irg_generacion_diplomados/static/src/img/firma_izquierda.jpg"/>
-                        <img class="signature-img-right" src="/irg_generacion_diplomados/static/src/img/firma_derecha.jpg"/>
+                            <!-- Barcelona, a ... -->
+                            <div class="center-text" style="top: 158mm; font-size: 13pt; color: #6C7A71;">
+                                Barcelona, a <span t-field="o.issue_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/>
+                            </div>
 
-                        <div class="signature-container-left">
-                            <strong>Raimon Gaja Jaumeandreu</strong><br/>
-                            <span style="color: #666; font-size: 9.5pt;">Director General iRG</span>
-                        </div>
+                            <!-- Firmas e Imágenes -->
+                            <img class="signature-img-left" src="/irg_generacion_diplomados/static/src/img/firma_izquierda.jpg"/>
+                            <img class="signature-img-right" src="/irg_generacion_diplomados/static/src/img/firma_derecha.jpg"/>
 
-                        <div class="signature-container-right">
-                            <strong>Fermín Carrillo González</strong><br/>
-                            <span style="color: #666; font-size: 9.5pt;">Director de Relaciones Internacionales</span>
+                            <div class="signature-container-left">
+                                <strong>Raimon Gaja Jaumeandreu</strong><br/>
+                                <span style="color: #666; font-size: 9.5pt;">Director General iRG</span>
+                            </div>
+
+                            <div class="signature-container-right">
+                                <strong>Fermín Carrillo González</strong><br/>
+                                <span style="color: #666; font-size: 9.5pt;">Director de Relaciones Internacionales</span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Página 2: Reverso del Diploma (Desglose de asignaturas) -->
                     <div class="page diploma-page back">
-                        <!-- Fondo a hoja completa (Full Bleed) -->
-                        <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
-                        
-                        <!-- Logo Superior -->
-                        <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
+                        <div class="diploma-scale">
+                            <!-- Fondo a hoja completa (Full Bleed) -->
+                            <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
 
-                        <div class="back-content">
-                            <div class="module-section">
-                                <div class="module-title">Módulos Presenciales</div>
-                                <div class="module-list">
-                                    <t t-if="o.subjects_presencial">
-                                        <span t-field="o.subjects_presencial"/>
-                                    </t>
-                                    <t t-else="">
-                                        <span class="module-empty">No se registran módulos en modalidad presencial.</span>
-                                    </t>
+                            <!-- Logo Superior -->
+                            <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
+
+                            <div class="back-content">
+                                <div class="module-section">
+                                    <div class="module-title">Módulos Presenciales</div>
+                                    <div class="module-list">
+                                        <t t-if="o.subjects_presencial">
+                                            <span t-field="o.subjects_presencial"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="module-empty">No se registran módulos en modalidad presencial.</span>
+                                        </t>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="module-section">
-                                <div class="module-title">Módulos Online</div>
-                                <div class="module-list">
-                                    <t t-if="o.subjects_online">
-                                        <span t-field="o.subjects_online"/>
-                                    </t>
-                                    <t t-else="">
-                                        <span class="module-empty">No se registran módulos en modalidad online / virtual.</span>
-                                    </t>
+                                <div class="module-section">
+                                    <div class="module-title">Módulos Online</div>
+                                    <div class="module-list">
+                                        <t t-if="o.subjects_online">
+                                            <span t-field="o.subjects_online"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="module-empty">No se registran módulos en modalidad online / virtual.</span>
+                                        </t>
+                                    </div>
                                 </div>
                             </div>
                         </div>

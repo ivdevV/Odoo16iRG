@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "task": "diplomados-scale-wrapper",
+  "checks": [
+    { "name": "xmllint", "result": "pass", "detail": "diplomado_templates.xml y diplomado_report.xml validos" },
+    { "name": "odoo_module_update", "result": "pass", "detail": "Modules loaded. Registry loaded in 2.960s" }
+  ],
+  "evidence": ["diff.patch"],
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "notes": "La verificacion visual del PDF queda pendiente; el factor inicial de escala es 1.08."
+}

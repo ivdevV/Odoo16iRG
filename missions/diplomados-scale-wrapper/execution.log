@@ -1,0 +1,8 @@
+Creada mision diplomados-scale-wrapper.
+Revisado template actual tras revert: mantiene web.html_container + web.basic_layout.
+Anadida clase CSS `.diploma-scale` con transform: scale(1.08) desde el centro.
+Anverso: fondo, logo, textos y firmas envueltos dentro de `.diploma-scale`.
+Reverso: fondo, logo y contenido de modulos envueltos dentro de `.diploma-scale`.
+Validado XML con xmllint sin errores.
+Actualizado modulo con docker compose local: Modules loaded, Registry loaded in 2.960s.
+Queda pendiente verificacion visual del PDF generado en Odoo.
