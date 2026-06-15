@@ -66,50 +66,50 @@
                             text-align: center;
                             z-index: 2;
                         }
-                        .signature-container-left {
+                        .diploma-page.front .signature-container-left {
                             position: absolute;
                             left: 25mm;
                             width: 95mm;
-                            top: 188.5mm;
+                            top: 193mm;
                             text-align: center;
-                            font-size: 11pt;
-                            line-height: 1.2;
+                            font-size: 10.5pt;
+                            line-height: 1.15;
                             z-index: 2;
                         }
-                        .signature-container-right {
+                        .diploma-page.front .signature-container-right {
                             position: absolute;
                             left: 177mm;
                             width: 95mm;
-                            top: 188.5mm;
+                            top: 193mm;
                             text-align: center;
-                            font-size: 11pt;
-                            line-height: 1.2;
+                            font-size: 10.5pt;
+                            line-height: 1.15;
                             z-index: 2;
                         }
-                        .signature-img-left {
+                        .diploma-page.front .signature-img-left {
                             position: absolute;
-                            left: 49mm;
-                            top: 153mm;
-                            width: 50mm;
+                            left: 54mm;
+                            top: 166mm;
+                            width: 37mm;
                             height: auto;
                             z-index: 2;
                         }
-                        .signature-img-right {
+                        .diploma-page.front .signature-img-right {
                             position: absolute;
-                            left: 179mm;
-                            top: 152mm;
-                            width: 58mm;
+                            left: 203mm;
+                            top: 165mm;
+                            width: 43mm;
                             height: auto;
                             z-index: 2;
                         }
-                        .diplomado-title {
+                        .diploma-page.front .diplomado-title {
                             left: 16mm;
                             width: 265mm;
-                            top: 103mm;
-                            font-size: 23pt;
+                            top: 113mm;
+                            font-size: 21pt;
                             font-weight: bold;
                             color: #000;
-                            line-height: 1.08;
+                            line-height: 1.12;
                             letter-spacing: 0.3px;
                         }
                         .back-content {
@@ -160,17 +160,17 @@
                         <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
 
                         <!-- Hace constar que -->
-                        <div class="center-text" style="top: 55mm; font-size: 14pt; color: #727F77; font-style: italic;">
+                        <div class="center-text" style="top: 58mm; font-size: 14pt; color: #727F77; font-style: italic;">
                             Hace constar que
                         </div>
 
                         <!-- Nombre del Alumno -->
-                        <div class="center-text" style="top: 64.5mm; font-size: 31pt; font-weight: bold; color: #000; letter-spacing: 1px;">
+                        <div class="center-text" style="top: 69mm; font-size: 29pt; line-height: 1.05; font-weight: bold; color: #000; letter-spacing: 1px;">
                             <span t-field="o.student_name"/>
                         </div>
 
                         <!-- Texto de Aprobación -->
-                        <div class="center-text" style="left: 20mm; width: 257mm; top: 84mm; font-size: 13.5pt; color: #6C7A71; line-height: 1.35; font-family: 'Helvetica', 'Arial', sans-serif;">
+                        <div class="center-text" style="left: 20mm; width: 257mm; top: 91mm; font-size: 13pt; color: #6C7A71; line-height: 1.32; font-family: 'Helvetica', 'Arial', sans-serif;">
                             ha aprobado los estudios correspondientes al programa de contenidos que figura en el dorso, celebrado del 
                             <strong><span t-field="o.start_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong> al 
                             <strong><span t-field="o.end_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong>, con una duración de 
@@ -186,12 +186,12 @@
                         </div>
 
                         <!-- que acredita haber superado con aprovechamiento... -->
-                        <div class="center-text" style="top: 132mm; font-size: 13.5pt; color: #6C7A71; font-style: italic;">
+                        <div class="center-text" style="top: 144mm; font-size: 13pt; color: #6C7A71; font-style: italic;">
                             que acredita haber superado con aprovechamiento las mencionadas enseñanzas.
                         </div>
 
                         <!-- Barcelona, a ... -->
-                        <div class="center-text" style="top: 145mm; font-size: 13.5pt; color: #6C7A71;">
+                        <div class="center-text" style="top: 158mm; font-size: 13pt; color: #6C7A71;">
                             Barcelona, a <span t-field="o.issue_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/>
                         </div>
 
@@ -201,12 +201,12 @@
 
                         <div class="signature-container-left">
                             <strong>Raimon Gaja Jaumeandreu</strong><br/>
-                            <span style="color: #666; font-size: 10pt;">Director General iRG</span>
+                            <span style="color: #666; font-size: 9.5pt;">Director General iRG</span>
                         </div>
 
                         <div class="signature-container-right">
                             <strong>Fermín Carrillo González</strong><br/>
-                            <span style="color: #666; font-size: 10pt;">Director de Relaciones Internacionales</span>
+                            <span style="color: #666; font-size: 9.5pt;">Director de Relaciones Internacionales</span>
                         </div>
                     </div>
 
