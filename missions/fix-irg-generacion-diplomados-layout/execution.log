@@ -46,3 +46,22 @@
     5. En la página 2 (reverso), los títulos y el desglose de asignaturas se muestran con fuentes visiblemente mayores y muy legibles en sus columnas.
     6. Las imágenes cargan al 100% y el PDF tiene exactamente 2 páginas totales.
   - Verificación formal final declarada como **PASSED**.
+2026-06-15 - Refinamiento estético de la plantilla PDF ReportLab:
+  - Cambiada la referencia del logo a `logo_irg.png` en el reverso (pág 2).
+  - Reducido el tamaño del código QR a `28*mm` y reposicionado a `22*mm, 12*mm` (con el texto de registro centrado a `y=6*mm`).
+  - Redimensionada la firma de Raimon Gaja a `48*mm x 18*mm` en `x=72*mm, y=page_height-162*mm-18*mm` (texto de cargo a `x=72*mm, width=80*mm`).
+  - Redimensionada la firma de Fermín Carrillo a `52*mm x 18*mm` en `x=185*mm, y=page_height-161*mm-18*mm` (texto de cargo a `x=185*mm, width=80*mm`).
+2026-06-15 - Ajustadas las coordenadas verticales del anverso para comprimir el diseño hacia el centro y evitar recortes de impresión:
+  - Bajado el Logo Superior (logo_y a page_height - 16*mm - logo_h).
+  - Ajustados textos centrales ("Hace constar que" a page_height - 63*mm, alumno a page_height - 81*mm, aprobación a page_height - 104*mm, diplomado a page_height - 124*mm, frase final a page_height - 142*mm y fecha central a coordenada absoluta y = 48*mm).
+  - Subido el QR a y = 18*mm y su registro a y = 12*mm.
+  - Subidas las firmas a y = 35*mm y los textos de cargo a y = 20*mm.
+2026-06-15 - Desplazados hacia arriba los textos del anverso para solucionar solape de firmas y fecha central:
+  - "Hace constar que" subido a `page_height - 58 * mm` (152mm).
+  - "Nombre del Alumno" subido a `page_height - 75 * mm` (135mm).
+  - "Texto de Aprobación" subido a `page_height - 95 * mm` (115mm).
+  - "Nombre del Diplomado" subido a `page_height - 118 * mm` (92mm).
+  - "Frase final" subido a `page_height - 133 * mm` (77mm).
+  - Fecha central "Barcelona, a..." subida a `58 * mm` (separación de 5mm con firmas).
+  - Regenerado PDF, tests unitarios superados, y confirmada visualmente la eliminación del solape.
+
