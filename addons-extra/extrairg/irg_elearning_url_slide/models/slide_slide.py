@@ -10,12 +10,13 @@ from odoo.exceptions import ValidationError
 class SlideChannel(models.Model):
     _inherit = 'slide.channel'
 
-    nbr_url = fields.Integer(string='URL', store=True)
+    nbr_url = fields.Integer(string='URL Slides', store=True)
 
 
 class SlideSlide(models.Model):
     _inherit = 'slide.slide'
 
+    nbr_url = fields.Integer(string='URL', store=True)
     slide_category = fields.Selection(
         selection_add=[('url', 'URL')],
         ondelete={'url': 'set default'},

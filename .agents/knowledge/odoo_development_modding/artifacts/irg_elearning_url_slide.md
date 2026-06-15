@@ -6,13 +6,14 @@ Para anadir nuevas categorias de contenido a `website_slides` en Odoo 16 no bast
 
 ## Gotcha
 
-`website_slides` calcula estadisticas de `slide.channel` usando campos con patron `nbr_<slide_category>`. Si se anade una categoria `url`, tambien debe existir `slide.channel.nbr_url`; de lo contrario aparece `KeyError: 'nbr_url'` durante recomputos de `_compute_slides_statistics`.
+`website_slides` calcula estadisticas usando campos con patron `nbr_<slide_category>`. Si se anade una categoria `url`, deben existir tanto `slide.channel.nbr_url` como `slide.slide.nbr_url`; de lo contrario aparece `KeyError: 'nbr_url'` durante recomputos de `_compute_slides_statistics`.
 
 ## Patron Aplicado
 
 - Anadir `selection_add` en `slide.slide.slide_category`.
 - Anadir `selection_add` en `slide.slide.slide_type` y ajustar `_compute_slide_type`.
 - Anadir contador `slide.channel.nbr_<categoria>`.
+- Anadir contador `slide.slide.nbr_<categoria>`.
 - Si se requiere fullscreen, anadir `slide.embed_code` y extender el player JS/XML de `website_slides`.
 
 ## Validacion

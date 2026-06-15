@@ -1,0 +1,5 @@
+2026-06-15 - Mision creada para corregir KeyError 'nbr_url' reportado al guardar un slide URL.
+2026-06-15 - Fix aplicado: anadido campo slide.slide.nbr_url.
+2026-06-15 - Validacion con actualizacion del modulo pasada; se detecto warning no bloqueante por etiqueta duplicada URL.
+2026-06-15 - Ajustada etiqueta de slide.slide.nbr_url a 'URL Slides' para evitar warning de campos con misma etiqueta.
+2026-06-15 - Validacion final pasada: compileall, parse XML y actualizacion del modulo con tests enfocados: 0 failed, 0 errors de 2 tests.
