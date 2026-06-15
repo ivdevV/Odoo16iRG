@@ -162,31 +162,16 @@
                             Certificación de las materias y asignaturas cursadas por el alumno <strong><span t-field="o.student_name"/></strong> en el diplomado <strong><span t-field="o.diplomado_name"/></strong>:
                         </div>
 
-                        <!-- Filtro y agrupado de asignaturas según la modalidad -->
-                        <t t-set="presenciales" t-value="o.subject_ids.filtered(lambda s: s.irg_modality == 'presencial')"/>
-                        <t t-set="online" t-value="o.subject_ids.filtered(lambda s: s.irg_modality == 'online')"/>
-
                         <div class="clearfix" style="width: 100%;">
                             <!-- Columna de Módulos Presenciales -->
                             <div class="column-half">
                                 <h5 style="border-bottom: 2px solid #8B0000; padding-bottom: 5px; color: #8B0000; font-weight: bold; font-size: 14px;">
                                     Módulos Presenciales
                                 </h5>
-                                <t t-if="presenciales">
-                                    <table class="subjects-table">
-                                        <thead>
-                                            <tr>
-                                                <th style="width: 25%;">Código</th>
-                                                <th style="width: 75%;">Asignatura</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr t-foreach="presenciales" t-as="sub">
-                                                <td><span t-field="sub.code"/></td>
-                                                <td><span t-field="sub.name"/></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                <t t-if="o.subjects_presencial">
+                                    <div style="white-space: pre-line; text-align: left; font-size: 12px; line-height: 1.6; color: #333; margin-top: 10px;">
+                                        <span t-field="o.subjects_presencial"/>
+                                    </div>
                                 </t>
                                 <t t-else="">
                                     <p class="text-muted" style="font-size: 12px; font-style: italic; margin-top: 10px;">
@@ -203,21 +188,10 @@
                                 <h5 style="border-bottom: 2px solid #00008B; padding-bottom: 5px; color: #00008B; font-weight: bold; font-size: 14px;">
                                     Módulos Online / Virtuales
                                 </h5>
-                                <t t-if="online">
-                                    <table class="subjects-table">
-                                        <thead>
-                                            <tr>
-                                                <th style="width: 25%;">Código</th>
-                                                <th style="width: 75%;">Asignatura</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr t-foreach="online" t-as="sub">
-                                                <td><span t-field="sub.code"/></td>
-                                                <td><span t-field="sub.name"/></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                <t t-if="o.subjects_online">
+                                    <div style="white-space: pre-line; text-align: left; font-size: 12px; line-height: 1.6; color: #333; margin-top: 10px;">
+                                        <span t-field="o.subjects_online"/>
+                                    </div>
                                 </t>
                                 <t t-else="">
                                     <p class="text-muted" style="font-size: 12px; font-style: italic; margin-top: 10px;">

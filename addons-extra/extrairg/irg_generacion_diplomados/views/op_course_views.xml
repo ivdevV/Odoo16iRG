@@ -7,13 +7,14 @@
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
                 <page string="Asignaturas Diplomado" name="diplomado_subjects">
-                    <field name="irg_diplomado_subject_ids" placeholder="Añada las asignaturas que aparecerán en el reverso del diplomado para este curso.">
-                        <tree string="Asignaturas del Diplomado">
-                            <field name="name"/>
-                            <field name="code"/>
-                            <field name="irg_modality"/>
-                        </tree>
-                    </field>
+                    <group>
+                        <group string="Asignaturas Presenciales">
+                            <field name="irg_diplomado_subjects_presencial" placeholder="Escriba la lista de asignaturas presenciales (una por línea)..." style="height: 250px;"/>
+                        </group>
+                        <group string="Asignaturas Online">
+                            <field name="irg_diplomado_subjects_online" placeholder="Escriba la lista de asignaturas online (una por línea)..." style="height: 250px;"/>
+                        </group>
+                    </group>
                 </page>
             </xpath>
         </field>

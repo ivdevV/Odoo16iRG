@@ -52,13 +52,13 @@ class IrgDiplomadoWizard(models.TransientModel):
         ('physical', 'Físico')
     ], string='Tipo de Diploma', required=True, default='digital', help=_("Estilo del diploma a generar."))
 
-    subject_ids = fields.Many2many(
-        'op.subject',
-        'irg_diplomado_wizard_subject_rel',
-        'wizard_id',
-        'subject_id',
-        string='Asignaturas a Incluir',
-        help=_("Asignaturas seleccionadas para figurar en el reverso del diplomado.")
+    subjects_presencial = fields.Text(
+        string='Asignaturas Presenciales',
+        help=_("Asignaturas presenciales a incluir (separadas por línea).")
+    )
+    subjects_online = fields.Text(
+        string='Asignaturas Online',
+        help=_("Asignaturas online/virtuales a incluir (separadas por línea).")
     )
 
     @api.onchange('student_id')
@@ -77,31 +77,24 @@ class IrgDiplomadoWizard(models.TransientModel):
             if student_course.batch_id:
                 self.start_date = student_course.batch_id.start_date
                 self.end_date = student_course.batch_id.end_date
-            return self._onchange_course_id()
+            self._onchange_course_id()
         else:
             # Si no hay cursos en su ficha, dejamos los campos vacíos para que los rellene el usuario
             self.course_id = False
             self.start_date = False
             self.end_date = False
-            return {'domain': {'subject_ids': [('id', '=', False)]}}
 
     @api.onchange('course_id')
     def _onchange_course_id(self):
         if not self.course_id:
-            return {'domain': {'subject_ids': [('id', '=', False)]}}
+            return
 
         self.diplomado_name = self.course_id.name
 
         # Cargar asignaturas por defecto
-        if self.course_id.irg_diplomado_subject_ids:
-            self.subject_ids = [(6, 0, self.course_id.irg_diplomado_subject_ids.ids)]
-        elif self.course_id.subject_ids:
-            self.subject_ids = [(6, 0, self.course_id.subject_ids.ids)]
-        else:
-            self.subject_ids = [(5, 0, 0)]
+        self.subjects_presencial = self.course_id.irg_diplomado_subjects_presencial
+        self.subjects_online = self.course_id.irg_diplomado_subjects_online
 
-        allowed_subjects = self.course_id.irg_diplomado_subject_ids | self.course_id.subject_ids
-        return {'domain': {'subject_ids': [('id', 'in', allowed_subjects.ids)]}}
     def action_print_diplomado(self):
         self.ensure_one()
         if not self.student_id or not self.course_id:
@@ -121,7 +114,8 @@ class IrgDiplomadoWizard(models.TransientModel):
             'duration_ects': self.duration_ects,
             'issue_date': self.issue_date,
             'diploma_type': self.diploma_type,
-            'subject_ids': [(6, 0, self.subject_ids.ids)],
+            'subjects_presencial': self.subjects_presencial,
+            'subjects_online': self.subjects_online,
         }
         registry = self.env['irg.diplomado.registry'].create(registry_vals)
 

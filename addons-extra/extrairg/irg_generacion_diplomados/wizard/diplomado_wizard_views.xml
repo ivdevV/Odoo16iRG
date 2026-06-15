@@ -27,17 +27,17 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Asignaturas a Incluir" name="subjects">
+                        <page string="Asignaturas Presenciales" name="subjects_presencial">
                             <p class="text-muted">
-                                Modifique las asignaturas que se imprimirán en el reverso del diplomado. Por defecto se cargan desde la configuración del curso.
+                                Escriba o modifique la lista de asignaturas presenciales (una por línea) que aparecerán en el reverso.
                             </p>
-                            <field name="subject_ids">
-                                <tree string="Asignaturas del Diplomado">
-                                    <field name="name"/>
-                                    <field name="code"/>
-                                    <field name="irg_modality"/>
-                                </tree>
-                            </field>
+                            <field name="subjects_presencial" placeholder="Asignaturas presenciales..." style="height: 200px;"/>
+                        </page>
+                        <page string="Asignaturas Online" name="subjects_online">
+                            <p class="text-muted">
+                                Escriba o modifique la lista de asignaturas online (una por línea) que aparecerán en el reverso.
+                            </p>
+                            <field name="subjects_online" placeholder="Asignaturas online..." style="height: 200px;"/>
                         </page>
                     </notebook>
                 </sheet>

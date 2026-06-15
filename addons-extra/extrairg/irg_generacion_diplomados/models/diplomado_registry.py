@@ -66,13 +66,13 @@ class IrgDiplomadoRegistry(models.Model):
         ('physical', 'Físico')
     ], string='Tipo de Diploma', required=True, default='digital', help=_("Tipo de diploma generado."))
     
-    subject_ids = fields.Many2many(
-        'op.subject',
-        'irg_diplomado_registry_subject_rel',
-        'registry_id',
-        'subject_id',
-        string='Asignaturas',
-        help=_("Asignaturas incluidas en el reverso del diplomado.")
+    subjects_presencial = fields.Text(
+        string='Asignaturas Presenciales',
+        help=_("Listado de asignaturas presenciales que figurarán en el reverso.")
+    )
+    subjects_online = fields.Text(
+        string='Asignaturas Online',
+        help=_("Listado de asignaturas online que figurarán en el reverso.")
     )
 
     @api.model

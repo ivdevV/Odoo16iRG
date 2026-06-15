@@ -9,29 +9,15 @@ class TestDiplomadoGeneration(TransactionCase):
     def setUp(self):
         super(TestDiplomadoGeneration, self).setUp()
         
-        # 1. Crear asignaturas con diferente modalidad
-        self.sub_presencial = self.env['op.subject'].create({
-            'name': 'Taller de Grafología Práctica',
-            'code': 'GRAF_PRES',
-            'irg_modality': 'presencial',
-            'type': 'theory',
-        })
-        
-        self.sub_online = self.env['op.subject'].create({
-            'name': 'Introducción a la Psicología del Rostro',
-            'code': 'PSIC_ONL',
-            'irg_modality': 'online',
-            'type': 'theory',
-        })
-        
-        # 2. Crear un curso y asociarle las asignaturas
+        # 1. Crear un curso y asociarle los textos de asignaturas por defecto
         self.course = self.env['op.course'].create({
             'name': 'Diplomado en Grafología y Morfopsicología',
             'code': 'DIP_GM',
-            'subject_ids': [(6, 0, [self.sub_presencial.id, self.sub_online.id])],
+            'irg_diplomado_subjects_presencial': 'Taller de Grafología Práctica\nGrafología Forense',
+            'irg_diplomado_subjects_online': 'Introducción a la Psicología del Rostro\nMorfopsicología Avanzada',
         })
         
-        # 3. Crear lote (batch) del curso
+        # 2. Crear lote (batch) del curso
         self.batch = self.env['op.batch'].create({
             'name': 'Promoción 2026',
             'code': 'PROM_2026',
@@ -40,7 +26,7 @@ class TestDiplomadoGeneration(TransactionCase):
             'course_id': self.course.id,
         })
         
-        # 4. Crear un partner y un estudiante
+        # 3. Crear un partner y un estudiante
         self.partner = self.env['res.partner'].create({
             'name': 'Adrián López Test'
         })
@@ -50,7 +36,7 @@ class TestDiplomadoGeneration(TransactionCase):
             'partner_id': self.partner.id,
         })
         
-        # 5. Configurar el layout de la compañía para evitar la redirección en report_action
+        # 4. Configurar el layout de la compañía para evitar la redirección en report_action
         self.env.company.external_report_layout_id = self.env.ref("web.external_layout_standard").id
 
     def test_01_can_generate_diplomado_computation(self):
@@ -99,7 +85,8 @@ class TestDiplomadoGeneration(TransactionCase):
         # Simular onchange del curso
         wizard._onchange_course_id()
         self.assertEqual(wizard.diplomado_name, self.course.name)
-        self.assertEqual(len(wizard.subject_ids), 2, "Deberían precargarse las 2 asignaturas del curso.")
+        self.assertEqual(wizard.subjects_presencial, 'Taller de Grafología Práctica\nGrafología Forense')
+        self.assertEqual(wizard.subjects_online, 'Introducción a la Psicología del Rostro\nMorfopsicología Avanzada')
 
     def test_03_registry_generation_and_report_action(self):
         """Probar que al confirmar el wizard se crea el registro del diplomado y se lanza el reporte."""
@@ -122,7 +109,8 @@ class TestDiplomadoGeneration(TransactionCase):
             'duration_ects': 6.0,
             'issue_date': fields.Date.today(),
             'diploma_type': 'digital',
-            'subject_ids': [(6, 0, [self.sub_presencial.id, self.sub_online.id])]
+            'subjects_presencial': 'Prácticas Presenciales 1',
+            'subjects_online': 'Módulos Online 1\nMódulos Online 2'
         })
         
         action = wizard.action_print_diplomado()
@@ -140,7 +128,8 @@ class TestDiplomadoGeneration(TransactionCase):
         self.assertEqual(registry.duration_ects, 6.0)
         self.assertEqual(registry.start_date, fields.Date.from_string('2026-02-01'))
         self.assertEqual(registry.end_date, fields.Date.from_string('2026-05-30'))
-        self.assertEqual(len(registry.subject_ids), 2)
+        self.assertEqual(registry.subjects_presencial, 'Prácticas Presenciales 1')
+        self.assertEqual(registry.subjects_online, 'Módulos Online 1\nMódulos Online 2')
         
         # Probar el método de reimpresión del registro
         reprint_action = registry.action_reprint()

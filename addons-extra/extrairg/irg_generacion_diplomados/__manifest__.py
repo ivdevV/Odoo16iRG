@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Generación de Diplomados iRG',
-    'version': '16.0.1.0.2',
+    'version': '16.0.1.0.3',
     'summary': 'Módulo independiente para la generación y registro de diplomados iRG.',
     'description': """
         Módulo para la generación y registro de diplomados iRG.
@@ -20,7 +20,6 @@
     'data': [
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
-        'views/op_subject_views.xml',
         'views/op_course_views.xml',
         'views/op_student_views.xml',
         'views/diplomado_registry_views.xml',

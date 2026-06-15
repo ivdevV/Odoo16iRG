@@ -48,14 +48,11 @@
                             </group>
                         </group>
                         <notebook>
-                            <page string="Asignaturas Incluidas" name="subjects">
-                                <field name="subject_ids" readonly="1">
-                                    <tree string="Asignaturas">
-                                        <field name="name"/>
-                                        <field name="code"/>
-                                        <field name="irg_modality"/>
-                                    </tree>
-                                </field>
+                            <page string="Asignaturas Presenciales" name="subjects_presencial">
+                                <field name="subjects_presencial" readonly="1"/>
+                            </page>
+                            <page string="Asignaturas Online" name="subjects_online">
+                                <field name="subjects_online" readonly="1"/>
                             </page>
                         </notebook>
                     </sheet>
