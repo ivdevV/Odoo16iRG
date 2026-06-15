@@ -43,6 +43,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.utils import ImageReader
 
 class MiReportePDF(models.AbstractModel):
     _name = 'report.mi_modulo.mi_reporte_pdf'
@@ -50,6 +51,17 @@ class MiReportePDF(models.AbstractModel):
 
     def _get_image_path(self, image_name):
         return modules.get_module_resource('mi_modulo', 'static/src/img', image_name)
+
+    def _generate_qr(self, url):
+        import qrcode
+        qr = qrcode.QRCode(version=1, box_size=10, border=1)
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        return ImageReader(buffer)
 
     @api.model
     def generate_pdf(self, data):
@@ -64,6 +76,14 @@ class MiReportePDF(models.AbstractModel):
         if bg_path and os.path.exists(bg_path):
             c.drawImage(bg_path, 0, 0, width=page_width, height=page_height)
 
+        # Dibujo de código QR dinámico (Generado en memoria y renderizado)
+        qr_image = self._generate_qr(data.get('qr_url', 'https://institutoraimongaja.com'))
+        c.drawImage(qr_image, 20 * mm, 15 * mm, width=35 * mm, height=35 * mm)
+
+        # Dibujo del texto del folio de registro debajo del QR
+        c.setFont('Helvetica-Bold', 8)
+        c.drawCentredString(20 * mm + (35 * mm) / 2.0, 8 * mm, f"Nº Registro: {data.get('registry_number', '')}")
+
         # Dibujo de Textos
         c.setFont('Helvetica-Bold', 29)
         c.setFillColorRGB(0, 0, 0)
@@ -75,9 +95,19 @@ class MiReportePDF(models.AbstractModel):
         p.wrapOn(c, 257 * mm, 40 * mm)
         p.drawOn(c, 20 * mm, page_height - 106 * mm)
 
+        # Dibujo de firmas ampliadas (Simétricas y anti-solape con el QR)
+        sig_path = self._get_image_path('firma.jpg')
+        if sig_path and os.path.exists(sig_path):
+            # Posicionamiento horizontal seguro y escalado mayor (ej. 65mm de ancho y 25mm de alto)
+            c.drawImage(sig_path, 90 * mm, page_height - 157 * mm - 25 * mm, width=65 * mm, height=25 * mm, preserveAspectRatio=True, mask='auto')
+
         # PAGINA 2: Reverso (Salto de página explícito)
         c.showPage()
         
+        # Estilos tipográficos con tamaños óptimos para reverso
+        style_back_title = ParagraphStyle('BackTitle', fontName='Helvetica-Bold', fontSize=13.5, leading=16)
+        style_back_text = ParagraphStyle('BackText', fontName='Helvetica', fontSize=10.5, leading=14)
+
         # Dibujo del reverso...
         # ...
 
@@ -104,6 +134,8 @@ class MiWizard(models.TransientModel):
         # 1. Preparar datos
         data = {
             'student_name': self.student_name,
+            'registry_number': self.name,
+            'qr_url': f"https://institutoraimongaja.com/valida/{self.name}",
             # ...
         }
         
@@ -129,6 +161,10 @@ class MiWizard(models.TransientModel):
 ```
 
 ## Conclusiones / Buenas Prácticas
-1. **Utilizar siempre `Paragraph` para textos largos:** Las funciones `drawString` o `drawCentredString` no soportan saltos de línea ni auto-wrap. Si el contenido dinámico puede ser largo, es obligatorio envolverlo en un `Paragraph`.
-2. **Definir el tamaño de envoltura (`wrapOn`) antes de pintar (`drawOn`):** En ReportLab, un `Paragraph` requiere que se calcule su tamaño y área de dibujo llamando primero a `p.wrapOn(canvas, width, height)` antes de pintar sobre la coordenada con `p.drawOn(canvas, x, y)`.
-3. **Mapear coordenadas y origen:** En ReportLab, el origen `(0,0)` del canvas está en la esquina inferior izquierda. Por consistencia de legibilidad de arriba-abajo, es una buena práctica restar las coordenadas verticales a la altura máxima (`page_height - Y * mm`).
+1. **Generación Dinámica de QR en Memoria:** No pregenerar archivos de imagen físicos en disco para códigos QR. Utilizar `qrcode` con un búfer de bytes (`io.BytesIO`) e importarlo como un `ImageReader` en ReportLab. Esto mantiene el servidor libre de archivos temporales huérfanos.
+2. **Distribución Anti-solape:** Cuando se introduce un elemento en una esquina (como el QR), se deben rediseñar los alineamientos de los demás elementos basándose en la coordenada horizontal X del canvas. En el ejemplo, las firmas se desplazaron de `54mm` a `90mm` para evitar colisiones con el QR que ocupa hasta los `55mm` de ancho.
+3. **Escalado de Firmas Digitales:** Para firmas digitales, las dimensiones idóneas para impresión clara son entre `60mm` y `75mm` de ancho por `20mm` y `30mm` de alto, usando `preserveAspectRatio=True` y `mask='auto'` para conservar la transparencia del fondo de las firmas escaneadas.
+4. **Legibilidad del Plan de Estudios (Reverso):** Un tamaño de fuente inferior a `9pt` puede dificultar la lectura en impresiones físicas. Se recomienda usar `10.5pt` de tamaño de fuente (`fontSize`) con `14pt` de interlínea (`leading`) para el listado de asignaturas, y `13.5pt` (`fontSize`) con `16pt` (`leading`) para los títulos de sección.
+5. **Utilizar siempre `Paragraph` para textos largos:** Las funciones `drawString` o `drawCentredString` no soportan saltos de línea ni auto-wrap. Si el contenido dinámico puede ser largo, es obligatorio envolverlo en un `Paragraph`.
+6. **Definir el tamaño de envoltura (`wrapOn`) antes de pintar (`drawOn`):** En ReportLab, un `Paragraph` requiere que se calcule su tamaño y área de dibujo llamando primero a `p.wrapOn(canvas, width, height)` antes de pintar sobre la coordenada con `p.drawOn(canvas, x, y)`.
+7. **Mapear coordenadas y origen:** En ReportLab, el origen `(0,0)` del canvas está en la esquina inferior izquierda. Por consistencia de legibilidad de arriba-abajo, es una buena práctica restar las coordenadas verticales a la altura máxima (`page_height - Y * mm`).

@@ -34,3 +34,15 @@
     3. No existen márgenes ni bordes blancos (full-bleed Landscape A4).
     4. Los textos se encuentran perfectamente posicionados y sin solaparse ni cortarse.
   - Verificación formal final declarada como **PASSED**.
+2026-06-15 - Implementado el código QR dinámico (utilizando qrcode e ImageReader de ReportLab) en el anverso del PDF. Reajustadas las dimensiones y posiciones de las firmas y del logo superior (utilizando logo_irg.png), y aumentados los tamaños de fuente de las secciones en el reverso para mejorar la legibilidad.
+2026-06-15 - Validación de las mejoras de ReportLab en contenedor Docker:
+  - Pruebas unitarias de Odoo completadas satisfactoriamente (0 fallos, 0 errores en 3 tests).
+  - Regenerado PDF local `test_output.pdf` usando `scratch/generate_pdf.py`.
+  - La inspección visual del PDF confirma que:
+    1. Se visualiza correctamente el nuevo logotipo institucional `logo_irg.png` centrado en la parte superior.
+    2. Las firmas físicas se muestran con un tamaño mayor y excelente legibilidad.
+    3. El código QR dinámico se dibuja correctamente en la parte inferior izquierda, con el texto "Nº Registro: DRAFT" perfectamente centrado debajo del QR.
+    4. Las firmas y la fecha a la derecha del QR se mantienen alineadas y ordenadas de manera estética.
+    5. En la página 2 (reverso), los títulos y el desglose de asignaturas se muestran con fuentes visiblemente mayores y muy legibles en sus columnas.
+    6. Las imágenes cargan al 100% y el PDF tiene exactamente 2 páginas totales.
+  - Verificación formal final declarada como **PASSED**.

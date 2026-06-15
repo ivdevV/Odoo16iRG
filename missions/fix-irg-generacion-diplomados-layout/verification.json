@@ -15,7 +15,7 @@
     {
       "name": "odoo_pdf_layout",
       "result": "pass",
-      "detail": "PDF generated using ReportLab engine has exactly 2 pages (Anverso and Reverso). Background watermarks, top logo, and actual signature images load perfectly in offline rendering. Margins are exactly 0 (full bleed Landscape A4) and text fits without truncation."
+      "detail": "Verified ReportLab improvements: new logo_irg.png displays centered, physical signatures are larger, QR code renders on bottom-left with 'Nº Registro: [folio]' centered underneath, signatures remain aligned, and back page (page 2) subject list is larger and highly legible. 2-page total, zero margins."
     }
   ],
   "evidence": [

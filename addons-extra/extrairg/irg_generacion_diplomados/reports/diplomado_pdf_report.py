@@ -5,6 +5,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.utils import ImageReader
 import io
 import os
 
@@ -14,6 +15,19 @@ class DiplomadoReportPDF(models.AbstractModel):
 
     def _get_image_path(self, image_name):
         return modules.get_module_resource('irg_generacion_diplomados', 'static/src/img', image_name)
+
+    def _generate_qr(self, url):
+        import qrcode
+        from reportlab.lib.utils import ImageReader
+        import io
+        qr = qrcode.QRCode(version=1, box_size=10, border=1)
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        return ImageReader(buffer)
 
     @api.model
     def generate_diplomado_pdf(self, data):
@@ -31,13 +45,25 @@ class DiplomadoReportPDF(models.AbstractModel):
 
         # 2. Logo Superior (digital)
         if data.get('diploma_type') == 'digital':
-            logo_path = self._get_image_path('logo_instituto.jpg')
+            logo_path = self._get_image_path('logo_irg.png')
             if logo_path and os.path.exists(logo_path):
-                logo_w = 86 * mm
-                logo_h = 24 * mm  # Ajuste seguro
+                logo_w = 90 * mm
+                logo_h = 25 * mm
                 logo_x = (page_width - logo_w) / 2
                 logo_y = page_height - 11.5 * mm - logo_h
                 c.drawImage(logo_path, logo_x, logo_y, width=logo_w, height=logo_h, preserveAspectRatio=True, mask='auto')
+
+        # Generar y dibujar el código QR a la izquierda en el anverso
+        qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
+        qr_image = self._generate_qr(qr_url)
+        c.drawImage(qr_image, 20 * mm, 15 * mm, width=35 * mm, height=35 * mm)
+        
+        # Texto de registro debajo del QR
+        registry = data.get('registry_number', 'DRAFT')
+        reg_text = "Nº Registro: %s" % registry
+        c.setFont('Helvetica-Bold', 8)
+        c.setFillColorRGB(0, 0, 0)
+        c.drawCentredString(20 * mm + (35 * mm) / 2.0, 8 * mm, reg_text)
 
         # 3. Hace constar que
         c.setFont('Helvetica-Oblique', 14)
@@ -99,12 +125,12 @@ class DiplomadoReportPDF(models.AbstractModel):
             # Firma Raimon Gaja
             sig_left_path = self._get_image_path('firma_izquierda.jpg')
             if sig_left_path and os.path.exists(sig_left_path):
-                c.drawImage(sig_left_path, 54 * mm, page_height - 166 * mm - 16 * mm, width=37 * mm, height=16 * mm, preserveAspectRatio=True, mask='auto')
+                c.drawImage(sig_left_path, 90 * mm, page_height - 157 * mm - 25 * mm, width=65 * mm, height=25 * mm, preserveAspectRatio=True, mask='auto')
             
             # Firma Fermín Carrillo
             sig_right_path = self._get_image_path('firma_derecha.jpg')
             if sig_right_path and os.path.exists(sig_right_path):
-                c.drawImage(sig_right_path, 203 * mm, page_height - 165 * mm - 16 * mm, width=43 * mm, height=16 * mm, preserveAspectRatio=True, mask='auto')
+                c.drawImage(sig_right_path, 195 * mm, page_height - 156 * mm - 25 * mm, width=70 * mm, height=25 * mm, preserveAspectRatio=True, mask='auto')
 
         # Textos de firmas
         style_sig = ParagraphStyle(
@@ -116,12 +142,12 @@ class DiplomadoReportPDF(models.AbstractModel):
             alignment=1
         )
         p_sig_left = Paragraph("<b>Raimon Gaja Jaumeandreu</b><br/><font color='#666666' size='9.5'>Director General iRG</font>", style_sig)
-        p_sig_left.wrapOn(c, 95 * mm, 15 * mm)
-        p_sig_left.drawOn(c, 25 * mm, page_height - 193 * mm - 10 * mm)
+        p_sig_left.wrapOn(c, 85 * mm, 15 * mm)
+        p_sig_left.drawOn(c, 80 * mm, page_height - 193 * mm - 10 * mm)
 
         p_sig_right = Paragraph("<b>Fermín Carrillo González</b><br/><font color='#666666' size='9.5'>Director de Relaciones Internacionales</font>", style_sig)
-        p_sig_right.wrapOn(c, 95 * mm, 15 * mm)
-        p_sig_right.drawOn(c, 177 * mm, page_height - 193 * mm - 10 * mm)
+        p_sig_right.wrapOn(c, 85 * mm, 15 * mm)
+        p_sig_right.drawOn(c, 185 * mm, page_height - 193 * mm - 10 * mm)
 
         # ----------------- PAGINA 2: REVERSO -----------------
         c.showPage()  # Salto de página físico
@@ -146,16 +172,16 @@ class DiplomadoReportPDF(models.AbstractModel):
         style_back_title = ParagraphStyle(
             'BackTitle',
             fontName='Helvetica-Bold',
-            fontSize=10.5,
-            leading=13,
+            fontSize=13.5,
+            leading=16,
             textColor='#033DAA',
             alignment=1
         )
         style_back_text = ParagraphStyle(
             'BackText',
             fontName='Helvetica',
-            fontSize=8.2,
-            leading=11,
+            fontSize=10.5,
+            leading=14,
             textColor='#333333',
             alignment=0  # Izquierda
         )

@@ -13,8 +13,8 @@
 
 Permite la generación y registro histórico de diplomados independientes iRG en formato PDF de dos páginas generadas programáticamente en el servidor utilizando **ReportLab**.
 
-- **Página 1 (Anverso):** Muestra el título del diplomado, el nombre del estudiante, las fechas de celebración, la duración (en horas y créditos ECTS) y la fecha de impresión. En la variante digital se dibuja un fondo de sangrado completo, el logotipo institucional superior y las firmas y cargos correspondientes.
-- **Página 2 (Reverso):** Contiene el desglose de las asignaturas a cursar divididas en dos secciones independientes: Módulos Presenciales y Módulos Online. Las asignaturas se distribuyen de forma equilibrada en dos columnas por bloque.
+- **Página 1 (Anverso):** Muestra el título del diplomado, el nombre del estudiante, las fechas de celebración, la duración (en horas y créditos ECTS) y la fecha de impresión. En la variante digital se dibuja un fondo de sangrado completo, el logotipo institucional superior `logo_irg.png`, las firmas de la dirección ampliadas e idóneamente distribuidas, y un código QR dinámico en la esquina inferior izquierda para la verificación del folio del registro.
+- **Página 2 (Reverso):** Contiene el desglose de las asignaturas a cursar divididas en dos secciones independientes: Módulos Presenciales y Módulos Online. Las asignaturas se distribuyen de forma equilibrada en dos columnas por bloque con una tipografía aumentada para asegurar su perfecta legibilidad.
 
 Las asignaturas que figurarán en el diplomado se configuran como texto libre (campos de texto plano independientes con salto de línea) a nivel de curso y son editables directamente ("al vuelo") en el asistente antes de realizar la impresión.
 
@@ -63,15 +63,23 @@ La maquetación y generación del diplomado se realiza a través de **ReportLab*
 
 ### Diseño y Maquetación (A4 Landscape sin márgenes):
 - **Dimensiones:** Lienzo a tamaño exacto A4 horizontal (297mm de ancho por 210mm de alto) sin márgenes.
-- **Acceso Local a Recursos:** El fondo (`diploma_background.jpg`), el logotipo superior (`logo_instituto.jpg`) y las firmas de la dirección (`firma_izquierda.jpg`, `firma_derecha.jpg`) se resuelven a nivel de disco local de Odoo usando `modules.get_module_resource` en lugar de peticiones HTTP externas. Esto garantiza que las firmas y logotipos nunca aparezcan como imágenes rotas.
+- **Acceso Local a Recursos:** El fondo (`diploma_background.jpg`), el nuevo logotipo superior (`logo_irg.png`) y las firmas de la dirección (`firma_izquierda.jpg`, `firma_derecha.jpg`) se resuelven a nivel de disco local de Odoo usando `modules.get_module_resource` en lugar de peticiones HTTP externas. Esto garantiza que las firmas y logotipos nunca aparezcan como imágenes rotas.
 - **Página 1 (Anverso):**
-  - Dibujo de textos principales alineados verticalmente.
-  - El texto de aprobación utiliza la clase `Paragraph` con la hoja de estilos `ParagraphStyle` configurada con soporte para envoltura automática de texto (`wrapOn`) a un ancho máximo de `257mm` y posicionamiento con `drawOn`. Admite formato HTML básico en línea (como `<b>`).
-  - Las firmas y sus cargos asociados se dibujan en la parte inferior, posicionándose a una altura segura de `193mm` respecto al margen superior del A4.
+  - **Código QR:** Generado de forma dinámica a partir de la URL de verificación (por defecto la del propio Odoo o `https://institutoraimongaja.com`) mediante la librería Python `qrcode` y escrito en memoria (`io.BytesIO`). Se posiciona en la esquina inferior izquierda (`x = 20 * mm`, `y = 15 * mm`, tamaño `35 * mm x 35 * mm`).
+  - **Número de Registro:** Dibujado justo debajo del código QR (`y = 8 * mm`), centrado horizontalmente, usando la fuente `Helvetica-Bold` de tamaño `8`.
+  - **Logotipo Superior:** Se dibuja a un tamaño ampliado de `90 * mm` por `25 * mm`, centrado en la cabecera.
+  - **Texto de Aprobación:** Utiliza la clase `Paragraph` con la hoja de estilos `ParagraphStyle` configurada con soporte para envoltura automática de texto (`wrapOn`) a un ancho máximo de `257mm` y posicionamiento con `drawOn`. Admite formato HTML básico en línea (como `<b>`).
+  - **Firmas Ampliadas y Distribución Simétrica:** Para evitar solaparse con el código QR inferior izquierdo, se han ampliado y distribuido de forma equilibrada hacia el centro y la derecha del anverso:
+    - *Firma Raimon Gaja (Director General):* Dibujada a un tamaño de `65 * mm` por `25 * mm`, posicionada horizontalmente a partir de la coordenada `90 * mm` y a una altura vertical de `157 * mm` del borde inferior de las firmas.
+    - *Firma Fermín Carrillo (Director de RRII):* Dibujada a un tamaño de `70 * mm` por `25 * mm`, posicionada horizontalmente a partir de la coordenada `195 * mm`.
+    - *Textos de cargos:* Reubicados a las coordenadas de inicio horizontal de `80 * mm` (izq.) y `185 * mm` (der.) respectivamente, con un ancho máximo de `85 * mm` para cada columna.
 - **Página 2 (Reverso):**
   - Se genera dinámicamente llamando a `canvas.showPage()`.
-  - Los bloques de "Módulos Presenciales" y "Módulos Online" leen los campos de texto plano.
+  - Los bloques de "Módulos Presenciales" y "Módulos Online" leen los campos de texto plano del curso o wizard.
   - El texto libre se divide por saltos de línea y se distribuye de forma automática y equilibrada en 2 columnas (izquierda a `35mm` y derecha a `154mm`) usando envoltorios `Paragraph` de ReportLab.
+  - **Aumento de Tipografía:** Para garantizar la perfecta legibilidad del listado de asignaturas del reverso:
+    - *Títulos de Sección:* Fuente `Helvetica-Bold` de **`13.5pt`** con interlínea (`leading`) de `16pt`.
+    - *Listado de Asignaturas:* Fuente `Helvetica` de **`10.5pt`** con interlínea (`leading`) de `14pt`.
   - Si un bloque no tiene asignaturas registradas, se renderiza un mensaje por defecto indicando que no se registran módulos.
 
 ### Persistencia y Descarga:
@@ -118,6 +126,11 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_ge
   - Carga local de assets de imagen (fondos, firmas) desde el sistema de archivos del servidor en lugar de resoluciones de red HTTP.
   - Almacenamiento persistente del PDF generado como archivo adjunto (`ir.attachment`) en el histórico del diplomado (`irg.diplomado.registry`).
   - Redirección automática de la UI para la descarga del PDF a través de la acción `ir.actions.act_url` apuntando a `/web/content/`.
+- **Mejoras Visuales en el PDF (ReportLab):**
+  - Adición del código QR generado dinámicamente en la esquina inferior izquierda con la URL de verificación y número de registro/folio justo debajo.
+  - Actualización del logotipo superior con el nuevo asset `logo_irg.png` y aumento de sus dimensiones físicas a `90x25 mm`.
+  - Ampliación física del tamaño de las firmas escaneadas (`65x25 mm` para Raimon Gaja y `70x25 mm` para Fermín Carrillo) y desplazamiento horizontal a la derecha (`90mm` y `195mm`) para evitar solapamientos con el código QR y mejorar el equilibrio estético.
+  - Incremento del tamaño de fuente en el reverso para mejorar sustancialmente la legibilidad del plan de estudios (`13.5pt` en títulos y `10.5pt` en asignaturas).
 - **Reemplazo de Many2many por campos de Texto Plano**:
   - Remoción completa del uso de `op.subject` y sus relaciones Many2many en `op.course` (añadiendo `irg_diplomado_subjects_presencial` e `irg_diplomado_subjects_online`), en el wizard `irg.diplomado.wizard` (campos `subjects_presencial` y `subjects_online`) y en el registro histórico `irg.diplomado.registry` (campos `subjects_presencial` y `subjects_online`).
   - Posibilidad de definir y editar directamente el plan de estudios del diplomado como texto libre sin restricciones de modelos relacionados.

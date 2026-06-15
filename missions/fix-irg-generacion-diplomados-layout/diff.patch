@@ -1,161 +1,199 @@
-diff --git a/addons-extra/extrairg/irg_generacion_diplomados/__init__.py b/addons-extra/extrairg/irg_generacion_diplomados/__init__.py
-index 35e7c960..8033d251 100644
---- a/addons-extra/extrairg/irg_generacion_diplomados/__init__.py
-+++ b/addons-extra/extrairg/irg_generacion_diplomados/__init__.py
-@@ -2,3 +2,4 @@
- 
- from . import models
- from . import wizard
-+from . import reports
 diff --git a/addons-extra/extrairg/irg_generacion_diplomados/models/diplomado_registry.py b/addons-extra/extrairg/irg_generacion_diplomados/models/diplomado_registry.py
-index b8814614..c3f639e7 100644
+index c3f639e7..206e50b8 100644
 --- a/addons-extra/extrairg/irg_generacion_diplomados/models/diplomado_registry.py
 +++ b/addons-extra/extrairg/irg_generacion_diplomados/models/diplomado_registry.py
-@@ -74,6 +74,11 @@ class IrgDiplomadoRegistry(models.Model):
-         string='Asignaturas Online',
-         help=_("Listado de asignaturas online que figurarán en el reverso.")
-     )
-+    attachment_id = fields.Many2one(
-+        'ir.attachment',
-+        string='Archivo PDF',
-+        help=_("Archivo PDF adjunto que contiene el diplomado generado.")
-+    )
+@@ -94,6 +94,28 @@ class IrgDiplomadoRegistry(models.Model):
+             end_date_str = self.end_date.strftime('%d/%m/%Y') if self.end_date else ''
+             issue_date_str = self.issue_date.strftime('%d/%m/%Y') if self.issue_date else ''
  
++            # Calcular la URL del QR de forma idéntica a diplomas convencionales
++            from urllib.parse import urlencode
++            query_params = {'id': self.name}
++            if 'op.sign_certificate' in self.env:
++                stamp_payload = {
++                    'registry_number': self.name,
++                    'student_name': self.student_name,
++                    'course_name_es': self.diplomado_name,
++                    'course_name_cat': self.diplomado_name,
++                    'issue_date': str(self.issue_date),
++                    'diploma_type': self.diploma_type,
++                }
++                stamp_data = self.env['op.sign_certificate'].sudo().stamp_data(stamp_payload, student=self.student_id) or {}
++                if stamp_data.get('stamp') and stamp_data.get('data_str') and stamp_data.get('certificate_id'):
++                    query_params.update({
++                        'stamp': stamp_data.get('stamp'),
++                        'data_str': stamp_data.get('data_str'),
++                        'certificate_id': stamp_data.get('certificate_id'),
++                    })
++
++            qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
++
+             data = {
+                 'student_name': self.student_name,
+                 'diplomado_name': self.diplomado_name,
+@@ -105,6 +127,8 @@ class IrgDiplomadoRegistry(models.Model):
+                 'diploma_type': self.diploma_type,
+                 'subjects_presencial': self.subjects_presencial or '',
+                 'subjects_online': self.subjects_online or '',
++                'qr_url': qr_url,
++                'registry_number': self.name,
+             }
+ 
+             pdf_content = self.env['report.irg_generacion_diplomados.diplomado_pdf'].generate_diplomado_pdf(data)
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
+index cc3af5eb..84db738a 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
+@@ -5,6 +5,7 @@ from reportlab.pdfgen import canvas
+ from reportlab.lib.units import mm
+ from reportlab.platypus import Paragraph
+ from reportlab.lib.styles import ParagraphStyle
++from reportlab.lib.utils import ImageReader
+ import io
+ import os
+ 
+@@ -15,6 +16,19 @@ class DiplomadoReportPDF(models.AbstractModel):
+     def _get_image_path(self, image_name):
+         return modules.get_module_resource('irg_generacion_diplomados', 'static/src/img', image_name)
+ 
++    def _generate_qr(self, url):
++        import qrcode
++        from reportlab.lib.utils import ImageReader
++        import io
++        qr = qrcode.QRCode(version=1, box_size=10, border=1)
++        qr.add_data(url)
++        qr.make(fit=True)
++        img = qr.make_image(fill_color="black", back_color="white")
++        buffer = io.BytesIO()
++        img.save(buffer, format='PNG')
++        buffer.seek(0)
++        return ImageReader(buffer)
++
      @api.model
-     def create(self, vals):
-@@ -83,5 +88,41 @@ class IrgDiplomadoRegistry(models.Model):
+     def generate_diplomado_pdf(self, data):
+         buffer = io.BytesIO()
+@@ -31,14 +45,26 @@ class DiplomadoReportPDF(models.AbstractModel):
  
-     def action_reprint(self):
-         self.ensure_one()
--        report = self.env.ref('irg_generacion_diplomados.action_report_diplomado')
--        return report.report_action(self)
-+        if not self.attachment_id:
-+            # Regenerar el PDF si no existiera (por ejemplo, registros creados anteriormente)
-+            start_date_str = self.start_date.strftime('%d/%m/%Y') if self.start_date else ''
-+            end_date_str = self.end_date.strftime('%d/%m/%Y') if self.end_date else ''
-+            issue_date_str = self.issue_date.strftime('%d/%m/%Y') if self.issue_date else ''
-+
-+            data = {
-+                'student_name': self.student_name,
-+                'diplomado_name': self.diplomado_name,
-+                'start_date': start_date_str,
-+                'end_date': end_date_str,
-+                'duration_hours': self.duration_hours,
-+                'duration_ects': self.duration_ects,
-+                'issue_date': issue_date_str,
-+                'diploma_type': self.diploma_type,
-+                'subjects_presencial': self.subjects_presencial or '',
-+                'subjects_online': self.subjects_online or '',
-+            }
-+
-+            pdf_content = self.env['report.irg_generacion_diplomados.diplomado_pdf'].generate_diplomado_pdf(data)
-+
-+            import base64
-+            attachment_name = "Diplomado_%s.pdf" % self.student_name.replace(' ', '_')
-+            attachment = self.env['ir.attachment'].create({
-+                'name': attachment_name,
-+                'type': 'binary',
-+                'datas': base64.b64encode(pdf_content),
-+                'res_model': 'irg.diplomado.registry',
-+                'res_id': self.id,
-+                'mimetype': 'application/pdf',
-+            })
-+            self.write({'attachment_id': attachment.id})
-+
-+        return {
-+            'type': 'ir.actions.act_url',
-+            'url': '/web/content/%s?download=true' % self.attachment_id.id,
-+            'target': 'self',
-+        }
-diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/__init__.py b/addons-extra/extrairg/irg_generacion_diplomados/reports/__init__.py
-index 47ef8d7c..a41a0df1 100644
---- a/addons-extra/extrairg/irg_generacion_diplomados/reports/__init__.py
-+++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/__init__.py
-@@ -1,2 +1,3 @@
- # -*- coding: utf-8 -*-
--# No python models needed in reports directory
-+
-+from . import diplomado_pdf_report
-diff --git a/addons-extra/extrairg/irg_generacion_diplomados/tests/test_diplomado_generation.py b/addons-extra/extrairg/irg_generacion_diplomados/tests/test_diplomado_generation.py
-index 884ed67f..616efe9a 100644
---- a/addons-extra/extrairg/irg_generacion_diplomados/tests/test_diplomado_generation.py
-+++ b/addons-extra/extrairg/irg_generacion_diplomados/tests/test_diplomado_generation.py
-@@ -115,9 +115,9 @@ class TestDiplomadoGeneration(TransactionCase):
-         
-         action = wizard.action_print_diplomado()
-         
--        # Comprobar retorno de acción de reporte
--        self.assertEqual(action['type'], 'ir.actions.report')
--        self.assertEqual(action['report_name'], 'irg_generacion_diplomados.report_diplomado_template')
-+        # Comprobar retorno de acción de descarga de URL (act_url)
-+        self.assertEqual(action['type'], 'ir.actions.act_url')
-+        self.assertTrue(action['url'].startswith('/web/content/'))
-         
-         # Buscar si el registro en la base de datos se creó
-         registry = self.env['irg.diplomado.registry'].search([('student_id', '=', self.student.id)])
-@@ -131,6 +131,10 @@ class TestDiplomadoGeneration(TransactionCase):
-         self.assertEqual(registry.subjects_presencial, 'Prácticas Presenciales 1')
-         self.assertEqual(registry.subjects_online, 'Módulos Online 1\nMódulos Online 2')
-         
-+        # Comprobar que el registro tiene el archivo PDF adjunto
-+        self.assertTrue(registry.attachment_id, "El registro debería tener un archivo PDF adjunto.")
+         # 2. Logo Superior (digital)
+         if data.get('diploma_type') == 'digital':
+-            logo_path = self._get_image_path('logo_instituto.jpg')
++            logo_path = self._get_image_path('logo_irg.png')
+             if logo_path and os.path.exists(logo_path):
+-                logo_w = 86 * mm
+-                logo_h = 24 * mm  # Ajuste seguro
++                logo_w = 90 * mm
++                logo_h = 25 * mm
+                 logo_x = (page_width - logo_w) / 2
+                 logo_y = page_height - 11.5 * mm - logo_h
+                 c.drawImage(logo_path, logo_x, logo_y, width=logo_w, height=logo_h, preserveAspectRatio=True, mask='auto')
+ 
++        # Generar y dibujar el código QR a la izquierda en el anverso
++        qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
++        qr_image = self._generate_qr(qr_url)
++        c.drawImage(qr_image, 20 * mm, 15 * mm, width=35 * mm, height=35 * mm)
 +        
-         # Probar el método de reimpresión del registro
-         reprint_action = registry.action_reprint()
--        self.assertEqual(reprint_action['type'], 'ir.actions.report')
-+        self.assertEqual(reprint_action['type'], 'ir.actions.act_url')
-+        self.assertEqual(reprint_action['url'], '/web/content/%s?download=true' % registry.attachment_id.id)
++        # Texto de registro debajo del QR
++        registry = data.get('registry_number', 'DRAFT')
++        reg_text = "Nº Registro: %s" % registry
++        c.setFont('Helvetica-Bold', 8)
++        c.setFillColorRGB(0, 0, 0)
++        c.drawCentredString(20 * mm + (35 * mm) / 2.0, 8 * mm, reg_text)
++
+         # 3. Hace constar que
+         c.setFont('Helvetica-Oblique', 14)
+         c.setFillColorRGB(0.447, 0.498, 0.467)  # #727F77
+@@ -99,12 +125,12 @@ class DiplomadoReportPDF(models.AbstractModel):
+             # Firma Raimon Gaja
+             sig_left_path = self._get_image_path('firma_izquierda.jpg')
+             if sig_left_path and os.path.exists(sig_left_path):
+-                c.drawImage(sig_left_path, 54 * mm, page_height - 166 * mm - 16 * mm, width=37 * mm, height=16 * mm, preserveAspectRatio=True, mask='auto')
++                c.drawImage(sig_left_path, 90 * mm, page_height - 157 * mm - 25 * mm, width=65 * mm, height=25 * mm, preserveAspectRatio=True, mask='auto')
+             
+             # Firma Fermín Carrillo
+             sig_right_path = self._get_image_path('firma_derecha.jpg')
+             if sig_right_path and os.path.exists(sig_right_path):
+-                c.drawImage(sig_right_path, 203 * mm, page_height - 165 * mm - 16 * mm, width=43 * mm, height=16 * mm, preserveAspectRatio=True, mask='auto')
++                c.drawImage(sig_right_path, 195 * mm, page_height - 156 * mm - 25 * mm, width=70 * mm, height=25 * mm, preserveAspectRatio=True, mask='auto')
+ 
+         # Textos de firmas
+         style_sig = ParagraphStyle(
+@@ -116,12 +142,12 @@ class DiplomadoReportPDF(models.AbstractModel):
+             alignment=1
+         )
+         p_sig_left = Paragraph("<b>Raimon Gaja Jaumeandreu</b><br/><font color='#666666' size='9.5'>Director General iRG</font>", style_sig)
+-        p_sig_left.wrapOn(c, 95 * mm, 15 * mm)
+-        p_sig_left.drawOn(c, 25 * mm, page_height - 193 * mm - 10 * mm)
++        p_sig_left.wrapOn(c, 85 * mm, 15 * mm)
++        p_sig_left.drawOn(c, 80 * mm, page_height - 193 * mm - 10 * mm)
+ 
+         p_sig_right = Paragraph("<b>Fermín Carrillo González</b><br/><font color='#666666' size='9.5'>Director de Relaciones Internacionales</font>", style_sig)
+-        p_sig_right.wrapOn(c, 95 * mm, 15 * mm)
+-        p_sig_right.drawOn(c, 177 * mm, page_height - 193 * mm - 10 * mm)
++        p_sig_right.wrapOn(c, 85 * mm, 15 * mm)
++        p_sig_right.drawOn(c, 185 * mm, page_height - 193 * mm - 10 * mm)
+ 
+         # ----------------- PAGINA 2: REVERSO -----------------
+         c.showPage()  # Salto de página físico
+@@ -146,16 +172,16 @@ class DiplomadoReportPDF(models.AbstractModel):
+         style_back_title = ParagraphStyle(
+             'BackTitle',
+             fontName='Helvetica-Bold',
+-            fontSize=10.5,
+-            leading=13,
++            fontSize=13.5,
++            leading=16,
+             textColor='#033DAA',
+             alignment=1
+         )
+         style_back_text = ParagraphStyle(
+             'BackText',
+             fontName='Helvetica',
+-            fontSize=8.2,
+-            leading=11,
++            fontSize=10.5,
++            leading=14,
+             textColor='#333333',
+             alignment=0  # Izquierda
+         )
 diff --git a/addons-extra/extrairg/irg_generacion_diplomados/wizard/diplomado_wizard.py b/addons-extra/extrairg/irg_generacion_diplomados/wizard/diplomado_wizard.py
-index bf29c49f..b264baa3 100644
+index b264baa3..a3c8bf1f 100644
 --- a/addons-extra/extrairg/irg_generacion_diplomados/wizard/diplomado_wizard.py
 +++ b/addons-extra/extrairg/irg_generacion_diplomados/wizard/diplomado_wizard.py
-@@ -119,6 +119,46 @@ class IrgDiplomadoWizard(models.TransientModel):
-         }
-         registry = self.env['irg.diplomado.registry'].create(registry_vals)
+@@ -124,6 +124,28 @@ class IrgDiplomadoWizard(models.TransientModel):
+         end_date_str = self.end_date.strftime('%d/%m/%Y') if self.end_date else ''
+         issue_date_str = self.issue_date.strftime('%d/%m/%Y') if self.issue_date else ''
  
--        # Disparar la acción de reporte QWeb para el registro creado
--        report = self.env.ref('irg_generacion_diplomados.action_report_diplomado')
--        return report.report_action(registry)
-+        # Formatear fechas en formato dd/mm/yyyy
-+        start_date_str = self.start_date.strftime('%d/%m/%Y') if self.start_date else ''
-+        end_date_str = self.end_date.strftime('%d/%m/%Y') if self.end_date else ''
-+        issue_date_str = self.issue_date.strftime('%d/%m/%Y') if self.issue_date else ''
++        # Calcular la URL del QR de forma idéntica a diplomas convencionales
++        from urllib.parse import urlencode
++        query_params = {'id': registry.name}
++        if 'op.sign_certificate' in self.env:
++            stamp_payload = {
++                'registry_number': registry.name,
++                'student_name': self.student_name,
++                'course_name_es': self.diplomado_name,
++                'course_name_cat': self.diplomado_name,
++                'issue_date': str(self.issue_date),
++                'diploma_type': self.diploma_type,
++            }
++            stamp_data = self.env['op.sign_certificate'].sudo().stamp_data(stamp_payload, student=self.student_id) or {}
++            if stamp_data.get('stamp') and stamp_data.get('data_str') and stamp_data.get('certificate_id'):
++                query_params.update({
++                    'stamp': stamp_data.get('stamp'),
++                    'data_str': stamp_data.get('data_str'),
++                    'certificate_id': stamp_data.get('certificate_id'),
++                })
 +
-+        # Construir el diccionario de datos
-+        data = {
-+            'student_name': self.student_name,
-+            'diplomado_name': self.diplomado_name,
-+            'start_date': start_date_str,
-+            'end_date': end_date_str,
-+            'duration_hours': self.duration_hours,
-+            'duration_ects': self.duration_ects,
-+            'issue_date': issue_date_str,
-+            'diploma_type': self.diploma_type,
-+            'subjects_presencial': self.subjects_presencial or '',
-+            'subjects_online': self.subjects_online or '',
-+        }
++        qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
 +
-+        # Generar el contenido en binario mediante ReportLab
-+        pdf_content = self.env['report.irg_generacion_diplomados.diplomado_pdf'].generate_diplomado_pdf(data)
-+
-+        # Crear un ir.attachment binario
-+        import base64
-+        attachment_name = "Diplomado_%s.pdf" % self.student_name.replace(' ', '_')
-+        attachment = self.env['ir.attachment'].create({
-+            'name': attachment_name,
-+            'type': 'binary',
-+            'datas': base64.b64encode(pdf_content),
-+            'res_model': 'irg.diplomado.registry',
-+            'res_id': registry.id,
-+            'mimetype': 'application/pdf',
-+        })
-+
-+        # Vincular el attachment_id en el registro del histórico
-+        registry.write({'attachment_id': attachment.id})
-+
-+        # Retornar la acción ir.actions.act_url para descargar el PDF directamente
-+        return {
-+            'type': 'ir.actions.act_url',
-+            'url': '/web/content/%s?download=true' % attachment.id,
-+            'target': 'self',
-+        }
+         # Construir el diccionario de datos
+         data = {
+             'student_name': self.student_name,
+@@ -136,6 +158,8 @@ class IrgDiplomadoWizard(models.TransientModel):
+             'diploma_type': self.diploma_type,
+             'subjects_presencial': self.subjects_presencial or '',
+             'subjects_online': self.subjects_online or '',
++            'qr_url': qr_url,
++            'registry_number': registry.name,
+         }
+ 
+         # Generar el contenido en binario mediante ReportLab

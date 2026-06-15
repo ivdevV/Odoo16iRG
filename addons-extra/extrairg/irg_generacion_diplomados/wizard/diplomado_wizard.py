@@ -124,6 +124,28 @@ class IrgDiplomadoWizard(models.TransientModel):
         end_date_str = self.end_date.strftime('%d/%m/%Y') if self.end_date else ''
         issue_date_str = self.issue_date.strftime('%d/%m/%Y') if self.issue_date else ''
 
+        # Calcular la URL del QR de forma idéntica a diplomas convencionales
+        from urllib.parse import urlencode
+        query_params = {'id': registry.name}
+        if 'op.sign_certificate' in self.env:
+            stamp_payload = {
+                'registry_number': registry.name,
+                'student_name': self.student_name,
+                'course_name_es': self.diplomado_name,
+                'course_name_cat': self.diplomado_name,
+                'issue_date': str(self.issue_date),
+                'diploma_type': self.diploma_type,
+            }
+            stamp_data = self.env['op.sign_certificate'].sudo().stamp_data(stamp_payload, student=self.student_id) or {}
+            if stamp_data.get('stamp') and stamp_data.get('data_str') and stamp_data.get('certificate_id'):
+                query_params.update({
+                    'stamp': stamp_data.get('stamp'),
+                    'data_str': stamp_data.get('data_str'),
+                    'certificate_id': stamp_data.get('certificate_id'),
+                })
+
+        qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
+
         # Construir el diccionario de datos
         data = {
             'student_name': self.student_name,
@@ -136,6 +158,8 @@ class IrgDiplomadoWizard(models.TransientModel):
             'diploma_type': self.diploma_type,
             'subjects_presencial': self.subjects_presencial or '',
             'subjects_online': self.subjects_online or '',
+            'qr_url': qr_url,
+            'registry_number': registry.name,
         }
 
         # Generar el contenido en binario mediante ReportLab
