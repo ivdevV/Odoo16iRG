@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "task": "revert-diplomados-full-bleed-fix",
+  "checks": [
+    { "name": "xmllint", "result": "pass", "detail": "diplomado_templates.xml y diplomado_report.xml validos" },
+    { "name": "odoo_module_update", "result": "pass", "detail": "Modules loaded. Registry loaded in 3.228s" }
+  ],
+  "evidence": [],
+  "model_tier_used": "trivial",
+  "escalations": 0
+}

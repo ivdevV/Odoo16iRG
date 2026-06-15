@@ -1,0 +1,5 @@
+Revertido localmente el commit f5d92b31 con `git revert --no-commit f5d92b31`.
+Archivos revertidos: diplomado_templates.xml y artefactos de missions/diplomados-full-bleed-fix/.
+Validado XML con xmllint sin errores.
+Validado update local de Odoo con docker-compose.local.yml; el modulo cargo correctamente.
+No se realizo push a Dev_iRG durante la ejecucion del rollback.

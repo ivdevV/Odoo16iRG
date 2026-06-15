@@ -1,6 +1,0 @@
-Eliminado web.basic_layout del template.
-Imagen de fondo cambiada a position:fixed con dimensiones explícitas 297mm x 210mm.
-Añadidos width:100%!important y max-width:none!important a wrappers html/body/.page.
-Eliminado el <div class="page"> wrapper de Odoo que añadía padding interno.
-xmllint: OK en ambos XML.
-odoo -u irg_generacion_diplomados: Modules loaded sin errores (solo warnings de otros módulos ajenos).
