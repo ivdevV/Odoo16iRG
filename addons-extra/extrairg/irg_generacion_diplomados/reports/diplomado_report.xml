@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Paper Format para Diplomados A4 Landscape sin márgenes -->
+    <record id="paperformat_irg_diplomado" model="report.paperformat">
+        <field name="name">Diplomado iRG A4 Landscape</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- Acción de Reporte -->
+    <record id="action_report_diplomado" model="ir.actions.report">
+        <field name="name">Imprimir Diplomado</field>
+        <field name="model">irg.diplomado.registry</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">irg_generacion_diplomados.report_diplomado_template</field>
+        <field name="report_file">irg_generacion_diplomados.report_diplomado_template</field>
+        <field name="paperformat_id" ref="paperformat_irg_diplomado"/>
+        <field name="binding_model_id" ref="model_irg_diplomado_registry"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
