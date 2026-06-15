@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "task": "fix-irg-generacion-diplomados-layout",
+  "checks": [
+    {
+      "name": "xml_syntax",
+      "result": "pass",
+      "detail": "xmllint --noout passed for reports/diplomado_templates.xml"
+    },
+    {
+      "name": "diff_whitespace",
+      "result": "pass",
+      "detail": "git diff --check passed for reports/diplomado_templates.xml"
+    },
+    {
+      "name": "odoo_runtime_tests",
+      "result": "skip",
+      "detail": "No odoo-bin executable found inside the workspace; live Odoo report rendering could not be run locally from this checkout."
+    }
+  ],
+  "evidence": [
+    "artifacts/validation.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

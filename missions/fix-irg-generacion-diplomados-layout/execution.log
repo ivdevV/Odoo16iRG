@@ -1,0 +1,8 @@
+2026-06-15 - Plan creado antes de modificar codigo.
+2026-06-15 - Inspeccionados knowledge/workflow del proyecto y reporte `irg_generacion_diplomados`.
+2026-06-15 - Inspeccionadas dimensiones de imagenes static con `sips`: fondo 1123x776, logo 330x148, firmas 153x88 y 401x347.
+2026-06-15 - Modificado `reports/diplomado_templates.xml`: reset de pagina reforzado, fondo sin z-index negativo, titulo del diplomado sin uppercase, reverso reestructurado en flujo vertical.
+2026-06-15 - Validado XML con `xmllint --noout`: passed.
+2026-06-15 - Validado diff con `git diff --check`: passed.
+2026-06-15 - No se encontro `odoo-bin` en el workspace; no fue posible ejecutar tests transaccionales ni render PDF real desde este checkout.
+2026-06-15 - Registrados `verification.json`, `diff.patch`, `artifacts/validation.log` y aprendizaje en `.agents/knowledge/odoo_development_modding/artifacts/diplomado_report_layout.md`.

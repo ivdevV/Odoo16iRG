@@ -1,0 +1,120 @@
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+@@
+-                        html, body, body.container, #wrapwrap, main, .article {
++                        html, body, body.container, #wrapwrap, main, .article, .page {
+@@
++                        .article {
++                            height: 210mm !important;
++                        }
+@@
+-                            z-index: -10;
++                            z-index: 0;
+@@
+-                            z-index: 10;
++                            z-index: 2;
+@@
++                            z-index: 2;
+@@
++                        .diplomado-title {
++                            left: 28mm;
++                            width: 241mm;
++                            top: 91.8mm;
++                            font-size: 15pt;
++                            font-weight: bold;
++                            color: #000;
++                            line-height: 1.18;
++                            letter-spacing: 0.3px;
++                        }
++                        .back-content {
++                            position: absolute;
++                            left: 39mm;
++                            top: 41.5mm;
++                            width: 219mm;
++                            z-index: 2;
++                            text-align: center;
++                            color: #333;
++                            font-size: 10.5pt;
++                            line-height: 1.55;
++                        }
++                        .module-section {
++                            margin: 0 0 8mm 0;
++                        }
++                        .module-title {
++                            margin: 0 0 4mm 0;
++                            font-size: 12pt;
++                            font-weight: bold;
++                            color: #033DAA;
++                        }
++                        .module-list {
++                            white-space: pre-line;
++                            margin: 0;
++                        }
++                        .module-empty {
++                            color: #777;
++                            font-style: italic;
++                        }
+@@
+-                        <div class="center-text" style="top: 94.2mm; font-size: 18pt; font-weight: bold; color: #000; text-transform: uppercase; letter-spacing: 1px;">
++                        <div class="center-text diplomado-title">
+@@
+-                        <div class="center-text" style="top: 107.1mm; font-size: 11.5pt; color: #6C7A71; font-style: italic;">
++                        <div class="center-text" style="top: 112.5mm; font-size: 11.5pt; color: #6C7A71; font-style: italic;">
+@@
+-                        <div class="center-text" style="top: 119.3mm; font-size: 11.5pt; color: #6C7A71;">
++                        <div class="center-text" style="top: 123.5mm; font-size: 11.5pt; color: #6C7A71;">
+@@
+-                        <!-- Módulos Presenciales Header -->
+-                        <div class="center-text" style="top: 41.2mm; font-size: 13pt; font-weight: bold; color: #033DAA; text-transform: uppercase; letter-spacing: 1px;">
+-                            Módulos Presenciales
+-                        </div>
+-
+-                        <!-- Módulos Presenciales List -->
+-                        <div class="center-text" style="left: 30mm; width: 237mm; top: 53.0mm; font-size: 12pt; color: #333; line-height: 1.6; white-space: pre-line;">
+-                            <t t-if="o.subjects_presencial">
+-                                <span t-field="o.subjects_presencial"/>
+-                            </t>
+-                            <t t-else="">
+-                                <span class="text-muted" style="font-style: italic;">No se registran módulos en modalidad presencial.</span>
+-                            </t>
+-                        </div>
+-
+-                        <!-- Módulos Online Header -->
+-                        <div class="center-text" style="top: 151.6mm; font-size: 13pt; font-weight: bold; color: #033DAA; text-transform: uppercase; letter-spacing: 1px;">
+-                            Módulos Online
+-                        </div>
+-
+-                        <!-- Módulos Online List -->
+-                        <div class="center-text" style="left: 30mm; width: 237mm; top: 162.3mm; font-size: 12pt; color: #333; line-height: 1.6; white-space: pre-line;">
+-                            <t t-if="o.subjects_online">
+-                                <span t-field="o.subjects_online"/>
+-                            </t>
+-                            <t t-else="">
+-                                <span class="text-muted" style="font-style: italic;">No se registran módulos en modalidad online / virtual.</span>
+-                            </t>
++                        <div class="back-content">
++                            <div class="module-section">
++                                <div class="module-title">Módulos Presenciales</div>
++                                <div class="module-list">
++                                    <t t-if="o.subjects_presencial">
++                                        <span t-field="o.subjects_presencial"/>
++                                    </t>
++                                    <t t-else="">
++                                        <span class="module-empty">No se registran módulos en modalidad presencial.</span>
++                                    </t>
++                                </div>
++                            </div>
++
++                            <div class="module-section">
++                                <div class="module-title">Módulos Online</div>
++                                <div class="module-list">
++                                    <t t-if="o.subjects_online">
++                                        <span t-field="o.subjects_online"/>
++                                    </t>
++                                    <t t-else="">
++                                        <span class="module-empty">No se registran módulos en modalidad online / virtual.</span>
++                                    </t>
++                                </div>
++                            </div>
+                         </div>
