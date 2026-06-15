@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Generación de Diplomados iRG',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': 'Módulo independiente para la generación y registro de diplomados iRG.',
     'description': """
         Módulo para la generación y registro de diplomados iRG.

@@ -34,7 +34,7 @@ Las asignaturas que figurarán en el diplomado son configurables a nivel de curs
 
 | Modelo | Tipo | Descripción / Campos principales |
 |--------|------|----------------------------------|
-| `op.subject` | Extensión | Añade `irg_modality` (Presencial/Online) y relación inversa Many2many `course_ids` para filtrado en dominios. |
+| `op.subject` | Extensión | Añade `irg_modality` (Presencial/Online) para clasificar las asignaturas. |
 | `op.course` | Extensión | Añade `irg_diplomado_subject_ids` (Many2many a `op.subject`). |
 | `op.student` | Extensión | Añade botón inteligente y campo computado `can_generate_diplomado`. |
 | `irg.diplomado.registry` | Nuevo | Almacena el registro histórico (Nombre, curso, fechas, folio único `name`, tipo de diploma, asignaturas). |
@@ -95,6 +95,12 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_ge
 ---
 
 ## Historial de Cambios
+
+### Versión 16.0.1.0.1
+- **Corrección de ParseError en instalación limpia**:
+  - Remoción de la relación Many2many `course_ids` en `op.subject` y de su filtrado directo en la vista XML del wizard (`domain`).
+  - Reemplazo por un filtrado dinámico en Python mediante la respuesta de los métodos `@api.onchange` en `_onchange_student_id` y `_onchange_course_id`, permitiendo la correcta instalación limpia del módulo desde cero sin colisiones de carga en la base de datos.
+  - Pruebas y validaciones unitarias verificadas con éxito en Docker local.
 
 ### Versión 16.0.1.0.0
 - **Estructura base completada:** Implementación limpia del módulo `irg_generacion_diplomados` en `addons-extra/extrairg/irg_generacion_diplomados`.

@@ -77,16 +77,18 @@ class IrgDiplomadoWizard(models.TransientModel):
             if student_course.batch_id:
                 self.start_date = student_course.batch_id.start_date
                 self.end_date = student_course.batch_id.end_date
+            return self._onchange_course_id()
         else:
             # Si no hay cursos en su ficha, dejamos los campos vacíos para que los rellene el usuario
             self.course_id = False
             self.start_date = False
             self.end_date = False
+            return {'domain': {'subject_ids': [('id', '=', False)]}}
 
     @api.onchange('course_id')
     def _onchange_course_id(self):
         if not self.course_id:
-            return
+            return {'domain': {'subject_ids': [('id', '=', False)]}}
 
         self.diplomado_name = self.course_id.name
 
@@ -97,6 +99,9 @@ class IrgDiplomadoWizard(models.TransientModel):
             self.subject_ids = [(6, 0, self.course_id.subject_ids.ids)]
         else:
             self.subject_ids = [(5, 0, 0)]
+
+        allowed_subjects = self.course_id.irg_diplomado_subject_ids | self.course_id.subject_ids
+        return {'domain': {'subject_ids': [('id', 'in', allowed_subjects.ids)]}}
     def action_print_diplomado(self):
         self.ensure_one()
         if not self.student_id or not self.course_id:

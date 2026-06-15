@@ -31,7 +31,7 @@
                             <p class="text-muted">
                                 Modifique las asignaturas que se imprimirán en el reverso del diplomado. Por defecto se cargan desde la configuración del curso.
                             </p>
-                            <field name="subject_ids" domain="[('course_ids', 'in', course_id)]">
+                            <field name="subject_ids">
                                 <tree string="Asignaturas del Diplomado">
                                     <field name="name"/>
                                     <field name="code"/>
