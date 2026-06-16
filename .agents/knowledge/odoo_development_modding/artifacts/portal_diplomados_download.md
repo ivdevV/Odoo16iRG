@@ -1,6 +1,6 @@
 # Descarga de Diplomados en el Portal del Alumno (Odoo 16)
 
-Este documento describe detalladamente los patrones técnicos empleados para implementar la descarga segura de diplomas de posgrado y diplomados desde el portal web del estudiante, garantizando modularidad, legibilidad y robustez académica.
+Este documento describe detalladamente los patrones técnicos empleados para implementar el aislamiento y descarga segura de diplomas de posgrado y diplomados desde el portal web del estudiante, garantizando modularidad, legibilidad y robustez académica.
 
 ---
 
@@ -72,48 +72,94 @@ class IrgCampusDiplomadosPortal(IrgCampusCertificatesPortal):
 
 ---
 
-## 2. Patrón de Inyección de Subsecciones en Vistas mediante XPath en Odoo 16
+## 2. Patrón de Exclusión y Filtrado por Controladores en Formularios
 
-Para extender y modificar las plantillas QWeb del portal sin alterar el código original del módulo padre, se utiliza herencia XML (`inherit_id`) e inyección mediante expresiones XPath.
+Para evitar la solicitud y tramitación de tasas de certificados para cursos que son diplomados (ya que estos se expiden de manera gratuita mediante el histórico), se debe excluir e invalidar este flujo tanto en el frontend como en el backend.
 
-### Inyección de la Tabla de Diplomados
-La plantilla hereda de `irg_campus_certificates_portal.portal_certificate_list_override` e inyecta la subsección usando `position="inside"` en el contenedor correspondiente:
+El endpoint `/campus/certificates/new` gestiona tanto la presentación del formulario (método `GET`) como el procesamiento del envío de la solicitud (método `POST`).
 
-```xml
-<template id="portal_certificate_list_diplomados_override" inherit_id="irg_campus_certificates_portal.portal_certificate_list_override">
-    
-    <!-- 1. Alerta de error por nota insuficiente -->
-    <xpath expr="//t[@t-if=&quot;request.params.get('error') == 'no_pdf'&quot;]" position="before">
-        <t t-if="request.params.get('error') == 'grade_too_low'">
-            <div class="alert alert-danger alert-dismissible fade show border-start border-4 border-danger shadow-sm mb-4" role="alert">
-                <i class="fa fa-times-circle me-2 text-danger"/>
-                <strong>Calificación insuficiente:</strong> No cumples con los requisitos académicos de calificación final mínima (7.0) para poder imprimir este diploma.
-            </div>
-        </t>
-    </xpath>
+### A. Filtrado en la Carga del Formulario (GET)
+Cuando se carga el formulario, el controlador intercepta la lista de libretas de calificaciones disponibles (`gradebooks`) que se pasarán al combo de selección en QWeb. Se realiza un filtrado mediante el método `.filtered()` del RecordSet para eliminar aquellas correspondientes a diplomados:
 
-    <!-- 2. Contenido de la subsección dentro de la pestaña de diplomas -->
-    <xpath expr="//div[@id='diplomas-pane']" position="inside">
-        <t t-if="diplomados_data">
-            <div class="mt-5 pt-4 border-top">
-                <h4 class="h5 mb-0 text-primary fw-bold">Diplomas de Posgrados y Diplomados</h4>
-                <!-- Renderizado de la tabla con t-foreach="diplomados_data" t-as="d" -->
-                ...
-            </div>
-        </t>
-    </xpath>
-</template>
+```python
+    @http.route(
+        '/campus/certificates/new',
+        type='http',
+        auth='user',
+        website=True,
+        methods=['GET', 'POST'],
+        csrf=True,
+    )
+    def certificate_new(self, **post):
+        # 1. Ejecutar comportamiento padre (que generará qcontext o procesará el POST)
+        # Si es POST, primero procesamos la validación de seguridad de datos enviados
+        ...
 ```
 
-### Elementos Clave de Diseño:
-- **Control Condicional de Botones:** En base a `d['can_download']`, la interfaz renderiza condicionalmente el botón de descarga (`<a>` con la ruta de descarga) o un elemento badge que indica que el diploma está "Bloqueado" junto a un icono de candado (`<i class="fa fa-lock"/>`).
-- **Formateo Numérico:** Calificaciones formateadas de manera uniforme mediante `<t t-out="'%.2f' % d['final_grade']"/>` con colores dinámicos según el estado de la descarga (`text-success` si cumple, `text-danger` si no).
+El filtrado en Odoo 16 se hace después del `super()`, modificando la variable `gradebooks` en el `qcontext`:
+
+```python
+        response = super(IrgCampusDiplomadosPortal, self).certificate_new(**post)
+
+        if hasattr(response, 'qcontext') and 'gradebooks' in response.qcontext:
+            gradebooks = response.qcontext['gradebooks']
+            # Excluir las libretas académicas de diplomados
+            response.qcontext['gradebooks'] = gradebooks.filtered(lambda gb: not gb.course_id.is_diplomado())
+
+        return response
+```
+
+### B. Validación y Sanitización del Envío (POST)
+Si un usuario intenta saltarse la validación visual del frontend y envía directamente una solicitud POST con el ID de una libreta de diplomado, el backend debe interceptarlo **antes** de delegar al controlador padre. 
+
+Al cambiar el `gradebook_id` enviado a `'0'`, el controlador original del módulo base no encontrará una libreta válida y rechazará la solicitud de forma nativa devolviendo un error del formulario ("Selecciona la libreta"):
+
+```python
+        if request.httprequest.method == 'POST':
+            gradebook_id = int(post.get('gradebook_id', 0) or 0)
+            if gradebook_id:
+                gradebook = request.env['app.gradebook.student'].sudo().browse(gradebook_id)
+                # Si la libreta pertenece a un diplomado, invalidamos la solicitud
+                if gradebook.exists() and gradebook.course_id.is_diplomado():
+                    post['gradebook_id'] = '0'  # Provoca fallo nativo por libreta no seleccionada
+```
 
 ---
 
-## 3. Validación del Rendimiento Académico para Proteger Descargas
+## 3. Patrón de Inyección de Pestañas y Paneles Independientes mediante XPath
 
-La validación del rendimiento del estudiante no debe recaer de manera única en la UI (ocultando el botón). Es imperativo implementar una doble capa de validación directamente en el backend (dentro del endpoint de descarga) para evitar peticiones malintencionadas o accesos directos por URL.
+En lugar de incrustar contenidos adicionales dentro de la misma sección de certificados de pago (lo cual genera confusión), se inyecta una pestaña (`nav-item`) y un panel (`tab-pane`) independientes dentro del contenedor principal del portal.
+
+### Implementación en QWeb
+```xml
+<!-- Inyectar la pestaña en la lista de tabs -->
+<xpath expr="//button[@id='diplomas-tab']/parent::li" position="after">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link py-3 fw-bold border-0 rounded-0" id="diplomados-tab" data-bs-toggle="tab" data-bs-target="#diplomados-pane" type="button" role="tab" aria-controls="diplomados-pane" aria-selected="false">
+            <i class="fa fa-certificate me-2 text-primary"/>Mis Diplomados
+        </button>
+    </li>
+</xpath>
+
+<!-- Inyectar el panel de la pestaña justo después del panel original -->
+<xpath expr="//div[@id='diplomas-pane']" position="after">
+    <div class="tab-pane fade" id="diplomados-pane" role="tabpanel" aria-labelledby="diplomados-tab">
+        <!-- Listado específico de diplomados -->
+        <t t-if="not diplomados_data">
+            ...
+        </t>
+        <t t-else="">
+            ...
+        </t>
+    </div>
+</xpath>
+```
+
+---
+
+## 4. Validación del Rendimiento Académico para Proteger Descargas
+
+La validación del rendimiento del estudiante no debe recaer de manera única en la UI (ocultando el botón). Es imperativo implementar una doble capa de validación directamente en el endpoint de descarga para evitar peticiones malintencionadas o accesos directos por URL.
 
 ### Lógica de Control y Protección del Endpoint
 Cuando el usuario llama a `/campus/certificates/download/diplomado/<int:diplomado_id>`, el controlador valida el rendimiento académico en la base de datos contra el modelo de libreta de calificaciones `app.gradebook.student`:
