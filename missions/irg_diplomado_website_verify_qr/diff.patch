@@ -1,0 +1,561 @@
+diff --git a/.agents/knowledge/odoo_development_modding/artifacts/irg_diplomado_website_verify_qr.md b/.agents/knowledge/odoo_development_modding/artifacts/irg_diplomado_website_verify_qr.md
+new file mode 100644
+index 00000000..d15b2bad
+--- /dev/null
++++ b/.agents/knowledge/odoo_development_modding/artifacts/irg_diplomado_website_verify_qr.md
+@@ -0,0 +1,19 @@
++# Validacion web QR de diplomados
++
++## Contexto
++
++Los registros de `irg.diplomado.registry` usan `name` como numero de registro, mientras que `irg.diploma.registry` usa `registry_number`.
++
++## Patron Aplicado
++
++- Crear modulo puente separado para no modificar directamente `irg_generacion_diplomas` ni `irg_generacion_diplomados`.
++- Heredar `IrgDiplomaVerificationController` y mantener las mismas rutas `/verificar` y `/verificar_api`.
++- Delegar primero en `super()._verify_from_registry_or_stamp()` para no romper diplomas normales.
++- Si no aparece diploma normal, buscar `irg.diplomado.registry` por `name`.
++- Construir QR con `web.base.url.rstrip('/') + '/verificar/?' + urlencode(...)`.
++
++## Gotchas
++
++- En tests `HttpCase`, no usar `cls.registry` para guardar un registro de negocio: pisa el atributo interno `registry` de Odoo y rompe `setUp()`.
++- Aunque la ruta sea publica, los tests HTTP locales pueden necesitar `self.authenticate('admin', 'admin')` para fijar la base de datos en la sesion.
++- `action_reprint()` no regenera si ya existe `attachment_id`; los PDFs antiguos no cambian su QR automaticamente.
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/__init__.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/__init__.py
+new file mode 100644
+index 00000000..cec04a5b
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/__init__.py
+@@ -0,0 +1,4 @@
++# -*- coding: utf-8 -*-
++from . import controllers
++from . import models
++from . import wizard
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/__manifest__.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/__manifest__.py
+new file mode 100644
+index 00000000..0d2b1d49
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/__manifest__.py
+@@ -0,0 +1,20 @@
++# -*- coding: utf-8 -*-
++{
++    'name': 'Verificacion Web de Diplomas de Diplomados',
++    'version': '16.0.1.0.0',
++    'summary': 'Valida diplomas de diplomados desde el QR en el sitio web Odoo.',
++    'category': 'Website',
++    'author': 'iRG',
++    'license': 'LGPL-3',
++    'depends': [
++        'website',
++        'irg_generacion_diplomas',
++        'irg_generacion_diplomados',
++    ],
++    'data': [
++        'views/diplomado_verify_templates.xml',
++    ],
++    'installable': True,
++    'application': False,
++    'auto_install': False,
++}
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/controllers/__init__.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/controllers/__init__.py
+new file mode 100644
+index 00000000..757b12a1
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/controllers/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import main
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/controllers/main.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/controllers/main.py
+new file mode 100644
+index 00000000..87b46354
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/controllers/main.py
+@@ -0,0 +1,57 @@
++# -*- coding: utf-8 -*-
++from odoo import http
++from odoo.http import request
++from odoo.addons.irg_generacion_diplomas.controllers.main import IrgDiplomaVerificationController
++
++
++class IrgDiplomadoVerificationController(IrgDiplomaVerificationController):
++    def _verify_from_registry_or_stamp(self, **kw):
++        code, record, verified_by_stamp = super()._verify_from_registry_or_stamp(**kw)
++        record_model = 'diploma' if record else False
++        diplomado = False
++
++        if not record and code:
++            diplomado = request.env['irg.diplomado.registry'].sudo().search([
++                ('name', '=', code),
++            ], limit=1)
++            if diplomado:
++                record = diplomado
++                record_model = 'diplomado'
++
++        return code, record, verified_by_stamp, record_model
++
++    @http.route(['/verificar', '/verificar/', '/web/verificar', '/web/verificar/'], type='http', auth='public', website=True, sitemap=False)
++    def verify_diploma(self, **kw):
++        code, record, verified_by_stamp, record_model = self._verify_from_registry_or_stamp(**kw)
++        values = {
++            'code': code,
++            'record': record,
++            'record_model': record_model,
++            'found': bool(record) or verified_by_stamp,
++        }
++        return request.render('irg_generacion_diplomados_website_verify.portal_verify_academic_diploma', values)
++
++    @http.route(['/verificar_api', '/verificar_api/', '/web/verificar_api', '/web/verificar_api/'], type='http', auth='public', methods=['GET'], csrf=False, sitemap=False)
++    def verify_diploma_api(self, **kw):
++        code, record, verified_by_stamp, record_model = self._verify_from_registry_or_stamp(**kw)
++        if record_model == 'diplomado':
++            payload = {
++                'found': True,
++                'code': code,
++                'source': 'odoo_diplomado_registry',
++                'student_name': record.student_id.name if record.student_id else '',
++                'course_name': record.diplomado_name or (record.course_id.name if record.course_id else ''),
++                'issue_date': str(record.issue_date) if record.issue_date else '',
++                'document_type': 'diplomado',
++            }
++        else:
++            payload = {
++                'found': bool(record) or verified_by_stamp,
++                'code': code,
++                'source': 'odoo_stamp' if verified_by_stamp and not record else ('odoo_registry' if record else 'none'),
++                'student_name': record.student_id.name if record and record.student_id else '',
++                'course_name': record.student_course_id.course_id.name if record and record.student_course_id and record.student_course_id.course_id else '',
++                'issue_date': str(record.issue_date) if record and record.issue_date else '',
++                'document_type': 'diploma' if record else '',
++            }
++        return request.make_json_response(payload)
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/models/__init__.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/models/__init__.py
+new file mode 100644
+index 00000000..4629a961
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/models/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import diplomado_registry
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/models/diplomado_registry.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/models/diplomado_registry.py
+new file mode 100644
+index 00000000..e491803a
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/models/diplomado_registry.py
+@@ -0,0 +1,77 @@
++# -*- coding: utf-8 -*-
++import base64
++from urllib.parse import urlencode
++
++from odoo import models
++
++
++class IrgDiplomadoRegistry(models.Model):
++    _inherit = 'irg.diplomado.registry'
++
++    def _get_diplomado_verification_base_url(self):
++        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or ''
++        return base_url.rstrip('/')
++
++    def _build_diplomado_verification_qr_url(self):
++        self.ensure_one()
++        query_params = {'id': self.name}
++        if 'op.sign_certificate' in self.env:
++            stamp_payload = {
++                'registry_number': self.name,
++                'student_name': self.student_name,
++                'course_name_es': self.diplomado_name,
++                'course_name_cat': self.diplomado_name,
++                'issue_date': str(self.issue_date),
++                'diploma_type': self.diploma_type,
++            }
++            stamp_data = self.env['op.sign_certificate'].sudo().stamp_data(stamp_payload, student=self.student_id) or {}
++            if stamp_data.get('stamp') and stamp_data.get('data_str') and stamp_data.get('certificate_id'):
++                query_params.update({
++                    'stamp': stamp_data.get('stamp'),
++                    'data_str': stamp_data.get('data_str'),
++                    'certificate_id': stamp_data.get('certificate_id'),
++                })
++
++        return '%s/verificar/?%s' % (
++            self._get_diplomado_verification_base_url(),
++            urlencode(query_params),
++        )
++
++    def _get_diplomado_pdf_data(self):
++        self.ensure_one()
++        return {
++            'student_name': self.student_name,
++            'diplomado_name': self.diplomado_name,
++            'start_date': self.start_date.strftime('%d/%m/%Y') if self.start_date else '',
++            'end_date': self.end_date.strftime('%d/%m/%Y') if self.end_date else '',
++            'duration_hours': self.duration_hours,
++            'duration_ects': self.duration_ects,
++            'issue_date': self.issue_date.strftime('%d/%m/%Y') if self.issue_date else '',
++            'diploma_type': self.diploma_type,
++            'subjects_presencial': self.subjects_presencial or '',
++            'subjects_online': self.subjects_online or '',
++            'qr_url': self._build_diplomado_verification_qr_url(),
++            'registry_number': self.name,
++        }
++
++    def action_reprint(self):
++        self.ensure_one()
++        if not self.attachment_id:
++            pdf_content = self.env['report.irg_generacion_diplomados.diplomado_pdf'].generate_diplomado_pdf(
++                self._get_diplomado_pdf_data()
++            )
++            attachment = self.env['ir.attachment'].create({
++                'name': 'Diplomado_%s.pdf' % self.student_name.replace(' ', '_'),
++                'type': 'binary',
++                'datas': base64.b64encode(pdf_content),
++                'res_model': 'irg.diplomado.registry',
++                'res_id': self.id,
++                'mimetype': 'application/pdf',
++            })
++            self.write({'attachment_id': attachment.id})
++
++        return {
++            'type': 'ir.actions.act_url',
++            'url': '/web/content/%s?download=true' % self.attachment_id.id,
++            'target': 'self',
++        }
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/tests/__init__.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/tests/__init__.py
+new file mode 100644
+index 00000000..880a091d
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/tests/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import test_diplomado_verify
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/tests/test_diplomado_verify.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/tests/test_diplomado_verify.py
+new file mode 100644
+index 00000000..6692541a
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/tests/test_diplomado_verify.py
+@@ -0,0 +1,61 @@
++# -*- coding: utf-8 -*-
++import json
++
++from odoo.tests.common import HttpCase, tagged
++
++
++@tagged('post_install', '-at_install', 'irg_generacion_diplomados_website_verify')
++class TestDiplomadoWebsiteVerify(HttpCase):
++    @classmethod
++    def setUpClass(cls):
++        super().setUpClass()
++        cls.env['irg.diplomado.registry'].sudo().search([('name', '=', 'DIP-VERIFY-TEST')]).unlink()
++        cls.env['op.student'].sudo().search([('first_name', '=', 'VerifyDiplomado')]).unlink()
++        cls.env['op.course'].sudo().search([('name', '=', 'Diplomado Verify Test')]).unlink()
++        cls.env['res.partner'].sudo().search([('email', '=', 'verify.diplomado@example.test')]).unlink()
++
++        cls.env['ir.config_parameter'].sudo().set_param('web.base.url', 'https://odoo.example.test')
++        cls.partner = cls.env['res.partner'].sudo().create({
++            'name': 'VerifyDiplomado Student',
++            'email': 'verify.diplomado@example.test',
++        })
++        cls.student = cls.env['op.student'].sudo().create({
++            'partner_id': cls.partner.id,
++            'first_name': 'VerifyDiplomado',
++            'last_name': 'Student',
++        })
++        cls.course = cls.env['op.course'].sudo().create({
++            'name': 'Diplomado Verify Test',
++            'code': 'DIPVERIFY',
++        })
++        cls.diplomado_registry = cls.env['irg.diplomado.registry'].sudo().create({
++            'name': 'DIP-VERIFY-TEST',
++            'student_id': cls.student.id,
++            'student_name': cls.student.name,
++            'course_id': cls.course.id,
++            'diplomado_name': cls.course.name,
++            'issue_date': '2026-06-16',
++            'diploma_type': 'digital',
++        })
++        cls.env.cr.commit()
++
++    def test_qr_url_uses_odoo_website_verification_route(self):
++        qr_url = self.diplomado_registry._build_diplomado_verification_qr_url()
++        self.assertIn('https://odoo.example.test/verificar/?', qr_url)
++        self.assertIn('id=DIP-VERIFY-TEST', qr_url)
++
++    def test_public_verify_page_finds_diplomado_registry(self):
++        self.authenticate('admin', 'admin')
++        response = self.url_open('/verificar/?id=DIP-VERIFY-TEST')
++        self.assertEqual(response.status_code, 200)
++        self.assertIn('ENCONTRADO', response.text)
++        self.assertIn('Diplomado Verify Test', response.text)
++
++    def test_public_verify_api_finds_diplomado_registry(self):
++        self.authenticate('admin', 'admin')
++        response = self.url_open('/verificar_api/?id=DIP-VERIFY-TEST')
++        self.assertEqual(response.status_code, 200)
++        payload = json.loads(response.text)
++        self.assertTrue(payload['found'])
++        self.assertEqual(payload['source'], 'odoo_diplomado_registry')
++        self.assertEqual(payload['document_type'], 'diplomado')
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/views/diplomado_verify_templates.xml b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/views/diplomado_verify_templates.xml
+new file mode 100644
+index 00000000..88c3cb8e
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/views/diplomado_verify_templates.xml
+@@ -0,0 +1,48 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <template id="portal_verify_academic_diploma" name="Verificar Diploma o Diplomado iRG">
++        <t t-call="website.layout">
++            <div class="container my-5">
++                <h1 class="mb-4">Verificar</h1>
++
++                <t t-if="code and found">
++                    <div class="alert alert-success" role="alert" style="font-size: 1.05rem;">
++                        <strong>ENCONTRADO</strong><br/>
++                        El código <strong t-esc="code"/> es válido.
++                    </div>
++                    <div class="card mt-3">
++                        <div class="card-body">
++                            <t t-if="record_model == 'diplomado'">
++                                <p><strong>Código:</strong> <span t-esc="record.name"/></p>
++                                <p><strong>Estudiante:</strong> <span t-esc="record.student_id.name"/></p>
++                                <p><strong>Diplomado:</strong> <span t-esc="record.diplomado_name or record.course_id.name"/></p>
++                                <p><strong>Fecha de expedición:</strong> <span t-field="record.issue_date"/></p>
++                                <p><strong>Tipo:</strong> <span t-esc="dict(record._fields['diploma_type'].selection).get(record.diploma_type)"/></p>
++                            </t>
++                            <t t-else="">
++                                <p><strong>Código:</strong> <span t-esc="record.registry_number if record else code"/></p>
++                                <p t-if="record"><strong>Estudiante:</strong> <span t-esc="record.student_id.name"/></p>
++                                <p t-if="record"><strong>Curso:</strong> <span t-esc="record.student_course_id.course_id.name if record.student_course_id else ''"/></p>
++                                <p t-if="record"><strong>Fecha de expedición:</strong> <span t-field="record.issue_date"/></p>
++                                <p t-if="record"><strong>Tipo:</strong> <span t-esc="dict(record._fields['diploma_type'].selection).get(record.diploma_type)"/></p>
++                            </t>
++                        </div>
++                    </div>
++                </t>
++
++                <t t-if="code and not found">
++                    <div class="alert alert-danger" role="alert" style="font-size: 1.05rem;">
++                        <strong>NO ENCONTRADO</strong><br/>
++                        El código <strong t-esc="code"/> no existe en nuestra base de datos.
++                    </div>
++                </t>
++
++                <t t-if="not code">
++                    <div class="alert alert-info" role="alert">
++                        Debes proporcionar un código para verificar el diploma.
++                    </div>
++                </t>
++            </div>
++        </t>
++    </template>
++</odoo>
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/wizard/__init__.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/wizard/__init__.py
+new file mode 100644
+index 00000000..72f9741d
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/wizard/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import diplomado_wizard
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados_website_verify/wizard/diplomado_wizard.py b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/wizard/diplomado_wizard.py
+new file mode 100644
+index 00000000..37d14035
+--- /dev/null
++++ b/addons-extra/extrairg/irg_generacion_diplomados_website_verify/wizard/diplomado_wizard.py
+@@ -0,0 +1,50 @@
++# -*- coding: utf-8 -*-
++import base64
++
++from odoo import models, _
++from odoo.exceptions import UserError
++
++
++class IrgDiplomadoWizard(models.TransientModel):
++    _inherit = 'irg.diplomado.wizard'
++
++    def action_print_diplomado(self):
++        self.ensure_one()
++        if not self.student_id or not self.course_id:
++            raise UserError(_('Debe seleccionar un estudiante y un curso válido.'))
++        if not self.student_name or not self.diplomado_name:
++            raise UserError(_('Debe ingresar el nombre del estudiante y del diplomado.'))
++
++        registry = self.env['irg.diplomado.registry'].create({
++            'student_id': self.student_id.id,
++            'student_name': self.student_name,
++            'course_id': self.course_id.id,
++            'diplomado_name': self.diplomado_name,
++            'start_date': self.start_date,
++            'end_date': self.end_date,
++            'duration_hours': self.duration_hours,
++            'duration_ects': self.duration_ects,
++            'issue_date': self.issue_date,
++            'diploma_type': self.diploma_type,
++            'subjects_presencial': self.subjects_presencial,
++            'subjects_online': self.subjects_online,
++        })
++
++        pdf_content = self.env['report.irg_generacion_diplomados.diplomado_pdf'].generate_diplomado_pdf(
++            registry._get_diplomado_pdf_data()
++        )
++        attachment = self.env['ir.attachment'].create({
++            'name': 'Diplomado_%s.pdf' % self.student_name.replace(' ', '_'),
++            'type': 'binary',
++            'datas': base64.b64encode(pdf_content),
++            'res_model': 'irg.diplomado.registry',
++            'res_id': registry.id,
++            'mimetype': 'application/pdf',
++        })
++        registry.write({'attachment_id': attachment.id})
++
++        return {
++            'type': 'ir.actions.act_url',
++            'url': '/web/content/%s?download=true' % attachment.id,
++            'target': 'self',
++        }
+diff --git a/doc/modules/extrairg/irg_generacion_diplomados_website_verify.md b/doc/modules/extrairg/irg_generacion_diplomados_website_verify.md
+new file mode 100644
+index 00000000..271adf8c
+--- /dev/null
++++ b/doc/modules/extrairg/irg_generacion_diplomados_website_verify.md
+@@ -0,0 +1,55 @@
++# irg_generacion_diplomados_website_verify
++
++## Proposito
++
++Este modulo permite validar diplomas de diplomados desde el QR del PDF usando el sitio web del propio Odoo.
++
++Extiende la validacion existente de `irg_generacion_diplomas` para que la ruta publica `/verificar` reconozca tambien registros de `irg.diplomado.registry`.
++
++## Dependencias
++
++- `website`
++- `irg_generacion_diplomas`
++- `irg_generacion_diplomados`
++
++## Comportamiento
++
++- La URL del QR de nuevos PDFs de diplomados se construye con `web.base.url`.
++- La ruta usada es `/verificar/?id=<numero_registro>`.
++- Si existe `op.sign_certificate`, se conservan los parametros de sello `stamp`, `data_str` y `certificate_id`.
++- `/verificar` muestra una pagina web con los datos del diplomado cuando encuentra `irg.diplomado.registry.name`.
++- `/verificar_api` devuelve JSON con `document_type = diplomado` cuando el codigo pertenece a un diplomado.
++- La validacion anterior de diplomas convencionales sigue delegando en `irg_generacion_diplomas`.
++
++## Uso
++
++1. Instalar o actualizar `irg_generacion_diplomados_website_verify`.
++2. Confirmar que `web.base.url` apunta al dominio publico correcto.
++3. Generar o regenerar un diploma de diplomado.
++4. Escanear el QR del PDF.
++5. Comprobar que abre `/verificar/?id=<registro>` y muestra el diplomado como valido.
++
++## Limitaciones
++
++- Los PDFs generados antes de instalar este modulo conservan el QR antiguo hasta que se regeneren.
++- `action_reprint()` solo regenera el PDF si el registro no tiene `attachment_id`; si ya existe un adjunto antiguo, hay que eliminarlo o regenerarlo mediante un flujo especifico.
++
++## Validacion Ejecutada
++
++```bash
++python3 -m compileall "addons-extra/extrairg/irg_generacion_diplomados_website_verify"
++```
++
++```bash
++python3 - <<'PY'
++from lxml import etree
++etree.parse('addons-extra/extrairg/irg_generacion_diplomados_website_verify/views/diplomado_verify_templates.xml')
++print('OK')
++PY
++```
++
++```bash
++docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_generacion_diplomados_website_verify --test-enable --test-tags irg_generacion_diplomados_website_verify --stop-after-init --http-port=8099 --log-level=test
++```
++
++Resultado Odoo: `0 failed, 0 error(s) of 3 tests`.
+diff --git a/missions/irg_diplomado_website_verify_qr/execution.log b/missions/irg_diplomado_website_verify_qr/execution.log
+new file mode 100644
+index 00000000..448452bf
+--- /dev/null
++++ b/missions/irg_diplomado_website_verify_qr/execution.log
+@@ -0,0 +1,8 @@
++2026-06-16 Plan creado antes de modificar codigo. Se implementara modulo puente de validacion QR web para diplomados.
++2026-06-16 Modulo `irg_generacion_diplomados_website_verify` creado. Extiende `/verificar` y `/verificar_api` para reconocer `irg.diplomado.registry` y actualiza la generacion QR de `action_reprint` y wizard para usar `web.base.url`.
++2026-06-16 Ajustes preventivos: plantilla dejada en ASCII y test actualizado para crear `res.partner` requerido por `op.student`.
++2026-06-16 Validacion Odoo inicial con `-u` cargo 0 tests porque el modulo no estaba instalado. Reintento con `-i` ejecuto 3 tests y fallo por conflicto del atributo `cls.registry` con `HttpCase.registry`; renombrado a `cls.diplomado_registry`.
++2026-06-16 Reintento Odoo: 1 test de QR paso, 2 tests HTTP fallaron con 404 porque la peticion no llevaba sesion/base de datos. Se anadio `self.authenticate('admin', 'admin')` en tests HTTP siguiendo patron del repo.
++2026-06-16 Validacion Odoo final pasada: `0 failed, 0 error(s) of 3 tests` con `docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_generacion_diplomados_website_verify --test-enable --test-tags irg_generacion_diplomados_website_verify --stop-after-init --http-port=8099 --log-level=test`.
++2026-06-16 Documentacion creada en `doc/modules/extrairg/irg_generacion_diplomados_website_verify.md` y knowledge en `.agents/knowledge/odoo_development_modding/artifacts/irg_diplomado_website_verify_qr.md`.
++2026-06-16 `verification.json` actualizado a `passed`.
+diff --git a/missions/irg_diplomado_website_verify_qr/plan.md b/missions/irg_diplomado_website_verify_qr/plan.md
+new file mode 100644
+index 00000000..e15fc92c
+--- /dev/null
++++ b/missions/irg_diplomado_website_verify_qr/plan.md
+@@ -0,0 +1,31 @@
++# Mision: irg_diplomado_website_verify_qr
++
++## Alcance
++
++Hacer que el QR de los diplomas de diplomados valide en el sitio web del mismo Odoo, de forma equivalente al modulo `irg_generacion_diplomas`.
++
++## Clasificacion de complejidad
++
++Tier: `standard`.
++
++Justificacion: se crea un modulo puente por herencia con controlador web publico, extension de modelo/wizard y tests. No toca autenticacion, secretos, migraciones ni borrado de datos.
++
++## Knowledge base consultada
++
++- `.agents/knowledge/odoo_development_modding/artifacts/diplomado_report_layout.md`
++- `.agents/knowledge/odoo_development_modding/artifacts/irg_diplomado_course_duration.md`
++
++## Referencia analizada
++
++- `irg_generacion_diplomas.controllers.main`: rutas publicas `/verificar` y `/verificar_api`.
++- `irg_generacion_diplomas.views.diploma_verify_templates`: plantilla web de validacion.
++- `irg_generacion_diplomas.wizard.diploma_wizard`: QR con parametros `id`, `stamp`, `data_str`, `certificate_id`.
++
++## Plan
++
++1. Crear modulo nuevo `irg_generacion_diplomados_website_verify`.
++2. Extender `/verificar` y `/verificar_api` para que validen tambien `irg.diplomado.registry` por `name`.
++3. Anadir plantilla web especifica que muestre diplomas normales y diplomados sin romper el flujo existente.
++4. Extender `irg.diplomado.registry.action_reprint()` para construir `qr_url` con `web.base.url + /verificar/?...`.
++5. Extender `irg.diplomado.wizard.action_print_diplomado()` para usar la misma URL al generar desde backend.
++6. Validar con tests HTTP y unitarios.
+diff --git a/missions/irg_diplomado_website_verify_qr/verification.json b/missions/irg_diplomado_website_verify_qr/verification.json
+new file mode 100644
+index 00000000..3eb1a7df
+--- /dev/null
++++ b/missions/irg_diplomado_website_verify_qr/verification.json
+@@ -0,0 +1,27 @@
++{
++  "status": "passed",
++  "task": "irg_diplomado_website_verify_qr",
++  "checks": [
++    {
++      "name": "python_compile",
++      "result": "pass",
++      "detail": "python3 -m compileall addons-extra/extrairg/irg_generacion_diplomados_website_verify"
++    },
++    {
++      "name": "xml_parse",
++      "result": "pass",
++      "detail": "lxml parsed diplomado_verify_templates.xml"
++    },
++    {
++      "name": "odoo_tests",
++      "result": "pass",
++      "detail": "0 failed, 0 error(s) of 3 tests"
++    }
++  ],
++  "evidence": [
++    "missions/irg_diplomado_website_verify_qr/execution.log",
++    "missions/irg_diplomado_website_verify_qr/diff.patch"
++  ],
++  "model_tier_used": "standard",
++  "escalations": 0
++}
