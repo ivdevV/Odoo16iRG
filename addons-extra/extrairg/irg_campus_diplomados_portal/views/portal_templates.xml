@@ -14,16 +14,28 @@
                 </t>
             </xpath>
 
-            <!-- Inyectar la subsección de Diplomados en la pestaña "Mis Diplomas" -->
-            <xpath expr="//div[@id='diplomas-pane']" position="inside">
-                <t t-if="diplomados_data">
-                    <div class="mt-5 pt-4 border-top">
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <i class="fa fa-bookmark text-primary fs-4"/>
-                            <h4 class="h5 mb-0 text-primary fw-bold">Diplomas de Posgrados y Diplomados</h4>
+            <!-- Inyectar la pestaña "Mis Diplomados" después de "Mis Diplomas" -->
+            <xpath expr="//button[@id='diplomas-tab']/parent::li" position="after">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-3 fw-bold border-0 rounded-0" id="diplomados-tab" data-bs-toggle="tab" data-bs-target="#diplomados-pane" type="button" role="tab" aria-controls="diplomados-pane" aria-selected="false" style="font-size: 1.05rem;">
+                        <i class="fa fa-certificate me-2 text-primary"/>Mis Diplomados
+                    </button>
+                </li>
+            </xpath>
+
+            <!-- Inyectar el panel de contenido de la pestaña "Mis Diplomados" -->
+            <xpath expr="//div[@id='diplomas-pane']" position="after">
+                <div class="tab-pane fade" id="diplomados-pane" role="tabpanel" aria-labelledby="diplomados-tab">
+                    <t t-if="not diplomados_data">
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa fa-certificate fa-3x mb-3" style="color: #cbd5e1;"/>
+                            <p class="mb-0">No se encontraron títulos de posgrados o diplomados en tu expediente académico.</p>
                         </div>
-                        <p class="text-muted small mb-3">Estos títulos requieren una calificación final en la libreta académica superior a 7.0 para habilitar su descarga.</p>
-                        
+                    </t>
+                    <t t-else="">
+                        <div class="mb-3">
+                            <p class="text-muted small">Estos títulos corresponden a tus diplomados y posgrados cursados, y su descarga gratuita está habilitada si tu calificación final supera el 7.0.</p>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
@@ -75,8 +87,8 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                </t>
+                    </t>
+                </div>
             </xpath>
 
         </template>

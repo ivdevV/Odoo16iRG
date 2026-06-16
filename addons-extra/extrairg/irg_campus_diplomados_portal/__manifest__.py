@@ -11,6 +11,7 @@
         'irg_campus_certificates_portal',
         'irg_generacion_diplomados',
         'isep_gradebook',
+        'irg_course_portal_tiles_diplomado_hide',
     ],
     'data': [
         'views/portal_templates.xml',

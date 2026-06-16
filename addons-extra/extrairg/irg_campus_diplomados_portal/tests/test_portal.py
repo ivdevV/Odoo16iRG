@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
+import base64
 from odoo.tests.common import HttpCase, tagged
 from odoo.addons.mail.tests.common import mail_new_test_user
-import base64
-
 
 
 @tagged('post_install', '-at_install')
@@ -36,14 +35,14 @@ class TestCampusDiplomadosPortal(HttpCase):
             leftover_so.unlink()
 
         cls.env['irg.diplomado.registry'].sudo().search([('name', 'in', ('TEST-DIP-01', 'TEST-DIP-02'))]).unlink()
-        cls.env['app.gradebook.student'].sudo().search([('course_id.name', 'in', ('Diplomado Test 1', 'Diplomado Test 2'))]).unlink()
+        cls.env['app.gradebook.student'].sudo().search([('course_id.name', 'in', ('Diplomado Test 1', 'Diplomado Test 2', 'Master Test Normal'))]).unlink()
         cls.env['op.student'].sudo().search([('first_name', '=', 'PortalStudent')]).unlink()
-        cls.env['op.admission'].sudo().search([('name', 'in', ('ADM-OK', 'ADM-FAIL'))]).unlink()
-        cls.env['op.admission.register'].sudo().search([('name', 'in', ('Test Register OK', 'Test Register FAIL'))]).unlink()
+        cls.env['op.admission'].sudo().search([('name', 'in', ('ADM-OK', 'ADM-FAIL', 'ADM-NORMAL'))]).unlink()
+        cls.env['op.admission.register'].sudo().search([('name', 'in', ('Test Register OK', 'Test Register FAIL', 'Test Register Normal'))]).unlink()
         cls.env['op.subject'].sudo().search([('code', 'in', ('SUBJOK', 'SUBJFAIL'))]).unlink()
         cls.env['product.product'].sudo().search([('name', '=', 'Test Course Product Portal Dip')]).unlink()
-        cls.env['op.batch'].sudo().search([('name', 'in', ('Batch OK', 'Batch FAIL'))]).unlink()
-        cls.env['op.course'].sudo().search([('name', 'in', ('Diplomado Test 1', 'Diplomado Test 2'))]).unlink()
+        cls.env['op.batch'].sudo().search([('name', 'in', ('Batch OK', 'Batch FAIL', 'Batch Normal'))]).unlink()
+        cls.env['op.course'].sudo().search([('name', 'in', ('Diplomado Test 1', 'Diplomado Test 2', 'Master Test Normal'))]).unlink()
         
         leftover_users.unlink()
         for partner in leftover_partners:
@@ -70,8 +69,9 @@ class TestCampusDiplomadosPortal(HttpCase):
         })
         
         # Cursos
-        cls.course_ok = cls.env['op.course'].create({'name': 'Diplomado Test 1', 'code': 'DIP01'})
-        cls.course_fail = cls.env['op.course'].create({'name': 'Diplomado Test 2', 'code': 'DIP02'})
+        cls.course_ok = cls.env['op.course'].create({'name': 'Diplomado Test 1', 'code': 'DIP01'}) # Es diplomado (DI)
+        cls.course_fail = cls.env['op.course'].create({'name': 'Diplomado Test 2', 'code': 'DIP02'}) # Es diplomado (DI)
+        cls.course_normal = cls.env['op.course'].create({'name': 'Master Test Normal', 'code': 'MST01'}) # NO es diplomado
 
         # Lotes
         cls.batch_ok = cls.env['op.batch'].create({
@@ -85,6 +85,13 @@ class TestCampusDiplomadosPortal(HttpCase):
             'name': 'Batch FAIL',
             'code': 'BFAIL',
             'course_id': cls.course_fail.id,
+            'start_date': '2026-01-01',
+            'end_date': '2026-12-31',
+        })
+        cls.batch_normal = cls.env['op.batch'].create({
+            'name': 'Batch Normal',
+            'code': 'BNORM',
+            'course_id': cls.course_normal.id,
             'start_date': '2026-01-01',
             'end_date': '2026-12-31',
         })
@@ -106,6 +113,15 @@ class TestCampusDiplomadosPortal(HttpCase):
         cls.register_fail = cls.env['op.admission.register'].create({
             'name': 'Test Register FAIL',
             'course_id': cls.course_fail.id,
+            'start_date': '2026-01-01',
+            'end_date': '2026-12-31',
+            'min_count': 1,
+            'max_count': 100,
+            'product_id': cls.product.id,
+        })
+        cls.register_normal = cls.env['op.admission.register'].create({
+            'name': 'Test Register Normal',
+            'course_id': cls.course_normal.id,
             'start_date': '2026-01-01',
             'end_date': '2026-12-31',
             'min_count': 1,
@@ -136,6 +152,17 @@ class TestCampusDiplomadosPortal(HttpCase):
             'first_name': 'PortalStudent',
             'last_name': 'Diplomado',
         })
+        cls.admission_normal = cls.env['op.admission'].create({
+            'name': 'ADM-NORMAL',
+            'partner_id': cls.portal_user.partner_id.id,
+            'student_id': cls.student.id,
+            'course_id': cls.course_normal.id,
+            'batch_id': cls.batch_normal.id,
+            'register_id': cls.register_normal.id,
+            'gender': 'm',
+            'first_name': 'PortalStudent',
+            'last_name': 'Normal',
+        })
         
         # Libretas académicas
         # Nota > 7 (ejemplo: 8.5)
@@ -146,9 +173,6 @@ class TestCampusDiplomadosPortal(HttpCase):
             'admission_id': cls.admission_ok.id,
             'state': 'done',
         })
-        # Forzar nota final usando mock o rellenando el total_final. 
-        # Como total_final es un campo computado en app.gradebook.student, depende de gradebook_subject_ids.
-        # Creemos una asignatura y pongámosle nota.
         cls.op_subject_ok = cls.env['op.subject'].create({
             'name': 'Asignatura Ok',
             'code': 'SUBJOK',
@@ -182,6 +206,15 @@ class TestCampusDiplomadosPortal(HttpCase):
             'final_subject_note': 6.0,
         })
         cls.gradebook_fail._amount_prod_final()
+
+        # Libreta Normal (para Máster)
+        cls.gradebook_normal = cls.env['app.gradebook.student'].create({
+            'partner_id': cls.portal_user.partner_id.id,
+            'course_id': cls.course_normal.id,
+            'batch_id': cls.batch_normal.id,
+            'admission_id': cls.admission_normal.id,
+            'state': 'done',
+        })
         
         # Crear adjunto de prueba simulado
         cls.test_attachment = cls.env['ir.attachment'].create({
@@ -244,6 +277,7 @@ class TestCampusDiplomadosPortal(HttpCase):
         # Y también el diplomado bloqueado con la insignia correspondiente
         self.assertIn('TEST-DIP-02', html_content, "El diplomado con calificación <= 7.0 debe estar visible en el portal.")
         self.assertIn('Bloqueado', html_content, "Debe mostrarse la indicación de bloqueo.")
+        self.assertIn('Mis Diplomados', html_content, "La pestaña independiente 'Mis Diplomados' debe estar visible.")
         
         # 3. Descarga del diplomado Ok (debe dar 200 y descargar el PDF)
         download_ok_url = f'/campus/certificates/download/diplomado/{self.diplomado_ok.id}'
@@ -256,3 +290,44 @@ class TestCampusDiplomadosPortal(HttpCase):
         response_fail = self.url_open(download_fail_url)
         self.assertEqual(response_fail.status_code, 200, "La llamada debe completarse con redirección (código HTTP final 200 al renderizar el portal).")
         self.assertIn('error=grade_too_low', response_fail.url, "La redirección debe incluir el parámetro de error de calificación baja.")
+
+    def test_02_diplomados_request_form_exclusion(self):
+        # Autenticarse como usuario del portal
+        self.authenticate('student_portal_diplomados', 'student_portal_diplomados')
+
+        # 1. Acceder al formulario de nueva solicitud de certificados
+        response = self.url_open('/campus/certificates/new')
+        self.assertEqual(response.status_code, 200)
+        html_content = response.text
+
+        # 2. Comprobar que en el dropdown de programas académicos NO aparecen los diplomados, pero sí el máster normal
+        self.assertIn('Master Test Normal', html_content, "El curso Máster Normal debe figurar en el desplegable de solicitudes.")
+        self.assertNotIn('Diplomado Test 1', html_content, "El Diplomado Test 1 debe estar excluido por completo del desplegable de solicitudes.")
+        self.assertNotIn('Diplomado Test 2', html_content, "El Diplomado Test 2 debe estar excluido por completo del desplegable de solicitudes.")
+
+        # 3. Intentar enviar una solicitud POST con el ID del diplomado (debe fallar devolviendo error)
+        # Extraer el CSRF token de la respuesta GET anterior
+        import re
+        csrf_token = None
+        csrf_js = re.search(r'csrf_token:\s*["\']([^"\']+)["\']', html_content)
+        if csrf_js:
+            csrf_token = csrf_js.group(1)
+        else:
+            csrf_input = re.search(r'name="csrf_token"\s+value="([^"]+)"', html_content)
+            if csrf_input:
+                csrf_token = csrf_input.group(1)
+
+        # Enviamos datos para solicitar el diploma para la libreta del diplomado
+        post_data = {
+            'document_type': 'diploma',
+            'certificate_type': 'digital',
+            'gradebook_id': str(self.gradebook_ok.id),
+        }
+        if csrf_token:
+            post_data['csrf_token'] = csrf_token
+
+        # Hacemos la llamada POST
+        response_post = self.url_open('/campus/certificates/new', data=post_data)
+        # El controlador interceptará la libreta del diplomado, la forzará a '0' y el padre devolverá error en el HTML
+        self.assertEqual(response_post.status_code, 200)
+        self.assertIn('Selecciona la libreta', response_post.text, "El controlador debe rechazar y solicitar seleccionar una libreta válida (ya que forzamos a 0).")

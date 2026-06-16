@@ -59,6 +59,33 @@ class IrgCampusDiplomadosPortal(IrgCampusCertificatesPortal):
         return response
 
     @http.route(
+        '/campus/certificates/new',
+        type='http',
+        auth='user',
+        website=True,
+        methods=['GET', 'POST'],
+        csrf=True,
+    )
+    def certificate_new(self, **post):
+        # Si es un POST y el gradebook seleccionado corresponde a un diplomado, bloqueamos la solicitud
+        if request.httprequest.method == 'POST':
+            gradebook_id = int(post.get('gradebook_id', 0) or 0)
+            if gradebook_id:
+                gradebook = request.env['app.gradebook.student'].sudo().browse(gradebook_id)
+                if gradebook.exists() and gradebook.course_id.is_diplomado():
+                    post['gradebook_id'] = '0'  # Provocará error de libreta no válida o no seleccionada en el super()
+
+        # Llamar al controlador original
+        response = super(IrgCampusDiplomadosPortal, self).certificate_new(**post)
+
+        # Filtrar los diplomados del listado de gradebooks que se muestra en el combo
+        if hasattr(response, 'qcontext') and 'gradebooks' in response.qcontext:
+            gradebooks = response.qcontext['gradebooks']
+            response.qcontext['gradebooks'] = gradebooks.filtered(lambda gb: not gb.course_id.is_diplomado())
+
+        return response
+
+    @http.route(
         '/campus/certificates/download/diplomado/<int:diplomado_id>',
         type='http',
         auth='user',
