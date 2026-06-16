@@ -15,7 +15,7 @@
     {
       "name": "odoo_pdf_layout",
       "result": "pass",
-      "detail": "Verified ReportLab improvements: new logo_irg.png displays centered, physical signatures are larger, QR code renders on bottom-left with 'Nº Registro: [folio]' centered underneath. The text 'Hace constar que' has been replaced by 'certifica'. The front page texts are shifted upward slightly to avoid any overlap with the signatures or QR code. The signature names and cargo text blocks are perfectly centered under the left (Raimon Gaja) and right (Fermín Carrillo) signature images. The back page (page 2) subject list is larger and highly legible. 2-page total, zero margins."
+      "detail": "Verified ReportLab improvements: new logo_irg.png displays centered, physical signatures are larger, QR code renders on bottom-left with 'Nº Registro: [folio]' centered underneath. Wording updated to 'certifica que'. Student name and diplomado title font sizes matched at 23pt. The issue date is formatted in Spanish style (e.g. 15 de Junio de 2026). The signature names and cargo text blocks are perfectly centered under the respective signature images. The back page (page 2) subject list is larger (13pt), formatted in bullet points, and dynamically wrapped. 2-page total, zero margins."
     }
   ],
   "evidence": [

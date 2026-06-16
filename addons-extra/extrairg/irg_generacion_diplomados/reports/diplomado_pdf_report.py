@@ -29,6 +29,45 @@ class DiplomadoReportPDF(models.AbstractModel):
         buffer.seek(0)
         return ImageReader(buffer)
 
+    def _format_issue_date(self, date_val):
+        if not date_val:
+            return ''
+        from datetime import date, datetime
+        if isinstance(date_val, (date, datetime)):
+            day = date_val.day
+            month_num = date_val.month
+            year = date_val.year
+        else:
+            date_str = str(date_val).strip()
+            try:
+                if '/' in date_str:
+                    parts = date_str.split('/')
+                    day = int(parts[0])
+                    month_num = int(parts[1])
+                    year = int(parts[2])
+                elif '-' in date_str:
+                    parts = date_str.split('-')
+                    if len(parts[0]) == 4:
+                        year = int(parts[0])
+                        month_num = int(parts[1])
+                        day = int(parts[2])
+                    else:
+                        day = int(parts[0])
+                        month_num = int(parts[1])
+                        year = int(parts[2])
+                else:
+                    return date_str
+            except Exception:
+                return date_str
+
+        months = {
+            1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
+            5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
+            9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+        }
+        month_name = months.get(month_num, '')
+        return f"{day} de {month_name} de {year}"
+
     @api.model
     def generate_diplomado_pdf(self, data):
         buffer = io.BytesIO()
@@ -118,7 +157,8 @@ class DiplomadoReportPDF(models.AbstractModel):
         # 8. Barcelona, a ...
         c.setFont('Helvetica', 13)
         c.setFillColorRGB(0.423, 0.478, 0.443)
-        c.drawCentredString(page_width / 2.0, 58 * mm, "Barcelona, a %s" % data.get('issue_date', ''))
+        formatted_date = self._format_issue_date(data.get('issue_date', ''))
+        c.drawCentredString(page_width / 2.0, 58 * mm, "Barcelona, a %s" % formatted_date)
 
         # 9. Firmas e Imágenes
         if data.get('diploma_type') == 'digital':

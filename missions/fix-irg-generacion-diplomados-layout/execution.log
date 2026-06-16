@@ -68,5 +68,13 @@
   - Cambiado el texto "Hace constar que" por "certifica".
   - Centrados y alineados perfectamente los bloques de nombres/cargos de firmas bajo sus respectivas imágenes de firma (Raimon Gaja a x=56mm y Fermín Carrillo a x=171mm).
   - Pruebas unitarias de Odoo completadas con éxito y regenerado el PDF para comprobar visualmente la alineación perfecta.
+2026-06-16 - Mejoras de tipografía, texto y fecha:
+  - Modificado el encabezado a "certifica que".
+  - Igualados los tamaños de fuente del nombre del alumno y diplomado a 23pt (con leading a 27pt en el título).
+  - Modificada la visualización de la fecha de expedición para mostrarse en formato largo español (ej. "15 de Junio de 2026").
+  - Añadido soporte de viñetas (bullet points) a la lista de asignaturas de la página 2 (reverso) y aumentado su tamaño a 13pt (con leading de 17pt).
+  - Modificado el dibujo del reverso para calcular de forma dinámica la altura con wrap() y evitar cualquier posible solapamiento.
+  - Pruebas de Odoo completadas con éxito.
+
 
 

@@ -1,8 +1,54 @@
 diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
-index 8367646d..a4fdbe2e 100644
+index 8367646d..fc1e67d6 100644
 --- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
 +++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
-@@ -68,10 +68,10 @@ class DiplomadoReportPDF(models.AbstractModel):
+@@ -29,6 +29,45 @@ class DiplomadoReportPDF(models.AbstractModel):
+         buffer.seek(0)
+         return ImageReader(buffer)
+ 
++    def _format_issue_date(self, date_val):
++        if not date_val:
++            return ''
++        from datetime import date, datetime
++        if isinstance(date_val, (date, datetime)):
++            day = date_val.day
++            month_num = date_val.month
++            year = date_val.year
++        else:
++            date_str = str(date_val).strip()
++            try:
++                if '/' in date_str:
++                    parts = date_str.split('/')
++                    day = int(parts[0])
++                    month_num = int(parts[1])
++                    year = int(parts[2])
++                elif '-' in date_str:
++                    parts = date_str.split('-')
++                    if len(parts[0]) == 4:
++                        year = int(parts[0])
++                        month_num = int(parts[1])
++                        day = int(parts[2])
++                    else:
++                        day = int(parts[0])
++                        month_num = int(parts[1])
++                        year = int(parts[2])
++                else:
++                    return date_str
++            except Exception:
++                return date_str
++
++        months = {
++            1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
++            5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
++            9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
++        }
++        month_name = months.get(month_num, '')
++        return f"{day} de {month_name} de {year}"
++
+     @api.model
+     def generate_diplomado_pdf(self, data):
+         buffer = io.BytesIO()
+@@ -68,10 +107,10 @@ class DiplomadoReportPDF(models.AbstractModel):
          # 3. Certifica
          c.setFont('Helvetica-Oblique', 14)
          c.setFillColorRGB(0.447, 0.498, 0.467)  # #727F77
@@ -15,7 +61,7 @@ index 8367646d..a4fdbe2e 100644
          c.setFillColorRGB(0, 0, 0)
          c.drawCentredString(page_width / 2.0, page_height - 75 * mm, data.get('student_name', ''))
  
-@@ -101,8 +101,8 @@ class DiplomadoReportPDF(models.AbstractModel):
+@@ -101,8 +140,8 @@ class DiplomadoReportPDF(models.AbstractModel):
          style_title = ParagraphStyle(
              'Title',
              fontName='Helvetica-Bold',
@@ -26,7 +72,17 @@ index 8367646d..a4fdbe2e 100644
              textColor='#000000',
              alignment=1
          )
-@@ -172,16 +172,16 @@ class DiplomadoReportPDF(models.AbstractModel):
+@@ -118,7 +157,8 @@ class DiplomadoReportPDF(models.AbstractModel):
+         # 8. Barcelona, a ...
+         c.setFont('Helvetica', 13)
+         c.setFillColorRGB(0.423, 0.478, 0.443)
+-        c.drawCentredString(page_width / 2.0, 58 * mm, "Barcelona, a %s" % data.get('issue_date', ''))
++        formatted_date = self._format_issue_date(data.get('issue_date', ''))
++        c.drawCentredString(page_width / 2.0, 58 * mm, "Barcelona, a %s" % formatted_date)
+ 
+         # 9. Firmas e Imágenes
+         if data.get('diploma_type') == 'digital':
+@@ -172,16 +212,16 @@ class DiplomadoReportPDF(models.AbstractModel):
          style_back_title = ParagraphStyle(
              'BackTitle',
              fontName='Helvetica-Bold',
@@ -47,7 +103,7 @@ index 8367646d..a4fdbe2e 100644
              textColor='#333333',
              alignment=0  # Izquierda
          )
-@@ -203,8 +203,8 @@ class DiplomadoReportPDF(models.AbstractModel):
+@@ -203,8 +243,8 @@ class DiplomadoReportPDF(models.AbstractModel):
              y_curr = start_y_pos - 8 * mm
              
              if text and text.strip():
@@ -58,7 +114,7 @@ index 8367646d..a4fdbe2e 100644
                  
                  # Distribuir en 2 columnas (estilo column-count: 2)
                  half = (len(subjects) + 1) // 2
-@@ -216,13 +216,13 @@ class DiplomadoReportPDF(models.AbstractModel):
+@@ -216,13 +256,13 @@ class DiplomadoReportPDF(models.AbstractModel):
                  
                  # Columna 1 (Izquierda)
                  p_col1 = Paragraph(col1_text, style_back_text)
