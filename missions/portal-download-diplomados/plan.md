@@ -1,22 +1,26 @@
-# Misión: portal-download-diplomados (Revisado - Aislamiento Completo)
+# Misión: portal-download-diplomados (Revisado - Visibilidad Contextual)
 
 ## Alcance y Descomposición
-El objetivo es permitir que los alumnos descarguen diplomados (`irg.diplomado.registry`) directamente (sin flujos de pago) desde el campus si su calificación final es > 7.0. Esto se hará de forma completamente aislada de los diplomas y solicitudes de máster.
+El objetivo es permitir que los alumnos soliciten gratis la expedición de sus diplomados (`irg.diplomado.request`) desde el campus si su calificación final es > 7.0, y descargarlos una vez emitidos.
+Además, si el campus se abre en el contexto de un curso de tipo diplomado (`course_id` en URL), se ocultarán las demás pestañas y el botón de "+ Nueva Solicitud".
 
-1. **Aislamiento en Vistas**:
-   - Crear una pestaña exclusiva llamada **"Mis Diplomados"** al mismo nivel que "Mis Diplomas" y "Actas TFM/TFG".
-   - No mostrar los diplomados en la pestaña original de "Mis Diplomas".
+1. **Nuevo Modelo de Solicitudes**:
+   - `irg.diplomado.request` para registrar las peticiones del campus.
+   - Asociación automática en `irg.diplomado.registry` cuando se expide el diploma.
 
-2. **Aislamiento en Solicitudes (Sin Pago)**:
-   - Sobrescribir `certificate_new` en el controlador para filtrar y **excluir** todas las libretas académicas de cursos de diplomado en el formulario de solicitud tradicional `/campus/certificates/new`. Así el alumno no podrá solicitar su pago en Stripe por error.
+2. **Aislamiento y Visibilidad Contextual**:
+   - Añadir pestaña "Mis Diplomados".
+   - Si se detecta `course_id` de tipo diplomado en el request, fijar `only_diplomados = True`.
+   - Ocultar las otras pestañas y paneles, y activar "Mis Diplomados" por defecto.
+   - Ocultar el botón superior de solicitudes tradicionales.
 
 3. **Complejidad y Routing**:
    - **Clasificación**: `standard` (afecta a un nuevo módulo extendiendo dos módulos existentes sin comprometer la seguridad general).
    - **Modelo sugerido**: Modelo intermedio / fuerte de código.
 
 4. **Tareas de Implementación**:
-   - Modificar controlador `controllers/portal.py`.
-   - Modificar la plantilla `views/portal_templates.xml`.
+   - Definir modelos y archivos de datos.
+   - Modificar controlador `controllers/portal.py` y plantilla `views/portal_templates.xml`.
    - Modificar tests unitarios en `tests/test_portal.py`.
 
 5. **Validación**:

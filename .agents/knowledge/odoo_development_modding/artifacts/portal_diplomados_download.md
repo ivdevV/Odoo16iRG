@@ -1,6 +1,6 @@
 # Descarga de Diplomados en el Portal del Alumno (Odoo 16)
 
-Este documento describe detalladamente los patrones técnicos empleados para implementar el aislamiento y descarga segura de diplomas de posgrado y diplomados desde el portal web del estudiante, garantizando modularidad, legibilidad y robustez académica.
+Este documento describe detalladamente los patrones técnicos empleados para implementar el aislamiento, solicitud gratuita y descarga segura de diplomas de posgrado y diplomados desde el portal web del estudiante, garantizando modularidad, legibilidad y robustez académica.
 
 ---
 
@@ -33,100 +33,130 @@ class IrgCampusDiplomadosPortal(IrgCampusCertificatesPortal):
         if hasattr(response, 'qcontext'):
             partner = request.env.user.partner_id
             
-            # Buscar estudiantes del partner
-            students = request.env['op.student'].sudo().search([
-                ('partner_id', '=', partner.id)
-            ])
-            
-            # Recuperar diplomados del histórico
-            diplomados_raw = request.env['irg.diplomado.registry'].sudo().search([
-                ('student_id', 'in', students.ids),
-            ], order='id desc')
-            
-            # Procesar lógica de libreta y descarga
-            diplomados_data = []
-            for d in diplomados_raw:
-                gradebook = request.env['app.gradebook.student'].sudo().search([
-                    ('student_id', '=', d.student_id.id),
-                    ('course_id', '=', d.course_id.id),
-                ], limit=1)
-                
-                final_grade = gradebook.total_final if gradebook else 0.0
-                can_download = final_grade > 7.0
-                
-                diplomados_data.append({
-                    'record': d,
-                    'final_grade': final_grade,
-                    'can_download': can_download,
-                })
-                
-            # Exponer los datos en el contexto de QWeb sin sobreescribir el resto
-            response.qcontext['diplomados_data'] = diplomados_data
-            
-        return response
+            # Buscar estudiantes del partner y diplomados del histórico
+            ...
 ```
-
-### Ventajas de este patrón:
-- **Preservación de Rutas:** Se conserva la ruta original `/campus/certificates` sin necesidad de duplicarla o colisionar con otros controladores.
-- **Acumulación de Contexto:** Al usar `super()`, la respuesta original (con los certificados que ya listaba el módulo base) se genera primero, y luego simplemente inyectamos la clave `diplomados_data` en el `qcontext`.
 
 ---
 
-## 2. Patrón de Exclusión y Filtrado por Controladores en Formularios
+## 2. Patrón de Herencia Contextual y Visibilidad Dinámica por Parámetros (Query Params)
+
+Para mantener una navegación enfocada e impedir que el usuario navegue fuera del alcance de su programa actual cuando es redirigido desde el curso de un diplomado, se aplica una visibilidad condicional en la interfaz web de Odoo basada en parámetros de URL.
+
+### A. Lógica en el Controlador (Backend)
+El controlador lee el parámetro `course_id` de los argumentos HTTP de tipo GET (`**kw`). Si este existe y corresponde a un diplomado, activa la bandera `only_diplomados = True` y filtra estrictamente los datos que se mostrarán en la vista, eliminando información de otros programas:
+
+```python
+        course_id = kw.get('course_id')
+        only_diplomados = False
+        if course_id:
+            try:
+                course = request.env['op.course'].sudo().browse(int(course_id))
+                if course.exists() and course.is_diplomado():
+                    only_diplomados = True
+                    # Filtrar datos exclusivamente para este curso
+                    diplomados_data = [d for d in diplomados_data if d['record'].course_id.id == course.id]
+                    solicitudes_tramite = solicitudes_tramite.filtered(lambda r: r.course_id.id == course.id)
+                    disponibles_solicitar = [gb for gb in disponibles_solicitar if gb.course_id.id == course.id]
+            except Exception:
+                pass
+                
+        response.qcontext.update({
+            'diplomados_data': diplomados_data,
+            'solicitudes_tramite': solicitudes_tramite,
+            'disponibles_solicitar': disponibles_solicitar,
+            'only_diplomados': only_diplomados,
+        })
+```
+
+### B. Ocultamiento de la Interfaz en QWeb (Frontend)
+En la plantilla XML se envuelven las pestañas comunes ("Mis Diplomas", "Actas TFM/TFG", "Solicitudes") y el botón superior "+ Nueva Solicitud" con condicionales QWeb que evalúan la bandera inyectada:
+
+```xml
+<!-- Ocultamiento dinámico del botón superior de Nueva Solicitud -->
+<xpath expr="//a[contains(@href, '/campus/certificates/new')]" position="replace">
+    <t t-if="not only_diplomados">
+        <a href="/campus/certificates/new" class="btn btn-primary">
+            <i class="fa fa-plus me-1"/> Nueva Solicitud
+        </a>
+    </t>
+</xpath>
+```
+Este patrón evita el "ruido visual" y guía al estudiante de forma contextual en el flujo de su diplomado específico.
+
+---
+
+## 3. Patrón de Vinculación Automatizada y Reactiva de Estados
+
+Cuando un administrador del centro educativo emite o registra el diploma oficial en el backend (creando un registro en `irg.diplomado.registry`), el sistema debe actualizar de forma reactiva el estado de cualquier solicitud de trámite web pendiente que haya hecho el alumno en el portal.
+
+### Implementación en el Modelo (Backend)
+Se extiende la creación del modelo de registro (`irg.diplomado.registry`) mediante herencia clásica de Odoo para interceptar el método `create`:
+
+```python
+class IrgDiplomadoRegistry(models.Model):
+    _inherit = 'irg.diplomado.registry'
+
+    @api.model
+    def create(self, vals):
+        # 1. Crear el registro original en el histórico
+        record = super(IrgDiplomadoRegistry, self).create(vals)
+        
+        # 2. Buscar si el estudiante tenía una solicitud activa para este curso en el portal
+        solicitud = self.env['irg.diplomado.request'].sudo().search([
+            ('student_id', '=', record.student_id.id),
+            ('course_id', '=', record.course_id.id),
+            ('state', '=', 'requested')
+        ], limit=1)
+        
+        # 3. Vincular de manera automatizada y reactiva
+        if solicitud:
+            solicitud.write({
+                'diplomado_registry_id': record.id,
+                'state': 'processed' # Cambia de "Solicitado" a "Procesado"
+            })
+            
+        return record
+```
+
+### Ventajas del Patrón:
+- **Desacoplamiento:** El módulo de expedición base no conoce la existencia del portal de solicitudes; la reactividad e integración se inyectan limpiamente en el módulo del portal.
+- **Sincronización Inmediata:** La interfaz del portal del alumno se actualiza de inmediato para reflejar el estado "Procesado", moviendo el registro de "Expediciones en Trámite" a "Títulos Emitidos" para habilitar la descarga del PDF.
+
+---
+
+## 4. Patrón de Exclusión y Filtrado por Controladores en Formularios
 
 Para evitar la solicitud y tramitación de tasas de certificados para cursos que son diplomados (ya que estos se expiden de manera gratuita mediante el histórico), se debe excluir e invalidar este flujo tanto en el frontend como en el backend.
 
-El endpoint `/campus/certificates/new` gestiona tanto la presentación del formulario (método `GET`) como el procesamiento del envío de la solicitud (método `POST`).
-
 ### A. Filtrado en la Carga del Formulario (GET)
 Cuando se carga el formulario, el controlador intercepta la lista de libretas de calificaciones disponibles (`gradebooks`) que se pasarán al combo de selección en QWeb. Se realiza un filtrado mediante el método `.filtered()` del RecordSet para eliminar aquellas correspondientes a diplomados:
-
-```python
-    @http.route(
-        '/campus/certificates/new',
-        type='http',
-        auth='user',
-        website=True,
-        methods=['GET', 'POST'],
-        csrf=True,
-    )
-    def certificate_new(self, **post):
-        # 1. Ejecutar comportamiento padre (que generará qcontext o procesará el POST)
-        # Si es POST, primero procesamos la validación de seguridad de datos enviados
-        ...
-```
-
-El filtrado en Odoo 16 se hace después del `super()`, modificando la variable `gradebooks` en el `qcontext`:
 
 ```python
         response = super(IrgCampusDiplomadosPortal, self).certificate_new(**post)
 
         if hasattr(response, 'qcontext') and 'gradebooks' in response.qcontext:
             gradebooks = response.qcontext['gradebooks']
-            # Excluir las libretas académicas de diplomados
             response.qcontext['gradebooks'] = gradebooks.filtered(lambda gb: not gb.course_id.is_diplomado())
 
         return response
 ```
 
 ### B. Validación y Sanitización del Envío (POST)
-Si un usuario intenta saltarse la validación visual del frontend y envía directamente una solicitud POST con el ID de una libreta de diplomado, el backend debe interceptarlo **antes** de delegar al controlador padre. 
-
-Al cambiar el `gradebook_id` enviado a `'0'`, el controlador original del módulo base no encontrará una libreta válida y rechazará la solicitud de forma nativa devolviendo un error del formulario ("Selecciona la libreta"):
+Si un usuario intenta saltarse la validación visual del frontend y envía directamente una solicitud POST con el ID de una libreta de diplomado, el backend debe interceptarlo **antes** de delegar al controlador padre. Al cambiar el `gradebook_id` enviado a `'0'`, el controlador original del módulo base no encontrará una libreta válida y rechazará la solicitud de forma nativa devolviendo un error del formulario ("Selecciona la libreta"):
 
 ```python
         if request.httprequest.method == 'POST':
             gradebook_id = int(post.get('gradebook_id', 0) or 0)
             if gradebook_id:
                 gradebook = request.env['app.gradebook.student'].sudo().browse(gradebook_id)
-                # Si la libreta pertenece a un diplomado, invalidamos la solicitud
                 if gradebook.exists() and gradebook.course_id.is_diplomado():
                     post['gradebook_id'] = '0'  # Provoca fallo nativo por libreta no seleccionada
 ```
 
 ---
 
-## 3. Patrón de Inyección de Pestañas y Paneles Independientes mediante XPath
+## 5. Patrón de Inyección de Pestañas y Paneles Independientes mediante XPath
 
 En lugar de incrustar contenidos adicionales dentro de la misma sección de certificados de pago (lo cual genera confusión), se inyecta una pestaña (`nav-item`) y un panel (`tab-pane`) independientes dentro del contenedor principal del portal.
 
@@ -144,55 +174,8 @@ En lugar de incrustar contenidos adicionales dentro de la misma sección de cert
 <!-- Inyectar el panel de la pestaña justo después del panel original -->
 <xpath expr="//div[@id='diplomas-pane']" position="after">
     <div class="tab-pane fade" id="diplomados-pane" role="tabpanel" aria-labelledby="diplomados-tab">
-        <!-- Listado específico de diplomados -->
-        <t t-if="not diplomados_data">
-            ...
-        </t>
-        <t t-else="">
-            ...
-        </t>
+        <!-- Listado específico de diplomados con tres subsecciones: Emitidos, Disponibles para Solicitar y En Trámite -->
+        ...
     </div>
 </xpath>
 ```
-
----
-
-## 4. Validación del Rendimiento Académico para Proteger Descargas
-
-La validación del rendimiento del estudiante no debe recaer de manera única en la UI (ocultando el botón). Es imperativo implementar una doble capa de validación directamente en el endpoint de descarga para evitar peticiones malintencionadas o accesos directos por URL.
-
-### Lógica de Control y Protección del Endpoint
-Cuando el usuario llama a `/campus/certificates/download/diplomado/<int:diplomado_id>`, el controlador valida el rendimiento académico en la base de datos contra el modelo de libreta de calificaciones `app.gradebook.student`:
-
-```python
-# 1. Control de seguridad y pertenencia
-partner = request.env.user.partner_id
-diplomado = request.env['irg.diplomado.registry'].sudo().browse(diplomado_id)
-
-if not diplomado.exists() or diplomado.student_id.partner_id.id != partner.id:
-    return request.redirect('/campus/certificates')
-
-# 2. Validación de rendimiento académico
-gradebook = request.env['app.gradebook.student'].sudo().search([
-    ('student_id', '=', diplomado.student_id.id),
-    ('course_id', '=', diplomado.course_id.id),
-], limit=1)
-
-# El criterio estricto exige que la nota final sea superior a 7.0
-if not gradebook or gradebook.total_final <= 7.0:
-    return request.redirect('/campus/certificates?error=grade_too_low')
-
-# 3. Envío del archivo
-# (Si no existe el binario adjunto, se genera dinámicamente)
-if not diplomado.attachment_id or not diplomado.attachment_id.datas:
-    diplomado.action_reprint()
-
-data = io.BytesIO(base64.standard_b64decode(diplomado.attachment_id.datas))
-filename = diplomado.attachment_id.name or "diplomado.pdf"
-return http.send_file(data, filename=filename, as_attachment=True)
-```
-
-### Reglas del Criterio Académico:
-- **Origen de la Calificación:** La nota final se lee del campo `total_final` en el modelo `app.gradebook.student` correspondiente al estudiante y curso del diplomado.
-- **Límite Estricto:** La calificación final debe ser **estrictamente mayor a 7.0** (`gradebook.total_final > 7.0`). Si la nota es menor o igual, la descarga se bloquea de forma inmediata a nivel de backend.
-- **Redirección Segura:** El bloqueo redirige a la lista de certificados del portal agregando el query parameter `error=grade_too_low`, activando la alerta visual del frontend.

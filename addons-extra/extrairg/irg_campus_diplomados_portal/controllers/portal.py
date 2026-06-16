@@ -35,9 +35,25 @@ class IrgCampusDiplomadosPortal(IrgCampusCertificatesPortal):
                 ('student_id', 'in', students.ids),
             ], order='id desc')
             
+            # Buscar todas las solicitudes de diplomados
+            solicitudes = request.env['irg.diplomado.request'].sudo().search([
+                ('student_id', 'in', students.ids),
+            ], order='id desc')
+            
+            # Buscar libretas académicas finalizadas del alumno
+            gradebooks_diplomados = request.env['app.gradebook.student'].sudo().search([
+                ('partner_id', '=', partner.id),
+                ('state', '=', 'done'),
+            ])
+            
+            # Filtrar libretas que correspondan a diplomados y que tengan nota > 7.0
+            gradebooks_diplomados = gradebooks_diplomados.filtered(
+                lambda gb: gb.course_id.is_diplomado() and gb.total_final > 7.0
+            )
+            
+            # 1. Poblamos datos de diplomados emitidos
             diplomados_data = []
             for d in diplomados_raw:
-                # Buscar la libreta académica correspondiente
                 gradebook = request.env['app.gradebook.student'].sudo().search([
                     ('student_id', '=', d.student_id.id),
                     ('course_id', '=', d.course_id.id),
@@ -46,15 +62,45 @@ class IrgCampusDiplomadosPortal(IrgCampusCertificatesPortal):
                 final_grade = gradebook.total_final if gradebook else 0.0
                 can_download = final_grade > 7.0
                 
-                # Adjuntamos datos dinámicos al objeto en memoria para consumirlos en QWeb
-                d_info = {
+                diplomados_data.append({
                     'record': d,
                     'final_grade': final_grade,
                     'can_download': can_download,
-                }
-                diplomados_data.append(d_info)
+                })
                 
-            response.qcontext['diplomados_data'] = diplomados_data
+            # 2. Poblamos solicitudes en trámite
+            solicitudes_tramite = solicitudes.filtered(lambda r: r.state == 'requested')
+            
+            # 3. Poblamos cursos disponibles para solicitar (libreta con nota > 7, sin diploma ni solicitud activa)
+            disponibles_solicitar = []
+            for gb in gradebooks_diplomados:
+                has_diploma = any(d.course_id.id == gb.course_id.id for d in diplomados_raw)
+                has_request = any(r.course_id.id == gb.course_id.id and r.state in ('requested', 'processed') for r in solicitudes)
+                if not has_diploma and not has_request:
+                    disponibles_solicitar.append(gb)
+                    
+            # 4. Visibilidad Contextual y Filtrado por course_id
+            course_id = kw.get('course_id')
+            only_diplomados = False
+            if course_id:
+                try:
+                    course = request.env['op.course'].sudo().browse(int(course_id))
+                    if course.exists() and course.is_diplomado():
+                        only_diplomados = True
+                        # Filtrar datos exclusivamente para este curso
+                        diplomados_data = [d for d in diplomados_data if d['record'].course_id.id == course.id]
+                        solicitudes_tramite = solicitudes_tramite.filtered(lambda r: r.course_id.id == course.id)
+                        disponibles_solicitar = [gb for gb in disponibles_solicitar if gb.course_id.id == course.id]
+                except Exception:
+                    pass
+                    
+            # Pasar variables al contexto de la plantilla
+            response.qcontext.update({
+                'diplomados_data': diplomados_data,
+                'solicitudes_tramite': solicitudes_tramite,
+                'disponibles_solicitar': disponibles_solicitar,
+                'only_diplomados': only_diplomados,
+            })
             
         return response
 
@@ -84,6 +130,58 @@ class IrgCampusDiplomadosPortal(IrgCampusCertificatesPortal):
             response.qcontext['gradebooks'] = gradebooks.filtered(lambda gb: not gb.course_id.is_diplomado())
 
         return response
+
+    @http.route(
+        '/campus/certificates/request/diplomado/<int:course_id>',
+        type='http',
+        auth='user',
+        website=True,
+        methods=['POST', 'GET'],
+        csrf=True,
+    )
+    def request_diplomado(self, course_id, **kw):
+        partner = request.env.user.partner_id
+        student = request.env['op.student'].sudo().search([
+            ('partner_id', '=', partner.id)
+        ], limit=1)
+        
+        if not student:
+            return request.redirect('/campus/certificates')
+            
+        # Comprobar libreta finalizada y nota > 7.0
+        gradebook = request.env['app.gradebook.student'].sudo().search([
+            ('student_id', '=', student.id),
+            ('course_id', '=', course_id),
+            ('state', '=', 'done')
+        ], limit=1)
+        
+        if not gradebook or gradebook.total_final <= 7.0:
+            return request.redirect(f'/campus/certificates?course_id={course_id}&error=grade_too_low')
+            
+        # Verificar duplicados (si ya hay diploma o solicitud activa)
+        has_diploma = request.env['irg.diplomado.registry'].sudo().search_count([
+            ('student_id', '=', student.id),
+            ('course_id', '=', course_id)
+        ]) > 0
+        
+        has_request = request.env['irg.diplomado.request'].sudo().search_count([
+            ('student_id', '=', student.id),
+            ('course_id', '=', course_id),
+            ('state', 'in', ('requested', 'processed'))
+        ]) > 0
+        
+        if has_diploma or has_request:
+            return request.redirect(f'/campus/certificates?course_id={course_id}&error=already_requested')
+            
+        # Crear la solicitud
+        request.env['irg.diplomado.request'].sudo().create({
+            'student_id': student.id,
+            'course_id': course_id,
+            'state': 'requested',
+        })
+        
+        # Redirigir al campus con éxito, preservando el contexto del curso si aplica
+        return request.redirect(f'/campus/certificates?course_id={course_id}&request_success=1')
 
     @http.route(
         '/campus/certificates/download/diplomado/<int:diplomado_id>',

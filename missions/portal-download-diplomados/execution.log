@@ -13,4 +13,10 @@
    - El controlador hereda de `IrgCampusCertificatesPortal` y añade filtrado y lógica exclusiva para `irg.diplomado.registry`.
    - La plantilla XML inyecta la alerta y la subsección bajo XPath sin tocar el diseño del módulo de certificados base.
    - Se implementaron los tests automatizados para validar los flujos de descarga y denegación de alumnos con baja calificación.
+3. **Validación y Ejecución de Tests (Completado)**:
+   - Se ejecutó la instalación y actualización del nuevo módulo en la base de datos `test_irg_db`.
+   - Se ejecutaron los tests unitarios. Inicialmente, el test de flujo de solicitud gratuita fallaba porque la base de datos conservaba los registros creados durante el `setUpClass` (debido a la concurrencia/aislamiento de transacciones entre el test y la instancia Werkzeug del servidor de fondo de Odoo).
+   - Se corrigió el test `test_03_diplomados_contextual_only_visibility_and_request` para forzar un commit de la base de datos tras desvincular los registros iniciales y, a continuación, restaurar el Savepoint de Odoo (`test_%d` dinámico basado en `self._savepoint_id`).
+   - Tras este ajuste, los 3 tests pasaron con éxito (`0 failed, 0 error(s) of 3 tests`).
+   - Se generó el log `test_output.log` y se actualizó `verification.json` indicando el paso exitoso de las pruebas de validación.
 

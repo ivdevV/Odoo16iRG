@@ -14,6 +14,9 @@
         'irg_course_portal_tiles_diplomado_hide',
     ],
     'data': [
+        'security/ir.model.access.csv',
+        'data/ir_sequence_data.xml',
+        'views/diplomado_request_views.xml',
         'views/portal_templates.xml',
     ],
     'installable': True,

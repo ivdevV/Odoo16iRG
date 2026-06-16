@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vista Lista (Tree) -->
+        <record id="view_irg_diplomado_request_tree" model="ir.ui.view">
+            <field name="name">irg.diplomado.request.tree</field>
+            <field name="model">irg.diplomado.request</field>
+            <field name="arch" type="xml">
+                <tree string="Solicitudes de Diplomados" decoration-info="state == 'requested'" decoration-success="state == 'processed'" decoration-muted="state == 'cancelled'">
+                    <field name="name"/>
+                    <field name="student_id"/>
+                    <field name="course_id"/>
+                    <field name="request_date"/>
+                    <field name="diplomado_registry_id"/>
+                    <field name="state" widget="badge" decoration-info="state == 'requested'" decoration-success="state == 'processed'" decoration-danger="state == 'cancelled'"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista Formulario (Form) -->
+        <record id="view_irg_diplomado_request_form" model="ir.ui.view">
+            <field name="name">irg.diplomado.request.form</field>
+            <field name="model">irg.diplomado.request</field>
+            <field name="arch" type="xml">
+                <form string="Solicitud de Diplomado">
+                    <header>
+                        <field name="state" widget="statusbar" statusbar_visible="requested,processed,cancelled"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="student_id" options="{'no_create': True}"/>
+                                <field name="course_id" options="{'no_create': True}"/>
+                            </group>
+                            <group>
+                                <field name="request_date"/>
+                                <field name="diplomado_registry_id" attrs="{'invisible': [('diplomado_registry_id', '=', False)]}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Acción de Ventana -->
+        <record id="action_irg_diplomado_request" model="ir.actions.act_window">
+            <field name="name">Solicitudes de Diplomados</field>
+            <field name="res_model">irg.diplomado.request</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay solicitudes registradas.
+                </p>
+                <p>
+                    Las solicitudes que los alumnos realicen desde el portal del campus se mostrarán aquí.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú de solicitudes -->
+        <menuitem id="menu_irg_diplomado_request"
+                  name="Solicitudes de Diplomados"
+                  parent="openeducat_core.menu_op_general_main"
+                  action="action_irg_diplomado_request"
+                  sequence="51"/>
+
+    </data>
+</odoo>

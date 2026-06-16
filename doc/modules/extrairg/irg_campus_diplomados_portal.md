@@ -11,34 +11,41 @@
 
 ## ¿Qué hace este módulo?
 
-Este módulo integra los registros de diplomas generados a través de `irg_generacion_diplomados` en el portal del estudiante, permitiendo visualizar y descargar los documentos en formato PDF de manera segura y controlada desde el campus web de Odoo 16.
+Este módulo integra los registros de diplomas generados a través de `irg_generacion_diplomados` en el portal del estudiante, permitiendo visualizar, solicitar de forma gratuita y descargar los documentos en formato PDF de manera segura y controlada desde el campus web de Odoo 16.
 
 ### Aislamiento e Independencia
 Para evitar que los alumnos confundan los diplomados y posgrados (gratuitos e inmutables) con los certificados normales que conllevan tasas de pago de trámites, el módulo implementa:
-1. **Aislamiento Visual:** Los diplomados se muestran en una pestaña independiente llamada "Mis Diplomados" en el portal de certificados, en lugar de estar mezclados en el listado base.
-2. **Exclusión de Solicitudes:** Los diplomados y posgrados están completamente excluidos del formulario de solicitud de nuevos certificados (`/campus/certificates/new`), bloqueando la creación de solicitudes de pago asociadas a los mismos.
+1. **Aislamiento Visual:** Los diplomados se muestran en una pestaña independiente llamada "Mis Diplomados" en el portal de certificados.
+2. **Exclusión de Solicitudes de Pago:** Los diplomados y posgrados están completamente excluidos del formulario de solicitud de nuevos certificados base (`/campus/certificates/new`), bloqueando la creación de solicitudes de pago asociadas a los mismos.
+3. **Flujo de Solicitud Directo y Gratuito:** El alumno puede tramitar su solicitud directamente desde la pestaña "Mis Diplomados" sin coste alguno.
 
 ---
 
 ## Funcionalidades principales
 
-- **Listado Unificado pero Aislado:** Muestra los diplomados emitidos al estudiante dentro del portal en su propia pestaña "Mis Diplomados".
-- **Validación Académica:** Verifica en tiempo real la calificación final de la libreta académica del estudiante.
+- **Pestaña Independiente "Mis Diplomados":** Organizada en tres subsecciones para guiar al estudiante de forma clara:
+  1. **Títulos Emitidos:** Listado de diplomados con calificación y el botón de descarga del PDF (o insignia de "Bloqueado" si la nota es insuficiente).
+  2. **Títulos Disponibles para Solicitar:** Muestra los cursos finalizados con nota final superior a 7.0 que aún no tienen un diploma emitido ni una solicitud activa. Contiene un botón para realizar el trámite de expedición gratuita de manera inmediata.
+  3. **Expediciones en Trámite:** Muestra las solicitudes enviadas por el portal en estado "En trámite" que están pendientes de proceso en el backend.
+- **Validación Académica:** Verifica en tiempo real la calificación final de la libreta académica del estudiante (nota final `> 7.0`).
 - **Acceso Restringido y Seguro:** Oculta los enlaces de descarga directa y muestra una insignia de **"Bloqueado"** con candado si el alumno no supera la nota final de 7.0. Además, protege el endpoint del controlador para validar de nuevo la nota y el partner propietario del diploma antes de servir el PDF.
 - **Regeneración en Caliente:** Si un alumno cumple las condiciones pero su registro histórico no tiene un archivo adjunto PDF almacenado, el sistema intenta ejecutar la reimpresión automática (`action_reprint()`) para servir el archivo al vuelo.
-- **Filtrado GET/POST en Solicitudes:** Elimina los diplomados del combobox de libretas en la solicitud de certificados (GET) e invalida a nivel de backend cualquier envío forzado por red para un diplomado (POST), forzando el ID de libreta académica a `'0'` para gatillar la validación de error nativa.
+- **Filtrado GET/POST en Solicitudes Base:** Elimina los diplomados del combobox de libretas en la solicitud de certificados general (GET) e invalida a nivel de backend cualquier envío forzado por red para un diplomado (POST), forzando el ID de libreta académica a `'0'` para gatillar la validación de error nativa.
+- **Visibilidad Contextual Dinámica:** Si se accede al portal de certificados con un parámetro de URL `course_id` de tipo diplomado, el sistema oculta dinámicamente el botón de nueva solicitud y las demás pestañas para enfocar al alumno en la gestión de su diplomado.
+- **Transición y Vinculación Reactiva:** Cuando administración genera el registro del diplomado (`irg.diplomado.registry`), el modelo intercepta el `create` y asocia el nuevo diploma a la solicitud pendiente (`irg.diplomado.request`), cambiando su estado a "Procesado" de forma automática.
 
 ---
 
 ## Modelos Utilizados
 
-El módulo no crea nuevos modelos persistentes, sino que actúa como una capa de servicio e integración sobre modelos de otros módulos:
+El módulo utiliza modelos específicos de integración y extiende los modelos existentes:
 
-| Modelo | Módulo de Origen | Uso / Descripción |
-|--------|------------------|-------------------|
-| `irg.diplomado.registry` | `irg_generacion_diplomados` | Registro histórico de diplomados emitidos. Se utiliza para listar y obtener el PDF adjunto (`attachment_id`). |
-| `app.gradebook.student` | `irg_academic_request_history` (base) | Libreta de calificaciones del estudiante. Se consulta el campo `total_final` para verificar el rendimiento académico y el curso para saber si es diplomado. |
-| `op.student` | `openeducat_core` | Ficha del alumno. Sirve para relacionar el usuario logueado en el portal (`res.partner`) con sus inscripciones y diplomados. |
+| Modelo | Tipo | Uso / Descripción |
+|--------|------|-------------------|
+| `irg.diplomado.request` | Nuevo | Almacena y trackea las solicitudes de expedición de diplomas gratuitas, con estados `requested` (Solicitado), `processed` (Procesado) y `cancelled` (Cancelado). |
+| `irg.diplomado.registry` | Extensión | Sobrescribe el método `create` para asociar reactivamente el diploma y actualizar el estado de las solicitudes a `processed`. |
+| `app.gradebook.student` | Extensión (base) | Libreta de calificaciones del estudiante. Se consulta el campo `total_final` para verificar el rendimiento académico y el curso para saber si es diplomado. |
+| `op.student` | Extensión (base) | Ficha del alumno. Sirve para relacionar el usuario logueado en el portal (`res.partner`) con sus inscripciones, solicitudes y diplomados. |
 
 ---
 
@@ -46,26 +53,23 @@ El módulo no crea nuevos modelos persistentes, sino que actúa como una capa de
 
 ### 1. Extensión del listado de certificados (`/campus/certificates`)
 - **Método:** `GET`
-- **Autenticación:** `user` (Usuario autenticado en el portal)
-- **Descripción:** Extiende el controlador original `IrgCampusCertificatesPortal` mediante herencia de clases. Recupera los registros de diplomados asociados al partner del usuario y, para cada uno, busca su libreta de notas para determinar la calificación final y el estado de descarga (`can_download`). Expone esta información en `qcontext['diplomados_data']`.
+- **Autenticación:** `user`
+- **Descripción:** Extiende el controlador base. Recupera la lista de diplomados, las solicitudes pendientes y los cursos aptos para solicitar. Aplica filtrado de contexto por `course_id` si el parámetro GET está presente y corresponde a un diplomado, forzando la bandera `only_diplomados = True`.
 
-### 2. Extensión del formulario de solicitudes (`/campus/certificates/new`)
+### 2. Extensión del formulario de solicitudes de pago (`/campus/certificates/new`)
 - **Método:** `GET` y `POST`
 - **Autenticación:** `user`
-- **Descripción:** Controla el aislamiento y exclusión del flujo de pago de certificados:
-  - **Filtro GET:** Al renderizar el formulario, filtra la lista de libretas académicas enviadas a la vista, excluyendo los cursos donde `is_diplomado()` sea verdadero.
-  - **Filtro POST:** Al procesar el envío, si el usuario inyecta por red el ID de una libreta de diplomado, el controlador lo intercepta antes del comportamiento base y sobrescribe el parámetro `gradebook_id` con `'0'`. Esto fuerza al controlador nativo a devolver un error de formulario ("Selecciona la libreta"), bloqueando la creación del trámite.
+- **Descripción:** Excluye el combo de libretas del formulario de la selección de diplomados (GET) e invalida el envío directo POST forzando la libreta a `'0'` si se inyecta un diplomado.
 
-### 3. Endpoint de descarga directa (`/campus/certificates/download/diplomado/<int:diplomado_id>`)
+### 3. Trámite de nueva solicitud de diplomado (`/campus/certificates/request/diplomado/<int:course_id>`)
+- **Método:** `GET` y `POST`
+- **Autenticación:** `user`
+- **Descripción:** Crea un registro en `irg.diplomado.request` en estado `requested`. Valida previamente que la libreta académica del estudiante en ese curso esté finalizada y tenga nota `> 7.0`, y que no existan solicitudes ni diplomas previos activos. Redirige al listado con `request_success=1`.
+
+### 4. Endpoint de descarga directa (`/campus/certificates/download/diplomado/<int:diplomado_id>`)
 - **Método:** `GET`
 - **Autenticación:** `user`
-- **Parámetros:** `diplomado_id` (ID del registro histórico de diplomado)
-- **Flujo de Seguridad:**
-  1. Verifica que el registro de diplomado exista.
-  2. Verifica que el diplomado pertenezca al partner del usuario autenticado (evita escalación de privilegios / ID Harvesting).
-  3. Verifica que la nota final de la libreta académica asociada a ese alumno y curso sea estrictamente superior a **7.0**.
-  4. Si alguna validación falla, redirige al portal. Si es por notas, redirige con el query param `error=grade_too_low`.
-  5. Si las validaciones son correctas, descarga el adjunto PDF en el navegador.
+- **Descripción:** Valida la propiedad del diploma y nota `> 7.0` en la libreta. Si es correcto, sirve el PDF adjunto (y lo genera en caliente si está ausente).
 
 ---
 
@@ -74,8 +78,8 @@ El módulo no crea nuevos modelos persistentes, sino que actúa como una capa de
 La plantilla se extiende en `views/portal_templates.xml` heredando de `irg_campus_certificates_portal.portal_certificate_list_override`:
 
 - **Bloque de Mensaje de Error:** Se inyecta una alerta bootstrap de tipo peligro (`alert-danger`) si se detecta el parámetro `error=grade_too_low` en la URL.
-- **Pestaña Independiente "Mis Diplomados":** Inyecta un botón `button` con ID `diplomados-tab` después de la pestaña base.
-- **Contenedor Independiente "Mis Diplomados":** Inyecta una sección `div` con ID `diplomados-pane` y comportamiento fade de Bootstrap. Muestra la tabla estilizada con el folio, curso, calificación (con colores dinámicos: verde para aprobado, rojo para insuficiente), fecha, tipo, y el botón dinámico de descarga directa o insignia de candado.
+- **Pestaña y Panel Independiente "Mis Diplomados":** Inyecta un botón y un contenedor fade de Bootstrap con las tres subsecciones de Títulos Emitidos, Disponibles para Solicitar y Expediciones en Trámite.
+- **Ocultamiento Dinámico:** Si `only_diplomados` es verdadero, se ocultan mediante condicionales las pestañas base ("Mis Diplomas", "Actas TFM/TFG", "Solicitudes") y el botón superior "+ Nueva Solicitud".
 
 ---
 
@@ -83,14 +87,9 @@ La plantilla se extiende en `views/portal_templates.xml` heredando de `irg_campu
 
 El módulo incluye tests de integración HTTP localizados en `tests/test_portal.py`:
 
-- **`test_01_diplomados_portal_list_and_download`:**
-  - Autentica a un usuario portal de prueba.
-  - Comprueba que la página del portal carga correctamente (HTTP 200).
-  - Valida la presencia de la pestaña independiente "Mis Diplomados" y de los diplomados correspondientes.
-  - Valida el funcionamiento del botón de descarga para el alumno aprobado (nota `8.5`) y la insignia de "Bloqueado" para el reprobado (nota `6.0`), así como el bloqueo de URL directa con redirección por calificación baja.
-- **`test_02_diplomados_request_form_exclusion`:**
-  - Valida que al cargar el formulario de nueva solicitud, los cursos de tipo diplomado estén excluidos de la lista desplegable, pero los cursos normales de máster se muestren correctamente.
-  - Simula una petición maliciosa tipo POST enviando directamente el ID de la libreta del diplomado, comprobando que el backend lo intercepte, lo limpie a `'0'` y el formulario lo rechace con el error nativo "Selecciona la libreta".
+- **`test_01_diplomados_portal_list_and_download`:** Valida listado, estados de descarga y descarga directa/bloqueos de PDF.
+- **`test_02_diplomados_request_form_exclusion`:** Valida que el formulario general de solicitudes de pago no permita listar ni tramitar diplomados.
+- **`test_03_diplomados_contextual_only_visibility_and_request`:** Valida el acceso contextual por URL ocultando las pestañas base, el envío del flujo de solicitud gratuita, y la posterior transición automática y vinculación reactiva del estado de la solicitud a `processed` cuando el diploma es creado en el backend.
 
 ### Comando de Ejecución de Tests
 ```bash

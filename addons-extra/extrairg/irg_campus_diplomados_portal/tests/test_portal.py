@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+import re
 from odoo.tests.common import HttpCase, tagged
 from odoo.addons.mail.tests.common import mail_new_test_user
 
@@ -34,6 +35,7 @@ class TestCampusDiplomadosPortal(HttpCase):
             leftover_so.write({'state': 'draft'})
             leftover_so.unlink()
 
+        cls.env['irg.diplomado.request'].sudo().search([]).unlink()
         cls.env['irg.diplomado.registry'].sudo().search([('name', 'in', ('TEST-DIP-01', 'TEST-DIP-02'))]).unlink()
         cls.env['app.gradebook.student'].sudo().search([('course_id.name', 'in', ('Diplomado Test 1', 'Diplomado Test 2', 'Master Test Normal'))]).unlink()
         cls.env['op.student'].sudo().search([('first_name', '=', 'PortalStudent')]).unlink()
@@ -272,42 +274,39 @@ class TestCampusDiplomadosPortal(HttpCase):
         self.assertEqual(response.status_code, 200, "La ruta del portal debe cargar correctamente.")
         html_content = response.text
         
-        # 2. Comprobar que en la respuesta HTML se muestra el diplomado aprobado
-        self.assertIn('TEST-DIP-01', html_content, "El diplomado con calificación > 7.0 debe estar visible en el portal.")
-        # Y también el diplomado bloqueado con la insignia correspondiente
-        self.assertIn('TEST-DIP-02', html_content, "El diplomado con calificación <= 7.0 debe estar visible en el portal.")
-        self.assertIn('Bloqueado', html_content, "Debe mostrarse la indicación de bloqueo.")
-        self.assertIn('Mis Diplomados', html_content, "La pestaña independiente 'Mis Diplomados' debe estar visible.")
+        # 2. Comprobar que en la respuesta HTML se muestran los elementos del diplomado
+        self.assertIn('TEST-DIP-01', html_content)
+        self.assertIn('TEST-DIP-02', html_content)
+        self.assertIn('Bloqueado', html_content)
+        self.assertIn('Mis Diplomados', html_content)
         
-        # 3. Descarga del diplomado Ok (debe dar 200 y descargar el PDF)
+        # 3. Descarga de diplomado Ok
         download_ok_url = f'/campus/certificates/download/diplomado/{self.diplomado_ok.id}'
         response_download = self.url_open(download_ok_url)
-        self.assertEqual(response_download.status_code, 200, "La descarga del diplomado aprobado debe retornar 200.")
-        self.assertEqual(response_download.content, b'PDF_TEST_CONTENT', "El contenido descargado debe coincidir con el PDF del diplomado.")
+        self.assertEqual(response_download.status_code, 200)
+        self.assertEqual(response_download.content, b'PDF_TEST_CONTENT')
         
-        # 4. Descarga del diplomado Bloqueado (debe redirigir a /campus/certificates con error=grade_too_low)
+        # 4. Descarga de diplomado Bloqueado
         download_fail_url = f'/campus/certificates/download/diplomado/{self.diplomado_fail.id}'
         response_fail = self.url_open(download_fail_url)
-        self.assertEqual(response_fail.status_code, 200, "La llamada debe completarse con redirección (código HTTP final 200 al renderizar el portal).")
-        self.assertIn('error=grade_too_low', response_fail.url, "La redirección debe incluir el parámetro de error de calificación baja.")
+        self.assertEqual(response_fail.status_code, 200)
+        self.assertIn('error=grade_too_low', response_fail.url)
 
     def test_02_diplomados_request_form_exclusion(self):
         # Autenticarse como usuario del portal
         self.authenticate('student_portal_diplomados', 'student_portal_diplomados')
 
-        # 1. Acceder al formulario de nueva solicitud de certificados
+        # 1. Acceder al formulario de nueva solicitud
         response = self.url_open('/campus/certificates/new')
         self.assertEqual(response.status_code, 200)
         html_content = response.text
 
-        # 2. Comprobar que en el dropdown de programas académicos NO aparecen los diplomados, pero sí el máster normal
-        self.assertIn('Master Test Normal', html_content, "El curso Máster Normal debe figurar en el desplegable de solicitudes.")
-        self.assertNotIn('Diplomado Test 1', html_content, "El Diplomado Test 1 debe estar excluido por completo del desplegable de solicitudes.")
-        self.assertNotIn('Diplomado Test 2', html_content, "El Diplomado Test 2 debe estar excluido por completo del desplegable de solicitudes.")
+        # 2. Comprobar exclusión
+        self.assertIn('Master Test Normal', html_content)
+        self.assertNotIn('Diplomado Test 1', html_content)
+        self.assertNotIn('Diplomado Test 2', html_content)
 
-        # 3. Intentar enviar una solicitud POST con el ID del diplomado (debe fallar devolviendo error)
-        # Extraer el CSRF token de la respuesta GET anterior
-        import re
+        # 3. Extraer CSRF token
         csrf_token = None
         csrf_js = re.search(r'csrf_token:\s*["\']([^"\']+)["\']', html_content)
         if csrf_js:
@@ -317,7 +316,7 @@ class TestCampusDiplomadosPortal(HttpCase):
             if csrf_input:
                 csrf_token = csrf_input.group(1)
 
-        # Enviamos datos para solicitar el diploma para la libreta del diplomado
+        # 4. Enviar POST con gradebook de diplomado (debe fallar)
         post_data = {
             'document_type': 'diploma',
             'certificate_type': 'digital',
@@ -326,8 +325,62 @@ class TestCampusDiplomadosPortal(HttpCase):
         if csrf_token:
             post_data['csrf_token'] = csrf_token
 
-        # Hacemos la llamada POST
         response_post = self.url_open('/campus/certificates/new', data=post_data)
-        # El controlador interceptará la libreta del diplomado, la forzará a '0' y el padre devolverá error en el HTML
         self.assertEqual(response_post.status_code, 200)
-        self.assertIn('Selecciona la libreta', response_post.text, "El controlador debe rechazar y solicitar seleccionar una libreta válida (ya que forzamos a 0).")
+        self.assertIn('Selecciona la libreta', response_post.text)
+
+    def test_03_diplomados_contextual_only_visibility_and_request(self):
+        # Autenticarse como usuario del portal
+        self.authenticate('student_portal_diplomados', 'student_portal_diplomados')
+
+        # Primero, eliminamos los registros de diplomados ya emitidos para simular que no están impresos
+        self.diplomado_ok.unlink()
+        self.diplomado_fail.unlink()
+        self.env.cr.commit()
+        if hasattr(self, '_savepoint_id'):
+            self.env.cr.execute('SAVEPOINT test_%d' % self._savepoint_id)
+        
+        # 1. Comprobar visibilidad contextual (desde un curso tipo diplomado)
+        response_context = self.url_open(f'/campus/certificates?course_id={self.course_ok.id}')
+        self.assertEqual(response_context.status_code, 200)
+        html_content = response_context.text
+
+        # 2. Verificar que las demás pestañas están ocultas en el HTML
+        self.assertNotIn('id="diplomas-tab"', html_content, "La pestaña 'Mis Diplomas' debe estar oculta.")
+        self.assertNotIn('id="actas-tab"', html_content, "La pestaña 'Actas TFM/TFG' debe estar oculta.")
+        self.assertNotIn('id="solicitudes-tab"', html_content, "La pestaña 'Solicitudes' debe estar oculta.")
+        self.assertNotIn('Nueva Solicitud', html_content, "El botón '+ Nueva Solicitud' debe estar oculto.")
+        self.assertIn('id="diplomados-tab"', html_content, "La pestaña 'Mis Diplomados' debe estar visible.")
+
+        # 3. Verificar que aparece en "Títulos Disponibles para Solicitar"
+        self.assertIn('Diplomado Test 1', html_content)
+        self.assertIn('Solicitar Diploma', html_content)
+
+        # 4. Ejecutar la solicitud gratuita vía URL
+        req_url = f'/campus/certificates/request/diplomado/{self.course_ok.id}'
+        response_req = self.url_open(req_url)
+        self.assertEqual(response_req.status_code, 200)
+        self.assertIn('request_success=1', response_req.url)
+
+        # 5. Comprobar que la solicitud se creó en la base de datos
+        sol = self.env['irg.diplomado.request'].sudo().search([
+            ('student_id', '=', self.student.id),
+            ('course_id', '=', self.course_ok.id)
+        ])
+        self.assertEqual(len(sol), 1)
+        self.assertEqual(sol.state, 'requested')
+
+        # 6. Simular expedición en backend y comprobar asociación automática
+        new_diploma = self.env['irg.diplomado.registry'].create({
+            'student_id': self.student.id,
+            'student_name': 'PortalStudent Diplomado',
+            'course_id': self.course_ok.id,
+            'diplomado_name': 'Diplomado Test 1',
+            'issue_date': '2026-06-16',
+            'diploma_type': 'digital',
+            'attachment_id': self.test_attachment.id,
+        })
+        
+        self.env.invalidate_all()
+        self.assertEqual(sol.state, 'processed')
+        self.assertEqual(sol.diplomado_registry_id.id, new_diploma.id)
