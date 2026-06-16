@@ -15,6 +15,8 @@ Para configurar un bloque comun a todas las asignaturas de un curso, no se debe 
 
 Para iframes o codigo de insercion, no usar `fields.Html` con editor HTML porque el saneado/editor puede eliminar tags embebidos. Usar un `fields.Text` dedicado y renderizarlo con `Markup` solo para contenido configurado desde backend por usuarios de confianza.
 
+Para campos `fields.Html` donde se desee permitir la inserción o pegado de bloques de código formateados (como bloques de texto plano), es aconsejable habilitar la opción `codeview: True` en las `options` del widget HTML en la vista XML. Esto habilita el botón `</>` (código fuente) en el editor de Odoo 16, evitando que el manejador visual de pegado descarte el contenido.
+
 ## Gotcha
 
 `slide.channel` no tiene un `course_id` directo fiable en esta instancia. Cualquier feature global por curso debe resolver el curso desde `op.subject` o desde `op.course.slide_channel_ids`.

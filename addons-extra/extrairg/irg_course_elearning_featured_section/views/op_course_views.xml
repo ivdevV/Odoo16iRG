@@ -12,7 +12,7 @@
                     </group>
                     <group attrs="{'invisible': [('irg_featured_section_enabled', '=', False)]}">
                         <field name="irg_featured_section_title" attrs="{'required': [('irg_featured_section_enabled', '=', True)]}"/>
-                        <field name="irg_featured_section_body" widget="html" options="{'safe': True}" nolabel="1"/>
+                        <field name="irg_featured_section_body" widget="html" options="{'safe': True, 'codeview': True}" nolabel="1"/>
                         <group string="Código embebido">
                             <field name="irg_featured_section_embed_code"
                                    nolabel="1"

@@ -1,0 +1,13 @@
+diff --git a/addons-extra/extrairg/irg_course_elearning_featured_section/views/op_course_views.xml b/addons-extra/extrairg/irg_course_elearning_featured_section/views/op_course_views.xml
+index 632c6826..b45d2c44 100644
+--- a/addons-extra/extrairg/irg_course_elearning_featured_section/views/op_course_views.xml
++++ b/addons-extra/extrairg/irg_course_elearning_featured_section/views/op_course_views.xml
+@@ -12,7 +12,7 @@
+                     </group>
+                     <group attrs="{'invisible': [('irg_featured_section_enabled', '=', False)]}">
+                         <field name="irg_featured_section_title" attrs="{'required': [('irg_featured_section_enabled', '=', True)]}"/>
+-                        <field name="irg_featured_section_body" widget="html" options="{'safe': True}" nolabel="1"/>
++                        <field name="irg_featured_section_body" widget="html" options="{'safe': True, 'codeview': True}" nolabel="1"/>
+                         <group string="Código embebido">
+                             <field name="irg_featured_section_embed_code"
+                                    nolabel="1"
