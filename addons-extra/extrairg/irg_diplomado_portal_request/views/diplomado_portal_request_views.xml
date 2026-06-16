@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_irg_diplomado_portal_request_tree" model="ir.ui.view">
+            <field name="name">irg.diplomado.portal.request.tree</field>
+            <field name="model">irg.diplomado.portal.request</field>
+            <field name="arch" type="xml">
+                <tree string="Solicitudes de Diplomas de Diplomados" decoration-info="state == 'requested'" decoration-success="state == 'processed'" decoration-muted="state == 'cancelled'">
+                    <field name="name"/>
+                    <field name="student_id"/>
+                    <field name="course_id"/>
+                    <field name="final_grade"/>
+                    <field name="request_date"/>
+                    <field name="diplomado_registry_id"/>
+                    <field name="state" widget="badge" decoration-info="state == 'requested'" decoration-success="state == 'processed'" decoration-muted="state == 'cancelled'"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_irg_diplomado_portal_request_form" model="ir.ui.view">
+            <field name="name">irg.diplomado.portal.request.form</field>
+            <field name="model">irg.diplomado.portal.request</field>
+            <field name="arch" type="xml">
+                <form string="Solicitud de Diploma de Diplomado">
+                    <header>
+                        <button name="action_cancel" type="object" string="Cancelar" class="btn-secondary" attrs="{'invisible': [('state', '=', 'cancelled')]}"/>
+                        <field name="state" widget="statusbar" statusbar_visible="requested,processed,cancelled"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="student_id" readonly="1"/>
+                                <field name="partner_id" readonly="1"/>
+                                <field name="course_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="gradebook_student_id" readonly="1"/>
+                                <field name="final_grade" readonly="1"/>
+                                <field name="request_date" readonly="1"/>
+                                <field name="diplomado_registry_id" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_irg_diplomado_portal_request" model="ir.actions.act_window">
+            <field name="name">Solicitudes de Diplomas de Diplomados</field>
+            <field name="res_model">irg.diplomado.portal.request</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_irg_diplomado_portal_request"
+                  name="Solicitudes Diplomas Diplomados"
+                  parent="openeducat_core.menu_op_general_main"
+                  action="action_irg_diplomado_portal_request"
+                  sequence="52"/>
+    </data>
+</odoo>

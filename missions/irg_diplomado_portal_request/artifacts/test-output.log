@@ -1,0 +1,9 @@
+Validacion estatica:
+- `python3 -m compileall addons-extra/extrairg/irg_diplomado_portal_request`: pass.
+- Parseo XML con lxml de `data/*.xml` y `views/*.xml`: pass.
+
+Validacion Odoo local:
+- Comando: `docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_diplomado_portal_request --test-enable --test-tags /irg_diplomado_portal_request --stop-after-init --http-port=8099 --log-level=test`
+- Resultado: `0 failed, 0 error(s)`.
+- Tests reportados por Odoo: `irg_diplomado_portal_request: 5 tests`.
+- Log completo capturado por OpenCode en: `/Users/ivrogo/.local/share/opencode/tool-output/tool_ed00d9103001Qnld0Cr2nf4dH0`.
