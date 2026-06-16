@@ -1,31 +1,78 @@
 diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
-index f13939ea..8367646d 100644
+index 8367646d..a4fdbe2e 100644
 --- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
 +++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
-@@ -65,10 +65,10 @@ class DiplomadoReportPDF(models.AbstractModel):
-         c.setFillColorRGB(0, 0, 0)
-         c.drawCentredString(22 * mm + (28 * mm) / 2.0, 12 * mm, reg_text)
- 
--        # 3. Hace constar que
-+        # 3. Certifica
+@@ -68,10 +68,10 @@ class DiplomadoReportPDF(models.AbstractModel):
+         # 3. Certifica
          c.setFont('Helvetica-Oblique', 14)
          c.setFillColorRGB(0.447, 0.498, 0.467)  # #727F77
--        c.drawCentredString(page_width / 2.0, page_height - 58 * mm, "Hace constar que")
-+        c.drawCentredString(page_width / 2.0, page_height - 58 * mm, "certifica")
+-        c.drawCentredString(page_width / 2.0, page_height - 58 * mm, "certifica")
++        c.drawCentredString(page_width / 2.0, page_height - 58 * mm, "certifica que")
  
          # 4. Nombre del Alumno
-         c.setFont('Helvetica-Bold', 29)
-@@ -143,11 +143,11 @@ class DiplomadoReportPDF(models.AbstractModel):
+-        c.setFont('Helvetica-Bold', 29)
++        c.setFont('Helvetica-Bold', 23)
+         c.setFillColorRGB(0, 0, 0)
+         c.drawCentredString(page_width / 2.0, page_height - 75 * mm, data.get('student_name', ''))
+ 
+@@ -101,8 +101,8 @@ class DiplomadoReportPDF(models.AbstractModel):
+         style_title = ParagraphStyle(
+             'Title',
+             fontName='Helvetica-Bold',
+-            fontSize=21,
+-            leading=25,
++            fontSize=23,
++            leading=27,
+             textColor='#000000',
+             alignment=1
          )
-         p_sig_left = Paragraph("<b>Raimon Gaja Jaumeandreu</b><br/><font color='#666666' size='9.5'>Director General iRG</font>", style_sig)
-         p_sig_left.wrapOn(c, 80 * mm, 15 * mm)
--        p_sig_left.drawOn(c, 72 * mm, 20 * mm)
-+        p_sig_left.drawOn(c, 56 * mm, 20 * mm)
- 
-         p_sig_right = Paragraph("<b>Fermín Carrillo González</b><br/><font color='#666666' size='9.5'>Director de Relaciones Internacionales</font>", style_sig)
-         p_sig_right.wrapOn(c, 80 * mm, 15 * mm)
--        p_sig_right.drawOn(c, 185 * mm, 20 * mm)
-+        p_sig_right.drawOn(c, 171 * mm, 20 * mm)
- 
-         # ----------------- PAGINA 2: REVERSO -----------------
-         c.showPage()  # Salto de página físico
+@@ -172,16 +172,16 @@ class DiplomadoReportPDF(models.AbstractModel):
+         style_back_title = ParagraphStyle(
+             'BackTitle',
+             fontName='Helvetica-Bold',
+-            fontSize=13.5,
+-            leading=16,
++            fontSize=14.5,
++            leading=18,
+             textColor='#033DAA',
+             alignment=1
+         )
+         style_back_text = ParagraphStyle(
+             'BackText',
+             fontName='Helvetica',
+-            fontSize=10.5,
+-            leading=14,
++            fontSize=13,
++            leading=17,
+             textColor='#333333',
+             alignment=0  # Izquierda
+         )
+@@ -203,8 +203,8 @@ class DiplomadoReportPDF(models.AbstractModel):
+             y_curr = start_y_pos - 8 * mm
+             
+             if text and text.strip():
+-                # Separar las asignaturas por líneas
+-                subjects = [s.strip() for s in text.split('\n') if s.strip()]
++                # Separar las asignaturas por líneas y añadir un bullet point a cada una
++                subjects = [f"&bull; {s.strip()}" for s in text.split('\n') if s.strip()]
+                 
+                 # Distribuir en 2 columnas (estilo column-count: 2)
+                 half = (len(subjects) + 1) // 2
+@@ -216,13 +216,13 @@ class DiplomadoReportPDF(models.AbstractModel):
+                 
+                 # Columna 1 (Izquierda)
+                 p_col1 = Paragraph(col1_text, style_back_text)
+-                p_col1.wrapOn(c, 108 * mm, 50 * mm)
+-                p_col1.drawOn(c, 35 * mm, y_curr - 35 * mm)  # 35mm de altura aproximada de dibujo
++                w1, h1 = p_col1.wrap(108 * mm, 100 * mm)
++                p_col1.drawOn(c, 35 * mm, y_curr - h1)
+                 
+                 # Columna 2 (Derecha)
+                 p_col2 = Paragraph(col2_text, style_back_text)
+-                p_col2.wrapOn(c, 108 * mm, 50 * mm)
+-                p_col2.drawOn(c, 154 * mm, y_curr - 35 * mm)
++                w2, h2 = p_col2.wrap(108 * mm, 100 * mm)
++                p_col2.drawOn(c, 154 * mm, y_curr - h2)
+             else:
+                 p_empty = Paragraph("No se registran módulos en esta modalidad.", style_back_empty)
+                 p_empty.wrapOn(c, 227 * mm, 8 * mm)
