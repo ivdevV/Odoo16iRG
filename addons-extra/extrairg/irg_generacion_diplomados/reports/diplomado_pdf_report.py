@@ -165,12 +165,12 @@ class DiplomadoReportPDF(models.AbstractModel):
             # Firma Raimon Gaja
             sig_left_path = self._get_image_path('firma_izquierda.jpg')
             if sig_left_path and os.path.exists(sig_left_path):
-                c.drawImage(sig_left_path, 72 * mm, 35 * mm, width=48 * mm, height=18 * mm, preserveAspectRatio=True, mask='auto')
+                c.drawImage(sig_left_path, 72 * mm, 27 * mm, width=48 * mm, height=18 * mm, preserveAspectRatio=True, mask='auto')
             
             # Firma Fermín Carrillo
             sig_right_path = self._get_image_path('firma_derecha.jpg')
             if sig_right_path and os.path.exists(sig_right_path):
-                c.drawImage(sig_right_path, 185 * mm, 35 * mm, width=52 * mm, height=18 * mm, preserveAspectRatio=True, mask='auto')
+                c.drawImage(sig_right_path, 185 * mm, 27 * mm, width=52 * mm, height=18 * mm, preserveAspectRatio=True, mask='auto')
 
         # Textos de firmas
         style_sig = ParagraphStyle(
@@ -183,11 +183,11 @@ class DiplomadoReportPDF(models.AbstractModel):
         )
         p_sig_left = Paragraph("<b>Raimon Gaja Jaumeandreu</b><br/><font color='#666666' size='9.5'>Director General iRG</font>", style_sig)
         p_sig_left.wrapOn(c, 80 * mm, 15 * mm)
-        p_sig_left.drawOn(c, 56 * mm, 20 * mm)
+        p_sig_left.drawOn(c, 56 * mm, 12 * mm)
 
         p_sig_right = Paragraph("<b>Fermín Carrillo González</b><br/><font color='#666666' size='9.5'>Director de Relaciones Internacionales</font>", style_sig)
         p_sig_right.wrapOn(c, 80 * mm, 15 * mm)
-        p_sig_right.drawOn(c, 171 * mm, 20 * mm)
+        p_sig_right.drawOn(c, 171 * mm, 12 * mm)
 
         # ----------------- PAGINA 2: REVERSO -----------------
         c.showPage()  # Salto de página físico

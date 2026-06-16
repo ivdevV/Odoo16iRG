@@ -75,6 +75,10 @@
   - Añadido soporte de viñetas (bullet points) a la lista de asignaturas de la página 2 (reverso) y aumentado su tamaño a 13pt (con leading de 17pt).
   - Modificado el dibujo del reverso para calcular de forma dinámica la altura con wrap() y evitar cualquier posible solapamiento.
   - Pruebas de Odoo completadas con éxito.
+2026-06-16 - Alineación de firmas y cargos con el QR:
+  - Bajados las imágenes de firma a y=27mm y los nombres/cargos a y=12mm para alinearse perfectamente con la parte superior del QR y el texto inferior respectivamente.
+  - Pruebas unitarias de Odoo superadas y regenerado el PDF para confirmación visual.
+
 
 
 
