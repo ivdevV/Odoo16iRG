@@ -119,6 +119,8 @@ class IrgDiplomadoPortalRequestController(http.Controller):
             'diplomado_name': course.name,
             'start_date': batch.start_date if batch else False,
             'end_date': batch.end_date if batch else False,
+            'duration_hours': course.irg_diplomado_duration_hours if 'irg_diplomado_duration_hours' in course._fields else 0,
+            'duration_ects': course.irg_diplomado_duration_ects if 'irg_diplomado_duration_ects' in course._fields else 0.0,
             'diploma_type': 'digital',
             'subjects_presencial': course.irg_diplomado_subjects_presencial or '',
             'subjects_online': course.irg_diplomado_subjects_online or '',
@@ -155,5 +157,5 @@ class IrgDiplomadoPortalRequestController(http.Controller):
             filename = diplomado.attachment_id.name or 'diplomado.pdf'
             return http.send_file(data, filename=filename, as_attachment=True)
         except Exception:
-            _logger.exception('Error al descargar el diplomado %s', registry_id)
+            _logger.exception('Error al descargar el diplomado %s', diplomado.id)
             return request.redirect('/campus/diplomados/%s?error=no_pdf' % diplomado.course_id.id)

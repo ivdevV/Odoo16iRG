@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "task": "irg_diplomado_course_duration",
+  "checks": [
+    {
+      "name": "python_compile",
+      "result": "pass",
+      "detail": "python3 -m compileall for irg_generacion_diplomados_course_duration and irg_diplomado_portal_request"
+    },
+    {
+      "name": "xml_parse",
+      "result": "pass",
+      "detail": "All XML files in both affected modules parsed with lxml"
+    },
+    {
+      "name": "odoo_module_tests",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s); irg_diplomado_portal_request: 5 tests; irg_generacion_diplomados_course_duration: 3 tests"
+    }
+  ],
+  "evidence": [
+    "missions/irg_diplomado_course_duration/artifacts/test-output.log",
+    "/Users/ivrogo/.local/share/opencode/tool-output/tool_ed04597ef001j8lXxVJo2SLsKw"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}
