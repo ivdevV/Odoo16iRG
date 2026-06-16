@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Portal de Solicitudes de Diplomas de Diplomados',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'summary': 'Solicitudes portal de diplomas de diplomados con validacion de nota final superior a 7.',
     'category': 'Website',
     'author': 'iRG',

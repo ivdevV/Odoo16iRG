@@ -31,7 +31,7 @@
                                 <div class="col-12 col-lg-4">
                                     <div class="h-100 rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #37b6d8, #178cb4);">
                                         <i class="fa fa-certificate fa-3x mb-3"/>
-                                        <h3 class="h5 fw-bold mb-2">Solicitud gratuita</h3>
+                                        <h3 class="h5 fw-bold mb-2">Descarga gratuita</h3>
                                         <p class="mb-0 small opacity-75">Disponible al completar el diplomado con calificacion final superior a 7.0.</p>
                                     </div>
                                 </div>
@@ -52,8 +52,7 @@
                                         <dt class="col-sm-4 text-muted">Situacion</dt>
                                         <dd class="col-sm-8">
                                             <span t-if="diplomado_registry" class="badge rounded-pill bg-primary px-3 py-2">Emitido</span>
-                                            <span t-elif="diplomado_request" class="badge rounded-pill bg-warning text-dark px-3 py-2">En tramite</span>
-                                            <span t-elif="eligible" class="badge rounded-pill bg-success px-3 py-2">Disponible para solicitar</span>
+                                            <span t-elif="eligible" class="badge rounded-pill bg-success px-3 py-2">Disponible para descargar</span>
                                             <span t-else="" class="badge rounded-pill bg-light text-muted border px-3 py-2">No disponible</span>
                                         </dd>
                                     </dl>
@@ -62,15 +61,12 @@
                                         <a t-if="diplomado_registry" t-attf-href="/campus/diplomados/download/#{diplomado_registry.id}" class="btn btn-primary rounded-pill px-4">
                                             <i class="fa fa-download me-1"/> Descargar PDF
                                         </a>
-                                        <form t-elif="eligible and not diplomado_request" t-attf-action="/campus/diplomados/#{course.id}/request" method="post" class="d-inline">
+                                        <form t-elif="eligible" t-attf-action="/campus/diplomados/#{course.id}/request" method="post" class="d-inline">
                                             <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                             <button type="submit" class="btn btn-warning text-dark fw-bold rounded-pill px-4">
-                                                <i class="fa fa-paper-plane me-1"/> Solicitar Diploma
+                                                <i class="fa fa-download me-1"/> Descargar Diploma
                                             </button>
                                         </form>
-                                        <span t-elif="diplomado_request" class="text-muted small d-inline-flex align-items-center">
-                                            <i class="fa fa-clock-o me-1"/> Secretaria academica esta tramitando tu diploma.
-                                        </span>
                                     </div>
                                 </div>
                             </div>

@@ -33,7 +33,6 @@ class IrgDiplomadoPortalRequestController(http.Controller):
         return gradebook
 
     def _get_page_values(self, course_id):
-        partner = request.env.user.partner_id
         course = request.env['op.course'].sudo().browse(course_id)
         student = self._get_portal_student()
         values = {
@@ -77,7 +76,7 @@ class IrgDiplomadoPortalRequestController(http.Controller):
             'diplomado_request': diplomado_request,
         })
         if request.params.get('success') == '1':
-            values['success'] = _('Solicitud enviada correctamente.')
+            values['success'] = _('Diploma generado correctamente.')
         elif request.params.get('error') == 'grade_too_low':
             values['error'] = _('Solo puedes solicitar el diploma si tu calificacion final es superior a 7.0.')
         elif request.params.get('error') == 'already_requested':
@@ -105,19 +104,25 @@ class IrgDiplomadoPortalRequestController(http.Controller):
 
         if not course.exists() or not course.irg_is_diplomado() or not student:
             return request.redirect(redirect_url)
-        if values['diplomado_registry'] or values['diplomado_request']:
-            return request.redirect('%s?error=already_requested' % redirect_url)
         if not gradebook or not values['eligible']:
             return request.redirect('%s?error=grade_too_low' % redirect_url)
 
-        request.env['irg.diplomado.portal.request'].sudo().create({
+        diplomado = values['diplomado_registry'] or self._create_diplomado_registry(student, course, gradebook)
+        return self._send_diplomado_file(diplomado)
+
+    def _create_diplomado_registry(self, student, course, gradebook):
+        batch = gradebook.batch_id
+        return request.env['irg.diplomado.registry'].sudo().create({
             'student_id': student.id,
+            'student_name': student.name,
             'course_id': course.id,
-            'gradebook_student_id': gradebook.id,
-            'final_grade': values['final_grade'],
-            'state': 'requested',
+            'diplomado_name': course.name,
+            'start_date': batch.start_date if batch else False,
+            'end_date': batch.end_date if batch else False,
+            'diploma_type': 'digital',
+            'subjects_presencial': course.irg_diplomado_subjects_presencial or '',
+            'subjects_online': course.irg_diplomado_subjects_online or '',
         })
-        return request.redirect('%s?success=1' % redirect_url)
 
     @http.route('/campus/diplomados/download/<int:registry_id>', type='http', auth='user', website=True, methods=['GET'])
     def download_diplomado(self, registry_id, **kw):
@@ -132,11 +137,14 @@ class IrgDiplomadoPortalRequestController(http.Controller):
         if not gradebook or gradebook.total_final <= 7.0:
             return request.redirect('/campus/diplomados/%s?error=grade_too_low' % diplomado.course_id.id)
 
+        return self._send_diplomado_file(diplomado)
+
+    def _send_diplomado_file(self, diplomado):
         if not diplomado.attachment_id or not diplomado.attachment_id.datas:
             try:
                 diplomado.action_reprint()
             except Exception:
-                _logger.exception('Error al regenerar el PDF del diplomado %s', registry_id)
+                _logger.exception('Error al generar el PDF del diplomado %s', diplomado.id)
                 return request.redirect('/campus/diplomados/%s?error=no_pdf' % diplomado.course_id.id)
 
         if not diplomado.attachment_id or not diplomado.attachment_id.datas:

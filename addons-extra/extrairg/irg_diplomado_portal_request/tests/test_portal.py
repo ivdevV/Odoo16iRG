@@ -24,9 +24,30 @@ class TestDiplomadoPortalRequest(HttpCase):
                     rec.final_subject_note = 0.0
 
         type(cls.env['app.gradebook.subject']).compute_final_subject_note = _mock_compute_final_subject_note
+        cls._original_action_reprint = type(cls.env['irg.diplomado.registry']).action_reprint
 
-        cls.env['irg.diplomado.portal.request'].sudo().search([('name', 'like', 'DIP-REQ-TEST')]).unlink()
-        cls.env['irg.diplomado.registry'].sudo().search([('name', 'in', ('DIP-PORTAL-OK', 'DIP-PORTAL-LOW'))]).unlink()
+        def _mock_action_reprint(self):
+            for record in self:
+                attachment = record.env['ir.attachment'].sudo().create({
+                    'name': 'diplomado_direct_download_test.pdf',
+                    'type': 'binary',
+                    'datas': base64.b64encode(b'DIPLOMADO_DIRECT_DOWNLOAD_PDF'),
+                    'res_model': 'irg.diplomado.registry',
+                    'res_id': record.id,
+                    'mimetype': 'application/pdf',
+                })
+                record.attachment_id = attachment.id
+            return True
+
+        type(cls.env['irg.diplomado.registry']).action_reprint = _mock_action_reprint
+
+        test_course_names = ('Diplomado Portal OK', 'Diplomado Portal LOW', 'Master Portal')
+        cls.env['irg.diplomado.portal.request'].sudo().search([('course_id.name', 'in', test_course_names)]).unlink()
+        cls.env['irg.diplomado.registry'].sudo().search([
+            '|',
+            ('name', 'in', ('DIP-PORTAL-OK', 'DIP-PORTAL-LOW')),
+            ('course_id.name', 'in', test_course_names),
+        ]).unlink()
         cls.env['app.gradebook.student'].sudo().search([('admission_id.name', 'in', ('ADM-DIP-OK-PORTAL', 'ADM-DIP-LOW-PORTAL', 'ADM-MASTER-PORTAL'))]).unlink()
         cls.env['op.subject'].sudo().search([('code', 'in', ('DIPOKPORTAL', 'DIPLOWPORTAL'))]).unlink()
         cls.env['op.admission'].sudo().search([('name', 'in', ('ADM-DIP-OK-PORTAL', 'ADM-DIP-LOW-PORTAL', 'ADM-MASTER-PORTAL'))]).unlink()
@@ -126,6 +147,8 @@ class TestDiplomadoPortalRequest(HttpCase):
     def tearDownClass(cls):
         if hasattr(cls, '_original_compute_final_subject_note'):
             type(cls.env['app.gradebook.subject']).compute_final_subject_note = cls._original_compute_final_subject_note
+        if hasattr(cls, '_original_action_reprint'):
+            type(cls.env['irg.diplomado.registry']).action_reprint = cls._original_action_reprint
         super().tearDownClass()
 
     @classmethod
@@ -171,7 +194,7 @@ class TestDiplomadoPortalRequest(HttpCase):
 
         response_ok = self.url_open('/campus/diplomados/%s' % self.course_ok.id)
         self.assertEqual(response_ok.status_code, 200)
-        self.assertIn('Solicitar Diploma', response_ok.text)
+        self.assertIn('Descargar Diploma', response_ok.text)
         self.assertIn('8.50', response_ok.text)
 
         csrf = self._get_csrf(response_ok.text)
@@ -180,19 +203,24 @@ class TestDiplomadoPortalRequest(HttpCase):
             post_data['csrf_token'] = csrf
         response_post = self.url_open('/campus/diplomados/%s/request' % self.course_ok.id, data=post_data)
         self.assertEqual(response_post.status_code, 200)
-        self.assertIn('success=1', response_post.url)
+        self.assertEqual(response_post.content, b'DIPLOMADO_DIRECT_DOWNLOAD_PDF')
 
         request_record = self.env['irg.diplomado.portal.request'].sudo().search([
             ('student_id', '=', self.student.id),
             ('course_id', '=', self.course_ok.id),
         ], limit=1)
-        self.assertTrue(request_record)
-        self.assertEqual(request_record.state, 'requested')
+        self.assertFalse(request_record)
+        registry = self.env['irg.diplomado.registry'].sudo().search([
+            ('student_id', '=', self.student.id),
+            ('course_id', '=', self.course_ok.id),
+        ], limit=1)
+        self.assertTrue(registry)
+        self.assertTrue(registry.attachment_id)
 
         response_low = self.url_open('/campus/diplomados/%s' % self.course_low.id)
         self.assertEqual(response_low.status_code, 200)
         self.assertIn('7.00', response_low.text)
-        self.assertNotIn('Solicitar Diploma', response_low.text)
+        self.assertNotIn('Descargar Diploma', response_low.text)
 
     def test_registry_links_request_and_download_is_secure(self):
         self.authenticate('student_dip_portal_request', 'student_dip_portal_request')

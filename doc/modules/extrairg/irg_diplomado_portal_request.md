@@ -8,8 +8,8 @@ Modulo Odoo 16 para solicitar desde el portal del alumno el diploma especifico d
 
 - Anade un tile especifico `Diploma del Diplomado` en las herramientas del curso cuando el curso es un diplomado.
 - Oculta el tile generico `Certificados y Diplomas` en cursos de diplomado.
-- Permite solicitar el diploma solo si la libreta academica del alumno esta completada y la calificacion final es estrictamente superior a `7.0`.
-- Registra solicitudes en el modelo propio `irg.diplomado.portal.request`.
+- Permite descargar el diploma solo si la libreta academica del alumno esta completada y la calificacion final es estrictamente superior a `7.0`.
+- Al pulsar `Descargar Diploma`, crea el registro `irg.diplomado.registry` si todavia no existe, genera el PDF y responde con la descarga directa.
 - Vincula automaticamente una solicitud pendiente cuando secretaria emite un registro en `irg.diplomado.registry`.
 - Permite descargar el PDF emitido solo al alumno propietario y solo si mantiene la nota final requerida.
 
@@ -18,12 +18,14 @@ Modulo Odoo 16 para solicitar desde el portal del alumno el diploma especifico d
 | Ruta | Metodo | Uso |
 | --- | --- | --- |
 | `/campus/diplomados/<course_id>` | `GET` | Pagina contextual del diplomado |
-| `/campus/diplomados/<course_id>/request` | `POST` | Crea la solicitud si cumple requisitos |
+| `/campus/diplomados/<course_id>/request` | `POST` | Genera/recupera el diploma y descarga el PDF si cumple requisitos |
 | `/campus/diplomados/download/<registry_id>` | `GET` | Descarga segura del PDF emitido |
 
 ## Modelos
 
 ### `irg.diplomado.portal.request`
+
+Modelo historico interno del modulo para compatibilidad administrativa. El flujo portal actual no deja solicitudes pendientes: descarga directamente el diploma si cumple requisitos.
 
 Campos principales:
 
@@ -47,7 +49,8 @@ Al crear o cambiar un registro emitido, el modulo busca una solicitud `requested
 - El curso debe ser diplomado.
 - La libreta debe estar en estado `done`.
 - La nota final debe ser `> 7.0`.
-- La solicitud no se crea si ya existe un diploma emitido o una solicitud activa para el mismo alumno y curso.
+- Si no existe diploma emitido para el alumno y curso, el portal lo crea automaticamente antes de descargarlo.
+- Si ya existe, reutiliza el registro emitido y descarga su PDF.
 
 ## Validacion
 
@@ -58,6 +61,8 @@ docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/
 ```
 
 Resultado: `0 failed, 0 error(s)`.
+
+La correccion de descarga directa se valido con el mismo comando. El test comprueba que el `POST` devuelve el binario PDF y que no se crea una solicitud pendiente.
 
 Tambien se validaron compilacion Python y parseo XML del modulo.
 
