@@ -64,4 +64,9 @@
   - "Frase final" subido a `page_height - 133 * mm` (77mm).
   - Fecha central "Barcelona, a..." subida a `58 * mm` (separación de 5mm con firmas).
   - Regenerado PDF, tests unitarios superados, y confirmada visualmente la eliminación del solape.
+2026-06-16 - Modificaciones adicionales de diseño según feedback del usuario:
+  - Cambiado el texto "Hace constar que" por "certifica".
+  - Centrados y alineados perfectamente los bloques de nombres/cargos de firmas bajo sus respectivas imágenes de firma (Raimon Gaja a x=56mm y Fermín Carrillo a x=171mm).
+  - Pruebas unitarias de Odoo completadas con éxito y regenerado el PDF para comprobar visualmente la alineación perfecta.
+
 

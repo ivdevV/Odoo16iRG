@@ -65,10 +65,10 @@ class DiplomadoReportPDF(models.AbstractModel):
         c.setFillColorRGB(0, 0, 0)
         c.drawCentredString(22 * mm + (28 * mm) / 2.0, 12 * mm, reg_text)
 
-        # 3. Hace constar que
+        # 3. Certifica
         c.setFont('Helvetica-Oblique', 14)
         c.setFillColorRGB(0.447, 0.498, 0.467)  # #727F77
-        c.drawCentredString(page_width / 2.0, page_height - 58 * mm, "Hace constar que")
+        c.drawCentredString(page_width / 2.0, page_height - 58 * mm, "certifica")
 
         # 4. Nombre del Alumno
         c.setFont('Helvetica-Bold', 29)
@@ -143,11 +143,11 @@ class DiplomadoReportPDF(models.AbstractModel):
         )
         p_sig_left = Paragraph("<b>Raimon Gaja Jaumeandreu</b><br/><font color='#666666' size='9.5'>Director General iRG</font>", style_sig)
         p_sig_left.wrapOn(c, 80 * mm, 15 * mm)
-        p_sig_left.drawOn(c, 72 * mm, 20 * mm)
+        p_sig_left.drawOn(c, 56 * mm, 20 * mm)
 
         p_sig_right = Paragraph("<b>Fermín Carrillo González</b><br/><font color='#666666' size='9.5'>Director de Relaciones Internacionales</font>", style_sig)
         p_sig_right.wrapOn(c, 80 * mm, 15 * mm)
-        p_sig_right.drawOn(c, 185 * mm, 20 * mm)
+        p_sig_right.drawOn(c, 171 * mm, 20 * mm)
 
         # ----------------- PAGINA 2: REVERSO -----------------
         c.showPage()  # Salto de página físico
