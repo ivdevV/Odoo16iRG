@@ -946,7 +946,36 @@ class IrgCertificateRequest(models.Model):
             )
 
         doc = DocxDocument(tpl_path)
-        self._scale_document_fonts(doc, percent=75)
+        is_physical = self.certificate_type in PHYSICAL_TYPES
+        if is_physical:
+            for section in doc.sections:
+                section.top_margin = section.top_margin + Pt(56.25)
+            # Remove template signature/stamp runs
+            sig_rel_ids = []
+            for rel_id, rel in doc.part.rels.items():
+                target = getattr(rel, 'target_ref', '').lower()
+                if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
+                    sig_rel_ids.append(rel_id)
+            if sig_rel_ids:
+                for para in list(doc.paragraphs):
+                    for run in list(para.runs):
+                        for rel_id in sig_rel_ids:
+                            embed_nodes = run._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id)
+                            if embed_nodes:
+                                para._p.remove(run._r)
+                                break
+                for tbl in doc.tables:
+                    for row in tbl.rows:
+                        for cell in row.cells:
+                            for para in list(cell.paragraphs):
+                                for run in list(para.runs):
+                                    for rel_id in sig_rel_ids:
+                                        embed_nodes = run._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id)
+                                        if embed_nodes:
+                                            para._p.remove(run._r)
+                                            break
+        scale_percent = 100 if is_physical else 75
+        self._scale_document_fonts(doc, percent=scale_percent)
         self._replace_dpto_academico_intro(doc)
 
         top_font_size = None
@@ -1224,13 +1253,14 @@ class IrgCertificateRequest(models.Model):
             self._format_gradebook_static_paragraphs(doc)
 
         if top_font_size:
+            table_font_size = Pt(7.5) if is_physical else top_font_size
             for tbl in doc.tables:
                 for row in tbl.rows:
                     for cell in row.cells:
                         for para in cell.paragraphs:
                             for r in para.runs:
                                 if r.font:
-                                    r.font.size = top_font_size
+                                    r.font.size = table_font_size
 
         # Save filled document to a temp file
         tmp_docx = tempfile.NamedTemporaryFile(
@@ -1240,7 +1270,7 @@ class IrgCertificateRequest(models.Model):
         tmp_docx.close()
         if self.document_type == 'gradebook':
             self._restore_gradebook_vertical_legal_text(tpl_path, tmp_docx.name)
-        if self.signer == 'raimon':
+        if self.signer == 'raimon' and not is_physical:
             self._ensure_signature_logo(tmp_docx.name)
         if self.document_type == 'gradebook' and self.certificate_type in PHYSICAL_TYPES:
             self._remove_header_logo(tmp_docx.name)

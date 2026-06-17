@@ -1,0 +1,16 @@
+# Bitácora de Ejecución: Modificaciones en Variante Física de Certificados de Notas
+
+## Inicio de Misión
+- **Fecha y Hora**: 2026-06-17T10:13:00+02:00
+- **Tier de Complejidad**: `standard`
+- **Modelo Utilizado**: Gemini 3.5 Flash
+
+## Pasos Realizados
+- [2026-06-17T10:13:10] Inicialización de plan de misión en `missions/modificaciones_certificado_fisico/plan.md`.
+- [2026-06-17T10:13:12] Inicialización de la lista de tareas en `task.md`.
+- [2026-06-17T10:26:21] Ejecución exitosa de validación autónoma `validate_physical_layout.py` usando el entorno virtual `.venv`. Todos los checks de margen, fuentes y eliminación de firmas pasaron correctamente.
+- [2026-06-17T10:27:43] Creación del walkthrough de la misión en la carpeta de artefactos de Gemini.
+- [2026-06-17T10:28:45] Creación del CHANGELOG oficial en la raíz del repositorio.
+- [2026-06-17T10:29:08] Documentación de aprendizajes técnicos y gotchas de manipulación XML/docx en la base de conocimientos (`.agents/knowledge/`).
+- [2026-06-17T10:30:00] Validación completada con estado PASSED en `verification.json`.
+

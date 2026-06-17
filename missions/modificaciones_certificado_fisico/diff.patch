@@ -1,0 +1,296 @@
+diff --git a/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py b/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py
+index 388989ef..bb1d0794 100644
+--- a/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py
++++ b/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py
+@@ -236,7 +236,36 @@ class IrgCertificateRequest(models.Model):
+             )
+ 
+         doc = DocxDocument(tpl_path)
+-        self._scale_document_fonts(doc, percent=75)
++        is_physical = self.certificate_type in ('physical', 'physical_apostilled')
++        if is_physical:
++            for section in doc.sections:
++                section.top_margin = section.top_margin + Pt(56.25)
++            # Remove template signature/stamp runs
++            sig_rel_ids = []
++            for rel_id, rel in doc.part.rels.items():
++                target = getattr(rel, 'target_ref', '').lower()
++                if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
++                    sig_rel_ids.append(rel_id)
++            if sig_rel_ids:
++                for para in list(doc.paragraphs):
++                    for run in list(para.runs):
++                        for rel_id in sig_rel_ids:
++                            embed_nodes = run._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id)
++                            if embed_nodes:
++                                para._p.remove(run._r)
++                                break
++                for tbl in doc.tables:
++                    for row in tbl.rows:
++                        for cell in row.cells:
++                            for para in list(cell.paragraphs):
++                                for run in list(para.runs):
++                                    for rel_id in sig_rel_ids:
++                                        embed_nodes = run._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id)
++                                        if embed_nodes:
++                                            para._p.remove(run._r)
++                                            break
++        scale_percent = 100 if is_physical else 75
++        self._scale_document_fonts(doc, percent=scale_percent)
+ 
+         top_font_size = None
+         for para in doc.paragraphs:
+@@ -558,13 +587,14 @@ class IrgCertificateRequest(models.Model):
+                 target_p.append(r_el)
+ 
+         if top_font_size:
++            table_font_size = Pt(7.5) if is_physical else top_font_size
+             for tbl in doc.tables:
+                 for row in tbl.rows:
+                     for cell in row.cells:
+                         for para in cell.paragraphs:
+                             for r in para.runs:
+                                 if r.font:
+-                                    r.font.size = top_font_size
++                                    r.font.size = table_font_size
+ 
+         tmp_docx = tempfile.NamedTemporaryFile(
+             suffix='.docx', delete=False, prefix='cert_partial_'
+@@ -572,7 +602,7 @@ class IrgCertificateRequest(models.Model):
+         doc.save(tmp_docx.name)
+         tmp_docx.close()
+         self._restore_vertical_legal_text(tpl_path, tmp_docx.name)
+-        if self.signer == 'raimon':
++        if self.signer == 'raimon' and not is_physical:
+             self._ensure_signature_logo(tmp_docx.name)
+         if self.certificate_type in ('physical', 'physical_apostilled'):
+             self._remove_header_logo(tmp_docx.name)
+diff --git a/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py b/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
+index a1de7df9..05e3865c 100644
+--- a/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
++++ b/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
+@@ -521,8 +521,21 @@ class TestIrgCertificatePartial(TransactionCase):
+         drawing_runs = [r for r in sig_para.runs if r._r.xpath('.//*[local-name()="drawing" or local-name()="pict"]')]
+         self.assertTrue(len(drawing_runs) >= 2, "Paragraph containing the handwritten signature does not contain at least 2 drawings")
+ 
++    def _assert_table_font_sizes_match_value(self, res_file, expected_size):
++        doc = DocxDocument(res_file)
++        for tbl in doc.tables:
++            for row in tbl.rows:
++                for cell in row.cells:
++                    for para in cell.paragraphs:
++                        for run in para.runs:
++                            self.assertEqual(
++                                run.font.size,
++                                expected_size,
++                                f"Table run font size is {run.font.size}, expected {expected_size}."
++                            )
++
+     def test_09_partial_table_font_sizes_match_top_font_size(self):
+-        """Verify that table cell font size matches the top font size for partial gradebooks."""
++        """Verify that table cell font size matches the top font size for digital and is 7.5 Pt for physical."""
+         cert = self.env['irg.certificate.request'].create({
+             'gradebook_student_id': self.gradebook.id,
+             'document_type': 'gradebook_partial',
+@@ -540,7 +553,7 @@ class TestIrgCertificatePartial(TransactionCase):
+             'state': 'draft',
+         })
+         res_file_phys = cert_phys._fill_template()
+-        self._assert_table_font_sizes_match_top_font_size(res_file_phys)
++        self._assert_table_font_sizes_match_value(res_file_phys, Pt(7.5))
+ 
+     def test_10_partial_signature_logo_present_for_raimon_signer(self):
+         """Verify that Raimon Gaja's signature logo is present and referenced in partial certificates."""
+@@ -673,4 +686,44 @@ class TestIrgCertificatePartial(TransactionCase):
+         self.assertIsNotNone(second_body, "120 ECTS text not found in generated document.")
+         self.assertIn('120 ECTS, equivalentes a 3000 horas de estudio', second_body.text)
+ 
++    def test_13_partial_physical_modifications(self):
++        """Verify top margin, unscaled outer fonts, table cell fonts, and signature/stamp removal on physical partial gradebooks."""
++        cert = self.env['irg.certificate.request'].create({
++            'gradebook_student_id': self.gradebook.id,
++            'certificate_type': 'physical',
++            'shipping_type': 'national',
++            'document_type': 'gradebook_partial',
++            'signer': 'raimon',
++            'state': 'draft',
++        })
++        res_file = cert._fill_template()
++        doc = DocxDocument(res_file)
++        
++        # 1. Verify top margin shift (72 Pt default + 56.25 Pt shift = 128.25 Pt)
++        self.assertEqual(doc.sections[0].top_margin.pt, 128.25)
++        
++        # 2. Verify outer font size is 10 Pt (not scaled down by 75%)
++        body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
++        self.assertTrue(len(body_runs) > 0, "No body runs found with font size set.")
++        for r in body_runs:
++            self.assertEqual(r.font.size.pt, 10.0, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 10.0 Pt")
++            
++        # 3. Verify table run font size is 7.5 Pt (95250 EMUs)
++        self._assert_table_font_sizes_match_value(res_file, Pt(7.5))
++        
++        # 4. Verify signature/stamp images are removed (media/image2.jpg / media/image2.png / media/image2.jpeg)
++        sig_rel_ids = []
++        for rel_id, rel in doc.part.rels.items():
++            target = getattr(rel, 'target_ref', '').lower()
++            if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
++                sig_rel_ids.append(rel_id)
++        
++        embeds = []
++        if sig_rel_ids:
++            for para in list(doc.paragraphs) + [p for t in doc.tables for r in t.rows for c in r.cells for p in c.paragraphs]:
++                for r in para.runs:
++                    for rel_id in sig_rel_ids:
++                        embeds.extend(r._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id))
++        self.assertEqual(len(embeds), 0, "Signature/stamp images still embedded in document XML.")
++
+ 
+diff --git a/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py b/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py
+index 192c24dd..4f2c683f 100644
+--- a/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py
++++ b/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py
+@@ -946,7 +946,36 @@ class IrgCertificateRequest(models.Model):
+             )
+ 
+         doc = DocxDocument(tpl_path)
+-        self._scale_document_fonts(doc, percent=75)
++        is_physical = self.certificate_type in PHYSICAL_TYPES
++        if is_physical:
++            for section in doc.sections:
++                section.top_margin = section.top_margin + Pt(56.25)
++            # Remove template signature/stamp runs
++            sig_rel_ids = []
++            for rel_id, rel in doc.part.rels.items():
++                target = getattr(rel, 'target_ref', '').lower()
++                if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
++                    sig_rel_ids.append(rel_id)
++            if sig_rel_ids:
++                for para in list(doc.paragraphs):
++                    for run in list(para.runs):
++                        for rel_id in sig_rel_ids:
++                            embed_nodes = run._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id)
++                            if embed_nodes:
++                                para._p.remove(run._r)
++                                break
++                for tbl in doc.tables:
++                    for row in tbl.rows:
++                        for cell in row.cells:
++                            for para in list(cell.paragraphs):
++                                for run in list(para.runs):
++                                    for rel_id in sig_rel_ids:
++                                        embed_nodes = run._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id)
++                                        if embed_nodes:
++                                            para._p.remove(run._r)
++                                            break
++        scale_percent = 100 if is_physical else 75
++        self._scale_document_fonts(doc, percent=scale_percent)
+         self._replace_dpto_academico_intro(doc)
+ 
+         top_font_size = None
+@@ -1224,13 +1253,14 @@ class IrgCertificateRequest(models.Model):
+             self._format_gradebook_static_paragraphs(doc)
+ 
+         if top_font_size:
++            table_font_size = Pt(7.5) if is_physical else top_font_size
+             for tbl in doc.tables:
+                 for row in tbl.rows:
+                     for cell in row.cells:
+                         for para in cell.paragraphs:
+                             for r in para.runs:
+                                 if r.font:
+-                                    r.font.size = top_font_size
++                                    r.font.size = table_font_size
+ 
+         # Save filled document to a temp file
+         tmp_docx = tempfile.NamedTemporaryFile(
+@@ -1240,7 +1270,7 @@ class IrgCertificateRequest(models.Model):
+         tmp_docx.close()
+         if self.document_type == 'gradebook':
+             self._restore_gradebook_vertical_legal_text(tpl_path, tmp_docx.name)
+-        if self.signer == 'raimon':
++        if self.signer == 'raimon' and not is_physical:
+             self._ensure_signature_logo(tmp_docx.name)
+         if self.document_type == 'gradebook' and self.certificate_type in PHYSICAL_TYPES:
+             self._remove_header_logo(tmp_docx.name)
+diff --git a/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py b/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py
+index f0900386..9aa032ed 100644
+--- a/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py
++++ b/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py
+@@ -519,8 +519,21 @@ class TestIrgCertificateRequest(TransactionCase):
+         drawing_runs = [r for r in sig_para.runs if r._r.xpath('.//*[local-name()="drawing" or local-name()="pict"]')]
+         self.assertTrue(len(drawing_runs) >= 2, "Paragraph containing the handwritten signature does not contain at least 2 drawings")
+ 
++    def _assert_table_font_sizes_match_value(self, res_file, expected_size):
++        doc = DocxDocument(res_file)
++        for tbl in doc.tables:
++            for row in tbl.rows:
++                for cell in row.cells:
++                    for para in cell.paragraphs:
++                        for run in para.runs:
++                            self.assertEqual(
++                                run.font.size,
++                                expected_size,
++                                f"Table run font size is {run.font.size}, expected {expected_size}."
++                            )
++
+     def test_13_table_font_sizes_match_top_font_size(self):
+-        """Verify that table cell font size matches the top font size for all document formats."""
++        """Verify that table cell font size matches the top font size for digital and is 7.5 Pt for physical."""
+         cert = self.env['irg.certificate.request'].create({
+             'gradebook_student_id': self.gradebook.id,
+             'certificate_type': 'digital',
+@@ -538,7 +551,7 @@ class TestIrgCertificateRequest(TransactionCase):
+             'state': 'draft',
+         })
+         res_file_phys = cert_phys._fill_template()
+-        self._assert_table_font_sizes_match_top_font_size(res_file_phys)
++        self._assert_table_font_sizes_match_value(res_file_phys, Pt(7.5))
+ 
+     def test_14_signature_logo_present_for_raimon_signer(self):
+         """Verify that Raimon Gaja's signature logo is present in the ZIP and referenced in document.xml."""
+@@ -695,4 +708,44 @@ class TestIrgCertificateRequest(TransactionCase):
+         self.assertIsNotNone(second_body, "120 ECTS text not found in generated document.")
+         self.assertIn('120 ECTS, equivalentes a 3000 horas de estudio', second_body.text)
+ 
++    def test_18_physical_gradebook_modifications(self):
++        """Verify top margin, unscaled outer fonts, table cell fonts, and signature/stamp removal on physical gradebooks."""
++        cert = self.env['irg.certificate.request'].create({
++            'gradebook_student_id': self.gradebook.id,
++            'certificate_type': 'physical',
++            'shipping_type': 'national',
++            'document_type': 'gradebook',
++            'signer': 'raimon',
++            'state': 'draft',
++        })
++        res_file = cert._fill_template()
++        doc = DocxDocument(res_file)
++        
++        # 1. Verify top margin shift (72 Pt default + 56.25 Pt shift = 128.25 Pt)
++        self.assertEqual(doc.sections[0].top_margin.pt, 128.25)
++        
++        # 2. Verify outer font size is 10 Pt (not scaled down by 75%)
++        body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
++        self.assertTrue(len(body_runs) > 0, "No body runs found with font size set.")
++        for r in body_runs:
++            self.assertEqual(r.font.size.pt, 10.0, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 10.0 Pt")
++            
++        # 3. Verify table run font size is 7.5 Pt (95250 EMUs)
++        self._assert_table_font_sizes_match_value(res_file, Pt(7.5))
++        
++        # 4. Verify signature/stamp images are removed (media/image2.jpg / media/image2.png / media/image2.jpeg)
++        sig_rel_ids = []
++        for rel_id, rel in doc.part.rels.items():
++            target = getattr(rel, 'target_ref', '').lower()
++            if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
++                sig_rel_ids.append(rel_id)
++        
++        embeds = []
++        if sig_rel_ids:
++            for para in list(doc.paragraphs) + [p for t in doc.tables for r in t.rows for c in r.cells for p in c.paragraphs]:
++                for r in para.runs:
++                    for rel_id in sig_rel_ids:
++                        embeds.extend(r._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id))
++        self.assertEqual(len(embeds), 0, "Signature/stamp images still embedded in document XML.")
++
+ 
