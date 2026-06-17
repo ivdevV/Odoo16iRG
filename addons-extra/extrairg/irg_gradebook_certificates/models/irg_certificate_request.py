@@ -541,7 +541,7 @@ class IrgCertificateRequest(models.Model):
             if run.text:
                 run.text = run.text.lstrip()
             if is_physical:
-                run.font.size = Pt(8.5)
+                run.font.size = Pt(9.25)
         return paragraph
 
     def _format_gradebook_static_paragraphs(self, doc):
@@ -585,7 +585,7 @@ class IrgCertificateRequest(models.Model):
                     para.text = f'Para que así conste, firmo la presente en Barcelona, a fecha {fecha_larga}'
                     para.paragraph_format.space_after = Pt(48)
                     for run in para.runs:
-                        run.font.size = Pt(8.5)
+                        run.font.size = Pt(9.25)
                 self._format_gradebook_body_paragraph(para, justify=True)
             if normalized_text in signature_texts:
                 self._format_gradebook_signature_paragraph(para)
@@ -999,7 +999,7 @@ class IrgCertificateRequest(models.Model):
                                         if embed_nodes:
                                             para._p.remove(run._r)
                                             break
-        scale_percent = 85 if is_physical else 75
+        scale_percent = 92.5 if is_physical else 75
         self._scale_document_fonts(doc, percent=scale_percent)
         self._replace_dpto_academico_intro(doc)
 
@@ -1278,6 +1278,11 @@ class IrgCertificateRequest(models.Model):
 
         if self.document_type == 'gradebook':
             self._format_gradebook_static_paragraphs(doc)
+
+        if is_physical:
+            for para in doc.paragraphs:
+                for r in para.runs:
+                    r.font.size = Pt(9.25)
 
         if top_font_size:
             table_font_size = Pt(7.5) if is_physical else top_font_size

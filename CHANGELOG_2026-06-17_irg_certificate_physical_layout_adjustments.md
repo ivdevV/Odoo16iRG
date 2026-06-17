@@ -1,4 +1,4 @@
-# Changelog: Ajuste de Diseño para la Variante Física en Certificados de Notas (Tercera Iteración)
+# Changelog: Ajuste de Diseño para la Variante Física en Certificados de Notas (Cuarta Iteración)
 **Fecha:** 17 de junio de 2026  
 **Autor:** Antigravity AI  
 **ID del Cambio:** `irg_certificate_physical_layout_adjustments`
@@ -8,7 +8,7 @@
 ## 1. Resumen de los Cambios
 
 ### Requerimientos del Usuario (Actualizados)
-1. **Tamaño de letra exterior**: Se redujo el tamaño de la letra exterior (cuerpo y cabeceras) de `10 Pt` (100%) a **`8.5 Pt`** (escala al **85%**), ya que se consideraba demasiado grande, manteniendo el texto de la tabla exactamente en `7.5 Pt`.
+1. **Tamaño de letra exterior**: Se ajustó el tamaño de la letra exterior (cuerpo y cabeceras) a exactamente **`9.25 Pt`** (que python-docx escribe como `18` medio puntos y se lee de vuelta como `9.0 Pt` debido a la limitación de enteros en Word) para asegurar una consistencia absoluta en todos los textos de la variante física, mientras se mantiene el texto de la tabla exactamente en `7.5 Pt`.
 2. **Reducir el desplazamiento del bloque**: Se disminuyó la bajada del margen superior a aproximadamente 50 píxeles (`37.5 Pt`) en vez de 75 píxeles, logrando un margen superior total de `109.5 Pt`.
 3. **Reemplazo de Nombre**: Se reemplaza `"Raimon Gaja Jaumeandreu"` por `"Raimon Gaja"` en todo el documento físico.
 4. **Frase de Cierre**: Se cambia la frase final por: `"Para que así conste, firmo la presente en Barcelona, a fecha {fecha_larga}"`.
@@ -17,8 +17,8 @@
 
 ### Solución Implementada
 - **Control de Fuentes**:
-  - Configurado el porcentaje de escalado de fuentes a **`85%`** para certificados físicos en los modelos de ambos módulos, resultando en un tamaño de fuente exterior de `8.5 Pt` (escala sobre los `10 Pt` originales).
-  - Se fuerza la tipografía de los párrafos modificados dinámicamente ("Para que así conste..." y firmas) a `Pt(8.5)` en certificados físicos.
+  - Configurado el porcentaje de escalado de fuentes a **`92.5%`** para certificados físicos en los modelos de ambos módulos, resultando en un tamaño de fuente exterior de `9.25 Pt` (escala sobre los `10 Pt` originales).
+  - Se fuerza de forma absoluta la tipografía de todos los párrafos exteriores (incluyendo descripciones dinámicas y firmas) a `Pt(9.25)` en certificados físicos.
   - Las tablas se siguen forzando a `7.5 Pt` fijas.
 - **Desplazamiento**: Margen superior con desplazamiento de `37.5 Pt` en variantes físicas.
 - **Sustitución de Nombre**: Añadida la regla `'Raimon Gaja Jaumeandreu': 'Raimon Gaja'` a `replacements` para certificados físicos.
@@ -32,9 +32,9 @@
 
 | Módulo | Archivo | Descripción del Cambio |
 |---|---|---|
-| **`irg_gradebook_certificates`** | `models/irg_certificate_request.py` | Lógica de desplazamiento de márgenes, ajuste de escala a 85%, sustitución de nombre, frase de cierre, espaciado de firma y cargo para certificados completos físicos. |
-| **`irg_gradebook_certificates`** | `tests/test_certificate_request.py` | Pruebas unitarias actualizadas para validar la escala exterior a `8.5 Pt`, el margen a `109.5 Pt`, frase de cierre y firma. |
-| **`irg_certificate_partial`** | `models/irg_certificate_request.py` | Lógica de márgenes, escala al 85%, reemplazo de nombre, firmas y frase de cierre física en el módulo de parciales. |
+| **`irg_gradebook_certificates`** | `models/irg_certificate_request.py` | Lógica de desplazamiento de márgenes, ajuste de escala a 92.5%, sustitución de nombre, frase de cierre, espaciado de firma y cargo para certificados completos físicos, aplicando fuerza a `Pt(9.25)` para todos los párrafos exteriores. |
+| **`irg_gradebook_certificates`** | `tests/test_certificate_request.py` | Pruebas unitarias actualizadas para validar la escala exterior a `9.0 Pt` (de vuelta de `Pt(9.25)`), el margen a `109.5 Pt`, frase de cierre y firma. |
+| **`irg_certificate_partial`** | `models/irg_certificate_request.py` | Lógica de márgenes, escala al 92.5%, reemplazo de nombre, firmas y frase de cierre física en el módulo de parciales, aplicando fuerza a `Pt(9.25)` para todos los párrafos exteriores. |
 | **`irg_certificate_partial`** | `tests/test_partial.py` | Pruebas unitarias parciales actualizadas. |
 
 ---

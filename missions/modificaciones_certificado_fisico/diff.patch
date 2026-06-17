@@ -1,13 +1,13 @@
 diff --git a/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py b/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py
-index 3d5d83d0..14515674 100644
+index 14515674..6a2f0356 100644
 --- a/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py
 +++ b/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py
 @@ -89,7 +89,7 @@ class IrgCertificateRequest(models.Model):
              if run.text:
                  run.text = run.text.lstrip()
              if is_physical:
--                run.font.size = Pt(10)
-+                run.font.size = Pt(8.5)
+-                run.font.size = Pt(8.5)
++                run.font.size = Pt(9.25)
          return paragraph
  
      def _replace_dpto_academico_intro(self, doc):
@@ -15,8 +15,8 @@ index 3d5d83d0..14515674 100644
                      para.text = f'Para que así conste, firmo la presente en Barcelona, a fecha {fecha_larga}'
                      para.paragraph_format.space_after = Pt(48)
                      for run in para.runs:
--                        run.font.size = Pt(10)
-+                        run.font.size = Pt(8.5)
+-                        run.font.size = Pt(8.5)
++                        run.font.size = Pt(9.25)
                  self._format_partial_body_paragraph(para, justify=True)
  
      def _format_partial_static_paragraphs(self, doc):
@@ -24,39 +24,51 @@ index 3d5d83d0..14515674 100644
                                          if embed_nodes:
                                              para._p.remove(run._r)
                                              break
--        scale_percent = 100 if is_physical else 75
-+        scale_percent = 85 if is_physical else 75
+-        scale_percent = 85 if is_physical else 75
++        scale_percent = 92.5 if is_physical else 75
          self._scale_document_fonts(doc, percent=scale_percent)
  
          top_font_size = None
+@@ -614,6 +614,11 @@ class IrgCertificateRequest(models.Model):
+                 r_el.append(t_el)
+                 target_p.append(r_el)
+ 
++        if is_physical:
++            for para in doc.paragraphs:
++                for r in para.runs:
++                    r.font.size = Pt(9.25)
++
+         if top_font_size:
+             table_font_size = Pt(7.5) if is_physical else top_font_size
+             for tbl in doc.tables:
 diff --git a/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py b/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
-index 54325e60..ce034a09 100644
+index ce034a09..642438bb 100644
 --- a/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
 +++ b/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
 @@ -703,11 +703,11 @@ class TestIrgCertificatePartial(TransactionCase):
          # 1. Verify top margin shift (72 Pt default + 37.5 Pt shift = 109.5 Pt)
          self.assertEqual(doc.sections[0].top_margin.pt, 109.5)
          
--        # 2. Verify outer font size is 10 Pt (not scaled down by 75%)
-+        # 2. Verify outer font size is 8.5 Pt
+-        # 2. Verify outer font size is 8.5 Pt
++        # 2. Verify outer font size is 9.0 Pt
          body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
          self.assertTrue(len(body_runs) > 0, "No body runs found with font size set.")
          for r in body_runs:
--            self.assertEqual(r.font.size.pt, 10.0, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 10.0 Pt")
-+            self.assertEqual(r.font.size.pt, 8.5, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 8.5 Pt")
+-            self.assertEqual(r.font.size.pt, 8.5, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 8.5 Pt")
++            self.assertEqual(r.font.size.pt, 9.0, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 9.0 Pt")
              
          # 3. Verify table run font size is 7.5 Pt (95250 EMUs)
          self._assert_table_font_sizes_match_value(res_file, Pt(7.5))
 diff --git a/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py b/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py
-index 748051c8..44d3aad4 100644
+index 44d3aad4..f968e066 100644
 --- a/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py
 +++ b/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py
 @@ -541,7 +541,7 @@ class IrgCertificateRequest(models.Model):
              if run.text:
                  run.text = run.text.lstrip()
              if is_physical:
--                run.font.size = Pt(10)
-+                run.font.size = Pt(8.5)
+-                run.font.size = Pt(8.5)
++                run.font.size = Pt(9.25)
          return paragraph
  
      def _format_gradebook_static_paragraphs(self, doc):
@@ -64,8 +76,8 @@ index 748051c8..44d3aad4 100644
                      para.text = f'Para que así conste, firmo la presente en Barcelona, a fecha {fecha_larga}'
                      para.paragraph_format.space_after = Pt(48)
                      for run in para.runs:
--                        run.font.size = Pt(10)
-+                        run.font.size = Pt(8.5)
+-                        run.font.size = Pt(8.5)
++                        run.font.size = Pt(9.25)
                  self._format_gradebook_body_paragraph(para, justify=True)
              if normalized_text in signature_texts:
                  self._format_gradebook_signature_paragraph(para)
@@ -73,26 +85,38 @@ index 748051c8..44d3aad4 100644
                                          if embed_nodes:
                                              para._p.remove(run._r)
                                              break
--        scale_percent = 100 if is_physical else 75
-+        scale_percent = 85 if is_physical else 75
+-        scale_percent = 85 if is_physical else 75
++        scale_percent = 92.5 if is_physical else 75
          self._scale_document_fonts(doc, percent=scale_percent)
          self._replace_dpto_academico_intro(doc)
  
+@@ -1279,6 +1279,11 @@ class IrgCertificateRequest(models.Model):
+         if self.document_type == 'gradebook':
+             self._format_gradebook_static_paragraphs(doc)
+ 
++        if is_physical:
++            for para in doc.paragraphs:
++                for r in para.runs:
++                    r.font.size = Pt(9.25)
++
+         if top_font_size:
+             table_font_size = Pt(7.5) if is_physical else top_font_size
+             for tbl in doc.tables:
 diff --git a/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py b/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py
-index 5ca7574d..d5823968 100644
+index d5823968..de7f7966 100644
 --- a/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py
 +++ b/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py
 @@ -725,11 +725,11 @@ class TestIrgCertificateRequest(TransactionCase):
          # 1. Verify top margin shift (72 Pt default + 37.5 Pt shift = 109.5 Pt)
          self.assertEqual(doc.sections[0].top_margin.pt, 109.5)
          
--        # 2. Verify outer font size is 10 Pt (not scaled down by 75%)
-+        # 2. Verify outer font size is 8.5 Pt
+-        # 2. Verify outer font size is 8.5 Pt
++        # 2. Verify outer font size is 9.0 Pt
          body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
          self.assertTrue(len(body_runs) > 0, "No body runs found with font size set.")
          for r in body_runs:
--            self.assertEqual(r.font.size.pt, 10.0, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 10.0 Pt")
-+            self.assertEqual(r.font.size.pt, 8.5, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 8.5 Pt")
+-            self.assertEqual(r.font.size.pt, 8.5, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 8.5 Pt")
++            self.assertEqual(r.font.size.pt, 9.0, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 9.0 Pt")
              
          # 3. Verify table run font size is 7.5 Pt (95250 EMUs)
          self._assert_table_font_sizes_match_value(res_file, Pt(7.5))
