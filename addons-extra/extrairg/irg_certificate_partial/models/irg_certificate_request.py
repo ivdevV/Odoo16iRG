@@ -69,11 +69,18 @@ class IrgCertificateRequest(models.Model):
 
     def _format_partial_signature_paragraph(self, paragraph):
         """Normalize signature lines to the same left-aligned text grid."""
+        is_physical = self.certificate_type in ('physical', 'physical_apostilled')
         normalized_text = ' '.join(paragraph.text.split())
         if normalized_text == 'Departamento Académico Instituto Raimon Gaja':
             paragraph.text = 'Departamento Académico\nInstituto Raimon Gaja'
-        elif normalized_text == 'Raimon Gaja Jaumeandreu Instituto Raimon Gaja':
-            paragraph.text = 'Raimon Gaja Jaumeandreu\nInstituto Raimon Gaja'
+        elif normalized_text in (
+            'Raimon Gaja Jaumeandreu Instituto Raimon Gaja',
+            'Raimon Gaja Instituto Raimon Gaja'
+        ):
+            if is_physical:
+                paragraph.text = 'Raimon Gaja\nDirector General iRG'
+            else:
+                paragraph.text = 'Raimon Gaja Jaumeandreu\nInstituto Raimon Gaja'
         self._format_partial_body_paragraph(paragraph, justify=False)
         paragraph.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
         paragraph.paragraph_format.first_line_indent = None
@@ -81,7 +88,8 @@ class IrgCertificateRequest(models.Model):
         for run in paragraph.runs:
             if run.text:
                 run.text = run.text.lstrip()
-                break
+            if is_physical:
+                run.font.size = Pt(10)
         return paragraph
 
     def _replace_dpto_academico_intro(self, doc):
@@ -97,18 +105,36 @@ class IrgCertificateRequest(models.Model):
 
     def _format_partial_closing_paragraphs(self, doc):
         """Justify closing text and constrain it to the grade table width."""
+        is_physical = self.certificate_type in ('physical', 'physical_apostilled')
         for para in doc.paragraphs:
             if 'Para que así conste' in para.text:
+                if is_physical:
+                    fecha_larga = ''
+                    if self.request_date:
+                        meses = {
+                            1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril',
+                            5: 'mayo', 6: 'junio', 7: 'julio', 8: 'agosto',
+                            9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre',
+                        }
+                        dt = self.request_date
+                        fecha_larga = '%d de %s de %d' % (dt.day, meses[dt.month], dt.year)
+                    para.text = f'Para que así conste, firmo la presente en Barcelona, a fecha {fecha_larga}'
+                    para.paragraph_format.space_after = Pt(48)
+                    for run in para.runs:
+                        run.font.size = Pt(10)
                 self._format_partial_body_paragraph(para, justify=True)
 
     def _format_partial_static_paragraphs(self, doc):
         """Align fixed template paragraphs with the notes table grid."""
+        is_physical = self.certificate_type in ('physical', 'physical_apostilled')
         signer_intro_markers = (
             'Raimon Gaja Jaumeandreu, con DNI',
+            'Raimon Gaja, con DNI',
             self._DPTO_ACADEMICO_INTRO,
         )
         signature_texts = (
             'Raimon Gaja Jaumeandreu Instituto Raimon Gaja',
+            'Raimon Gaja Instituto Raimon Gaja',
             'Departamento Académico Instituto Raimon Gaja',
         )
         for para in doc.paragraphs:
@@ -239,7 +265,7 @@ class IrgCertificateRequest(models.Model):
         is_physical = self.certificate_type in ('physical', 'physical_apostilled')
         if is_physical:
             for section in doc.sections:
-                section.top_margin = section.top_margin + Pt(56.25)
+                section.top_margin = section.top_margin + Pt(37.5)
             # Remove template signature/stamp runs
             sig_rel_ids = []
             for rel_id, rel in doc.part.rels.items():
@@ -439,6 +465,8 @@ class IrgCertificateRequest(models.Model):
             '<<ects>>': ects_str,
             '<<duracion>>': periodo_str,
         }
+        if is_physical:
+            replacements['Raimon Gaja Jaumeandreu'] = 'Raimon Gaja'
 
         for para in doc.paragraphs:
             for old, new in replacements.items():

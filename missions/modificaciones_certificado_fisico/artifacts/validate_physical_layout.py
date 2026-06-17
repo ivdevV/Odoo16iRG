@@ -214,9 +214,7 @@ def create_mock_partial_request(cert_type, signer='raimon'):
     req._ensure_signature_logo = lambda docx: GradebookRequest._ensure_signature_logo(req, docx)
     req._remove_header_logo = lambda docx: GradebookRequest._remove_header_logo(req, docx)
     req._ensure_bottom_right_arcs = lambda docx: GradebookRequest._ensure_bottom_right_arcs(req, docx)
-    
     req._fill_template = lambda: PartialRequest._fill_template(req)
-    
     return req
 
 def run_gradebook_validation():
@@ -227,9 +225,9 @@ def run_gradebook_validation():
     res_path = req_phys._fill_template()
     doc = Document(res_path)
     
-    # Check 1: Margin top
-    print(f"Physical top margin (Pt): {doc.sections[0].top_margin.pt} (Expected: 128.25)")
-    assert doc.sections[0].top_margin.pt == 128.25, "Physical top margin is incorrect"
+    # Check 1: Margin top (72 Pt + 37.5 Pt = 109.5 Pt)
+    print(f"Physical top margin (Pt): {doc.sections[0].top_margin.pt} (Expected: 109.5)")
+    assert doc.sections[0].top_margin.pt == 109.5, "Physical top margin is incorrect"
     
     # Check 2: Outer text size
     body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
@@ -259,9 +257,29 @@ def run_gradebook_validation():
     print(f"Embedded signature shapes found: {len(embeds)} (Expected: 0)")
     assert len(embeds) == 0, "Signature/stamp images still embedded in document XML."
     
+    # Check 5: Name replacement
+    full_text = '\n'.join(p.text for p in doc.paragraphs)
+    print("Checking that 'Raimon Gaja Jaumeandreu' is replaced by 'Raimon Gaja'...")
+    assert 'Raimon Gaja Jaumeandreu' not in full_text, "Raimon Gaja Jaumeandreu still found in text"
+    assert 'Raimon Gaja' in full_text, "Raimon Gaja not found in text"
+    
+    # Check 6: Closing sentence and space after
+    closing_paras = [p for p in doc.paragraphs if 'Para que así conste' in p.text]
+    assert len(closing_paras) > 0, "Closing sentence not found"
+    print(f"Closing sentence: '{closing_paras[0].text}'")
+    assert closing_paras[0].text == "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026", "Closing sentence is incorrect"
+    print(f"Closing space after (Pt): {closing_paras[0].paragraph_format.space_after.pt} (Expected: 48.0)")
+    assert closing_paras[0].paragraph_format.space_after.pt == 48.0, "Closing space after is incorrect"
+    
+    # Check 7: Signature block text and font size
+    sig_paras = [p for p in doc.paragraphs if 'Director General iRG' in p.text]
+    assert len(sig_paras) > 0, "Signature block with Director General iRG not found"
+    print(f"Signature block: '{sig_paras[0].text.replace(chr(10), ' | ')}'")
+    assert sig_paras[0].text == "Raimon Gaja\nDirector General iRG", "Signature text is incorrect"
+    
     os.unlink(res_path)
     print("GRADEBOOK VALIDATION PASSED SUCCESSFULLY!\n")
-
+ 
 def run_partial_validation():
     print("=== RUNNING PARTIAL CERTIFICATE VALIDATION ===")
     
@@ -270,9 +288,9 @@ def run_partial_validation():
     res_path = req_phys._fill_template()
     doc = Document(res_path)
     
-    # Check 1: Margin top
-    print(f"Physical partial top margin (Pt): {doc.sections[0].top_margin.pt} (Expected: 128.25)")
-    assert doc.sections[0].top_margin.pt == 128.25, "Physical top margin is incorrect"
+    # Check 1: Margin top (72 Pt + 37.5 Pt = 109.5 Pt)
+    print(f"Physical partial top margin (Pt): {doc.sections[0].top_margin.pt} (Expected: 109.5)")
+    assert doc.sections[0].top_margin.pt == 109.5, "Physical top margin is incorrect"
     
     # Check 2: Outer text size
     body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
@@ -302,9 +320,28 @@ def run_partial_validation():
     print(f"Embedded signature shapes found: {len(embeds)} (Expected: 0)")
     assert len(embeds) == 0, "Signature/stamp images still embedded in document XML."
     
+    # Check 5: Name replacement
+    full_text = '\n'.join(p.text for p in doc.paragraphs)
+    print("Checking that 'Raimon Gaja Jaumeandreu' is replaced by 'Raimon Gaja'...")
+    assert 'Raimon Gaja Jaumeandreu' not in full_text, "Raimon Gaja Jaumeandreu still found in text"
+    assert 'Raimon Gaja' in full_text, "Raimon Gaja not found in text"
+    
+    # Check 6: Closing sentence and space after
+    closing_paras = [p for p in doc.paragraphs if 'Para que así conste' in p.text]
+    assert len(closing_paras) > 0, "Closing sentence not found"
+    print(f"Closing sentence: '{closing_paras[0].text}'")
+    assert closing_paras[0].text == "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026", "Closing sentence is incorrect"
+    print(f"Closing space after (Pt): {closing_paras[0].paragraph_format.space_after.pt} (Expected: 48.0)")
+    assert closing_paras[0].paragraph_format.space_after.pt == 48.0, "Closing space after is incorrect"
+    
+    # Check 7: Signature block text and font size
+    sig_paras = [p for p in doc.paragraphs if 'Director General iRG' in p.text]
+    assert len(sig_paras) > 0, "Signature block with Director General iRG not found"
+    print(f"Signature block: '{sig_paras[0].text.replace(chr(10), ' | ')}'")
+    assert sig_paras[0].text == "Raimon Gaja\nDirector General iRG", "Signature text is incorrect"
+    
     os.unlink(res_path)
     print("PARTIAL VALIDATION PASSED SUCCESSFULLY!\n")
-
 if __name__ == '__main__':
     run_gradebook_validation()
     run_partial_validation()

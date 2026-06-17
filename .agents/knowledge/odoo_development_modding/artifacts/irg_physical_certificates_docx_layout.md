@@ -4,9 +4,10 @@
 
 En el proyecto se generan certificados de notas completos (`irg_gradebook_certificates`) y parciales (`irg_certificate_partial`) a partir de plantillas `.docx` con la librería `python-docx` y se convierten a PDF usando LibreOffice.
 El cliente requería que para la **variante física** (`physical` y `physical_apostilled`):
-1. El bloque de texto completo se desplazara hacia abajo unos 75 píxeles (para dejar espacio a cabeceras preimpresas en el papel físico).
+1. El bloque de texto completo se desplazara hacia abajo unos 50 píxeles (para dejar espacio a cabeceras preimpresas en el papel físico).
 2. El texto exterior (cuerpo/cabecera) se mantuviera a tamaño normal (`10 Pt`), pero el texto de la tabla permaneciera a `7.5 Pt` (comportamiento idéntico al digital).
 3. Se quitaran las firmas digitalizadas y logotipos de tipo sello del pie de página.
+4. Se modificara la frase de cierre y el cargo del firmante (Raimon Gaja), dejando espacio vertical suficiente para la firma manuscrita.
 
 ## Decisiones de Diseño y Código
 
@@ -16,7 +17,7 @@ El desplazamiento se logra sumando un offset al margen superior (`top_margin`) d
 is_physical = self.certificate_type in ('physical', 'physical_apostilled')
 if is_physical:
     for section in doc.sections:
-        section.top_margin = section.top_margin + Pt(56.25)  # 56.25 Pt = 75 pixels
+        section.top_margin = section.top_margin + Pt(37.5)  # 37.5 Pt = 50 pixels
 ```
 
 ### 2. Control de Tamaño de Letra Exterior vs Interior (Tabla)
@@ -63,6 +64,9 @@ if sig_rel_ids:
 
 - **Eliminación de imágenes**: No es suficiente limpiar `run.text = ''` para eliminar imágenes de un run en `python-docx` ya que la imagen está embebida en un elemento `<w:drawing>` o `<w:pict>` independiente del texto. Se debe eliminar el elemento run completo (`run._r`) de su párrafo padre (`para._p.remove(run._r)`).
 - **Raimon dynamic signature**: El sello de Raimon Gaja (`logodesgastado.png`) se inserta mediante un método dinámico de post-procesado `_ensure_signature_logo` que re-abre el ZIP del documento DOCX. Se debe asegurar no llamar a esta función cuando `is_physical` es True.
+- **Sustitución Global de Textos**: La conversión de `"Raimon Gaja Jaumeandreu"` a `"Raimon Gaja"` se inyecta en el diccionario `replacements` para que actúe en párrafos, tablas y cabeceras. En el formateo de firmas, se debe contemplar tanto la cadena larga como la corta en las comparaciones de textos normalizados.
+- **Formateo tras reasignación de textos**: Asignar directamente a `para.text` descarta los runs previos y genera uno nuevo. Se debe asegurar restablecer la fuente a `Pt(10)` en los runs resultantes para el párrafo de cierre y firma en el certificado físico.
+- **Espaciado vertical para firma**: En lugar de inyectar párrafos vacíos que pueden romper la consistencia, se configura `para.paragraph_format.space_after = Pt(48)` en el párrafo de cierre ("Para que así conste...") para generar el hueco de firma.
 
 ## Validación Recomendada
 

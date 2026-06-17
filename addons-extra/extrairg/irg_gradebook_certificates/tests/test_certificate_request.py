@@ -716,13 +716,14 @@ class TestIrgCertificateRequest(TransactionCase):
             'shipping_type': 'national',
             'document_type': 'gradebook',
             'signer': 'raimon',
+            'request_date': '2026-06-17',
             'state': 'draft',
         })
         res_file = cert._fill_template()
         doc = DocxDocument(res_file)
         
-        # 1. Verify top margin shift (72 Pt default + 56.25 Pt shift = 128.25 Pt)
-        self.assertEqual(doc.sections[0].top_margin.pt, 128.25)
+        # 1. Verify top margin shift (72 Pt default + 37.5 Pt shift = 109.5 Pt)
+        self.assertEqual(doc.sections[0].top_margin.pt, 109.5)
         
         # 2. Verify outer font size is 10 Pt (not scaled down by 75%)
         body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
@@ -747,5 +748,24 @@ class TestIrgCertificateRequest(TransactionCase):
                     for rel_id in sig_rel_ids:
                         embeds.extend(r._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id))
         self.assertEqual(len(embeds), 0, "Signature/stamp images still embedded in document XML.")
+
+        # 5. Verify name replacement
+        full_text = '\n'.join(p.text for p in doc.paragraphs)
+        self.assertNotIn('Raimon Gaja Jaumeandreu', full_text)
+        self.assertIn('Raimon Gaja', full_text)
+        
+        # 6. Verify closing sentence and space after
+        closing_paras = [p for p in doc.paragraphs if 'Para que así conste' in p.text]
+        self.assertTrue(len(closing_paras) > 0)
+        self.assertEqual(
+            closing_paras[0].text,
+            "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026"
+        )
+        self.assertEqual(closing_paras[0].paragraph_format.space_after.pt, 48.0)
+        
+        # 7. Verify signature block text
+        sig_paras = [p for p in doc.paragraphs if 'Director General iRG' in p.text]
+        self.assertTrue(len(sig_paras) > 0)
+        self.assertEqual(sig_paras[0].text, "Raimon Gaja\nDirector General iRG")
 
 
