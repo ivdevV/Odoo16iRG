@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "task": "fix_featured_section_and_decouple_portal_request",
+  "checks": [
+    {
+      "name": "slide_channel_sudo_access",
+      "result": "pass",
+      "detail": "Modified slide_channel.py to use self.sudo().op_subject_ids. Student AccessError resolved."
+    },
+    {
+      "name": "decouple_diplomado_manifest",
+      "result": "pass",
+      "detail": "Removed irg_campus_certificates_portal dependency from irg_diplomado_portal_request manifest."
+    },
+    {
+      "name": "relocate_course_tiles",
+      "result": "pass",
+      "detail": "Tiles relocated from first row to Tools row using target: //h5[contains(text(), 'Herramientas del curso')]/following-sibling::div[hasclass('row')]"
+    },
+    {
+      "name": "test_irg_diplomado_portal_request",
+      "result": "pass",
+      "detail": "Odoo tests for irg_diplomado_portal_request completed with 0 errors/failures."
+    },
+    {
+      "name": "test_irg_campus_certificates_portal",
+      "result": "pass",
+      "detail": "Odoo tests for irg_campus_certificates_portal completed with 0 errors/failures (after resolving academic debt check logic)."
+    }
+  ],
+  "evidence": [
+    "missions/fix_featured_section_and_decouple_portal_request/diff.patch",
+    "missions/fix_featured_section_and_decouple_portal_request/execution.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

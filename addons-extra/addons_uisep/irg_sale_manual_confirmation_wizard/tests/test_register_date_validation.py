@@ -236,6 +236,18 @@ class TestRegisterDateValidation(TransactionCase):
                 'noupdate': True,
             })
 
+        admission_model = self.env['ir.model'].search([('model', '=', 'op.admission')], limit=1)
+        test_template = self.env['mail.template'].create({
+            'name': 'Test Manual Wizard Welcome Template',
+            'model_id': admission_model.id,
+            'subject': 'Test Admission Confirmation',
+            'body_html': '<p>Test welcome email</p>',
+        })
+        ad.write({
+            'welcome_template_default_id': test_template.id,
+            'welcome_template_online_id': test_template.id,
+        })
+
         # Set email, phone, and recurrence on native sale order
         self.sale_order.write({
             'recurrence_id': recurrence.id,
@@ -283,11 +295,14 @@ class TestRegisterDateValidation(TransactionCase):
             reg.write({'state': 'application'})
 
         # Case A: Confirm native sale order (without manual wizard context)
+        today = fields.Date.context_today(self.sale_order)
         self.sale_order.action_confirm()
 
         # Check native admission
         native_admission = self.env['op.admission'].search([('sale_id', '=', self.sale_order.id)])
         self.assertTrue(native_admission, "An admission should have been created natively")
+        self.assertEqual(native_admission.admission_date, today)
+        self.assertEqual(native_admission.irg_class_start_date, fields.Date.to_date('2026-02-01'))
         self.assertIn(native_admission.state, ['draft', 'application'], "The native admission state must not be promoted to 'done'")
         self.assertFalse(native_admission.email_send_ok, "The native admission email_send_ok must be False")
 
@@ -312,6 +327,8 @@ class TestRegisterDateValidation(TransactionCase):
         # Check wizard admission
         wizard_admission = self.env['op.admission'].search([('sale_id', '=', sale_order_wizard.id)])
         self.assertTrue(wizard_admission, "An admission should have been created via the wizard context")
+        self.assertEqual(wizard_admission.admission_date, today)
+        self.assertEqual(wizard_admission.irg_class_start_date, fields.Date.to_date('2026-02-01'))
         self.assertEqual(wizard_admission.state, 'done', "The wizard admission state must be 'done'")
         self.assertTrue(wizard_admission.email_send_ok, "The wizard admission email_send_ok must be True")
 
@@ -473,11 +490,11 @@ class TestRegisterDateValidation(TransactionCase):
         # Check admission is created in draft/application state
         admission = self.env['op.admission'].search([('sale_id', '=', sale_order.id)])
         self.assertTrue(admission, "An admission should have been created")
+        self.assertEqual(admission.admission_date, fields.Date.context_today(sale_order))
+        self.assertEqual(admission.irg_class_start_date, fields.Date.to_date('2026-02-01'))
         self.assertIn(admission.state, ['draft', 'application'], "The admission state must remain in draft/application")
 
         # Check that no batch has been created in the database for this course
         batches_after = self.env['op.batch'].search([('course_id', '=', course.id)])
         self.assertEqual(len(batches_after), 0, "No batch should have been created during native confirmation")
         self.assertFalse(admission.batch_id, "The admission batch_id must be empty/False")
-
-

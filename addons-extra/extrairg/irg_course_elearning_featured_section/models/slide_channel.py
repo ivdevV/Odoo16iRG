@@ -14,7 +14,7 @@ class SlideChannel(models.Model):
         """Return the first course that configures a featured block for this channel."""
         self.ensure_one()
         course_model = self.env['op.course'].sudo()
-        subjects = self.op_subject_ids.sudo()
+        subjects = self.sudo().op_subject_ids
 
         courses = course_model.search([
             ('subject_ids', 'in', subjects.ids),

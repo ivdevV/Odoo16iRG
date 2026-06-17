@@ -1,0 +1,321 @@
+diff --git a/addons-extra/extrairg/irg_academic_request_history/models/irg_certificate_request.py b/addons-extra/extrairg/irg_academic_request_history/models/irg_certificate_request.py
+index 736717d3..2014c7ed 100644
+--- a/addons-extra/extrairg/irg_academic_request_history/models/irg_certificate_request.py
++++ b/addons-extra/extrairg/irg_academic_request_history/models/irg_certificate_request.py
+@@ -1,6 +1,7 @@
+ # -*- coding: utf-8 -*-
+ 
+-from odoo import api, fields, models
++from odoo import api, fields, models, _
++from odoo.exceptions import ValidationError
+ 
+ 
+ class IrgCertificateRequest(models.Model):
+@@ -82,6 +83,35 @@ class IrgCertificateRequest(models.Model):
+         copy=False,
+         readonly=True,
+     )
++    academic_payment_validation_state = fields.Selection(
++        selection=[
++            ('not_checked', 'No comprobado'),
++            ('eligible', 'Apto'),
++            ('blocked', 'Bloqueado'),
++        ],
++        string='Validacion Pagos Alumno',
++        default='not_checked',
++        copy=False,
++        readonly=True,
++    )
++    academic_payment_validation_date = fields.Datetime(
++        string='Fecha Validacion Pagos',
++        copy=False,
++        readonly=True,
++    )
++    academic_payment_block_reason = fields.Text(
++        string='Motivo Bloqueo Pagos',
++        copy=False,
++        readonly=True,
++    )
++
++    @api.model_create_multi
++    def create(self, vals_list):
++        requests = super().create(vals_list)
++        for request, vals in zip(requests, vals_list):
++            if vals.get('origin') == 'portal':
++                request._check_academic_payment_eligibility(raise_if_blocked=True)
++        return requests
+ 
+     @api.depends('gradebook_student_id.student_id', 'partner_id')
+     def _compute_student_id(self):
+@@ -91,3 +121,201 @@ class IrgCertificateRequest(models.Model):
+             if not student and request.partner_id:
+                 student = Student.search([('partner_id', '=', request.partner_id.id)], limit=1)
+             request.student_id = student
++
++    def _get_academic_course_product_templates(self):
++        self.ensure_one()
++        templates = self.env['product.template']
++        course = self.course_id
++        if not course:
++            return templates
++        if 'product_template_id' in course._fields and course.product_template_id:
++            templates |= course.product_template_id
++        if 'product_template_ids' in course._fields and course.product_template_ids:
++            templates |= course.product_template_ids
++        return templates
++
++    def _get_academic_sale_orders(self):
++        self.ensure_one()
++        partner = self.partner_id
++        if not partner:
++            return self.env['sale.order']
++
++        orders = self.env['sale.order'].sudo().search([
++            ('state', 'not in', ('draft', 'sent', 'cancel')),
++            '|',
++            ('student_id', '=', partner.id),
++            ('partner_id', '=', partner.id),
++        ])
++        course_templates = self._get_academic_course_product_templates()
++        if not course_templates:
++            return orders
++
++        course_orders = orders.filtered(
++            lambda order: any(
++                line.product_template_id in course_templates
++                for line in order.order_line
++            )
++        )
++        return course_orders or orders
++
++    def _get_academic_invoices(self, orders=None):
++        self.ensure_one()
++        partner = self.partner_id
++        if not partner:
++            return self.env['account.move']
++
++        domain = [
++            ('move_type', '=', 'out_invoice'),
++            ('state', '=', 'posted'),
++            '|',
++            ('partner_id', '=', partner.id),
++            ('irg_student_partner_id', '=', partner.id),
++        ]
++        invoices = self.env['account.move'].sudo().search(domain)
++        if orders:
++            order_invoices = orders.mapped('invoice_ids').filtered(
++                lambda move: move.move_type == 'out_invoice' and move.state == 'posted'
++            )
++            invoices |= order_invoices
++
++        # Exclude invoices related to certificate requests
++        cert_requests = self.env['irg.certificate.request'].sudo().search([
++            ('partner_id', '=', partner.id),
++            ('invoice_id', '!=', False)
++        ])
++        if cert_requests:
++            invoices = invoices.filtered(lambda inv: inv.id not in cert_requests.mapped('invoice_id').ids)
++
++        return invoices
++
++    def _has_overdue_academic_debt(self, orders, invoices):
++        today = fields.Date.context_today(self)
++        for order in orders:
++            schedules = order.subscription_schedule if 'subscription_schedule' in order._fields else False
++            if schedules:
++                overdue = schedules.filtered(
++                    lambda line: line.payment_state != 'paid'
++                    and (
++                        line.date_due
++                        or (line.date_schedule if 'date_schedule' in line._fields else False)
++                        or today
++                    ) <= today
++                )
++                if overdue:
++                    return True
++
++        unpaid_due_invoices = invoices.filtered(
++            lambda move: move.payment_state not in ('paid', 'in_payment', 'reversed')
++            and (move.invoice_date_due or move.invoice_date or today) <= today
++            and move.amount_residual > 0
++        )
++        return bool(unpaid_due_invoices)
++
++    def _has_pending_master_balance(self, orders, invoices):
++        for order in orders:
++            schedules = order.subscription_schedule if 'subscription_schedule' in order._fields else False
++            if schedules and schedules.filtered(lambda line: line.payment_state != 'paid'):
++                return True
++            if not schedules and order.invoice_ids.filtered(
++                lambda move: move.move_type == 'out_invoice'
++                and move.state == 'posted'
++                and move.payment_state not in ('paid', 'in_payment', 'reversed')
++                and move.amount_residual > 0
++            ):
++                return True
++
++        pending_invoices = invoices.filtered(
++            lambda move: move.payment_state not in ('paid', 'in_payment', 'reversed')
++            and move.amount_residual > 0
++        )
++        return bool(pending_invoices)
++
++    def _get_subscription_data_debt_reason(self):
++        self.ensure_one()
++        student = self.student_id
++        if not student or not hasattr(student, 'get_subscription_data'):
++            return False
++        sub_data = student.sudo().get_subscription_data()
++        if sub_data.get('t_adeuda') or (sub_data.get('t_amount_due_data') or 0) > 0:
++            return _(
++                'El alumno tiene cuotas de matricula pendientes de pago.'
++            )
++        return False
++
++    def _check_academic_payment_eligibility(self, raise_if_blocked=False):
++        """Validate academic payment status before requesting/generating docs."""
++        self.ensure_one()
++        reason = False
++        final_documents = ('gradebook', 'diploma')
++
++        if not self.partner_id:
++            reason = _('No se ha podido identificar el alumno de la solicitud.')
++        else:
++            orders = self._get_academic_sale_orders()
++            invoices = self._get_academic_invoices(orders=orders)
++            reason = self._get_subscription_data_debt_reason()
++
++            if not reason and self.document_type in final_documents:
++                if not orders and not invoices:
++                    reason = _(
++                        'No hay informacion de venta o facturacion para comprobar que el master esta completamente pagado.'
++                    )
++                elif self._has_pending_master_balance(orders, invoices):
++                    reason = _(
++                        'Para solicitar este documento el master debe estar completamente pagado.'
++                    )
++            elif not reason and self._has_overdue_academic_debt(orders, invoices):
++                reason = _(
++                    'El alumno no esta al dia de pagos academicos.'
++                )
++
++        self.sudo().write({
++            'academic_payment_validation_state': 'blocked' if reason else 'eligible',
++            'academic_payment_validation_date': fields.Datetime.now(),
++            'academic_payment_block_reason': reason or False,
++        })
++        if reason and raise_if_blocked:
++            raise ValidationError(reason)
++        return not bool(reason)
++
++    def _generate_and_attach_pdf(self):
++        Registry = self.env['irg.diploma.registry'].sudo()
++        for request in self:
++            request._check_academic_payment_eligibility(raise_if_blocked=True)
++            registry_domain = []
++            existing_registries = Registry
++            if request.document_type == 'diploma':
++                student = request.student_id or request.gradebook_student_id.student_id
++                registry_domain = [('student_id', '=', student.id)] if student else []
++                if registry_domain:
++                    existing_registries = Registry.search(registry_domain)
++
++            super(IrgCertificateRequest, request)._generate_and_attach_pdf()
++
++            if request.document_type == 'diploma' and request.attachment_id:
++                new_registry = Registry
++                if registry_domain:
++                    new_registry = Registry.search(
++                        registry_domain + [('id', 'not in', existing_registries.ids)],
++                        order='id desc',
++                        limit=1,
++                    )
++                if not new_registry:
++                    new_registry = Registry.search(
++                        registry_domain + [('attachment_id', '=', False)] if registry_domain else [('attachment_id', '=', False)],
++                        order='id desc',
++                        limit=1,
++                    )
++                if new_registry:
++                    new_registry.write({'attachment_id': request.attachment_id.id})
++                    request.sudo().write({'diploma_registry_id': new_registry.id})
++
++    def action_generate_pdf(self):
++        for request in self:
++            request._check_academic_payment_eligibility(raise_if_blocked=True)
++        return super().action_generate_pdf()
++
++    def _process_payment(self):
++        for request in self:
++            request._check_academic_payment_eligibility(raise_if_blocked=True)
++        return super()._process_payment()
+diff --git a/addons-extra/extrairg/irg_campus_certificates_portal/views/campus_dashboard_override.xml b/addons-extra/extrairg/irg_campus_certificates_portal/views/campus_dashboard_override.xml
+index 2ea62192..b983ca38 100644
+--- a/addons-extra/extrairg/irg_campus_certificates_portal/views/campus_dashboard_override.xml
++++ b/addons-extra/extrairg/irg_campus_certificates_portal/views/campus_dashboard_override.xml
+@@ -2,10 +2,9 @@
+ <odoo>
+     <data>
+ 
+-        <!-- Inyectar el Tile de Mis Certificados y Diplomas en "Herramientas del curso" -->
+         <template id="user_profile_content_details_certificates_tile" inherit_id="irg_course_portal_tiles.irg_user_profile_content_details_inherit">
+-            <xpath expr="//div[@class='row']" position="inside">
+-                <div class="col-12 col-sm-12 col-md-6 col-lg-4 p-2 student_tile_portal" name="certificates_and_diplomas">
++            <xpath expr="//h5[contains(text(), 'Herramientas del curso')]/following-sibling::div[hasclass('row')]" position="inside">
++                <div t-if="not hasattr(course_id, 'irg_is_diplomado') or not course_id.irg_is_diplomado()" class="col-12 col-sm-12 col-md-6 col-lg-4 p-2 student_tile_portal" name="certificates_and_diplomas">
+                     <a class="row ms-0 me-0 w-auto p-3 dashboard_element_main_body d-flex align-items-center justify-content-between" t-attf-href="/campus/certificates?course_id=#{op_course_id}">
+                         <div class="col-lg-12 text-center hover_effect">
+                             <img class="image oe_portal_img mt16 mb16" src="/irg_course_portal_tiles/static/src/img/icon-docs.svg" style="width: 74px;"/>
+diff --git a/addons-extra/extrairg/irg_course_elearning_featured_section/models/slide_channel.py b/addons-extra/extrairg/irg_course_elearning_featured_section/models/slide_channel.py
+index 9d01312c..77c68a64 100644
+--- a/addons-extra/extrairg/irg_course_elearning_featured_section/models/slide_channel.py
++++ b/addons-extra/extrairg/irg_course_elearning_featured_section/models/slide_channel.py
+@@ -14,7 +14,7 @@ class SlideChannel(models.Model):
+         """Return the first course that configures a featured block for this channel."""
+         self.ensure_one()
+         course_model = self.env['op.course'].sudo()
+-        subjects = self.op_subject_ids.sudo()
++        subjects = self.sudo().op_subject_ids
+ 
+         courses = course_model.search([
+             ('subject_ids', 'in', subjects.ids),
+diff --git a/addons-extra/extrairg/irg_diplomado_portal_request/__manifest__.py b/addons-extra/extrairg/irg_diplomado_portal_request/__manifest__.py
+index 56db2829..1fd742c4 100644
+--- a/addons-extra/extrairg/irg_diplomado_portal_request/__manifest__.py
++++ b/addons-extra/extrairg/irg_diplomado_portal_request/__manifest__.py
+@@ -11,7 +11,6 @@
+         'portal',
+         'mail',
+         'irg_course_portal_tiles',
+-        'irg_campus_certificates_portal',
+         'irg_generacion_diplomados',
+         'isep_gradebook',
+     ],
+diff --git a/addons-extra/extrairg/irg_diplomado_portal_request/tests/test_portal.py b/addons-extra/extrairg/irg_diplomado_portal_request/tests/test_portal.py
+index 63e48ef6..d44fa408 100644
+--- a/addons-extra/extrairg/irg_diplomado_portal_request/tests/test_portal.py
++++ b/addons-extra/extrairg/irg_diplomado_portal_request/tests/test_portal.py
+@@ -254,5 +254,4 @@ class TestDiplomadoPortalRequest(HttpCase):
+         arch = view.arch_db
+         self.assertIn('Diploma del Diplomado', arch)
+         self.assertIn('/campus/diplomados/#{op_course_id}', arch)
+-        self.assertIn('not course_id.irg_is_diplomado()', arch)
+         self.assertIn('course_id.irg_is_diplomado()', arch)
+diff --git a/addons-extra/extrairg/irg_diplomado_portal_request/views/course_portal_tiles.xml b/addons-extra/extrairg/irg_diplomado_portal_request/views/course_portal_tiles.xml
+index c6954231..00966fdb 100644
+--- a/addons-extra/extrairg/irg_diplomado_portal_request/views/course_portal_tiles.xml
++++ b/addons-extra/extrairg/irg_diplomado_portal_request/views/course_portal_tiles.xml
+@@ -1,11 +1,8 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <odoo>
+     <data>
+-        <template id="course_diplomado_specific_tile" inherit_id="irg_campus_certificates_portal.user_profile_content_details_certificates_tile">
+-            <xpath expr="//div[@name='certificates_and_diplomas']" position="attributes">
+-                <attribute name="t-if">not course_id.irg_is_diplomado()</attribute>
+-            </xpath>
+-            <xpath expr="//div[@name='certificates_and_diplomas']" position="after">
++        <template id="course_diplomado_specific_tile" inherit_id="irg_course_portal_tiles.irg_user_profile_content_details_inherit">
++            <xpath expr="//h5[contains(text(), 'Herramientas del curso')]/following-sibling::div[hasclass('row')]" position="inside">
+                 <div t-if="course_id.irg_is_diplomado()" class="col-12 col-sm-12 col-md-6 col-lg-4 p-2 student_tile_portal" name="diplomado_diploma_request">
+                     <a class="row ms-0 me-0 w-auto p-3 dashboard_element_main_body d-flex align-items-center justify-content-between" t-attf-href="/campus/diplomados/#{op_course_id}">
+                         <div class="col-lg-12 text-center hover_effect">

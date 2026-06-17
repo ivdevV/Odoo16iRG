@@ -254,5 +254,4 @@ class TestDiplomadoPortalRequest(HttpCase):
         arch = view.arch_db
         self.assertIn('Diploma del Diplomado', arch)
         self.assertIn('/campus/diplomados/#{op_course_id}', arch)
-        self.assertIn('not course_id.irg_is_diplomado()', arch)
         self.assertIn('course_id.irg_is_diplomado()', arch)

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_certificate_request_form_inherit_stripe" model="ir.ui.view">
+        <field name="name">irg.certificate.request.form.inherit.stripe</field>
+        <field name="model">irg.certificate.request</field>
+        <field name="inherit_id" ref="irg_gradebook_certificates.view_irg_certificate_request_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Evidencias Stripe" name="stripe_evidence" attrs="{'invisible': [('stripe_checkout_session_id', '=', False)]}">
+                    <group>
+                        <group string="Transacción">
+                            <field name="stripe_checkout_session_id" readonly="1"/>
+                            <field name="stripe_payment_intent_id" readonly="1"/>
+                            <field name="stripe_payment_status" readonly="1"/>
+                            <field name="payment_success_date" readonly="1"/>
+                        </group>
+                        <group string="Detalles de Pago y Facturación">
+                            <field name="payment_amount" readonly="1"/>
+                            <field name="payment_currency_id" readonly="1"/>
+                            <field name="payment_concept" readonly="1"/>
+                            <field name="stripe_receipt_url" widget="url" readonly="1" text="Ver Recibo Stripe"/>
+                        </group>
+                    </group>
+                    <group string="Factura de Stripe" attrs="{'invisible': [('stripe_invoice_id', '=', False)]}">
+                        <group>
+                            <field name="stripe_invoice_id" readonly="1"/>
+                            <field name="stripe_invoice_url" widget="url" readonly="1" text="Ver Factura Stripe"/>
+                            <field name="stripe_invoice_pdf" widget="url" readonly="1" text="Descargar PDF Factura"/>
+                        </group>
+                    </group>
+                </page>
+            </notebook>
+            <field name="partner_id" position="after">
+                <field name="student_id" readonly="1"/>
+            </field>
+        </field>
+    </record>
+</odoo>
