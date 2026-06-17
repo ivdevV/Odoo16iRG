@@ -232,8 +232,8 @@ def run_gradebook_validation():
     # Check 2: Outer text size
     body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
     for r in body_runs:
-        print(f"Body run '{r.text[:20]}...' size: {r.font.size.pt} Pt (Expected: 10.0)")
-        assert r.font.size.pt == 10.0, "Body text font size was scaled"
+        print(f"Body run '{r.text[:20]}...' size: {r.font.size.pt} Pt (Expected: 8.5)")
+        assert r.font.size.pt == 8.5, "Body text font size was scaled"
         
     # Check 3: Table text size
     table_runs = [r for t in doc.tables for row in t.rows for c in row.cells for p in c.paragraphs for r in p.runs if r.font and r.font.size]
@@ -295,8 +295,8 @@ def run_partial_validation():
     # Check 2: Outer text size
     body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
     for r in body_runs:
-        print(f"Body run '{r.text[:20]}...' size: {r.font.size.pt} Pt (Expected: 10.0)")
-        assert r.font.size.pt == 10.0, "Body text font size was scaled"
+        print(f"Body run '{r.text[:20]}...' size: {r.font.size.pt} Pt (Expected: 8.5)")
+        assert r.font.size.pt == 8.5, "Body text font size was scaled"
         
     # Check 3: Table text size
     table_runs = [r for t in doc.tables for row in t.rows for c in row.cells for p in c.paragraphs for r in p.runs if r.font and r.font.size]

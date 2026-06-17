@@ -21,9 +21,9 @@ if is_physical:
 ```
 
 ### 2. Control de Tamaño de Letra Exterior vs Interior (Tabla)
-Por defecto, los certificados digitales se escalan al 75%. Para los físicos se configuró al 100%. Sin embargo, para mantener las tablas en `7.5 Pt`, se forzó su tamaño de forma selectiva:
+Por defecto, los certificados digitales se escalan al 75%. Para los físicos se configuró al 85% (tamaño de fuente exterior resultante de 8.5 Pt). Sin embargo, para mantener las tablas en `7.5 Pt`, se forzó su tamaño de forma selectiva:
 ```python
-scale_percent = 100 if is_physical else 75
+scale_percent = 85 if is_physical else 75
 self._scale_document_fonts(doc, percent=scale_percent)
 
 # Para las tablas
@@ -65,7 +65,7 @@ if sig_rel_ids:
 - **Eliminación de imágenes**: No es suficiente limpiar `run.text = ''` para eliminar imágenes de un run en `python-docx` ya que la imagen está embebida en un elemento `<w:drawing>` o `<w:pict>` independiente del texto. Se debe eliminar el elemento run completo (`run._r`) de su párrafo padre (`para._p.remove(run._r)`).
 - **Raimon dynamic signature**: El sello de Raimon Gaja (`logodesgastado.png`) se inserta mediante un método dinámico de post-procesado `_ensure_signature_logo` que re-abre el ZIP del documento DOCX. Se debe asegurar no llamar a esta función cuando `is_physical` es True.
 - **Sustitución Global de Textos**: La conversión de `"Raimon Gaja Jaumeandreu"` a `"Raimon Gaja"` se inyecta en el diccionario `replacements` para que actúe en párrafos, tablas y cabeceras. En el formateo de firmas, se debe contemplar tanto la cadena larga como la corta en las comparaciones de textos normalizados.
-- **Formateo tras reasignación de textos**: Asignar directamente a `para.text` descarta los runs previos y genera uno nuevo. Se debe asegurar restablecer la fuente a `Pt(10)` en los runs resultantes para el párrafo de cierre y firma en el certificado físico.
+- **Formateo tras reasignación de textos**: Asignar directamente a `para.text` descarta los runs previos y genera uno nuevo. Se debe asegurar restablecer la fuente a `Pt(8.5)` en los runs resultantes para el párrafo de cierre y firma en el certificado físico.
 - **Espaciado vertical para firma**: En lugar de inyectar párrafos vacíos que pueden romper la consistencia, se configura `para.paragraph_format.space_after = Pt(48)` en el párrafo de cierre ("Para que así conste...") para generar el hueco de firma.
 
 ## Validación Recomendada

@@ -3,7 +3,7 @@
   "task": "modificaciones_certificado_fisico",
   "checks": [
     { "name": "top_margin_shift", "result": "pass", "detail": "Top margin successfully shifted down by 37.5 Pt (50 pixels) to 109.5 Pt" },
-    { "name": "outer_font_size", "result": "pass", "detail": "Outer font size set to 10.0 Pt (100% scale) for physical variant" },
+    { "name": "outer_font_size", "result": "pass", "detail": "Outer font size set to 8.5 Pt (85% scale) for physical variant" },
     { "name": "table_font_size", "result": "pass", "detail": "Table cell font size kept at 7.5 Pt (unaltered, matching digital variant)" },
     { "name": "signature_stamp_removal", "result": "pass", "detail": "Handwritten signatures and stamp logos successfully removed from physical certificates" },
     { "name": "name_replacement", "result": "pass", "detail": "Raimon Gaja Jaumeandreu successfully shortened to Raimon Gaja" },

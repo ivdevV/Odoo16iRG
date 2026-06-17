@@ -703,11 +703,11 @@ class TestIrgCertificatePartial(TransactionCase):
         # 1. Verify top margin shift (72 Pt default + 37.5 Pt shift = 109.5 Pt)
         self.assertEqual(doc.sections[0].top_margin.pt, 109.5)
         
-        # 2. Verify outer font size is 10 Pt (not scaled down by 75%)
+        # 2. Verify outer font size is 8.5 Pt
         body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
         self.assertTrue(len(body_runs) > 0, "No body runs found with font size set.")
         for r in body_runs:
-            self.assertEqual(r.font.size.pt, 10.0, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 10.0 Pt")
+            self.assertEqual(r.font.size.pt, 8.5, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 8.5 Pt")
             
         # 3. Verify table run font size is 7.5 Pt (95250 EMUs)
         self._assert_table_font_sizes_match_value(res_file, Pt(7.5))

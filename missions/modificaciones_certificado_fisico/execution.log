@@ -18,4 +18,9 @@
 - [2026-06-17T14:43:59] Validación exitosa de la segunda iteración con `validate_physical_layout.py`.
 - [2026-06-17T14:44:11] Actualización del walkthrough, CHANGELOG y base de conocimiento para la segunda iteración.
 - [2026-06-17T14:44:30] Validación de segunda iteración completada con estado PASSED en `verification.json`.
+- [2026-06-17T15:22:00] Recepción de especificaciones adicionales: reducir tamaño de letra exterior a 8.5 Pt en variante física.
+- [2026-06-17T15:22:15] Implementación del escalado a 85% y forzado de tamaño de letra de firmas/cierre a 8.5 Pt en ambos módulos.
+- [2026-06-17T15:22:27] Validación exitosa de la tercera iteración con `validate_physical_layout.py`.
+- [2026-06-17T15:22:31] Actualización del walkthrough, CHANGELOG y base de conocimiento para la tercera iteración.
+- [2026-06-17T15:22:38] Validación de tercera iteración completada con estado PASSED en `verification.json`.
 
