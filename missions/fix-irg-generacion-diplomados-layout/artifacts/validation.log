@@ -1,0 +1,18 @@
+Validation date: 2026-06-15
+
+Commands executed:
+
+- `xmllint --noout "addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml"`
+  Result: pass. No XML syntax errors reported.
+
+- `git diff --check -- "addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml"`
+  Result: pass. No whitespace errors reported.
+
+- `glob: odoo-bin` and `glob: **/odoo-bin`
+  Result: no Odoo executable found inside the workspace, so transactional Odoo tests and live PDF rendering could not be executed from this checkout.
+
+Manual review:
+
+- Confirmed `wizard/diplomado_wizard.py` copies `course_id.name` into `diplomado_name` without uppercase transformation.
+- Confirmed uppercase was caused by QWeb CSS `text-transform: uppercase` in `reports/diplomado_templates.xml`.
+- Confirmed reverse-page overlap was caused by independent absolute positioning of headers/lists.

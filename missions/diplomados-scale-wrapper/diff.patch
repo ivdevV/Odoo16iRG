@@ -1,0 +1,34 @@
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+index 84afaae8..e21e6fe7 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+@@ -167,7 +167,7 @@
+                         <div class="diploma-scale">
+                             <!-- Fondo a hoja completa (Full Bleed) -->
+                             <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
+-
++
+                             <!-- Logo Superior -->
+                             <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
+
+@@ -183,9 +183,9 @@
+
+                             <!-- Texto de Aprobación -->
+                             <div class="center-text" style="left: 20mm; width: 257mm; top: 91mm; font-size: 13pt; color: #6C7A71; line-height: 1.32; font-family: 'Helvetica', 'Arial', sans-serif;">
+-                                ha aprobado los estudios correspondientes al programa de contenidos que figura en el dorso, celebrado del
+-                                <strong><span t-field="o.start_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong> al
+-                                <strong><span t-field="o.end_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong>, con una duración de
++                                ha aprobado los estudios correspondientes al programa de contenidos que figura en el dorso, celebrado del
++                                <strong><span t-field="o.start_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong> al
++                                <strong><span t-field="o.end_date" t-options='{"widget": "date", "format": "d/MM/yyyy"}'/></strong>, con una duración de
+                                 <strong><span t-field="o.duration_hours"/> horas</strong>
+                                 <t t-if="o.duration_ects">
+                                     (equivalente a <strong><span t-field="o.duration_ects"/> ECTS</strong>)
+@@ -228,7 +228,7 @@
+                         <div class="diploma-scale">
+                             <!-- Fondo a hoja completa (Full Bleed) -->
+                             <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
+-
++
+                             <!-- Logo Superior -->
+                             <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>

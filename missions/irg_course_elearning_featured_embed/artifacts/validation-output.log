@@ -1,0 +1,240 @@
+2026-06-15 13:53:36,499 2911 INFO ? odoo: Odoo version 16.0-20250909
+2026-06-15 13:53:36,499 2911 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf
+2026-06-15 13:53:36,499 2911 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech']
+2026-06-15 13:53:36,499 2911 INFO ? odoo: database: odoo@pgodoo_local:5432
+2026-06-15 13:53:36,549 2911 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf
+Exception in thread odoo.service.httpd:
+Traceback (most recent call last):
+  File "/usr/lib/python3.9/threading.py", line 954, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.9/threading.py", line 892, in run
+    self._target(*self._args, **self._kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 528, in http_thread
+    self.httpd = ThreadedWSGIServerReloadable(self.interface, self.port, self.app)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 188, in __init__
+    super(ThreadedWSGIServerReloadable, self).__init__(host, port, app,
+  File "/usr/lib/python3/dist-packages/werkzeug/serving.py", line 740, in __init__
+    HTTPServer.__init__(self, server_address, handler)
+  File "/usr/lib/python3.9/socketserver.py", line 452, in __init__
+    self.server_bind()
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 204, in server_bind
+    super(ThreadedWSGIServerReloadable, self).server_bind()
+  File "/usr/lib/python3.9/http/server.py", line 138, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/lib/python3.9/socketserver.py", line 466, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+2026-06-15 13:53:36,601 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: loading 1 modules...
+2026-06-15 13:53:36,604 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra)
+2026-06-15 13:53:36,610 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: updating modules list
+2026-06-15 13:53:36,611 2911 INFO validation_featured_section_20260615_d odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a
+2026-06-15 13:53:36,716 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3
+2026-06-15 13:53:36,768 2911 WARNING validation_featured_section_20260615_d py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+
+2026-06-15 13:53:36,770 2911 WARNING validation_featured_section_20260615_d py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+
+2026-06-15 13:53:36,772 2911 WARNING validation_featured_section_20260615_d py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+
+2026-06-15 13:53:36,957 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3
+2026-06-15 13:53:36,984 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3
+2026-06-15 13:53:37,041 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3
+2026-06-15 13:53:37,042 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3
+2026-06-15 13:53:37,043 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3
+2026-06-15 13:53:37,086 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3
+2026-06-15 13:53:37,190 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3
+2026-06-15 13:53:37,293 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3
+2026-06-15 13:53:37,295 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3
+2026-06-15 13:53:37,338 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3
+2026-06-15 13:53:37,382 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3
+2026-06-15 13:53:37,409 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3
+2026-06-15 13:53:37,411 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3
+2026-06-15 13:53:37,412 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3
+2026-06-15 13:53:37,413 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3
+2026-06-15 13:53:37,462 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3
+2026-06-15 13:53:37,475 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3
+2026-06-15 13:53:37,477 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3
+2026-06-15 13:53:37,486 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3
+2026-06-15 13:53:37,492 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3
+2026-06-15 13:53:37,509 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3
+2026-06-15 13:53:37,512 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3
+2026-06-15 13:53:37,518 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3
+2026-06-15 13:53:37,519 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3
+2026-06-15 13:53:37,521 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3
+2026-06-15 13:53:37,523 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3
+2026-06-15 13:53:37,524 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3
+2026-06-15 13:53:37,532 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3
+2026-06-15 13:53:37,537 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3
+2026-06-15 13:53:37,544 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3
+2026-06-15 13:53:37,550 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3
+2026-06-15 13:53:37,554 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3
+2026-06-15 13:53:37,560 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3
+2026-06-15 13:53:37,562 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3
+2026-06-15 13:53:37,569 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3
+2026-06-15 13:53:38,020 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3
+2026-06-15 13:53:38,124 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3
+2026-06-15 13:53:38,136 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3
+2026-06-15 13:53:38,328 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3
+2026-06-15 13:53:38,363 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3
+2026-06-15 13:53:38,580 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3
+2026-06-15 13:53:38,581 2911 WARNING validation_featured_section_20260615_d odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3
+2026-06-15 13:53:38,688 2911 INFO validation_featured_section_20260615_d odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['IRG Course eLearning Featured Section'] to user __system__ #1 via n/a
+2026-06-15 13:53:38,688 2911 INFO validation_featured_section_20260615_d odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['IRG Course eLearning Featured Section'] to user __system__ #1 via n/a
+2026-06-15 13:53:39,189 2911 INFO validation_featured_section_20260615_d odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a
+2026-06-15 13:53:39,200 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: loading 94 modules...
+2026-06-15 13:53:39,425 2911 WARNING validation_featured_section_20260615_d odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch
+2026-06-15 13:53:39,492 2911 WARNING validation_featured_section_20260615_d odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch
+2026-06-15 13:53:39,493 2911 WARNING validation_featured_section_20260615_d odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch
+2026-06-15 13:53:39,494 2911 WARNING validation_featured_section_20260615_d odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch
+2026-06-15 13:53:39,495 2911 WARNING validation_featured_section_20260615_d odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch
+2026-06-15 13:53:39,496 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: Loading module irg_course_elearning_featured_section (94/94)
+2026-06-15 13:53:39,585 2911 INFO validation_featured_section_20260615_d odoo.modules.registry: module irg_course_elearning_featured_section: creating or updating database tables
+2026-06-15 13:53:39,624 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: loading irg_course_elearning_featured_section/views/op_course_views.xml
+2026-06-15 13:53:39,631 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: loading irg_course_elearning_featured_section/views/website_slides_templates.xml
+2026-06-15 13:53:39,644 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: Module irg_course_elearning_featured_section loaded in 0.15s, 113 queries (+113 other)
+2026-06-15 13:53:39,644 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: 94 modules loaded in 0.44s, 113 queries (+113 extra)
+2026-06-15 13:53:39,909 2911 INFO validation_featured_section_20260615_d odoo.modules.loading: Modules loaded.
+2026-06-15 13:53:39,912 2911 INFO validation_featured_section_20260615_d odoo.modules.registry: Registry loaded in 3.321s
+2026-06-15 13:53:39,912 2911 INFO validation_featured_section_20260615_d odoo.service.server: Starting post tests
+2026-06-15 13:53:39,928 2911 INFO validation_featured_section_20260615_d odoo.addons.irg_course_elearning_featured_section.tests.test_featured_section: Starting TestCourseElearningFeaturedSection.test_disabled_course_returns_no_featured_values ...
+2026-06-15 13:53:39,931 2911 INFO validation_featured_section_20260615_d odoo.addons.irg_course_elearning_featured_section.tests.test_featured_section: Starting TestCourseElearningFeaturedSection.test_enabled_course_with_only_embed_code_returns_featured_values ...
+2026-06-15 13:53:39,933 2911 INFO validation_featured_section_20260615_d odoo.addons.irg_course_elearning_featured_section.tests.test_featured_section: Starting TestCourseElearningFeaturedSection.test_enabled_course_without_content_returns_no_featured_values ...
+2026-06-15 13:53:39,935 2911 INFO validation_featured_section_20260615_d odoo.addons.irg_course_elearning_featured_section.tests.test_featured_section: Starting TestCourseElearningFeaturedSection.test_featured_course_is_resolved_from_channel_subjects ...
+2026-06-15 13:53:39,980 2911 INFO validation_featured_section_20260615_d odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed
+2026-06-15 13:53:39,980 2911 INFO validation_featured_section_20260615_d odoo.service.server: 4 post-tests in 0.07s, 85 queries
+2026-06-15 13:53:39,980 2911 INFO validation_featured_section_20260615_d odoo.tests.stats: irg_course_elearning_featured_section: 6 tests 0.07s 85 queries
+2026-06-15 13:53:39,980 2911 INFO validation_featured_section_20260615_d odoo.tests.result: 0 failed, 0 error(s) of 4 tests when loading database 'validation_featured_section_20260615_d'
+2026-06-15 13:53:39,980 2911 INFO validation_featured_section_20260615_d odoo.service.server: Initiating shutdown
+2026-06-15 13:53:39,980 2911 INFO validation_featured_section_20260615_d odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown.
+2026-06-15 13:53:39,980 2911 INFO validation_featured_section_20260615_d odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections

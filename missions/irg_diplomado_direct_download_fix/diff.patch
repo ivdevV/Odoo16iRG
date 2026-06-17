@@ -1,0 +1,25 @@
+# Diff summary for mission irg_diplomado_direct_download_fix
+
+Updated module files:
+
+- `addons-extra/extrairg/irg_diplomado_portal_request/__manifest__.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/controllers/portal.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/tests/test_portal.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/views/portal_templates.xml`
+
+Updated documentation and knowledge:
+
+- `doc/modules/extrairg/irg_diplomado_portal_request.md`
+- `.agents/knowledge/odoo_development_modding/artifacts/irg_diplomado_portal_request.md`
+
+Mission evidence:
+
+- `missions/irg_diplomado_direct_download_fix/plan.md`
+- `missions/irg_diplomado_direct_download_fix/execution.log`
+- `missions/irg_diplomado_direct_download_fix/verification.json`
+- `missions/irg_diplomado_direct_download_fix/artifacts/test-output.log`
+
+Behavioral change:
+
+- Portal POST now creates/reuses `irg.diplomado.registry` and returns a PDF download directly.
+- It no longer creates a pending `irg.diplomado.portal.request` for secretary processing.

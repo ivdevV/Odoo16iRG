@@ -1,0 +1,57 @@
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_report.xml b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_report.xml
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_report.xml
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_report.xml
+@@
+-        <field name="default" eval="True"/>
++        <field name="default" eval="False"/>
+@@
+-        <field name="dpi">96</field>
++        <field name="dpi">90</field>
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+@@
+-                            width: 297mm !important;
+-                            max-width: 297mm !important;
+-                            min-width: 297mm !important;
+@@
+-                        .article {
+-                            height: 210mm !important;
+-                        }
+-                        .page-container {
++                        .diploma-page {
+@@
+-                        .page-container-back {
+-                            position: relative;
+-                            width: 297mm;
+-                            height: 210mm;
+-                            margin: 0;
+-                            padding: 0;
++                        .diploma-page.back {
+                             page-break-after: avoid;
+-                            overflow: hidden;
+-                            box-sizing: border-box;
+@@
+                             position: absolute;
++                            inset: 0;
+                             top: 0;
++                            right: 0;
++                            bottom: 0;
+                             left: 0;
+-                            width: 297mm;
+-                            height: 210mm;
++                            width: 100%;
++                            height: 100%;
++                            object-fit: cover;
+@@
+-                            font-size: 15pt;
++                            font-size: 17pt;
+@@
+-                            line-height: 1.18;
++                            line-height: 1.12;
+@@
+-                    <div class="page-container">
++                    <div class="page diploma-page">
+@@
+-                    <div class="page-container-back">
++                    <div class="page diploma-page back">

@@ -51,7 +51,7 @@ class AppisepGradebookSummary(models.Model):
                 if current_quarter:
                     description = f"Cuatrimestre {current_quarter['number']}: {current_quarter['start'].strftime('%d/%m/%Y')} - {current_quarter['end'].strftime('%d/%m/%Y')}"
                     
-                    # Exclude subjects with code starting with 'NLEX'
+                    # Exclude exempt subjects (code contains 'EX')
                     slide_channels = self.env['slide.channel.partner'].search([
                         ('active', '=', True),
                         ('partner_id', '=', self.student_id.id),
@@ -59,7 +59,7 @@ class AppisepGradebookSummary(models.Model):
                         ('batch_id', '=', self.batch_id.id),
                         ('write_date', '>=', current_quarter['start']),
                         ('write_date', '<=', current_quarter['end'])
-                    ]).filtered(lambda r: not (r.op_subject_id.code and r.op_subject_id.code.upper().startswith('NLEX')))
+                    ]).filtered(lambda r: not r.op_subject_id.irg_is_grade_exempt())
                     
                     current_quarter_ids = slide_channels.op_subject_id.ids
                     

@@ -1,0 +1,24 @@
+# Diff summary for mission irg_diplomado_course_duration
+
+New module:
+
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/__init__.py`
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/__manifest__.py`
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/models/__init__.py`
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/models/op_course.py`
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/wizard/__init__.py`
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/wizard/diplomado_wizard.py`
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/security/ir.model.access.csv`
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/views/op_course_views.xml`
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/tests/__init__.py`
+- `addons-extra/extrairg/irg_generacion_diplomados_course_duration/tests/test_course_duration.py`
+
+Updated integration:
+
+- `addons-extra/extrairg/irg_diplomado_portal_request/__manifest__.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/controllers/portal.py`
+
+Documentation and knowledge:
+
+- `doc/modules/extrairg/irg_generacion_diplomados_course_duration.md`
+- `.agents/knowledge/odoo_development_modding/artifacts/irg_diplomado_course_duration.md`

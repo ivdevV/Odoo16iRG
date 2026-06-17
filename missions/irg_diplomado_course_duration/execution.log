@@ -1,0 +1,6 @@
+2026-06-16 Plan creado antes de modificar codigo. Se anadiran Horas y ECTS al curso mediante modulo nuevo por herencia.
+2026-06-16 Modulo nuevo `irg_generacion_diplomados_course_duration` creado. Anade campos en `op.course`, los muestra en la pestana de diplomados y los precarga en `irg.diplomado.wizard`.
+2026-06-16 `irg_diplomado_portal_request` actualizado para copiar Horas y ECTS del curso al `irg.diplomado.registry` si los campos existen.
+2026-06-16 Validacion estatica pasada: compileall y parseo XML.
+2026-06-16 Validacion Odoo pasada con docker-compose.local.yml: 0 failed, 0 error(s). Tests: portal 5, course_duration 3.
+2026-06-16 Documentacion creada y knowledge persistida.

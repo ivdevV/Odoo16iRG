@@ -1,0 +1,8 @@
+2026-06-16 Plan creado antes de modificar codigo. Se implementara modulo puente de validacion QR web para diplomados.
+2026-06-16 Modulo `irg_generacion_diplomados_website_verify` creado. Extiende `/verificar` y `/verificar_api` para reconocer `irg.diplomado.registry` y actualiza la generacion QR de `action_reprint` y wizard para usar `web.base.url`.
+2026-06-16 Ajustes preventivos: plantilla dejada en ASCII y test actualizado para crear `res.partner` requerido por `op.student`.
+2026-06-16 Validacion Odoo inicial con `-u` cargo 0 tests porque el modulo no estaba instalado. Reintento con `-i` ejecuto 3 tests y fallo por conflicto del atributo `cls.registry` con `HttpCase.registry`; renombrado a `cls.diplomado_registry`.
+2026-06-16 Reintento Odoo: 1 test de QR paso, 2 tests HTTP fallaron con 404 porque la peticion no llevaba sesion/base de datos. Se anadio `self.authenticate('admin', 'admin')` en tests HTTP siguiendo patron del repo.
+2026-06-16 Validacion Odoo final pasada: `0 failed, 0 error(s) of 3 tests` con `docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_generacion_diplomados_website_verify --test-enable --test-tags irg_generacion_diplomados_website_verify --stop-after-init --http-port=8099 --log-level=test`.
+2026-06-16 Documentacion creada en `doc/modules/extrairg/irg_generacion_diplomados_website_verify.md` y knowledge en `.agents/knowledge/odoo_development_modding/artifacts/irg_diplomado_website_verify_qr.md`.
+2026-06-16 `verification.json` actualizado a `passed`.

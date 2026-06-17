@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "task": "diplomados-enlarge-page-composition",
+  "checks": [
+    {
+      "name": "xml_syntax",
+      "result": "pass",
+      "detail": "xmllint passed for diplomado_templates.xml"
+    },
+    {
+      "name": "diff_whitespace",
+      "result": "pass",
+      "detail": "git diff --check passed for diplomado_templates.xml"
+    },
+    {
+      "name": "local_compose_status",
+      "result": "pass",
+      "detail": "docker-compose.local.yml services odoo_local, pgodoo_local and redisodoo_local were running"
+    },
+    {
+      "name": "odoo_module_update",
+      "result": "pass",
+      "detail": "Odoo module update/load completed on odoo_test_diplomado with 0 failed and 0 errors; selected test tag executed 0 tests"
+    },
+    {
+      "name": "reverse_page_scope",
+      "result": "pass",
+      "detail": "No direct reverse page markup changes; front logo override scoped to .diploma-page.front"
+    }
+  ],
+  "evidence": [
+    "artifacts/validation.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

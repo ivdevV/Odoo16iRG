@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "task": "irg_diplomado_website_verify_qr",
+  "checks": [
+    {
+      "name": "python_compile",
+      "result": "pass",
+      "detail": "python3 -m compileall addons-extra/extrairg/irg_generacion_diplomados_website_verify"
+    },
+    {
+      "name": "xml_parse",
+      "result": "pass",
+      "detail": "lxml parsed diplomado_verify_templates.xml"
+    },
+    {
+      "name": "odoo_tests",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 3 tests"
+    }
+  ],
+  "evidence": [
+    "missions/irg_diplomado_website_verify_qr/execution.log",
+    "missions/irg_diplomado_website_verify_qr/diff.patch"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

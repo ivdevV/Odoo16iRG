@@ -1,0 +1,5 @@
+2026-06-15 - Plan creado antes de modificar codigo.
+2026-06-15 - Implementacion delegada a subagente codificador `general`.
+2026-06-15 - Subagente codificador modifico `reports/diplomado_templates.xml`: reverso con contenido mas ancho, fuente 8.2pt, line-height 1.18, margenes reducidos y listados en dos columnas con `column-count` y `-webkit-column-count`.
+2026-06-15 - Validacion delegada a subagente tester `general`.
+2026-06-15 - Subagente tester valido XML, whitespace, estado de `docker-compose.local.yml` y carga del modulo en `odoo_test_diplomado`.

@@ -1,0 +1,6 @@
+2026-06-15 - Plan creado antes de modificar codigo.
+2026-06-15 - Analisis delegado a subagente `explore`: recomienda distribuir el bloque central entre 58mm y 158mm y reducir firmas.
+2026-06-15 - Implementacion delegada a subagente codificador `general`.
+2026-06-15 - Codificador modifico solo `reports/diplomado_templates.xml`: bajo los textos del anverso, redujo firmas, separo etiquetas y acoto selectores a `.diploma-page.front`.
+2026-06-15 - Validacion delegada a subagente tester `general` usando `docker-compose.local.yml`.
+2026-06-15 - Tester valido XML, whitespace, servicios compose, carga del modulo en `odoo_test_diplomado` y confirmo que no se toca `.back-content` ni markup del reverso.

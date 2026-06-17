@@ -1,0 +1,22 @@
+.o_irg_featured_section {
+    background: linear-gradient(135deg, rgba(240, 247, 255, 0.95), rgba(255, 255, 255, 0.98));
+    border-left: 4px solid #0d6efd !important;
+}
+
+.o_irg_featured_section_badge {
+    color: #0d6efd;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+}
+
+.o_irg_featured_section_body > :last-child {
+    margin-bottom: 0;
+}
+
+.o_irg_featured_section_embed iframe {
+    max-width: 100%;
+}
+
+.o_irg_featured_section_action .btn {
+    white-space: nowrap;
+}

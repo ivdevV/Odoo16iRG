@@ -1,0 +1,3 @@
+2026-06-15T00:00:00Z Created mission for raw embed support in course-level eLearning featured block.
+2026-06-15T00:00:00Z Added op.course irg_featured_section_embed_code Text field, backend textarea, frontend QWeb render, CSS iframe max-width and tests.
+2026-06-15T00:00:00Z Validation passed: compileall OK, XML parse OK, Odoo update and 4 tagged tests passed with 0 failures and 0 errors.

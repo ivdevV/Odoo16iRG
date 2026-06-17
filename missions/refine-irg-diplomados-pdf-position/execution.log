@@ -1,0 +1,7 @@
+2026-06-15 - Plan creado antes de modificar codigo.
+2026-06-15 - Revisado el PDF `/Users/ivrogo/Downloads/Imprimir Diplomado (3).pdf`: el logo se pisa con el texto superior, el reverso empieza demasiado arriba y la composicion queda concentrada en la mitad superior.
+2026-06-15 - Modificado `reports/diplomado_templates.xml`: logo reducido y bajado, eliminado texto duplicado "El instituto Raimon Gaja", contenido del anverso desplazado hacia abajo, firmas bajadas y contenido del reverso desplazado bajo el logo.
+2026-06-15 - Validado XML con `xmllint --noout`: passed.
+2026-06-15 - Validado whitespace con `git diff --check`: passed.
+2026-06-15 - Comprobado `docker compose -f docker-compose.local.yml ps`: entorno local levantado.
+2026-06-15 - Ejecutado `docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d odoo_test_diplomado -u irg_generacion_diplomados --test-enable --stop-after-init --test-tags /irg_generacion_diplomados`: Odoo cargo correctamente y termino con `0 failed, 0 error(s) of 0 tests`; el tag no ejecuto tests Python.

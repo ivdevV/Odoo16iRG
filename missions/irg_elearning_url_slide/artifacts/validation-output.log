@@ -1,0 +1,14 @@
+Static validation:
+- python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide: passed
+- XML parse for backend views, QWeb templates and frontend XML: passed
+
+Odoo validation using docker-compose.local.yml:
+- Command: docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d validation_url_slide_20260615_c -i irg_elearning_url_slide --test-enable --test-tags /irg_elearning_url_slide --stop-after-init --without-demo=all
+- Database: validation_url_slide_20260615_c
+- Result: passed
+- Evidence summary: irg_elearning_url_slide loaded; TestUrlSlide.test_url_slide_requires_http_url and TestUrlSlide.test_url_slide_type started; 0 failed, 0 error(s) of 2 tests.
+
+Earlier failed validation:
+- Database: validation_url_slide_20260615
+- Result: failed due to KeyError 'nbr_url' in website_slides slide channel statistics.
+- Fix: added slide.channel.nbr_url field.

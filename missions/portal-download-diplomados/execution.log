@@ -1,0 +1,22 @@
+# Registro de Ejecución - Misión: portal-download-diplomados
+
+- **Inicio de la fase de implementación**: 2026-06-16T10:40:00+02:00
+- **Tier del modelo**: standard (Gemini 1.5 Pro)
+
+## Historial de Pasos:
+1. **Planificación y Aprobación (Completado)**:
+   - Se diseñó el plan inicial integrando en el módulo existente.
+   - Tras recibir comentarios del usuario, se revisó el plan para crear un nuevo módulo independiente `irg_campus_diplomados_portal` con el fin de evitar conflictos con los másteres tradicionales.
+   - Se acordó listar los diplomados en la pestaña "Mis Diplomas" pero mostrando el estado "Bloqueado / Calificación insuficiente" si la nota del alumno es <= 7.0, denegando y redirigiendo en la descarga directa.
+2. **Creación del Módulo e Implementación (Completado)**:
+   - Se crearon los archivos base del módulo `irg_campus_diplomados_portal` (`__manifest__.py`, `__init__.py`, `controllers/__init__.py`, `controllers/portal.py`, `views/portal_templates.xml`, `tests/__init__.py`, `tests/test_portal.py`).
+   - El controlador hereda de `IrgCampusCertificatesPortal` y añade filtrado y lógica exclusiva para `irg.diplomado.registry`.
+   - La plantilla XML inyecta la alerta y la subsección bajo XPath sin tocar el diseño del módulo de certificados base.
+   - Se implementaron los tests automatizados para validar los flujos de descarga y denegación de alumnos con baja calificación.
+3. **Validación y Ejecución de Tests (Completado)**:
+   - Se ejecutó la instalación y actualización del nuevo módulo en la base de datos `test_irg_db`.
+   - Se ejecutaron los tests unitarios. Inicialmente, el test de flujo de solicitud gratuita fallaba porque la base de datos conservaba los registros creados durante el `setUpClass` (debido a la concurrencia/aislamiento de transacciones entre el test y la instancia Werkzeug del servidor de fondo de Odoo).
+   - Se corrigió el test `test_03_diplomados_contextual_only_visibility_and_request` para forzar un commit de la base de datos tras desvincular los registros iniciales y, a continuación, restaurar el Savepoint de Odoo (`test_%d` dinámico basado en `self._savepoint_id`).
+   - Tras este ajuste, los 3 tests pasaron con éxito (`0 failed, 0 error(s) of 3 tests`).
+   - Se generó el log `test_output.log` y se actualizó `verification.json` indicando el paso exitoso de las pruebas de validación.
+

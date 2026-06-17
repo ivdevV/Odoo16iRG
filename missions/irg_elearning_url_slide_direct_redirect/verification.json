@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "task": "irg_elearning_url_slide_direct_redirect",
+  "checks": [
+    {
+      "name": "python_compile",
+      "result": "pass",
+      "detail": "python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide completed successfully"
+    },
+    {
+      "name": "xml_parse",
+      "result": "pass",
+      "detail": "Backend XML, QWeb XML and frontend XML parsed successfully"
+    },
+    {
+      "name": "javascript_syntax",
+      "result": "pass",
+      "detail": "node --check slides_course_fullscreen_url.js completed successfully"
+    },
+    {
+      "name": "odoo_module_update",
+      "result": "pass",
+      "detail": "Module updated in validation_url_slide_20260615_c using docker-compose.local.yml"
+    },
+    {
+      "name": "odoo_tests",
+      "result": "pass",
+      "detail": "0 failed, 0 errors of 2 focused tests for irg_elearning_url_slide"
+    }
+  ],
+  "evidence": [
+    "missions/irg_elearning_url_slide_direct_redirect/artifacts/validation-output.log"
+  ],
+  "model_tier_used": "trivial",
+  "escalations": 0
+}

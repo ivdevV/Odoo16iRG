@@ -1,0 +1,10 @@
+2026-06-15 - Plan creado antes de tocar codigo.
+2026-06-15 - Micro-spec creada segun SPECIFICATIONS.md.
+2026-06-15 - Implementado modulo inicial irg_elearning_url_slide.
+2026-06-15 - Validacion Odoo con --test-enable fallo por KeyError 'nbr_url' en slide.channel._compute_slides_statistics.
+2026-06-15 - Correccion aplicada: anadido campo slide.channel.nbr_url requerido por estadisticas de categorias de website_slides.
+2026-06-15 - Instalacion enfocada del modulo en validation_url_slide_20260615_b cargo sin errores, pero no ejecuto tests por falta de import en tests/__init__.py.
+2026-06-15 - Correccion aplicada: import de tests y reemplazo de XPath contains(@class) por hasclass().
+2026-06-15 - Validacion estatica final pasada: compileall y parse XML.
+2026-06-15 - Validacion Odoo final pasada en validation_url_slide_20260615_c con --test-tags /irg_elearning_url_slide: 0 failed, 0 errors de 2 tests.
+2026-06-15 - Documentacion README y knowledge base actualizadas.

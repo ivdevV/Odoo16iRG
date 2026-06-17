@@ -1,0 +1,145 @@
+diff --git a/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js b/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js
+index b19217fd..72880d7c 100644
+--- a/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js
++++ b/addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js
+@@ -5,6 +5,13 @@ odoo.define('irg_elearning_url_slide.fullscreen_url', function (require) {
+     const QWeb = core.qweb;
+     const Fullscreen = require('@website_slides/js/slides_course_fullscreen_player')[Symbol.for('default')];
+
++    const getUrlFromEmbedCode = function (embedCode) {
++        const wrapper = document.createElement('div');
++        wrapper.innerHTML = embedCode || '';
++        const link = wrapper.querySelector('a[href]');
++        return link ? link.getAttribute('href') : false;
++    };
++
+     Fullscreen.include({
+         xmlDependencies: (Fullscreen.prototype.xmlDependencies || []).concat([
+             '/irg_elearning_url_slide/static/src/xml/website_slides_fullscreen_url.xml',
+@@ -16,6 +23,7 @@ odoo.define('irg_elearning_url_slide.fullscreen_url', function (require) {
+             slidesDataList.forEach(function (slideData) {
+                 if (slideData.category === 'url') {
+                     slideData.hasQuestion = !!slideData.hasQuestion;
++                    slideData.url = getUrlFromEmbedCode(slideData.embedCode);
+                     if (!slideData.hasQuestion) {
+                         slideData._autoSetDone = true;
+                     }
+@@ -31,7 +39,11 @@ odoo.define('irg_elearning_url_slide.fullscreen_url', function (require) {
+             const slide = this.get('slide');
+
+             if (slide.category === 'url') {
+-                $content.html(QWeb.render('website.slides.fullscreen.content', {widget: this}));
++                if (slide.url) {
++                    window.location.href = slide.url;
++                } else {
++                    $content.html(QWeb.render('website.slides.fullscreen.content', {widget: this}));
++                }
+             }
+
+             return Promise.all([def]);
+diff --git a/missions/irg_elearning_url_slide_direct_redirect/plan.md b/missions/irg_elearning_url_slide_direct_redirect/plan.md
+new file mode 100644
+index 00000000..f1cb9d47
+--- /dev/null
++++ b/missions/irg_elearning_url_slide_direct_redirect/plan.md
+@@ -0,0 +1,28 @@
++# irg_elearning_url_slide_direct_redirect
++
++## Alcance
++
++Cambiar el comportamiento de los slides de tipo `URL` en el reproductor fullscreen de eLearning para que al seleccionarlos redirijan directamente a la URL configurada, evitando la pantalla intermedia.
++
++## Diagnostico
++
++Actualmente el modulo renderiza un contenido intermedio mediante `embed_code`. En fullscreen esto muestra una pantalla vacia/intermedia antes de que el usuario pulse el enlace. El requisito actualizado es que el click sobre el contenido URL lleve directamente al destino.
++
++## Clasificacion de Complejidad
++
++Tier: `trivial`.
++
++Justificacion: cambio localizado en el asset JS del modulo, sin cambios de datos, seguridad, autenticacion, concurrencia ni despliegue.
++
++## Plan
++
++1. Extraer la URL destino desde el `embedCode` ya disponible en los datos del slide.
++2. En `_renderSlide`, si la categoria es `url`, redirigir `window.location.href` a esa URL.
++3. Mantener fallback al render actual si no se puede extraer una URL.
++4. Validar sintaxis JS/Python/XML y actualizar el modulo en Docker local.
++
++## Criterios de Aceptacion
++
++- Al clicar un slide `URL` en fullscreen, el navegador navega directamente a la URL configurada.
++- No se abre pestana nueva.
++- Si falta la URL, no rompe el reproductor y usa el render actual.
+diff --git a/missions/irg_elearning_url_slide_direct_redirect/execution.log b/missions/irg_elearning_url_slide_direct_redirect/execution.log
+new file mode 100644
+index 00000000..2be2f7b8
+--- /dev/null
++++ b/missions/irg_elearning_url_slide_direct_redirect/execution.log
+@@ -0,0 +1,3 @@
++2026-06-15 - Mision creada para cambiar slides URL a redireccion directa en fullscreen.
++2026-06-15 - Implementado parser de href desde embedCode y redireccion por window.location.href para slides categoria url.
++2026-06-15 - Validacion pasada: compileall, XML parse, node --check y actualizacion del modulo con tests enfocados: 0 failed, 0 errors de 2 tests.
+diff --git a/missions/irg_elearning_url_slide_direct_redirect/verification.json b/missions/irg_elearning_url_slide_direct_redirect/verification.json
+new file mode 100644
+index 00000000..3c0683fa
+--- /dev/null
++++ b/missions/irg_elearning_url_slide_direct_redirect/verification.json
+@@ -0,0 +1,36 @@
++{
++  "status": "passed",
++  "task": "irg_elearning_url_slide_direct_redirect",
++  "checks": [
++    {
++      "name": "python_compile",
++      "result": "pass",
++      "detail": "python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide completed successfully"
++    },
++    {
++      "name": "xml_parse",
++      "result": "pass",
++      "detail": "Backend XML, QWeb XML and frontend XML parsed successfully"
++    },
++    {
++      "name": "javascript_syntax",
++      "result": "pass",
++      "detail": "node --check slides_course_fullscreen_url.js completed successfully"
++    },
++    {
++      "name": "odoo_module_update",
++      "result": "pass",
++      "detail": "Module updated in validation_url_slide_20260615_c using docker-compose.local.yml"
++    },
++    {
++      "name": "odoo_tests",
++      "result": "pass",
++      "detail": "0 failed, 0 errors of 2 focused tests for irg_elearning_url_slide"
++    }
++  ],
++  "evidence": [
++    "missions/irg_elearning_url_slide_direct_redirect/artifacts/validation-output.log"
++  ],
++  "model_tier_used": "trivial",
++  "escalations": 0
++}
+diff --git a/missions/irg_elearning_url_slide_direct_redirect/artifacts/validation-output.log b/missions/irg_elearning_url_slide_direct_redirect/artifacts/validation-output.log
+new file mode 100644
+index 00000000..df98b519
+--- /dev/null
++++ b/missions/irg_elearning_url_slide_direct_redirect/artifacts/validation-output.log
+@@ -0,0 +1,15 @@
++Static validation:
++- python3 -m compileall addons-extra/extrairg/irg_elearning_url_slide: passed
++- XML parse for backend views, QWeb templates and frontend XML: passed
++- node --check addons-extra/extrairg/irg_elearning_url_slide/static/src/js/slides_course_fullscreen_url.js: passed
++
++Odoo validation using docker-compose.local.yml:
++- Command: docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d validation_url_slide_20260615_c -u irg_elearning_url_slide --test-enable --test-tags /irg_elearning_url_slide --stop-after-init --without-demo=all
++- Database: validation_url_slide_20260615_c
++- Result: passed
++- Evidence summary: module updated; TestUrlSlide.test_url_slide_requires_http_url and TestUrlSlide.test_url_slide_type executed; 0 failed, 0 error(s) of 2 tests.
++
++Behavior changed:
++- URL slides in fullscreen now extract the configured href from embedCode during preprocessing.
++- When a URL slide is rendered, the player navigates with window.location.href to the configured URL in the same browser tab.
++- If no URL can be extracted, the previous intermediate render remains as fallback.

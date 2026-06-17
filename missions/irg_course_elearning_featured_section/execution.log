@@ -1,0 +1,9 @@
+2026-06-15T00:00:00Z Created mission plan for global course eLearning featured block.
+2026-06-15T00:00:00Z Confirmed course-to-eLearning relation through isep_elearning_custom: op.course.subject_ids -> op.subject.slide_channel_id -> slide.channel.op_subject_ids.
+2026-06-15T00:00:00Z Implemented new module irg_course_elearning_featured_section with op.course configuration fields, slide.channel helper, backend view, frontend QWeb block and SCSS.
+2026-06-15T00:00:00Z Added focused TransactionCase tests and knowledge artifact.
+2026-06-15T00:00:00Z First Odoo install validation loaded the module but tests failed because local op.course requires lang; updated test fixture to set lang explicitly.
+2026-06-15T00:00:00Z Reactive escalation standard->complex not required for implementation, but validation exposed a pre-existing website_slides stats issue: isep_elearning_custom adds certification category without nbr_certification counters. Added compatibility counters in the new module to keep Odoo statistics recompute stable.
+2026-06-15T00:00:00Z Final Odoo validation passed on validation_featured_section_20260615_c: 0 failed, 0 errors of 3 tests.
+2026-06-15T00:00:00Z Wrapped sanitized featured HTML body with Markup before QWeb output so configured HTML renders as HTML instead of escaped text.
+2026-06-15T00:00:00Z Definitive validation passed on validation_featured_section_20260615_d: module installed and 3 tagged post-install tests passed with 0 failures and 0 errors.

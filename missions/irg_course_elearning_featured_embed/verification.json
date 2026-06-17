@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "task": "irg_course_elearning_featured_embed",
+  "checks": [
+    {
+      "name": "python_compile",
+      "result": "pass",
+      "detail": "python3 -m compileall addons-extra/extrairg/irg_course_elearning_featured_section completed successfully"
+    },
+    {
+      "name": "xml_parse",
+      "result": "pass",
+      "detail": "All XML view files in irg_course_elearning_featured_section parsed successfully with lxml"
+    },
+    {
+      "name": "odoo_update_and_tests",
+      "result": "pass",
+      "detail": "Odoo updated irg_course_elearning_featured_section and ran 4 tagged post-install tests: 0 failed, 0 errors"
+    }
+  ],
+  "evidence": [
+    "missions/irg_course_elearning_featured_embed/artifacts/validation-output.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

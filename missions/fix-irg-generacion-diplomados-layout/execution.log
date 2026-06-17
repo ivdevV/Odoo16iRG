@@ -1,0 +1,84 @@
+2026-06-15 - Plan creado antes de modificar codigo.
+2026-06-15 - Inspeccionados knowledge/workflow del proyecto y reporte `irg_generacion_diplomados`.
+2026-06-15 - Inspeccionadas dimensiones de imagenes static con `sips`: fondo 1123x776, logo 330x148, firmas 153x88 y 401x347.
+2026-06-15 - Modificado `reports/diplomado_templates.xml`: reset de pagina reforzado, fondo sin z-index negativo, titulo del diplomado sin uppercase, reverso reestructurado en flujo vertical.
+2026-06-15 - Validado XML con `xmllint --noout`: passed.
+2026-06-15 - Validado diff con `git diff --check`: passed.
+2026-06-15 - No se encontro `odoo-bin` en el workspace; no fue posible ejecutar tests transaccionales ni render PDF real desde este checkout.
+2026-06-15 - Registrados `verification.json`, `diff.patch`, `artifacts/validation.log` y aprendizaje en `.agents/knowledge/odoo_development_modding/artifacts/diplomado_report_layout.md`.
+2026-06-15 - Reestructurada la plantilla report_diplomado_template y añadido disable_shrinking al paperformat para adaptarlo al estilo limpio de irg_generacion_diplomas.
+2026-06-15 - Validación en caliente desde contenedor Docker:
+  - Pruebas unitarias completadas satisfactoriamente (0 fallos, 0 errores en 3 tests).
+  - Regenerado PDF y HTML de prueba a través de odoo shell.
+  - La inspección visual del PDF revela que el documento tiene 4 páginas (en lugar de 2).
+  - El anverso se desborda debido a la escala de 1.08 y la posición top 193mm de las firmas, cortando el texto a la mitad (cargos en página 2).
+  - El reverso se desborda a una página 4 en blanco.
+  - Las imágenes no cargan porque el servidor HTTP está inactivo durante la ejecución de odoo shell.
+  - Se declara la verificación como FAILED debido a estos problemas de maquetación en el PDF físico.
+2026-06-15 - Ajustada la escala de transform: scale(1.08) a scale(1.0) en la clase .diploma-scale para evitar el desborde y corregir la paginación según reporte de validación.
+2026-06-15 - Validación posterior con escala 1.0 reveló desbordamiento persistente a 4 páginas debido a márgenes implícitos y conflictos de la clase nativa `.page` de Odoo.
+  - Se removió la clase nativa `page` de los divs de anverso/reverso.
+  - Se redujo el alto del contenedor `.diploma-page` y `.diploma-scale` de 209mm a 200mm para dar un margen de tolerancia a wkhtmltopdf.
+  - Se movió el contenedor de firmas a top 184mm (y las imágenes correspondientes a 157mm/156mm).
+  - Se configuró `disable_shrinking` a `False` en el paperformat para permitir el ajuste de escala automático.
+  - Se actualizó el módulo y regeneró el reporte en Docker.
+  - La verificación física del PDF final confirma que tiene **exactamente 2 páginas** (anverso completo en pág 1 con firmas perfectas, reverso en pág 2 sin páginas residuales en blanco).
+  - Verificación formal del estado del reporte cambiada a **PASSED**.
+2026-06-15 - Implementada la generación de diplomas con ReportLab: creado reports/diplomado_pdf_report.py, registrados los inits correspondientes, modificado el wizard/diplomado_wizard.py para guardar el PDF como ir.attachment y retornar act_url, añadido el campo attachment_id a irg.diplomado.registry, y actualizados los tests unitarios.
+2026-06-15 - Validación de la implementación con ReportLab en contenedor Docker:
+  - Pruebas unitarias de Odoo completadas con éxito (0 fallos, 0 errores en 3 tests).
+  - Regenerado PDF local `test_output.pdf` usando `scratch/generate_pdf.py`.
+  - La inspección visual del PDF confirma que:
+    1. Las imágenes de fondo (filigranas), logo de cabecera y firmas físicas reales se cargan a la perfección (ya que al usar Python se resuelven directamente sobre las rutas de archivo del sistema en el contenedor local sin depender del servidor HTTP).
+    2. El PDF tiene exactamente 2 páginas (anverso y reverso) sin páginas vacías intermedias ni al final.
+    3. No existen márgenes ni bordes blancos (full-bleed Landscape A4).
+    4. Los textos se encuentran perfectamente posicionados y sin solaparse ni cortarse.
+  - Verificación formal final declarada como **PASSED**.
+2026-06-15 - Implementado el código QR dinámico (utilizando qrcode e ImageReader de ReportLab) en el anverso del PDF. Reajustadas las dimensiones y posiciones de las firmas y del logo superior (utilizando logo_irg.png), y aumentados los tamaños de fuente de las secciones en el reverso para mejorar la legibilidad.
+2026-06-15 - Validación de las mejoras de ReportLab en contenedor Docker:
+  - Pruebas unitarias de Odoo completadas satisfactoriamente (0 fallos, 0 errores en 3 tests).
+  - Regenerado PDF local `test_output.pdf` usando `scratch/generate_pdf.py`.
+  - La inspección visual del PDF confirma que:
+    1. Se visualiza correctamente el nuevo logotipo institucional `logo_irg.png` centrado en la parte superior.
+    2. Las firmas físicas se muestran con un tamaño mayor y excelente legibilidad.
+    3. El código QR dinámico se dibuja correctamente en la parte inferior izquierda, con el texto "Nº Registro: DRAFT" perfectamente centrado debajo del QR.
+    4. Las firmas y la fecha a la derecha del QR se mantienen alineadas y ordenadas de manera estética.
+    5. En la página 2 (reverso), los títulos y el desglose de asignaturas se muestran con fuentes visiblemente mayores y muy legibles en sus columnas.
+    6. Las imágenes cargan al 100% y el PDF tiene exactamente 2 páginas totales.
+  - Verificación formal final declarada como **PASSED**.
+2026-06-15 - Refinamiento estético de la plantilla PDF ReportLab:
+  - Cambiada la referencia del logo a `logo_irg.png` en el reverso (pág 2).
+  - Reducido el tamaño del código QR a `28*mm` y reposicionado a `22*mm, 12*mm` (con el texto de registro centrado a `y=6*mm`).
+  - Redimensionada la firma de Raimon Gaja a `48*mm x 18*mm` en `x=72*mm, y=page_height-162*mm-18*mm` (texto de cargo a `x=72*mm, width=80*mm`).
+  - Redimensionada la firma de Fermín Carrillo a `52*mm x 18*mm` en `x=185*mm, y=page_height-161*mm-18*mm` (texto de cargo a `x=185*mm, width=80*mm`).
+2026-06-15 - Ajustadas las coordenadas verticales del anverso para comprimir el diseño hacia el centro y evitar recortes de impresión:
+  - Bajado el Logo Superior (logo_y a page_height - 16*mm - logo_h).
+  - Ajustados textos centrales ("Hace constar que" a page_height - 63*mm, alumno a page_height - 81*mm, aprobación a page_height - 104*mm, diplomado a page_height - 124*mm, frase final a page_height - 142*mm y fecha central a coordenada absoluta y = 48*mm).
+  - Subido el QR a y = 18*mm y su registro a y = 12*mm.
+  - Subidas las firmas a y = 35*mm y los textos de cargo a y = 20*mm.
+2026-06-15 - Desplazados hacia arriba los textos del anverso para solucionar solape de firmas y fecha central:
+  - "Hace constar que" subido a `page_height - 58 * mm` (152mm).
+  - "Nombre del Alumno" subido a `page_height - 75 * mm` (135mm).
+  - "Texto de Aprobación" subido a `page_height - 95 * mm` (115mm).
+  - "Nombre del Diplomado" subido a `page_height - 118 * mm` (92mm).
+  - "Frase final" subido a `page_height - 133 * mm` (77mm).
+  - Fecha central "Barcelona, a..." subida a `58 * mm` (separación de 5mm con firmas).
+  - Regenerado PDF, tests unitarios superados, y confirmada visualmente la eliminación del solape.
+2026-06-16 - Modificaciones adicionales de diseño según feedback del usuario:
+  - Cambiado el texto "Hace constar que" por "certifica".
+  - Centrados y alineados perfectamente los bloques de nombres/cargos de firmas bajo sus respectivas imágenes de firma (Raimon Gaja a x=56mm y Fermín Carrillo a x=171mm).
+  - Pruebas unitarias de Odoo completadas con éxito y regenerado el PDF para comprobar visualmente la alineación perfecta.
+2026-06-16 - Mejoras de tipografía, texto y fecha:
+  - Modificado el encabezado a "certifica que".
+  - Igualados los tamaños de fuente del nombre del alumno y diplomado a 23pt (con leading a 27pt en el título).
+  - Modificada la visualización de la fecha de expedición para mostrarse en formato largo español (ej. "15 de Junio de 2026").
+  - Añadido soporte de viñetas (bullet points) a la lista de asignaturas de la página 2 (reverso) y aumentado su tamaño a 13pt (con leading de 17pt).
+  - Modificado el dibujo del reverso para calcular de forma dinámica la altura con wrap() y evitar cualquier posible solapamiento.
+  - Pruebas de Odoo completadas con éxito.
+2026-06-16 - Alineación de firmas y cargos con el QR:
+  - Bajados las imágenes de firma a y=27mm y los nombres/cargos a y=12mm para alinearse perfectamente con la parte superior del QR y el texto inferior respectivamente.
+  - Pruebas unitarias de Odoo superadas y regenerado el PDF para confirmación visual.
+
+
+
+

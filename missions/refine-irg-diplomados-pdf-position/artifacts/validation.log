@@ -1,0 +1,22 @@
+Validation date: 2026-06-15
+
+Checks:
+
+- XML syntax: pass
+  Command: `xmllint --noout "addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml"`
+
+- Diff whitespace: pass
+  Command: `git diff --check -- "addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml"`
+
+- Local compose availability: pass
+  Command: `docker compose -f "docker-compose.local.yml" ps`
+  Result: `odoo_local`, `pgodoo_local` and `redisodoo_local` were running.
+
+- Odoo module load/update in local compose: pass with no module tests executed
+  Command: `docker compose -f "docker-compose.local.yml" exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d odoo_test_diplomado -u irg_generacion_diplomados --test-enable --stop-after-init --test-tags /irg_generacion_diplomados`
+  Result: Odoo completed with `0 failed, 0 error(s) of 0 tests`.
+
+Visual verification:
+
+- Input PDF reviewed: `/Users/ivrogo/Downloads/Imprimir Diplomado (3).pdf`.
+- Final rendered PDF after this patch was not generated from Odoo in this session; regenerate from the UI to confirm exact visual output.

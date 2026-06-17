@@ -1,0 +1,14 @@
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+index 9172a5ad..c307b791 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_templates.xml
+@@ -13,6 +13,9 @@
+                             padding: 0 !important;
+                             background-color: transparent !important;
+                             border: none !important;
++                            width: 100% !important;
++                            max-width: none !important;
++                            min-width: 0 !important;
+                         }
+                         body {
+                             font-family: 'Helvetica', 'Arial', sans-serif;

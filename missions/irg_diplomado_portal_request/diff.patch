@@ -1,0 +1,33 @@
+# Diff summary for mission irg_diplomado_portal_request
+
+New module:
+
+- `addons-extra/extrairg/irg_diplomado_portal_request/__init__.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/__manifest__.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/controllers/__init__.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/controllers/portal.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/models/__init__.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/models/op_course.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/models/diplomado_portal_request.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/models/diplomado_registry.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/security/ir.model.access.csv`
+- `addons-extra/extrairg/irg_diplomado_portal_request/data/ir_sequence_data.xml`
+- `addons-extra/extrairg/irg_diplomado_portal_request/views/diplomado_portal_request_views.xml`
+- `addons-extra/extrairg/irg_diplomado_portal_request/views/course_portal_tiles.xml`
+- `addons-extra/extrairg/irg_diplomado_portal_request/views/portal_templates.xml`
+- `addons-extra/extrairg/irg_diplomado_portal_request/tests/__init__.py`
+- `addons-extra/extrairg/irg_diplomado_portal_request/tests/test_portal.py`
+
+Documentation and knowledge:
+
+- `doc/modules/extrairg/irg_diplomado_portal_request.md`
+- `.agents/knowledge/odoo_development_modding/artifacts/irg_diplomado_portal_request.md`
+
+Mission evidence:
+
+- `missions/irg_diplomado_portal_request/plan.md`
+- `missions/irg_diplomado_portal_request/execution.log`
+- `missions/irg_diplomado_portal_request/verification.json`
+- `missions/irg_diplomado_portal_request/artifacts/test-output.log`
+
+No existing Odoo module source files were modified for this mission.

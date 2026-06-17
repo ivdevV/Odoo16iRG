@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_course_form_inherit_irg" model="ir.ui.view">
+        <field name="name">op.course.form.inherit.irg</field>
+        <field name="model">op.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_course_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Asignaturas Diplomado" name="diplomado_subjects">
+                    <group>
+                        <group string="Asignaturas Presenciales">
+                            <field name="irg_diplomado_subjects_presencial" placeholder="Escriba la lista de asignaturas presenciales (una por línea)..." style="height: 250px;"/>
+                        </group>
+                        <group string="Asignaturas Online">
+                            <field name="irg_diplomado_subjects_online" placeholder="Escriba la lista de asignaturas online (una por línea)..." style="height: 250px;"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

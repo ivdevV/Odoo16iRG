@@ -79,3 +79,27 @@ docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_nlex_cert_tdd \
 ```
 
 **Despliegue:** actualizar los 3 módulos (`-u irg_nlex_grade_exemption,irg_gradebook_certificates,irg_certificate_partial`).
+
+---
+
+## v16.0.1.2.0 — Generalización de la regla de exención NLEX → "contiene EX" (2026-06-15)
+
+**Petición:** que la exención no se limite al prefijo `NLEX`, sino a cualquier asignatura marcada como exenta de forma más general.
+
+**Decisión:** una asignatura es exenta cuando su código **contiene** la subcadena `EX` (case-insensitive). Cubre el caso legacy `NLEX*` y añade `*EX*` (p.ej. `MATEX01`, `ex03`).
+
+**Cambios:**
+* Nuevo `models/op_subject.py`: helper `op.subject.irg_is_grade_exempt()` como única fuente de verdad de la regla. Público (sin guion bajo) para poder llamarlo desde QWeb.
+* Refactor: los 7 puntos que duplicaban `code.upper().startswith('NLEX')` ahora llaman al helper:
+  - `app_gradebook_student.py` (state_to_done, _amount_prod_final, compute_avg_score, action_export_to_dec).
+  - `ap_gradebook_summary.py` (promedio cuatrimestral).
+  - `irg_certificate_request.py` (hook de certificados).
+  - `views/report_gradebook.xml` y `views/certified_diploma.xml` (condiciones QWeb).
+
+**Pruebas (TDD):**
+* Test nuevo `test_exempt_rule_matches_any_ex_code`: verifica que `MATEX01` (no empieza por NLEX pero contiene EX) queda exento y excluido del certificado, que `NLEX01` sigue exento, y que un código sin EX no lo está.
+* Suite completa de los 3 módulos: `0 failed, 0 error(s) of 33 tests` en BD clonada `test_nlex_ex_tdd`.
+
+> ⚠️ Limitación conocida: códigos no exentos que contengan la subcadena `EX` (p.ej. `TEXTO01`, `FLEX02`) se marcarían como exentos por error. Evitar esos códigos o cambiar a marca explícita si surge el caso.
+
+**Despliegue:** actualizar `irg_nlex_grade_exemption` (los otros dos módulos no cambian en esta versión).

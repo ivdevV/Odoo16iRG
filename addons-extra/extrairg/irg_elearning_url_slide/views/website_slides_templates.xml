@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="slide_content_detailed_irg_url" inherit_id="website_slides.slide_content_detailed" name="Slide Content Detailed - IRG URL">
+        <xpath expr="//div[hasclass('ratio')][1]" position="before">
+            <div t-if="slide.slide_category == 'url'" class="o_irg_url_slide card border-0 shadow-sm my-3">
+                <div class="card-body text-center p-4 p-md-5">
+                    <i class="fa fa-link fa-2x text-primary mb-3" aria-hidden="true"/>
+                    <h3 class="mb-3" t-esc="slide.name"/>
+                    <p class="text-muted mb-4" t-if="slide.description" t-field="slide.description"/>
+                    <a class="btn btn-primary btn-lg" t-att-href="slide.irg_url">
+                        <t t-esc="slide.irg_url_button_label or 'Ir al contenido'"/>
+                    </a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="slide_icon_irg_url" inherit_id="website_slides.slide_icon" name="Slide Icon - IRG URL">
+        <xpath expr="//i[@t-if=&quot;slide.slide_type == 'quiz'&quot;]" position="after">
+            <i t-if="slide.slide_type == 'url'" t-att-class="'fa fa-link %s' % icon_class"/>
+        </xpath>
+    </template>
+
+    <template id="slide_fullscreen_sidebar_category_irg_url" inherit_id="website_slides.slide_fullscreen_sidebar_category" name="Fullscreen Sidebar - IRG URL" priority="110">
+        <xpath expr="//li[contains(@t-attf-class, 'o_wslides_fs_sidebar_list_item')]" position="attributes">
+            <attribute name="t-att-data-embed-code">slide.embed_code if slide.slide_category in ['video', 'document', 'infographic', 'local_external', 'bunny', 'scorm', 'url'] else False</attribute>
+            <attribute name="t-att-data-url">slide.irg_url if slide.slide_category == 'url' else False</attribute>
+        </xpath>
+    </template>
+
+    <template id="course_slides_list_slide_irg_url" inherit_id="website_slides.course_slides_list_slide" name="Course Slide List - IRG URL">
+        <xpath expr="//a[hasclass('o_wslides_js_slides_list_slide_link')]" position="attributes">
+            <attribute name="t-att-href">slide.irg_url if slide.slide_category == 'url' and slide.irg_url else '/slides/slide/%s' % slug(slide)</attribute>
+            <attribute name="t-attf-href"/>
+        </xpath>
+    </template>
+
+    <template id="lesson_card_irg_url" inherit_id="website_slides.lesson_card" name="Lesson Card - IRG URL">
+        <xpath expr="//a[@t-title='slide.name']" position="attributes">
+            <attribute name="t-att-href">slide.irg_url if slide.slide_category == 'url' and slide.irg_url else '/slides/slide/%s%s' % (slug(slide), query_string)</attribute>
+            <attribute name="t-attf-href"/>
+        </xpath>
+        <xpath expr="//a[hasclass('card-title')]" position="attributes">
+            <attribute name="t-att-href">slide.irg_url if slide.slide_category == 'url' and slide.irg_url else '/slides/slide/%s%s' % (slug(slide), query_string)</attribute>
+            <attribute name="t-attf-href"/>
+        </xpath>
+    </template>
+
+    <template id="slide_aside_training_category_irg_url" inherit_id="website_slides.slide_aside_training_category" name="Training Sidebar - IRG URL">
+        <xpath expr="//a[contains(@t-attf-class, 'd-flex') and contains(@t-att-href, '/slides/slide/')]" position="attributes">
+            <attribute name="t-att-href">aside_slide.irg_url if can_access and aside_slide.slide_category == 'url' and aside_slide.irg_url else ('/slides/slide/%s' % (slug(aside_slide)) if can_access else '#')</attribute>
+        </xpath>
+    </template>
+
+    <template id="slide_nav_irg_url" inherit_id="website_slides.slide_content_detailed" name="Slide Navigation - IRG URL">
+        <xpath expr="//a[contains(@t-att-href, 'previous_slide')]" position="attributes">
+            <attribute name="t-att-href">previous_slide.irg_url if previous_slide and previous_slide.slide_category == 'url' and previous_slide.irg_url else ('/slides/slide/%s' % (slug(previous_slide)) if previous_slide else '#')</attribute>
+        </xpath>
+        <xpath expr="//a[contains(@t-att-href, 'next_slide')]" position="attributes">
+            <attribute name="t-att-href">next_slide.irg_url if next_slide and next_slide.slide_category == 'url' and next_slide.irg_url else ('/slides/slide/%s' % (slug(next_slide)) if next_slide else '#')</attribute>
+        </xpath>
+    </template>
+
+    <template id="lesson_content_quiz_irg_url" inherit_id="website_slides.lesson_content_quiz" name="Lesson Quiz Next URL - IRG URL">
+        <xpath expr="//div[hasclass('o_wslides_js_lesson_quiz')]" position="attributes">
+            <attribute name="t-att-data-next-slide-url">next_slide.irg_url if next_slide and next_slide.slide_category == 'url' and next_slide.irg_url else ('/slides/slide/%s' % (slug(next_slide)) if next_slide else None)</attribute>
+        </xpath>
+    </template>
+</odoo>

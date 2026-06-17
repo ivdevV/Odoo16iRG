@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+        <html lang="en-US" web-base-url="http://127.0.0.1:8069">
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="initial-scale=1"/>
+                <title>Odoo Report</title>
+                <link type="text/css" rel="stylesheet" href="/web/assets/3140-6d8ddbd/web.report_assets_common.min.css" data-asset-bundle="web.report_assets_common" data-asset-version="6d8ddbd"/>
+                
+                
+                <script type="text/javascript">
+                    window.odoo = {};
+                    window.odoo.__session_info__ = {is_report: true};
+                </script>
+                <script type="text/javascript" src="/web/assets/2097-c13a66b/web.assets_common.min.js" data-asset-bundle="web.assets_common" data-asset-version="c13a66b"></script>
+                <script type="text/javascript" src="/web/assets/3141-6d8ddbd/web.report_assets_common.min.js" data-asset-bundle="web.report_assets_common" data-asset-version="6d8ddbd"></script>
+            </head>
+            <body class="container" dir="ltr">
+                <div id="wrapwrap">
+                    <main>
+                        
+            
+            <div class="article" data-oe-model="irg.diplomado.registry" data-oe-id="8" data-oe-lang="en_US">
+                
+                    <style>
+                        @page {
+                            size: A4 landscape;
+                            margin: 0 !important;
+                        }
+                        html, body, body.container, #wrapwrap, main, .article, .page {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            background-color: transparent !important;
+                            border: none !important;
+                            width: 100% !important;
+                            max-width: none !important;
+                            min-width: 0 !important;
+                        }
+                        body {
+                            font-family: 'Helvetica', 'Arial', sans-serif;
+                            -webkit-print-color-adjust: exact;
+                            background-color: #ffffff !important;
+                        }
+                        .diploma-page {
+                            position: relative;
+                            width: 297mm;
+                            height: 210mm;
+                            margin: 0;
+                            padding: 0;
+                            page-break-after: always;
+                            overflow: hidden;
+                            box-sizing: border-box;
+                        }
+                        .diploma-page.back {
+                            page-break-after: avoid;
+                        }
+                        .diploma-scale {
+                            position: absolute;
+                            left: 50%;
+                            top: 50%;
+                            width: 297mm;
+                            height: 210mm;
+                            margin-left: -148.5mm;
+                            margin-top: -105mm;
+                            transform: scale(1.08);
+                            transform-origin: center center;
+                        }
+                        .bg-image {
+                            position: absolute;
+                            inset: 0;
+                            top: 0;
+                            right: 0;
+                            bottom: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                            z-index: 0;
+                            display: block;
+                        }
+                        .top-logo {
+                            position: absolute;
+                            left: 112.5mm;
+                            top: 16mm;
+                            width: 72mm;
+                            height: auto;
+                            z-index: 2;
+                        }
+                        .diploma-page.front .top-logo {
+                            left: 105.5mm;
+                            top: 11.5mm;
+                            width: 86mm;
+                        }
+                        .center-text {
+                            position: absolute;
+                            left: 0;
+                            width: 297mm;
+                            text-align: center;
+                            z-index: 2;
+                        }
+                        .diploma-page.front .signature-container-left {
+                            position: absolute;
+                            left: 25mm;
+                            width: 95mm;
+                            top: 193mm;
+                            text-align: center;
+                            font-size: 10.5pt;
+                            line-height: 1.15;
+                            z-index: 2;
+                        }
+                        .diploma-page.front .signature-container-right {
+                            position: absolute;
+                            left: 177mm;
+                            width: 95mm;
+                            top: 193mm;
+                            text-align: center;
+                            font-size: 10.5pt;
+                            line-height: 1.15;
+                            z-index: 2;
+                        }
+                        .diploma-page.front .signature-img-left {
+                            position: absolute;
+                            left: 54mm;
+                            top: 166mm;
+                            width: 37mm;
+                            height: auto;
+                            z-index: 2;
+                        }
+                        .diploma-page.front .signature-img-right {
+                            position: absolute;
+                            left: 203mm;
+                            top: 165mm;
+                            width: 43mm;
+                            height: auto;
+                            z-index: 2;
+                        }
+                        .diploma-page.front .diplomado-title {
+                            left: 16mm;
+                            width: 265mm;
+                            top: 113mm;
+                            font-size: 21pt;
+                            font-weight: bold;
+                            color: #000;
+                            line-height: 1.12;
+                            letter-spacing: 0.3px;
+                        }
+                        .back-content {
+                            position: absolute;
+                            left: 35mm;
+                            top: 64mm;
+                            width: 227mm;
+                            z-index: 2;
+                            text-align: center;
+                            color: #333;
+                            font-size: 8.2pt;
+                            line-height: 1.18;
+                        }
+                        .module-section {
+                            margin: 0 0 4mm 0;
+                        }
+                        .module-title {
+                            margin: 0 0 2mm 0;
+                            font-size: 10.5pt;
+                            font-weight: bold;
+                            color: #033DAA;
+                        }
+                        .module-list {
+                            white-space: pre-line;
+                            margin: 0;
+                            text-align: left;
+                            column-count: 2;
+                            column-gap: 10mm;
+                            -webkit-column-count: 2;
+                            -webkit-column-gap: 10mm;
+                        }
+                        .module-list span {
+                            display: block;
+                        }
+                        .module-empty {
+                            color: #777;
+                            font-style: italic;
+                            text-align: center;
+                        }
+                    </style>
+
+                    
+                    <div class="page diploma-page front">
+                        <div class="diploma-scale">
+                            
+                            <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
+
+                            
+                            <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
+
+                            
+                            <div class="center-text" style="top: 58mm; font-size: 14pt; color: #727F77; font-style: italic;">
+                                Hace constar que
+                            </div>
+
+                            
+                            <div class="center-text" style="top: 69mm; font-size: 29pt; line-height: 1.05; font-weight: bold; color: #000; letter-spacing: 1px;">
+                                <span>Juan Pérez</span>
+                            </div>
+
+                            
+                            <div class="center-text" style="left: 20mm; width: 257mm; top: 91mm; font-size: 13pt; color: #6C7A71; line-height: 1.32; font-family: &#39;Helvetica&#39;, &#39;Arial&#39;, sans-serif;">
+                                ha aprobado los estudios correspondientes al programa de contenidos que figura en el dorso, celebrado del
+                                <strong><span>1/01/2026</span></strong> al
+                                <strong><span>30/06/2026</span></strong>, con una duración de
+                                <strong><span>150</span> horas</strong>
+                                    (equivalente a <strong><span>6.0</span> ECTS</strong>), por lo que se expide el presente diploma:
+                            </div>
+
+                            
+                            <div class="center-text diplomado-title">
+                                <span>DIPLOMADO EN PSICOLOGÍA CLÍNICA</span>
+                            </div>
+
+                            
+                            <div class="center-text" style="top: 144mm; font-size: 13pt; color: #6C7A71; font-style: italic;">
+                                que acredita haber superado con aprovechamiento las mencionadas enseñanzas.
+                            </div>
+
+                            
+                            <div class="center-text" style="top: 158mm; font-size: 13pt; color: #6C7A71;">
+                                Barcelona, a <span>15/06/2026</span>
+                            </div>
+
+                            
+                            <img class="signature-img-left" src="/irg_generacion_diplomados/static/src/img/firma_izquierda.jpg"/>
+                            <img class="signature-img-right" src="/irg_generacion_diplomados/static/src/img/firma_derecha.jpg"/>
+
+                            <div class="signature-container-left">
+                                <strong>Raimon Gaja Jaumeandreu</strong><br/>
+                                <span style="color: #666; font-size: 9.5pt;">Director General iRG</span>
+                            </div>
+
+                            <div class="signature-container-right">
+                                <strong>Fermín Carrillo González</strong><br/>
+                                <span style="color: #666; font-size: 9.5pt;">Director de Relaciones Internacionales</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="page diploma-page back">
+                        <div class="diploma-scale">
+                            
+                            <img class="bg-image" src="/irg_generacion_diplomados/static/src/img/diploma_background.jpg"/>
+
+                            
+                            <img class="top-logo" src="/irg_generacion_diplomados/static/src/img/logo_instituto.jpg"/>
+
+                            <div class="back-content">
+                                <div class="module-section">
+                                    <div class="module-title">Módulos Presenciales</div>
+                                    <div class="module-list">
+                                            <span>Módulo 1: Introducción a la Psicopatología<br>
+Módulo 2: Evaluación Clínica<br>
+Módulo 3: Psicoterapia Integradora</span>
+                                    </div>
+                                </div>
+
+                                <div class="module-section">
+                                    <div class="module-title">Módulos Online</div>
+                                    <div class="module-list">
+                                            <span>Módulo 4: Farmacología Clínica<br>
+Módulo 5: Ética en Psicología</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            
+            </div>
+        
+        
+                    </main>
+                </div>
+            </body>
+        </html>

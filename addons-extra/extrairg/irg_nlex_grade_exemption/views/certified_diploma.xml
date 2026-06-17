@@ -2,7 +2,7 @@
 <odoo>
     <template id="t_cert_diploma_document_inherit" inherit_id="isep_openeducat_reports.t_cert_diploma_document">
         <xpath expr="//t[@t-set='materias_obligatorias']" position="attributes">
-            <attribute name="t-value">materias.filtered(lambda r: r.op_subject_id.subject_type == 'compulsory' and not (r.op_subject_id.code or '').upper().startswith('NLEX'))</attribute>
+            <attribute name="t-value">materias.filtered(lambda r: r.op_subject_id.subject_type == 'compulsory' and not r.op_subject_id.irg_is_grade_exempt())</attribute>
         </xpath>
     </template>
 </odoo>

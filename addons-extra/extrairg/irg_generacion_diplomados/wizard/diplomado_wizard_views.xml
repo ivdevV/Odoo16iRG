@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_diplomado_wizard_form" model="ir.ui.view">
+        <field name="name">irg.diplomado.wizard.form</field>
+        <field name="model">irg.diplomado.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generar Diplomado">
+                <sheet>
+                    <group>
+                        <group string="Información Básica">
+                            <field name="student_id" readonly="1" force_save="1"/>
+                            <field name="student_name"/>
+                            <field name="course_id" required="1"/>
+                            <field name="diplomado_name"/>
+                        </group>
+                        <group string="Detalles de Celebración e Impresión">
+                            <label for="start_date" string="Fechas de Celebración"/>
+                            <div class="o_row">
+                                <field name="start_date" placeholder="Fecha Inicio"/>
+                                <span> a </span>
+                                <field name="end_date" placeholder="Fecha Fin"/>
+                            </div>
+                            <field name="duration_hours"/>
+                            <field name="duration_ects"/>
+                            <field name="issue_date"/>
+                            <field name="diploma_type" widget="radio"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Asignaturas Presenciales" name="subjects_presencial">
+                            <p class="text-muted">
+                                Escriba o modifique la lista de asignaturas presenciales (una por línea) que aparecerán en el reverso.
+                            </p>
+                            <field name="subjects_presencial" placeholder="Asignaturas presenciales..." style="height: 200px;"/>
+                        </page>
+                        <page string="Asignaturas Online" name="subjects_online">
+                            <p class="text-muted">
+                                Escriba o modifique la lista de asignaturas online (una por línea) que aparecerán en el reverso.
+                            </p>
+                            <field name="subjects_online" placeholder="Asignaturas online..." style="height: 200px;"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button name="action_print_diplomado" string="Generar e Imprimir" type="object" class="oe_highlight"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_diplomado_wizard" model="ir.actions.act_window">
+        <field name="name">Generar Diplomado</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">irg.diplomado.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

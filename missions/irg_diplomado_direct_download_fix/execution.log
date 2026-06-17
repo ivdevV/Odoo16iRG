@@ -1,0 +1,6 @@
+2026-06-16 Plan creado antes de modificar codigo. Se corregira el flujo de solicitud para descargar directamente el diploma.
+2026-06-16 Controlador actualizado: el POST crea/recupera `irg.diplomado.registry`, genera attachment si falta y devuelve descarga directa. QWeb cambia textos de solicitud/tramite por descarga directa.
+2026-06-16 Tests actualizados: el POST debe devolver contenido PDF y no crear `irg.diplomado.portal.request`; se mockea `action_reprint` para un PDF determinista.
+2026-06-16 Validacion estatica pasada: compileall y parseo XML.
+2026-06-16 Validacion Odoo pasada con docker-compose.local.yml: 0 failed, 0 error(s), 5 tests.
+2026-06-16 Documentacion y knowledge actualizadas para dejar claro que el flujo descarga directamente y no envia peticion a academica.

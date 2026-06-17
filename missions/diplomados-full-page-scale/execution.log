@@ -1,0 +1,7 @@
+2026-06-15 - Plan creado antes de modificar codigo.
+2026-06-15 - Analisis delegado a subagente `explore`: causa probable identificada como smart shrinking/wrappers con ancho forzado y paperformat dpi=96.
+2026-06-15 - Implementacion delegada a subagente codificador `general`.
+2026-06-15 - Codificador modifico `diplomado_report.xml`: `default=False` y `dpi=90`; no agrego `disable_shrinking` porque el campo no existe en el Odoo local y romperia la carga XML.
+2026-06-15 - Codificador modifico `diplomado_templates.xml`: elimino ancho 297mm en wrappers, uso `.page.diploma-page`, fondo 100% con `object-fit: cover`, titulo de diplomado a 17pt y mantuvo reverso en dos columnas.
+2026-06-15 - Validacion delegada a subagente tester `general` usando `docker-compose.local.yml`.
+2026-06-15 - Tester valido XML, whitespace, servicios compose y actualizacion/carga del modulo en `odoo_test_diplomado` sin errores.
