@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "task": "irg-campus-workshops",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "result": "pass",
+      "detail": "1 test passed, 0 failed. Loaded database 'test_irg_db' and verified view inheritance."
+    },
+    {
+      "name": "build",
+      "result": "pass",
+      "detail": "Odoo module 'irg_campus_workshops' installed and compiled successfully during tests."
+    }
+  ],
+  "evidence": [],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

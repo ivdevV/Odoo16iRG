@@ -1,0 +1,109 @@
+diff --git a/addons-extra/extrairg/irg_campus_workshops/__init__.py b/addons-extra/extrairg/irg_campus_workshops/__init__.py
+new file mode 100644
+index 00000000..40a96afc
+--- /dev/null
++++ b/addons-extra/extrairg/irg_campus_workshops/__init__.py
+@@ -0,0 +1 @@
++# -*- coding: utf-8 -*-
+diff --git a/addons-extra/extrairg/irg_campus_workshops/__manifest__.py b/addons-extra/extrairg/irg_campus_workshops/__manifest__.py
+new file mode 100644
+index 00000000..b6a56115
+--- /dev/null
++++ b/addons-extra/extrairg/irg_campus_workshops/__manifest__.py
+@@ -0,0 +1,18 @@
++# -*- coding: utf-8 -*-
++{
++    'name': 'IRG - Talleres en Campus',
++    'summary': 'Añade una sección de talleres en el portal /campus con el tile de iRG Empower',
++    'version': '16.0.1.0.0',
++    'category': 'Website',
++    'author': 'IRG',
++    'license': 'LGPL-3',
++    'depends': [
++        'isep_website_custom',
++        'isep_website_custom_design',
++    ],
++    'data': [
++        'views/user_profile_content_workshops.xml',
++    ],
++    'installable': True,
++    'auto_install': False,
++}
+diff --git a/addons-extra/extrairg/irg_campus_workshops/static/src/img/irg_empower_logo.jpg b/addons-extra/extrairg/irg_campus_workshops/static/src/img/irg_empower_logo.jpg
+new file mode 100644
+index 00000000..2a496d1c
+Binary files /dev/null and b/addons-extra/extrairg/irg_campus_workshops/static/src/img/irg_empower_logo.jpg differ
+diff --git a/addons-extra/extrairg/irg_campus_workshops/tests/__init__.py b/addons-extra/extrairg/irg_campus_workshops/tests/__init__.py
+new file mode 100644
+index 00000000..5b63075c
+--- /dev/null
++++ b/addons-extra/extrairg/irg_campus_workshops/tests/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import test_workshops
+diff --git a/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py b/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py
+new file mode 100644
+index 00000000..a17ef715
+--- /dev/null
++++ b/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py
+@@ -0,0 +1,17 @@
++# -*- coding: utf-8 -*-
++from odoo.tests.common import TransactionCase
++
++
++class TestCampusWorkshops(TransactionCase):
++
++    def test_view_inheritance(self):
++        """Verifica que la vista herede de forma correcta y contenga la sección Talleres y la tarjeta iRG Empower."""
++        # Obtener la vista heredada por su external ID
++        view = self.env.ref('irg_campus_workshops.irg_user_profile_content_workshops')
++        self.assertTrue(view.active, "La vista heredada de talleres debe estar activa.")
++
++        # Verificar que el arch de la vista heredada contiene la sección
++        arch = view.arch
++        self.assertIn('Talleres', arch, "La vista debe definir la sección Talleres.")
++        self.assertIn('https://app.institutoraimongaja.com/slides/irg-empower-261', arch, "La tarjeta debe apuntar a la URL de redirección específica.")
++        self.assertIn('irg_empower_logo.jpg', arch, "La tarjeta debe incluir la imagen del logo.")
+diff --git a/addons-extra/extrairg/irg_campus_workshops/views/user_profile_content_workshops.xml b/addons-extra/extrairg/irg_campus_workshops/views/user_profile_content_workshops.xml
+new file mode 100644
+index 00000000..bff389b8
+--- /dev/null
++++ b/addons-extra/extrairg/irg_campus_workshops/views/user_profile_content_workshops.xml
+@@ -0,0 +1,37 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <template id="irg_user_profile_content_workshops" inherit_id="isep_website_custom_design.custom_user_profile_content_design">
++        <!-- Inserción de la sección de Talleres antes de la sección de Aplicaciones -->
++        <xpath expr="//div[t[@t-call='isep_website_custom.user_profile_openeducat']]" position="before">
++            <style>
++                .irg-workshop-card {
++                    border-radius: 10px;
++                    overflow: hidden;
++                    background: #ffffff;
++                    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
++                }
++                .irg-workshop-card:hover {
++                    transform: translateY(-4px);
++                    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
++                }
++            </style>
++            <div class="mb32" id="portal_section_workshops">
++                <h5 class="border-bottom pb-1">Talleres</h5>
++                <div class="row">
++                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 p-2">
++                        <a href="https://app.institutoraimongaja.com/slides/irg-empower-261" class="d-block text-decoration-none" target="_blank">
++                            <div class="card h-100 border-0 shadow-sm irg-workshop-card">
++                                <div class="d-flex align-items-center justify-content-center p-3" style="min-height: 140px; background: #ffffff;">
++                                    <img src="/irg_campus_workshops/static/src/img/irg_empower_logo.jpg" alt="iRG Empower" class="img-fluid" style="max-height: 100px; object-fit: contain;"/>
++                                </div>
++                                <div class="card-body p-2 text-center" style="background: #f8f9fa; border-top: 1px solid #eee;">
++                                    <h6 class="m-0 font-weight-bold" style="color: #002e5d;">iRG Empower</h6>
++                                </div>
++                            </div>
++                        </a>
++                    </div>
++                </div>
++            </div>
++        </xpath>
++    </template>
++</odoo>
