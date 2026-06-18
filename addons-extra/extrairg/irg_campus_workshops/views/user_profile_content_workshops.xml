@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="irg_user_profile_content_workshops" inherit_id="isep_website_custom_design.custom_user_profile_content_design">
+        <!-- Inserción de la sección de Talleres antes de la sección de Aplicaciones -->
+        <xpath expr="//div[t[@t-call='isep_website_custom.user_profile_openeducat']]" position="before">
+            <!-- Obtener las admisiones finalizadas del alumno y evaluar si está matriculado únicamente en Diplomados -->
+            <t t-set="admissions" t-value="env['op.admission'].sudo().search([('state', '=', 'done'), ('partner_id', '=', user.partner_id.id)])"/>
+            <t t-set="only_diplomado" t-value="admissions and all((adm.batch_id.course_id or adm.register_id.course_id).is_diplomado() for adm in admissions if (adm.batch_id.course_id or adm.register_id.course_id))"/>
+
+            <t t-if="not only_diplomado">
+                <style>
+                    .irg-workshop-card {
+                        border-radius: 10px;
+                        overflow: hidden;
+                        background: #ffffff;
+                        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                    }
+                    .irg-workshop-card:hover {
+                        transform: translateY(-4px);
+                        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+                    }
+                </style>
+                <div class="mb32" id="portal_section_workshops">
+                    <h5 class="border-bottom pb-1">Talleres</h5>
+                    <div class="row">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 p-2">
+                            <a href="https://app.institutoraimongaja.com/slides/irg-empower-261" class="d-block text-decoration-none" target="_blank">
+                                <div class="card h-100 border-0 shadow-sm irg-workshop-card">
+                                    <div class="d-flex align-items-center justify-content-center p-3" style="min-height: 140px; background: #ffffff;">
+                                        <img src="/irg_campus_workshops/static/src/img/irg_empower_logo.jpg" alt="iRG Empower" class="img-fluid" style="max-height: 100px; object-fit: contain;"/>
+                                    </div>
+                                    <div class="card-body p-2 text-center" style="background: #f8f9fa; border-top: 1px solid #eee;">
+                                        <h6 class="m-0 font-weight-bold" style="color: #002e5d;">iRG Empower</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

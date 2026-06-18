@@ -1,0 +1,21 @@
+# Execution Log - Misión irg-campus-workshops
+
+- [2026-06-18T11:54:30] Inicio de fase de implementación.
+- [2026-06-18T11:54:35] Creación del esqueleto del módulo irg_campus_workshops.
+- [2026-06-18T11:55:00] Implementación de archivos finalizada con éxito.
+- [2026-06-18T11:55:05] Inicio de la fase de Validación.
+- [2026-06-18T11:55:12] Ejecución de pruebas unitarias exitosa. 0 fallos, 0 errores.
+- [2026-06-18T11:55:16] Generación de diff.patch y verification.json.
+- [2026-06-18T11:55:23] Inicio de la fase de Documentación. Creación de CHANGELOG y adición en base de conocimiento de agentes.
+- [2026-06-18T11:55:35] Misión completada con éxito.
+- [2026-06-18T12:07:30] Inicio de tareas de ampliación (auto-inscripción al taller iRG Empower).
+- [2026-06-18T12:08:15] Creación del directorio de controladores e implementación de controllers/main.py.
+- [2026-06-18T12:08:25] Actualización del archivo de pruebas unitarias test_workshops.py.
+- [2026-06-18T12:09:05] Validación de pruebas con éxito. 0 fallos, 0 errores (2 tests pasados).
+- [2026-06-18T12:09:15] Actualización de verification.json, walkthrough.md y CHANGELOG.
+- [2026-06-18T12:09:30] Ampliación completada con éxito.
+- [2026-06-18T12:21:00] Corrección de test_workshops_visibility_only_diplomado. Se implementó el uso de odoo.http._request_stack para simular de manera limpia y robusta el contexto del request, y se reemplazó la llamada view._render por self.env['ir.qweb']._render para evitar métodos heredados/rotos en el modelo de ir.ui.view. Pruebas unitarias ejecutadas: 3 tests exitosos.
+
+
+
+

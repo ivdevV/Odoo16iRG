@@ -582,7 +582,7 @@ class IrgCertificateRequest(models.Model):
                         }
                         dt = self.request_date
                         fecha_larga = '%d de %s de %d' % (dt.day, meses[dt.month], dt.year)
-                    para.text = f'Para que así conste, firmo la presente en Barcelona, a fecha {fecha_larga}'
+                    para.text = f'Para que así conste, firmo la presente en Barcelona, a fecha {fecha_larga}.'
                     para.paragraph_format.space_after = Pt(48)
                     for run in para.runs:
                         run.font.size = Pt(9.25)
@@ -974,7 +974,7 @@ class IrgCertificateRequest(models.Model):
         is_physical = self.certificate_type in PHYSICAL_TYPES
         if is_physical:
             for section in doc.sections:
-                section.top_margin = section.top_margin + Pt(37.5)
+                section.top_margin = section.top_margin + Pt(75.0)
             # Remove template signature/stamp runs
             sig_rel_ids = []
             for rel_id, rel in doc.part.rels.items():

@@ -225,9 +225,9 @@ def run_gradebook_validation():
     res_path = req_phys._fill_template()
     doc = Document(res_path)
     
-    # Check 1: Margin top (72 Pt + 37.5 Pt = 109.5 Pt)
-    print(f"Physical top margin (Pt): {doc.sections[0].top_margin.pt} (Expected: 109.5)")
-    assert doc.sections[0].top_margin.pt == 109.5, "Physical top margin is incorrect"
+    # Check 1: Margin top (72 Pt + 75 Pt = 147.0 Pt)
+    print(f"Physical top margin (Pt): {doc.sections[0].top_margin.pt} (Expected: 147.0)")
+    assert doc.sections[0].top_margin.pt == 147.0, "Physical top margin is incorrect"
     
     # Check 2: Outer text size
     body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
@@ -267,7 +267,7 @@ def run_gradebook_validation():
     closing_paras = [p for p in doc.paragraphs if 'Para que así conste' in p.text]
     assert len(closing_paras) > 0, "Closing sentence not found"
     print(f"Closing sentence: '{closing_paras[0].text}'")
-    assert closing_paras[0].text == "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026", "Closing sentence is incorrect"
+    assert closing_paras[0].text == "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026.", "Closing sentence is incorrect"
     print(f"Closing space after (Pt): {closing_paras[0].paragraph_format.space_after.pt} (Expected: 48.0)")
     assert closing_paras[0].paragraph_format.space_after.pt == 48.0, "Closing space after is incorrect"
     
@@ -288,9 +288,9 @@ def run_partial_validation():
     res_path = req_phys._fill_template()
     doc = Document(res_path)
     
-    # Check 1: Margin top (72 Pt + 37.5 Pt = 109.5 Pt)
-    print(f"Physical partial top margin (Pt): {doc.sections[0].top_margin.pt} (Expected: 109.5)")
-    assert doc.sections[0].top_margin.pt == 109.5, "Physical top margin is incorrect"
+    # Check 1: Margin top (72 Pt + 75 Pt = 147.0 Pt)
+    print(f"Physical partial top margin (Pt): {doc.sections[0].top_margin.pt} (Expected: 147.0)")
+    assert doc.sections[0].top_margin.pt == 147.0, "Physical top margin is incorrect"
     
     # Check 2: Outer text size
     body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
@@ -330,7 +330,7 @@ def run_partial_validation():
     closing_paras = [p for p in doc.paragraphs if 'Para que así conste' in p.text]
     assert len(closing_paras) > 0, "Closing sentence not found"
     print(f"Closing sentence: '{closing_paras[0].text}'")
-    assert closing_paras[0].text == "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026", "Closing sentence is incorrect"
+    assert closing_paras[0].text == "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026.", "Closing sentence is incorrect"
     print(f"Closing space after (Pt): {closing_paras[0].paragraph_format.space_after.pt} (Expected: 48.0)")
     assert closing_paras[0].paragraph_format.space_after.pt == 48.0, "Closing space after is incorrect"
     

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="app_gradebook_student_form_diploma_weighting" model="ir.ui.view">
+        <field name="name">app.gradebook.student.form.diploma.weighting</field>
+        <field name="model">app.gradebook.student</field>
+        <field name="inherit_id" ref="isep_gradebook.app_gradebook_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='average_final']" position="after">
+                <group name="diploma_recovery_group"
+                       string="Recuperación diplomado"
+                       attrs="{'invisible': [('diploma_recovery_required', '=', False), ('diploma_recovery_score', '=', 0.0)]}">
+                    <group>
+                        <field name="diploma_recovery_required" readonly="1"/>
+                        <field name="diploma_recovery_applied" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="diploma_recovery_score"
+                               attrs="{'readonly': [('diploma_recovery_required', '=', False)]}"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
