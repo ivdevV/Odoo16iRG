@@ -1,0 +1,284 @@
+diff --git a/addons-extra/extrairg/irg_forum_batch_visibility/models/forum_post.py b/addons-extra/extrairg/irg_forum_batch_visibility/models/forum_post.py
+index a3b85cda..9d6c522c 100644
+--- a/addons-extra/extrairg/irg_forum_batch_visibility/models/forum_post.py
++++ b/addons-extra/extrairg/irg_forum_batch_visibility/models/forum_post.py
+@@ -13,6 +13,58 @@ class ForumPost(models.Model):
+         help='If empty, this post follows the forum batch rules. If set, only users in these batches can read this post.',
+     )
+ 
++    excluded_visibility_batch_ids = fields.Many2many(
++        'op.batch',
++        'forum_post_excluded_visibility_batch_rel',
++        'post_id',
++        'batch_id',
++        string='Excluded Visibility Batches',
++        help='Users in these batches cannot read this post, even if they match the allowed batches.',
++    )
++
++    def _is_visible_for_user(self, user, course=None):
++        """Return whether *user* can read this post according to forum and post batches."""
++        self.ensure_one()
++        if not user or user._is_public() or user.has_group('base.group_public'):
++            return False
++        if user.has_group('base.group_system'):
++            return True
++
++        user = user.sudo()
++        visible_forums = self.env['forum.forum'].sudo().search(
++            self.env['forum.forum']._visibility_domain_for_user(user, course=course)
++        )
++        if self.forum_id not in visible_forums:
++            return False
++
++        user_batch_ids = set(user.forum_effective_batch_ids.ids)
++        allowed_batch_ids = set(self.visibility_batch_ids.ids)
++        excluded_batch_ids = set(self.excluded_visibility_batch_ids.ids)
++
++        if allowed_batch_ids and not user_batch_ids.intersection(allowed_batch_ids):
++            return False
++        if excluded_batch_ids and user_batch_ids.intersection(excluded_batch_ids):
++            return False
++        return True
++
++    def _filter_visible_for_user(self, user, course=None):
++        """Filter a post recordset with the same rules used by backend security."""
++        return self.filtered(lambda post: post.sudo()._is_visible_for_user(user, course=course))
++
++    def _filter_partners_visible_for_post(self, partners):
++        """Keep only partners whose linked user can read this post."""
++        self.ensure_one()
++        if not partners:
++            return partners
++
++        Users = self.env['res.users'].sudo()
++        users = Users.search([('partner_id', 'in', partners.ids), ('active', '=', True)])
++        visible_partner_ids = set()
++        for user in users:
++            if self.sudo()._is_visible_for_user(user):
++                visible_partner_ids.add(user.partner_id.id)
++        return partners.filtered(lambda partner: partner.id in visible_partner_ids)
++
+     @api.model_create_multi
+     def create(self, vals_list):
+         posts = super().create(vals_list)
+diff --git a/addons-extra/extrairg/irg_forum_batch_visibility/security/forum_batch_visibility_rules.xml b/addons-extra/extrairg/irg_forum_batch_visibility/security/forum_batch_visibility_rules.xml
+index cfd85ecf..75710436 100644
+--- a/addons-extra/extrairg/irg_forum_batch_visibility/security/forum_batch_visibility_rules.xml
++++ b/addons-extra/extrairg/irg_forum_batch_visibility/security/forum_batch_visibility_rules.xml
+@@ -19,7 +19,7 @@
+         <field name="perm_write" eval="False"/>
+         <field name="perm_create" eval="False"/>
+         <field name="perm_unlink" eval="False"/>
+-        <field name="domain_force">['&amp;', '&amp;', '|', ('forum_id.visibility_batch_ids', '=', False), ('forum_id.visibility_batch_ids', 'in', user.forum_effective_batch_ids.ids), '|', ('forum_id.visibility_course_ids', '=', False), ('forum_id.visibility_course_ids', 'in', user.forum_effective_course_ids.ids), '|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.forum_effective_batch_ids.ids)]</field>
++        <field name="domain_force">['&amp;', '&amp;', '&amp;', '|', ('forum_id.visibility_batch_ids', '=', False), ('forum_id.visibility_batch_ids', 'in', user.forum_effective_batch_ids.ids), '|', ('forum_id.visibility_course_ids', '=', False), ('forum_id.visibility_course_ids', 'in', user.forum_effective_course_ids.ids), '|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', user.forum_effective_batch_ids.ids), '|', ('excluded_visibility_batch_ids', '=', False), ('excluded_visibility_batch_ids', 'not in', user.forum_effective_batch_ids.ids)]</field>
+     </record>
+ 
+     <record id="forum_forum_visibility_rule_public_deny" model="ir.rule">
+diff --git a/addons-extra/extrairg/irg_forum_batch_visibility/views/forum_batch_visibility_views.xml b/addons-extra/extrairg/irg_forum_batch_visibility/views/forum_batch_visibility_views.xml
+index 13773ef1..1572ae4c 100644
+--- a/addons-extra/extrairg/irg_forum_batch_visibility/views/forum_batch_visibility_views.xml
++++ b/addons-extra/extrairg/irg_forum_batch_visibility/views/forum_batch_visibility_views.xml
+@@ -44,7 +44,20 @@
+         <field name="inherit_id" ref="website_forum.view_forum_post_list"/>
+         <field name="arch" type="xml">
+             <field name="forum_id" position="after">
+-                <field name="visibility_batch_ids" widget="many2many_tags" optional="hide"/>
++                <field name="visibility_batch_ids" string="Lotes que pueden visualizar" widget="many2many_tags" optional="show"/>
++                <field name="excluded_visibility_batch_ids" string="Lotes que no pueden visualizar" widget="many2many_tags" optional="show"/>
++            </field>
++        </field>
++    </record>
++
++    <record id="view_forum_post_form_batch_visibility" model="ir.ui.view">
++        <field name="name">forum.post.form.batch.visibility</field>
++        <field name="model">forum.post</field>
++        <field name="inherit_id" ref="website_forum.view_forum_post_form"/>
++        <field name="arch" type="xml">
++            <field name="forum_id" position="after">
++                <field name="visibility_batch_ids" string="Lotes que pueden visualizar" widget="many2many_tags"/>
++                <field name="excluded_visibility_batch_ids" string="Lotes que no pueden visualizar" widget="many2many_tags"/>
+             </field>
+         </field>
+     </record>
+diff --git a/addons-extra/extrairg/irg_forum_email_notify/models/forum_post.py b/addons-extra/extrairg/irg_forum_email_notify/models/forum_post.py
+index 716d71a9..d39dd35f 100644
+--- a/addons-extra/extrairg/irg_forum_email_notify/models/forum_post.py
++++ b/addons-extra/extrairg/irg_forum_email_notify/models/forum_post.py
+@@ -50,6 +50,8 @@ class ForumPost(models.Model):
+         partners = forum._get_notification_recipients(
+             exclude_partner=author_partner,
+         )
++        if hasattr(self, '_filter_partners_visible_for_post'):
++            partners = self._filter_partners_visible_for_post(partners)
+ 
+         if not partners:
+             _logger.info(
+diff --git a/addons-extra/extrairg/irg_forum_notice_popup/controllers/main.py b/addons-extra/extrairg/irg_forum_notice_popup/controllers/main.py
+index 29106da4..682e383e 100644
+--- a/addons-extra/extrairg/irg_forum_notice_popup/controllers/main.py
++++ b/addons-extra/extrairg/irg_forum_notice_popup/controllers/main.py
+@@ -112,8 +112,15 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
+                 post_domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
+             else:
+                 post_domain += [('visibility_batch_ids', '=', False)]
++        if 'excluded_visibility_batch_ids' in post_model._fields:
++            if user_batch_ids:
++                post_domain += ['|', ('excluded_visibility_batch_ids', '=', False), ('excluded_visibility_batch_ids', 'not in', list(user_batch_ids))]
++            else:
++                post_domain += [('excluded_visibility_batch_ids', '=', False)]
+ 
+         posts = post_model.search(post_domain, order='create_date desc', limit=40)
++        if hasattr(posts, '_filter_visible_for_user'):
++            posts = posts._filter_visible_for_user(user, course=course)
+         notice_post = next((post for post in posts if self._is_notice_post(post)), False)
+         if not notice_post and posts:
+             notice_post = posts[0]
+@@ -156,6 +163,8 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
+             post_domain.append(('active', '=', True))
+ 
+         posts = post_model.search(post_domain, order='create_date desc', limit=40)
++        if hasattr(posts, '_filter_visible_for_user'):
++            posts = posts._filter_visible_for_user(user)
+         if not posts:
+             return False, False
+ 
+diff --git a/doc/modules/extrairg/irg_forum_batch_visibility.md b/doc/modules/extrairg/irg_forum_batch_visibility.md
+index 5d898819..2c09203a 100644
+--- a/doc/modules/extrairg/irg_forum_batch_visibility.md
++++ b/doc/modules/extrairg/irg_forum_batch_visibility.md
+@@ -13,12 +13,16 @@
+ 
+ Restringe la visibilidad de los foros del campus a grupos concretos de alumnos (lotes/batches). Sin este módulo, todos los foros serían accesibles por cualquier estudiante registrado. Con él, cada foro puede configurarse para que solo lo vean los alumnos pertenecientes a un lote o curso específico.
+ 
++También permite configurar visibilidad granular por publicación. Dentro de un foro visible para varios lotes, cada publicación puede indicar lotes que sí pueden visualizarla y lotes que no pueden visualizarla.
++
+ Además incluye mejoras visuales de interfaz que informan al alumno cuándo un post no puede publicarse (feedback de publicación) y ajustes SCSS para el editor del foro.
+ 
+ ## Funcionalidades principales
+ 
+ - Campo de configuración de visibilidad por lote en el modelo del foro.
++- Campos de visibilidad por lote en publicaciones: lotes que pueden visualizar y lotes que no pueden visualizar.
+ - Reglas de seguridad para restringir el acceso a foros no permitidos (`security/forum_batch_visibility_rules.xml`).
++- Reglas de seguridad para restringir publicaciones no permitidas dentro de foros compartidos.
+ - Vista de gestión de visibilidad por lote en el backoffice.
+ - Script JS que muestra feedback al intentar publicar en un foro sin permiso.
+ - SCSS de foco para el editor del foro.
+@@ -28,15 +32,19 @@ Además incluye mejoras visuales de interfaz que informan al alumno cuándo un p
+ | Modelo | Tipo | Campos principales |
+ |--------|------|--------------------|
+ | `forum.forum` | Herencia | Campos de configuración de lotes visibles |
++| `forum.post` | Herencia | `visibility_batch_ids`, `excluded_visibility_batch_ids`, helpers de visibilidad por usuario |
+ 
+ ## Vistas y UI
+ 
+ - `views/forum_batch_visibility_views.xml` — formulario de configuración de visibilidad en el backend.
++- En publicaciones de foro, los campos `Lotes que pueden visualizar` y `Lotes que no pueden visualizar` se muestran en la ficha y en el listado backend.
+ - Assets JS/SCSS para el frontend del foro.
+ 
+ ## Notas técnicas
+ 
+ - Las reglas de seguridad se aplican en `security/forum_batch_visibility_rules.xml` usando `ir.rule`.
++- En publicaciones, la exclusión gana siempre frente a la inclusión. Si un usuario pertenece a un lote permitido y a uno excluido, no puede leer la publicación.
++- Si una publicación no tiene lotes permitidos ni excluidos, hereda la visibilidad del foro.
+ - Es dependencia obligatoria de `irg_forum_email_notify`, `irg_forum_notice_popup` y `irg_campus_course_forum`.
+ 
+ ## Instalación / Actualización
+diff --git a/doc/modules/extrairg/irg_forum_email_notify.md b/doc/modules/extrairg/irg_forum_email_notify.md
+index 2720bb25..9113209b 100644
+--- a/doc/modules/extrairg/irg_forum_email_notify.md
++++ b/doc/modules/extrairg/irg_forum_email_notify.md
+@@ -11,7 +11,7 @@
+ 
+ ## ¿Qué hace este módulo?
+ 
+-Envía notificaciones por correo electrónico a todos los participantes elegibles de un foro cada vez que se publica una nueva entrada (pregunta o respuesta). El módulo determina los destinatarios según la configuración de visibilidad del foro (por lote o por curso), asegurando que cada alumno reciba solo los mensajes relevantes para su grupo.
++Envía notificaciones por correo electrónico a todos los participantes elegibles de un foro cada vez que se publica una nueva entrada (pregunta o respuesta). El módulo determina los destinatarios según la configuración de visibilidad del foro (por lote o por curso) y según la visibilidad granular de la publicación, asegurando que cada alumno reciba solo los mensajes relevantes para su grupo.
+ 
+ Cada correo incluye el contenido completo de la publicación, un enlace directo al hilo del foro y un enlace de baja en un solo clic (unsubscribe).
+ 
+@@ -19,6 +19,7 @@ Cada correo incluye el contenido completo de la publicación, un enlace directo
+ 
+ - Envío automático de email al publicar una nueva pregunta o respuesta en el foro.
+ - Filtrado de destinatarios por visibilidad de foro (batch/course) definida en `irg_forum_batch_visibility`.
++- Filtrado adicional de destinatarios por lotes permitidos y excluidos en la publicación (`forum.post`).
+ - Plantilla de correo personalizable con el contenido del post y enlace al hilo.
+ - Enlace de baja incluido en cada notificación.
+ - Configuración adicional en el formulario del foro (campos de notificación).
+@@ -43,6 +44,7 @@ Añade campos de configuración de notificación en el formulario del foro (`vie
+ 
+ - Utiliza `data/mail_template.xml` para la plantilla de correo; puede personalizarse desde la interfaz.
+ - El envío se realiza de forma síncrona al publicar el post.
++- Antes de crear correos, `_send_forum_email_notification()` filtra destinatarios con `_filter_partners_visible_for_post()` para evitar emails a alumnos excluidos de una publicación.
+ 
+ ## Instalación / Actualización
+ 
+diff --git a/doc/modules/extrairg/irg_forum_notice_popup.md b/doc/modules/extrairg/irg_forum_notice_popup.md
+index bfe38c1b..dc55081d 100644
+--- a/doc/modules/extrairg/irg_forum_notice_popup.md
++++ b/doc/modules/extrairg/irg_forum_notice_popup.md
+@@ -13,13 +13,16 @@
+ 
+ Muestra avisos o notificaciones importantes del foro del campus como popups filtrados por lote. Permite al equipo docente o administrativo publicar anuncios que aparecen como ventanas emergentes solo a los alumnos del lote correspondiente cuando acceden al foro de su curso.
+ 
++El popup respeta tanto la visibilidad del foro como la visibilidad granular configurada en cada publicación mediante `irg_forum_batch_visibility`.
++
+ Incluye un override del comportamiento de compartir (`forum_share_override`) para personalizar cómo se comparten los posts desde el popup.
+ 
+ ## Funcionalidades principales
+ 
+ - Modelo dedicado para avisos de foro (gestión desde el backoffice).
+ - Popup automático en el frontend cuando hay avisos activos para el lote del alumno.
+-- Filtrado por lote para que cada alumno solo vea los avisos de su programa.
++- Filtrado por lote para que cada alumno solo vea los avisos de su programa y las publicaciones habilitadas para su lote.
++- Respeto de los lotes excluidos a nivel publicación, incluso en las búsquedas con `sudo()` del controlador.
+ - Override de la funcionalidad de compartir posts.
+ - Estilos SCSS dedicados para el popup.
+ 
+@@ -38,6 +41,7 @@ Incluye un override del comportamiento de compartir (`forum_share_override`) par
+ 
+ - Requiere `security/ir.model.access.csv` por crear un modelo nuevo.
+ - Assets JS para la lógica del popup y override de compartir.
++- El controlador aplica `_filter_visible_for_user()` sobre las publicaciones candidatas para no depender únicamente de `ir.rule`.
+ 
+ ## Instalación / Actualización
+ 
+diff --git a/.agents/knowledge/odoo_development_modding/artifacts/forum_post_batch_visibility_controls.md b/.agents/knowledge/odoo_development_modding/artifacts/forum_post_batch_visibility_controls.md
+new file mode 100644
+index 00000000..6d431c7c
+--- /dev/null
++++ b/.agents/knowledge/odoo_development_modding/artifacts/forum_post_batch_visibility_controls.md
+@@ -0,0 +1,34 @@
++# Forum Post Batch Visibility Controls
++
++## Contexto
++
++El modulo `irg_forum_batch_visibility` no solo limita foros (`forum.forum`), tambien ofrece visibilidad granular por publicacion (`forum.post`). Para publicaciones dentro de foros compartidos, la fuente de verdad es:
++
++- `forum.post.visibility_batch_ids`: lotes que pueden visualizar la publicacion.
++- `forum.post.excluded_visibility_batch_ids`: lotes que no pueden visualizar la publicacion.
++
++## Regla Funcional
++
++Un usuario puede leer una publicacion si:
++
++- Puede ver el foro contenedor segun `_visibility_domain_for_user()`.
++- Si la publicacion tiene lotes permitidos, el usuario pertenece a alguno de ellos.
++- El usuario no pertenece a ningun lote excluido en la publicacion.
++
++La exclusion gana siempre sobre la inclusion.
++
++## Gotcha Tecnico
++
++No basta con actualizar `ir.rule`. Algunos flujos usan `sudo()` o calculan destinatarios manualmente:
++
++- `irg_forum_notice_popup` debe llamar a `_filter_visible_for_user()` porque el controlador busca publicaciones con `sudo()`.
++- `irg_forum_email_notify` debe llamar a `_filter_partners_visible_for_post()` antes de crear `mail.mail`.
++
++## Validacion Usada
++
++Se valido con:
++
++- `py_compile` de los Python modificados.
++- Parse XML de vistas y reglas.
++- Actualizacion Odoo local en `test_irg_db` con `docker-compose.local.yml`.
++- Assertions funcionales en Odoo shell con rollback para permitido, excluido, no permitido y herencia del foro.

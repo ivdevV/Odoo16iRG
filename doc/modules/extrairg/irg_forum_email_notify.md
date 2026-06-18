@@ -11,7 +11,7 @@
 
 ## ¿Qué hace este módulo?
 
-Envía notificaciones por correo electrónico a todos los participantes elegibles de un foro cada vez que se publica una nueva entrada (pregunta o respuesta). El módulo determina los destinatarios según la configuración de visibilidad del foro (por lote o por curso), asegurando que cada alumno reciba solo los mensajes relevantes para su grupo.
+Envía notificaciones por correo electrónico a todos los participantes elegibles de un foro cada vez que se publica una nueva entrada (pregunta o respuesta). El módulo determina los destinatarios según la configuración de visibilidad del foro (por lote o por curso) y según la visibilidad granular de la publicación, asegurando que cada alumno reciba solo los mensajes relevantes para su grupo.
 
 Cada correo incluye el contenido completo de la publicación, un enlace directo al hilo del foro y un enlace de baja en un solo clic (unsubscribe).
 
@@ -19,6 +19,7 @@ Cada correo incluye el contenido completo de la publicación, un enlace directo 
 
 - Envío automático de email al publicar una nueva pregunta o respuesta en el foro.
 - Filtrado de destinatarios por visibilidad de foro (batch/course) definida en `irg_forum_batch_visibility`.
+- Filtrado adicional de destinatarios por lotes permitidos y excluidos en la publicación (`forum.post`).
 - Plantilla de correo personalizable con el contenido del post y enlace al hilo.
 - Enlace de baja incluido en cada notificación.
 - Configuración adicional en el formulario del foro (campos de notificación).
@@ -43,6 +44,7 @@ Añade campos de configuración de notificación en el formulario del foro (`vie
 
 - Utiliza `data/mail_template.xml` para la plantilla de correo; puede personalizarse desde la interfaz.
 - El envío se realiza de forma síncrona al publicar el post.
+- Antes de crear correos, `_send_forum_email_notification()` filtra destinatarios con `_filter_partners_visible_for_post()` para evitar emails a alumnos excluidos de una publicación.
 
 ## Instalación / Actualización
 

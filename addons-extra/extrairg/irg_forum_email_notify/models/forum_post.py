@@ -50,6 +50,8 @@ class ForumPost(models.Model):
         partners = forum._get_notification_recipients(
             exclude_partner=author_partner,
         )
+        if hasattr(self, '_filter_partners_visible_for_post'):
+            partners = self._filter_partners_visible_for_post(partners)
 
         if not partners:
             _logger.info(
