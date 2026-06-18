@@ -1,0 +1,87 @@
+diff --git a/addons-extra/extrairg/irg_course_elearning_featured_section/models/slide_channel.py b/addons-extra/extrairg/irg_course_elearning_featured_section/models/slide_channel.py
+index 77c68a64..756c8057 100644
+--- a/addons-extra/extrairg/irg_course_elearning_featured_section/models/slide_channel.py
++++ b/addons-extra/extrairg/irg_course_elearning_featured_section/models/slide_channel.py
+@@ -14,7 +14,13 @@ class SlideChannel(models.Model):
+         """Return the first course that configures a featured block for this channel."""
+         self.ensure_one()
+         course_model = self.env['op.course'].sudo()
+-        subjects = self.sudo().op_subject_ids
++
++        # If this is an online clone, look up the subjects on the main HomeClass channel
++        channel = self
++        if hasattr(self, 'irg_homeclass_channel_id') and self.irg_homeclass_channel_id:
++            channel = self.irg_homeclass_channel_id
++
++        subjects = channel.sudo().op_subject_ids
+ 
+         courses = course_model.search([
+             ('subject_ids', 'in', subjects.ids),
+@@ -23,7 +29,7 @@ class SlideChannel(models.Model):
+ 
+         if not courses and 'slide_channel_ids' in course_model._fields:
+             courses = course_model.search([
+-                ('slide_channel_ids', 'in', self.id),
++                ('slide_channel_ids', 'in', channel.id),
+                 ('irg_featured_section_enabled', '=', True),
+             ], order='id', limit=1)
+ 
+diff --git a/addons-extra/extrairg/irg_course_elearning_featured_section/static/src/scss/featured_section.scss b/addons-extra/extrairg/irg_course_elearning_featured_section/static/src/scss/featured_section.scss
+index e8f25912..c67d9d93 100644
+--- a/addons-extra/extrairg/irg_course_elearning_featured_section/static/src/scss/featured_section.scss
++++ b/addons-extra/extrairg/irg_course_elearning_featured_section/static/src/scss/featured_section.scss
+@@ -13,8 +13,17 @@
+     margin-bottom: 0;
+ }
+ 
++.o_irg_featured_section_embed {
++    width: 100%;
++    max-width: 800px;
++    margin-top: 1rem;
++}
++
+ .o_irg_featured_section_embed iframe {
+-    max-width: 100%;
++    width: 100% !important;
++    height: auto !important;
++    aspect-ratio: 16 / 9;
++    border: 0;
+ }
+ 
+ .o_irg_featured_section_action .btn {
+diff --git a/addons-extra/extrairg/irg_course_elearning_featured_section/tests/test_featured_section.py b/addons-extra/extrairg/irg_course_elearning_featured_section/tests/test_featured_section.py
+index 76d91fcf..f50b7d4a 100644
+--- a/addons-extra/extrairg/irg_course_elearning_featured_section/tests/test_featured_section.py
++++ b/addons-extra/extrairg/irg_course_elearning_featured_section/tests/test_featured_section.py
+@@ -69,3 +69,31 @@ class TestCourseElearningFeaturedSection(TransactionCase):
+         })
+ 
+         self.assertEqual(self.channel.irg_get_featured_section_values(), {})
++
++    def test_featured_course_resolved_for_clone_channel(self):
++        if 'irg_homeclass_channel_id' in self.env['slide.channel']._fields:
++            # Create a clone channel
++            clone_channel = self.env['slide.channel'].create({
++                'name': 'Clone Channel',
++                'channel_type': 'training',
++                'enroll': 'public',
++                'irg_homeclass_channel_id': self.channel.id,
++            })
++            
++            # Configure featured course on main channel
++            self.course.write({
++                'irg_featured_section_enabled': True,
++                'irg_featured_section_title': 'Destacado para clone',
++                'irg_featured_section_body': '<p>Cuerpo</p>',
++            })
++            
++            # Get values as portal user
++            portal_user = self.env['res.users'].create({
++                'name': 'Portal User Test',
++                'login': 'portal_user_test',
++                'groups_id': [(6, 0, [self.env.ref('base.group_portal').id])],
++            })
++            
++            # Run the values function on the clone channel as the portal user
++            values = clone_channel.with_env(self.env(user=portal_user)).irg_get_featured_section_values()
++            self.assertEqual(values.get('title'), 'Destacado para clone')

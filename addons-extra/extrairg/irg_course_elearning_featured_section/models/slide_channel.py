@@ -14,7 +14,13 @@ class SlideChannel(models.Model):
         """Return the first course that configures a featured block for this channel."""
         self.ensure_one()
         course_model = self.env['op.course'].sudo()
-        subjects = self.sudo().op_subject_ids
+
+        # If this is an online clone, look up the subjects on the main HomeClass channel
+        channel = self
+        if hasattr(self, 'irg_homeclass_channel_id') and self.irg_homeclass_channel_id:
+            channel = self.irg_homeclass_channel_id
+
+        subjects = channel.sudo().op_subject_ids
 
         courses = course_model.search([
             ('subject_ids', 'in', subjects.ids),
@@ -23,7 +29,7 @@ class SlideChannel(models.Model):
 
         if not courses and 'slide_channel_ids' in course_model._fields:
             courses = course_model.search([
-                ('slide_channel_ids', 'in', self.id),
+                ('slide_channel_ids', 'in', channel.id),
                 ('irg_featured_section_enabled', '=', True),
             ], order='id', limit=1)
 
