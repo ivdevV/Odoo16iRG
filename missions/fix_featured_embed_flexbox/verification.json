@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "task": "fix_featured_embed_flexbox",
+  "checks": [
+    {
+      "name": "flexbox_grow_class",
+      "result": "pass",
+      "detail": "Added flex-grow-1 to .o_irg_featured_section_content div to prevent flex container collapse."
+    },
+    {
+      "name": "inline_style_tag",
+      "result": "pass",
+      "detail": "Added <style> block directly in website_slides_templates.xml to bypass caching and bundle issues."
+    },
+    {
+      "name": "automated_tests",
+      "result": "pass",
+      "detail": "All 7 tests passed (0 failed, 0 errors) for irg_course_elearning_featured_section."
+    }
+  ],
+  "evidence": [
+    "missions/fix_featured_embed_flexbox/diff.patch",
+    "missions/fix_featured_embed_flexbox/execution.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}
