@@ -6,8 +6,11 @@
     'category': 'Education',
     'author': 'iRG',
     'depends': [
+        'irg_campus_certificates_portal',
+        'irg_certificate_partial',
         'irg_gradebook_certificates',
         'irg_generacion_diplomas',
+        'irg_student_invoice_payment_link',
         'openeducat_core',
     ],
     'data': [

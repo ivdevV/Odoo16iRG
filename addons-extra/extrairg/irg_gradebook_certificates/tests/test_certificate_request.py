@@ -519,8 +519,21 @@ class TestIrgCertificateRequest(TransactionCase):
         drawing_runs = [r for r in sig_para.runs if r._r.xpath('.//*[local-name()="drawing" or local-name()="pict"]')]
         self.assertTrue(len(drawing_runs) >= 2, "Paragraph containing the handwritten signature does not contain at least 2 drawings")
 
+    def _assert_table_font_sizes_match_value(self, res_file, expected_size):
+        doc = DocxDocument(res_file)
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        for run in para.runs:
+                            self.assertEqual(
+                                run.font.size,
+                                expected_size,
+                                f"Table run font size is {run.font.size}, expected {expected_size}."
+                            )
+
     def test_13_table_font_sizes_match_top_font_size(self):
-        """Verify that table cell font size matches the top font size for all document formats."""
+        """Verify that table cell font size matches the top font size for digital and is 7.5 Pt for physical."""
         cert = self.env['irg.certificate.request'].create({
             'gradebook_student_id': self.gradebook.id,
             'certificate_type': 'digital',
@@ -538,7 +551,7 @@ class TestIrgCertificateRequest(TransactionCase):
             'state': 'draft',
         })
         res_file_phys = cert_phys._fill_template()
-        self._assert_table_font_sizes_match_top_font_size(res_file_phys)
+        self._assert_table_font_sizes_match_value(res_file_phys, Pt(7.5))
 
     def test_14_signature_logo_present_for_raimon_signer(self):
         """Verify that Raimon Gaja's signature logo is present in the ZIP and referenced in document.xml."""
@@ -694,5 +707,65 @@ class TestIrgCertificateRequest(TransactionCase):
         )
         self.assertIsNotNone(second_body, "120 ECTS text not found in generated document.")
         self.assertIn('120 ECTS, equivalentes a 3000 horas de estudio', second_body.text)
+
+    def test_18_physical_gradebook_modifications(self):
+        """Verify top margin, unscaled outer fonts, table cell fonts, and signature/stamp removal on physical gradebooks."""
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'certificate_type': 'physical',
+            'shipping_type': 'national',
+            'document_type': 'gradebook',
+            'signer': 'raimon',
+            'request_date': '2026-06-17',
+            'state': 'draft',
+        })
+        res_file = cert._fill_template()
+        doc = DocxDocument(res_file)
+        
+        # 1. Verify top margin shift (72 Pt default + 37.5 Pt shift = 109.5 Pt)
+        self.assertEqual(doc.sections[0].top_margin.pt, 109.5)
+        
+        # 2. Verify outer font size is 9.0 Pt
+        body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
+        self.assertTrue(len(body_runs) > 0, "No body runs found with font size set.")
+        for r in body_runs:
+            self.assertEqual(r.font.size.pt, 9.0, f"Outer text run '{r.text}' font size is {r.font.size.pt}, expected 9.0 Pt")
+            
+        # 3. Verify table run font size is 7.5 Pt (95250 EMUs)
+        self._assert_table_font_sizes_match_value(res_file, Pt(7.5))
+        
+        # 4. Verify signature/stamp images are removed (media/image2.jpg / media/image2.png / media/image2.jpeg)
+        sig_rel_ids = []
+        for rel_id, rel in doc.part.rels.items():
+            target = getattr(rel, 'target_ref', '').lower()
+            if any(img in target for img in ('media/image2.jpg', 'media/image2.png', 'media/image2.jpeg')):
+                sig_rel_ids.append(rel_id)
+        
+        embeds = []
+        if sig_rel_ids:
+            for para in list(doc.paragraphs) + [p for t in doc.tables for r in t.rows for c in r.cells for p in c.paragraphs]:
+                for r in para.runs:
+                    for rel_id in sig_rel_ids:
+                        embeds.extend(r._r.xpath('.//*[@*[local-name()="embed" and .="%s"]]' % rel_id))
+        self.assertEqual(len(embeds), 0, "Signature/stamp images still embedded in document XML.")
+
+        # 5. Verify name replacement
+        full_text = '\n'.join(p.text for p in doc.paragraphs)
+        self.assertNotIn('Raimon Gaja Jaumeandreu', full_text)
+        self.assertIn('Raimon Gaja', full_text)
+        
+        # 6. Verify closing sentence and space after
+        closing_paras = [p for p in doc.paragraphs if 'Para que así conste' in p.text]
+        self.assertTrue(len(closing_paras) > 0)
+        self.assertEqual(
+            closing_paras[0].text,
+            "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026"
+        )
+        self.assertEqual(closing_paras[0].paragraph_format.space_after.pt, 48.0)
+        
+        # 7. Verify signature block text
+        sig_paras = [p for p in doc.paragraphs if 'Director General iRG' in p.text]
+        self.assertTrue(len(sig_paras) > 0)
+        self.assertEqual(sig_paras[0].text, "Raimon Gaja\nDirector General iRG")
 
 

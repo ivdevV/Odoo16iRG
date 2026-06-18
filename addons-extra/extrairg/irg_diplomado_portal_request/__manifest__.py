@@ -11,7 +11,6 @@
         'portal',
         'mail',
         'irg_course_portal_tiles',
-        'irg_campus_certificates_portal',
         'irg_generacion_diplomados',
         'isep_gradebook',
     ],

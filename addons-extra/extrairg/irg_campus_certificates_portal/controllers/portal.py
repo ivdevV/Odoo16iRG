@@ -193,7 +193,7 @@ class IrgCampusCertificatesPortal(CertificatePortalController):
                     'pendientes de pago. Por favor, regulariza tu situación antes de continuar.'
                 ))
 
-        # Create certificate request and portal invoice
+        # Create certificate request and Stripe Checkout Session
         try:
             cert = request.env['irg.certificate.request'].sudo().create({
                 'gradebook_student_id': gradebook.id,
@@ -206,14 +206,13 @@ class IrgCampusCertificatesPortal(CertificatePortalController):
                 'state': 'pending_payment',
                 'origin': 'portal',
             })
-            cert._create_portal_invoice()
+            checkout_url = cert._create_stripe_checkout_session()
+            return request.redirect(checkout_url, local=False)
         except ValidationError as exc:
             return _render_error(exc.args[0])
-        except Exception:
-            _logger.exception('Error al crear la solicitud de certificado para partner %s', partner.id)
-            return _render_error(_('Se ha producido un error al procesar tu solicitud. Inténtalo de nuevo.'))
-
-        return request.redirect('/campus/certificates/confirm/%d' % cert.id)
+        except Exception as exc:
+            _logger.exception('Error al crear la solicitud de certificado para partner %s: %s', partner.id, str(exc))
+            return _render_error(_('Se ha producido un error al procesar tu solicitud de pago en Stripe. Inténtalo de nuevo.'))
 
     # ------------------------------------------------------------------
     # Download Endpoints for Diplomas and Actas (using .sudo() for safety)
@@ -270,3 +269,109 @@ class IrgCampusCertificatesPortal(CertificatePortalController):
         except Exception:
             _logger.exception('Error al descargar el acta %s', acta_id)
             return request.redirect('/campus/certificates?error=download_error')
+
+    # ------------------------------------------------------------------
+    # Payment status endpoints (Stripe Checkout Integration)
+    # ------------------------------------------------------------------
+
+    @http.route(
+        '/campus/certificates/payment/success/<int:request_id>',
+        type='http',
+        auth='user',
+        website=True,
+        methods=['GET'],
+    )
+    def certificate_payment_success(self, request_id, **kw):
+        partner = request.env.user.partner_id
+        cert = request.env['irg.certificate.request'].sudo().browse(request_id)
+        
+        # Seguridad: verificar que la solicitud existe y pertenece al partner actual
+        if not cert.exists() or cert.partner_id.id != partner.id:
+            return request.redirect('/campus/certificates')
+            
+        # Si ya se procesó el pago mediante el webhook y el estado es paid, in_process, sent o done:
+        if cert.state in ('paid', 'in_process', 'sent', 'done'):
+            if cert.certificate_type in ('digital', 'custom') and cert.state == 'done':
+                # Si es digital y ya está listo, redirigir a la descarga
+                if cert.attachment_id:
+                    return request.redirect(f'/web/content/{cert.attachment_id.id}?download=true')
+            # Si es físico o si es digital y no está listo, redirigir a la página de agradecimiento / éxito
+            return request.redirect(f'/campus/certificates/thank-you/{cert.id}')
+            
+        # Si aún está en pending_payment, mostramos la pantalla de espera
+        return request.render(
+            'irg_campus_certificates_portal.portal_payment_success_waiting',
+            {
+                'cert': cert,
+                'page_name': 'certificates',
+            }
+        )
+
+    @http.route(
+        '/campus/certificates/payment/cancel/<int:request_id>',
+        type='http',
+        auth='user',
+        website=True,
+        methods=['GET'],
+    )
+    def certificate_payment_cancel(self, request_id, **kw):
+        partner = request.env.user.partner_id
+        cert = request.env['irg.certificate.request'].sudo().browse(request_id)
+        
+        # Seguridad: verificar que la solicitud existe y pertenece al partner actual
+        if not cert.exists() or cert.partner_id.id != partner.id:
+            return request.redirect('/campus/certificates')
+            
+        # Cancelar la solicitud si está en pending_payment
+        if cert.state == 'pending_payment':
+            cert.write({'state': 'cancelled'})
+            
+        return request.redirect('/campus/certificates?payment_cancelled=1')
+
+    @http.route(
+        '/campus/certificates/thank-you/<int:request_id>',
+        type='http',
+        auth='user',
+        website=True,
+        methods=['GET'],
+    )
+    def certificate_thank_you(self, request_id, **kw):
+        partner = request.env.user.partner_id
+        cert = request.env['irg.certificate.request'].sudo().browse(request_id)
+        
+        # Seguridad: verificar que la solicitud existe y pertenece al partner actual
+        if not cert.exists() or cert.partner_id.id != partner.id:
+            return request.redirect('/campus/certificates')
+            
+        return request.render(
+            'irg_campus_certificates_portal.portal_payment_thank_you_physical',
+            {
+                'cert': cert,
+                'page_name': 'certificates',
+            }
+        )
+
+    @http.route(
+        '/campus/certificates/pay/<int:request_id>',
+        type='http',
+        auth='user',
+        website=True,
+        methods=['GET'],
+    )
+    def certificate_pay(self, request_id, **kw):
+        partner = request.env.user.partner_id
+        cert = request.env['irg.certificate.request'].sudo().browse(request_id)
+        
+        # Seguridad: verificar que la solicitud existe y pertenece al partner actual
+        if not cert.exists() or cert.partner_id.id != partner.id:
+            return request.redirect('/campus/certificates')
+            
+        if cert.state != 'pending_payment':
+            return request.redirect('/campus/certificates')
+            
+        try:
+            checkout_url = cert._create_stripe_checkout_session()
+            return request.redirect(checkout_url, local=False)
+        except Exception as exc:
+            _logger.exception('Error al regenerar pago Stripe para certificado %s: %s', cert.name, str(exc))
+            return request.redirect('/campus/certificates?error=stripe_error')

@@ -4,9 +4,22 @@
         <xpath expr="//div[hasclass('o_wslides_slides_list')]" position="before">
             <t t-set="irg_featured_section" t-value="channel.irg_get_featured_section_values()"/>
             <section t-if="irg_featured_section" class="o_irg_featured_section card border-0 shadow-sm mb-4 overflow-hidden">
+                <style>
+                    .o_irg_featured_section_embed {
+                        width: 100% !important;
+                        max-width: 800px !important;
+                        margin-top: 1rem !important;
+                    }
+                    .o_irg_featured_section_embed iframe {
+                        width: 100% !important;
+                        height: auto !important;
+                        aspect-ratio: 16 / 9 !important;
+                        border: 0 !important;
+                    }
+                </style>
                 <div class="card-body p-4 p-md-5">
                     <div class="d-flex flex-column flex-md-row gap-3 justify-content-between">
-                        <div class="o_irg_featured_section_content">
+                        <div class="o_irg_featured_section_content flex-grow-1">
                             <span class="o_irg_featured_section_badge text-uppercase fw-semibold mb-2 d-inline-flex align-items-center">
                                 Destacado
                             </span>

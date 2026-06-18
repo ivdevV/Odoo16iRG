@@ -14,6 +14,17 @@
                            attrs="{'invisible': [('document_type', '!=', 'diploma')]}"/>
                 </xpath>
                 <xpath expr="//notebook" position="inside">
+                    <page string="Validacion Academica" name="page_academic_validation">
+                        <group>
+                            <group string="Pagos del Alumno">
+                                <field name="academic_payment_validation_state" readonly="1"/>
+                                <field name="academic_payment_validation_date" readonly="1"/>
+                            </group>
+                            <group string="Bloqueo">
+                                <field name="academic_payment_block_reason" readonly="1" nolabel="1"/>
+                            </group>
+                        </group>
+                    </page>
                     <page string="Pago Stripe" name="page_stripe_payment">
                         <group>
                             <group string="Resumen de Pago">
@@ -46,6 +57,7 @@
                     <field name="student_id" optional="hide"/>
                 </xpath>
                 <xpath expr="//field[@name='price_total']" position="after">
+                    <field name="academic_payment_validation_state" optional="hide"/>
                     <field name="payment_success_date" optional="hide"/>
                     <field name="stripe_payment_status" optional="hide"/>
                 </xpath>
@@ -63,6 +75,8 @@
                     <field name="stripe_payment_intent_id" string="PaymentIntent"/>
                 </xpath>
                 <xpath expr="//filter[@name='filter_pending']" position="after">
+                    <filter name="filter_academic_payment_blocked" string="Bloqueo Pagos Alumno"
+                            domain="[('academic_payment_validation_state', '=', 'blocked')]"/>
                     <filter name="filter_stripe_paid" string="Pagado Stripe"
                             domain="[('payment_success_date', '!=', False)]"/>
                 </xpath>

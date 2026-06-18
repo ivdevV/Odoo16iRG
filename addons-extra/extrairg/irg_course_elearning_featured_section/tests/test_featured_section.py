@@ -69,3 +69,31 @@ class TestCourseElearningFeaturedSection(TransactionCase):
         })
 
         self.assertEqual(self.channel.irg_get_featured_section_values(), {})
+
+    def test_featured_course_resolved_for_clone_channel(self):
+        if 'irg_homeclass_channel_id' in self.env['slide.channel']._fields:
+            # Create a clone channel
+            clone_channel = self.env['slide.channel'].create({
+                'name': 'Clone Channel',
+                'channel_type': 'training',
+                'enroll': 'public',
+                'irg_homeclass_channel_id': self.channel.id,
+            })
+            
+            # Configure featured course on main channel
+            self.course.write({
+                'irg_featured_section_enabled': True,
+                'irg_featured_section_title': 'Destacado para clone',
+                'irg_featured_section_body': '<p>Cuerpo</p>',
+            })
+            
+            # Get values as portal user
+            portal_user = self.env['res.users'].create({
+                'name': 'Portal User Test',
+                'login': 'portal_user_test',
+                'groups_id': [(6, 0, [self.env.ref('base.group_portal').id])],
+            })
+            
+            # Run the values function on the clone channel as the portal user
+            values = clone_channel.with_env(self.env(user=portal_user)).irg_get_featured_section_values()
+            self.assertEqual(values.get('title'), 'Destacado para clone')

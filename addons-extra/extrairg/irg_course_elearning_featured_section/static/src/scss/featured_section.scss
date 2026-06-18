@@ -13,8 +13,17 @@
     margin-bottom: 0;
 }
 
+.o_irg_featured_section_embed {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 1rem;
+}
+
 .o_irg_featured_section_embed iframe {
-    max-width: 100%;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+    border: 0;
 }
 
 .o_irg_featured_section_action .btn {

@@ -34,6 +34,18 @@
                                 <strong>Error de descarga:</strong> Ha ocurrido un error al procesar la descarga de tu documento. Por favor, inténtalo de nuevo o contacta con secretaría.
                             </div>
                         </t>
+                        <t t-if="request.params.get('payment_cancelled') == '1'">
+                            <div class="alert alert-warning alert-dismissible fade show border-start border-4 border-warning shadow-sm mb-4" role="alert">
+                                <i class="fa fa-exclamation-triangle me-2 text-warning"/>
+                                <strong>Pago Cancelado:</strong> Has cancelado el proceso de pago en Stripe. Puedes volver a intentarlo cuando lo desees usando el botón "Completar Pago".
+                            </div>
+                        </t>
+                        <t t-if="request.params.get('error') == 'stripe_error'">
+                            <div class="alert alert-danger alert-dismissible fade show border-start border-4 border-danger shadow-sm mb-4" role="alert">
+                                <i class="fa fa-times-circle me-2 text-danger"/>
+                                <strong>Error de Pago:</strong> No se pudo conectar con la pasarela de Stripe. Por favor, inténtalo de nuevo más tarde.
+                            </div>
+                        </t>
 
                         <!-- Contenedor Principal con Diseño por Pestañas (Bootstrap 5) -->
                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
@@ -231,8 +243,8 @@
                                                                             <i class="fa fa-download me-1"/> Descargar PDF
                                                                         </a>
                                                                     </t>
-                                                                    <t t-elif="cert.state == 'pending_payment' and cert.payment_link">
-                                                                        <a t-att-href="cert.payment_link" class="btn btn-sm btn-warning rounded-pill px-3 text-dark fw-semibold transition-all hover-btn-payment">
+                                                                    <t t-elif="cert.state == 'pending_payment'">
+                                                                        <a t-attf-href="/campus/certificates/pay/{{ cert.id }}" class="btn btn-sm btn-warning rounded-pill px-3 text-dark fw-semibold transition-all hover-btn-payment">
                                                                             <i class="fa fa-credit-card me-1"/> Completar Pago
                                                                         </a>
                                                                     </t>
@@ -626,6 +638,149 @@
                 </style>
             </xpath>
         </template>
+
+    <!-- Pantalla de Espera Premium tras pago exitoso -->
+    <template id="portal_payment_success_waiting" name="Esperando confirmación de pago">
+        <t t-call="portal.portal_layout">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 text-center py-5">
+                        <div class="card border-0 shadow-lg rounded-4 p-5 bg-white">
+                            <!-- Spinner de Carga Interactivo -->
+                            <div class="spinner-container mb-4">
+                                <div class="spinner-border text-primary" role="status" style="width: 4.5rem; height: 4.5rem; border-width: 0.35em;">
+                                    <span class="visually-hidden">Procesando...</span>
+                                </div>
+                            </div>
+                            
+                            <h2 class="h3 fw-bold text-primary mb-3">Estamos verificando tu pago...</h2>
+                            <p class="text-muted mb-4 lead">
+                                Stripe ha procesado correctamente la transacción. En unos segundos confirmaremos tu solicitud de certificado.
+                            </p>
+                            
+                            <div class="alert alert-info d-flex align-items-center justify-content-center gap-2 mb-4 border-0 bg-light-blue py-3 rounded-3">
+                                <i class="fa fa-info-circle text-primary fs-5"/>
+                                <span class="text-dark-blue small fw-semibold">Esta página se actualizará automáticamente.</span>
+                            </div>
+                            
+                            <div class="text-start bg-light p-4 rounded-4 mb-4 small">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Referencia de Solicitud:</span>
+                                    <strong class="text-dark" t-out="cert.name"/>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Documento:</span>
+                                    <strong class="text-dark" t-out="dict(cert.fields_get(['document_type'])['document_type']['selection']).get(cert.document_type, cert.document_type)"/>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Formato:</span>
+                                    <strong class="text-dark" t-out="dict(cert.fields_get(['certificate_type'])['certificate_type']['selection']).get(cert.certificate_type, cert.certificate_type)"/>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Total Pagado:</span>
+                                    <strong class="text-primary fs-6" t-out="'%.2f €' % cert.price_total"/>
+                                </div>
+                            </div>
+
+                            <div>
+                                <a href="/campus/certificates" class="btn btn-outline-primary rounded-pill px-4 py-2 small fw-semibold">
+                                    <i class="fa fa-arrow-left me-2"/>Volver a Certificaciones
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto-refrescado cada 4 segundos -->
+            <script type="text/javascript">
+                setTimeout(function() {
+                    window.location.reload();
+                }, 4000);
+            </script>
+            <style>
+                .bg-light-blue {
+                    background-color: #e6f0fa;
+                }
+                .text-dark-blue {
+                    color: #002e5d;
+                }
+                .hover-lift {
+                    transition: transform 0.2s ease;
+                }
+                .hover-lift:hover {
+                    transform: translateY(-2px);
+                }
+            </style>
+        </t>
+    </template>
+
+    <!-- Pantalla de agradecimiento física -->
+    <template id="portal_payment_thank_you_physical" name="Pago Confirmado - Envío Físico">
+        <t t-call="portal.portal_layout">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 py-4">
+                        <div class="card border-0 shadow-lg rounded-4 p-5 bg-white text-center">
+                            <!-- Icono de Éxito Circular -->
+                            <div class="success-icon mb-4 text-success">
+                                <i class="fa fa-check-circle-o" style="font-size: 6rem;"/>
+                            </div>
+                            
+                            <h2 class="h3 fw-bold text-success mb-3">¡Pago Confirmado con Éxito!</h2>
+                            <p class="text-muted mb-4 lead">
+                                Gracias por realizar el pago. Tu solicitud ha sido recibida y el equipo académico ya está trabajando en su procesamiento y envío.
+                            </p>
+                            
+                            <div class="text-start bg-light p-4 rounded-4 mb-4 small">
+                                <h5 class="fw-bold mb-3 text-primary border-bottom pb-2">Detalles del Envío</h5>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Referencia:</span>
+                                    <strong class="text-dark" t-out="cert.name"/>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Tipo de Envío:</span>
+                                    <strong class="text-dark" t-out="dict(cert.fields_get(['shipping_type'])['shipping_type']['selection']).get(cert.shipping_type, 'Mensajería')"/>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Formato:</span>
+                                    <strong class="text-dark" t-out="dict(cert.fields_get(['certificate_type'])['certificate_type']['selection']).get(cert.certificate_type, cert.certificate_type)"/>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Fecha de Solicitud:</span>
+                                    <strong class="text-dark" t-out="cert.request_date.strftime('%d/%m/%Y') if cert.request_date else ''"/>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Importe Total:</span>
+                                    <strong class="text-primary fs-6" t-out="'%.2f €' % cert.price_total"/>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                                <a href="/campus/certificates" class="btn btn-primary rounded-pill px-4 py-2.5 fw-bold shadow-sm hover-lift">
+                                    Mis Certificaciones
+                                </a>
+                                <t t-if="cert.stripe_invoice_pdf">
+                                    <a t-att-href="cert.stripe_invoice_pdf" target="_blank" class="btn btn-outline-secondary rounded-pill px-4 py-2.5 fw-semibold">
+                                        <i class="fa fa-file-pdf-o me-2"/>Factura de Pago
+                                    </a>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <style>
+                .hover-lift {
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+                .hover-lift:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25) !important;
+                }
+            </style>
+        </t>
+    </template>
 
     </data>
 </odoo>

@@ -14,6 +14,11 @@ class TestCampusCertificatesPortal(HttpCase):
         leftover_users = cls.env['res.users'].sudo().search([('login', 'in', ('student_portal_certificates', 'other_student'))])
         leftover_partners = leftover_users.partner_id
         
+        leftover_so = cls.env['sale.order'].sudo().search([('partner_id', 'in', leftover_partners.ids)])
+        if leftover_so:
+            leftover_so.write({'state': 'draft'})
+            leftover_so.unlink()
+        
         if 'op.session' in cls.env:
             cls.env['op.session'].sudo().search([('name', '=', 'Test Session')]).unlink()
             cls.env['op.session'].sudo().search([('subject_id.code', 'in', ('TS01', 'TSPORTAL'))]).unlink()
@@ -30,7 +35,7 @@ class TestCampusCertificatesPortal(HttpCase):
         cls.env['product.product'].sudo().search([('name', '=', 'Test Course Product Portal')]).unlink()
         cls.env['op.batch'].sudo().search([('name', 'in', ('Batch Portal HC', 'Batch Portal Done'))]).unlink()
         cls.env['op.course'].sudo().search([('name', 'in', ('Test Course Portal', 'Test Course Portal Done'))]).unlink()
-        cls.env['op.student'].sudo().search([('first_name', '=', 'Test'), ('last_name', '=', 'Student')]).unlink()
+        cls.env['op.student'].sudo().search([('first_name', 'in', ('Test', 'Other')), ('last_name', '=', 'Student')]).unlink()
         
         leftover_users.unlink()
         for partner in leftover_partners:
@@ -204,12 +209,95 @@ class TestCampusCertificatesPortal(HttpCase):
             email='other_student@test.com',
             groups='base.group_portal',
         )
+        cls.other_student = cls.env['op.student'].create({
+            'partner_id': cls.other_user.partner_id.id,
+            'first_name': 'Other',
+            'last_name': 'Student',
+        })
+        
+        # Configure and enable Stripe Payment Provider
+        cls.stripe_provider = cls.env['payment.provider'].sudo().search([('code', '=', 'stripe')], limit=1)
+        if not cls.stripe_provider:
+            cls.stripe_provider = cls.env['payment.provider'].sudo().create({
+                'name': 'Stripe Test',
+                'code': 'stripe',
+                'state': 'test',
+                'is_published': True,
+                'stripe_publishable_key': 'pk_test_dummy',
+                'stripe_secret_key': 'sk_test_dummy',
+                'stripe_webhook_secret': 'whsec_test_dummy',
+            })
+        else:
+            cls.stripe_provider.write({
+                'state': 'test',
+                'is_published': True,
+                'stripe_publishable_key': 'pk_test_dummy',
+                'stripe_secret_key': 'sk_test_dummy',
+                'stripe_webhook_secret': 'whsec_test_dummy',
+            })
+            
+        # Create dummy sale orders to pass academic checks
+        cls.env['sale.order'].sudo().create({
+            'partner_id': cls.portal_user.partner_id.id,
+            'state': 'sale',
+        })
+        cls.env['sale.order'].sudo().create({
+            'partner_id': cls.other_user.partner_id.id,
+            'state': 'sale',
+        })
+            
+        # Monkeypatch _stripe_make_request directly on the registry model class
+        cls._original_stripe_make_request = type(cls.env['payment.provider'])._stripe_make_request
+        
+        def _mock_stripe_make_request_bound(self, endpoint, payload=None, method='POST', offline=False, idempotency_key=None, **kwargs):
+            print("MONKEYPATCH MOCK STRIPE CALLED: endpoint=%s, method=%s, payload=%s" % (endpoint, method, payload))
+            if "checkout/sessions" in endpoint:
+                return {
+                    'id': 'cs_test_12345',
+                    'url': 'https://checkout.stripe.com/pay/cs_test_12345',
+                    'payment_status': 'paid',
+                }
+            elif "invoices/" in endpoint:
+                return {
+                    'hosted_invoice_url': 'https://stripe.com/invoice/hosted',
+                    'invoice_pdf': 'https://stripe.com/invoice/pdf',
+                }
+            elif "payment_intents/" in endpoint:
+                return {
+                    'charges': {
+                        'data': [
+                            {'receipt_url': 'https://stripe.com/receipt'}
+                        ]
+                    }
+                }
+            elif "customers" in endpoint:
+                return {
+                    'id': 'cus_test_12345',
+                }
+            return {}
+
+        type(cls.env['payment.provider'])._stripe_make_request = _mock_stripe_make_request_bound
+        
         cls.env.cr.commit()
 
     @classmethod
     def tearDownClass(cls):
+        # Restore _stripe_make_request on the registry model class
+        if hasattr(cls, '_original_stripe_make_request'):
+            type(cls.env['payment.provider'])._stripe_make_request = cls._original_stripe_make_request
+            
         # Rollback local transaction to start a fresh one and see HTTP thread commits
         cls.env.cr.rollback()
+
+        # Disable stripe provider
+        if hasattr(cls, 'stripe_provider') and cls.stripe_provider:
+            cls.stripe_provider.write({'state': 'disabled'})
+
+        # Clean up sale orders first
+        leftover_so = cls.env['sale.order'].sudo().search([('partner_id', 'in', (cls.portal_user.partner_id.id, cls.other_user.partner_id.id))])
+        if leftover_so:
+            leftover_so.write({'state': 'draft'})
+            leftover_so.unlink()
 
         # Clean up records from DB
         if 'op.session' in cls.env:
@@ -235,7 +323,7 @@ class TestCampusCertificatesPortal(HttpCase):
         cls.env['op.batch'].sudo().search([('name', 'in', ('Batch Portal HC', 'Batch Portal Done'))]).unlink()
         cls.env['op.course'].sudo().search([('name', 'in', ('Test Course Portal', 'Test Course Portal Done'))]).unlink()
 
-        cls.env['op.student'].sudo().search([('first_name', '=', 'Test'), ('last_name', '=', 'Student')]).unlink()
+        cls.env['op.student'].sudo().search([('first_name', 'in', ('Test', 'Other')), ('last_name', '=', 'Student')]).unlink()
         
         users = cls.env['res.users'].sudo().search([('login', 'in', ('student_portal_certificates', 'other_student'))])
         partners = users.partner_id
@@ -248,6 +336,40 @@ class TestCampusCertificatesPortal(HttpCase):
         
         cls.env.cr.commit()
         super().tearDownClass()
+
+    @staticmethod
+    def _mock_stripe_make_request(*args, **kwargs):
+        print("MOCK STRIPE CALLED: args=%s, kwargs=%s" % (str(args), str(kwargs)))
+        endpoint = args[1] if len(args) > 1 else kwargs.get('endpoint', '')
+        if not isinstance(endpoint, str):
+            for arg in args:
+                if isinstance(arg, str):
+                    endpoint = arg
+                    break
+        if "checkout/sessions" in endpoint:
+            return {
+                'id': 'cs_test_12345',
+                'url': 'https://checkout.stripe.com/pay/cs_test_12345',
+                'payment_status': 'paid',
+            }
+        elif "invoices/" in endpoint:
+            return {
+                'hosted_invoice_url': 'https://stripe.com/invoice/hosted',
+                'invoice_pdf': 'https://stripe.com/invoice/pdf',
+            }
+        elif "payment_intents/" in endpoint:
+            return {
+                'charges': {
+                    'data': [
+                        {'receipt_url': 'https://stripe.com/receipt'}
+                    ]
+                }
+            }
+        elif "customers" in endpoint:
+            return {
+                'id': 'cus_test_12345',
+            }
+        return {}
 
     def test_01_campus_certificates_unauthorized_redirects(self):
         """Unauthenticated requests should be redirected to login page."""
@@ -351,35 +473,169 @@ class TestCampusCertificatesPortal(HttpCase):
 
         # 2. Requesting 'gradebook_partial' (partial) on an in-progress gradebook should succeed
         post_data['document_type'] = 'gradebook_partial'
-        response_post2 = self.url_open('/campus/certificates/new', data=post_data)
-        self.assertEqual(response_post2.status_code, 200)
-        self.assertTrue('/campus/certificates/confirm/' in response_post2.url)
+        response_post2 = self.url_open('/campus/certificates/new', data=post_data, allow_redirects=False)
+        if response_post2.status_code not in (302, 303):
+            print("DEBUG: response_post2.status_code is %s" % response_post2.status_code)
+            print("DEBUG: response_post2.text is:\n%s" % response_post2.text)
+        self.assertIn(response_post2.status_code, (302, 303))
+        self.assertIn('checkout.stripe.com', response_post2.headers.get('Location', ''))
 
         # 3. Requesting 'attendance' on an in-progress gradebook should succeed
         post_data['document_type'] = 'attendance'
         if hasattr(self, 'op_session'):
             post_data['session_id'] = str(self.op_session.id)
-        response_post3 = self.url_open('/campus/certificates/new', data=post_data)
-        self.assertEqual(response_post3.status_code, 200)
-        if '/campus/certificates/confirm/' not in response_post3.url:
-            raise AssertionError("Assertion failed. URL: %s, Response text: %s" % (response_post3.url, response_post3.text))
-        self.assertTrue('/campus/certificates/confirm/' in response_post3.url)
+        response_post3 = self.url_open('/campus/certificates/new', data=post_data, allow_redirects=False)
+        self.assertIn(response_post3.status_code, (302, 303))
+        if 'session_id' in self.env['irg.certificate.request']._fields:
+            self.assertIn('/campus/certificates/confirm/', response_post3.headers.get('Location', ''))
+        else:
+            self.assertIn('checkout.stripe.com', response_post3.headers.get('Location', ''))
 
         # 4. Requesting 'enrollment' on an in-progress gradebook should succeed
         post_data['document_type'] = 'enrollment'
-        response_post4 = self.url_open('/campus/certificates/new', data=post_data)
-        self.assertEqual(response_post4.status_code, 200)
-        self.assertTrue('/campus/certificates/confirm/' in response_post4.url)
+        response_post4 = self.url_open('/campus/certificates/new', data=post_data, allow_redirects=False)
+        if response_post4.status_code not in (302, 303):
+            print("DEBUG ENROLLMENT: status=%s body=%s" % (response_post4.status_code, response_post4.text))
+        self.assertIn(response_post4.status_code, (302, 303))
+        self.assertIn('checkout.stripe.com', response_post4.headers.get('Location', ''))
 
         # 5. Requesting 'gradebook' on a finished gradebook should succeed
         post_data['gradebook_id'] = str(self.gradebook_done.id)
         post_data['document_type'] = 'gradebook'
-        response_post5 = self.url_open('/campus/certificates/new', data=post_data)
-        self.assertEqual(response_post5.status_code, 200)
-        self.assertTrue('/campus/certificates/confirm/' in response_post5.url)
+        response_post5 = self.url_open('/campus/certificates/new', data=post_data, allow_redirects=False)
+        self.assertIn(response_post5.status_code, (302, 303))
+        self.assertIn('checkout.stripe.com', response_post5.headers.get('Location', ''))
 
         # Requesting 'diploma' on a finished gradebook should succeed
         post_data['document_type'] = 'diploma'
-        response_post6 = self.url_open('/campus/certificates/new', data=post_data)
-        self.assertEqual(response_post6.status_code, 200)
-        self.assertTrue('/campus/certificates/confirm/' in response_post6.url)
+        response_post6 = self.url_open('/campus/certificates/new', data=post_data, allow_redirects=False)
+        self.assertIn(response_post6.status_code, (302, 303))
+        self.assertIn('checkout.stripe.com', response_post6.headers.get('Location', ''))
+
+    def test_07_stripe_webhook_completed_sync(self):
+        """Simulate reception of checkout.session.completed webhook via stripe.sync."""
+        # 1. Crear una solicitud de certificado que esté pendiente de pago
+        cert_req = self.env['irg.certificate.request'].sudo().create({
+            'gradebook_student_id': self.gradebook_done.id,
+            'document_type': 'diploma',
+            'certificate_type': 'digital',
+            'signer': 'raimon',
+            'state': 'pending_payment',
+            'origin': 'portal',
+        })
+        
+        # 2. Generar el payload simulado que envía Stripe
+        session_payload = {
+            'id': 'cs_test_webhook_123',
+            'object': 'checkout.session',
+            'amount_total': 1500,  # 15.00 EUR
+            'currency': 'eur',
+            'customer': 'cus_test_webhook',
+            'payment_status': 'paid',
+            'payment_intent': 'pi_test_webhook',
+            'invoice': 'in_test_webhook',
+            'metadata': {
+                'certificate_request_id': str(cert_req.id),
+            }
+        }
+        
+        # 3. Invocar al método de stripe.sync
+        self.env['stripe.sync']._sync_checkout_session(session_payload)
+        
+        # 4. Verificar el cambio de estados
+        cert_req.invalidate_model(['state', 'stripe_payment_status', 'attachment_id', 'diploma_registry_id'])
+        self.assertEqual(cert_req.state, 'done')
+        self.assertEqual(cert_req.stripe_payment_status, 'paid')
+        self.assertEqual(cert_req.stripe_checkout_session_id, 'cs_test_webhook_123')
+        self.assertEqual(cert_req.stripe_payment_intent_id, 'pi_test_webhook')
+        self.assertEqual(cert_req.stripe_invoice_id, 'in_test_webhook')
+        
+        # 5. Verificar vinculación del attachment de PDF al diploma registry
+        self.assertTrue(cert_req.attachment_id, "Debería haberse generado un PDF adjunto.")
+        
+        diploma = cert_req.diploma_registry_id
+        self.assertTrue(diploma.exists(), "Debería haberse vinculado a un registro de diploma.")
+        self.assertEqual(diploma.attachment_id, cert_req.attachment_id, "El adjunto del diploma debería ser el mismo que el del certificado.")
+        self.assertEqual(diploma.state, 'valid', "El diploma debería estar en estado válido.")
+
+        # Testear para certificado físico (debe quedar en in_process)
+        cert_physical = self.env['irg.certificate.request'].sudo().create({
+            'gradebook_student_id': self.gradebook_done.id,
+            'document_type': 'gradebook',
+            'certificate_type': 'physical',
+            'shipping_type': 'national',
+            'signer': 'raimon',
+            'state': 'pending_payment',
+            'origin': 'portal',
+        })
+        
+        physical_payload = {
+            'id': 'cs_test_webhook_physical',
+            'object': 'checkout.session',
+            'amount_total': 3000,
+            'currency': 'eur',
+            'customer': 'cus_test_webhook',
+            'payment_status': 'paid',
+            'payment_intent': 'pi_test_webhook_phys',
+            'invoice': 'in_test_webhook_phys',
+            'metadata': {
+                'certificate_request_id': str(cert_physical.id),
+            }
+        }
+        self.env['stripe.sync']._sync_checkout_session(physical_payload)
+        cert_physical.invalidate_model(['state'])
+        self.assertEqual(cert_physical.state, 'in_process', "Los certificados físicos deben transicionar a 'in_process'.")
+
+    def test_08_idor_security_checks(self):
+        """Test IDOR security checks: a student should not access other student's downloads/cancellations/success pages."""
+        # 1. Crear solicitud para portal_user
+        cert_req = self.env['irg.certificate.request'].sudo().create({
+            'gradebook_student_id': self.gradebook_done.id,
+            'document_type': 'gradebook',
+            'certificate_type': 'digital',
+            'signer': 'raimon',
+            'state': 'pending_payment',
+            'origin': 'portal',
+        })
+
+        # Autenticar como el otro estudiante
+        self.authenticate(self.other_user.login, self.other_user.login)
+        
+        # Intentar descargar diploma ajeno
+        diploma_url = f"/campus/certificates/download/diploma/{self.diploma.id}"
+        response = self.url_open(diploma_url, allow_redirects=False)
+        self.assertIn(response.status_code, (301, 302, 303))
+        self.assertTrue(response.headers.get('Location', '').endswith('/campus/certificates'))
+
+        # Intentar descargar acta ajena
+        acta_url = f"/campus/certificates/download/acta/{self.acta.id}"
+        response = self.url_open(acta_url, allow_redirects=False)
+        self.assertIn(response.status_code, (301, 302, 303))
+        self.assertTrue(response.headers.get('Location', '').endswith('/campus/certificates'))
+
+        # Intentar acceder a success del pago ajeno
+        success_url = f"/campus/certificates/payment/success/{cert_req.id}"
+        response = self.url_open(success_url, allow_redirects=False)
+        self.assertIn(response.status_code, (301, 302, 303))
+        self.assertTrue(response.headers.get('Location', '').endswith('/campus/certificates'))
+
+        # Intentar acceder a cancel del pago ajeno
+        cancel_url = f"/campus/certificates/payment/cancel/{cert_req.id}"
+        response = self.url_open(cancel_url, allow_redirects=False)
+        self.assertIn(response.status_code, (301, 302, 303))
+        self.assertTrue('/campus/certificates' in response.headers.get('Location', ''))
+        # Asegurarse de que el estado de la solicitud ajena no cambió a 'cancelled'
+        cert_req.invalidate_model(['state'])
+        self.assertEqual(cert_req.state, 'pending_payment', "El estado no debería haber cambiado a cancelado por otro usuario.")
+
+        # Intentar acceder a thank-you ajeno
+        thank_you_url = f"/campus/certificates/thank-you/{cert_req.id}"
+        response = self.url_open(thank_you_url, allow_redirects=False)
+        self.assertIn(response.status_code, (301, 302, 303))
+        self.assertTrue(response.headers.get('Location', '').endswith('/campus/certificates'))
+
+        # Intentar pagar solicitud ajena
+        pay_url = f"/campus/certificates/pay/{cert_req.id}"
+        response = self.url_open(pay_url, allow_redirects=False)
+        self.assertIn(response.status_code, (301, 302, 303))
+        self.assertTrue(response.headers.get('Location', '').endswith('/campus/certificates'))

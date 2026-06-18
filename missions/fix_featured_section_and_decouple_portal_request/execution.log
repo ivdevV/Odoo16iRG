@@ -1,0 +1,14 @@
+[2026-06-17 15:47:00] Misión iniciada.
+[2026-06-17 15:49:00] Analizados los módulos y planificado el alcance. Complejidad clasificada como 'standard'.
+[2026-06-17 15:51:00] Modificados los archivos correspondientes a las tareas del plan:
+  - slide_channel.py: Cambiada llamada self.op_subject_ids.sudo() por self.sudo().op_subject_ids.
+  - __manifest__.py (diplomados): Removida la dependencia irg_campus_certificates_portal.
+  - course_portal_tiles.xml: Modificado para heredar de irg_course_portal_tiles.irg_user_profile_content_details_inherit e inyectar el tile Diploma del Diplomado en la sección "Herramientas del curso" con un XPath robusto.
+  - test_portal.py (diplomados): Modificados los asserts del test_course_tile_is_specific_for_diplomado.
+  - campus_dashboard_override.xml: Modificado para usar el XPath robusto y agregar control condicional de diplomados.
+[2026-06-17 15:52:00] Ejecutados tests de irg_campus_certificates_portal. Se detecta un fallo en test_06_portal_new_certificate_post_validation al solicitar 'enrollment'.
+[2026-06-17 15:53:00] Depurando fallo: Identificada la causa. Al solicitar el certificado de asistencia ('attendance') en el paso anterior, se crea una factura posted sin pagar para el alumno. Dado que las facturas de certificados son opcionales y administrativas, no deben considerarse deuda académica ('academic debt') que bloquee otros trámites.
+[2026-06-17 15:55:00] Modificado _get_academic_invoices en irg_certificate_request.py (en el módulo irg_academic_request_history) para filtrar y excluir de la comprobación de deuda aquellas facturas asociadas a solicitudes de certificados.
+[2026-06-17 15:55:42] Ejecutados nuevamente los tests de irg_campus_certificates_portal. Resultados: 0 fallos, 0 errores (¡Pasan todos!).
+[2026-06-17 15:55:58] Ejecutados tests de irg_diplomado_portal_request. Resultados: 0 fallos, 0 errores (¡Pasan todos!).
+[2026-06-17 15:56:00] Generados los artefactos finalizados: diff.patch, execution.log y verification.json. Misión completada de forma satisfactoria.

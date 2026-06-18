@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_inherit_certificates" model="ir.ui.view">
+        <field name="name">op.student.form.inherit.certificates</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_certificate_requests"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o">
+                    <field name="certificate_request_count" widget="statinfo" string="Certificados"/>
+                </button>
+            </div>
+        </field>
+    </record>
+</odoo>

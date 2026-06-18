@@ -8,6 +8,12 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    def _get_course_product_domain(self, product_template):
+        domain = [('product_template_id', '=', product_template.id)]
+        if 'product_template_ids' in self.env['op.course']._fields:
+            domain = ['|'] + domain + [('product_template_ids', 'in', product_template.id)]
+        return domain
+
     def _is_academic_line(self, line):
         if line.price_unit < 0 or line.price_subtotal < 0:
             return False
@@ -18,11 +24,7 @@ class SaleOrder(models.Model):
         if pt.is_academic_program:
             return True
         # 2. Linked to an op.course
-        if self.env['op.course'].search_count([
-            '|',
-            ('product_template_id', '=', pt.id),
-            ('product_template_ids', 'in', pt.id)
-        ]) > 0:
+        if self.env['op.course'].search_count(self._get_course_product_domain(pt)) > 0:
             return True
         # 3. Linked to the order's course
         if line.order_id and line.order_id.course_id:
@@ -47,21 +49,7 @@ class SaleOrder(models.Model):
         # Asegurar que se calculan curso_id y product_template_id en el presupuesto
         self.get_academic_product_template_id()
         
-        # Buscar fecha de inicio de la línea de presupuesto
-        academic_lines = self.order_line.filtered(lambda l: self._is_academic_line(l))
-        line_start_date = False
-        if academic_lines:
-            line_start_date = academic_lines[0].start_date_enroller
-
-        today = fields.Date.today()
-        current = line_start_date or self.admission_date
-        
-        if line_start_date:
-            default_date = line_start_date
-        elif not current or current.month != today.month or current.year != today.year:
-            default_date = today.replace(day=1)
-        else:
-            default_date = current
+        default_date = fields.Date.context_today(self)
             
         wizard = self.env['irg.manual.confirmation.wizard'].create({
             'order_id': self.id,
@@ -97,9 +85,7 @@ class SaleOrder(models.Model):
 
         if not is_diplomado:
             # Fallback check on course categories
-            domain = ['|', 
-                     ('product_template_id', '=', line.product_template_id.id),
-                     ('product_template_ids', 'in', line.product_template_id.id)]
+            domain = self._get_course_product_domain(line.product_template_id)
             course = self.env['op.course'].search(domain, limit=1)
             if not course and line.order_id and line.order_id.course_id:
                 course = line.order_id.course_id
@@ -146,9 +132,7 @@ class SaleOrder(models.Model):
         se propaguen al registro de admisión cuando este es creado o recuperado.
         Asegura además que birth_date tenga un valor válido (evitando fallas de tipo al matricular).
         """
-        domain = ['|', 
-                 ('product_template_id', '=', line.product_template_id.id),
-                 ('product_template_ids', 'in', line.product_template_id.id)]
+        domain = self._get_course_product_domain(line.product_template_id)
         course = self.env['op.course'].search(domain, limit=1)
 
         ctx = {'irg_get_lot_line_id': line.id}
@@ -158,28 +142,20 @@ class SaleOrder(models.Model):
         admission = super(SaleOrder, self.with_context(**ctx))._create_or_get_admission(line)
         if admission:
             vals = {}
-            # Priorizamos la fecha de inicio de la línea (line.start_date_enroller),
-            # y usamos self.admission_date (seleccionada en el wizard o guardada) como fallback.
-            admission_date = line.start_date_enroller or self.admission_date
+            # La fecha de admision es la fecha real de confirmacion; la fecha de
+            # inicio de clases se conserva aparte en irg_class_start_date.
+            admission_date = fields.Date.context_today(self)
 
             if admission_date:
-                modality = self._get_line_modality(line)
-                today = fields.Date.today()
-                if modality in ('HC', 'PRS') and today.day > 7 and admission_date.month == today.month and admission_date.year == today.year:
-                    from dateutil.relativedelta import relativedelta
-                    admission_date = admission_date + relativedelta(months=1)
-                
-                # HC Summer Period Rule: everything entering (or shifted to) between July and Sept 1st goes to September (09)
-                if modality == 'HC':
-                    if admission_date.month in (7, 8) or (admission_date.month == 9 and admission_date.day == 1):
-                        admission_date = admission_date.replace(month=9, day=1)
-
                 _logger.info(
-                    "IRG Manual Wizard: Propagando admission_date %s y fees_start_date a la admisión %s desde línea/SO %s",
+                    "IRG Manual Wizard: Propagando admission_date %s a la admisión %s desde confirmación SO %s",
                     admission_date, admission.name, self.name
                 )
                 vals['admission_date'] = admission_date
-                vals['fees_start_date'] = admission_date
+                if line.start_date_enroller:
+                    vals['fees_start_date'] = line.start_date_enroller
+                else:
+                    vals['fees_start_date'] = admission_date
             
             # Propagar el precio subtotal de la línea de presupuesto como tarifa de la admisión (fees)
             _logger.info(
@@ -395,6 +371,3 @@ class SaleOrder(models.Model):
         if lang == 'es_ES':
             return False
         return res
-
-
-

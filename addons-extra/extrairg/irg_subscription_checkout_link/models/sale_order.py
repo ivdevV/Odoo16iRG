@@ -274,11 +274,16 @@ class SaleOrder(models.Model):
 
     def _irg_has_stripe_subscription(self):
         self.ensure_one()
-        existing_sub_id = (
-            getattr(self, "stripe_subscription_id", False)
-            or getattr(self, "stripe_subscription_ref", False)
-        )
-        return bool(existing_sub_id and existing_sub_id.startswith("sub_"))
+        existing_sub = getattr(self, "stripe_subscription_id", False)
+        existing_sub_id = False
+        if existing_sub:
+            if isinstance(existing_sub, models.BaseModel):
+                existing_sub_id = getattr(existing_sub, "stripe_id", False)
+            else:
+                existing_sub_id = existing_sub
+        if not existing_sub_id:
+            existing_sub_id = getattr(self, "stripe_subscription_ref", False)
+        return bool(existing_sub_id and isinstance(existing_sub_id, str) and existing_sub_id.startswith("sub_"))
 
     def _irg_consume_pending_subscription_checkout(self):
         for order in self:

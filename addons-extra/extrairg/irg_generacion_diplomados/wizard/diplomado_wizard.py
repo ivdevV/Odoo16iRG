@@ -144,7 +144,9 @@ class IrgDiplomadoWizard(models.TransientModel):
                     'certificate_id': stamp_data.get('certificate_id'),
                 })
 
-        qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or 'https://app.institutoraimongaja.com'
+        base_url = base_url.rstrip('/')
+        qr_url = "{}/verificar/?{}".format(base_url, urlencode(query_params))
 
         # Construir el diccionario de datos
         data = {

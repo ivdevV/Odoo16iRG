@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "task": "fix_featured_embed_and_portal_access",
+  "checks": [
+    {
+      "name": "embed_size_scss_responsive",
+      "result": "pass",
+      "detail": "Changed featured_section.scss to style embed iframe full-width with aspect-ratio 16:9 and max-width 800px."
+    },
+    {
+      "name": "portal_user_online_clone_access",
+      "result": "pass",
+      "detail": "Implemented fallback to HomeClass channel in slide_channel.py when current channel is an online clone."
+    },
+    {
+      "name": "unit_tests",
+      "result": "pass",
+      "detail": "All 7 tests passed (0 failed, 0 errors) for irg_course_elearning_featured_section."
+    }
+  ],
+  "evidence": [
+    "missions/fix_featured_embed_and_portal_access/diff.patch",
+    "missions/fix_featured_embed_and_portal_access/execution.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

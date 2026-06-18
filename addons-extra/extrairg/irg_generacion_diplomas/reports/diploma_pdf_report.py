@@ -420,8 +420,12 @@ class DiplomaReportPDF(models.AbstractModel):
         y_images = y - sp(34) if diploma_type == 'digital' else y - sp(12)
 
         # compute QR coordinates now so that later branches can reference qr_y
-        qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
         registry = data.get('registry_number', 'DRAFT')
+        qr_url = data.get('qr_url')
+        if not qr_url:
+            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or 'https://app.institutoraimongaja.com'
+            base_url = base_url.rstrip('/')
+            qr_url = "{}/verificar/?id={}".format(base_url, registry)
         qr_size = sp(46)
         qr_x = side_margin + sp(36)
         # For physical diplomas move the QR slightly towards the centre

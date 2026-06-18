@@ -50,6 +50,12 @@ class ManualConfirmationWizard(models.TransientModel):
     # Defaults
     # ----------------------------------------------------------------
 
+    def _get_course_product_domain(self, product_template):
+        domain = [('product_template_id', '=', product_template.id)]
+        if 'product_template_ids' in self.env['op.course']._fields:
+            domain = ['|'] + domain + [('product_template_ids', 'in', product_template.id)]
+        return domain
+
     def _is_academic_line(self, line):
         if line.price_unit < 0 or line.price_subtotal < 0:
             return False
@@ -60,11 +66,7 @@ class ManualConfirmationWizard(models.TransientModel):
         if pt.is_academic_program:
             return True
         # 2. Linked to an op.course
-        if self.env['op.course'].search_count([
-            '|',
-            ('product_template_id', '=', pt.id),
-            ('product_template_ids', 'in', pt.id)
-        ]) > 0:
+        if self.env['op.course'].search_count(self._get_course_product_domain(pt)) > 0:
             return True
         # 3. Linked to the order's course
         order = line.order_id
@@ -88,20 +90,7 @@ class ManualConfirmationWizard(models.TransientModel):
         order_id = res.get('order_id') or self.env.context.get('default_order_id')
         if order_id:
             order = self.env['sale.order'].browse(order_id)
-            academic_lines = order.order_line.filtered(lambda l: self._is_academic_line(l))
-            line_start_date = False
-            if academic_lines:
-                line_start_date = academic_lines[0].start_date_enroller
-            
-            if line_start_date:
-                res['admission_date'] = line_start_date
-            else:
-                today = fields.Date.today()
-                current_admission = order.admission_date
-                if not current_admission or current_admission.month != today.month or current_admission.year != today.year:
-                    res['admission_date'] = today.replace(day=1)
-                else:
-                    res['admission_date'] = current_admission
+            res['admission_date'] = fields.Date.context_today(order)
         return res
 
     # ----------------------------------------------------------------
@@ -243,9 +232,7 @@ class ManualConfirmationWizard(models.TransientModel):
         return reg
 
     def _find_course_for_line(self, line):
-        domain = ['|', 
-                 ('product_template_id', '=', line.product_template_id.id),
-                 ('product_template_ids', 'in', line.product_template_id.id)]
+        domain = self._get_course_product_domain(line.product_template_id)
         course = self.env['op.course'].search(domain, limit=1)
         if not course and line.order_id and line.order_id.course_id:
             course = line.order_id.course_id

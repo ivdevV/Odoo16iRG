@@ -34,6 +34,7 @@
         'isep_openeducat_sale',
         'irg_openeducat_sale_lote_custom',
         'irg_elearning_correo_bienvenida_selector',
+        'irg_openeducat_course_multi_product',
         'isep_sale_order_admissions',
         'isep_admission_from_student_field',
         'irg_admission_class_start_date',
