@@ -1,14 +1,14 @@
-# Mision: irg_qr_verification_fix (Actualizado)
+# Mision: irg_qr_verification_fix (Actualizado v2)
 
 ## Alcance
 
-Corregir las URLs QR generadas en los diplomas y diplomados de Odoo para que apunten dinámicamente al dominio del entorno correspondiente (usando `web.base.url`). Adicionalmente, actualizar el controlador del módulo `irg_diploma_sheet_verification` para que sea compatible y busque dinámicamente registros de diplomados en `irg.diplomado.registry` cuando se valide desde la web.
+Corregir las URLs QR generadas en los diplomas y diplomados de Odoo para que apunten dinámicamente al dominio del entorno correspondiente (usando `web.base.url`). Resolver los conflictos de ruteo HTTP entre controladores y posibilitar la validación e interpretación del sello de firma digital cuando los registros no existan físicamente en la base de datos (por ejemplo, en el entorno de desarrollo).
 
 ## Clasificación de complejidad
 
 Tier: `standard`.
 
-Justificación: Afecta a un archivo adicional de control (`main.py` de `irg_diploma_sheet_verification`), sumando un total de 6 archivos. No introduce cambios de arquitectura, flujos de autenticación, migraciones de datos, ni eliminación de datos históricos.
+Justificación: Afecta a 3 archivos controladores existentes para unificar y reestructurar la lógica de verificación web de forma cooperativa. No introduce cambios de arquitectura, flujos de autenticación, migraciones ni borrado de datos.
 
 ## Knowledge base consultada
 
@@ -16,17 +16,20 @@ Justificación: Afecta a un archivo adicional de control (`main.py` de `irg_dipl
 
 ## Referencia analizada
 
-- `irg_diploma_sheet_verification.controllers.main`: Intercepta la ruta `/verificar` omitiendo diplomados y rompiendo su validación.
+- `irg_generacion_diplomas.controllers.main`: Controlador base de verificación.
+- `irg_generacion_diplomados_website_verify.controllers.main`: Registra rutas HTTP duplicadas que entran en conflicto.
+- `irg_diploma_sheet_verification.controllers.main`: Registra rutas HTTP duplicadas que entran en conflicto e ignora la validación por sello.
 
 ## Plan
 
-1. **Investigar y Planificar**: (Completado) Identificar la interferencia del controlador de `irg_diploma_sheet_verification`.
+1. **Investigar y Planificar**: (Completado) Identificar conflictos de rutas y la falta de decodificación de sellos en el histórico.
 2. **Implementación**:
-   - Modificar `irg_generacion_diplomas` e `irg_generacion_diplomados` (ya completado en la iteración anterior).
-   - Modificar `irg_diploma_sheet_verification/controllers/main.py` para admitir búsqueda condicional en `irg.diplomado.registry` y formatear el diccionario de salida de forma compatible y segura.
+   - Modificar `irg_generacion_diplomas/controllers/main.py` para integrar la búsqueda de diplomados y retornar `record_model`.
+   - Modificar `irg_generacion_diplomados_website_verify/controllers/main.py` vaciando el controlador para eliminar registros de rutas duplicadas.
+   - Modificar `irg_diploma_sheet_verification/controllers/main.py` para delegar en `super()`, admitir diplomados de forma segura y decodificar los datos firmados en el sello si no existe registro físico.
 3. **Validación**:
-   - Compilación estática de todos los archivos modificados.
-   - Ejecución de los tests existentes de verificación web para validar que el sistema no presente regresiones.
+   - Compilación estática de todos los archivos.
+   - Pruebas HTTP simulando llamadas en Docker local.
 4. **Documentación**:
    - Registrar los cambios en `execution.log` y crear `verification.json` con los resultados.
    - Actualizar el changelog y la base de conocimientos si corresponde.

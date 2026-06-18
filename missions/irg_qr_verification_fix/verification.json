@@ -5,7 +5,7 @@
     {
       "name": "python_compilation",
       "result": "pass",
-      "detail": "python3 -m compileall passed successfully on all modified modules including irg_diploma_sheet_verification"
+      "detail": "python3 -m compileall passed successfully on all modified modules including base, bridge, and sheet verification"
     },
     {
       "name": "odoo_tests",
