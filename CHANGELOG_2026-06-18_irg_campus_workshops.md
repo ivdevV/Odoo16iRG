@@ -19,9 +19,13 @@ Este registro de cambios detalla la creación e implementación del módulo pers
 - **Estilos CSS Modernos y Hover Micro-Animations**:
   - Definidos estilos locales (`.irg-workshop-card`) con transiciones fluidas de transformación y sombra (`box-shadow`) para proporcionar un efecto de elevación táctil e interactivo de alta calidad en dispositivos de escritorio.
   - Diseño responsivo compatible con dispositivos móviles, adaptándose a cuadrículas de 1 a 4 columnas.
+- **Controlador Python de Auto-inscripción (`controllers/main.py`)**:
+  - Sobrescritura del controlador `WebsiteSlides` en la ruta `/slides/<model("slide.channel"):channel>`.
+  - Detección y auto-inscripción automática (creación de registro `slide.channel.partner` con `auto_added=True`) para usuarios autenticados que accedan al taller de iRG Empower, eliminando el paso de inscripción manual y permitiendo el acceso directo al contenido.
 - **Tests de Integración y Carga de Vistas (`tests/test_workshops.py`)**:
-  - Suite de pruebas de Odoo que verifica la carga exitosa de la vista heredada.
-  - Comprobación de que el XML final renderizado incluye el título "Talleres", el enlace de redirección a iRG Empower y la imagen del logotipo.
+  - Suite de pruebas de Odoo que verifica la carga exitosa de la vista heredada (incluyendo el título "Talleres", el enlace y el logotipo).
+  - Añadido segundo test de integración unitaria (`test_auto_enrollment`) que mockea el entorno de request del usuario y valida que la auto-inscripción en el canal de Empower ocurra exitosamente al acceder a la ruta.
+
 
 ### Documentación
 - Registro de la misión y el plan de ejecución en `missions/irg-campus-workshops/`.

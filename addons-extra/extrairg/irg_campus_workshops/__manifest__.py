@@ -9,6 +9,7 @@
     'depends': [
         'isep_website_custom',
         'isep_website_custom_design',
+        'irg_course_portal_tiles_diplomado_hide',
     ],
     'data': [
         'views/user_profile_content_workshops.xml',

@@ -1,109 +1,386 @@
 diff --git a/addons-extra/extrairg/irg_campus_workshops/__init__.py b/addons-extra/extrairg/irg_campus_workshops/__init__.py
-new file mode 100644
-index 00000000..40a96afc
---- /dev/null
+index 40a96afc..153a9e31 100644
+--- a/addons-extra/extrairg/irg_campus_workshops/__init__.py
 +++ b/addons-extra/extrairg/irg_campus_workshops/__init__.py
-@@ -0,0 +1 @@
-+# -*- coding: utf-8 -*-
+@@ -1 +1,2 @@
+ # -*- coding: utf-8 -*-
++from . import controllers
 diff --git a/addons-extra/extrairg/irg_campus_workshops/__manifest__.py b/addons-extra/extrairg/irg_campus_workshops/__manifest__.py
-new file mode 100644
-index 00000000..b6a56115
---- /dev/null
+index b6a56115..2928d69f 100644
+--- a/addons-extra/extrairg/irg_campus_workshops/__manifest__.py
 +++ b/addons-extra/extrairg/irg_campus_workshops/__manifest__.py
-@@ -0,0 +1,18 @@
-+# -*- coding: utf-8 -*-
-+{
-+    'name': 'IRG - Talleres en Campus',
-+    'summary': 'Añade una sección de talleres en el portal /campus con el tile de iRG Empower',
-+    'version': '16.0.1.0.0',
-+    'category': 'Website',
-+    'author': 'IRG',
-+    'license': 'LGPL-3',
-+    'depends': [
-+        'isep_website_custom',
-+        'isep_website_custom_design',
-+    ],
-+    'data': [
-+        'views/user_profile_content_workshops.xml',
-+    ],
-+    'installable': True,
-+    'auto_install': False,
-+}
-diff --git a/addons-extra/extrairg/irg_campus_workshops/static/src/img/irg_empower_logo.jpg b/addons-extra/extrairg/irg_campus_workshops/static/src/img/irg_empower_logo.jpg
+@@ -9,6 +9,7 @@
+     'depends': [
+         'isep_website_custom',
+         'isep_website_custom_design',
++        'irg_course_portal_tiles_diplomado_hide',
+     ],
+     'data': [
+         'views/user_profile_content_workshops.xml',
+diff --git a/addons-extra/extrairg/irg_campus_workshops/controllers/__init__.py b/addons-extra/extrairg/irg_campus_workshops/controllers/__init__.py
 new file mode 100644
-index 00000000..2a496d1c
-Binary files /dev/null and b/addons-extra/extrairg/irg_campus_workshops/static/src/img/irg_empower_logo.jpg differ
-diff --git a/addons-extra/extrairg/irg_campus_workshops/tests/__init__.py b/addons-extra/extrairg/irg_campus_workshops/tests/__init__.py
-new file mode 100644
-index 00000000..5b63075c
+index 00000000..757b12a1
 --- /dev/null
-+++ b/addons-extra/extrairg/irg_campus_workshops/tests/__init__.py
++++ b/addons-extra/extrairg/irg_campus_workshops/controllers/__init__.py
 @@ -0,0 +1,2 @@
 +# -*- coding: utf-8 -*-
-+from . import test_workshops
-diff --git a/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py b/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py
++from . import main
+diff --git a/addons-extra/extrairg/irg_campus_workshops/controllers/main.py b/addons-extra/extrairg/irg_campus_workshops/controllers/main.py
 new file mode 100644
-index 00000000..a17ef715
+index 00000000..ba53570e
 --- /dev/null
-+++ b/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py
-@@ -0,0 +1,17 @@
++++ b/addons-extra/extrairg/irg_campus_workshops/controllers/main.py
+@@ -0,0 +1,59 @@
 +# -*- coding: utf-8 -*-
-+from odoo.tests.common import TransactionCase
++import logging
++from odoo import http
++from odoo.http import request
++from odoo.addons.website_slides.controllers.main import WebsiteSlides
++
++_logger = logging.getLogger(__name__)
 +
 +
-+class TestCampusWorkshops(TransactionCase):
++class WebsiteSlidesWorkshops(WebsiteSlides):
 +
-+    def test_view_inheritance(self):
-+        """Verifica que la vista herede de forma correcta y contenga la sección Talleres y la tarjeta iRG Empower."""
-+        # Obtener la vista heredada por su external ID
-+        view = self.env.ref('irg_campus_workshops.irg_user_profile_content_workshops')
-+        self.assertTrue(view.active, "La vista heredada de talleres debe estar activa.")
++    @http.route([
++        '/slides/<model("slide.channel"):channel>',
++        '/slides/<model("slide.channel"):channel>/page/<int:page>',
++        '/slides/<model("slide.channel"):channel>/tag/<model("slide.tag"):tag>',
++        '/slides/<model("slide.channel"):channel>/tag/<model("slide.tag"):tag>/page/<int:page>',
++        '/slides/<model("slide.channel"):channel>/category/<model("slide.slide"):category>',
++        '/slides/<model("slide.channel"):channel>/category/<model("slide.slide"):category>/page/<int:page>',
++    ], type='http', auth="public", website=True, sitemap=WebsiteSlides.sitemap_slide)
++    def channel(self, channel, category=None, tag=None, page=1, slide_category=None,
++                uncategorized=False, sorting=None, search=None, **kw):
++        """Sobrescribe la ruta de acceso al canal de diapositivas para auto-inscribir a los usuarios
++        autenticados si acceden al canal de iRG Empower.
++        """
++        # Si el usuario está autenticado y no es el usuario público
++        if request.env.user and not request.env.user._is_public():
++            # Si el canal es el de iRG Empower (ID 261 o contiene 'empower' en el nombre)
++            if channel.id == 261 or 'empower' in (channel.name or '').lower():
++                partner = request.env.user.partner_id
++                # Comprobar si ya está inscrito
++                membership = request.env['slide.channel.partner'].sudo().search([
++                    ('partner_id', '=', partner.id),
++                    ('channel_id', '=', channel.id)
++                ], limit=1)
++                
++                if not membership:
++                    _logger.info("[WORKSHOPS] Auto-enrolling user %s (Partner: %s) in workshop channel: %s (ID: %s)", 
++                                 request.env.user.name, partner.id, channel.name, channel.id)
++                    create_vals = {
++                        'partner_id': partner.id,
++                        'channel_id': channel.id,
++                    }
++                    # Comprobar defensivamente si el campo 'auto_added' está disponible en el modelo
++                    if 'auto_added' in request.env['slide.channel.partner']._fields:
++                        create_vals['auto_added'] = True
++                        
++                    request.env['slide.channel.partner'].sudo().create(create_vals)
 +
-+        # Verificar que el arch de la vista heredada contiene la sección
-+        arch = view.arch
-+        self.assertIn('Talleres', arch, "La vista debe definir la sección Talleres.")
-+        self.assertIn('https://app.institutoraimongaja.com/slides/irg-empower-261', arch, "La tarjeta debe apuntar a la URL de redirección específica.")
-+        self.assertIn('irg_empower_logo.jpg', arch, "La tarjeta debe incluir la imagen del logo.")
++        return super(WebsiteSlidesWorkshops, self).channel(
++            channel,
++            category=category,
++            tag=tag,
++            page=page,
++            slide_category=slide_category,
++            uncategorized=uncategorized,
++            sorting=sorting,
++            search=search,
++            **kw
++        )
+diff --git a/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py b/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py
+index a17ef715..d26b3cd4 100644
+--- a/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py
++++ b/addons-extra/extrairg/irg_campus_workshops/tests/test_workshops.py
+@@ -1,9 +1,19 @@
+ # -*- coding: utf-8 -*-
+ from odoo.tests.common import TransactionCase
++from unittest.mock import patch, MagicMock
+ 
+ 
+ class TestCampusWorkshops(TransactionCase):
+ 
++    @classmethod
++    def setUpClass(cls):
++        super(TestCampusWorkshops, cls).setUpClass()
++        # Crear producto para admisión
++        cls.product = cls.env['product.product'].create({
++            'name': 'Test Admission Product',
++            'type': 'service',
++        })
++
+     def test_view_inheritance(self):
+         """Verifica que la vista herede de forma correcta y contenga la sección Talleres y la tarjeta iRG Empower."""
+         # Obtener la vista heredada por su external ID
+@@ -15,3 +25,197 @@ class TestCampusWorkshops(TransactionCase):
+         self.assertIn('Talleres', arch, "La vista debe definir la sección Talleres.")
+         self.assertIn('https://app.institutoraimongaja.com/slides/irg-empower-261', arch, "La tarjeta debe apuntar a la URL de redirección específica.")
+         self.assertIn('irg_empower_logo.jpg', arch, "La tarjeta debe incluir la imagen del logo.")
++
++    def test_auto_enrollment(self):
++        """Verifica que un usuario autenticado sea auto-inscrito automáticamente al acceder al canal de iRG Empower."""
++        # 1. Crear un canal de prueba que contenga 'empower' en el nombre
++        channel = self.env['slide.channel'].create({
++            'name': 'iRG Empower Test Channel',
++            'enroll': 'public',
++            'visibility': 'public',
++        })
++
++        # 2. Crear un partner y usuario de prueba (no inscrito)
++        partner = self.env['res.partner'].create({'name': 'Student Test Partner'})
++        user = self.env['res.users'].create({
++            'name': 'Student Test User',
++            'login': 'student_test_user_workshops',
++            'partner_id': partner.id,
++            'groups_id': [(6, 0, [self.env.ref('base.group_portal').id])],
++        })
++
++        # 3. Comprobar que no hay registro de inscripción
++        domain = [('partner_id', '=', partner.id), ('channel_id', '=', channel.id)]
++        self.assertEqual(self.env['slide.channel.partner'].search_count(domain), 0)
++
++        # 4. Instanciar el controlador
++        from odoo.addons.irg_campus_workshops.controllers.main import WebsiteSlidesWorkshops
++        controller = WebsiteSlidesWorkshops()
++
++        # Mockear request de odoo.http
++        mock_request = MagicMock()
++        mock_request.env = self.env(user=user)
++        mock_request.website = self.env['website'].browse(1)
++
++        # Reemplazar el request local en el archivo main.py del controlador
++        with patch('odoo.addons.irg_campus_workshops.controllers.main.request', mock_request):
++            try:
++                controller.channel(channel)
++            except Exception:
++                # El render final de super().channel() puede fallar/lanzar excepciones si el entorno mockeado
++                # carece de request completo, pero la lógica de inscripción en el método sobreescrito se ejecuta primero.
++                pass
++
++        # 5. Verificar que se ha creado la inscripción automática
++        self.assertEqual(self.env['slide.channel.partner'].search_count(domain), 1,
++                         "El alumno de prueba debería haber sido auto-inscrito en el canal al acceder al mismo.")
++
++    def _create_mock_request(self, user):
++        from unittest.mock import MagicMock
++        class SessionMock(dict):
++            def __getattr__(self, name):
++                if name in self:
++                    return self[name]
++                return None
++
++        session = SessionMock()
++        session['force_website_id'] = 1
++        session['debug'] = ""
++        session['context'] = {'lang': 'es_ES'}
++        session.geoip = {}
++        session.debug = ""
++        session.context = {'lang': 'es_ES'}
++
++        mock_request = MagicMock()
++        mock_request.params = {}
++        mock_request.session = session
++        mock_request.context = {'lang': 'es_ES'}
++        mock_request.env = self.env(user=user)
++        mock_request.website = self.env['website'].browse(1)
++        mock_request.registry = self.env.registry
++        mock_request.httprequest = MagicMock()
++        mock_request.httprequest.args = {}
++        mock_request.httprequest.form = {}
++        mock_request.httprequest.cookies = {}
++        mock_request.httprequest.environ = {'installed_modules': ['website']}
++        mock_request.httprequest.url = "http://localhost:8069"
++        mock_request.httprequest.path = "/campus"
++        return mock_request
++
++    def test_workshops_visibility_only_diplomado(self):
++        """Verifica que la sección de talleres se oculte si el alumno está inscrito ÚNICAMENTE en diplomados."""
++        from odoo.http import _request_stack
++        # 1. Crear tipo de curso diplomado y curso diplomado
++        type_diplomado = self.env['op.course.type'].create({
++            'name': 'DIPLOMADO DE PRUEBA',
++            'code': 'DI',
++        })
++        course_diplomado = self.env['op.course'].create({
++            'name': 'Diplomado Test Course',
++            'code': 'DI-TEST',
++            'course_type_id': type_diplomado.id,
++        })
++        
++        # 2. Crear un curso máster (no diplomado)
++        type_master = self.env['op.course.type'].create({
++            'name': 'MÁSTER DE PRUEBA',
++            'code': 'M',
++        })
++        course_master = self.env['op.course'].create({
++            'name': 'Master Test Course',
++            'code': 'M-TEST',
++            'course_type_id': type_master.id,
++        })
++
++        # 3. Crear registros de admisión (admission register) requeridos por NotNull
++        register_diplomado = self.env['op.admission.register'].create({
++            'name': 'Register Diplomado Test',
++            'course_id': course_diplomado.id,
++            'start_date': '2026-01-01',
++            'end_date': '2026-12-31',
++            'min_count': 1,
++            'max_count': 100,
++            'product_id': self.product.id,
++        })
++        register_master = self.env['op.admission.register'].create({
++            'name': 'Register Master Test',
++            'course_id': course_master.id,
++            'start_date': '2026-01-01',
++            'end_date': '2026-12-31',
++            'min_count': 1,
++            'max_count': 100,
++            'product_id': self.product.id,
++        })
++
++        # 4. Crear un partner, usuario y op.student de prueba
++        partner = self.env['res.partner'].create({'name': 'Student Visibility Partner'})
++        user = self.env['res.users'].create({
++            'name': 'Student Visibility User',
++            'login': 'student_visibility_user_workshops',
++            'partner_id': partner.id,
++            'groups_id': [(6, 0, [self.env.ref('base.group_portal').id])],
++        })
++        self.env['op.student'].create({
++            'partner_id': partner.id,
++            'first_name': 'Visibility',
++            'last_name': 'Student',
++        })
++
++        # 5. Caso 1: Estudiante inscrito únicamente en el curso Diplomado
++        self.env['op.admission'].create({
++            'name': 'ADM-DIPLOMADO-ONLY',
++            'partner_id': partner.id,
++            'course_id': course_diplomado.id,
++            'register_id': register_diplomado.id,
++            'state': 'done',
++            'gender': 'm',
++            'first_name': 'Visibility',
++            'last_name': 'Student',
++        })
++
++        view = self.env.ref('isep_website_custom.user_profile_content')
++        
++        # Renderizar como el usuario autenticado (sólo inscrito en Diplomado)
++        mock_request = self._create_mock_request(user)
++        _request_stack.push(mock_request)
++        try:
++            html = self.env['ir.qweb'].with_user(user)._render('isep_website_custom.user_profile_content', {
++                'user': user,
++                'env': self.env(user=user),
++                'channel': True,
++                'website': self.env['website'].browse(1),
++            })
++            # No debe aparecer el título "Talleres" ni la tarjeta irg_empower_logo.jpg
++            self.assertNotIn('Talleres', str(html), "La sección Talleres debería estar oculta para alumnos inscritos únicamente en Diplomados.")
++            self.assertNotIn('irg_empower_logo.jpg', str(html))
++        finally:
++            _request_stack.pop()
++
++        # 6. Caso 2: Estudiante inscrito también en un Máster
++        self.env['op.admission'].create({
++            'name': 'ADM-MASTER-ALSO',
++            'partner_id': partner.id,
++            'course_id': course_master.id,
++            'register_id': register_master.id,
++            'state': 'done',
++            'gender': 'm',
++            'first_name': 'Visibility',
++            'last_name': 'Student',
++        })
++
++        # Renderizar de nuevo
++        mock_request = self._create_mock_request(user)
++        _request_stack.push(mock_request)
++        try:
++            html = self.env['ir.qweb'].with_user(user)._render('isep_website_custom.user_profile_content', {
++                'user': user,
++                'env': self.env(user=user),
++                'channel': True,
++                'website': self.env['website'].browse(1),
++            })
++            # Debe aparecer la sección "Talleres" porque ya no está inscrito "únicamente" en Diplomados
++            self.assertIn('Talleres', str(html), "La sección Talleres debería mostrarse si el alumno está inscrito en al menos un curso que no es Diplomado.")
++            self.assertIn('irg_empower_logo.jpg', str(html))
++        finally:
++            _request_stack.pop()
++
 diff --git a/addons-extra/extrairg/irg_campus_workshops/views/user_profile_content_workshops.xml b/addons-extra/extrairg/irg_campus_workshops/views/user_profile_content_workshops.xml
-new file mode 100644
-index 00000000..bff389b8
---- /dev/null
+index bff389b8..a064a185 100644
+--- a/addons-extra/extrairg/irg_campus_workshops/views/user_profile_content_workshops.xml
 +++ b/addons-extra/extrairg/irg_campus_workshops/views/user_profile_content_workshops.xml
-@@ -0,0 +1,37 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<odoo>
-+    <template id="irg_user_profile_content_workshops" inherit_id="isep_website_custom_design.custom_user_profile_content_design">
-+        <!-- Inserción de la sección de Talleres antes de la sección de Aplicaciones -->
-+        <xpath expr="//div[t[@t-call='isep_website_custom.user_profile_openeducat']]" position="before">
-+            <style>
-+                .irg-workshop-card {
-+                    border-radius: 10px;
-+                    overflow: hidden;
-+                    background: #ffffff;
-+                    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-+                }
-+                .irg-workshop-card:hover {
-+                    transform: translateY(-4px);
-+                    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
-+                }
-+            </style>
-+            <div class="mb32" id="portal_section_workshops">
-+                <h5 class="border-bottom pb-1">Talleres</h5>
-+                <div class="row">
-+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 p-2">
-+                        <a href="https://app.institutoraimongaja.com/slides/irg-empower-261" class="d-block text-decoration-none" target="_blank">
-+                            <div class="card h-100 border-0 shadow-sm irg-workshop-card">
-+                                <div class="d-flex align-items-center justify-content-center p-3" style="min-height: 140px; background: #ffffff;">
-+                                    <img src="/irg_campus_workshops/static/src/img/irg_empower_logo.jpg" alt="iRG Empower" class="img-fluid" style="max-height: 100px; object-fit: contain;"/>
-+                                </div>
-+                                <div class="card-body p-2 text-center" style="background: #f8f9fa; border-top: 1px solid #eee;">
-+                                    <h6 class="m-0 font-weight-bold" style="color: #002e5d;">iRG Empower</h6>
-+                                </div>
-+                            </div>
-+                        </a>
-+                    </div>
-+                </div>
-+            </div>
-+        </xpath>
-+    </template>
-+</odoo>
+@@ -3,35 +3,41 @@
+     <template id="irg_user_profile_content_workshops" inherit_id="isep_website_custom_design.custom_user_profile_content_design">
+         <!-- Inserción de la sección de Talleres antes de la sección de Aplicaciones -->
+         <xpath expr="//div[t[@t-call='isep_website_custom.user_profile_openeducat']]" position="before">
+-            <style>
+-                .irg-workshop-card {
+-                    border-radius: 10px;
+-                    overflow: hidden;
+-                    background: #ffffff;
+-                    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+-                }
+-                .irg-workshop-card:hover {
+-                    transform: translateY(-4px);
+-                    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+-                }
+-            </style>
+-            <div class="mb32" id="portal_section_workshops">
+-                <h5 class="border-bottom pb-1">Talleres</h5>
+-                <div class="row">
+-                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 p-2">
+-                        <a href="https://app.institutoraimongaja.com/slides/irg-empower-261" class="d-block text-decoration-none" target="_blank">
+-                            <div class="card h-100 border-0 shadow-sm irg-workshop-card">
+-                                <div class="d-flex align-items-center justify-content-center p-3" style="min-height: 140px; background: #ffffff;">
+-                                    <img src="/irg_campus_workshops/static/src/img/irg_empower_logo.jpg" alt="iRG Empower" class="img-fluid" style="max-height: 100px; object-fit: contain;"/>
++            <!-- Obtener las admisiones finalizadas del alumno y evaluar si está matriculado únicamente en Diplomados -->
++            <t t-set="admissions" t-value="env['op.admission'].sudo().search([('state', '=', 'done'), ('partner_id', '=', user.partner_id.id)])"/>
++            <t t-set="only_diplomado" t-value="admissions and all((adm.batch_id.course_id or adm.register_id.course_id).is_diplomado() for adm in admissions if (adm.batch_id.course_id or adm.register_id.course_id))"/>
++
++            <t t-if="not only_diplomado">
++                <style>
++                    .irg-workshop-card {
++                        border-radius: 10px;
++                        overflow: hidden;
++                        background: #ffffff;
++                        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
++                    }
++                    .irg-workshop-card:hover {
++                        transform: translateY(-4px);
++                        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
++                    }
++                </style>
++                <div class="mb32" id="portal_section_workshops">
++                    <h5 class="border-bottom pb-1">Talleres</h5>
++                    <div class="row">
++                        <div class="col-12 col-sm-6 col-md-4 col-lg-3 p-2">
++                            <a href="https://app.institutoraimongaja.com/slides/irg-empower-261" class="d-block text-decoration-none" target="_blank">
++                                <div class="card h-100 border-0 shadow-sm irg-workshop-card">
++                                    <div class="d-flex align-items-center justify-content-center p-3" style="min-height: 140px; background: #ffffff;">
++                                        <img src="/irg_campus_workshops/static/src/img/irg_empower_logo.jpg" alt="iRG Empower" class="img-fluid" style="max-height: 100px; object-fit: contain;"/>
++                                    </div>
++                                    <div class="card-body p-2 text-center" style="background: #f8f9fa; border-top: 1px solid #eee;">
++                                        <h6 class="m-0 font-weight-bold" style="color: #002e5d;">iRG Empower</h6>
++                                    </div>
+                                 </div>
+-                                <div class="card-body p-2 text-center" style="background: #f8f9fa; border-top: 1px solid #eee;">
+-                                    <h6 class="m-0 font-weight-bold" style="color: #002e5d;">iRG Empower</h6>
+-                                </div>
+-                            </div>
+-                        </a>
++                            </a>
++                        </div>
+                     </div>
+                 </div>
+-            </div>
++            </t>
+         </xpath>
+     </template>
+ </odoo>
