@@ -1,0 +1,81 @@
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/models/diplomado_registry.py b/addons-extra/extrairg/irg_generacion_diplomados/models/diplomado_registry.py
+index 206e50b8..42a0a4e5 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomados/models/diplomado_registry.py
++++ b/addons-extra/extrairg/irg_generacion_diplomados/models/diplomado_registry.py
+@@ -114,7 +114,9 @@ class IrgDiplomadoRegistry(models.Model):
+                         'certificate_id': stamp_data.get('certificate_id'),
+                     })
+ 
+-            qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
++            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or 'https://app.institutoraimongaja.com'
++            base_url = base_url.rstrip('/')
++            qr_url = "{}/verificar/?{}".format(base_url, urlencode(query_params))
+ 
+             data = {
+                 'student_name': self.student_name,
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
+index 1eb8dc45..b6d9ab24 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
++++ b/addons-extra/extrairg/irg_generacion_diplomados/reports/diplomado_pdf_report.py
+@@ -93,7 +93,12 @@ class DiplomadoReportPDF(models.AbstractModel):
+                 c.drawImage(logo_path, logo_x, logo_y, width=logo_w, height=logo_h, preserveAspectRatio=True, mask='auto')
+ 
+         # Generar y dibujar el código QR a la izquierda en el anverso
+-        qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
++        registry = data.get('registry_number', 'DRAFT')
++        qr_url = data.get('qr_url')
++        if not qr_url:
++            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or 'https://app.institutoraimongaja.com'
++            base_url = base_url.rstrip('/')
++            qr_url = "{}/verificar/?id={}".format(base_url, registry)
+         qr_image = self._generate_qr(qr_url)
+         c.drawImage(qr_image, 22 * mm, 18 * mm, width=28 * mm, height=28 * mm)
+         
+diff --git a/addons-extra/extrairg/irg_generacion_diplomados/wizard/diplomado_wizard.py b/addons-extra/extrairg/irg_generacion_diplomados/wizard/diplomado_wizard.py
+index a3c8bf1f..7d1e598a 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomados/wizard/diplomado_wizard.py
++++ b/addons-extra/extrairg/irg_generacion_diplomados/wizard/diplomado_wizard.py
+@@ -144,7 +144,9 @@ class IrgDiplomadoWizard(models.TransientModel):
+                     'certificate_id': stamp_data.get('certificate_id'),
+                 })
+ 
+-        qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
++        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or 'https://app.institutoraimongaja.com'
++        base_url = base_url.rstrip('/')
++        qr_url = "{}/verificar/?{}".format(base_url, urlencode(query_params))
+ 
+         # Construir el diccionario de datos
+         data = {
+diff --git a/addons-extra/extrairg/irg_generacion_diplomas/reports/diploma_pdf_report.py b/addons-extra/extrairg/irg_generacion_diplomas/reports/diploma_pdf_report.py
+index 12832357..17584b5f 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomas/reports/diploma_pdf_report.py
++++ b/addons-extra/extrairg/irg_generacion_diplomas/reports/diploma_pdf_report.py
+@@ -420,8 +420,12 @@ class DiplomaReportPDF(models.AbstractModel):
+         y_images = y - sp(34) if diploma_type == 'digital' else y - sp(12)
+ 
+         # compute QR coordinates now so that later branches can reference qr_y
+-        qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
+         registry = data.get('registry_number', 'DRAFT')
++        qr_url = data.get('qr_url')
++        if not qr_url:
++            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or 'https://app.institutoraimongaja.com'
++            base_url = base_url.rstrip('/')
++            qr_url = "{}/verificar/?id={}".format(base_url, registry)
+         qr_size = sp(46)
+         qr_x = side_margin + sp(36)
+         # For physical diplomas move the QR slightly towards the centre
+diff --git a/addons-extra/extrairg/irg_generacion_diplomas/wizard/diploma_wizard.py b/addons-extra/extrairg/irg_generacion_diplomas/wizard/diploma_wizard.py
+index cbf101bb..481b4ef4 100644
+--- a/addons-extra/extrairg/irg_generacion_diplomas/wizard/diploma_wizard.py
++++ b/addons-extra/extrairg/irg_generacion_diplomas/wizard/diploma_wizard.py
+@@ -69,7 +69,9 @@ class DiplomaWizard(models.TransientModel):
+                     'certificate_id': stamp_data.get('certificate_id'),
+                 })
+ 
+-        qr_url = "https://institutoraimongaja.com/verificar/?{}".format(urlencode(query_params))
++        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or 'https://app.institutoraimongaja.com'
++        base_url = base_url.rstrip('/')
++        qr_url = "{}/verificar/?{}".format(base_url, urlencode(query_params))
+ 
+         # Prepare data
+         # also construct HTML-friendly versions with potential breaks, used by qweb templates

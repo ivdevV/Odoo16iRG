@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "task": "irg_qr_verification_fix",
+  "checks": [
+    {
+      "name": "python_compilation",
+      "result": "pass",
+      "detail": "python3 -m compileall passed successfully on modified modules"
+    },
+    {
+      "name": "odoo_tests",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 3 tests on irg_generacion_diplomados_website_verify"
+    }
+  ],
+  "evidence": [
+    "missions/irg_qr_verification_fix/execution.log",
+    "missions/irg_qr_verification_fix/diff.patch"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

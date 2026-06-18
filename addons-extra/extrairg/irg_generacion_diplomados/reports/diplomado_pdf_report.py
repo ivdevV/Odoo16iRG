@@ -93,7 +93,12 @@ class DiplomadoReportPDF(models.AbstractModel):
                 c.drawImage(logo_path, logo_x, logo_y, width=logo_w, height=logo_h, preserveAspectRatio=True, mask='auto')
 
         # Generar y dibujar el código QR a la izquierda en el anverso
-        qr_url = data.get('qr_url', 'https://institutoraimongaja.com')
+        registry = data.get('registry_number', 'DRAFT')
+        qr_url = data.get('qr_url')
+        if not qr_url:
+            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or 'https://app.institutoraimongaja.com'
+            base_url = base_url.rstrip('/')
+            qr_url = "{}/verificar/?id={}".format(base_url, registry)
         qr_image = self._generate_qr(qr_url)
         c.drawImage(qr_image, 22 * mm, 18 * mm, width=28 * mm, height=28 * mm)
         
