@@ -30,12 +30,22 @@ class IrgDiplomaSheetVerificationController(IrgDiplomaVerificationController):
     def _search_odoo_registry(self, code):
         if not code:
             return False
-        return request.env['irg.diploma.registry'].sudo().search([
+        record = request.env['irg.diploma.registry'].sudo().search([
             '|',
             ('verification_code', '=', code),
             ('registry_number', '=', code),
             ('state', '=', 'valid'),
         ], limit=1)
+        if record:
+            return record
+
+        if 'irg.diplomado.registry' in request.env:
+            diplomado = request.env['irg.diplomado.registry'].sudo().search([
+                ('name', '=', code),
+            ], limit=1)
+            if diplomado:
+                return diplomado
+        return False
 
     def _search_sheet(self, code):
         if not code or not HISTORICAL_CODE_PATTERN.match(code):
@@ -66,24 +76,40 @@ class IrgDiplomaSheetVerificationController(IrgDiplomaVerificationController):
         code = self._normalize_code(kw.get('id') or kw.get('codigo') or kw.get('code'))
         record = self._search_odoo_registry(code)
         if record:
-            return {
-                'found': True,
-                'code': code,
-                'source': 'odoo',
-                'record': record,
-                'student_name': record.student_id.name if record.student_id else '',
-                'course_name': (
-                    record.student_course_id.course_id.name
-                    if record.student_course_id and record.student_course_id.course_id
-                    else ''
-                ),
-                'registry_number': record.registry_number,
-                'verification_code': record.verification_code or '',
-                'issue_date': record.issue_date,
-                'diploma_type': dict(record._fields['diploma_type'].selection).get(
-                    record.diploma_type, record.diploma_type
-                ),
-            }
+            if record._name == 'irg.diplomado.registry':
+                return {
+                    'found': True,
+                    'code': code,
+                    'source': 'odoo',
+                    'record': record,
+                    'student_name': record.student_id.name if record.student_id else record.student_name or '',
+                    'course_name': record.diplomado_name or (record.course_id.name if record.course_id else ''),
+                    'registry_number': record.name,
+                    'verification_code': '',
+                    'issue_date': record.issue_date,
+                    'diploma_type': dict(record._fields['diploma_type'].selection).get(
+                        record.diploma_type, record.diploma_type
+                    ) if 'diploma_type' in record._fields else '',
+                }
+            else:
+                return {
+                    'found': True,
+                    'code': code,
+                    'source': 'odoo',
+                    'record': record,
+                    'student_name': record.student_id.name if record.student_id else '',
+                    'course_name': (
+                        record.student_course_id.course_id.name
+                        if record.student_course_id and record.student_course_id.course_id
+                        else ''
+                    ),
+                    'registry_number': record.registry_number,
+                    'verification_code': record.verification_code or '',
+                    'issue_date': record.issue_date,
+                    'diploma_type': dict(record._fields['diploma_type'].selection).get(
+                        record.diploma_type, record.diploma_type
+                    ),
+                }
 
         sheet_result = self._search_sheet(code)
         if sheet_result:

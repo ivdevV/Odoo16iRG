@@ -5,12 +5,12 @@
     {
       "name": "python_compilation",
       "result": "pass",
-      "detail": "python3 -m compileall passed successfully on modified modules"
+      "detail": "python3 -m compileall passed successfully on all modified modules including irg_diploma_sheet_verification"
     },
     {
       "name": "odoo_tests",
       "result": "pass",
-      "detail": "0 failed, 0 error(s) of 3 tests on irg_generacion_diplomados_website_verify"
+      "detail": "0 failed, 0 error(s) of 3 tests on irg_generacion_diplomados_website_verify, irg_diploma_sheet_verification"
     }
   ],
   "evidence": [

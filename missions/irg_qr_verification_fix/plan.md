@@ -1,14 +1,14 @@
-# Mision: irg_qr_verification_fix
+# Mision: irg_qr_verification_fix (Actualizado)
 
 ## Alcance
 
-Corregir las URLs QR generadas en los diplomas y diplomados de Odoo para que apunten dinámicamente al dominio del entorno correspondiente (usando `web.base.url`) en lugar del dominio corporativo hardcodeado `https://institutoraimongaja.com`.
+Corregir las URLs QR generadas en los diplomas y diplomados de Odoo para que apunten dinámicamente al dominio del entorno correspondiente (usando `web.base.url`). Adicionalmente, actualizar el controlador del módulo `irg_diploma_sheet_verification` para que sea compatible y busque dinámicamente registros de diplomados en `irg.diplomado.registry` cuando se valide desde la web.
 
 ## Clasificación de complejidad
 
 Tier: `standard`.
 
-Justificación: Afecta a 5 archivos de lógica y reportes en dos módulos existentes. No introduce cambios de arquitectura, flujos de autenticación, migraciones de datos, ni eliminación de datos históricos.
+Justificación: Afecta a un archivo adicional de control (`main.py` de `irg_diploma_sheet_verification`), sumando un total de 6 archivos. No introduce cambios de arquitectura, flujos de autenticación, migraciones de datos, ni eliminación de datos históricos.
 
 ## Knowledge base consultada
 
@@ -16,24 +16,17 @@ Justificación: Afecta a 5 archivos de lógica y reportes en dos módulos existe
 
 ## Referencia analizada
 
-- `irg_generacion_diplomas.wizard.diploma_wizard`: QR URL hardcodeada en la línea 72.
-- `irg_generacion_diplomados.models.diplomado_registry`: QR URL hardcodeada en la línea 117.
-- `irg_generacion_diplomados.wizard.diplomado_wizard`: QR URL hardcodeada en la línea 147.
-- `irg_generacion_diplomas.reports.diploma_pdf_report`: Fallback hardcodeado en la línea 423.
-- `irg_generacion_diplomados.reports.diplomado_pdf_report`: Fallback hardcodeado en la línea 96.
+- `irg_diploma_sheet_verification.controllers.main`: Intercepta la ruta `/verificar` omitiendo diplomados y rompiendo su validación.
 
 ## Plan
 
-1. **Investigar y Planificar**: (Completado) Identificar todos los puntos donde se genera el QR.
+1. **Investigar y Planificar**: (Completado) Identificar la interferencia del controlador de `irg_diploma_sheet_verification`.
 2. **Implementación**:
-   - Modificar `irg_generacion_diplomas/wizard/diploma_wizard.py` para obtener `web.base.url` dinámicamente.
-   - Modificar `irg_generacion_diplomas/reports/diploma_pdf_report.py` para usar `web.base.url` en el fallback.
-   - Modificar `irg_generacion_diplomados/models/diplomado_registry.py` para obtener `web.base.url` dinámicamente.
-   - Modificar `irg_generacion_diplomados/wizard/diplomado_wizard.py` para obtener `web.base.url` dinámicamente.
-   - Modificar `irg_generacion_diplomados/reports/diplomado_pdf_report.py` para usar `web.base.url` en el fallback.
+   - Modificar `irg_generacion_diplomas` e `irg_generacion_diplomados` (ya completado en la iteración anterior).
+   - Modificar `irg_diploma_sheet_verification/controllers/main.py` para admitir búsqueda condicional en `irg.diplomado.registry` y formatear el diccionario de salida de forma compatible y segura.
 3. **Validación**:
    - Compilación estática de todos los archivos modificados.
-   - Ejecución de los tests existentes de verificación web para validar el correcto funcionamiento.
+   - Ejecución de los tests existentes de verificación web para validar que el sistema no presente regresiones.
 4. **Documentación**:
    - Registrar los cambios en `execution.log` y crear `verification.json` con los resultados.
    - Actualizar el changelog y la base de conocimientos si corresponde.
