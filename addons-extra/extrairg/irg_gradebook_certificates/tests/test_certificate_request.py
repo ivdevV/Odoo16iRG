@@ -723,7 +723,7 @@ class TestIrgCertificateRequest(TransactionCase):
         doc = DocxDocument(res_file)
         
         # 1. Verify top margin shift (72 Pt default + 37.5 Pt shift = 109.5 Pt)
-        self.assertEqual(doc.sections[0].top_margin.pt, 109.5)
+        self.assertEqual(doc.sections[0].top_margin.pt, 147.0)
         
         # 2. Verify outer font size is 9.0 Pt
         body_runs = [r for p in doc.paragraphs if p.text.strip() for r in p.runs if r.font and r.font.size]
@@ -759,7 +759,7 @@ class TestIrgCertificateRequest(TransactionCase):
         self.assertTrue(len(closing_paras) > 0)
         self.assertEqual(
             closing_paras[0].text,
-            "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026"
+            "Para que así conste, firmo la presente en Barcelona, a fecha 17 de junio de 2026."
         )
         self.assertEqual(closing_paras[0].paragraph_format.space_after.pt, 48.0)
         

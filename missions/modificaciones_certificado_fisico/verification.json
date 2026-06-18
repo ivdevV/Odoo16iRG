@@ -2,12 +2,12 @@
   "status": "passed",
   "task": "modificaciones_certificado_fisico",
   "checks": [
-    { "name": "top_margin_shift", "result": "pass", "detail": "Top margin successfully shifted down by 37.5 Pt (50 pixels) to 109.5 Pt" },
+    { "name": "top_margin_shift", "result": "pass", "detail": "Top margin successfully shifted down by 75 Pt (100 pixels) to 147.0 Pt" },
     { "name": "outer_font_size", "result": "pass", "detail": "Outer font size set to 9.25 Pt (9.0 Pt read-back size) for physical variant" },
     { "name": "table_font_size", "result": "pass", "detail": "Table cell font size kept at 7.5 Pt (unaltered, matching digital variant)" },
     { "name": "signature_stamp_removal", "result": "pass", "detail": "Handwritten signatures and stamp logos successfully removed from physical certificates" },
     { "name": "name_replacement", "result": "pass", "detail": "Raimon Gaja Jaumeandreu successfully shortened to Raimon Gaja" },
-    { "name": "closing_phrase_correct", "result": "pass", "detail": "Closing sentence updated to exact requested text and spaced by 48 Pt" },
+    { "name": "closing_phrase_correct", "result": "pass", "detail": "Closing sentence updated to exact requested text ending with a period and spaced by 48 Pt" },
     { "name": "signer_title_updated", "result": "pass", "detail": "Raimon's title changed to Director General iRG" }
   ],
   "evidence": ["missions/modificaciones_certificado_fisico/artifacts/validate_physical_layout.py"],
