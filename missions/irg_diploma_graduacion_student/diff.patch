@@ -1,0 +1,497 @@
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/__init__.py b/addons-extra/extrairg/irg_diploma_graduacion_student/__init__.py
+new file mode 100644
+index 00000000..408a6001
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/__init__.py
+@@ -0,0 +1,3 @@
++# -*- coding: utf-8 -*-
++from . import models
++from . import wizard
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/__manifest__.py b/addons-extra/extrairg/irg_diploma_graduacion_student/__manifest__.py
+new file mode 100644
+index 00000000..a8a389d2
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/__manifest__.py
+@@ -0,0 +1,26 @@
++{
++    'name': 'IRG Diploma Graduación Estudiante',
++    'version': '16.0.1.0.0',
++    'category': 'Education',
++    'summary': 'Generación de diploma de graduación en PDF para estudiantes desde op.student',
++    'description': """
++        Este módulo permite generar un diploma de graduación en PDF para un estudiante
++        desde su vista en OpenEduCat (op.student) a partir de una plantilla .docx.
++    """,
++    'author': 'ISEP / iRG',
++    'depends': [
++        'openeducat_core',
++        'web',
++    ],
++    'external_dependencies': {
++        'python': ['docx'],
++    },
++    'data': [
++        'security/ir.model.access.csv',
++        'wizard/diploma_graduacion_wizard_views.xml',
++        'views/op_student_views.xml',
++    ],
++    'installable': True,
++    'application': False,
++    'license': 'AGPL-3',
++}
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/models/__init__.py b/addons-extra/extrairg/irg_diploma_graduacion_student/models/__init__.py
+new file mode 100644
+index 00000000..2d1af0e1
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/models/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import op_student
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/models/op_student.py b/addons-extra/extrairg/irg_diploma_graduacion_student/models/op_student.py
+new file mode 100644
+index 00000000..a4f12b0a
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/models/op_student.py
+@@ -0,0 +1,18 @@
++# -*- coding: utf-8 -*-
++from odoo import models, api, _
++
++class OpStudent(models.Model):
++    _inherit = 'op.student'
++
++    def action_open_graduation_diploma_wizard(self):
++        self.ensure_one()
++        return {
++            'name': _('Generar Diploma de Graduación'),
++            'type': 'ir.actions.act_window',
++            'res_model': 'irg.diploma.graduacion.wizard',
++            'view_mode': 'form',
++            'target': 'new',
++            'context': {
++                'default_student_id': self.id,
++            }
++        }
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/security/ir.model.access.csv b/addons-extra/extrairg/irg_diploma_graduacion_student/security/ir.model.access.csv
+new file mode 100644
+index 00000000..da9530d0
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/security/ir.model.access.csv
+@@ -0,0 +1,2 @@
++id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
++access_irg_diploma_graduacion_wizard,irg.diploma.graduacion.wizard,model_irg_diploma_graduacion_wizard,base.group_user,1,1,1,1
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/static/src/templates/plantilla_diploma_graduado.docx b/addons-extra/extrairg/irg_diploma_graduacion_student/static/src/templates/plantilla_diploma_graduado.docx
+new file mode 100644
+index 00000000..f8bea306
+Binary files /dev/null and b/addons-extra/extrairg/irg_diploma_graduacion_student/static/src/templates/plantilla_diploma_graduado.docx differ
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/tests/__init__.py b/addons-extra/extrairg/irg_diploma_graduacion_student/tests/__init__.py
+new file mode 100644
+index 00000000..892241f9
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/tests/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import test_diploma
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/tests/test_diploma.py b/addons-extra/extrairg/irg_diploma_graduacion_student/tests/test_diploma.py
+new file mode 100644
+index 00000000..11557fe4
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/tests/test_diploma.py
+@@ -0,0 +1,79 @@
++# -*- coding: utf-8 -*-
++from odoo.tests.common import TransactionCase
++from odoo import fields
++
++class TestDiplomaGraduacion(TransactionCase):
++
++    def setUp(self):
++        super(TestDiplomaGraduacion, self).setUp()
++        
++        # 1. Create ResPartner
++        self.partner = self.env['res.partner'].create({
++            'name': 'Test Student Partner',
++        })
++        
++        # 2. Create OpStudent
++        self.student = self.env['op.student'].create({
++            'partner_id': self.partner.id,
++            'first_name': 'Test',
++            'last_name': 'Student',
++        })
++        
++        # 3. Create OpCourse (include name_cat if available)
++        course_vals = {
++            'name': 'Máster de Prueba',
++            'code': 'M-PRUEBA',
++        }
++        if 'name_cat' in self.env['op.course']._fields:
++            course_vals['name_cat'] = 'Màster de Prova'
++        self.course = self.env['op.course'].create(course_vals)
++        
++        # 4. Create OpBatch
++        self.batch = self.env['op.batch'].create({
++            'name': 'Test Batch',
++            'code': 'B-TEST',
++            'course_id': self.course.id,
++            'start_date': fields.Date.today(),
++            'end_date': fields.Date.today(),
++        })
++        
++        # 5. Create OpStudentCourse
++        self.student_course = self.env['op.student.course'].create({
++            'student_id': self.student.id,
++            'course_id': self.course.id,
++            'batch_id': self.batch.id,
++            'roll_number': '123456',
++        })
++
++    def test_graduation_diploma_wizard_flow(self):
++        # - Launches the wizard action on the student, gets the active action.
++        action = self.student.action_open_graduation_diploma_wizard()
++        self.assertEqual(action.get('type'), 'ir.actions.act_window')
++        self.assertEqual(action.get('res_model'), 'irg.diploma.graduacion.wizard')
++        
++        # - Instantiates the wizard irg.diploma.graduacion.wizard passing student, course, and date
++        wizard = self.env['irg.diploma.graduacion.wizard'].create({
++            'student_id': self.student.id,
++            'student_course_id': self.student_course.id,
++            'date': fields.Date.today(),
++        })
++        
++        # - Calls action_print_pdf() on the wizard
++        res_action = wizard.action_print_pdf()
++        
++        # - Asserts that the return action is of type ir.actions.act_url
++        self.assertEqual(res_action.get('type'), 'ir.actions.act_url')
++        self.assertTrue(res_action.get('url'))
++        
++        # - Asserts that an ir.attachment is successfully created for res_model='op.student'
++        #   and the student's ID, has a PDF mimetype, and contains valid binary data.
++        attachment = self.env['ir.attachment'].search([
++            ('res_model', '=', 'op.student'),
++            ('res_id', '=', self.student.id),
++            ('mimetype', '=', 'application/pdf'),
++        ])
++        self.assertTrue(attachment, "Attachment should be created")
++        self.assertEqual(attachment.res_model, 'op.student')
++        self.assertEqual(attachment.res_id, self.student.id)
++        self.assertEqual(attachment.mimetype, 'application/pdf')
++        self.assertTrue(attachment.datas, "Attachment datas must contain binary data")
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/views/op_student_views.xml b/addons-extra/extrairg/irg_diploma_graduacion_student/views/op_student_views.xml
+new file mode 100644
+index 00000000..768d2cf7
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/views/op_student_views.xml
+@@ -0,0 +1,16 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <record id="view_op_student_form_inherit_diploma_graduacion" model="ir.ui.view">
++        <field name="name">op.student.form.inherit.diploma.graduacion</field>
++        <field name="model">op.student</field>
++        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
++        <field name="arch" type="xml">
++            <xpath expr="//header" position="inside">
++                <button name="action_open_graduation_diploma_wizard" 
++                        type="object" 
++                        string="Diploma Graduación" 
++                        class="oe_highlight"/>
++            </xpath>
++        </field>
++    </record>
++</odoo>
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/__init__.py b/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/__init__.py
+new file mode 100644
+index 00000000..819ceede
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import diploma_graduacion_wizard
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard.py b/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard.py
+new file mode 100644
+index 00000000..5b656743
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard.py
+@@ -0,0 +1,244 @@
++# -*- coding: utf-8 -*-
++import os
++import subprocess
++import tempfile
++import base64
++import logging
++from docx import Document as DocxDocument
++from babel.dates import format_date
++
++from odoo import models, fields, api, _
++from odoo.exceptions import UserError
++from odoo.modules.module import get_module_resource
++
++_logger = logging.getLogger(__name__)
++
++
++class IrgDiplomaGraduacionWizard(models.TransientModel):
++    _name = 'irg.diploma.graduacion.wizard'
++    _description = 'Asistente para Imprimir Diploma de Graduación'
++
++    student_id = fields.Many2one(
++        'op.student',
++        string='Estudiante',
++        required=True,
++        readonly=True
++    )
++    student_course_id = fields.Many2one(
++        'op.student.course',
++        string='Curso Académico',
++        required=True,
++        domain="[('student_id', '=', student_id)]"
++    )
++    date = fields.Date(
++        string='Fecha de Expedición',
++        default=fields.Date.context_today,
++        required=True
++    )
++
++    @api.model
++    def default_get(self, fields_list):
++        res = super(IrgDiplomaGraduacionWizard, self).default_get(fields_list)
++        if 'student_id' in fields_list and not res.get('student_id'):
++            res['student_id'] = self.env.context.get('active_id') or self.env.context.get('default_student_id')
++        return res
++
++    def _normalize_catalan_course_name(self, course_name):
++        """Normalize common accent differences for Catalan rendering."""
++        if not course_name:
++            return ""
++        normalized = course_name
++        normalized = normalized.replace("Máster", "Màster")
++        normalized = normalized.replace("máster", "màster")
++        normalized = normalized.replace("Master", "Màster")
++        normalized = normalized.replace("master", "màster")
++        normalized = normalized.replace("Salud", "Salut")
++        normalized = normalized.replace("salud", "salut")
++        normalized = normalized.replace(" y ", " i ")
++        normalized = normalized.replace(" Y ", " I ")
++        return normalized
++
++    @staticmethod
++    def _replace_in_paragraph(paragraph, replacements):
++        """Replace placeholders in a paragraph across runs that may be split by Word."""
++        if not paragraph.runs:
++            return
++        full = ''.join(r.text for r in paragraph.runs)
++        replaced = False
++        for old, new in replacements.items():
++            if old in full:
++                full = full.replace(old, new or '')
++                replaced = True
++        if replaced:
++            paragraph.runs[0].text = full
++            for r in paragraph.runs[1:]:
++                for t in r._element.xpath('.//w:t'):
++                    t.text = ''
++
++    def action_print_pdf(self):
++        self.ensure_one()
++
++        # Format dates using Babel
++        try:
++            date_es = "{} de {} de {}".format(
++                self.date.day,
++                format_date(self.date, format='MMMM', locale='es_ES'),
++                self.date.year
++            )
++            date_cat = "{} de {} de {}".format(
++                self.date.day,
++                format_date(self.date, format='MMMM', locale='ca_ES'),
++                self.date.year
++            )
++        except Exception as e:
++            _logger.warning("Babel date format failed, falling back to simple strftime: %s", e)
++            months_es = {
++                1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril', 5: 'mayo', 6: 'junio',
++                7: 'julio', 8: 'agosto', 9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
++            }
++            months_cat = {
++                1: 'gener', 2: 'febrer', 3: 'març', 4: 'abril', 5: 'maig', 6: 'juny',
++                7: 'juliol', 8: 'agost', 9: 'setembre', 10: 'octubre', 11: 'novembre', 12: 'desembre'
++            }
++            date_es = f"{self.date.day} de {months_es.get(self.date.month, '')} de {self.date.year}"
++            date_cat = f"{self.date.day} de {months_cat.get(self.date.month, '')} de {self.date.year}"
++
++        # Get values
++        student_name = self.student_id.name or ""
++        course = self.student_course_id.course_id
++        course_name_es = course.name or ""
++        
++        course_name_cat = course.name_cat if 'name_cat' in course._fields else course_name_es
++        if not course_name_cat:
++            course_name_cat = course_name_es
++        course_name_cat = self._normalize_catalan_course_name(course_name_cat)
++
++        replacements = {
++            '<<Alumno>>': student_name,
++            '<<alumno>>': student_name,
++            '<<Master>>': course_name_es,
++            '<<curso>>': course_name_es,
++            '<<MasterCat>>': course_name_cat,
++            '<<Fecha>>': date_es,
++            '<<FechaCat>>': date_cat,
++        }
++
++        tpl_path = get_module_resource(
++            'irg_diploma_graduacion_student',
++            'static',
++            'src',
++            'templates',
++            'plantilla_diploma_graduado.docx'
++        )
++
++        if not tpl_path or not os.path.exists(tpl_path):
++            raise UserError(_("No se encontró la plantilla Word en la ruta: %s") % tpl_path)
++
++        # Process document using python-docx
++        try:
++            doc = DocxDocument(tpl_path)
++        except Exception as e:
++            raise UserError(_("Error al abrir la plantilla Word: %s") % str(e))
++
++        # 1. Replace in normal paragraphs
++        for para in doc.paragraphs:
++            self._replace_in_paragraph(para, replacements)
++
++        # 2. Replace in tables
++        for tbl in doc.tables:
++            for row in tbl.rows:
++                for cell in row.cells:
++                    for para in cell.paragraphs:
++                        self._replace_in_paragraph(para, replacements)
++
++        # 3. Replace in headers/footers
++        for section in doc.sections:
++            if section.header:
++                for para in section.header.paragraphs:
++                    self._replace_in_paragraph(para, replacements)
++                for tbl in section.header.tables:
++                    for row in tbl.rows:
++                        for cell in row.cells:
++                            for para in cell.paragraphs:
++                                self._replace_in_paragraph(para, replacements)
++            if section.footer:
++                for para in section.footer.paragraphs:
++                    self._replace_in_paragraph(para, replacements)
++                for tbl in section.footer.tables:
++                    for row in tbl.rows:
++                        for cell in row.cells:
++                            for para in cell.paragraphs:
++                                self._replace_in_paragraph(para, replacements)
++
++        # Save to temp file
++        tmp_docx = tempfile.NamedTemporaryFile(
++            suffix='.docx', delete=False, prefix='diploma_graduado_'
++        )
++        doc.save(tmp_docx.name)
++        tmp_docx.close()
++
++        # Convert to PDF
++        out_dir = os.path.dirname(tmp_docx.name)
++        try:
++            subprocess.run(
++                [
++                    'libreoffice', '--headless', '--norestore',
++                    '--convert-to', 'pdf',
++                    '--outdir', out_dir,
++                    tmp_docx.name,
++                ],
++                check=True,
++                timeout=60,
++                stdout=subprocess.PIPE,
++                stderr=subprocess.PIPE,
++            )
++        except FileNotFoundError:
++            if os.path.exists(tmp_docx.name):
++                os.unlink(tmp_docx.name)
++            raise UserError(
++                _('LibreOffice no está instalado en el servidor. '
++                  'Ejecute: apt-get install -y libreoffice-writer')
++            )
++        except subprocess.CalledProcessError as exc:
++            if os.path.exists(tmp_docx.name):
++                os.unlink(tmp_docx.name)
++            _logger.error('LibreOffice conversion failed: %s', exc.stderr)
++            raise UserError(
++                _('Error al convertir el diploma a PDF. Revise el log de error.')
++            )
++
++        pdf_path = tmp_docx.name.rsplit('.', 1)[0] + '.pdf'
++        if not os.path.isfile(pdf_path):
++            if os.path.exists(tmp_docx.name):
++                os.unlink(tmp_docx.name)
++            raise UserError(_('No se generó el archivo PDF.'))
++
++        with open(pdf_path, 'rb') as f:
++            pdf_bytes = f.read()
++
++        # Cleanup temp files
++        for path in (tmp_docx.name, pdf_path):
++            try:
++                if os.path.exists(path):
++                    os.unlink(path)
++            except Exception:
++                pass
++
++        # Create attachment in Odoo
++        filename = "Diploma_{}.pdf".format(
++            student_name.replace(' ', '_')
++        )
++        attachment = self.env['ir.attachment'].create({
++            'name': filename,
++            'type': 'binary',
++            'datas': base64.b64encode(pdf_bytes),
++            'res_model': 'op.student',
++            'res_id': self.student_id.id,
++            'mimetype': 'application/pdf',
++        })
++
++        return {
++            'type': 'ir.actions.act_url',
++            'url': '/web/content/%s?download=true' % attachment.id,
++            'target': 'new',
++        }
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard_views.xml b/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard_views.xml
+new file mode 100644
+index 00000000..1bf6abb2
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard_views.xml
+@@ -0,0 +1,33 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <!-- Wizard View -->
++    <record id="view_irg_diploma_graduacion_wizard_form" model="ir.ui.view">
++        <field name="name">irg.diploma.graduacion.wizard.form</field>
++        <field name="model">irg.diploma.graduacion.wizard</field>
++        <field name="arch" type="xml">
++            <form string="Generar Diploma de Graduación">
++                <group>
++                    <group>
++                        <field name="student_id" options="{'no_create': True, 'no_open': True}"/>
++                        <field name="student_course_id" options="{'no_create': True, 'no_open': True}"/>
++                        <field name="date"/>
++                    </group>
++                </group>
++                <footer>
++                    <button name="action_print_pdf" string="Generar PDF" type="object" class="btn-primary"/>
++                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
++                </footer>
++            </form>
++        </field>
++    </record>
++
++    <!-- Action to open Wizard -->
++    <record id="action_irg_diploma_graduacion_wizard" model="ir.actions.act_window">
++        <field name="name">Generar Diploma de Graduación</field>
++        <field name="type">ir.actions.act_window</field>
++        <field name="res_model">irg.diploma.graduacion.wizard</field>
++        <field name="view_mode">form</field>
++        <field name="view_id" ref="view_irg_diploma_graduacion_wizard_form"/>
++        <field name="target">new</field>
++    </record>
++</odoo>

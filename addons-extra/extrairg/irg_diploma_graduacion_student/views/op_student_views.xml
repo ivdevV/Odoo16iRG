@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_inherit_diploma_graduacion" model="ir.ui.view">
+        <field name="name">op.student.form.inherit.diploma.graduacion</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_open_graduation_diploma_wizard" 
+                        type="object" 
+                        string="Diploma Graduación" 
+                        class="oe_highlight"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
