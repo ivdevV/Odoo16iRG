@@ -94,7 +94,7 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         c.restoreState()
         
         # Colors
-        dark_blue = colors.HexColor('#164584')
+        dark_blue = colors.HexColor('#3092C0')
         light_blue = colors.Color(60/255.0, 160/255.0, 220/255.0)
         
         # --- HEADER ---

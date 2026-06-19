@@ -55,7 +55,7 @@ El sistema intenta registrar la fuente corporativa **`Inter`** dinámica buscand
 
 ### Paleta de Colores
 Se utilizan colores corporativos definidos en formato RGB normalizado:
-- **Azul Oscuro (Títulos)**: `HexColor('#164584')` $\rightarrow$ Hex `#164584`
+- **Azul Oscuro (Títulos)**: `HexColor('#3092C0')` $\rightarrow$ Hex `#3092C0`
 - **Celeste / Azul Claro (Estudiante)**: `Color(60/255.0, 160/255.0, 220/255.0)` $\rightarrow$ Hex `#3CA0DC`
 - **Negro (Textos y cargos)**: `colors.black`
 
