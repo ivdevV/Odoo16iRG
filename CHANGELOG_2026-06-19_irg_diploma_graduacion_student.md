@@ -11,6 +11,7 @@
 ### Funcionalidades y Negocio
 - **Generación de Diploma nativa en PDF (ReportLab)**: La generación de diplomas ya no depende de LibreOffice. Ahora se dibuja directamente en un canvas de PDF utilizando ReportLab, asegurando precisión absoluta en el diseño y compatibilidad total con imágenes de fondo corporativas, firmas digitalizadas y tipografías específicas (`Inter`).
 - **Formato A3 Horizontal**: El tamaño de página oficial del diploma se ha fijado en **A3 landscape (1190.55 pt x 841.89 pt)**, duplicando el espacio y resolución respecto al diseño original para cumplir con la maquetación institucional del centro.
+- **Tweak de Maquetación (Remoción de Arcos y Marca de Agua)**: Tras el feedback visual, se eliminó la imagen de fondo con arcos decorativos (`digital_bg.png`) y se integró de forma vectorial una marca de agua translúcida rotada a 30 grados que lee `"Sin validez"`, posicionada detrás del texto principal del diploma para que actúe en visualizaciones de prueba, coincidiendo con la plantilla provista.
 - **Asistente de Configuración (Wizard)**: Se mantiene la lógica del wizard para seleccionar el curso académico y la fecha de expedición, pero ahora los datos se envían directamente en un diccionario estructurado al motor de ReportLab.
 
 ### Componentes Técnicos Añadidos o Modificados

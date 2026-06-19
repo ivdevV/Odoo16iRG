@@ -62,22 +62,27 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         # Create canvas
         c = canvas.Canvas(buffer, pagesize=(page_width, page_height))
         
-        # Draw background image if available
-        bg_path = self._get_image_path('digital_bg.png')
-        if bg_path and os.path.exists(bg_path):
-            c.drawImage(bg_path, 0, 0, width=page_width, height=page_height)
-            
         # Register and fetch fonts
         font_regular, font_bold = self._register_fonts()
+        
+        # Centred X coordinate
+        center_x = page_width / 2.0
+        
+        # --- WATERMARK "Sin validez" ---
+        # Rotated 30 degrees, light gray HexColor('#EAEAEA')
+        c.saveState()
+        c.setFont(font_bold, 100)
+        c.setFillColor(colors.HexColor('#EBEBEB'))
+        c.translate(center_x, page_height / 2.0)
+        c.rotate(30)
+        c.drawCentredString(0, -30, "Sin validez")
+        c.restoreState()
         
         # Colors
         dark_blue = colors.Color(20/255.0, 110/255.0, 180/255.0)
         light_blue = colors.Color(60/255.0, 160/255.0, 220/255.0)
         
         # --- HEADER ---
-        # Centered in X = 1190.55 / 2 = 595.27
-        center_x = page_width / 2.0
-        
         c.setFillColor(dark_blue)
         c.setFont(font_bold, 32)
         c.drawCentredString(center_x, 660, "Diploma de Graduación")

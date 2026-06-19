@@ -21,12 +21,13 @@ graph TD
 
 ## 2. Definición del Canvas A3 y Coordenadas de Dibujo
 
-El diploma está diseñado en orientación **Horizontal (Landscape)** utilizando el tamaño estándar **A3** (1190.55 pt de ancho por 841.89 pt de alto). El origen del sistema cartesiano `(0,0)` se sitúa en la esquina inferior izquierda.
+El diploma está diseñado en orientación **Horizontal (Landscape)** utilizando el tamaño estándar **A3** (1190.55 pt de ancho por 841.89 pt de alto). El origen del sistema cartesiano `(0,0)` se sitúa en la esquina inferior izquierda. El fondo es de color blanco limpio, omitiendo arcos o logotipos decorativos externos.
 
 ### Coordenadas del Sistema
 - **Línea Central X (`center_x`)**: `595.27` pt
 - **Eje de Columna Izquierda Catalán (`x1`)**: `297.6` pt
 - **Eje de Columna Derecha Castellano (`x2`)**: `892.9` pt
+- **Marca de Agua "Sin validez"**: Centrada en `X = 595.27, Y = 420.9` (mitad del alto), rotada 30 grados, color gris translúcido plano HexColor `#EBEBEB`, fuente `Inter-Bold`/`Helvetica-Bold` de tamaño 100 pt, dibujada en el fondo del canvas antes de los textos principales.
 
 ### Estructura de Alturas (Eje Y)
 
