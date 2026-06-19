@@ -99,14 +99,14 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         
         # --- HEADER ---
         c.setFillColor(dark_blue)
-        c.setFont(font_bold, 32)
+        c.setFont(font_bold, 24)
         c.drawCentredString(center_x, 660, "Diploma de Graduación")
         c.drawCentredString(center_x, 615, "Diploma de Graduació")
         
         # --- COURSE NAMES (Columns) ---
         # Gutter margins: Left column aligned to the right at 545.27 pt
         # Right column aligned to the left at 645.27 pt
-        # Increase font size to 26 pt
+        # Increase font size to 32 pt
         x1 = 297.6
         x2 = 892.9
         
@@ -115,22 +115,22 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         
         course_name_cat = self._normalize_catalan_course_name(course_name_cat)
         
-        c.setFont(font_bold, 26)
+        c.setFont(font_bold, 32)
         c.setFillColor(dark_blue)
         
         # Left (Catalan) Column - Aligned to Right
-        lines_course_cat = simpleSplit(course_name_cat, font_bold, 26, 450)
+        lines_course_cat = simpleSplit(course_name_cat, font_bold, 32, 450)
         curr_y = 510
         for line in lines_course_cat:
             c.drawRightString(545.27, curr_y, line)
-            curr_y -= 30
+            curr_y -= 36
             
         # Right (Spanish) Column - Aligned to Left
-        lines_course_es = simpleSplit(course_name_es, font_bold, 26, 450)
+        lines_course_es = simpleSplit(course_name_es, font_bold, 32, 450)
         curr_y = 510
         for line in lines_course_es:
             c.drawString(645.27, curr_y, line)
-            curr_y -= 30
+            curr_y -= 36
         
         # --- MIDDLE CONTENT ---
         c.setFillColor(colors.black)
