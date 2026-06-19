@@ -42,3 +42,5 @@
 [2026-06-19T13:10:00+02:00] Main Agent: Applied visual tweak. Removed the background image with decorative arcs ('digital_bg.png') and implemented the rotated diagonal "Sin validez" watermark in light gray HexColor('#EBEBEB') at size 100 pt centered in the A3 canvas.
 [2026-06-19T13:10:30+02:00] Main Agent: Executed Odoo test suite to re-verify tests passed successfully after watermark changes. Updated test output log and verification files.
 [2026-06-19T13:11:00+02:00] Main Agent: Updated changelogs, walkthroughs, and knowledge base files, staged all changes, and regenerated the git patch file.
+[2026-06-19T13:25:00+02:00] Main Agent: Applied course name font size increase (to 26 pt) and column alignment adjustments (left column right-aligned, right column left-aligned towards the central gutter).
+[2026-06-19T13:25:30+02:00] Main Agent: Executed Odoo tests to verify changes and regenerated the git patch diff.

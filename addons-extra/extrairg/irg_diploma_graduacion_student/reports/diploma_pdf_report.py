@@ -51,6 +51,21 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
             
         return font_regular, font_bold
 
+    def _normalize_catalan_course_name(self, course_name):
+        """Normalize common accent differences for Catalan rendering."""
+        if not course_name:
+            return ""
+        normalized = course_name
+        normalized = normalized.replace("Máster", "Màster")
+        normalized = normalized.replace("máster", "màster")
+        normalized = normalized.replace("Master", "Màster")
+        normalized = normalized.replace("master", "màster")
+        normalized = normalized.replace("Salud", "Salut")
+        normalized = normalized.replace("salud", "salut")
+        normalized = normalized.replace(" y ", " i ")
+        normalized = normalized.replace(" Y ", " I ")
+        return normalized
+
     @api.model
     def generate_diploma_pdf(self, data):
         """Generate the A3 landscape diploma PDF and return bytes"""
@@ -89,16 +104,33 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         c.drawCentredString(center_x, 615, "Diploma de Graduació")
         
         # --- COURSE NAMES (Columns) ---
-        # Catalan in Left (X1 = 297.6), Spanish in Right (X2 = 892.9)
+        # Gutter margins: Left column aligned to the right at 545.27 pt
+        # Right column aligned to the left at 645.27 pt
+        # Increase font size to 26 pt
         x1 = 297.6
         x2 = 892.9
         
         course_name_cat = data.get('course_name_cat') or ""
         course_name_es = data.get('course_name_es') or ""
         
-        c.setFont(font_bold, 22)
-        c.drawCentredString(x1, 510, course_name_cat)
-        c.drawCentredString(x2, 510, course_name_es)
+        course_name_cat = self._normalize_catalan_course_name(course_name_cat)
+        
+        c.setFont(font_bold, 26)
+        c.setFillColor(dark_blue)
+        
+        # Left (Catalan) Column - Aligned to Right
+        lines_course_cat = simpleSplit(course_name_cat, font_bold, 26, 450)
+        curr_y = 510
+        for line in lines_course_cat:
+            c.drawRightString(545.27, curr_y, line)
+            curr_y -= 30
+            
+        # Right (Spanish) Column - Aligned to Left
+        lines_course_es = simpleSplit(course_name_es, font_bold, 26, 450)
+        curr_y = 510
+        for line in lines_course_es:
+            c.drawString(645.27, curr_y, line)
+            curr_y -= 30
         
         # --- MIDDLE CONTENT ---
         c.setFillColor(colors.black)
@@ -111,35 +143,36 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         c.drawCentredString(center_x, 380, student_name)
         
         # --- DESCRIPTIVE TEXTS ---
-        # Y = 310, Column Width = 450 pt, size 13.5, leading 18
+        # Left column aligned to Right (at 545.27 pt)
+        # Right column aligned to Left (at 645.27 pt)
         desc_cat = "En reconeixement del rendiment acadèmic i a l'aprofitament dels estudis cursats en el programa del màster."
         desc_es = "En reconocimiento al rendimiento académico y al aprovechamiento de los estudios cursados en el programa del máster."
         
         c.setFillColor(colors.black)
         c.setFont(font_regular, 13.5)
         
-        # Left (Catalan) Column
+        # Left (Catalan) Column - Aligned to Right
         lines_cat = simpleSplit(desc_cat, font_regular, 13.5, 450)
         curr_y = 310
         for line in lines_cat:
-            c.drawCentredString(x1, curr_y, line)
+            c.drawRightString(545.27, curr_y, line)
             curr_y -= 18
             
-        # Right (Spanish) Column
+        # Right (Spanish) Column - Aligned to Left
         lines_es = simpleSplit(desc_es, font_regular, 13.5, 450)
         curr_y = 310
         for line in lines_es:
-            c.drawCentredString(x2, curr_y, line)
+            c.drawString(645.27, curr_y, line)
             curr_y -= 18
             
         # --- DATES ---
-        # Y = 220, size 13.5
+        # Left column aligned to Right, Right column aligned to Left
         date_cat = data.get('date_cat') or ""
         date_es = data.get('date_es') or ""
         
         c.setFont(font_regular, 13.5)
-        c.drawCentredString(x1, 220, "Barcelona, a " + date_cat)
-        c.drawCentredString(x2, 220, "Barcelona, a " + date_es)
+        c.drawRightString(545.27, 220, "Barcelona, a " + date_cat)
+        c.drawString(645.27, 220, "Barcelona, a " + date_es)
         
         # --- SIGNATURES (Column Footers) ---
         # Left (Raimon Gaja): Centred in X1 = 297.6, Y = 110, W = 160, H = 60
