@@ -94,14 +94,14 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         c.restoreState()
         
         # Colors
-        dark_blue = colors.Color(20/255.0, 110/255.0, 180/255.0)
+        dark_blue = colors.HexColor('#164584')
         light_blue = colors.Color(60/255.0, 160/255.0, 220/255.0)
         
         # --- HEADER ---
         c.setFillColor(dark_blue)
         c.setFont(font_bold, 24)
         c.drawCentredString(center_x, 660, "Diploma de Graduación")
-        c.drawCentredString(center_x, 615, "Diploma de Graduació")
+        c.drawCentredString(center_x, 632, "Diploma de Graduació")
         
         # --- COURSE NAMES (Columns) ---
         # Gutter margins: Left column aligned to the right at 545.27 pt
