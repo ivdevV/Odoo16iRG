@@ -25,8 +25,8 @@ El diploma está diseñado en orientación **Horizontal (Landscape)** utilizando
 
 ### Coordenadas del Sistema
 - **Línea Central X (`center_x`)**: `595.27` pt
-- **Eje de Columna Izquierda Catalán (`x1`)**: `297.6` pt
-- **Eje de Columna Derecha Castellano (`x2`)**: `892.9` pt
+- **Eje de Columna Izquierda Catalán (`x1`)**: `397.6` pt (desplazado al centro)
+- **Eje de Columna Derecha Castellano (`x2`)**: `792.9` pt (desplazado al centro)
 - **Marca de Agua "Sin validez"**: Centrada en `X = 595.27, Y = 420.9` (mitad del alto), rotada 30 grados, color gris translúcido plano HexColor `#EBEBEB`, fuente `Inter-Bold`/`Helvetica-Bold` de tamaño 100 pt, dibujada en el fondo del canvas antes de los textos principales.
 
 ### Estructura de Alturas (Eje Y)

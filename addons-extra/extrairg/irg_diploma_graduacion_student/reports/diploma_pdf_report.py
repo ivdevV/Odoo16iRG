@@ -107,8 +107,8 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         # Gutter margins: Left column aligned to the right at 545.27 pt
         # Right column aligned to the left at 645.27 pt
         # Increase font size to 32 pt
-        x1 = 297.6
-        x2 = 892.9
+        x1 = 397.6
+        x2 = 792.9
         
         course_name_cat = data.get('course_name_cat') or ""
         course_name_es = data.get('course_name_es') or ""
