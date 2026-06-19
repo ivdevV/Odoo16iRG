@@ -1,89 +1,78 @@
 # Base de Conocimiento - Módulo `irg_diploma_graduacion_student`
 
-Este documento describe la arquitectura, las estrategias y los patrones técnicos de implementación utilizados en el módulo de generación de diploma de graduación para estudiantes. Sirve como referencia técnica para futuros desarrollos en la instancia de Odoo 16 de iRG.
+Este documento describe la arquitectura técnica, las estrategias de diseño y el posicionamiento absoluto en lienzo ReportLab para la generación de diplomas de graduación en Odoo 16. Sirve como referencia técnica de desarrollo y maquetación para la institución.
 
 ---
 
-## 1. Arquitectura y Modelado
+## 1. Arquitectura de Generación en Memoria
 
-La generación de diplomas no se realiza directamente mediante informes QWeb estándar de Odoo, sino mediante un flujo de asistente intermedio (`TransientModel`) debido a la necesidad de parametrización manual antes de imprimir (como la selección del curso concreto o la fecha de expedición) y el uso de plantillas Word.
-
-### Modelos y Vistas
-- **`op.student` (`models/op_student.py`)**:
-  - Hereda el modelo de OpenEduCat para inyectar un botón de acción rápida (`action_open_graduation_diploma_wizard`) que retorna una acción de ventana (`ir.actions.act_window`) para abrir el wizard.
-  - El botón se inserta mediante un XPath en la cabecera de la ficha del estudiante (`views/op_student_views.xml`).
-- **`irg.diploma.graduacion.wizard` (`wizard/diploma_graduacion_wizard.py`)**:
-  - Un modelo transitorio que gestiona el estado temporal de la solicitud de diploma.
-  - Guarda la referencia al estudiante (`student_id`), la matrícula elegida (`student_course_id`) y la fecha de expedición (`date`).
-  - Implementa el método `default_get` para rellenar de forma transparente el estudiante a partir del contexto activo.
-
----
-
-## 2. Estrategia de Reemplazo en Plantillas Word (`python-docx`)
-
-### El problema de la fragmentación de tokens (`runs`)
-Al editar un documento en Microsoft Word, el formateo interno o el autoguardado a menudo dividen un texto simple como `<<Alumno>>` en múltiples elementos `<w:r>` (runs) dentro de XML. Por ejemplo, `<<` en un run, `Alumno` en otro y `>>` en el tercero.
-Si se realiza un simple reemplazo `run.text = run.text.replace('<<Alumno>>', 'Nombre')`, python-docx no encontrará la coincidencia debido a que el texto completo está dividido.
-
-### La solución implementada: manipulación y limpieza de runs
-Se utiliza el método estático `_replace_in_paragraph` que:
-1. Reconstruye la cadena de texto completa uniendo el contenido de todos los `runs` del párrafo: `full = ''.join(r.text for r in paragraph.runs)`.
-2. Realiza los reemplazos de marcadores en esa cadena unificada.
-3. Si hubo algún reemplazo:
-   - Sobrescribe la cadena resultante completa en el **primer run** del párrafo: `paragraph.runs[0].text = full`.
-   - Vacía los textos de todos los runs subsecuentes utilizando una consulta XPath directa al elemento XML (`w:t` dentro de `run._element`) para evitar dejar residuos vacíos o perder el formateo general del párrafo:
-     ```python
-     for r in paragraph.runs[1:]:
-         for t in r._element.xpath('.//w:t'):
-             t.text = ''
-     ```
-
-Este método se aplica de forma exhaustiva sobre:
-- Párrafos principales (`doc.paragraphs`).
-- Celdas de tablas (`doc.tables`).
-- Párrafos y tablas en cabeceras y pies de página de todas las secciones (`doc.sections`).
-
----
-
-## 3. Normalización de Traducción al Catalán
-
-Para renderizar correctamente el diploma bilingüe, es necesario disponer del nombre del curso tanto en español como en catalán. 
-- Si el campo traducido `name_cat` existe en el modelo `op.course`, se utiliza; de lo contrario, se hace fallback al campo `name` (español).
-- Para garantizar la uniformidad ortográfica y estilística (y evitar errores de entrada manual de datos de los cursos en Odoo), se diseñó la función `_normalize_catalan_course_name` que realiza reemplazos sistemáticos de términos comunes:
-  - `"Máster"`, `"máster"`, `"Master"`, `"master"` -> `"Màster"` / `"màster"`.
-  - `"Salud"`, `"salud"` -> `"Salut"` / `"salut"`.
-  - Conector copulativo `" y "`, `" Y "` -> `" i "` / `" I "`.
-
-Este patrón de normalización asegura que el diploma siempre cumpla con la normativa lingüística correspondiente del catalán.
-
----
-
-## 4. Pipeline de Renderizado y Conversión a PDF
-
-El flujo de generación de PDF sigue un pipeline robusto sin requerir un motor HTML-to-PDF:
+La generación de diplomas utiliza un modelo abstracto de Odoo (`AbstractModel`) que hereda la lógica de renderizado dinámico de ReportLab. A diferencia de las vistas tradicionales QWeb, esto permite un control total sobre el motor de renderizado PDF a bajo nivel.
 
 ```mermaid
 graph TD
-    A[Plantilla DOCX origen] --> B[Carga en python-docx]
-    B --> C[Reemplazo de variables dinámicas en runs]
-    C --> D[Guardado en archivo temporal .docx]
-    D --> E[Ejecución de LibreOffice Headless en Docker]
-    E --> F[Lectura del PDF temporal generado]
-    F --> G[Eliminación de archivos temporales]
-    G --> H[Creación de ir.attachment en Odoo]
-    H --> I[Descarga mediante ir.actions.act_url]
+    A[Wizard: Selección de Datos] --> B[Diccionario de datos estructurado]
+    B --> C[Llamada a report.irg_diploma_graduacion_student.diploma_pdf]
+    C --> D[Carga de fuentes e imágenes en memoria]
+    D --> E[Dibujo absoluto sobre canvas A3 Landscape]
+    E --> F[Retorno de bytes e inserción en ir.attachment]
 ```
 
-### Proceso de Conversión LibreOffice
-El comando ejecutado de forma asíncrona mediante `subprocess.run` es:
-```bash
-libreoffice --headless --norestore --convert-to pdf --outdir /tmp /tmp/diploma_graduado_xyz.docx
-```
-- **`--headless`**: Permite la ejecución sin interfaz gráfica (requerido para entornos de servidor/Docker).
-- **`--norestore`**: Evita que LibreOffice intente restaurar documentos dañados de sesiones anteriores si hubo fallos, asegurando un tiempo de respuesta rápido y predecible.
-- **`--outdir`**: Especifica la carpeta temporal donde se depositará el archivo PDF generado.
+---
 
-### Gestión de Errores y Limpieza
-- Si LibreOffice no está instalado (o falla el ejecutable), se captura la excepción `FileNotFoundError` y se lanza un `UserError` guiado al usuario indicando el comando de instalación requerido en el contenedor (`apt-get install -y libreoffice-writer`).
-- Se utiliza un bloque `try...finally` (o eliminación preventiva) para asegurar que todos los archivos temporales generados en el disco del servidor se borren tras la lectura binaria (`os.unlink`), previniendo fugas de almacenamiento y colmatación del disco `/tmp`.
-- El archivo binario de PDF se almacena en el modelo nativo `ir.attachment` de Odoo, vinculándolo de forma permanente a la ficha del alumno (`op.student`), permitiendo a su vez la descarga directa desde el navegador.
+## 2. Definición del Canvas A3 y Coordenadas de Dibujo
+
+El diploma está diseñado en orientación **Horizontal (Landscape)** utilizando el tamaño estándar **A3** (1190.55 pt de ancho por 841.89 pt de alto). El origen del sistema cartesiano `(0,0)` se sitúa en la esquina inferior izquierda.
+
+### Coordenadas del Sistema
+- **Línea Central X (`center_x`)**: `595.27` pt
+- **Eje de Columna Izquierda Catalán (`x1`)**: `297.6` pt
+- **Eje de Columna Derecha Castellano (`x2`)**: `892.9` pt
+
+### Estructura de Alturas (Eje Y)
+
+| Elemento | Posición Y (pt) | Alineación | Fuente / Estilo |
+| :--- | :--- | :--- | :--- |
+| **Título en Español** | `660` | Centrado | `Inter-Bold` o `Helvetica-Bold` (32 pt) |
+| **Título en Catalán** | `615` | Centrado | `Inter-Bold` o `Helvetica-Bold` (32 pt) |
+| **Nombres del Curso (Cat / Es)** | `510` | Columna (`x1` / `x2`) | `Inter-Bold` (22 pt) |
+| **Conector "a"** | `430` | Centrado | `Inter-Regular` (16 pt) |
+| **Nombre del Estudiante** | `380` | Centrado | `Inter-Bold` (36 pt), Color Celeste Corporativo |
+| **Texto Descriptivo (Bloque)** | `310` (inicio) | Columna (`x1` / `x2`) | `Inter-Regular` (13.5 pt), Salto de 18 pt |
+| **Fechas de Expedición** | `220` | Columna (`x1` / `x2`) | `Inter-Regular` (13.5 pt) |
+| **Imágenes de Firmas** | `110` | Columna (`x1` / `x2`) | Ancho `160` pt, Alto `60` pt (Proporcional) |
+| **Nombre del Firmante** | `80` | Columna (`x1` / `x2`) | `Inter-Bold` (12 pt) |
+| **Cargo del Firmante (Línea 1)** | `66` | Columna (`x1` / `x2`) | `Inter-Regular` (12 pt) |
+| **Cargo del Firmante (Línea 2)** | `52` | Columna (`x1` / `x2`) | `Inter-Regular` (12 pt) |
+
+---
+
+## 3. Tipografías y Colores Corporativos
+
+### Registro de Fuentes TTF
+El sistema intenta registrar la fuente corporativa **`Inter`** dinámica buscando primero en el propio módulo y luego en módulos hermanos de diplomas (`irg_generacion_diplomas`). Si no están disponibles en la ruta local, realiza un fallback automático y transparente a **`Helvetica`** (nativa del visor PDF) para evitar interrupciones de negocio.
+- Nombre en Canvas: `Inter` para regular, `Inter-Bold` para negritas.
+
+### Paleta de Colores
+Se utilizan colores corporativos definidos en formato RGB normalizado:
+- **Azul Oscuro (Títulos)**: `Color(20/255.0, 110/255.0, 180/255.0)` $\rightarrow$ Hex `#146EB4`
+- **Celeste / Azul Claro (Estudiante)**: `Color(60/255.0, 160/255.0, 220/255.0)` $\rightarrow$ Hex `#3CA0DC`
+- **Negro (Textos y cargos)**: `colors.black`
+
+---
+
+## 4. Estrategia de Text Wrapping (Ajuste de Texto)
+
+Dado que las descripciones del máster pueden variar de longitud según la titulación, y a fin de mantener el diseño bilingüe simétrico, se implementa una rutina de división de textos en ReportLab:
+
+1. Se define un ancho de columna seguro de **`450` pt** para evitar solapamientos centrales.
+2. Se utiliza la función nativa `simpleSplit(text, font, size, max_width)` para dividir el texto en una lista de cadenas conforme a la anchura de la columna.
+3. Se realiza un bucle en el eje Y restando un valor de `leading` de **`18` pt** entre cada línea para simular un párrafo:
+   ```python
+   lines = simpleSplit(desc_text, font_regular, 13.5, 450)
+   curr_y = 310
+   for line in lines:
+       c.drawCentredString(col_x, curr_y, line)
+       curr_y -= 18
+   ```
+
+Esta técnica garantiza que descripciones largas de cursos no se solapen con el nombre del alumno en la parte superior, ni con las firmas en la parte inferior.

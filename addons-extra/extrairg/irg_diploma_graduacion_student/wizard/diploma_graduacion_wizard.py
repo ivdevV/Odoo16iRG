@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
-import os
-import subprocess
-import tempfile
 import base64
 import logging
-from docx import Document as DocxDocument
 from babel.dates import format_date
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
-from odoo.modules.module import get_module_resource
 
 _logger = logging.getLogger(__name__)
 
@@ -58,23 +53,6 @@ class IrgDiplomaGraduacionWizard(models.TransientModel):
         normalized = normalized.replace(" Y ", " I ")
         return normalized
 
-    @staticmethod
-    def _replace_in_paragraph(paragraph, replacements):
-        """Replace placeholders in a paragraph across runs that may be split by Word."""
-        if not paragraph.runs:
-            return
-        full = ''.join(r.text for r in paragraph.runs)
-        replaced = False
-        for old, new in replacements.items():
-            if old in full:
-                full = full.replace(old, new or '')
-                replaced = True
-        if replaced:
-            paragraph.runs[0].text = full
-            for r in paragraph.runs[1:]:
-                for t in r._element.xpath('.//w:t'):
-                    t.text = ''
-
     def action_print_pdf(self):
         self.ensure_one()
 
@@ -113,116 +91,17 @@ class IrgDiplomaGraduacionWizard(models.TransientModel):
             course_name_cat = course_name_es
         course_name_cat = self._normalize_catalan_course_name(course_name_cat)
 
-        replacements = {
-            '<<Alumno>>': student_name,
-            '<<alumno>>': student_name,
-            '<<Master>>': course_name_es,
-            '<<curso>>': course_name_es,
-            '<<MasterCat>>': course_name_cat,
-            '<<Fecha>>': date_es,
-            '<<FechaCat>>': date_cat,
+        data = {
+            'student_name': student_name,
+            'course_name_es': course_name_es,
+            'course_name_cat': course_name_cat,
+            'date_es': date_es,
+            'date_cat': date_cat,
         }
 
-        tpl_path = get_module_resource(
-            'irg_diploma_graduacion_student',
-            'static',
-            'src',
-            'templates',
-            'plantilla_diploma_graduado.docx'
-        )
-
-        if not tpl_path or not os.path.exists(tpl_path):
-            raise UserError(_("No se encontró la plantilla Word en la ruta: %s") % tpl_path)
-
-        # Process document using python-docx
-        try:
-            doc = DocxDocument(tpl_path)
-        except Exception as e:
-            raise UserError(_("Error al abrir la plantilla Word: %s") % str(e))
-
-        # 1. Replace in normal paragraphs
-        for para in doc.paragraphs:
-            self._replace_in_paragraph(para, replacements)
-
-        # 2. Replace in tables
-        for tbl in doc.tables:
-            for row in tbl.rows:
-                for cell in row.cells:
-                    for para in cell.paragraphs:
-                        self._replace_in_paragraph(para, replacements)
-
-        # 3. Replace in headers/footers
-        for section in doc.sections:
-            if section.header:
-                for para in section.header.paragraphs:
-                    self._replace_in_paragraph(para, replacements)
-                for tbl in section.header.tables:
-                    for row in tbl.rows:
-                        for cell in row.cells:
-                            for para in cell.paragraphs:
-                                self._replace_in_paragraph(para, replacements)
-            if section.footer:
-                for para in section.footer.paragraphs:
-                    self._replace_in_paragraph(para, replacements)
-                for tbl in section.footer.tables:
-                    for row in tbl.rows:
-                        for cell in row.cells:
-                            for para in cell.paragraphs:
-                                self._replace_in_paragraph(para, replacements)
-
-        # Save to temp file
-        tmp_docx = tempfile.NamedTemporaryFile(
-            suffix='.docx', delete=False, prefix='diploma_graduado_'
-        )
-        doc.save(tmp_docx.name)
-        tmp_docx.close()
-
-        # Convert to PDF
-        out_dir = os.path.dirname(tmp_docx.name)
-        try:
-            subprocess.run(
-                [
-                    'libreoffice', '--headless', '--norestore',
-                    '--convert-to', 'pdf',
-                    '--outdir', out_dir,
-                    tmp_docx.name,
-                ],
-                check=True,
-                timeout=60,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except FileNotFoundError:
-            if os.path.exists(tmp_docx.name):
-                os.unlink(tmp_docx.name)
-            raise UserError(
-                _('LibreOffice no está instalado en el servidor. '
-                  'Ejecute: apt-get install -y libreoffice-writer')
-            )
-        except subprocess.CalledProcessError as exc:
-            if os.path.exists(tmp_docx.name):
-                os.unlink(tmp_docx.name)
-            _logger.error('LibreOffice conversion failed: %s', exc.stderr)
-            raise UserError(
-                _('Error al convertir el diploma a PDF. Revise el log de error.')
-            )
-
-        pdf_path = tmp_docx.name.rsplit('.', 1)[0] + '.pdf'
-        if not os.path.isfile(pdf_path):
-            if os.path.exists(tmp_docx.name):
-                os.unlink(tmp_docx.name)
-            raise UserError(_('No se generó el archivo PDF.'))
-
-        with open(pdf_path, 'rb') as f:
-            pdf_bytes = f.read()
-
-        # Cleanup temp files
-        for path in (tmp_docx.name, pdf_path):
-            try:
-                if os.path.exists(path):
-                    os.unlink(path)
-            except Exception:
-                pass
+        # Generate PDF using ReportLab model
+        report_model = self.env['report.irg_diploma_graduacion_student.diploma_pdf']
+        pdf_bytes = report_model.generate_diploma_pdf(data)
 
         # Create attachment in Odoo
         filename = "Diploma_{}.pdf".format(

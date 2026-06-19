@@ -13,7 +13,7 @@
         'web',
     ],
     'external_dependencies': {
-        'python': ['docx'],
+        'python': ['reportlab', 'qrcode'],
     },
     'data': [
         'security/ir.model.access.csv',
