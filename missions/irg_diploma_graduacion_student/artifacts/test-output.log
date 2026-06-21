@@ -1,8 +1,8 @@
-2026-06-19 14:03:13,945 771 [1;32m[1;49mINFO[0m ? odoo: Odoo version 16.0-20250909 
-2026-06-19 14:03:13,945 771 [1;32m[1;49mINFO[0m ? odoo: Using configuration file at /etc/odoo/odoo.conf 
-2026-06-19 14:03:13,945 771 [1;32m[1;49mINFO[0m ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
-2026-06-19 14:03:13,946 771 [1;32m[1;49mINFO[0m ? odoo: database: odoo@pgodoo_local:5432 
-2026-06-19 14:03:13,992 771 [1;32m[1;49mINFO[0m ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-06-21 15:26:23,943 73 [1;32m[1;49mINFO[0m ? odoo: Odoo version 16.0-20250909 
+2026-06-21 15:26:23,943 73 [1;32m[1;49mINFO[0m ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-06-21 15:26:23,943 73 [1;32m[1;49mINFO[0m ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-06-21 15:26:23,943 73 [1;32m[1;49mINFO[0m ? odoo: database: odoo@pgodoo_local:5432 
+2026-06-21 15:26:23,990 73 [1;32m[1;49mINFO[0m ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
 Exception in thread odoo.service.httpd:
 Traceback (most recent call last):
   File "/usr/lib/python3.9/threading.py", line 954, in _bootstrap_inner
@@ -24,12 +24,12 @@ Traceback (most recent call last):
   File "/usr/lib/python3.9/socketserver.py", line 466, in server_bind
     self.socket.bind(self.server_address)
 OSError: [Errno 98] Address already in use
-2026-06-19 14:03:14,036 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading 1 modules... 
-2026-06-19 14:03:14,038 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
-2026-06-19 14:03:14,044 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: updating modules list 
-2026-06-19 14:03:14,045 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
-2026-06-19 14:03:14,067 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
-2026-06-19 14:03:14,112 771 [1;33m[1;49mWARNING[0m odoo16irg_local py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+2026-06-21 15:26:24,032 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading 1 modules... 
+2026-06-21 15:26:24,035 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-06-21 15:26:24,040 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: updating modules list 
+2026-06-21 15:26:24,041 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-06-21 15:26:24,062 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-06-21 15:26:24,099 73 [1;33m[1;49mWARNING[0m odoo16irg_local py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
   File "/usr/bin/odoo", line 8, in <module>
     odoo.cli.main()
   File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
@@ -75,7 +75,7 @@ OSError: [Errno 98] Address already in use
   File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
     for frame in traceback.extract_stack():
  
-2026-06-19 14:03:14,114 771 [1;33m[1;49mWARNING[0m odoo16irg_local py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+2026-06-21 15:26:24,100 73 [1;33m[1;49mWARNING[0m odoo16irg_local py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
   File "/usr/bin/odoo", line 8, in <module>
     odoo.cli.main()
   File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
@@ -121,7 +121,7 @@ OSError: [Errno 98] Address already in use
   File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
     for frame in traceback.extract_stack():
  
-2026-06-19 14:03:14,115 771 [1;33m[1;49mWARNING[0m odoo16irg_local py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+2026-06-21 15:26:24,102 73 [1;33m[1;49mWARNING[0m odoo16irg_local py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
   File "/usr/bin/odoo", line 8, in <module>
     odoo.cli.main()
   File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
@@ -167,64 +167,64 @@ OSError: [Errno 98] Address already in use
   File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
     for frame in traceback.extract_stack():
  
-2026-06-19 14:03:14,249 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
-2026-06-19 14:03:14,269 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
-2026-06-19 14:03:14,312 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
-2026-06-19 14:03:14,313 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
-2026-06-19 14:03:14,314 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
-2026-06-19 14:03:14,352 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
-2026-06-19 14:03:14,448 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
-2026-06-19 14:03:14,497 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
-2026-06-19 14:03:14,499 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
-2026-06-19 14:03:14,543 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
-2026-06-19 14:03:14,585 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
-2026-06-19 14:03:14,610 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
-2026-06-19 14:03:14,611 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
-2026-06-19 14:03:14,613 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
-2026-06-19 14:03:14,614 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
-2026-06-19 14:03:14,660 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
-2026-06-19 14:03:14,672 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
-2026-06-19 14:03:14,673 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
-2026-06-19 14:03:14,681 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
-2026-06-19 14:03:14,687 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
-2026-06-19 14:03:14,704 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
-2026-06-19 14:03:14,708 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
-2026-06-19 14:03:14,713 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
-2026-06-19 14:03:14,713 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
-2026-06-19 14:03:14,715 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
-2026-06-19 14:03:14,718 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
-2026-06-19 14:03:14,719 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
-2026-06-19 14:03:14,726 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
-2026-06-19 14:03:14,729 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
-2026-06-19 14:03:14,736 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
-2026-06-19 14:03:14,741 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
-2026-06-19 14:03:14,744 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
-2026-06-19 14:03:14,749 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
-2026-06-19 14:03:14,751 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
-2026-06-19 14:03:14,758 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
-2026-06-19 14:03:15,179 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
-2026-06-19 14:03:15,272 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
-2026-06-19 14:03:15,283 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
-2026-06-19 14:03:15,477 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
-2026-06-19 14:03:15,510 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
-2026-06-19 14:03:15,704 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
-2026-06-19 14:03:15,705 771 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
-2026-06-19 14:03:15,809 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading 79 modules... 
-2026-06-19 14:03:15,986 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: Loading module irg_diploma_graduacion_student (74/79) 
-2026-06-19 14:03:16,091 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.registry: module irg_diploma_graduacion_student: creating or updating database tables 
-2026-06-19 14:03:16,111 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading irg_diploma_graduacion_student/security/ir.model.access.csv 
-2026-06-19 14:03:16,123 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard_views.xml 
-2026-06-19 14:03:16,128 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading irg_diploma_graduacion_student/views/op_student_views.xml 
-2026-06-19 14:03:16,140 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.addons.irg_diploma_graduacion_student.tests.test_diploma: Starting TestDiplomaGraduacion.test_graduation_diploma_wizard_flow ... 
-2026-06-19 14:03:16,208 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.addons.base.models.ir_attachment: filestore gc 1 checked, 1 removed 
-2026-06-19 14:03:16,218 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: Module irg_diploma_graduacion_student loaded in 0.23s (incl. 0.07s test), 92 queries (+67 test, +92 other) 
-2026-06-19 14:03:16,225 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: 79 modules loaded in 0.42s, 92 queries (+159 extra) 
-2026-06-19 14:03:16,450 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: Modules loaded. 
-2026-06-19 14:03:16,454 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.registry: Registry loaded in 2.425s 
-2026-06-19 14:03:16,454 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.service.server: Starting post tests 
-2026-06-19 14:03:16,455 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.service.server: 0 post-tests in 0.00s, 0 queries 
-2026-06-19 14:03:16,455 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.tests.stats: irg_diploma_graduacion_student: 3 tests 0.07s 67 queries 
-2026-06-19 14:03:16,455 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.tests.result: 0 failed, 0 error(s) of 1 tests when loading database 'odoo16irg_local' 
-2026-06-19 14:03:16,455 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.service.server: Initiating shutdown 
-2026-06-19 14:03:16,455 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
-2026-06-19 14:03:16,455 771 [1;32m[1;49mINFO[0m odoo16irg_local odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 2 connections  
+2026-06-21 15:26:24,240 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-06-21 15:26:24,261 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-06-21 15:26:24,305 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-06-21 15:26:24,306 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-06-21 15:26:24,307 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-06-21 15:26:24,347 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-06-21 15:26:24,447 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-06-21 15:26:24,498 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-06-21 15:26:24,501 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-06-21 15:26:24,543 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-06-21 15:26:24,586 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-06-21 15:26:24,612 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-06-21 15:26:24,613 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-06-21 15:26:24,615 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-06-21 15:26:24,616 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-06-21 15:26:24,674 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-06-21 15:26:24,686 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-06-21 15:26:24,688 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-06-21 15:26:24,696 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-06-21 15:26:24,702 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-06-21 15:26:24,720 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-06-21 15:26:24,723 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-06-21 15:26:24,728 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-06-21 15:26:24,729 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-06-21 15:26:24,731 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-06-21 15:26:24,734 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-06-21 15:26:24,735 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-06-21 15:26:24,742 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-06-21 15:26:24,745 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-06-21 15:26:24,752 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-06-21 15:26:24,759 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-06-21 15:26:24,762 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-06-21 15:26:24,812 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-06-21 15:26:24,817 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-06-21 15:26:24,827 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-06-21 15:26:25,279 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-06-21 15:26:25,377 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-06-21 15:26:25,388 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-06-21 15:26:25,567 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-06-21 15:26:25,599 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-06-21 15:26:25,792 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-06-21 15:26:25,792 73 [1;33m[1;49mWARNING[0m odoo16irg_local odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-06-21 15:26:25,929 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading 79 modules... 
+2026-06-21 15:26:26,114 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: Loading module irg_diploma_graduacion_student (74/79) 
+2026-06-21 15:26:26,209 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.registry: module irg_diploma_graduacion_student: creating or updating database tables 
+2026-06-21 15:26:26,230 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading irg_diploma_graduacion_student/security/ir.model.access.csv 
+2026-06-21 15:26:26,241 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard_views.xml 
+2026-06-21 15:26:26,246 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: loading irg_diploma_graduacion_student/views/op_student_views.xml 
+2026-06-21 15:26:26,260 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.addons.irg_diploma_graduacion_student.tests.test_diploma: Starting TestDiplomaGraduacion.test_graduation_diploma_wizard_flow ... 
+2026-06-21 15:26:26,329 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.addons.base.models.ir_attachment: filestore gc 1 checked, 1 removed 
+2026-06-21 15:26:26,339 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: Module irg_diploma_graduacion_student loaded in 0.22s (incl. 0.07s test), 92 queries (+67 test, +92 other) 
+2026-06-21 15:26:26,346 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: 79 modules loaded in 0.42s, 92 queries (+159 extra) 
+2026-06-21 15:26:26,575 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.loading: Modules loaded. 
+2026-06-21 15:26:26,577 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.modules.registry: Registry loaded in 2.551s 
+2026-06-21 15:26:26,577 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.service.server: Starting post tests 
+2026-06-21 15:26:26,578 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.service.server: 0 post-tests in 0.00s, 0 queries 
+2026-06-21 15:26:26,578 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.tests.stats: irg_diploma_graduacion_student: 3 tests 0.07s 67 queries 
+2026-06-21 15:26:26,578 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.tests.result: 0 failed, 0 error(s) of 1 tests when loading database 'odoo16irg_local' 
+2026-06-21 15:26:26,578 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.service.server: Initiating shutdown 
+2026-06-21 15:26:26,578 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-06-21 15:26:26,578 73 [1;32m[1;49mINFO[0m odoo16irg_local odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 2 connections  

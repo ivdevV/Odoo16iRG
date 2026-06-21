@@ -33,9 +33,9 @@ El diploma está diseñado en orientación **Horizontal (Landscape)** utilizando
 
 | Elemento | Posición Y (pt) | Alineación | Fuente / Estilo |
 | :--- | :--- | :--- | :--- |
-| **Título en Español** | `660` | Centrado | `Inter-Bold` o `Helvetica-Bold` (**24 pt**) |
-| **Título en Catalán** | `632` | Centrado | `Inter-Bold` o `Helvetica-Bold` (**24 pt**) |
-| **Nombres del Curso (Cat / Es)** | `510` | Columna (`545.27` / `645.27`) | `Inter-Bold` (**32 pt**), Salto de 36 pt |
+| **Título en Español** | `660` | Centrado | `Inter-Bold` / `Helvetica-Bold` (24 pt, `#3092C0`) |
+| **Título en Catalán** | `632` | Centrado | `Inter-Bold` / `Helvetica-Bold` (24 pt, `#3092C0`) |
+| **Nombres del Curso (Cat / Es)** | `510` | Columna (`545.27` / `645.27`) | `Inter-Bold` (32 pt, `#02448A`), Salto de 36 pt |
 | **Conector "a"** | `430` | Centrado | `Inter-Regular` (16 pt) |
 | **Nombre del Estudiante** | `380` | Centrado | `Inter-Bold` (36 pt), Color Celeste Corporativo |
 | **Texto Descriptivo (Bloque)** | `310` (inicio) | Columna (`x1` / `x2`) | `Inter-Regular` (13.5 pt), Salto de 18 pt |
@@ -55,7 +55,8 @@ El sistema intenta registrar la fuente corporativa **`Inter`** dinámica buscand
 
 ### Paleta de Colores
 Se utilizan colores corporativos definidos en formato RGB normalizado:
-- **Azul Oscuro (Títulos)**: `HexColor('#3092C0')` $\rightarrow$ Hex `#3092C0`
+- **Azul Claro (Títulos)**: `HexColor('#3092C0')` $\rightarrow$ Hex `#3092C0`
+- **Azul Oscuro (Nombre del Máster)**: `HexColor('#02448A')` $\rightarrow$ Hex `#02448A`
 - **Celeste / Azul Claro (Estudiante)**: `Color(60/255.0, 160/255.0, 220/255.0)` $\rightarrow$ Hex `#3CA0DC`
 - **Negro (Textos y cargos)**: `colors.black`
 

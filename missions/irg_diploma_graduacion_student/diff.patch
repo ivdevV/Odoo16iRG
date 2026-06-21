@@ -1,13 +1,28 @@
 diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py b/addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py
-index 40121571..dab764fc 100644
+index dab764fc..eeff4e6a 100644
 --- a/addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py
 +++ b/addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py
-@@ -94,7 +94,7 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
+@@ -94,11 +94,12 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
          c.restoreState()
          
          # Colors
--        dark_blue = colors.HexColor('#164584')
-+        dark_blue = colors.HexColor('#3092C0')
+-        dark_blue = colors.HexColor('#3092C0')
++        header_blue = colors.HexColor('#3092C0')
++        master_blue = colors.HexColor('#02448A')
          light_blue = colors.Color(60/255.0, 160/255.0, 220/255.0)
          
          # --- HEADER ---
+-        c.setFillColor(dark_blue)
++        c.setFillColor(header_blue)
+         c.setFont(font_bold, 24)
+         c.drawCentredString(center_x, 660, "Diploma de Graduación")
+         c.drawCentredString(center_x, 632, "Diploma de Graduació")
+@@ -116,7 +117,7 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
+         course_name_cat = self._normalize_catalan_course_name(course_name_cat)
+         
+         c.setFont(font_bold, 32)
+-        c.setFillColor(dark_blue)
++        c.setFillColor(master_blue)
+         
+         # Left (Catalan) Column - Aligned to Right
+         lines_course_cat = simpleSplit(course_name_cat, font_bold, 32, 450)
