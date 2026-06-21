@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "task": "fix_admission_gender_mapping",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "result": "pass",
+      "detail": "4 passed, 0 failed, 0 errors, 0 skipped"
+    },
+    {
+      "name": "build",
+      "result": "pass",
+      "detail": "Module installed and registry loaded successfully under Odoo 16."
+    }
+  ],
+  "evidence": [
+    "missions/fix_admission_gender_mapping/artifacts/test-output.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

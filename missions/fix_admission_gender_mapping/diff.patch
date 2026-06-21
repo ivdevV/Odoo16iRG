@@ -1,0 +1,434 @@
+diff --git a/addons-extra/extrairg/irg_admission_gender_fix/__init__.py b/addons-extra/extrairg/irg_admission_gender_fix/__init__.py
+new file mode 100644
+index 00000000..a0fdc10f
+--- /dev/null
++++ b/addons-extra/extrairg/irg_admission_gender_fix/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import models
+diff --git a/addons-extra/extrairg/irg_admission_gender_fix/__manifest__.py b/addons-extra/extrairg/irg_admission_gender_fix/__manifest__.py
+new file mode 100644
+index 00000000..42f195e3
+--- /dev/null
++++ b/addons-extra/extrairg/irg_admission_gender_fix/__manifest__.py
+@@ -0,0 +1,22 @@
++# -*- coding: utf-8 -*-
++{
++    'name': 'IRG Admission Gender Fix',
++    'version': '16.0.1.0.0',
++    'category': 'Education',
++    'summary': 'Fixes contact to admission/student gender mapping conflicts.',
++    'description': """
++        Handles mapping res.partner gender values ('male', 'female', 'not-sure', etc.)
++        to the expected op.admission and op.student selection values ('m', 'f', 'o')
++        during creation and modification.
++    """,
++    'author': 'Antigravity / Google DeepMind',
++    'depends': [
++        'openeducat_admission',
++        'openeducat_core',
++    ],
++    'data': [],
++    'demo': [],
++    'installable': True,
++    'auto_install': False,
++    'license': 'LGPL-3',
++}
+diff --git a/addons-extra/extrairg/irg_admission_gender_fix/models/__init__.py b/addons-extra/extrairg/irg_admission_gender_fix/models/__init__.py
+new file mode 100644
+index 00000000..3f3ba8a8
+--- /dev/null
++++ b/addons-extra/extrairg/irg_admission_gender_fix/models/__init__.py
+@@ -0,0 +1,3 @@
++# -*- coding: utf-8 -*-
++from . import op_admission
++from . import op_student
+diff --git a/addons-extra/extrairg/irg_admission_gender_fix/models/op_admission.py b/addons-extra/extrairg/irg_admission_gender_fix/models/op_admission.py
+new file mode 100644
+index 00000000..52193998
+--- /dev/null
++++ b/addons-extra/extrairg/irg_admission_gender_fix/models/op_admission.py
+@@ -0,0 +1,66 @@
++# -*- coding: utf-8 -*-
++from odoo import models, fields, api
++import logging
++
++_logger = logging.getLogger(__name__)
++
++class OpAdmission(models.Model):
++    _inherit = 'op.admission'
++
++    def _map_partner_gender(self, partner):
++        """Helper to map any res.partner gender value to ('m', 'f', 'o') format."""
++        if not partner:
++            return 'o'
++        
++        # Check both fields: gender (selection) and gender_type (moodle selection)
++        gender_val = getattr(partner, 'gender', False)
++        if not gender_val and hasattr(partner, 'gender_type'):
++            gender_val = getattr(partner, 'gender_type', False)
++
++        if gender_val in ('m', 'male', 'Male', 'Masculino'):
++            return 'm'
++        if gender_val in ('f', 'female', 'Female', 'Femenino'):
++            return 'f'
++        return 'o'
++
++    @api.model_create_multi
++    def create(self, vals_list):
++        for vals in vals_list:
++            partner_id = vals.get('partner_id')
++            partner = self.env['res.partner'].browse(partner_id) if partner_id else False
++            
++            incoming_gender = vals.get('gender')
++            
++            # Map input gender value if it's 'male'/'female'
++            if incoming_gender in ('male', 'Male', 'Masculino'):
++                vals['gender'] = 'm'
++            elif incoming_gender in ('female', 'Female', 'Femenino'):
++                vals['gender'] = 'f'
++            elif incoming_gender in ('other', 'not-sure', 'Other', 'Otro'):
++                vals['gender'] = 'o'
++            # If gender is not provided, or is the default 'o', check the partner
++            elif (not incoming_gender or incoming_gender == 'o') and partner:
++                mapped_gender = self._map_partner_gender(partner)
++                if mapped_gender in ('m', 'f'):
++                    _logger.info("IRG Gender Fix: Mapping empty/default admission gender to partner's gender: %s -> %s", partner.name, mapped_gender)
++                    vals['gender'] = mapped_gender
++        return super(OpAdmission, self).create(vals_list)
++
++    def write(self, vals):
++        incoming_gender = vals.get('gender')
++        
++        if incoming_gender:
++            if incoming_gender in ('male', 'Male', 'Masculino'):
++                vals['gender'] = 'm'
++            elif incoming_gender in ('female', 'Female', 'Femenino'):
++                vals['gender'] = 'f'
++            elif incoming_gender in ('other', 'not-sure', 'Other', 'Otro'):
++                vals['gender'] = 'o'
++        elif 'partner_id' in vals and 'gender' not in vals:
++            partner = self.env['res.partner'].browse(vals['partner_id'])
++            mapped_gender = self._map_partner_gender(partner)
++            if mapped_gender in ('m', 'f'):
++                _logger.info("IRG Gender Fix: Mapping admission gender on partner change: %s -> %s", partner.name, mapped_gender)
++                vals['gender'] = mapped_gender
++
++        return super(OpAdmission, self).write(vals)
+diff --git a/addons-extra/extrairg/irg_admission_gender_fix/models/op_student.py b/addons-extra/extrairg/irg_admission_gender_fix/models/op_student.py
+new file mode 100644
+index 00000000..392c5b30
+--- /dev/null
++++ b/addons-extra/extrairg/irg_admission_gender_fix/models/op_student.py
+@@ -0,0 +1,66 @@
++# -*- coding: utf-8 -*-
++from odoo import models, fields, api
++import logging
++
++_logger = logging.getLogger(__name__)
++
++class OpStudent(models.Model):
++    _inherit = 'op.student'
++
++    def _map_partner_gender(self, partner):
++        """Helper to map any res.partner gender value to ('m', 'f', 'o') format."""
++        if not partner:
++            return 'o'
++        
++        # Check both fields: gender (selection) and gender_type (moodle selection)
++        gender_val = getattr(partner, 'gender', False)
++        if not gender_val and hasattr(partner, 'gender_type'):
++            gender_val = getattr(partner, 'gender_type', False)
++
++        if gender_val in ('m', 'male', 'Male', 'Masculino'):
++            return 'm'
++        if gender_val in ('f', 'female', 'Female', 'Femenino'):
++            return 'f'
++        return 'o'
++
++    @api.model_create_multi
++    def create(self, vals_list):
++        for vals in vals_list:
++            partner_id = vals.get('partner_id')
++            partner = self.env['res.partner'].browse(partner_id) if partner_id else False
++            
++            incoming_gender = vals.get('gender')
++            
++            # Map input gender value if it's 'male'/'female'
++            if incoming_gender in ('male', 'Male', 'Masculino'):
++                vals['gender'] = 'm'
++            elif incoming_gender in ('female', 'Female', 'Femenino'):
++                vals['gender'] = 'f'
++            elif incoming_gender in ('other', 'not-sure', 'Other', 'Otro'):
++                vals['gender'] = 'o'
++            # If gender is not provided, or is the default 'o', check the partner
++            elif (not incoming_gender or incoming_gender == 'o') and partner:
++                mapped_gender = self._map_partner_gender(partner)
++                if mapped_gender in ('m', 'f'):
++                    _logger.info("IRG Gender Fix: Mapping empty/default student gender to partner's gender: %s -> %s", partner.name, mapped_gender)
++                    vals['gender'] = mapped_gender
++        return super(OpStudent, self).create(vals_list)
++
++    def write(self, vals):
++        incoming_gender = vals.get('gender')
++        
++        if incoming_gender:
++            if incoming_gender in ('male', 'Male', 'Masculino'):
++                vals['gender'] = 'm'
++            elif incoming_gender in ('female', 'Female', 'Femenino'):
++                vals['gender'] = 'f'
++            elif incoming_gender in ('other', 'not-sure', 'Other', 'Otro'):
++                vals['gender'] = 'o'
++        elif 'partner_id' in vals and 'gender' not in vals:
++            partner = self.env['res.partner'].browse(vals['partner_id'])
++            mapped_gender = self._map_partner_gender(partner)
++            if mapped_gender in ('m', 'f'):
++                _logger.info("IRG Gender Fix: Mapping student gender on partner change: %s -> %s", partner.name, mapped_gender)
++                vals['gender'] = mapped_gender
++
++        return super(OpStudent, self).write(vals)
+diff --git a/addons-extra/extrairg/irg_admission_gender_fix/tests/__init__.py b/addons-extra/extrairg/irg_admission_gender_fix/tests/__init__.py
+new file mode 100644
+index 00000000..68fb5eca
+--- /dev/null
++++ b/addons-extra/extrairg/irg_admission_gender_fix/tests/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import test_gender_mapping
+diff --git a/addons-extra/extrairg/irg_admission_gender_fix/tests/test_gender_mapping.py b/addons-extra/extrairg/irg_admission_gender_fix/tests/test_gender_mapping.py
+new file mode 100644
+index 00000000..62362dca
+--- /dev/null
++++ b/addons-extra/extrairg/irg_admission_gender_fix/tests/test_gender_mapping.py
+@@ -0,0 +1,183 @@
++# -*- coding: utf-8 -*-
++import logging
++from odoo.tests.common import TransactionCase
++
++_logger = logging.getLogger(__name__)
++
++class TestGenderMapping(TransactionCase):
++
++    def setUp(self):
++        super(TestGenderMapping, self).setUp()
++
++        self.course = self.env['op.course'].create({
++            'name': 'Test Course',
++            'code': 'T-CR-G',
++        })
++
++        self.product = self.env['product.product'].create({
++            'name': 'Test Course Product G',
++            'type': 'service',
++        })
++
++        self.register = self.env['op.admission.register'].create({
++            'name': 'Test Register G',
++            'course_id': self.course.id,
++            'period': '2026-06',
++            'start_date': '2026-06-01',
++            'end_date': '2026-06-30',
++            'min_count': 1,
++            'max_count': 100,
++            'product_id': self.product.id,
++        })
++
++        self.batch = self.env['op.batch'].create({
++            'name': 'Test Batch G',
++            'code': 'TST-BG-01',
++            'course_id': self.course.id,
++            'start_date': '2026-06-01',
++            'end_date': '2026-12-31',
++        })
++
++        self.fees_term = self.env['op.fees.terms'].search([], limit=1)
++        if not self.fees_term:
++            self.fees_term = self.env['op.fees.terms'].create({
++                'name': 'Test Fees Term G',
++                'fees_terms': 'fixed_days',
++            })
++
++    def test_01_create_admission_explicit_gender(self):
++        """Test mapping when explicit gender is provided in create."""
++        partner = self.env['res.partner'].create({
++            'name': 'Test Partner Explicit',
++        })
++        
++        admission_male = self.env['op.admission'].create({
++            'name': 'Test Male',
++            'first_name': 'Test',
++            'last_name': 'Male',
++            'partner_id': partner.id,
++            'register_id': self.register.id,
++            'course_id': self.course.id,
++            'batch_id': self.batch.id,
++            'fees_term_id': self.fees_term.id,
++            'gender': 'male',
++        })
++        self.assertEqual(admission_male.gender, 'm')
++
++        admission_female = self.env['op.admission'].create({
++            'name': 'Test Female',
++            'first_name': 'Test',
++            'last_name': 'Female',
++            'partner_id': partner.id,
++            'register_id': self.register.id,
++            'course_id': self.course.id,
++            'batch_id': self.batch.id,
++            'fees_term_id': self.fees_term.id,
++            'gender': 'female',
++        })
++        self.assertEqual(admission_female.gender, 'f')
++
++    def test_02_create_admission_from_partner_gender(self):
++        """Test mapping from partner gender when no explicit gender or default 'o' is provided."""
++        partner_male = self.env['res.partner'].create({
++            'name': 'Partner Male',
++        })
++        # Set partner gender dynamically using getattr/setattr to avoid static check warnings
++        if hasattr(partner_male, 'gender_type'):
++            partner_male.write({'gender_type': 'male'})
++        else:
++            partner_male.write({'gender': 'm'})
++
++        partner_female = self.env['res.partner'].create({
++            'name': 'Partner Female',
++        })
++        if hasattr(partner_female, 'gender_type'):
++            partner_female.write({'gender_type': 'female'})
++        else:
++            partner_female.write({'gender': 'f'})
++
++        admission_male = self.env['op.admission'].create({
++            'name': 'Test Male Partner',
++            'first_name': 'Test',
++            'last_name': 'MalePartner',
++            'partner_id': partner_male.id,
++            'register_id': self.register.id,
++            'course_id': self.course.id,
++            'batch_id': self.batch.id,
++            'fees_term_id': self.fees_term.id,
++            # 'gender' is omitted, so default 'o' or falsy is used
++        })
++        self.assertEqual(admission_male.gender, 'm')
++
++        admission_female = self.env['op.admission'].create({
++            'name': 'Test Female Partner',
++            'first_name': 'Test',
++            'last_name': 'FemalePartner',
++            'partner_id': partner_female.id,
++            'register_id': self.register.id,
++            'course_id': self.course.id,
++            'batch_id': self.batch.id,
++            'fees_term_id': self.fees_term.id,
++            'gender': 'o',  # explicitly passing 'o' but partner is female
++        })
++        self.assertEqual(admission_female.gender, 'f')
++
++    def test_03_write_admission_gender(self):
++        """Test mapping during write operations on admission."""
++        partner_male = self.env['res.partner'].create({
++            'name': 'Partner Male W',
++        })
++        if hasattr(partner_male, 'gender_type'):
++            partner_male.write({'gender_type': 'male'})
++        else:
++            partner_male.write({'gender': 'm'})
++
++        partner_female = self.env['res.partner'].create({
++            'name': 'Partner Female W',
++        })
++        if hasattr(partner_female, 'gender_type'):
++            partner_female.write({'gender_type': 'female'})
++        else:
++            partner_female.write({'gender': 'f'})
++
++        admission = self.env['op.admission'].create({
++            'name': 'Test Write',
++            'first_name': 'Test',
++            'last_name': 'Write',
++            'partner_id': partner_male.id,
++            'register_id': self.register.id,
++            'course_id': self.course.id,
++            'batch_id': self.batch.id,
++            'fees_term_id': self.fees_term.id,
++        })
++        self.assertEqual(admission.gender, 'm')
++
++        # Test explicit write of gender
++        admission.write({'gender': 'female'})
++        self.assertEqual(admission.gender, 'f')
++
++        # Test write of partner_id changing the gender
++        admission.write({'partner_id': partner_female.id})
++        self.assertEqual(admission.gender, 'f')
++
++    def test_04_student_gender_mapping(self):
++        """Test mapping on op.student creation and modification."""
++        partner_male = self.env['res.partner'].create({
++            'name': 'Partner Student Male',
++        })
++        if hasattr(partner_male, 'gender_type'):
++            partner_male.write({'gender_type': 'male'})
++        else:
++            partner_male.write({'gender': 'm'})
++
++        student = self.env['op.student'].create({
++            'name': 'Test Student',
++            'first_name': 'Test',
++            'last_name': 'Student',
++            'partner_id': partner_male.id,
++            'birth_date': '2000-01-01',
++        })
++        self.assertEqual(student.gender, 'm')
++
++        student.write({'gender': 'female'})
++        self.assertEqual(student.gender, 'f')
+diff --git a/doc/micro-specs/2026-06-21-irg_admission_gender_fix.md b/doc/micro-specs/2026-06-21-irg_admission_gender_fix.md
+new file mode 100644
+index 00000000..c1df2b22
+--- /dev/null
++++ b/doc/micro-specs/2026-06-21-irg_admission_gender_fix.md
+@@ -0,0 +1,42 @@
++# IRG Admission Gender Fix
++
++## 1. Título corto
++Corrección de mapeo de género de contacto a admisión y estudiante.
++
++## 2. Resumen objetivo
++Crear el módulo `irg_admission_gender_fix` que hereda `op.admission` y `op.student` para corregir de forma centralizada la conversión de las claves de género (`gender` / `gender_type`) del contacto (`res.partner`) hacia los valores esperados por OpenEduCat (`'m'`, `'f'`, `'o'`).
++
++## 3. Motivo / justificación
++La presencia del módulo de Moodle redefine la selección de `gender` en `res.partner` con los valores `('male', 'female', 'not-sure')` y valor por defecto `'male'`. Al crear admisiones desde pedidos de venta (manualmente o mediante el asistente de confirmación), se propaga este valor al campo `gender` de `op.admission`/`op.student` que requiere estrictamente `('m', 'f', 'o')`. Dado que `'male'` o `'female'` son valores no contemplados en la selección de la admisión, Odoo aplica el fallback de la admisión que es `'o'` (Otro). La conversión debe ser automática en base al contacto.
++
++## 4. Alcance exacto
++- Crear el módulo `irg_admission_gender_fix` en `addons-extra/extrairg/`.
++- Interceptar `create` y `write` en `op.admission` y `op.student` para:
++  - Mapear `'male'` / `'Male'` -> `'m'`.
++  - Mapear `'female'` / `'Female'` -> `'f'`.
++  - Mapear `'other'` / `'not-sure'` -> `'o'`.
++  - Si el género provisto es `'o'` o es nulo/vacío, e existe un `partner_id` válido, recuperar el género del partner y mapearlo correspondientemente.
++  - En `write`, no sobreescribir un `'o'` explícito con el género del partner si no se está cambiando de partner ni de género.
++- Crear tests unitarios que verifiquen el mapeo de todas las variantes de género en la creación y edición.
++
++## 5. Diseño técnico
++- Módulo: `addons-extra/extrairg/irg_admission_gender_fix`.
++- Dependencias: `openeducat_admission`, `openeducat_core`.
++- Herencia de modelos:
++  - `_inherit = 'op.admission'`
++  - `_inherit = 'op.student'`
++- Lógica de mapeo en `create` (multi) y `write`.
++
++## 6. Dependencias
++- `openeducat_admission`
++- `openeducat_core`
++
++## 7. Backwards-compatibility / migración
++Ninguna migración requerida. Las admisiones y estudiantes existentes seguirán teniendo sus valores actuales. Las nuevas admisiones y estudiantes heredarán correctamente el género mapeado de su partner asociado.
++
++## 8. Casos de prueba / criterios de aceptación
++- Crear un registro de admisión pasando en valores `gender='male'` y comprobar que se guarda como `gender='m'`.
++- Crear un registro de admisión pasando en valores `gender='female'` y comprobar que se guarda como `gender='f'`.
++- Crear un registro de admisión asociando un partner con `gender='male'` y comprobar que se guarda como `gender='m'`.
++- Crear un registro de estudiante asociando un partner con `gender='female'` y comprobar que se guarda como `gender='f'`.
++- Modificar el partner de un registro y verificar que el género se actualiza.
