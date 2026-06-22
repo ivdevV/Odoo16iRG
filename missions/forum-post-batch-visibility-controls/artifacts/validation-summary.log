@@ -1,0 +1,26 @@
+python3 -m py_compile addons-extra/extrairg/irg_forum_batch_visibility/models/forum_post.py addons-extra/extrairg/irg_forum_notice_popup/controllers/main.py addons-extra/extrairg/irg_forum_email_notify/models/forum_post.py
+Result: pass
+
+XML parse with lxml:
+- addons-extra/extrairg/irg_forum_batch_visibility/views/forum_batch_visibility_views.xml: pass
+- addons-extra/extrairg/irg_forum_batch_visibility/security/forum_batch_visibility_rules.xml: pass
+
+docker compose -f docker-compose.local.yml ps
+Result: local compose services running: odoo16irg_local, pgodoo16irg_local, redisodoo16irg_local.
+
+docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_forum_batch_visibility,irg_forum_notice_popup,irg_forum_email_notify --stop-after-init
+Result: pass; registry loaded, modules loaded, no ERROR/Traceback/ParseError/ValidationError in relevant update log search.
+Relevant log confirmations:
+- Loading module irg_forum_batch_visibility
+- loading irg_forum_batch_visibility/security/forum_batch_visibility_rules.xml
+- loading irg_forum_batch_visibility/views/forum_batch_visibility_views.xml
+
+Odoo shell functional assertions on test_irg_db with rollback:
+- Allowed batch can see post: pass
+- Excluded batch cannot see post: pass
+- Non-allowed batch cannot see post: pass
+- Empty post restrictions inherit forum visibility: pass
+
+Notes:
+- Odoo emitted pre-existing warnings from unrelated modules/fields during registry load.
+- The functional shell test ended with env.cr.rollback(), so temporary test writes were not persisted.

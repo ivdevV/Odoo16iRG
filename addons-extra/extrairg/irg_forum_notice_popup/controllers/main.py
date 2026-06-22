@@ -112,8 +112,15 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
                 post_domain += ['|', ('visibility_batch_ids', '=', False), ('visibility_batch_ids', 'in', list(user_batch_ids))]
             else:
                 post_domain += [('visibility_batch_ids', '=', False)]
+        if 'excluded_visibility_batch_ids' in post_model._fields:
+            if user_batch_ids:
+                post_domain += ['|', ('excluded_visibility_batch_ids', '=', False), ('excluded_visibility_batch_ids', 'not in', list(user_batch_ids))]
+            else:
+                post_domain += [('excluded_visibility_batch_ids', '=', False)]
 
         posts = post_model.search(post_domain, order='create_date desc', limit=40)
+        if hasattr(posts, '_filter_visible_for_user'):
+            posts = posts._filter_visible_for_user(user, course=course)
         notice_post = next((post for post in posts if self._is_notice_post(post)), False)
         if not notice_post and posts:
             notice_post = posts[0]
@@ -156,6 +163,8 @@ class ForumNoticePopupController(DashboardPortalCampusForum):
             post_domain.append(('active', '=', True))
 
         posts = post_model.search(post_domain, order='create_date desc', limit=40)
+        if hasattr(posts, '_filter_visible_for_user'):
+            posts = posts._filter_visible_for_user(user)
         if not posts:
             return False, False
 

@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "task": "forum-post-batch-visibility-controls",
+  "checks": [
+    {
+      "name": "python_compile",
+      "result": "pass",
+      "detail": "py_compile passed for modified Python files in irg_forum_batch_visibility, irg_forum_notice_popup and irg_forum_email_notify."
+    },
+    {
+      "name": "xml_parse",
+      "result": "pass",
+      "detail": "lxml parsed modified forum_batch_visibility views and security XML successfully."
+    },
+    {
+      "name": "odoo_module_update",
+      "result": "pass",
+      "detail": "docker-compose.local.yml environment used; Odoo updated irg_forum_batch_visibility, irg_forum_notice_popup and irg_forum_email_notify on test_irg_db with registry loaded successfully."
+    },
+    {
+      "name": "functional_assertions",
+      "result": "pass",
+      "detail": "Odoo shell assertions passed for allowed batch, excluded batch precedence, non-allowed batch denial and empty post restriction inheritance; transaction rolled back."
+    },
+    {
+      "name": "documentation",
+      "result": "pass",
+      "detail": "Module docs and knowledge base entry updated."
+    }
+  ],
+  "evidence": [
+    "missions/forum-post-batch-visibility-controls/artifacts/validation-summary.log",
+    "missions/forum-post-batch-visibility-controls/diff.patch"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

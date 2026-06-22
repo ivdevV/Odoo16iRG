@@ -1,0 +1,6 @@
+2026-06-18 - Plan creado antes de modificar codigo. Tier standard por cambios acotados en tres modulos de foro.
+2026-06-18 - Implementado campo negativo en forum.post, helpers de visibilidad y regla ir.rule de lectura de posts.
+2026-06-18 - Anhadida configuracion de lotes permitidos/excluidos en la ficha backend de forum.post.
+2026-06-18 - Ajustados popup y email para filtrar publicaciones por visibilidad granular de lotes.
+2026-06-18 - Validacion ejecutada: py_compile, parse XML, actualizacion Odoo en test_irg_db y assertions funcionales con rollback.
+2026-06-18 - Documentacion actualizada en doc/modules/extrairg y knowledge base.

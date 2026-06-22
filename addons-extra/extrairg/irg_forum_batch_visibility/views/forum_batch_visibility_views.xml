@@ -44,7 +44,20 @@
         <field name="inherit_id" ref="website_forum.view_forum_post_list"/>
         <field name="arch" type="xml">
             <field name="forum_id" position="after">
-                <field name="visibility_batch_ids" widget="many2many_tags" optional="hide"/>
+                <field name="visibility_batch_ids" string="Lotes que pueden visualizar" widget="many2many_tags" optional="show"/>
+                <field name="excluded_visibility_batch_ids" string="Lotes que no pueden visualizar" widget="many2many_tags" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_forum_post_form_batch_visibility" model="ir.ui.view">
+        <field name="name">forum.post.form.batch.visibility</field>
+        <field name="model">forum.post</field>
+        <field name="inherit_id" ref="website_forum.view_forum_post_form"/>
+        <field name="arch" type="xml">
+            <field name="forum_id" position="after">
+                <field name="visibility_batch_ids" string="Lotes que pueden visualizar" widget="many2many_tags"/>
+                <field name="excluded_visibility_batch_ids" string="Lotes que no pueden visualizar" widget="many2many_tags"/>
             </field>
         </field>
     </record>
