@@ -13,6 +13,9 @@
     'depends': [
         'openeducat_admission',
         'openeducat_core',
+        'isep_openeducat_sale',
+        'isep_admission_from_student_field',
+        'odoo_moodle_connector',
     ],
     'data': [],
     'demo': [],

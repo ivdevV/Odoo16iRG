@@ -1,0 +1,13 @@
+diff --git a/addons-extra/extrairg/irg_forum_batch_visibility/models/forum_forum.py b/addons-extra/extrairg/irg_forum_batch_visibility/models/forum_forum.py
+index 3bfaebf1..ec96b467 100644
+--- a/addons-extra/extrairg/irg_forum_batch_visibility/models/forum_forum.py
++++ b/addons-extra/extrairg/irg_forum_batch_visibility/models/forum_forum.py
+@@ -63,7 +63,7 @@ class ForumForum(models.Model):
+             ('course_id', '=', self.irg_course_id.id),
+             ('start_date', '>=', moodle_cutoff),
+             ('start_date', '<=', today),
+-            ('state', '=', 'active')  # Solo lotes activos
++            ('active', '=', True)  # Solo lotes activos
+         ])
+ 
+         # Autoseleccionar (marcar con tilde) usando comando 6

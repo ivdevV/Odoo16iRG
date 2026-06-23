@@ -63,7 +63,7 @@ class ForumForum(models.Model):
             ('course_id', '=', self.irg_course_id.id),
             ('start_date', '>=', moodle_cutoff),
             ('start_date', '<=', today),
-            ('state', '=', 'active')  # Solo lotes activos
+            ('active', '=', True)  # Solo lotes activos
         ])
 
         # Autoseleccionar (marcar con tilde) usando comando 6

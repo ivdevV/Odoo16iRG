@@ -82,7 +82,6 @@ class TestGenderMapping(TransactionCase):
         partner_male = self.env['res.partner'].create({
             'name': 'Partner Male',
         })
-        # Set partner gender dynamically using getattr/setattr to avoid static check warnings
         if hasattr(partner_male, 'gender_type'):
             partner_male.write({'gender_type': 'male'})
         else:
@@ -105,7 +104,6 @@ class TestGenderMapping(TransactionCase):
             'course_id': self.course.id,
             'batch_id': self.batch.id,
             'fees_term_id': self.fees_term.id,
-            # 'gender' is omitted, so default 'o' or falsy is used
         })
         self.assertEqual(admission_male.gender, 'm')
 
@@ -118,7 +116,7 @@ class TestGenderMapping(TransactionCase):
             'course_id': self.course.id,
             'batch_id': self.batch.id,
             'fees_term_id': self.fees_term.id,
-            'gender': 'o',  # explicitly passing 'o' but partner is female
+            'gender': 'o',
         })
         self.assertEqual(admission_female.gender, 'f')
 
@@ -152,11 +150,9 @@ class TestGenderMapping(TransactionCase):
         })
         self.assertEqual(admission.gender, 'm')
 
-        # Test explicit write of gender
         admission.write({'gender': 'female'})
         self.assertEqual(admission.gender, 'f')
 
-        # Test write of partner_id changing the gender
         admission.write({'partner_id': partner_female.id})
         self.assertEqual(admission.gender, 'f')
 
@@ -181,3 +177,101 @@ class TestGenderMapping(TransactionCase):
 
         student.write({'gender': 'female'})
         self.assertEqual(student.gender, 'f')
+
+    def test_05_intelligent_gender_guessing(self):
+        """Test intelligent gender guessing from partner's name and title."""
+        # 1. Test by title
+        title_female = self.env['res.partner.title'].create({'name': 'Sra.', 'shortcut': 'Sra.'})
+        partner_title_f = self.env['res.partner'].create({
+            'name': 'Guadalupe Ortiz',
+            'title': title_female.id,
+        })
+        admission_title_f = self.env['op.admission'].create({
+            'name': 'Guadalupe Ortiz',
+            'first_name': 'Guadalupe',
+            'last_name': 'Ortiz',
+            'partner_id': partner_title_f.id,
+            'register_id': self.register.id,
+            'course_id': self.course.id,
+            'batch_id': self.batch.id,
+            'fees_term_id': self.fees_term.id,
+        })
+        self.assertEqual(admission_title_f.gender, 'f')
+
+        # 2. Test by exact dictionary match
+        partner_name_f = self.env['res.partner'].create({
+            'name': 'Laura Gomez',
+        })
+        admission_name_f = self.env['op.admission'].create({
+            'name': 'Laura Gomez',
+            'first_name': 'Laura',
+            'last_name': 'Gomez',
+            'partner_id': partner_name_f.id,
+            'register_id': self.register.id,
+            'course_id': self.course.id,
+            'batch_id': self.batch.id,
+            'fees_term_id': self.fees_term.id,
+        })
+        self.assertEqual(admission_name_f.gender, 'f')
+
+        partner_name_m = self.env['res.partner'].create({
+            'name': 'Juan Pérez',
+        })
+        admission_name_m = self.env['op.admission'].create({
+            'name': 'Juan Pérez',
+            'first_name': 'Juan',
+            'last_name': 'Pérez',
+            'partner_id': partner_name_m.id,
+            'register_id': self.register.id,
+            'course_id': self.course.id,
+            'batch_id': self.batch.id,
+            'fees_term_id': self.fees_term.id,
+        })
+        self.assertEqual(admission_name_m.gender, 'm')
+
+        # 3. Test by ending heuristics
+        partner_heuristic_f = self.env['res.partner'].create({
+            'name': 'Carla Ruiz',
+        })
+        admission_heuristic_f = self.env['op.admission'].create({
+            'name': 'Carla Ruiz',
+            'first_name': 'Carla',
+            'last_name': 'Ruiz',
+            'partner_id': partner_heuristic_f.id,
+            'register_id': self.register.id,
+            'course_id': self.course.id,
+            'batch_id': self.batch.id,
+            'fees_term_id': self.fees_term.id,
+        })
+        self.assertEqual(admission_heuristic_f.gender, 'f')
+
+        partner_heuristic_m = self.env['res.partner'].create({
+            'name': 'Roberto Diaz',
+        })
+        admission_heuristic_m = self.env['op.admission'].create({
+            'name': 'Roberto Diaz',
+            'first_name': 'Roberto',
+            'last_name': 'Diaz',
+            'partner_id': partner_heuristic_m.id,
+            'register_id': self.register.id,
+            'course_id': self.course.id,
+            'batch_id': self.batch.id,
+            'fees_term_id': self.fees_term.id,
+        })
+        self.assertEqual(admission_heuristic_m.gender, 'm')
+
+        # 4. Test fallback
+        partner_other = self.env['res.partner'].create({
+            'name': 'Xyz Unknown',
+        })
+        admission_other = self.env['op.admission'].create({
+            'name': 'Xyz Unknown',
+            'first_name': 'Xyz',
+            'last_name': 'Unknown',
+            'partner_id': partner_other.id,
+            'register_id': self.register.id,
+            'course_id': self.course.id,
+            'batch_id': self.batch.id,
+            'fees_term_id': self.fees_term.id,
+        })
+        self.assertEqual(admission_other.gender, 'o')

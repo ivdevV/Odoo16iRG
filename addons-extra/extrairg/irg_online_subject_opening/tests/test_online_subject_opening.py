@@ -159,3 +159,38 @@ class TestOnlineSubjectOpening(TransactionCase):
         # The first subject 'IRG-OO-A' should be visible
         self.assertEqual(len(visible_subjects), 1)
         self.assertEqual(visible_subjects.code, 'IRG-OO-A')
+
+    def test_cron_auto_enroll_student_with_onl_batch_having_dates(self):
+        # Create a batch with ONL in code
+        batch = self._create_batch('MOPCONL_WITH_DATES')
+        today = date.today()
+        # Setup dates on subjects inside the batch
+        for s_line in batch.subject_to_batch_ids:
+            s_line.write({
+                'date_from': today,
+                'date_to': today,
+            })
+        
+        # Link channel to subject
+        channel_a = self.env['slide.channel'].create({
+            'name': 'Channel A',
+        })
+        self.subject_a.write({'slide_channel_id': channel_a.id})
+        
+        # Create admission
+        admission = self._create_admission(batch, admission_date=today)
+        
+        # Initially no memberships
+        memberships = self.env['slide.channel.partner'].search([('admission_id', '=', admission.id)])
+        self.assertFalse(memberships)
+        
+        # Run cron
+        self.env['op.admission'].cron_auto_enroll_student()
+        
+        # Verify that memberships are created for the student in subject_a's channel
+        memberships = self.env['slide.channel.partner'].search([
+            ('admission_id', '=', admission.id),
+            ('channel_id', '=', channel_a.id),
+        ])
+        self.assertTrue(memberships)
+        self.assertTrue(memberships.active)

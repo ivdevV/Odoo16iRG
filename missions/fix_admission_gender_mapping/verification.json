@@ -5,12 +5,12 @@
     {
       "name": "unit_tests",
       "result": "pass",
-      "detail": "4 passed, 0 failed, 0 errors, 0 skipped"
+      "detail": "5 passed, 0 failed, 0 errors, 0 skipped"
     },
     {
       "name": "build",
       "result": "pass",
-      "detail": "Module installed and registry loaded successfully under Odoo 16."
+      "detail": "Module loaded and registry successfully built under Odoo 16."
     }
   ],
   "evidence": [

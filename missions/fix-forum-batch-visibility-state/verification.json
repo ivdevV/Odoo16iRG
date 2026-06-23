@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "task": "fix-forum-batch-visibility-state",
+  "checks": [
+    { "name": "syntax_check", "result": "pass", "detail": "AST syntax check on modified file passed without errors." },
+    { "name": "manual_validation_odoo_db", "result": "pass", "detail": "Search execution completed with success in odoo_db via Odoo shell." },
+    { "name": "manual_validation_local_db", "result": "pass", "detail": "Search execution completed with success in local_db via Odoo shell." }
+  ],
+  "evidence": [
+    "missions/fix-forum-batch-visibility-state/diff.patch",
+    "missions/fix-forum-batch-visibility-state/execution.log"
+  ],
+  "model_tier_used": "trivial",
+  "escalations": 0
+}
