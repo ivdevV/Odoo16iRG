@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- ========== Inyección en el Layout Principal de eLearning ========== -->
-    <template id="n8n_chat_bubble_layout" inherit_id="website_slides.layout" name="iRG n8n Chat - Layout">
-        <xpath expr="//div[@id='wrap']" position="after">
+    <template id="n8n_chat_bubble_layout" inherit_id="website.layout" name="iRG n8n Chat - Layout">
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
             <t t-if="channel">
                 <t t-set="n8n_config" t-value="channel.irg_get_n8n_chat_config()"/>
                 <t t-if="n8n_config.get('enabled')">

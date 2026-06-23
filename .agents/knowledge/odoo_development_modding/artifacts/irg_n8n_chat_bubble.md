@@ -17,10 +17,14 @@
   - `subjectName` (Nombre de la asignatura)
   Esto permite que el agente inteligente de n8n reciba en el webhook de chat toda la información del estudiante para responder de forma personalizada.
 
+* **Evitación de Errores de External ID en Layouts (Odoo 16)**:
+  Al inyectar scripts, estilos o componentes globales (como widgets flotantes) en vistas específicas de un submódulo (e.g. `website_slides`), heredar directamente de sus layouts específicos (como `website_slides.layout`) puede arrojar errores de External ID no encontrado debido al orden de carga de los módulos y a cómo se resuelven en determinados controladores del portal.
+  La solución más robusta y compatible es heredar del layout base del portal web (`website.layout`) y aplicar una cláusula condicional de verificación (`<t t-if="channel">`) para encapsular el pintado de los elementos. Esto garantiza que la burbuja de chat o el componente solo se inyecte en el DOM cuando estemos navegando en el contexto del eLearning/slides sin generar errores de dependencias de plantillas inexistentes en el resto del portal.
+
 ## Estructura del Módulo
 El módulo se encuentra en: `addons-extra/extrairg/irg_n8n_chat_bubble`
 - `models/op_course.py`: Campos de configuración en `op.course`.
 - `models/slide_channel.py`: Extracción de la configuración y de los datos del estudiante conectado.
 - `views/op_course_views.xml`: Pestaña de configuración en formulario del curso en backend.
-- `views/website_slides_templates.xml`: Hereda de `website_slides.layout` y `website_slides.slide_fullscreen` para pintar el contenedor de datos.
+- `views/website_slides_templates.xml`: Hereda de `website.layout` (con condicional de presencia de `channel`) y `website_slides.slide_fullscreen` para pintar el contenedor de datos de configuración de forma segura.
 - `static/src/js/n8n_chat_bubble.js`: Inicializador lazy-load del widget flotante de chat de n8n.

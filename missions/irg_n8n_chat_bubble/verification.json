@@ -10,7 +10,7 @@
     {
       "name": "xml_structure_check",
       "result": "pass",
-      "detail": "Las vistas XML heredadas de op.course y website_slides siguen el estándar de Odoo 16 con xpaths válidos."
+      "detail": "Los archivos XML (op_course_views.xml y website_slides_templates.xml) son välidos. Se corrigió el bug de herencia en website_slides_templates.xml cambiando el External ID erróneo website_slides.layout a website.layout con filtros de canal condicionales."
     },
     {
       "name": "javascript_lazy_load_check",
@@ -18,7 +18,10 @@
       "detail": "El script JS de inicialización maneja correctamente la inyección lazy-load de n8n chat para conservar recursos del frontend."
     }
   ],
-  "evidence": [],
-  "model_tier_used": "standard",
-  "escalations": 0
+  "evidence": [
+    "py_compile output: success",
+    "xml.etree.ElementTree parse: success"
+  ],
+  "model_tier_used": "complex",
+  "escalations": 1
 }

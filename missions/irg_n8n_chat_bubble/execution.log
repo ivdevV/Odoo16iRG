@@ -11,3 +11,7 @@
 * **2026-06-23T12:53:00+02:00:** Validación estática de sintaxis de Python completada de manera exitosa.
 * **2026-06-23T12:54:00+02:00:** Emisión del contrato de verificación con estado `passed` en `verification.json`.
 * **2026-06-23T12:55:00+02:00:** Generación de la documentación de cierre en `walkthrough.md` y actualización de la Knowledge Base del proyecto. Misión completada.
+
+* **2026-06-23T13:01:00+02:00:** FALLO DE INSTALACIÓN detectado en el servidor Odoo. Error: ValueError: External ID not found in the system: website_slides.layout.
+* **2026-06-23T13:01:40+02:00:** Escalando la tarea a Tier `complex` de forma reactiva (Reintento 1).
+* **2026-06-23T13:02:00+02:00:** Delegando la corrección de la vista al Subagente Codificador.
