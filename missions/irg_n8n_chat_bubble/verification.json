@@ -10,7 +10,7 @@
     {
       "name": "xml_structure_check",
       "result": "pass",
-      "detail": "Los archivos XML (op_course_views.xml y website_slides_templates.xml) son välidos. Se corrigió el bug de herencia en website_slides_templates.xml cambiando el External ID erróneo website_slides.layout a website.layout con filtros de canal condicionales."
+      "detail": "Se corrigieron los condicionales t-if de las dos plantillas en website_slides_templates.xml para usar de forma segura 'hasattr(channel, ...)' evitando fallos AttributeError si la variable channel es un booleano en lugar del recordset esperado. La estructura del XML es perfectamente válida."
     },
     {
       "name": "javascript_lazy_load_check",
@@ -20,8 +20,9 @@
   ],
   "evidence": [
     "py_compile output: success",
-    "xml.etree.ElementTree parse: success"
+    "xml.etree.ElementTree parse: success",
+    "git diff verification: success"
   ],
   "model_tier_used": "complex",
-  "escalations": 1
+  "escalations": 2
 }

@@ -3,7 +3,7 @@
     <!-- ========== Inyección en el Layout Principal de eLearning ========== -->
     <template id="n8n_chat_bubble_layout" inherit_id="website.layout" name="iRG n8n Chat - Layout">
         <xpath expr="//div[@id='wrapwrap']" position="inside">
-            <t t-if="channel">
+            <t t-if="channel and hasattr(channel, 'irg_get_n8n_chat_config')">
                 <t t-set="n8n_config" t-value="channel.irg_get_n8n_chat_config()"/>
                 <t t-if="n8n_config.get('enabled')">
                     <!-- Contenedor oculto con los datos para la inicialización en la vista normal -->
@@ -23,7 +23,7 @@
     <!-- ========== Inyección en la Vista de Pantalla Completa (Fullscreen Player) ========== -->
     <template id="n8n_chat_bubble_fullscreen" inherit_id="website_slides.slide_fullscreen" name="iRG n8n Chat - Fullscreen">
         <xpath expr="//div[hasclass('o_wslides_fs_container')]" position="inside">
-            <t t-if="channel">
+            <t t-if="channel and hasattr(channel, 'irg_get_n8n_chat_config')">
                 <t t-set="n8n_config" t-value="channel.irg_get_n8n_chat_config()"/>
                 <t t-if="n8n_config.get('enabled')">
                     <!-- Contenedor oculto con los datos para la inicialización en el modo pantalla completa -->

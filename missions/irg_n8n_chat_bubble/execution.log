@@ -15,3 +15,8 @@
 * **2026-06-23T13:01:00+02:00:** FALLO DE INSTALACIÓN detectado en el servidor Odoo. Error: ValueError: External ID not found in the system: website_slides.layout.
 * **2026-06-23T13:01:40+02:00:** Escalando la tarea a Tier `complex` de forma reactiva (Reintento 1).
 * **2026-06-23T13:02:00+02:00:** Delegando la corrección de la vista al Subagente Codificador.
+
+* **2026-06-23T13:12:00+02:00:** FALLO DE RENDERIZADO (500) detectado en la página /campus. Error: AttributeError: 'bool' object has no attribute 'irg_get_n8n_chat_config'.
+* **2026-06-23T13:12:40+02:00:** Manteniendo Tier `complex` de forma reactiva (Reintento 2).
+* **2026-06-23T13:13:00+02:00:** Delegando la corrección definitiva (introspección hasattr) al Subagente Codificador.
+* **2026-06-23T13:13:20+02:00:** El Subagente Codificador aplica la corrección en `website_slides_templates.xml` usando `hasattr(channel, 'irg_get_n8n_chat_config')`. Se valida la sintaxis XML y se actualizan `diff.patch` y `verification.json` con estado `passed`.

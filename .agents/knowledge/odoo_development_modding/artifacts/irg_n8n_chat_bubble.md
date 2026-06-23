@@ -17,9 +17,9 @@
   - `subjectName` (Nombre de la asignatura)
   Esto permite que el agente inteligente de n8n reciba en el webhook de chat toda la información del estudiante para responder de forma personalizada.
 
-* **Evitación de Errores de External ID en Layouts (Odoo 16)**:
-  Al inyectar scripts, estilos o componentes globales (como widgets flotantes) en vistas específicas de un submódulo (e.g. `website_slides`), heredar directamente de sus layouts específicos (como `website_slides.layout`) puede arrojar errores de External ID no encontrado debido al orden de carga de los módulos y a cómo se resuelven en determinados controladores del portal.
-  La solución más robusta y compatible es heredar del layout base del portal web (`website.layout`) y aplicar una cláusula condicional de verificación (`<t t-if="channel">`) para encapsular el pintado de los elementos. Esto garantiza que la burbuja de chat o el componente solo se inyecte en el DOM cuando estemos navegando en el contexto del eLearning/slides sin generar errores de dependencias de plantillas inexistentes en el resto del portal.
+* **Evitación de Errores de External ID y Variables Booleanas en Layouts (Odoo 16)**:
+  Al inyectar scripts, estilos o componentes globales (como widgets flotantes) en vistas específicas de un submódulo (e.g. `website_slides`), heredar directamente de sus layouts específicos (como `website_slides.layout`) puede arrojar errores de External ID no encontrado debido al orden de carga de los módulos.
+  La solución es heredar del layout base del portal web (`website.layout`) y aplicar una cláusula condicional con introspección segura: `<t t-if="channel and hasattr(channel, 'irg_get_n8n_chat_config')">` para encapsular el pintado de los elementos. Esto previene un `AttributeError: 'bool' object has no attribute 'irg_get_n8n_chat_config'` cuando la variable `channel` está presente en el contexto pero se evalúa como un booleano (`False`), garantizando que la burbuja de chat o el componente solo se renderice de forma segura si la variable es un recordset real con dicho método.
 
 ## Estructura del Módulo
 El módulo se encuentra en: `addons-extra/extrairg/irg_n8n_chat_bubble`
