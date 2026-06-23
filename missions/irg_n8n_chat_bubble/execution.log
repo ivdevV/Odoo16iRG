@@ -26,3 +26,12 @@
 * **2026-06-23T13:22:00+02:00:** Delegando la corrección definitiva (getattr seguro) al Subagente Codificador.
 * **2026-06-23T13:22:30+02:00:** El Subagente Codificador aplica la corrección en `website_slides_templates.xml` usando `getattr(channel, 'irg_get_n8n_chat_config', None)`. Se actualiza el diff de la misión y el artículo en la Knowledge Base. Se valida la estructura XML.
 * **2026-06-23T13:22:51+02:00:** El Subagente Testeador ejecuta la fase de validación en el entorno local. Se verifica la compilación Python sin fallos, se identifica la base de datos activa `odoo16irg_local` desde los logs del contenedor, y se realiza la actualización exitosa del módulo `irg_n8n_chat_bubble` con `--stop-after-init` sin reportar errores. Se actualiza el archivo `verification.json` como `passed`.
+
+* **2026-06-23T13:43:00+02:00:** FALLO PERSISTENTE (500) en /campus del servidor. Se diagnostica que la base de datos Base16 mantiene el XML huérfano y no carga el Python porque el módulo está en estado "No instalado" (por lo que el comando -u no realiza acción).
+* **2026-06-23T13:43:40+02:00:** Manteniendo Tier `complex` de forma reactiva (Reintento 4).
+* **2026-06-23T13:44:00+02:00:** Delegando la adición de la dependencia 'website' en el manifest al Subagente Codificador.
+* **2026-06-23T13:44:15+02:00:** El Subagente Codificador agrega 'website' a la lista de dependencias ('depends') en `__manifest__.py`.
+* **2026-06-23T13:44:30+02:00:** El Subagente Testeador ejecuta la verificación de sintaxis de Python de forma exitosa.
+* **2026-06-23T13:44:50+02:00:** Se ejecuta la actualización local del módulo `irg_n8n_chat_bubble` en el contenedor Docker, finalizando con éxito (Registry loaded).
+* **2026-06-23T13:45:10+02:00:** Se actualizan `diff.patch` y `verification.json` con estado `passed`.
+

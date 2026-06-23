@@ -7,6 +7,7 @@
     'author': 'iRG',
     'license': 'LGPL-3',
     'depends': [
+        'website',
         'website_slides',
         'openeducat_core',
         'irg_course_convocatorias_v2',
