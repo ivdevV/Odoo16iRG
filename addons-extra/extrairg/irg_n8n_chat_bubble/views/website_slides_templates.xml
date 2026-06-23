@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========== Inyección en el Layout Principal de eLearning ========== -->
+    <template id="n8n_chat_bubble_layout" inherit_id="website_slides.layout" name="iRG n8n Chat - Layout">
+        <xpath expr="//div[@id='wrap']" position="after">
+            <t t-if="channel">
+                <t t-set="n8n_config" t-value="channel.irg_get_n8n_chat_config()"/>
+                <t t-if="n8n_config.get('enabled')">
+                    <!-- Contenedor oculto con los datos para la inicialización en la vista normal -->
+                    <div id="irg_n8n_chat_bubble_config" style="display: none;"
+                         t-att-data-webhook-url="n8n_config['webhook_url']"
+                         t-att-data-title="n8n_config['title']"
+                         t-att-data-welcome-msg="n8n_config['welcome_msg']"
+                         t-att-data-student-name="n8n_config['student_name']"
+                         t-att-data-student-email="n8n_config['student_email']"
+                         t-att-data-course-name="n8n_config['course_name']"
+                         t-att-data-subject-name="n8n_config['subject_name']"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ========== Inyección en la Vista de Pantalla Completa (Fullscreen Player) ========== -->
+    <template id="n8n_chat_bubble_fullscreen" inherit_id="website_slides.slide_fullscreen" name="iRG n8n Chat - Fullscreen">
+        <xpath expr="//div[hasclass('o_wslides_fs_container')]" position="inside">
+            <t t-if="channel">
+                <t t-set="n8n_config" t-value="channel.irg_get_n8n_chat_config()"/>
+                <t t-if="n8n_config.get('enabled')">
+                    <!-- Contenedor oculto con los datos para la inicialización en el modo pantalla completa -->
+                    <div id="irg_n8n_chat_bubble_config" style="display: none;"
+                         t-att-data-webhook-url="n8n_config['webhook_url']"
+                         t-att-data-title="n8n_config['title']"
+                         t-att-data-welcome-msg="n8n_config['welcome_msg']"
+                         t-att-data-student-name="n8n_config['student_name']"
+                         t-att-data-student-email="n8n_config['student_email']"
+                         t-att-data-course-name="n8n_config['course_name']"
+                         t-att-data-subject-name="n8n_config['subject_name']"/>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>

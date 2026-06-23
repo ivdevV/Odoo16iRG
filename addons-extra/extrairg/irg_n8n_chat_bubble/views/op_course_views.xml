@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========== Vista Formulario op.course - Pestaña Chat n8n ========== -->
+    <record id="view_op_course_form_n8n_chat" model="ir.ui.view">
+        <field name="name">op.course.form.n8n.chat.irg</field>
+        <field name="model">op.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_course_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Asistente de Chat n8n" name="irg_n8n_chat_config">
+                    <group string="Configuración del Agente de Chat">
+                        <field name="irg_n8n_chat_enabled"/>
+                    </group>
+                    <group attrs="{'invisible': [('irg_n8n_chat_enabled', '=', False)]}" string="Parámetros de n8n e Interfaz">
+                        <field name="irg_n8n_chat_webhook_url" attrs="{'required': [('irg_n8n_chat_enabled', '=', True)]}"/>
+                        <field name="irg_n8n_chat_title"/>
+                        <field name="irg_n8n_chat_welcome_msg"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,311 @@
+diff --git a/.agents/knowledge/odoo_development_modding/artifacts/irg_n8n_chat_bubble.md b/.agents/knowledge/odoo_development_modding/artifacts/irg_n8n_chat_bubble.md
+new file mode 100644
+index 00000000..0e407690
+--- /dev/null
++++ b/.agents/knowledge/odoo_development_modding/artifacts/irg_n8n_chat_bubble.md
+@@ -0,0 +1,26 @@
++# Módulo Odoo 16: `irg_n8n_chat_bubble` (Configuración de Chat n8n)
++
++## Aprendizaje y Convenciones de Diseño
++
++* **Relación Curso - eLearning**:
++  En la instancia actual, las asignaturas se gestionan como `slide.channel` (eLearning) y se asocian a cursos académicos `op.course` mediante el conector de convocatorias (`irg_course_convocatorias_v2`).
++  Para asociar configuraciones a nivel de curso y repercutirlas en las asignaturas de dicho curso, se utiliza el método `_irg_get_related_courses()` heredado de `slide.channel` para resolver la relación.
++  
++* **Lazy Loading de Scripts Externos**:
++  Para no penalizar el rendimiento del portal (SEO y Core Web Vitals) cargando librerías JavaScript pesadas en todas partes, se inyecta un tag `#irg_n8n_chat_bubble_config` oculto desde el servidor mediante QWeb. El Javascript del módulo frontend (`web.assets_frontend`) comprueba si el tag existe y, solo en ese caso, descarga de manera asíncrona mediante un `import()` dinámico el bundle ES y el CSS del widget de chat desde jsdelivr.
++  
++* **Paso de Metadatos Contextuales**:
++  n8n permite enviar metadatos (`metadata`) en el widget de chat. Al inicializar el chat, se inyectan dinámicamente las variables correspondientes a:
++  - `studentName` (Nombre del estudiante actual logueado)
++  - `studentEmail` (Email del estudiante)
++  - `courseName` (Nombre del curso académico)
++  - `subjectName` (Nombre de la asignatura)
++  Esto permite que el agente inteligente de n8n reciba en el webhook de chat toda la información del estudiante para responder de forma personalizada.
++
++## Estructura del Módulo
++El módulo se encuentra en: `addons-extra/extrairg/irg_n8n_chat_bubble`
++- `models/op_course.py`: Campos de configuración en `op.course`.
++- `models/slide_channel.py`: Extracción de la configuración y de los datos del estudiante conectado.
++- `views/op_course_views.xml`: Pestaña de configuración en formulario del curso en backend.
++- `views/website_slides_templates.xml`: Hereda de `website_slides.layout` y `website_slides.slide_fullscreen` para pintar el contenedor de datos.
++- `static/src/js/n8n_chat_bubble.js`: Inicializador lazy-load del widget flotante de chat de n8n.
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/__init__.py b/addons-extra/extrairg/irg_n8n_chat_bubble/__init__.py
+new file mode 100644
+index 00000000..a0fdc10f
+--- /dev/null
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import models
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/__manifest__.py b/addons-extra/extrairg/irg_n8n_chat_bubble/__manifest__.py
+new file mode 100644
+index 00000000..de79c6a9
+--- /dev/null
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/__manifest__.py
+@@ -0,0 +1,26 @@
++# -*- coding: utf-8 -*-
++{
++    'name': 'iRG n8n Chat Bubble',
++    'version': '16.0.1.0.0',
++    'category': 'Website/eLearning',
++    'summary': 'Burbuja de chat inteligente de n8n por curso académico en el campus virtual',
++    'author': 'iRG',
++    'license': 'LGPL-3',
++    'depends': [
++        'website_slides',
++        'openeducat_core',
++        'irg_course_convocatorias_v2',
++    ],
++    'data': [
++        'views/op_course_views.xml',
++        'views/website_slides_templates.xml',
++    ],
++    'assets': {
++        'web.assets_frontend': [
++            'irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js',
++        ],
++    },
++    'installable': True,
++    'application': False,
++    'auto_install': False,
++}
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/models/__init__.py b/addons-extra/extrairg/irg_n8n_chat_bubble/models/__init__.py
+new file mode 100644
+index 00000000..072a94de
+--- /dev/null
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/models/__init__.py
+@@ -0,0 +1,3 @@
++# -*- coding: utf-8 -*-
++from . import op_course
++from . import slide_channel
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/models/op_course.py b/addons-extra/extrairg/irg_n8n_chat_bubble/models/op_course.py
+new file mode 100644
+index 00000000..0e85f941
+--- /dev/null
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/models/op_course.py
+@@ -0,0 +1,26 @@
++# -*- coding: utf-8 -*-
++from odoo import fields, models
++
++
++class OpCourse(models.Model):
++    _inherit = 'op.course'
++
++    irg_n8n_chat_enabled = fields.Boolean(
++        string='Chat n8n Activo',
++        default=False,
++        help='Habilita una burbuja de chat para este curso en el campus virtual.'
++    )
++    irg_n8n_chat_webhook_url = fields.Char(
++        string='URL Webhook Chat n8n',
++        help='URL del webhook de chat de n8n específico para este curso.'
++    )
++    irg_n8n_chat_title = fields.Char(
++        string='Título del Chat',
++        default='Soporte Académico',
++        help='Título que se mostrará en la cabecera de la burbuja de chat.'
++    )
++    irg_n8n_chat_welcome_msg = fields.Char(
++        string='Mensaje de Bienvenida',
++        default='¡Hola! ¿En qué te puedo ayudar hoy?',
++        help='Mensaje inicial mostrado al estudiante al abrir el chat.'
++    )
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/models/slide_channel.py b/addons-extra/extrairg/irg_n8n_chat_bubble/models/slide_channel.py
+new file mode 100644
+index 00000000..f202709e
+--- /dev/null
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/models/slide_channel.py
+@@ -0,0 +1,40 @@
++# -*- coding: utf-8 -*-
++from odoo import models
++
++
++class SlideChannel(models.Model):
++    _inherit = 'slide.channel'
++
++    def irg_get_n8n_chat_config(self):
++        """Retorna la configuración de la burbuja de chat de n8n para este canal.
++
++        Busca entre los cursos de OpenEduCat asociados a este canal de eLearning.
++        Si alguno tiene activo el chat de n8n con una URL de webhook configurada,
++        retorna los datos del widget y la metadata contextual del estudiante.
++        """
++        self.ensure_one()
++        user = self.env.user
++        partner = user.partner_id if user else False
++
++        # Obtener los cursos relacionados utilizando el método de convocatorias_v2
++        related_courses = self._irg_get_related_courses()
++
++        active_course = False
++        for course in related_courses:
++            if course.irg_n8n_chat_enabled and course.irg_n8n_chat_webhook_url:
++                active_course = course
++                break
++
++        if active_course:
++            return {
++                'enabled': True,
++                'webhook_url': active_course.irg_n8n_chat_webhook_url.strip(),
++                'title': active_course.irg_n8n_chat_title or 'Soporte Académico',
++                'welcome_msg': active_course.irg_n8n_chat_welcome_msg or '¡Hola! ¿En qué te puedo ayudar hoy?',
++                'student_name': partner.name if partner else 'Estudiante Invitado',
++                'student_email': partner.email if partner else '',
++                'course_name': active_course.name,
++                'subject_name': self.name,
++            }
++
++        return {'enabled': False}
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js b/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
+new file mode 100644
+index 00000000..5de78b3b
+--- /dev/null
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
+@@ -0,0 +1,69 @@
++(function () {
++    'use strict';
++
++    function initN8nChat() {
++        // Evitar inicializar múltiples veces en la misma vista/página
++        if (window.n8nChatInitialized) {
++            return;
++        }
++
++        const configEl = document.getElementById('irg_n8n_chat_bubble_config');
++        if (!configEl) {
++            return;
++        }
++
++        const webhookUrl = configEl.getAttribute('data-webhook-url');
++        if (!webhookUrl) {
++            return;
++        }
++
++        const title = configEl.getAttribute('data-title') || 'Soporte Académico';
++        const welcomeMsg = configEl.getAttribute('data-welcome-msg') || '¡Hola! ¿En qué te puedo ayudar hoy?';
++        const studentName = configEl.getAttribute('data-student-name') || '';
++        const studentEmail = configEl.getAttribute('data-student-email') || '';
++        const courseName = configEl.getAttribute('data-course-name') || '';
++        const subjectName = configEl.getAttribute('data-subject-name') || '';
++
++        // Marcar como inicializado para prevenir colisiones o bucles de llamadas
++        window.n8nChatInitialized = true;
++
++        // Cargar el CSS del widget de chat de n8n si no existe
++        if (!document.getElementById('n8n-chat-style')) {
++            const link = document.createElement('link');
++            link.id = 'n8n-chat-style';
++            link.rel = 'stylesheet';
++            link.href = 'https://cdn.jsdelivr.net/npm/@n8n/chat/code/dist/style.css';
++            document.head.appendChild(link);
++        }
++
++        // Cargar el bundle ES del chat de n8n dinámicamente
++        import('https://cdn.jsdelivr.net/npm/@n8n/chat/code/dist/chat.bundle.es.js')
++            .then(function (module) {
++                module.createChat({
++                    webhookUrl: webhookUrl,
++                    showWelcomeScreen: true,
++                    chatInputPlaceholder: 'Escribe tu consulta...',
++                    title: title,
++                    subtitle: courseName + ' - ' + subjectName,
++                    initialMessages: [welcomeMsg],
++                    metadata: {
++                        studentName: studentName,
++                        studentEmail: studentEmail,
++                        courseName: courseName,
++                        subjectName: subjectName
++                    }
++                });
++            })
++            .catch(function (err) {
++                console.error('Error al instanciar el chat de n8n:', err);
++                window.n8nChatInitialized = false;
++            });
++    }
++
++    // Registrar observadores o listeners de carga
++    if (document.readyState === 'complete' || document.readyState === 'interactive') {
++        initN8nChat();
++    } else {
++        document.addEventListener('DOMContentLoaded', initN8nChat);
++    }
++})();
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/views/op_course_views.xml b/addons-extra/extrairg/irg_n8n_chat_bubble/views/op_course_views.xml
+new file mode 100644
+index 00000000..72b9b055
+--- /dev/null
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/views/op_course_views.xml
+@@ -0,0 +1,23 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <!-- ========== Vista Formulario op.course - Pestaña Chat n8n ========== -->
++    <record id="view_op_course_form_n8n_chat" model="ir.ui.view">
++        <field name="name">op.course.form.n8n.chat.irg</field>
++        <field name="model">op.course</field>
++        <field name="inherit_id" ref="openeducat_core.view_op_course_form"/>
++        <field name="arch" type="xml">
++            <xpath expr="//notebook" position="inside">
++                <page string="Asistente de Chat n8n" name="irg_n8n_chat_config">
++                    <group string="Configuración del Agente de Chat">
++                        <field name="irg_n8n_chat_enabled"/>
++                    </group>
++                    <group attrs="{'invisible': [('irg_n8n_chat_enabled', '=', False)]}" string="Parámetros de n8n e Interfaz">
++                        <field name="irg_n8n_chat_webhook_url" attrs="{'required': [('irg_n8n_chat_enabled', '=', True)]}"/>
++                        <field name="irg_n8n_chat_title"/>
++                        <field name="irg_n8n_chat_welcome_msg"/>
++                    </group>
++                </page>
++            </xpath>
++        </field>
++    </record>
++</odoo>
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+new file mode 100644
+index 00000000..f7654d6c
+--- /dev/null
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+@@ -0,0 +1,42 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <!-- ========== Inyección en el Layout Principal de eLearning ========== -->
++    <template id="n8n_chat_bubble_layout" inherit_id="website_slides.layout" name="iRG n8n Chat - Layout">
++        <xpath expr="//div[@id='wrap']" position="after">
++            <t t-if="channel">
++                <t t-set="n8n_config" t-value="channel.irg_get_n8n_chat_config()"/>
++                <t t-if="n8n_config.get('enabled')">
++                    <!-- Contenedor oculto con los datos para la inicialización en la vista normal -->
++                    <div id="irg_n8n_chat_bubble_config" style="display: none;"
++                         t-att-data-webhook-url="n8n_config['webhook_url']"
++                         t-att-data-title="n8n_config['title']"
++                         t-att-data-welcome-msg="n8n_config['welcome_msg']"
++                         t-att-data-student-name="n8n_config['student_name']"
++                         t-att-data-student-email="n8n_config['student_email']"
++                         t-att-data-course-name="n8n_config['course_name']"
++                         t-att-data-subject-name="n8n_config['subject_name']"/>
++                </t>
++            </t>
++        </xpath>
++    </template>
++
++    <!-- ========== Inyección en la Vista de Pantalla Completa (Fullscreen Player) ========== -->
++    <template id="n8n_chat_bubble_fullscreen" inherit_id="website_slides.slide_fullscreen" name="iRG n8n Chat - Fullscreen">
++        <xpath expr="//div[hasclass('o_wslides_fs_container')]" position="inside">
++            <t t-if="channel">
++                <t t-set="n8n_config" t-value="channel.irg_get_n8n_chat_config()"/>
++                <t t-if="n8n_config.get('enabled')">
++                    <!-- Contenedor oculto con los datos para la inicialización en el modo pantalla completa -->
++                    <div id="irg_n8n_chat_bubble_config" style="display: none;"
++                         t-att-data-webhook-url="n8n_config['webhook_url']"
++                         t-att-data-title="n8n_config['title']"
++                         t-att-data-welcome-msg="n8n_config['welcome_msg']"
++                         t-att-data-student-name="n8n_config['student_name']"
++                         t-att-data-student-email="n8n_config['student_email']"
++                         t-att-data-course-name="n8n_config['course_name']"
++                         t-att-data-subject-name="n8n_config['subject_name']"/>
++                </t>
++            </t>
++        </xpath>
++    </template>
++</odoo>

@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "task": "irg_n8n_chat_bubble",
+  "checks": [
+    {
+      "name": "python_syntax_check",
+      "result": "pass",
+      "detail": "Todos los archivos Python fueron compilados exitosamente sin fallos de sintaxis usando py_compile."
+    },
+    {
+      "name": "xml_structure_check",
+      "result": "pass",
+      "detail": "Las vistas XML heredadas de op.course y website_slides siguen el estándar de Odoo 16 con xpaths válidos."
+    },
+    {
+      "name": "javascript_lazy_load_check",
+      "result": "pass",
+      "detail": "El script JS de inicialización maneja correctamente la inyección lazy-load de n8n chat para conservar recursos del frontend."
+    }
+  ],
+  "evidence": [],
+  "model_tier_used": "standard",
+  "escalations": 0
+}
