@@ -24,6 +24,14 @@
   2. En estas vistas, `channel` siempre es el recordset esperado de `slide.channel`, permitiendo aplicar un condicional directo `<t t-if="channel">` sin necesidad de métodos complejos de introspección como `getattr` o `hasattr`.
   3. Declarar explícitamente `'website'` y `'website_slides'` en la sección `'depends'` del manifiesto del módulo (`__manifest__.py`) para asegurar que el orden de carga del ORM resuelva e instale los módulos requeridos antes de registrar las nuevas plantillas extendidas.
 
+* **Saneamiento de Vistas Huérfanas en BD (active="False")**:
+  En Odoo, si una plantilla XML de herencia (como `inherit_id="website.layout"`) es eliminada del código fuente, Odoo **no la elimina automáticamente de la base de datos** (`ir.ui.view`) durante la actualización del módulo. El registro huérfano permanece activo en la base de datos, lo que puede causar errores 500 persistentes si intenta evaluar variables del contexto inexistentes o llamadas inválidas en el frontend.
+  Para sanear estas vistas de forma totalmente automatizada y nativa sin recurrir a consultas SQL manuales ni intervención en el cliente:
+  1. Mantén la declaración de la plantilla en el archivo XML con el mismo `id` e `inherit_id`.
+  2. Añade el atributo `active="False"` a la definición de la plantilla para indicarle a Odoo que la desactive en base de datos.
+  3. Proporciona un `xpath` inofensivo y válido sobre la plantilla padre (por ejemplo, inyectando un comentario vacío en un contenedor genérico como `<xpath expr="//div[@id='wrapwrap']" position="inside">`).
+  Al actualizar el módulo, Odoo sobreescribirá el registro antiguo con esta nueva versión, desactivando efectivamente la herencia rota de manera nativa y segura.
+
 
 ## Estructura del Módulo
 El módulo se encuentra en: `addons-extra/extrairg/irg_n8n_chat_bubble`

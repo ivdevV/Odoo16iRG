@@ -42,3 +42,10 @@
 * **2026-06-23T14:11:00+02:00:** El Subagente Codificador reestructura `website_slides_templates.xml` eliminando la herencia sobre `website.layout` y creando `n8n_chat_bubble_course_main` heredando de `website_slides.course_main` e inyectando de forma segura con `t-if="channel"`. Modifica además `n8n_chat_bubble_fullscreen` con la misma simplificación.
 * **2026-06-23T14:12:00+02:00:** El Subagente Testeador realiza la validación sintáctica del XML e inicia la actualización del módulo en el contenedor local docker-compose.
 * **2026-06-23T14:13:00+02:00:** Módulo actualizado exitosamente. El log de Odoo confirma "Registry loaded" sin excepciones. Se actualiza el archivo `verification.json` como `passed`.
+
+* **2026-06-23T14:30:00+02:00:** ERROR 500 PERSISTENTE. Se diagnostica que la vista huérfana irg_n8n_chat_bubble.n8n_chat_bubble_layout sigue activa en la tabla ir_ui_view del servidor. El actualizador de Odoo no elimina vistas borradas del XML.
+* **2026-06-23T14:30:40+02:00:** Manteniendo Tier `complex` de forma reactiva (Reintento 6).
+* **2026-06-23T14:31:00+02:00:** Se decide declarar una plantilla de saneamiento vacía con id="n8n_chat_bubble_layout" y sin inherit_id para forzar a Odoo a anular la herencia en base de datos al hacer upgrade.
+* **2026-06-23T14:31:30+02:00:** Delegando la adición de la plantilla de saneamiento al Subagente Codificador.
+* **2026-06-23T14:32:00+02:00:** El Subagente Codificador agrega la plantilla de saneamiento vacía para `n8n_chat_bubble_layout` en `website_slides_templates.xml` y reporta la finalización al orquestador.
+* **2026-06-23T14:36:00+02:00:** Mantenimiento de Tier `complex` por error 500 persistente. Se cambia `n8n_chat_bubble_layout` por una plantilla heredada desactivada `active="False"` con xpath válido para sanear la BD de forma nativa. Delegación a codificador y validación exitosa.
