@@ -23,6 +23,7 @@ No basta con actualizar `ir.rule`. Algunos flujos usan `sudo()` o calculan desti
 
 - `irg_forum_notice_popup` debe llamar a `_filter_visible_for_user()` porque el controlador busca publicaciones con `sudo()`.
 - `irg_forum_email_notify` debe llamar a `_filter_partners_visible_for_post()` antes de crear `mail.mail`.
+- **Filtro de Lotes Activos**: El modelo `op.batch` no tiene un campo `state`. Para filtrar lotes activos en dominios y búsquedas, se debe utilizar el campo booleano estándar `active` (`('active', '=', True)`).
 
 ## Validacion Usada
 
