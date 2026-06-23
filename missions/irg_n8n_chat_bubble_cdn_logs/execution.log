@@ -1,0 +1,8 @@
+2026-06-23T15:21:00+02:00 [PLAN] Misión iniciada con complejidad standard.
+2026-06-23T15:21:05+02:00 [EXEC] Iniciando modificaciones en static/src/js/n8n_chat_bubble.js y models/slide_channel.py.
+2026-06-23T15:21:06+02:00 [EXEC] Modificado static/src/js/n8n_chat_bubble.js para remover '/code/' de las urls del CDN de n8n.
+2026-06-23T15:21:11+02:00 [EXEC] Modificado models/slide_channel.py para agregar import logging, logger y logs descriptivos de depuración en irg_get_n8n_chat_config.
+2026-06-23T15:21:12+02:00 [TEST] Ejecutado py_compile en slide_channel.py. Resultado: Exitoso sin warnings.
+2026-06-23T15:21:14+02:00 [TEST] Ejecutado node -c en n8n_chat_bubble.js. Resultado: Exitoso sin warnings.
+2026-06-23T15:21:26+02:00 [TEST] Ejecutada la actualización del módulo en Docker en la base de datos odoo16irg_local con '--stop-after-init'. Registro cargado y apagado correctamente.
+2026-06-23T15:21:28+02:00 [DOC] Creado verification.json con estado passed.

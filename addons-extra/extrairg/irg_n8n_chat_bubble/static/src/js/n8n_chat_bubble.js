@@ -32,12 +32,12 @@
             const link = document.createElement('link');
             link.id = 'n8n-chat-style';
             link.rel = 'stylesheet';
-            link.href = 'https://cdn.jsdelivr.net/npm/@n8n/chat/code/dist/style.css';
+            link.href = 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css';
             document.head.appendChild(link);
         }
 
         // Cargar el bundle ES del chat de n8n dinámicamente
-        import('https://cdn.jsdelivr.net/npm/@n8n/chat/code/dist/chat.bundle.es.js')
+        import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')
             .then(function (module) {
                 module.createChat({
                     webhookUrl: webhookUrl,

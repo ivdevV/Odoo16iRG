@@ -40,3 +40,16 @@ El módulo se encuentra en: `addons-extra/extrairg/irg_n8n_chat_bubble`
 - `views/op_course_views.xml`: Pestaña de configuración en formulario del curso en backend.
 - `views/website_slides_templates.xml`: Herencias en `website_slides.course_main` y `website_slides.slide_fullscreen` para inyectar el contenedor de inicialización de la burbuja de chat de n8n de manera acotada y segura.
 - `static/src/js/n8n_chat_bubble.js`: Inicializador lazy-load del widget flotante de chat de n8n.
+
+## CDN y Diagnóstico de n8n Chat (Actualización 2026-06-23)
+* **CDN de n8n**:
+  Las URLs de CDN para el widget `@n8n/chat` deben apuntar directamente a `dist/` omitiendo el segmento intermedio `/code/`.
+  - CSS: `https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css`
+  - JS: `https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js`
+
+* **Debugging y Logging**:
+  Para diagnosticar problemas en la carga de la burbuja en el frontend, `irg_get_n8n_chat_config()` usa el logger de Odoo para reportar el proceso de búsqueda:
+  - Nombre e ID del canal y los códigos de todos los cursos OpenEduCat relacionados.
+  - Estado de validación para cada curso (si el chat está habilitado y si cuenta con URL de webhook).
+  - Configuración final devuelta.
+
