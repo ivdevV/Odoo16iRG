@@ -10,7 +10,7 @@
     {
       "name": "xml_structure_check",
       "result": "pass",
-      "detail": "Se corrigieron los condicionales t-if de las dos plantillas en website_slides_templates.xml para usar de forma segura 'getattr(channel, 'irg_get_n8n_chat_config', None)' evitando fallos AttributeError y TypeError de NoneType. La estructura del XML es perfectamente válida."
+      "detail": "Se rediseñó la herencia eliminando la inyección global en website.layout. Se implementó la herencia en website_slides.course_main (n8n_chat_bubble_course_main) y se mantuvo en website_slides.slide_fullscreen, ambas de forma acotada y usando condicionales directos con t-if='channel' sin getattr/hasattr innecesarios. Estructura XML perfectamente válida."
     },
     {
       "name": "javascript_lazy_load_check",
@@ -36,5 +36,5 @@
     "docker exec odoo -u irg_n8n_chat_bubble -d odoo16irg_local --stop-after-init: Registry loaded successfully"
   ],
   "model_tier_used": "complex",
-  "escalations": 2
+  "escalations": 5
 }

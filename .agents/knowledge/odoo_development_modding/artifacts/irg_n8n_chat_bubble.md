@@ -15,12 +15,14 @@
   - `studentEmail` (Email del estudiante)
   - `courseName` (Nombre del curso académico)
   - `subjectName` (Nombre de la asignatura)
-  Esto permite que el agente inteligente de n8n reciba en el webhook de chat toda la información del estudiante para responder de forma personalizada.
+  - This allows the n8n intelligent agent to receive all context parameters in the webhook to personalize responses.
 
-* **Evitación de Errores de External ID, Variables Booleanas e Introspección Segura en Layouts (Odoo 16)**:
-  Al inyectar scripts, estilos o componentes globales (como widgets flotantes) en vistas específicas de un submódulo (e.g. `website_slides`), heredar directamente de sus layouts específicos (como `website_slides.layout`) puede arrojar errores de External ID no encontrado debido al orden de carga de los módulos.
-  La solución es heredar del layout base del portal web (`website.layout`) y aplicar una cláusula condicional con introspección segura: `<t t-if="channel and getattr(channel, 'irg_get_n8n_chat_config', None)">` para encapsular el pintado de los elementos. Esto previene un `AttributeError: 'bool' object has no attribute 'irg_get_n8n_chat_config'` cuando la variable `channel` está presente en el contexto pero se evalúa como un booleano (`False`), y el error `TypeError: 'NoneType' object is not callable` cuando Odoo evalúa un atributo inexistente como `None` (engañando a `hasattr`), garantizando que la burbuja de chat o el componente solo se renderice de forma segura si la variable es un recordset real con dicho método.
-  Asimismo, es obligatorio declarar explícitamente `'website'` en la lista `'depends'` del `__manifest__.py` para garantizar que el ORM de Odoo resuelva las dependencias de QWeb layouts de `website` antes de compilar y registrar las plantillas extendidas.
+* **Evitación de Errores de Contexto y QWeb SafeEval (Odoo 16)**:
+  Heredar del layout global del portal web (`website.layout`) para inyectar elementos condicionales basados en variables del contexto de una página particular (como `channel` de eLearning) puede ser problemático. Si el usuario navega a páginas globales (como `/campus`), la variable `channel` puede no existir, o evaluarse como un booleano `False` o un objeto no válido, disparando errores de tipo `AttributeError` o `TypeError` en el motor de renderizado de Odoo.
+  Para evitarlo de raíz:
+  1. Se debe acotar la herencia a las vistas específicas de eLearning donde dicha variable existe de forma natural: `website_slides.course_main` y `website_slides.slide_fullscreen`.
+  2. En estas vistas, `channel` siempre es el recordset esperado de `slide.channel`, permitiendo aplicar un condicional directo `<t t-if="channel">` sin necesidad de métodos complejos de introspección como `getattr` o `hasattr`.
+  3. Declarar explícitamente `'website'` y `'website_slides'` en la sección `'depends'` del manifiesto del módulo (`__manifest__.py`) para asegurar que el orden de carga del ORM resuelva e instale los módulos requeridos antes de registrar las nuevas plantillas extendidas.
 
 
 ## Estructura del Módulo
@@ -28,5 +30,5 @@ El módulo se encuentra en: `addons-extra/extrairg/irg_n8n_chat_bubble`
 - `models/op_course.py`: Campos de configuración en `op.course`.
 - `models/slide_channel.py`: Extracción de la configuración y de los datos del estudiante conectado.
 - `views/op_course_views.xml`: Pestaña de configuración en formulario del curso en backend.
-- `views/website_slides_templates.xml`: Hereda de `website.layout` (con condicional de presencia de `channel`) y `website_slides.slide_fullscreen` para pintar el contenedor de datos de configuración de forma segura.
+- `views/website_slides_templates.xml`: Herencias en `website_slides.course_main` y `website_slides.slide_fullscreen` para inyectar el contenedor de inicialización de la burbuja de chat de n8n de manera acotada y segura.
 - `static/src/js/n8n_chat_bubble.js`: Inicializador lazy-load del widget flotante de chat de n8n.

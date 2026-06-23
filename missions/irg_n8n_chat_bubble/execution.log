@@ -35,3 +35,10 @@
 * **2026-06-23T13:44:50+02:00:** Se ejecuta la actualización local del módulo `irg_n8n_chat_bubble` en el contenedor Docker, finalizando con éxito (Registry loaded).
 * **2026-06-23T13:45:10+02:00:** Se actualizan `diff.patch` y `verification.json` con estado `passed`.
 
+* **2026-06-23T14:06:52+02:00:** FALLO PERSISTENTE (500) en /campus tras reinstalación limpia. Se confirma que la herencia global en website.layout evalúa channel en contextos inadecuados en SafeEval de QWeb.
+* **2026-06-23T14:08:00+02:00:** Manteniendo Tier `complex` de forma reactiva (Reintento 5).
+* **2026-06-23T14:09:00+02:00:** Se decide cambiar el diseño de herencia XML: eliminar herencia de website.layout y heredar directamente de las vistas de eLearning (website_slides.course_main y website_slides.slide_fullscreen).
+* **2026-06-23T14:10:00+02:00:** Delegando la codificación de la vista al Subagente Codificador.
+* **2026-06-23T14:11:00+02:00:** El Subagente Codificador reestructura `website_slides_templates.xml` eliminando la herencia sobre `website.layout` y creando `n8n_chat_bubble_course_main` heredando de `website_slides.course_main` e inyectando de forma segura con `t-if="channel"`. Modifica además `n8n_chat_bubble_fullscreen` con la misma simplificación.
+* **2026-06-23T14:12:00+02:00:** El Subagente Testeador realiza la validación sintáctica del XML e inicia la actualización del módulo en el contenedor local docker-compose.
+* **2026-06-23T14:13:00+02:00:** Módulo actualizado exitosamente. El log de Odoo confirma "Registry loaded" sin excepciones. Se actualiza el archivo `verification.json` como `passed`.
