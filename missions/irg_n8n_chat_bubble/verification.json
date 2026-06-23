@@ -10,18 +10,30 @@
     {
       "name": "xml_structure_check",
       "result": "pass",
-      "detail": "Se corrigieron los condicionales t-if de las dos plantillas en website_slides_templates.xml para usar de forma segura 'hasattr(channel, ...)' evitando fallos AttributeError si la variable channel es un booleano en lugar del recordset esperado. La estructura del XML es perfectamente válida."
+      "detail": "Se corrigieron los condicionales t-if de las dos plantillas en website_slides_templates.xml para usar de forma segura 'getattr(channel, 'irg_get_n8n_chat_config', None)' evitando fallos AttributeError y TypeError de NoneType. La estructura del XML es perfectamente válida."
     },
     {
       "name": "javascript_lazy_load_check",
       "result": "pass",
       "detail": "El script JS de inicialización maneja correctamente la inyección lazy-load de n8n chat para conservar recursos del frontend."
+    },
+    {
+      "name": "database_identification",
+      "result": "pass",
+      "detail": "Se leyeron los logs de Odoo local y se identificó la base de datos activa: 'odoo16irg_local'."
+    },
+    {
+      "name": "odoo_module_upgrade_check",
+      "result": "pass",
+      "detail": "Se ejecutó la actualización del módulo irg_n8n_chat_bubble en la base de datos odoo16irg_local con '--stop-after-init' y finalizó exitosamente sin errores."
     }
   ],
   "evidence": [
     "py_compile output: success",
     "xml.etree.ElementTree parse: success",
-    "git diff verification: success"
+    "git diff verification: success",
+    "docker logs DB detection: success (database 'odoo16irg_local')",
+    "docker exec odoo -u irg_n8n_chat_bubble -d odoo16irg_local --stop-after-init: Registry loaded successfully"
   ],
   "model_tier_used": "complex",
   "escalations": 2

@@ -17,9 +17,9 @@
   - `subjectName` (Nombre de la asignatura)
   Esto permite que el agente inteligente de n8n reciba en el webhook de chat toda la información del estudiante para responder de forma personalizada.
 
-* **Evitación de Errores de External ID y Variables Booleanas en Layouts (Odoo 16)**:
+* **Evitación de Errores de External ID, Variables Booleanas e Introspección Segura en Layouts (Odoo 16)**:
   Al inyectar scripts, estilos o componentes globales (como widgets flotantes) en vistas específicas de un submódulo (e.g. `website_slides`), heredar directamente de sus layouts específicos (como `website_slides.layout`) puede arrojar errores de External ID no encontrado debido al orden de carga de los módulos.
-  La solución es heredar del layout base del portal web (`website.layout`) y aplicar una cláusula condicional con introspección segura: `<t t-if="channel and hasattr(channel, 'irg_get_n8n_chat_config')">` para encapsular el pintado de los elementos. Esto previene un `AttributeError: 'bool' object has no attribute 'irg_get_n8n_chat_config'` cuando la variable `channel` está presente en el contexto pero se evalúa como un booleano (`False`), garantizando que la burbuja de chat o el componente solo se renderice de forma segura si la variable es un recordset real con dicho método.
+  La solución es heredar del layout base del portal web (`website.layout`) y aplicar una cláusula condicional con introspección segura: `<t t-if="channel and getattr(channel, 'irg_get_n8n_chat_config', None)">` para encapsular el pintado de los elementos. Esto previene un `AttributeError: 'bool' object has no attribute 'irg_get_n8n_chat_config'` cuando la variable `channel` está presente en el contexto pero se evalúa como un booleano (`False`), y el error `TypeError: 'NoneType' object is not callable` cuando Odoo evalúa un atributo inexistente como `None` (engañando a `hasattr`), garantizando que la burbuja de chat o el componente solo se renderice de forma segura si la variable es un recordset real con dicho método.
 
 ## Estructura del Módulo
 El módulo se encuentra en: `addons-extra/extrairg/irg_n8n_chat_bubble`

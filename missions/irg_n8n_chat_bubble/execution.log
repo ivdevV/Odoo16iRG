@@ -20,3 +20,9 @@
 * **2026-06-23T13:12:40+02:00:** Manteniendo Tier `complex` de forma reactiva (Reintento 2).
 * **2026-06-23T13:13:00+02:00:** Delegando la corrección definitiva (introspección hasattr) al Subagente Codificador.
 * **2026-06-23T13:13:20+02:00:** El Subagente Codificador aplica la corrección en `website_slides_templates.xml` usando `hasattr(channel, 'irg_get_n8n_chat_config')`. Se valida la sintaxis XML y se actualizan `diff.patch` y `verification.json` con estado `passed`.
+
+* **2026-06-23T13:21:00+02:00:** NUEVO FALLO (500) en /campus. Error: TypeError: 'NoneType' object is not callable al intentar ejecutar la llamada del método no registrado.
+* **2026-06-23T13:21:40+02:00:** Manteniendo Tier `complex` de forma reactiva (Reintento 3).
+* **2026-06-23T13:22:00+02:00:** Delegando la corrección definitiva (getattr seguro) al Subagente Codificador.
+* **2026-06-23T13:22:30+02:00:** El Subagente Codificador aplica la corrección en `website_slides_templates.xml` usando `getattr(channel, 'irg_get_n8n_chat_config', None)`. Se actualiza el diff de la misión y el artículo en la Knowledge Base. Se valida la estructura XML.
+* **2026-06-23T13:22:51+02:00:** El Subagente Testeador ejecuta la fase de validación en el entorno local. Se verifica la compilación Python sin fallos, se identifica la base de datos activa `odoo16irg_local` desde los logs del contenedor, y se realiza la actualización exitosa del módulo `irg_n8n_chat_bubble` con `--stop-after-init` sin reportar errores. Se actualiza el archivo `verification.json` como `passed`.
