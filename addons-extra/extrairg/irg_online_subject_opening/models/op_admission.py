@@ -232,22 +232,16 @@ class OpAdmission(models.Model):
 
     def cron_auto_enroll_student(self):
         today = date.today()
-        online_admissions = self.search([
+        admissions = self.search([
             ('state', '=', 'done'),
             ('batch_id', '!=', False),
-            ('batch_id.code', 'ilike', 'ONL'),
-            ('batch_id.code', 'not ilike', 'MONL'),
         ])
+
+        online_admissions = admissions.filtered(lambda record: record._irg_has_online_subject_opening_context())
+        other_admissions = admissions - online_admissions
+
         online_admissions._irg_generate_online_subject_openings()
         online_admissions._irg_sync_online_channel_partners()
-
-        other_admissions = self.search([
-            ('state', '=', 'done'),
-            ('batch_id', '!=', False),
-            '|',
-            ('batch_id.code', 'not ilike', 'ONL'),
-            ('batch_id.code', 'ilike', 'MONL'),
-        ])
 
         for record in other_admissions:
             if hasattr(record, 'modality') and record.modality == 'manual':
