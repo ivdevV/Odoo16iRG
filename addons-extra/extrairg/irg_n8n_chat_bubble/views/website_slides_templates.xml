@@ -58,6 +58,11 @@
                             --chat--window--border-radius: 0px !important;
                             --chat--window--z-index: 99999 !important;
                         }
+                        body.n8n-chat-fullscreen .chat-window {
+                            width: 100vw !important;
+                            height: 100vh !important;
+                            max-height: 100vh !important;
+                        }
                         .chat-message-markdown p {
                             margin: 0 0 8px 0 !important;
                             padding: 0 !important;
@@ -148,6 +153,11 @@
                             --chat--window--right: 0px !important;
                             --chat--window--border-radius: 0px !important;
                             --chat--window--z-index: 99999 !important;
+                        }
+                        body.n8n-chat-fullscreen .chat-window {
+                            width: 100vw !important;
+                            height: 100vh !important;
+                            max-height: 100vh !important;
                         }
                         .chat-message-markdown p {
                             margin: 0 0 8px 0 !important;
