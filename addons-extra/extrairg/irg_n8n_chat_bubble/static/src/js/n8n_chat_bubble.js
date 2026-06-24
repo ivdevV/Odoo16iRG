@@ -45,7 +45,7 @@
                     webhookUrl: webhookUrl,
                     showWelcomeScreen: true,
                     defaultLanguage: 'es',
-                    initialMessages: [customWelcome],
+                    initialMessages: [welcomeMsg],
                     i18n: {
                         es: {
                             title: title,
