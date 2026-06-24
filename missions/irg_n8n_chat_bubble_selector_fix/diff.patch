@@ -1,0 +1,28 @@
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+index 96acc1a0..6795b560 100644
+--- a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+@@ -58,6 +58,11 @@
+                             --chat--window--border-radius: 0px !important;
+                             --chat--window--z-index: 99999 !important;
+                         }
++                        body.n8n-chat-fullscreen .chat-window {
++                            width: 100vw !important;
++                            height: 100vh !important;
++                            max-height: 100vh !important;
++                        }
+                         .chat-message-markdown p {
+                             margin: 0 0 8px 0 !important;
+                             padding: 0 !important;
+@@ -149,6 +154,11 @@
+                             --chat--window--border-radius: 0px !important;
+                             --chat--window--z-index: 99999 !important;
+                         }
++                        body.n8n-chat-fullscreen .chat-window {
++                            width: 100vw !important;
++                            height: 100vh !important;
++                            max-height: 100vh !important;
++                        }
+                         .chat-message-markdown p {
+                             margin: 0 0 8px 0 !important;
+                             padding: 0 !important;
