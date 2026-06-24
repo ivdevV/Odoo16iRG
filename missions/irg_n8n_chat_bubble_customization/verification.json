@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "task": "irg_n8n_chat_bubble_customization",
+  "checks": [
+    {
+      "name": "javascript_syntax",
+      "result": "pass",
+      "detail": "Checked using node -c. No syntax errors found."
+    },
+    {
+      "name": "xml_syntax",
+      "result": "pass",
+      "detail": "Checked using python's xml.etree.ElementTree. No syntax errors found."
+    },
+    {
+      "name": "odoo_module_upgrade",
+      "result": "pass",
+      "detail": "Successful module upgrade on docker container odoo16irg_local with Registry loaded in 2.902s."
+    }
+  ],
+  "evidence": [
+    "node -c /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js",
+    "python3 -c \"import xml.etree.ElementTree as ET; ET.parse('/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml')\"",
+    "docker exec -i odoo16irg_local odoo -c /etc/odoo/odoo.conf -u irg_n8n_chat_bubble -d odoo16irg_local --stop-after-init"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

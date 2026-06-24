@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========== Plantilla de saneamiento para anular la herencia antigua en la base de datos ========== -->
+    <template id="n8n_chat_bubble_layout" inherit_id="website.layout" active="False" name="iRG n8n Chat - Layout Obsoleto (Desactivado)">
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <!-- Obsoleto y Desactivado para sanear la base de datos -->
+        </xpath>
+    </template>
+    <!-- ========== Inyección en la Vista Principal del Curso de eLearning ========== -->
+    <template id="n8n_chat_bubble_course_main" inherit_id="website_slides.course_main" name="iRG n8n Chat - Course Main">
+        <xpath expr="//div[hasclass('o_wslides_course_main')]" position="inside">
+            <t t-if="channel">
+                <t t-set="n8n_config" t-value="channel.irg_get_n8n_chat_config()"/>
+                <t t-if="n8n_config.get('enabled')">
+                    <!-- Contenedor oculto con los datos para la inicialización en la vista normal -->
+                    <div id="irg_n8n_chat_bubble_config" style="display: none;"
+                         t-att-data-webhook-url="n8n_config['webhook_url']"
+                         t-att-data-title="n8n_config['title']"
+                         t-att-data-welcome-msg="n8n_config['welcome_msg']"
+                         t-att-data-student-name="n8n_config['student_name']"
+                         t-att-data-student-email="n8n_config['student_email']"
+                         t-att-data-course-name="n8n_config['course_name']"
+                         t-att-data-subject-name="n8n_config['subject_name']"/>
+                    <style>
+                        :root {
+                            --chat--color--primary: #1da1f2;
+                            --chat--color--secondary: #1da1f2;
+                            --chat--color-dark: #1da1f2;
+                            --chat--header--background: #1da1f2;
+                            --chat--window--width: 420px;
+                            --chat--window--height: 650px;
+                            --chat--window--border-radius: 16px;
+                            --chat--toggle--background: #1da1f2;
+                            --chat--toggle--hover--background: #0c8de4;
+                            --chat--toggle--active--background: #0b7fcb;
+                            --chat--window--border: 1px solid rgba(0,0,0,0.08);
+                            --chat--window--z-index: 99999;
+                        }
+                        @media (min-width: 576px) {
+                            :root {
+                                --chat--window--width: 600px;
+                            }
+                        }
+                    </style>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ========== Inyección en la Vista de Pantalla Completa (Fullscreen Player) ========== -->
+    <template id="n8n_chat_bubble_fullscreen" inherit_id="website_slides.slide_fullscreen" name="iRG n8n Chat - Fullscreen">
+        <xpath expr="//div[hasclass('o_wslides_fs_container')]" position="inside">
+            <t t-if="channel">
+                <t t-set="n8n_config" t-value="channel.irg_get_n8n_chat_config()"/>
+                <t t-if="n8n_config.get('enabled')">
+                    <!-- Contenedor oculto con los datos para la inicialización en el modo pantalla completa -->
+                    <div id="irg_n8n_chat_bubble_config" style="display: none;"
+                         t-att-data-webhook-url="n8n_config['webhook_url']"
+                         t-att-data-title="n8n_config['title']"
+                         t-att-data-welcome-msg="n8n_config['welcome_msg']"
+                         t-att-data-student-name="n8n_config['student_name']"
+                         t-att-data-student-email="n8n_config['student_email']"
+                         t-att-data-course-name="n8n_config['course_name']"
+                         t-att-data-subject-name="n8n_config['subject_name']"/>
+                    <style>
+                        :root {
+                            --chat--color--primary: #1da1f2;
+                            --chat--color--secondary: #1da1f2;
+                            --chat--color-dark: #1da1f2;
+                            --chat--header--background: #1da1f2;
+                            --chat--window--width: 420px;
+                            --chat--window--height: 650px;
+                            --chat--window--border-radius: 16px;
+                            --chat--toggle--background: #1da1f2;
+                            --chat--toggle--hover--background: #0c8de4;
+                            --chat--toggle--active--background: #0b7fcb;
+                            --chat--window--border: 1px solid rgba(0,0,0,0.08);
+                            --chat--window--z-index: 99999;
+                        }
+                        @media (min-width: 576px) {
+                            :root {
+                                --chat--window--width: 600px;
+                            }
+                        }
+                    </style>
+                </t>
+            </t>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,16 @@
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+index 2c28de4e..20b4fd58 100644
+--- a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+@@ -1,5 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <odoo>
++    <!-- ========== Plantilla de saneamiento para anular la herencia antigua en la base de datos ========== -->
++    <template id="n8n_chat_bubble_layout" inherit_id="website.layout" active="False" name="iRG n8n Chat - Layout Obsoleto (Desactivado)">
++        <xpath expr="//div[@id='wrapwrap']" position="inside">
++            <!-- Obsoleto y Desactivado para sanear la base de datos -->
++        </xpath>
++    </template>
+     <!-- ========== Inyección en la Vista Principal del Curso de eLearning ========== -->
+     <template id="n8n_chat_bubble_course_main" inherit_id="website_slides.course_main" name="iRG n8n Chat - Course Main">
+         <xpath expr="//div[hasclass('o_wslides_course_main')]" position="inside">
