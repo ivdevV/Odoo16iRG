@@ -36,6 +36,11 @@
                             --chat--window--border: 1px solid rgba(0,0,0,0.08);
                             --chat--window--z-index: 99999;
                         }
+                        @media (min-width: 576px) {
+                            :root {
+                                --chat--window--width: 600px;
+                            }
+                        }
                     </style>
                 </t>
             </t>
@@ -71,6 +76,11 @@
                             --chat--toggle--active--background: #0b7fcb;
                             --chat--window--border: 1px solid rgba(0,0,0,0.08);
                             --chat--window--z-index: 99999;
+                        }
+                        @media (min-width: 576px) {
+                            :root {
+                                --chat--window--width: 600px;
+                            }
                         }
                     </style>
                 </t>

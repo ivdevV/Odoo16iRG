@@ -37,23 +37,24 @@
         }
 
         // Cargar el bundle ES del chat de n8n dinámicamente
+        const customWelcome = '¡Hola! Soy tu tutor virtual, pregúntame cualquier cosa 🤖';
         import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')
             .then(function (module) {
                 module.createChat({
                     webhookUrl: webhookUrl,
                     showWelcomeScreen: true,
                     defaultLanguage: 'es',
-                    initialMessages: [welcomeMsg],
+                    initialMessages: [customWelcome],
                     i18n: {
                         es: {
                             title: title,
-                            subtitle: welcomeMsg,
+                            subtitle: customWelcome,
                             getStarted: 'Iniciar chat',
                             inputPlaceholder: 'Escribe tu consulta...'
                         },
                         en: {
                             title: title,
-                            subtitle: welcomeMsg,
+                            subtitle: 'Hi! I am your virtual tutor, ask me anything 🤖',
                             getStarted: 'Start chat',
                             inputPlaceholder: 'Type your question...'
                         }

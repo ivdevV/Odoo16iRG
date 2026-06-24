@@ -1,80 +1,60 @@
 diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js b/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
-index 747ba224..56bfb9ab 100644
+index 56bfb9ab..71f85855 100644
 --- a/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
 +++ b/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
-@@ -42,10 +42,22 @@
+@@ -37,23 +37,24 @@
+         }
+ 
+         // Cargar el bundle ES del chat de n8n dinámicamente
++        const customWelcome = '¡Hola! Soy tu tutor virtual, pregúntame cualquier cosa 🤖';
+         import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')
+             .then(function (module) {
                  module.createChat({
                      webhookUrl: webhookUrl,
                      showWelcomeScreen: true,
--                    chatInputPlaceholder: 'Escribe tu consulta...',
--                    title: title,
--                    subtitle: courseName + ' - ' + subjectName,
-+                    defaultLanguage: 'es',
-                     initialMessages: [welcomeMsg],
-+                    i18n: {
-+                        es: {
-+                            title: title,
-+                            subtitle: welcomeMsg,
-+                            getStarted: 'Iniciar chat',
-+                            inputPlaceholder: 'Escribe tu consulta...'
-+                        },
-+                        en: {
-+                            title: title,
-+                            subtitle: welcomeMsg,
-+                            getStarted: 'Start chat',
-+                            inputPlaceholder: 'Type your question...'
-+                        }
-+                    },
-                     metadata: {
-                         studentName: studentName,
-                         studentEmail: studentEmail,
+                     defaultLanguage: 'es',
+-                    initialMessages: [welcomeMsg],
++                    initialMessages: [customWelcome],
+                     i18n: {
+                         es: {
+                             title: title,
+-                            subtitle: welcomeMsg,
++                            subtitle: customWelcome,
+                             getStarted: 'Iniciar chat',
+                             inputPlaceholder: 'Escribe tu consulta...'
+                         },
+                         en: {
+                             title: title,
+-                            subtitle: welcomeMsg,
++                            subtitle: 'Hi! I am your virtual tutor, ask me anything 🤖',
+                             getStarted: 'Start chat',
+                             inputPlaceholder: 'Type your question...'
+                         }
 diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
-index 20b4fd58..8b89bc01 100644
+index 8b89bc01..5cc05694 100644
 --- a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
 +++ b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
-@@ -21,6 +21,22 @@
-                          t-att-data-student-email="n8n_config['student_email']"
-                          t-att-data-course-name="n8n_config['course_name']"
-                          t-att-data-subject-name="n8n_config['subject_name']"/>
-+                    <style>
-+                        :root {
-+                            --chat--color--primary: #1da1f2;
-+                            --chat--color--secondary: #1da1f2;
-+                            --chat--color-dark: #1da1f2;
-+                            --chat--header--background: #1da1f2;
-+                            --chat--window--width: 420px;
-+                            --chat--window--height: 650px;
-+                            --chat--window--border-radius: 16px;
-+                            --chat--toggle--background: #1da1f2;
-+                            --chat--toggle--hover--background: #0c8de4;
-+                            --chat--toggle--active--background: #0b7fcb;
-+                            --chat--window--border: 1px solid rgba(0,0,0,0.08);
-+                            --chat--window--z-index: 99999;
+@@ -36,6 +36,11 @@
+                             --chat--window--border: 1px solid rgba(0,0,0,0.08);
+                             --chat--window--z-index: 99999;
+                         }
++                        @media (min-width: 576px) {
++                            :root {
++                                --chat--window--width: 600px;
++                            }
 +                        }
-+                    </style>
+                     </style>
                  </t>
              </t>
-         </xpath>
-@@ -41,6 +57,22 @@
-                          t-att-data-student-email="n8n_config['student_email']"
-                          t-att-data-course-name="n8n_config['course_name']"
-                          t-att-data-subject-name="n8n_config['subject_name']"/>
-+                    <style>
-+                        :root {
-+                            --chat--color--primary: #1da1f2;
-+                            --chat--color--secondary: #1da1f2;
-+                            --chat--color-dark: #1da1f2;
-+                            --chat--header--background: #1da1f2;
-+                            --chat--window--width: 420px;
-+                            --chat--window--height: 650px;
-+                            --chat--window--border-radius: 16px;
-+                            --chat--toggle--background: #1da1f2;
-+                            --chat--toggle--hover--background: #0c8de4;
-+                            --chat--toggle--active--background: #0b7fcb;
-+                            --chat--window--border: 1px solid rgba(0,0,0,0.08);
-+                            --chat--window--z-index: 99999;
+@@ -72,6 +77,11 @@
+                             --chat--window--border: 1px solid rgba(0,0,0,0.08);
+                             --chat--window--z-index: 99999;
+                         }
++                        @media (min-width: 576px) {
++                            :root {
++                                --chat--window--width: 600px;
++                            }
 +                        }
-+                    </style>
+                     </style>
                  </t>
              </t>
-         </xpath>

@@ -11,3 +11,4 @@
 * **2026-06-24T09:33:12+02:00:** Validación sintáctica de XML exitosa (`python3 -c xml.etree`).
 * **2026-06-24T09:33:14+02:00:** Actualización exitosa del módulo `irg_n8n_chat_bubble` en el contenedor docker `odoo16irg_local` (`Registry loaded` sin errores). Se emite `verification.json` con estado `passed`.
 * **2026-06-24T09:33:20+02:00:** Documentación y cierre de la misión.
+* **2026-06-24T09:45:00+02:00:** Se aplican las modificaciones adicionales requeridas por el usuario: definición de `customWelcome` y actualización de `i18n` en JS; inyección de la media query CSS en las plantillas XML para pantallas grandes. Verificación sintáctica y actualización en Docker exitosas. Se actualizan `diff.patch` y `verification.json`.
