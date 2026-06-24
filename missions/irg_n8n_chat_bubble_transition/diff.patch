@@ -1,0 +1,36 @@
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+index 51c1ded0..96acc1a0 100644
+--- a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+@@ -22,6 +22,15 @@
+                          t-att-data-course-name="n8n_config['course_name']"
+                          t-att-data-subject-name="n8n_config['subject_name']"/>
+                     <style>
++                        /* Transición fluida para el cambio de tamaño del chat */
++                        .n8n-chat, 
++                        .n8n-chat .chat-window {
++                            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
++                                        height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
++                                        bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1),
++                                        right 0.35s cubic-bezier(0.4, 0, 0.2, 1),
++                                        border-radius 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
++                        }
+                         :root {
+                             --chat--color--primary: #1da1f2;
+                             --chat--color--secondary: #1da1f2;
+@@ -104,6 +113,15 @@
+                          t-att-data-course-name="n8n_config['course_name']"
+                          t-att-data-subject-name="n8n_config['subject_name']"/>
+                     <style>
++                        /* Transición fluida para el cambio de tamaño del chat */
++                        .n8n-chat, 
++                        .n8n-chat .chat-window {
++                            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
++                                        height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
++                                        bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1),
++                                        right 0.35s cubic-bezier(0.4, 0, 0.2, 1),
++                                        border-radius 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
++                        }
+                         :root {
+                             --chat--color--primary: #1da1f2;
+                             --chat--color--secondary: #1da1f2;
