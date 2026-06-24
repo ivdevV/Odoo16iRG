@@ -66,10 +66,21 @@
                             padding: 1.5rem !important;
                         }
                         .n8n-chat-fullscreen-btn {
-                            transition: transform 0.2s ease-in-out !important;
+                            display: none !important;
+                            transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s ease-in-out !important;
+                        }
+                        @media (min-width: 576px) {
+                            .n8n-chat-fullscreen-btn {
+                                display: inline-flex !important;
+                            }
                         }
                         .n8n-chat-fullscreen-btn:hover {
-                            transform: scale(1.15) !important;
+                            opacity: 0.9 !important;
+                            background-color: rgba(255, 255, 255, 0.25) !important;
+                            transform: scale(1.05) !important;
+                        }
+                        .n8n-chat-fullscreen-btn:active {
+                            transform: scale(0.95) !important;
                         }
                     </style>
                 </t>
@@ -137,10 +148,21 @@
                             padding: 1.5rem !important;
                         }
                         .n8n-chat-fullscreen-btn {
-                            transition: transform 0.2s ease-in-out !important;
+                            display: none !important;
+                            transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s ease-in-out !important;
+                        }
+                        @media (min-width: 576px) {
+                            .n8n-chat-fullscreen-btn {
+                                display: inline-flex !important;
+                            }
                         }
                         .n8n-chat-fullscreen-btn:hover {
-                            transform: scale(1.15) !important;
+                            opacity: 0.9 !important;
+                            background-color: rgba(255, 255, 255, 0.25) !important;
+                            transform: scale(1.05) !important;
+                        }
+                        .n8n-chat-fullscreen-btn:active {
+                            transform: scale(0.95) !important;
                         }
                     </style>
                 </t>
