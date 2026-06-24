@@ -21,6 +21,22 @@
                          t-att-data-student-email="n8n_config['student_email']"
                          t-att-data-course-name="n8n_config['course_name']"
                          t-att-data-subject-name="n8n_config['subject_name']"/>
+                    <style>
+                        :root {
+                            --chat--color--primary: #1da1f2;
+                            --chat--color--secondary: #1da1f2;
+                            --chat--color-dark: #1da1f2;
+                            --chat--header--background: #1da1f2;
+                            --chat--window--width: 420px;
+                            --chat--window--height: 650px;
+                            --chat--window--border-radius: 16px;
+                            --chat--toggle--background: #1da1f2;
+                            --chat--toggle--hover--background: #0c8de4;
+                            --chat--toggle--active--background: #0b7fcb;
+                            --chat--window--border: 1px solid rgba(0,0,0,0.08);
+                            --chat--window--z-index: 99999;
+                        }
+                    </style>
                 </t>
             </t>
         </xpath>
@@ -41,6 +57,22 @@
                          t-att-data-student-email="n8n_config['student_email']"
                          t-att-data-course-name="n8n_config['course_name']"
                          t-att-data-subject-name="n8n_config['subject_name']"/>
+                    <style>
+                        :root {
+                            --chat--color--primary: #1da1f2;
+                            --chat--color--secondary: #1da1f2;
+                            --chat--color-dark: #1da1f2;
+                            --chat--header--background: #1da1f2;
+                            --chat--window--width: 420px;
+                            --chat--window--height: 650px;
+                            --chat--window--border-radius: 16px;
+                            --chat--toggle--background: #1da1f2;
+                            --chat--toggle--hover--background: #0c8de4;
+                            --chat--toggle--active--background: #0b7fcb;
+                            --chat--window--border: 1px solid rgba(0,0,0,0.08);
+                            --chat--window--z-index: 99999;
+                        }
+                    </style>
                 </t>
             </t>
         </xpath>

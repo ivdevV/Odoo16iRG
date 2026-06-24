@@ -1,0 +1,80 @@
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js b/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
+index 747ba224..56bfb9ab 100644
+--- a/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
+@@ -42,10 +42,22 @@
+                 module.createChat({
+                     webhookUrl: webhookUrl,
+                     showWelcomeScreen: true,
+-                    chatInputPlaceholder: 'Escribe tu consulta...',
+-                    title: title,
+-                    subtitle: courseName + ' - ' + subjectName,
++                    defaultLanguage: 'es',
+                     initialMessages: [welcomeMsg],
++                    i18n: {
++                        es: {
++                            title: title,
++                            subtitle: welcomeMsg,
++                            getStarted: 'Iniciar chat',
++                            inputPlaceholder: 'Escribe tu consulta...'
++                        },
++                        en: {
++                            title: title,
++                            subtitle: welcomeMsg,
++                            getStarted: 'Start chat',
++                            inputPlaceholder: 'Type your question...'
++                        }
++                    },
+                     metadata: {
+                         studentName: studentName,
+                         studentEmail: studentEmail,
+diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+index 20b4fd58..8b89bc01 100644
+--- a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
++++ b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
+@@ -21,6 +21,22 @@
+                          t-att-data-student-email="n8n_config['student_email']"
+                          t-att-data-course-name="n8n_config['course_name']"
+                          t-att-data-subject-name="n8n_config['subject_name']"/>
++                    <style>
++                        :root {
++                            --chat--color--primary: #1da1f2;
++                            --chat--color--secondary: #1da1f2;
++                            --chat--color-dark: #1da1f2;
++                            --chat--header--background: #1da1f2;
++                            --chat--window--width: 420px;
++                            --chat--window--height: 650px;
++                            --chat--window--border-radius: 16px;
++                            --chat--toggle--background: #1da1f2;
++                            --chat--toggle--hover--background: #0c8de4;
++                            --chat--toggle--active--background: #0b7fcb;
++                            --chat--window--border: 1px solid rgba(0,0,0,0.08);
++                            --chat--window--z-index: 99999;
++                        }
++                    </style>
+                 </t>
+             </t>
+         </xpath>
+@@ -41,6 +57,22 @@
+                          t-att-data-student-email="n8n_config['student_email']"
+                          t-att-data-course-name="n8n_config['course_name']"
+                          t-att-data-subject-name="n8n_config['subject_name']"/>
++                    <style>
++                        :root {
++                            --chat--color--primary: #1da1f2;
++                            --chat--color--secondary: #1da1f2;
++                            --chat--color-dark: #1da1f2;
++                            --chat--header--background: #1da1f2;
++                            --chat--window--width: 420px;
++                            --chat--window--height: 650px;
++                            --chat--window--border-radius: 16px;
++                            --chat--toggle--background: #1da1f2;
++                            --chat--toggle--hover--background: #0c8de4;
++                            --chat--toggle--active--background: #0b7fcb;
++                            --chat--window--border: 1px solid rgba(0,0,0,0.08);
++                            --chat--window--z-index: 99999;
++                        }
++                    </style>
+                 </t>
+             </t>
+         </xpath>

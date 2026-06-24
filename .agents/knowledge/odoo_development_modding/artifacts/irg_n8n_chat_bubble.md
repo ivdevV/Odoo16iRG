@@ -53,3 +53,23 @@ El módulo se encuentra en: `addons-extra/extrairg/irg_n8n_chat_bubble`
   - Estado de validación para cada curso (si el chat está habilitado y si cuenta con URL de webhook).
   - Configuración final devuelta.
 
+
+## Personalización, Idiomas y Estilización del Widget (Actualización 2026-06-24)
+* **Internacionalización y Traducciones (`i18n`)**:
+  La inicialización del widget `createChat()` utiliza `defaultLanguage: 'es'` y recibe un objeto `i18n` con traducciones estructuradas para los idiomas configurados (`es` y `en`). Las claves de traducción personalizadas son:
+  - `title`: El título dinámico de la configuración de chat del curso.
+  - `subtitle`: El mensaje de bienvenida (`welcomeMsg`) del curso.
+  - `getStarted`: "Iniciar chat" en `es` y "Start chat" en `en`.
+  - `inputPlaceholder`: "Escribe tu consulta..." en `es` y "Type your question..." en `en`.
+  - *Nota*: Los parámetros de configuración de primer nivel `title`, `subtitle` y `chatInputPlaceholder` se eliminaron del objeto raíz para ser administrados de forma centralizada bajo la propiedad `i18n`.
+
+* **Estilización mediante Variables CSS**:
+  Se inyecta un bloque `<style>` con variables CSS de `:root` para `@n8n/chat` directamente después del contenedor `#irg_n8n_chat_bubble_config`. Esto permite adaptar la burbuja visualmente (colores de cabecera y toggle, tamaños y bordes) de forma consistente:
+  - `--chat--color--primary` / `--chat--color--secondary` / `--chat--color-dark`: `#1da1f2`
+  - `--chat--header--background` / `--chat--toggle--background`: `#1da1f2`
+  - `--chat--toggle--hover--background`: `#0c8de4`
+  - `--chat--toggle--active--background`: `#0b7fcb`
+  - `--chat--window--width`: `420px` / `--chat--window--height`: `650px`
+  - `--chat--window--border-radius`: `16px` / `--chat--window--z-index`: `99999`
+
+

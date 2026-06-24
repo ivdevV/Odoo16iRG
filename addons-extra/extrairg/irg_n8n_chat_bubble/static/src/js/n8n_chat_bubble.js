@@ -42,10 +42,22 @@
                 module.createChat({
                     webhookUrl: webhookUrl,
                     showWelcomeScreen: true,
-                    chatInputPlaceholder: 'Escribe tu consulta...',
-                    title: title,
-                    subtitle: courseName + ' - ' + subjectName,
+                    defaultLanguage: 'es',
                     initialMessages: [welcomeMsg],
+                    i18n: {
+                        es: {
+                            title: title,
+                            subtitle: welcomeMsg,
+                            getStarted: 'Iniciar chat',
+                            inputPlaceholder: 'Escribe tu consulta...'
+                        },
+                        en: {
+                            title: title,
+                            subtitle: welcomeMsg,
+                            getStarted: 'Start chat',
+                            inputPlaceholder: 'Type your question...'
+                        }
+                    },
                     metadata: {
                         studentName: studentName,
                         studentEmail: studentEmail,
