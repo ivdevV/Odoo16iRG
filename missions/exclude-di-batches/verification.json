@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "task": "exclude-di-batches",
+  "checks": [
+    { "name": "unit_tests", "result": "pass", "detail": "4 passed, 0 failed, 0 error" }
+  ],
+  "evidence": ["missions/exclude-di-batches/execution.log", "missions/exclude-di-batches/diff.patch"],
+  "model_tier_used": "standard",
+  "escalations": 0
+}
