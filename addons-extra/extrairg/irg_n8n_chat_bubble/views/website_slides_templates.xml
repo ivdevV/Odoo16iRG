@@ -41,6 +41,36 @@
                                 --chat--window--width: 600px;
                             }
                         }
+                        body.n8n-chat-fullscreen {
+                            --chat--window--width: 100vw !important;
+                            --chat--window--height: 100vh !important;
+                            --chat--window--bottom: 0px !important;
+                            --chat--window--right: 0px !important;
+                            --chat--window--border-radius: 0px !important;
+                            --chat--window--z-index: 99999 !important;
+                        }
+                        .chat-message-markdown p {
+                            margin: 0 0 8px 0 !important;
+                            padding: 0 !important;
+                        }
+                        .chat-message-markdown ul,
+                        .chat-message-markdown ol {
+                            margin: 0 0 8px 0 !important;
+                            padding-left: 20px !important;
+                        }
+                        .chat-message-markdown li {
+                            margin: 4px 0 !important;
+                            padding: 0 !important;
+                        }
+                        .chat-messages-list {
+                            padding: 1.5rem !important;
+                        }
+                        .n8n-chat-fullscreen-btn {
+                            transition: transform 0.2s ease-in-out !important;
+                        }
+                        .n8n-chat-fullscreen-btn:hover {
+                            transform: scale(1.15) !important;
+                        }
                     </style>
                 </t>
             </t>
@@ -81,6 +111,36 @@
                             :root {
                                 --chat--window--width: 600px;
                             }
+                        }
+                        body.n8n-chat-fullscreen {
+                            --chat--window--width: 100vw !important;
+                            --chat--window--height: 100vh !important;
+                            --chat--window--bottom: 0px !important;
+                            --chat--window--right: 0px !important;
+                            --chat--window--border-radius: 0px !important;
+                            --chat--window--z-index: 99999 !important;
+                        }
+                        .chat-message-markdown p {
+                            margin: 0 0 8px 0 !important;
+                            padding: 0 !important;
+                        }
+                        .chat-message-markdown ul,
+                        .chat-message-markdown ol {
+                            margin: 0 0 8px 0 !important;
+                            padding-left: 20px !important;
+                        }
+                        .chat-message-markdown li {
+                            margin: 4px 0 !important;
+                            padding: 0 !important;
+                        }
+                        .chat-messages-list {
+                            padding: 1.5rem !important;
+                        }
+                        .n8n-chat-fullscreen-btn {
+                            transition: transform 0.2s ease-in-out !important;
+                        }
+                        .n8n-chat-fullscreen-btn:hover {
+                            transform: scale(1.15) !important;
                         }
                     </style>
                 </t>

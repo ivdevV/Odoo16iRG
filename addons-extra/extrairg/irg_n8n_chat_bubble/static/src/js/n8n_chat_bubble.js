@@ -26,6 +26,7 @@
 
         // Marcar como inicializado para prevenir colisiones o bucles de llamadas
         window.n8nChatInitialized = true;
+        setupFullscreenObserver();
 
         // Cargar el CSS del widget de chat de n8n si no existe
         if (!document.getElementById('n8n-chat-style')) {
@@ -71,6 +72,65 @@
                 console.error('Error al instanciar el chat de n8n:', err);
                 window.n8nChatInitialized = false;
             });
+    }
+
+    function injectFullscreenButton(header) {
+        if (header.querySelector('.n8n-chat-fullscreen-btn')) {
+            return;
+        }
+
+        const btn = document.createElement('button');
+        btn.className = 'n8n-chat-fullscreen-btn';
+        btn.type = 'button';
+        btn.title = 'Pantalla completa';
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path class="fs-icon-enter" d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>`;
+        
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isFullscreen = document.body.classList.toggle('n8n-chat-fullscreen');
+            btn.title = isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa';
+            
+            const path = btn.querySelector('path');
+            if (isFullscreen) {
+                // Exit fullscreen icon: shrink
+                path.setAttribute('d', 'M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4');
+            } else {
+                // Enter fullscreen icon: expand
+                path.setAttribute('d', 'M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3');
+            }
+        });
+
+        const closeBtn = header.querySelector('.chat-close-button');
+        if (closeBtn) {
+            header.insertBefore(btn, closeBtn);
+        } else {
+            header.appendChild(btn);
+        }
+    }
+
+    function setupFullscreenObserver() {
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                mutation.addedNodes.forEach(function (node) {
+                    if (node.nodeType === 1) {
+                        const header = node.classList.contains('chat-header') 
+                            ? node 
+                            : node.querySelector('.chat-header');
+                        if (header) {
+                            injectFullscreenButton(header);
+                        }
+                    }
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        const header = document.querySelector('.chat-header');
+        if (header) {
+            injectFullscreenButton(header);
+        }
     }
 
     // Registrar observadores o listeners de carga

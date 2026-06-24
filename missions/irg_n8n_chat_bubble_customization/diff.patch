@@ -1,59 +1,155 @@
 diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js b/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
-index 56bfb9ab..71f85855 100644
+index 71f85855..51ccbc8b 100644
 --- a/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
 +++ b/addons-extra/extrairg/irg_n8n_chat_bubble/static/src/js/n8n_chat_bubble.js
-@@ -37,23 +37,24 @@
-         }
+@@ -26,6 +26,7 @@
  
-         // Cargar el bundle ES del chat de n8n dinámicamente
-+        const customWelcome = '¡Hola! Soy tu tutor virtual, pregúntame cualquier cosa 🤖';
-         import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')
-             .then(function (module) {
-                 module.createChat({
-                     webhookUrl: webhookUrl,
-                     showWelcomeScreen: true,
-                     defaultLanguage: 'es',
--                    initialMessages: [welcomeMsg],
-+                    initialMessages: [customWelcome],
-                     i18n: {
-                         es: {
-                             title: title,
--                            subtitle: welcomeMsg,
-+                            subtitle: customWelcome,
-                             getStarted: 'Iniciar chat',
-                             inputPlaceholder: 'Escribe tu consulta...'
-                         },
-                         en: {
-                             title: title,
--                            subtitle: welcomeMsg,
-+                            subtitle: 'Hi! I am your virtual tutor, ask me anything 🤖',
-                             getStarted: 'Start chat',
-                             inputPlaceholder: 'Type your question...'
-                         }
+         // Marcar como inicializado para prevenir colisiones o bucles de llamadas
+         window.n8nChatInitialized = true;
++        setupFullscreenObserver();
+ 
+         // Cargar el CSS del widget de chat de n8n si no existe
+         if (!document.getElementById('n8n-chat-style')) {
+@@ -73,6 +74,65 @@
+             });
+     }
+ 
++    function injectFullscreenButton(header) {
++        if (header.querySelector('.n8n-chat-fullscreen-btn')) {
++            return;
++        }
++
++        const btn = document.createElement('button');
++        btn.className = 'n8n-chat-fullscreen-btn';
++        btn.type = 'button';
++        btn.title = 'Pantalla completa';
++        btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
++            <path class="fs-icon-enter" d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
++        </svg>`;
++        
++        btn.addEventListener('click', function (e) {
++            e.stopPropagation();
++            const isFullscreen = document.body.classList.toggle('n8n-chat-fullscreen');
++            btn.title = isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa';
++            
++            const path = btn.querySelector('path');
++            if (isFullscreen) {
++                // Exit fullscreen icon: shrink
++                path.setAttribute('d', 'M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4');
++            } else {
++                // Enter fullscreen icon: expand
++                path.setAttribute('d', 'M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3');
++            }
++        });
++
++        const closeBtn = header.querySelector('.chat-close-button');
++        if (closeBtn) {
++            header.insertBefore(btn, closeBtn);
++        } else {
++            header.appendChild(btn);
++        }
++    }
++
++    function setupFullscreenObserver() {
++        const observer = new MutationObserver(function (mutations) {
++            mutations.forEach(function (mutation) {
++                mutation.addedNodes.forEach(function (node) {
++                    if (node.nodeType === 1) {
++                        const header = node.classList.contains('chat-header') 
++                            ? node 
++                            : node.querySelector('.chat-header');
++                        if (header) {
++                            injectFullscreenButton(header);
++                        }
++                    }
++                });
++            });
++        });
++        observer.observe(document.body, { childList: true, subtree: true });
++
++        const header = document.querySelector('.chat-header');
++        if (header) {
++            injectFullscreenButton(header);
++        }
++    }
++
+     // Registrar observadores o listeners de carga
+     if (document.readyState === 'complete' || document.readyState === 'interactive') {
+         initN8nChat();
 diff --git a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
-index 8b89bc01..5cc05694 100644
+index 5cc05694..021ffc7c 100644
 --- a/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
 +++ b/addons-extra/extrairg/irg_n8n_chat_bubble/views/website_slides_templates.xml
-@@ -36,6 +36,11 @@
-                             --chat--window--border: 1px solid rgba(0,0,0,0.08);
-                             --chat--window--z-index: 99999;
+@@ -41,6 +41,36 @@
+                                 --chat--window--width: 600px;
+                             }
                          }
-+                        @media (min-width: 576px) {
-+                            :root {
-+                                --chat--window--width: 600px;
-+                            }
++                        body.n8n-chat-fullscreen {
++                            --chat--window--width: 100vw !important;
++                            --chat--window--height: 100vh !important;
++                            --chat--window--bottom: 0px !important;
++                            --chat--window--right: 0px !important;
++                            --chat--window--border-radius: 0px !important;
++                            --chat--window--z-index: 99999 !important;
++                        }
++                        .chat-message-markdown p {
++                            margin: 0 0 8px 0 !important;
++                            padding: 0 !important;
++                        }
++                        .chat-message-markdown ul,
++                        .chat-message-markdown ol {
++                            margin: 0 0 8px 0 !important;
++                            padding-left: 20px !important;
++                        }
++                        .chat-message-markdown li {
++                            margin: 4px 0 !important;
++                            padding: 0 !important;
++                        }
++                        .chat-messages-list {
++                            padding: 1.5rem !important;
++                        }
++                        .n8n-chat-fullscreen-btn {
++                            transition: transform 0.2s ease-in-out !important;
++                        }
++                        .n8n-chat-fullscreen-btn:hover {
++                            transform: scale(1.15) !important;
 +                        }
                      </style>
                  </t>
              </t>
-@@ -72,6 +77,11 @@
-                             --chat--window--border: 1px solid rgba(0,0,0,0.08);
-                             --chat--window--z-index: 99999;
+@@ -82,6 +112,36 @@
+                                 --chat--window--width: 600px;
+                             }
                          }
-+                        @media (min-width: 576px) {
-+                            :root {
-+                                --chat--window--width: 600px;
-+                            }
++                        body.n8n-chat-fullscreen {
++                            --chat--window--width: 100vw !important;
++                            --chat--window--height: 100vh !important;
++                            --chat--window--bottom: 0px !important;
++                            --chat--window--right: 0px !important;
++                            --chat--window--border-radius: 0px !important;
++                            --chat--window--z-index: 99999 !important;
++                        }
++                        .chat-message-markdown p {
++                            margin: 0 0 8px 0 !important;
++                            padding: 0 !important;
++                        }
++                        .chat-message-markdown ul,
++                        .chat-message-markdown ol {
++                            margin: 0 0 8px 0 !important;
++                            padding-left: 20px !important;
++                        }
++                        .chat-message-markdown li {
++                            margin: 4px 0 !important;
++                            padding: 0 !important;
++                        }
++                        .chat-messages-list {
++                            padding: 1.5rem !important;
++                        }
++                        .n8n-chat-fullscreen-btn {
++                            transition: transform 0.2s ease-in-out !important;
++                        }
++                        .n8n-chat-fullscreen-btn:hover {
++                            transform: scale(1.15) !important;
 +                        }
                      </style>
                  </t>
