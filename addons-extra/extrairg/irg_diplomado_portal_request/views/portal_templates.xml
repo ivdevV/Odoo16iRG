@@ -6,7 +6,7 @@
                 <div class="container py-4">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
                         <div>
-                            <h2 class="h3 mb-1 text-primary fw-bold">Diploma del Diplomado</h2>
+                            <h2 class="h3 mb-1 text-primary fw-bold">Diploma Campus Internacional</h2>
                             <p class="text-muted mb-0 small" t-out="course.name if course and course.exists() else ''"/>
                         </div>
                         <a t-if="course and course.exists()" t-attf-href="/campus/course/#{course.id}" class="btn btn-light border rounded-pill px-4">

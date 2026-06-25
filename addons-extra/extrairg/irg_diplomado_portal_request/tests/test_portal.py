@@ -252,6 +252,6 @@ class TestDiplomadoPortalRequest(HttpCase):
     def test_course_tile_is_specific_for_diplomado(self):
         view = self.env.ref('irg_diplomado_portal_request.course_diplomado_specific_tile')
         arch = view.arch_db
-        self.assertIn('Diploma del Diplomado', arch)
+        self.assertIn('Diploma Campus Internacional', arch)
         self.assertIn('/campus/diplomados/#{op_course_id}', arch)
         self.assertIn('course_id.irg_is_diplomado()', arch)

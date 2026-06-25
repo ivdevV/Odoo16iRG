@@ -1,0 +1,12 @@
+# Log de Ejecución - Renombrar "Diploma del Diplomado" a "Diploma Campus Internacional"
+
+- **Fase de Planificación:** Plan definido y aprobado por el usuario.
+- **Implementación de Cambios:**
+  - Se modificó la etiqueta del tile en `addons-extra/extrairg/irg_diplomado_portal_request/views/course_portal_tiles.xml`.
+  - Se modificó el encabezado principal de la página del portal en `addons-extra/extrairg/irg_diplomado_portal_request/views/portal_templates.xml`.
+  - Se actualizó la aserción de texto en la prueba automatizada en `addons-extra/extrairg/irg_diplomado_portal_request/tests/test_portal.py`.
+  - Se actualizó la referencia en el archivo de documentación `doc/modules/extrairg/irg_diplomado_portal_request.md`.
+- **Diferencial:** Generación del archivo `diff.patch` con los cambios.
+- **Pruebas y Validación:**
+  - El intento de ejecución de tests locales con Docker falló debido a que el demonio de Docker no está levantado/accesible en el entorno actual.
+  - Validación de sintaxis e integridad realizada con éxito.
