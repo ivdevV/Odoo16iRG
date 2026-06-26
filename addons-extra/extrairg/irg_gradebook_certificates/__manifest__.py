@@ -27,6 +27,7 @@
         'portal',
         'mail',
         'website',
+        'irg_op_student_fields',
     ],
     'data': [
         'security/ir.model.access.csv',

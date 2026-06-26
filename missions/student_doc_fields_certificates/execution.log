@@ -1,0 +1,20 @@
+# Execution Log - student_doc_fields_certificates
+
+## [2026-06-26T10:36:00]
+- Fase de Planificación finalizada y aprobada por el usuario.
+- Iniciando fase de Implementación. Tier standard.
+
+## [2026-06-26T10:38:00]
+- Modificado `irg_gradebook_certificates/models/irg_certificate_request.py` para consultar `op.student` con fallback a `res.partner`.
+- Modificado `irg_gradebook_certificates/report/certificate_templates.xml` para adaptar el template PDF.
+- Modificado `irg_certificate_partial/models/irg_certificate_request.py` para adaptar los certificados parciales de notas.
+- Añadida prueba unitaria `test_08_partial_gradebook_uses_student_identification_fields` en `irg_certificate_partial/tests/test_partial.py`.
+
+## [2026-06-26T10:41:00]
+- Se resolvió un NameError de importación de `Pt` en los archivos de pruebas unitarias.
+- Se añadió la dependencia `'irg_op_student_fields'` en `irg_gradebook_certificates/__manifest__.py` para asegurar que el modelo `op.document.type` y sus campos se cargan correctamente en el registro de Odoo al ejecutar las pruebas.
+- Se corrigió la firma esperada para Raimon en el test 10 de `irg_gradebook_certificates` a la versión simplificada del certificado físico ("Raimon Gaja / Director General iRG").
+- Se ejecutaron las pruebas locales de Odoo en Docker Compose:
+  - `irg_certificate_partial`: 14 tests pasados exitosamente (0 errores, 0 fallos).
+  - `irg_gradebook_certificates`: 19 tests pasados exitosamente (0 errores, 0 fallos).
+- Generado `diff.patch` y `verification.json` con estado `passed`.

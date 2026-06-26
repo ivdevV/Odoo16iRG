@@ -1,0 +1,217 @@
+diff --git a/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py b/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py
+index 04e2904c..b50438c8 100644
+--- a/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py
++++ b/addons-extra/extrairg/irg_certificate_partial/models/irg_certificate_request.py
+@@ -308,13 +308,29 @@ class IrgCertificateRequest(models.Model):
+ 
+         # --- Collect data ---------------------------------------------------
+         partner = self.partner_id
+-        identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
+-        id_label = (
+-            identification_type.name
+-            if identification_type
+-            else 'DNI/Pasaporte'
+-        )
+-        documento = '%s %s' % (id_label, partner.vat or '')
++        student = self.gradebook_student_id.student_id
++        if not student and partner:
++            student = self.env['op.student'].sudo().search([('partner_id', '=', partner.id)], limit=1)
++
++        id_label = False
++        doc_num = False
++        if student:
++            if student.document_type_id:
++                id_label = student.document_type_id.name
++            if student.document_number:
++                doc_num = student.document_number
++
++        if not id_label:
++            identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
++            id_label = (
++                identification_type.name
++                if identification_type
++                else 'DNI/Pasaporte'
++            )
++        if not doc_num:
++            doc_num = partner.vat or ''
++
++        documento = '%s %s' % (id_label, doc_num)
+ 
+         # Filtrar asignaturas obligatorias (hook extensible, p.ej. exclusion NLEX)
+         subjects = self._get_certificate_subjects()
+diff --git a/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py b/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
+index a8c4173d..3a484971 100644
+--- a/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
++++ b/addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py
+@@ -5,6 +5,7 @@ from zipfile import ZipFile
+ from lxml import etree
+ 
+ from docx import Document as DocxDocument
++from docx.shared import Pt
+ 
+ from odoo import fields
+ from odoo.tests.common import TransactionCase
+@@ -45,7 +46,10 @@ class TestIrgCertificatePartial(TransactionCase):
+     def setUpClass(cls):
+         super().setUpClass()
+         # Create student and course
+-        cls.partner = cls.env['res.partner'].create({'name': 'Test Student Partial'})
++        partner_vals = {'name': 'Test Student Partial'}
++        if 'gender' in cls.env['res.partner']._fields:
++            partner_vals['gender'] = 'm'
++        cls.partner = cls.env['res.partner'].create(partner_vals)
+         cls.course = cls.env['op.course'].create({'name': 'Test Course Partial', 'code': 'TCPART01'})
+         cls.batch = cls.env['op.batch'].create({
+             'name': 'Batch Partial',
+@@ -746,4 +750,47 @@ class TestIrgCertificatePartial(TransactionCase):
+         self.assertTrue(len(sig_paras) > 0)
+         self.assertEqual(sig_paras[0].text, "Raimon Gaja\nDirector General iRG")
+ 
++    def test_08_partial_gradebook_uses_student_identification_fields(self):
++        """Test that the student identification fields are used in preference to the partner's fields."""
++        doc_type = self.env['op.document.type'].create({
++            'name': 'Pasaporte Especial',
++            'code': 'PAS_ESP',
++        })
++        student = self.gradebook.student_id
++        if not student:
++            student = self.env['op.student'].create({
++                'partner_id': self.partner.id,
++                'first_name': 'Test',
++                'last_name': 'Student',
++            })
++        student.write({
++            'document_type_id': doc_type.id,
++            'document_number': 'STUDENT-DOC-777',
++        })
++        # Explicitly set partner fields to something else to ensure student fields are preferred
++        if 'l10n_latam_identification_type_id' in self.partner._fields:
++            partner_doc_type = self.env['l10n_latam.identification.type'].create({
++                'name': 'DNI',
++            })
++            self.partner.with_context(no_vat_validation=True).write({
++                'l10n_latam_identification_type_id': partner_doc_type.id,
++                'vat': 'PARTNER-VAT-999',
++            })
++
++        cert = self.env['irg.certificate.request'].create({
++            'gradebook_student_id': self.gradebook.id,
++            'document_type': 'gradebook_partial',
++            'certificate_type': 'digital',
++            'state': 'draft',
++        })
++
++        res_file = cert._fill_template()
++        document = DocxDocument(res_file)
++        paragraph_text = '\n'.join(para.text for para in document.paragraphs)
++
++        self.assertIn('Pasaporte Especial STUDENT-DOC-777', paragraph_text)
++        if 'l10n_latam_identification_type_id' in self.partner._fields:
++            self.assertNotIn('DNI PARTNER-VAT-999', paragraph_text)
++
++
+ 
+diff --git a/addons-extra/extrairg/irg_gradebook_certificates/__manifest__.py b/addons-extra/extrairg/irg_gradebook_certificates/__manifest__.py
+index 286b18ff..4613f633 100644
+--- a/addons-extra/extrairg/irg_gradebook_certificates/__manifest__.py
++++ b/addons-extra/extrairg/irg_gradebook_certificates/__manifest__.py
+@@ -27,6 +27,7 @@
+         'portal',
+         'mail',
+         'website',
++        'irg_op_student_fields',
+     ],
+     'data': [
+         'security/ir.model.access.csv',
+diff --git a/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py b/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py
+index 04674244..c0ea1d70 100644
+--- a/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py
++++ b/addons-extra/extrairg/irg_gradebook_certificates/models/irg_certificate_request.py
+@@ -1018,13 +1018,29 @@ class IrgCertificateRequest(models.Model):
+ 
+         # --- Collect data ---------------------------------------------------
+         partner = self.partner_id
+-        identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
+-        id_label = (
+-            identification_type.name
+-            if identification_type
+-            else 'DNI/Pasaporte'
+-        )
+-        documento = '%s %s' % (id_label, partner.vat or '')
++        student = self.gradebook_student_id.student_id
++        if not student and partner:
++            student = self.env['op.student'].sudo().search([('partner_id', '=', partner.id)], limit=1)
++
++        id_label = False
++        doc_num = False
++        if student:
++            if student.document_type_id:
++                id_label = student.document_type_id.name
++            if student.document_number:
++                doc_num = student.document_number
++
++        if not id_label:
++            identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
++            id_label = (
++                identification_type.name
++                if identification_type
++                else 'DNI/Pasaporte'
++            )
++        if not doc_num:
++            doc_num = partner.vat or ''
++
++        documento = '%s %s' % (id_label, doc_num)
+ 
+         subjects = self._get_certificate_subjects()
+         nota_media = '%.2f' % (self.gradebook_student_id.total_final or 0.0)
+diff --git a/addons-extra/extrairg/irg_gradebook_certificates/report/certificate_templates.xml b/addons-extra/extrairg/irg_gradebook_certificates/report/certificate_templates.xml
+index e4cce73d..0fda08cc 100644
+--- a/addons-extra/extrairg/irg_gradebook_certificates/report/certificate_templates.xml
++++ b/addons-extra/extrairg/irg_gradebook_certificates/report/certificate_templates.xml
+@@ -5,9 +5,11 @@
+         <template id="report_certificate_document">
+             <t t-call="web.html_container">
+                 <t t-foreach="docs" t-as="o">
++                    <t t-set="student" t-value="o.gradebook_student_id.student_id or o.env['op.student'].sudo().search([('partner_id', '=', o.partner_id.id)], limit=1)"/>
+                     <t t-set="id_type_name"
+-                       t-value="o.partner_id.l10n_latam_identification_type_id.name if o.partner_id.l10n_latam_identification_type_id else False"/>
+-                    <t t-set="id_number" t-value="o.partner_id.vat or ''"/>
++                       t-value="student.document_type_id.name if student and student.document_type_id else (o.partner_id.l10n_latam_identification_type_id.name if o.partner_id.l10n_latam_identification_type_id else False)"/>
++                    <t t-set="id_number"
++                       t-value="student.document_number if student and student.document_number else (o.partner_id.vat or '')"/>
+                     <t t-set="subjects" t-value="o._get_certificate_subjects()"/>
+ 
+                     <div class="article"
+diff --git a/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py b/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py
+index 3fe12a19..5c278f44 100644
+--- a/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py
++++ b/addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py
+@@ -5,6 +5,7 @@ from zipfile import ZipFile
+ from lxml import etree
+ 
+ from docx import Document as DocxDocument
++from docx.shared import Pt
+ 
+ from odoo import fields
+ from odoo.tests.common import TransactionCase
+@@ -47,7 +48,10 @@ class TestIrgCertificateRequest(TransactionCase):
+     def setUpClass(cls):
+         super().setUpClass()
+         # Create minimal linked records
+-        cls.partner = cls.env['res.partner'].create({'name': 'Test Student Portal'})
++        partner_vals = {'name': 'Test Student Portal'}
++        if 'gender' in cls.env['res.partner']._fields:
++            partner_vals['gender'] = 'm'
++        cls.partner = cls.env['res.partner'].create(partner_vals)
+         cls.course = cls.env['op.course'].create({'name': 'Test Course', 'code': 'TC01'})
+         cls.batch = cls.env['op.batch'].create({
+             'name': 'Batch A',
+@@ -279,7 +283,7 @@ class TestIrgCertificateRequest(TransactionCase):
+         for certificate_type, signer, signature_lines in (
+             ('digital', 'raimon', ['Raimon Gaja Jaumeandreu', 'Instituto Raimon Gaja']),
+             ('digital', 'dpto_academico', ['Departamento Académico', 'Instituto Raimon Gaja']),
+-            ('physical', 'raimon', ['Raimon Gaja Jaumeandreu', 'Instituto Raimon Gaja']),
++            ('physical', 'raimon', ['Raimon Gaja', 'Director General iRG']),
+         ):
+             cert = self.env['irg.certificate.request'].create({
+                 'gradebook_student_id': self.gradebook.id,

@@ -1018,13 +1018,29 @@ class IrgCertificateRequest(models.Model):
 
         # --- Collect data ---------------------------------------------------
         partner = self.partner_id
-        identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
-        id_label = (
-            identification_type.name
-            if identification_type
-            else 'DNI/Pasaporte'
-        )
-        documento = '%s %s' % (id_label, partner.vat or '')
+        student = self.gradebook_student_id.student_id
+        if not student and partner:
+            student = self.env['op.student'].sudo().search([('partner_id', '=', partner.id)], limit=1)
+
+        id_label = False
+        doc_num = False
+        if student:
+            if student.document_type_id:
+                id_label = student.document_type_id.name
+            if student.document_number:
+                doc_num = student.document_number
+
+        if not id_label:
+            identification_type = getattr(partner, 'l10n_latam_identification_type_id', False)
+            id_label = (
+                identification_type.name
+                if identification_type
+                else 'DNI/Pasaporte'
+            )
+        if not doc_num:
+            doc_num = partner.vat or ''
+
+        documento = '%s %s' % (id_label, doc_num)
 
         subjects = self._get_certificate_subjects()
         nota_media = '%.2f' % (self.gradebook_student_id.total_final or 0.0)
