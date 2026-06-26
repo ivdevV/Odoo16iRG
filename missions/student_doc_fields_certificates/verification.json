@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "task": "student_doc_fields_certificates",
+  "checks": [
+    {
+      "name": "unit_tests_partial",
+      "result": "pass",
+      "detail": "14 passed, 0 failed/errors in irg_certificate_partial"
+    },
+    {
+      "name": "unit_tests_gradebook",
+      "result": "pass",
+      "detail": "19 passed, 0 failed/errors in irg_gradebook_certificates"
+    },
+    {
+      "name": "manifest_dependencies",
+      "result": "pass",
+      "detail": "added irg_op_student_fields dependency to irg_gradebook_certificates"
+    }
+  ],
+  "evidence": [
+    "missions/student_doc_fields_certificates/diff.patch",
+    "missions/student_doc_fields_certificates/execution.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

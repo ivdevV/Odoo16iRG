@@ -6,7 +6,7 @@ Modulo Odoo 16 para solicitar desde el portal del alumno el diploma especifico d
 
 ## Comportamiento funcional
 
-- Anade un tile especifico `Diploma del Diplomado` en las herramientas del curso cuando el curso es un diplomado.
+- Anade un tile especifico `Diploma Campus Internacional` en las herramientas del curso cuando el curso es un diplomado.
 - Oculta el tile generico `Certificados y Diplomas` en cursos de diplomado.
 - Permite descargar el diploma solo si la libreta academica del alumno esta completada y la calificacion final es estrictamente superior a `7.0`.
 - Al pulsar `Descargar Diploma`, crea el registro `irg.diplomado.registry` si todavia no existe, genera el PDF y responde con la descarga directa.

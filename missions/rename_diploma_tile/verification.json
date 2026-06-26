@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "task": "rename_diploma_tile",
+  "checks": [
+    { "name": "xml_syntax", "result": "pass", "detail": "XML files modified with correct syntax and tags" },
+    { "name": "test_script_alignment", "result": "pass", "detail": "test_portal.py assertion updated to match 'Diploma Campus Internacional'" }
+  ],
+  "evidence": ["missions/rename_diploma_tile/diff.patch"],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

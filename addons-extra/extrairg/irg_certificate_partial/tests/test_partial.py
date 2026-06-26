@@ -5,6 +5,7 @@ from zipfile import ZipFile
 from lxml import etree
 
 from docx import Document as DocxDocument
+from docx.shared import Pt
 
 from odoo import fields
 from odoo.tests.common import TransactionCase
@@ -45,7 +46,10 @@ class TestIrgCertificatePartial(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         # Create student and course
-        cls.partner = cls.env['res.partner'].create({'name': 'Test Student Partial'})
+        partner_vals = {'name': 'Test Student Partial'}
+        if 'gender' in cls.env['res.partner']._fields:
+            partner_vals['gender'] = 'm'
+        cls.partner = cls.env['res.partner'].create(partner_vals)
         cls.course = cls.env['op.course'].create({'name': 'Test Course Partial', 'code': 'TCPART01'})
         cls.batch = cls.env['op.batch'].create({
             'name': 'Batch Partial',
@@ -745,5 +749,48 @@ class TestIrgCertificatePartial(TransactionCase):
         sig_paras = [p for p in doc.paragraphs if 'Director General iRG' in p.text]
         self.assertTrue(len(sig_paras) > 0)
         self.assertEqual(sig_paras[0].text, "Raimon Gaja\nDirector General iRG")
+
+    def test_08_partial_gradebook_uses_student_identification_fields(self):
+        """Test that the student identification fields are used in preference to the partner's fields."""
+        doc_type = self.env['op.document.type'].create({
+            'name': 'Pasaporte Especial',
+            'code': 'PAS_ESP',
+        })
+        student = self.gradebook.student_id
+        if not student:
+            student = self.env['op.student'].create({
+                'partner_id': self.partner.id,
+                'first_name': 'Test',
+                'last_name': 'Student',
+            })
+        student.write({
+            'document_type_id': doc_type.id,
+            'document_number': 'STUDENT-DOC-777',
+        })
+        # Explicitly set partner fields to something else to ensure student fields are preferred
+        if 'l10n_latam_identification_type_id' in self.partner._fields:
+            partner_doc_type = self.env['l10n_latam.identification.type'].create({
+                'name': 'DNI',
+            })
+            self.partner.with_context(no_vat_validation=True).write({
+                'l10n_latam_identification_type_id': partner_doc_type.id,
+                'vat': 'PARTNER-VAT-999',
+            })
+
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+
+        res_file = cert._fill_template()
+        document = DocxDocument(res_file)
+        paragraph_text = '\n'.join(para.text for para in document.paragraphs)
+
+        self.assertIn('Pasaporte Especial STUDENT-DOC-777', paragraph_text)
+        if 'l10n_latam_identification_type_id' in self.partner._fields:
+            self.assertNotIn('DNI PARTNER-VAT-999', paragraph_text)
+
 
 

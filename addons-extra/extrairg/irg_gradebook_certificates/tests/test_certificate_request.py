@@ -5,6 +5,7 @@ from zipfile import ZipFile
 from lxml import etree
 
 from docx import Document as DocxDocument
+from docx.shared import Pt
 
 from odoo import fields
 from odoo.tests.common import TransactionCase
@@ -47,7 +48,10 @@ class TestIrgCertificateRequest(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         # Create minimal linked records
-        cls.partner = cls.env['res.partner'].create({'name': 'Test Student Portal'})
+        partner_vals = {'name': 'Test Student Portal'}
+        if 'gender' in cls.env['res.partner']._fields:
+            partner_vals['gender'] = 'm'
+        cls.partner = cls.env['res.partner'].create(partner_vals)
         cls.course = cls.env['op.course'].create({'name': 'Test Course', 'code': 'TC01'})
         cls.batch = cls.env['op.batch'].create({
             'name': 'Batch A',
@@ -279,7 +283,7 @@ class TestIrgCertificateRequest(TransactionCase):
         for certificate_type, signer, signature_lines in (
             ('digital', 'raimon', ['Raimon Gaja Jaumeandreu', 'Instituto Raimon Gaja']),
             ('digital', 'dpto_academico', ['Departamento Académico', 'Instituto Raimon Gaja']),
-            ('physical', 'raimon', ['Raimon Gaja Jaumeandreu', 'Instituto Raimon Gaja']),
+            ('physical', 'raimon', ['Raimon Gaja', 'Director General iRG']),
         ):
             cert = self.env['irg.certificate.request'].create({
                 'gradebook_student_id': self.gradebook.id,

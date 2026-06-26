@@ -5,9 +5,11 @@
         <template id="report_certificate_document">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
+                    <t t-set="student" t-value="o.gradebook_student_id.student_id or o.env['op.student'].sudo().search([('partner_id', '=', o.partner_id.id)], limit=1)"/>
                     <t t-set="id_type_name"
-                       t-value="o.partner_id.l10n_latam_identification_type_id.name if o.partner_id.l10n_latam_identification_type_id else False"/>
-                    <t t-set="id_number" t-value="o.partner_id.vat or ''"/>
+                       t-value="student.document_type_id.name if student and student.document_type_id else (o.partner_id.l10n_latam_identification_type_id.name if o.partner_id.l10n_latam_identification_type_id else False)"/>
+                    <t t-set="id_number"
+                       t-value="student.document_number if student and student.document_number else (o.partner_id.vat or '')"/>
                     <t t-set="subjects" t-value="o._get_certificate_subjects()"/>
 
                     <div class="article"
