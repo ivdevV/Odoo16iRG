@@ -18,12 +18,13 @@
                             attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
                 </xpath>
 
-                <!-- Modifica el tree para que solo sea readonly en estado 'done', permitiendo el borrado individual de asignaturas en 'in_progress' -->
+                <!-- Modifica el tree para que solo sea readonly en estado 'done', y permite la eliminación nativa de líneas (delete="1") -->
                 <xpath expr="//field[@name='gradebook_subject_ids']/tree" position="attributes">
                     <attribute name="attrs">{'readonly': [('state', '=', 'done')]}</attribute>
+                    <attribute name="delete">1</attribute>
                 </xpath>
 
-                <!-- Reemplaza el botón de papelera individual para eliminar cualquier regla de invisibilidad redundante (attrs) que oculte la columna en el cliente web -->
+                <!-- Reemplaza el botón de papelera individual para remover cualquier atributo attrs de invisibilidad -->
                 <xpath expr="//field[@name='gradebook_subject_ids']/tree/button[@name='unlink_subject']" position="replace">
                     <button name="unlink_subject" string="" type="object" class="btn-danger" icon="fa-trash"/>
                 </xpath>
