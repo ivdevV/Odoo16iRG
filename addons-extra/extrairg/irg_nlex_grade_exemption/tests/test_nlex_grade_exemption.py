@@ -208,6 +208,10 @@ class TestNlexGradeExemption(TransactionCase):
         self.assertFalse(self.subject_regular.irg_is_grade_exempt(),
                          "Regular code without 'EX' must not be exempt.")
 
+        # Empty recordset should return False and not raise ValueError
+        self.assertFalse(self.env['op.subject'].browse().irg_is_grade_exempt(),
+                         "Empty recordset should not be exempt.")
+
         cert = self.env['irg.certificate.request'].sudo().create({
             'gradebook_student_id': self.gradebook_student.id,
             'certificate_type': 'digital',

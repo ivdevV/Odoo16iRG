@@ -16,5 +16,7 @@ class OpSubject(models.Model):
 
         Public (no leading underscore) so QWeb templates can call it.
         """
+        if not self:
+            return False
         self.ensure_one()
         return bool(self.code and 'EX' in self.code.upper())

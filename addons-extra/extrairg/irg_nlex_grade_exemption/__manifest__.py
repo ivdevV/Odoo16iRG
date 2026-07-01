@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'NLEX Grade Exemption',
-    'version': '16.0.1.2.0',
+    'version': '16.0.1.2.1',
     'summary': 'Excludes subjects with NLEX code from grades, certificates, and DEC export.',
     'description': """
         Excludes subjects with NLEX code from:
@@ -21,6 +21,7 @@
         'isep_openeducat_reports',
         'l10n_mx_edi_extended',
         'irg_gradebook_certificates',
+        'irg_admission_gender_fix',
     ],
     'data': [
         'views/report_gradebook.xml',

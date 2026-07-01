@@ -1,0 +1,39 @@
+diff --git a/addons-extra/extrairg/irg_nlex_grade_exemption/__manifest__.py b/addons-extra/extrairg/irg_nlex_grade_exemption/__manifest__.py
+index b88964c5..4d9aa225 100644
+--- a/addons-extra/extrairg/irg_nlex_grade_exemption/__manifest__.py
++++ b/addons-extra/extrairg/irg_nlex_grade_exemption/__manifest__.py
+@@ -21,6 +21,7 @@
+         'isep_openeducat_reports',
+         'l10n_mx_edi_extended',
+         'irg_gradebook_certificates',
++        'irg_admission_gender_fix',
+     ],
+     'data': [
+         'views/report_gradebook.xml',
+diff --git a/addons-extra/extrairg/irg_nlex_grade_exemption/models/op_subject.py b/addons-extra/extrairg/irg_nlex_grade_exemption/models/op_subject.py
+index f7b561a5..05731213 100644
+--- a/addons-extra/extrairg/irg_nlex_grade_exemption/models/op_subject.py
++++ b/addons-extra/extrairg/irg_nlex_grade_exemption/models/op_subject.py
+@@ -16,5 +16,7 @@ class OpSubject(models.Model):
+ 
+         Public (no leading underscore) so QWeb templates can call it.
+         """
++        if not self:
++            return False
+         self.ensure_one()
+         return bool(self.code and 'EX' in self.code.upper())
+diff --git a/addons-extra/extrairg/irg_nlex_grade_exemption/tests/test_nlex_grade_exemption.py b/addons-extra/extrairg/irg_nlex_grade_exemption/tests/test_nlex_grade_exemption.py
+index c181d9d9..43de37fb 100644
+--- a/addons-extra/extrairg/irg_nlex_grade_exemption/tests/test_nlex_grade_exemption.py
++++ b/addons-extra/extrairg/irg_nlex_grade_exemption/tests/test_nlex_grade_exemption.py
+@@ -208,6 +208,10 @@ class TestNlexGradeExemption(TransactionCase):
+         self.assertFalse(self.subject_regular.irg_is_grade_exempt(),
+                          "Regular code without 'EX' must not be exempt.")
+ 
++        # Empty recordset should return False and not raise ValueError
++        self.assertFalse(self.env['op.subject'].browse().irg_is_grade_exempt(),
++                         "Empty recordset should not be exempt.")
++
+         cert = self.env['irg.certificate.request'].sudo().create({
+             'gradebook_student_id': self.gradebook_student.id,
+             'certificate_type': 'digital',
