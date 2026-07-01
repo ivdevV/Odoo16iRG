@@ -1,11 +1,11 @@
 # irg_nlex_grade_exemption
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.2.0
+**Versión:** 16.0.1.2.1
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
-**Depende de:** `isep_gradebook`, `isep_control_escolar`, `dec_document`, `isep_openeducat_reports`, `l10n_mx_edi_extended`, `irg_gradebook_certificates`
+**Depende de:** `isep_gradebook`, `isep_control_escolar`, `dec_document`, `isep_openeducat_reports`, `l10n_mx_edi_extended`, `irg_gradebook_certificates`, `irg_admission_gender_fix`
 
 ---
 
@@ -72,3 +72,4 @@ Se han desarrollado pruebas unitarias automáticas en `tests/test_nlex_grade_exe
 2. Cierre exitoso de la libreta con materias NLEX vacías tras colocar nota en la materia regular.
 3. Exclusión correcta del promedio final y promedio general de las materias NLEX.
 4. Generación y validación del documento SEP (DEC) confirmando que no incluye la materia NLEX y recalcula créditos.
+5. Comportamiento seguro con recordsets vacíos en el helper `irg_is_grade_exempt()`, el cual ahora retorna `False` sin provocar un error de singleton.
