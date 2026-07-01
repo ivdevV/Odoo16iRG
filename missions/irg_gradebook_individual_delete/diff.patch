@@ -1,79 +1,16 @@
-diff --git a/addons-extra/extrairg/irg_gradebook_clear_subjects/__manifest__.py b/addons-extra/extrairg/irg_gradebook_clear_subjects/__manifest__.py
-index 3ac60924..3a310291 100644
---- a/addons-extra/extrairg/irg_gradebook_clear_subjects/__manifest__.py
-+++ b/addons-extra/extrairg/irg_gradebook_clear_subjects/__manifest__.py
-@@ -2,7 +2,7 @@
- {
-     'name': 'IRG Gradebook - Borrar Asignaturas',
-     'summary': 'Añade un botón en app.gradebook.student para eliminar todas las asignaturas de golpe.',
--    'version': '16.0.1.0.0',
-+    'version': '16.0.1.1.0',
-     'category': 'Education',
-     'author': 'IRG',
-     'license': 'LGPL-3',
-diff --git a/addons-extra/extrairg/irg_gradebook_clear_subjects/models/__init__.py b/addons-extra/extrairg/irg_gradebook_clear_subjects/models/__init__.py
-index 3b3d4515..6ae95000 100644
---- a/addons-extra/extrairg/irg_gradebook_clear_subjects/models/__init__.py
-+++ b/addons-extra/extrairg/irg_gradebook_clear_subjects/models/__init__.py
-@@ -1,2 +1,4 @@
- # -*- coding: utf-8 -*-
- from . import app_gradebook_student
-+from . import app_gradebook_subject
-+
 diff --git a/addons-extra/extrairg/irg_gradebook_clear_subjects/views/app_gradebook_student_views.xml b/addons-extra/extrairg/irg_gradebook_clear_subjects/views/app_gradebook_student_views.xml
-index d8175bba..6e71bffc 100644
+index 6e71bffc..5c81815f 100644
 --- a/addons-extra/extrairg/irg_gradebook_clear_subjects/views/app_gradebook_student_views.xml
 +++ b/addons-extra/extrairg/irg_gradebook_clear_subjects/views/app_gradebook_student_views.xml
-@@ -17,6 +17,11 @@
-                             confirm="¿Está seguro de que desea eliminar todas las asignaturas? Esta acción no se puede deshacer."
-                             attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
+@@ -22,6 +22,11 @@
+                 <xpath expr="//field[@name='gradebook_subject_ids']/tree" position="attributes">
+                     <attribute name="attrs">{'readonly': [('state', '=', 'done')]}</attribute>
                  </xpath>
 +
-+                <!-- Modifica el tree para que solo sea readonly en estado 'done', permitiendo el borrado individual de asignaturas en 'in_progress' -->
-+                <xpath expr="//field[@name='gradebook_subject_ids']/tree" position="attributes">
-+                    <attribute name="attrs">{'readonly': [('state', '=', 'done')]}</attribute>
++                <!-- Modifica la invisibilidad del botón de papelera individual para que se muestre en cualquier estado excepto en 'done' -->
++                <xpath expr="//field[@name='gradebook_subject_ids']/tree/button[@name='unlink_subject']" position="attributes">
++                    <attribute name="attrs">{'invisible': [('state', '=', 'done')]}</attribute>
 +                </xpath>
              </field>
          </record>
      </data>
-diff --git a/doc/modules/extrairg/irg_gradebook_clear_subjects.md b/doc/modules/extrairg/irg_gradebook_clear_subjects.md
-index 38674b05..c2f0ed5a 100644
---- a/doc/modules/extrairg/irg_gradebook_clear_subjects.md
-+++ b/doc/modules/extrairg/irg_gradebook_clear_subjects.md
-@@ -1,26 +1,27 @@
- # irg_gradebook_clear_subjects
- 
--**Categoría:** extrairg
--**Versión:** 16.0.1.0.0
--**Licencia:** LGPL-3
--**Instalable:** Sí
--**Autor:** IRG
-+**Categoría:** extrairg  
-+**Versión:** 16.0.1.1.0  
-+**Licencia:** LGPL-3  
-+**Instalable:** Sí  
-+**Autor:** IRG  
- **Depende de:** `isep_gradebook`
- 
- ---
- 
- ## ¿Qué hace este módulo?
- 
--Añade un botón en el formulario de la libreta del alumno (`app.gradebook.student`) para eliminar todas las asignaturas de la libreta de una sola vez. Útil para resetear la libreta antes de recargar asignaturas.
-+Añade herramientas de borrado en la libreta del alumno (`app.gradebook.student`) tanto para borrar todas las asignaturas de golpe como para permitir la eliminación individual de una materia específica en estado *En proceso*.
- 
- ## Funcionalidades principales
- 
--- Botón "Borrar todas las asignaturas" en el formulario de la libreta.
--- Acción de servidor que elimina todos los registros de asignatura asociados.
-+- **Borrar todas las asignaturas (Cabecera):** Botón "Borrar Asignaturas" en la cabecera del formulario de la libreta, disponible en estado `in_progress`. Elimina todas las materias de la libreta junto con sus calificaciones asociadas.
-+- **Borrado individual de asignaturas (Línea):** Habilita el botón nativo de papelera (`unlink_subject`) al final de cada línea de asignatura de la libreta del alumno en estado `in_progress`. Esto se logra redefiniendo el atributo `readonly` del tree de One2many para que sólo se aplique en estado `done`.
-+- **Integridad referencial (Borrado en cascada):** Sobrescribe el método `unlink()` en `app.gradebook.subject` para asegurar que, al eliminar una asignatura de manera individual, sus evaluaciones correspondientes (`gradebook_result_ids`) también se eliminen automáticamente de la base de datos.
- 
- ## Vistas y UI
- 
--- `views/app_gradebook_student_views.xml` — botón añadido en el formulario de la libreta.
-+- `views/app_gradebook_student_views.xml` — Añade el botón de borrado masivo en la cabecera y redefine el `readonly` del tree de asignaturas.
- 
- ## Instalación / Actualización
- 

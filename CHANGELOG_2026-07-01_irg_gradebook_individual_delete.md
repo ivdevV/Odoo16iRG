@@ -7,14 +7,15 @@
 ## Descripción del Problema
 El módulo `isep_gradebook` define un botón individual para borrar asignaturas (`unlink_subject`) con el icono de la papelera en la pestaña de calificaciones. Sin embargo, este botón no funcionaba en la práctica porque la vista tree One2many de asignaturas (`gradebook_subject_ids`) estaba configurada como de sólo lectura (`readonly`) cuando la libreta del alumno estaba en estado `in_progress` o `done`.
 
-Por lo tanto, la papelera no se mostraba ni era interactiva mientras el alumno cursaba las materias.
+Adicionalmente, se detectó que al remover el `readonly` del tree, el botón seguía sin mostrarse en el cliente web debido a que su regla de invisibilidad original `attrs="{'invisible': [('state', 'in', ('done','draft'))]}"` dependía de un estado computado a nivel de línea que podía evaluarse incorrectamente como `'draft'` o vacío (`False`) en el frontend (por desactualización del caché del cliente web), ocultando la columna de la papelera entera.
 
 ## Cambios Introducidos
 
 ### Módulo `irg_gradebook_clear_subjects` (v16.0.1.1.0)
 - **Vistas XML (`views/app_gradebook_student_views.xml`):**
   - Se modificó la herencia de la vista formulario `app.gradebook.student` para sobrescribir los atributos del elemento `tree` en el campo `gradebook_subject_ids`.
-  - Se cambió la regla de sólo lectura de la tabla para que aplique únicamente si `state == 'done'`, liberando el estado `in_progress` para permitir que el botón individual de borrar (`unlink_subject`) funcione.
+  - Se cambió la regla de sólo lectura de la tabla para que aplique únicamente si `state == 'done'`, liberando el estado `in_progress`.
+  - Se simplificó la condición de invisibilidad de la papelera individual (`unlink_subject`) para que se muestre en cualquier estado excepto en `'done'` (`attrs="{'invisible': [('state', '=', 'done')]}"`). Esto soluciona la ocultación de la columna de papelera en clientes web que evalúan el estado de línea desincronizado.
 - **Modelos Python (`models/app_gradebook_subject.py`):**
   - Se creó la extensión del modelo `app.gradebook.subject` heredando de Odoo.
   - Se sobrescribió el método `unlink()` para eliminar en cascada todos los registros de evaluación asociados (`gradebook_result_ids`) cuando se elimine una asignatura de forma individual, evitando inconsistencias o registros huérfanos en la base de datos.

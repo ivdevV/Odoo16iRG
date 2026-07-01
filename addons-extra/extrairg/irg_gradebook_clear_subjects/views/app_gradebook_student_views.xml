@@ -22,6 +22,11 @@
                 <xpath expr="//field[@name='gradebook_subject_ids']/tree" position="attributes">
                     <attribute name="attrs">{'readonly': [('state', '=', 'done')]}</attribute>
                 </xpath>
+
+                <!-- Modifica la invisibilidad del botón de papelera individual para que se muestre en cualquier estado excepto en 'done' -->
+                <xpath expr="//field[@name='gradebook_subject_ids']/tree/button[@name='unlink_subject']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('state', '=', 'done')]}</attribute>
+                </xpath>
             </field>
         </record>
     </data>
