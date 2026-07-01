@@ -1,16 +1,37 @@
+diff --git a/addons-extra/extrairg/irg_gradebook_clear_subjects/models/app_gradebook_subject.py b/addons-extra/extrairg/irg_gradebook_clear_subjects/models/app_gradebook_subject.py
+index 68189d92..66948987 100644
+--- a/addons-extra/extrairg/irg_gradebook_clear_subjects/models/app_gradebook_subject.py
++++ b/addons-extra/extrairg/irg_gradebook_clear_subjects/models/app_gradebook_subject.py
+@@ -1,11 +1,14 @@
+ # -*- coding: utf-8 -*-
+-from odoo import models
++from odoo import models, _
++from odoo.exceptions import UserError
+ 
+ class AppGradebookSubject(models.Model):
+     _inherit = 'app.gradebook.subject'
+ 
+     def unlink(self):
+         for rec in self:
++            if rec.state == 'done':
++                raise UserError(_("No se puede eliminar una asignatura si la libreta de calificaciones está finalizada."))
+             if rec.gradebook_result_ids:
+                 rec.gradebook_result_ids.unlink()
+         return super(AppGradebookSubject, self).unlink()
 diff --git a/addons-extra/extrairg/irg_gradebook_clear_subjects/views/app_gradebook_student_views.xml b/addons-extra/extrairg/irg_gradebook_clear_subjects/views/app_gradebook_student_views.xml
-index 6e71bffc..5c81815f 100644
+index 5c81815f..1b502635 100644
 --- a/addons-extra/extrairg/irg_gradebook_clear_subjects/views/app_gradebook_student_views.xml
 +++ b/addons-extra/extrairg/irg_gradebook_clear_subjects/views/app_gradebook_student_views.xml
-@@ -22,6 +22,11 @@
-                 <xpath expr="//field[@name='gradebook_subject_ids']/tree" position="attributes">
+@@ -23,9 +23,9 @@
                      <attribute name="attrs">{'readonly': [('state', '=', 'done')]}</attribute>
                  </xpath>
-+
-+                <!-- Modifica la invisibilidad del botón de papelera individual para que se muestre en cualquier estado excepto en 'done' -->
-+                <xpath expr="//field[@name='gradebook_subject_ids']/tree/button[@name='unlink_subject']" position="attributes">
-+                    <attribute name="attrs">{'invisible': [('state', '=', 'done')]}</attribute>
-+                </xpath>
+ 
+-                <!-- Modifica la invisibilidad del botón de papelera individual para que se muestre en cualquier estado excepto en 'done' -->
+-                <xpath expr="//field[@name='gradebook_subject_ids']/tree/button[@name='unlink_subject']" position="attributes">
+-                    <attribute name="attrs">{'invisible': [('state', '=', 'done')]}</attribute>
++                <!-- Reemplaza el botón de papelera individual para eliminar cualquier regla de invisibilidad redundante (attrs) que oculte la columna en el cliente web -->
++                <xpath expr="//field[@name='gradebook_subject_ids']/tree/button[@name='unlink_subject']" position="replace">
++                    <button name="unlink_subject" string="" type="object" class="btn-danger" icon="fa-trash"/>
+                 </xpath>
              </field>
          </record>
-     </data>
