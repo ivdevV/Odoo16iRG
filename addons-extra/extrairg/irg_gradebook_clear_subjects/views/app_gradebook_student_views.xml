@@ -17,6 +17,11 @@
                             confirm="¿Está seguro de que desea eliminar todas las asignaturas? Esta acción no se puede deshacer."
                             attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
                 </xpath>
+
+                <!-- Modifica el tree para que solo sea readonly en estado 'done', permitiendo el borrado individual de asignaturas en 'in_progress' -->
+                <xpath expr="//field[@name='gradebook_subject_ids']/tree" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state', '=', 'done')]}</attribute>
+                </xpath>
             </field>
         </record>
     </data>

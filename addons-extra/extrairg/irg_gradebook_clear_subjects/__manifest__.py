@@ -2,7 +2,7 @@
 {
     'name': 'IRG Gradebook - Borrar Asignaturas',
     'summary': 'Añade un botón en app.gradebook.student para eliminar todas las asignaturas de golpe.',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Education',
     'author': 'IRG',
     'license': 'LGPL-3',
