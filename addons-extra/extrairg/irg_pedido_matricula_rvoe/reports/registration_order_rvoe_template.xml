@@ -1,0 +1,805 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_report_registration_order_rvoe" model="ir.actions.report">
+            <field name="name">Pedido de matrícula RVOE</field>
+            <field name="model">sale.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">irg_pedido_matricula_rvoe.registration_order_rvoe_template</field>
+            <field name="report_file">irg_pedido_matricula_rvoe.registration_order_rvoe_template</field>
+            <field name="print_report_name">object.name</field>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="irg_sale_order_extended.report_registration_order_paperformat"/>
+        </record>
+
+        <template id="registration_order_rvoe_template">
+            <t t-call="web.html_container" t-no-header="1" t-no-footer="1">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.basic_layout">
+                        <div class="page">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="borderless-td" style="width: 50%;">
+                                        <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 100px; max-width: 250px;" class="img-fluid" alt="Logo"/>
+                                    </td>
+                                    <td class="borderless-td" style="width: 50%; text-align: right;">
+                                        <t t-if="o.company_id.phone">
+                                            <p style="margin: 0; font-size: smaller;">
+                                                <t t-esc="o.company_id.phone"/>
+                                            </p>
+                                        </t>
+                                        <t t-if="o.company_id.email">
+                                            <p style="margin: 0; font-size: smaller;">
+                                                <a t-att-href="'mailto:' + o.company_id.email" style="color: blue; text-decoration: underline;">
+                                                    <t t-esc="o.company_id.email"/>
+                                                </a>
+                                            </p>
+                                        </t>
+                                        <t t-if="o.company_id.website">
+                                            <p style="margin: 0; font-size: smaller;">
+                                                <a t-att-href="o.company_id.website" style="color: blue; text-decoration: underline;">
+                                                    <t t-esc="o.company_id.website"/>
+                                                </a>
+                                            </p>
+                                        </t>
+                                        <t t-if="o.company_id.vat">
+                                            <p style="margin: 0; font-size: smaller;">
+                                                <t t-esc="o.company_id.vat"/>
+                                            </p>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="height: 2em;"/>
+                            <table style="width: 100%; margin: 0; padding: 0;">
+                                <tr>
+                                    <td class="borderless-td" colspan="2">
+                                        <h5 style="color: #00468B; font-weight: bold; margin: 5px 0; padding: 0;">
+                                            DATOS PERSONALES DEL ALUMNO
+                                        </h5>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="width: 50%; vertical-align: top;">
+                                        <table style="width: 100%;">
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Nombres y Apellidos:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.name">
+                                                        <t t-esc="o.student_id.name"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.name">
+                                                        <t t-esc="o.partner_id.name"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        DNI/Pasaporte:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.vat">
+                                                        <t t-esc="o.student_id.vat"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.vat">
+                                                        <t t-esc="o.partner_id.vat"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Nacimiento:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.birth_date">
+                                                        <t t-esc="o.student_id.birth_date"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.birth_date">
+                                                        <t t-esc="o.partner_id.birth_date"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Móvil:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.mobile">
+                                                        <t t-esc="o.student_id.mobile"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.mobile">
+                                                        <t t-esc="o.partner_id.mobile"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Email:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.email">
+                                                        <t t-esc="o.student_id.email"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.email">
+                                                        <t t-esc="o.partner_id.email"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Domicilio:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.street">
+                                                        <t t-esc="o.student_id.street"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.street">
+                                                        <t t-esc="o.partner_id.street"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td class="borderless-td" style="width: 50%; vertical-align: top;">
+                                        <table style="width: 100%;">
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Población:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.city">
+                                                        <t t-esc="o.student_id.city"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.city">
+                                                        <t t-esc="o.partner_id.city"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        CP:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.zip">
+                                                        <t t-esc="o.student_id.zip"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.zip">
+                                                        <t t-esc="o.partner_id.zip"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        País:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.country_id.name">
+                                                        <t t-esc="o.student_id.country_id.name"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.country_id.name">
+                                                        <t t-esc="o.partner_id.country_id.name"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Estudios:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.x_studio_titulacion">
+                                                        <t t-esc="o.student_id.x_studio_titulacion"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.x_studio_titulacion">
+                                                        <t t-esc="o.partner_id.x_studio_titulacion"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Universidad:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.x_studio_universidad">
+                                                        <t t-esc="o.student_id.x_studio_universidad"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.x_studio_universidad">
+                                                        <t t-esc="o.partner_id.x_studio_universidad"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Año graduación:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.x_studio_ano_de_graduacion">
+                                                        <t t-esc="o.student_id.x_studio_ano_de_graduacion"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.x_studio_ano_de_graduacion">
+                                                        <t t-esc="o.partner_id.x_studio_ano_de_graduacion"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Profesión:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.student_id.function">
+                                                        <t t-esc="o.student_id.function"/>
+                                                    </t>
+                                                    <t t-elif="o.partner_id.function">
+                                                        <t t-esc="o.partner_id.function"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border-bottom: 2px solid #0091C1;"/>
+                                </tr>
+                            </table>
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="borderless-td" colspan="2">
+                                        <h5 style="color: #00468B; font-weight: bold; margin: 5px 0; padding: 0;">
+                                            DATOS DE FACTURACIÓN
+                                        </h5>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="width: 50%; vertical-align: top;">
+                                        <table style="width: 100%;">
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Nombres y Apellidos:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.partner_id.name">
+                                                        <t t-esc="o.partner_id.name"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        DNI/Pasaporte:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.partner_id.vat">
+                                                        <t t-esc="o.partner_id.vat"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Móvil:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.partner_id.mobile">
+                                                        <t t-esc="o.partner_id.mobile"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Email:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.partner_id.email">
+                                                        <t t-esc="o.partner_id.email"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Domicilio:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.partner_id.street">
+                                                        <t t-esc="o.partner_id.street"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td class="borderless-td" style="width: 50%; vertical-align: top;">
+                                        <table style="width: 100%;">
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Población:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.partner_id.city">
+                                                        <t t-esc="o.partner_id.city"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        CP:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.partner_id.zip">
+                                                        <t t-esc="o.partner_id.zip"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        País:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.partner_id.country_id.name">
+                                                        <t t-esc="o.partner_id.country_id.name"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="borderless-td" style="font-weight: bold;">
+                                                    <p style="margin: 0; padding: 0;">
+                                                        Asesor:
+                                                     </p>
+                                                </td>
+                                                <td class="borderless-td">
+                                                    <t t-if="o.user_id">
+                                                        <t t-esc="o.user_id.name"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border-bottom: 2px solid #0091C1;"/>
+                                </tr>
+                            </table>
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="borderless-td" style="text-align: justify;">
+                                        <p style="margin: 0; padding: 0;">
+                                            Reconozco haber recibido la información detallada de las características del curso, contenido y demás cuestiones relacionadas. Acepto las condiciones generales y académicas amparadas en este contrato y SOLICITO LA MATRÍCULA PARA:
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr t-foreach="o.order_line" t-as="line">
+                                    <td class="borderless-td" style="text-align: justify;">
+                                        <t t-if="line.product_id.formation_type == 'formation'">
+                                            <b>•</b>
+                                            <span>
+                                                <t t-esc="line.product_id.name"/>
+                                            </span>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border-bottom: 2px solid #0091C1;"/>
+                                </tr>
+                            </table>
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="borderless-td" colspan="2">
+                                        <h5 style="color: #00468B; font-weight: bold; margin: 5px 0; padding: 0;">
+                                            CONDICIONES ACEPTADAS PARA EL PAGO DE TU FORMACIÓN
+                                        </h5>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="font-weight: bold;">
+                                        <p style="margin: 0; padding: 0;">
+                                            Plazo de Pago:
+                                        </p>
+                                    </td>
+                                    <td class="borderless-td">
+                                        <t t-if="o.payment_term_id.name">
+                                            <t t-esc="o.payment_term_id.name"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="font-weight: bold;">
+                                        <p style="margin: 0; padding: 0;">
+                                            Matrícula/Pago Inicial:
+                                        </p>
+                                    </td>
+                                    <td class="borderless-td">
+                                        <t t-if="o.initial_payment">
+                                            <t t-esc="'{:.2f}'.format(o.initial_payment)"/>
+                                            <t t-esc="o.currency_id.symbol"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="font-weight: bold;">
+                                        <p style="margin: 0; padding: 0;">
+                                            Resto Aplazado:
+                                        </p>
+                                    </td>
+                                    <td class="borderless-td">
+                                        <t t-if="o.rest_postponed">
+                                            <t t-esc="'{:.2f}'.format(o.rest_postponed)"/>
+                                            <t t-esc="o.currency_id.symbol"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="font-weight: bold;">
+                                        <p style="margin: 0; padding: 0;">
+                                            Forma de Pago:
+                                        </p>
+                                    </td>
+                                    <td class="borderless-td">
+                                        <t t-if="o.payment_mode_id.name">
+                                            <t t-esc="o.payment_mode_id.name"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="font-weight: bold;">
+                                        <p style="margin: 0; padding: 0;">
+                                            Primer Vencimiento:
+                                        </p>
+                                    </td>
+                                    <td class="borderless-td">
+                                        <t t-if="o.validity_date">
+                                            <t t-set="month_names" t-value="{'January': 'enero', 'February': 'febrero', 'March': 'marzo', 'April': 'abril', 'May': 'mayo', 'June': 'junio', 'July': 'julio', 'August': 'agosto', 'September': 'septiembre', 'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'}"/>
+                                            <t t-esc="o.validity_date.strftime('%d de ')"/>
+                                            <t t-esc="month_names.get(o.validity_date.strftime('%B'), '')"/>
+                                            <t t-esc="o.validity_date.strftime(' de %Y')"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border-bottom: 2px solid #0091C1;"/>
+                                </tr>
+                            </table>
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="borderless-td" colspan="2">
+                                        <h5 style="color: #00468B; font-weight: bold; margin: 5px 0; padding: 0;">
+                                            OPCIONAL
+                                        </h5>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" colspan="2">
+                                        <p style="margin: 0; padding: 0;">
+                                            Título oficial de Universidad e-campus.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td">
+                                        <input type="checkbox" disabled="disabled" t-att-checked="o.is_official"/>
+                                        <span>
+                                            Si
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td">
+                                        <input type="checkbox" disabled="disabled" t-att-checked="not o.is_official"/>
+                                        <span>
+                                            No
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border-bottom: 2px solid #0091C1;"/>
+                                </tr>
+                            </table>
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="borderless-td" style="text-align: justify">
+                                        <span style="margin: 0; padding: 0;">
+                                            Suscrito en dos ejemplares en Barcelona a:
+                                        </span>
+                                        <t t-if="o.date_order">
+                                            <t t-set="month_names" t-value="{'January': 'enero', 'February': 'febrero', 'March': 'marzo', 'April': 'abril', 'May': 'mayo', 'June': 'junio', 'July': 'julio', 'August': 'agosto', 'September': 'septiembre', 'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'}"/>
+                                            <t t-esc="o.date_order.strftime('los %d días del mes de ')"/>
+                                            <t t-esc="month_names.get(o.date_order.strftime('%B'), '')"/>
+                                            <t t-esc="o.date_order.strftime(' del año %Y.')"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="text-align: justify">
+                                        <p style="margin: 0; padding: 0;"> 
+                                            Leído y conforme con las condiciones generales y mis derechos y deberes que se adjuntan (recibo copia).
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td">
+                                        <u>
+                                            <h5 style="font-weight: bold; margin: 0; padding: 0;">
+                                                NO ES VÁLIDO NINGÚN ACUERDO VERBAL.
+                                            </h5>
+                                        </u>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="height: 1em;"/>
+                            <table style="width: 100%;">
+                                <colgroup>
+                                    <col style="width: 33.33%;"/>
+                                    <col style="width: 33.33%;"/>
+                                    <col style="width: 33.33%;"/>
+                                </colgroup>
+                                <tr>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p>FIRMA DEL ALUMNO/A</p>
+                                    </td>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p>FIRMA DEL TITULAR (si es distinto al alumno/a)</p>
+                                    </td>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p>FIRMA IRG</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p/>
+                                    </td>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p/>
+                                    </td>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <img t-if="o.company_id.signature_order" t-att-src="image_data_uri(o.company_id.signature_order)" style="max-height: 60px; max-width: 120px;" class="img-fluid" alt="Logo"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="page" style="margin-top: 80px; page-break-before: always;">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td class="borderless-td" style="width: 50%; vertical-align: top; padding-right: 0.5em;">
+                                        <p style="font-size: 0.65em; text-align: justify;">
+                                            <b>
+                                                INFORMACIÓN PREVIA
+                                            </b>
+                                            <br/>
+                                            <span>
+                                                El alumno y el titular del contrato han recibido del Instituto Raimon Gaja, S.L. (en adelante iRG), en el momento de la firma del presente, la información necesaria acerca del programa a seguir, tanto académica, económica y administrativa.
+                                            </span>
+                                            <br/>
+                                            <br/>
+                                            <b>FORMALIZACIÓN Y CUMPLIMIENTO DEL CONTRATO</b>
+                                            <br/>
+                                            <span>
+                                                1.El contrato queda formalizado con la aceptación de estas condiciones. Las partes tienen por no efectuado ningún pacto verbal. Estas cláusulas prevalecen sobre otros pactos escritos que las contradigan.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                2.Tras la formalización del contrato, el alumno se compromete a aportar la documentación en el tiempo y forma solicitados por iRG. En el caso de que el estudiante opte por la modalidad de la doble titulación, donde se otorga un título de una Universidad (e-Campus, Instituto Raimon Gaja, Facultade ISEP, u otra), se reconoce y acepta que la titulación correspondiente a dicha Universidad estará sujeta exclusivamente a la normativa, políticas y requisitos establecidos por dicha Universidad. iRG no asume responsabilidad alguna por cambios, modificaciones, adaptaciones o revisiones de la normativa, políticas o requisitos de la Universidad vinculada durante el proceso formativo del estudiante. Será responsabilidad del estudiante atender y cumplir cualquier procedimiento que la Universidad determine en caso de cambios en su normativa o requisitos.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                3.De acuerdo con el Real Decreto Legislativo 1/2007, el alumno/titular tiene derecho, en plazo de 14 días naturales tras la formalización del contrato a desistir, debiendo notificarlo de forma inequívoca al iRG donde se haya matriculado. En cualquier otro caso, la baja unilateral por parte del alumno no exime del pago de los importes pactados ni da derecho a devolución de importes ya abonados. En ambos casos, iRG retendrá las tasas académicas en concepto de gastos de administración y el gasto de material. La asistencia al aula o el acceso al campus virtual o clases en streaming durante ese plazo suponen una solicitud expresa de Inicio de la prestación del servicio. Como Anexo integrante de este contrato, en este enlace (institutoraimongaja.com/documentodesistimiento) se adjunta el documento de desistimiento.
+                                            </span>
+                                            <span>
+                                                4. El titular autoriza a iRG a realizar los cobros en la forma y los plazos según las condiciones aceptadas para el pago.
+                                            </span>
+                                            <br/>
+                                            <br/>
+                                            <span>
+                                                5. En caso de incumplimiento de los vencimientos pactados, iRG podrá reclamar la totalidad del importe al alumno/titular, y los plazos acordados con anterioridad quedarán sin efecto.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                6. iRG se reserva el derecho de dejar de prestar el servicio cuando el alumno no cumpla con las obligaciones adquiridas, así como de reportar a ficheros de morosidad, solvencias patrimonial o crédito en caso de que alumno/titular no cumpla satisfactoriamente con las obligaciones de pago pactadas.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                7. Los programas presenciales serán realizados siempre que se alcance el número mínimo necesario de alumnos. En caso de anulación, el alumno podrá optar entre destinar el importe pagado a otro programa del iRG o bien el reintegro de los importes abonados. Si por causas de fuerza mayor (confinamiento por COVID-19, por ejemplo) no se pudiera realizar las sesiones presenciales, se mantendrían el programa y el alumno tiene derecho a las mismas horas de clase, bajo modalidad HomeClass© (clases en vivo por videoconferencia).
+                                            </span>
+                                        </p>
+                                    </td>
+                                    <td class="borderless-td" style="width: 50%; vertical-align: top; padding-left: 0.5em;">
+                                        <p style="font-size: 0.65em; text-align: justify; ">
+                                            <span>
+                                                Para cualquier proceso de homologación o acceso a programas de doctorado, el interesado debe consultar con la normativa del país donde desea que surta efecto. 
+                                            </span>
+                                            <br/>
+                                            <br/>
+                                            <b>
+                                                PROPIEDAL INTELECTUAL Y DERECHOS DE IMAGEN
+                                            </b>
+                                            <br/>
+                                            <span>
+                                                13. Uso personal de contenidos: El alumno tiene permitido descargar contenidos, copiar e imprimir páginas de la web y del campus virtual exclusivamente para uso personal, siempre y cuando se respeten los derechos de propiedad intelectual. No está autorizado a transmitir, cambiar, modificar o suprimir contenidos sin la previa autorización escrita de la entidad.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                14. La entidad se reserva el derecho de utilizar las contribuciones de los alumnos para varios propósitos: Utilizar el material para mejorar la enseñanza y el aprendizaje en el contexto académico. Evaluar el rendimiento de los alumnos en sus actividades académicas y proporcionar retroalimentación. Utilizar el material para llevar a cabo investigaciones académicas y científicas. Compartir el conocimiento y los logros académicos con la comunidad educativa o el público en general.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                15. Conforme al Reglamento General de Protección de Datos (UE) 679/2016, los datos que se solicitan en el presente contrato de matrícula, serán tratados por el responsable designado a tal efecto, asimismo el alumno da permiso a la entidad a captar su imagen (bien será en fotografía, vídeo o audio) durante su participación en actividades presenciales o virtuales, pudiendo ser difundidas y/o transcritas en página web, redes sociales y diferentes medios de comunicación presentes y futuros.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                16. Asimismo el alumno autoriza a la entidad a que pueda remitirle comunicaciones electrónicas sobre actividades, nuevos cursos y otra información de interés.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                17. Los datos personales del alumno o antiguo alumno serán conservados mientras dure la relación contractual entre el alumno y la entidad y una vez finalizada ésta, hasta que el alumno no manifieste su oposición a que la entidad siga tratando sus datos. 
+                                            </span>
+                                            <br/>
+                                            <br/>
+                                            <b>
+                                                INFORMACIÓN TECNOLÓGICA
+                                            </b>
+                                            <br/>
+                                            <span>
+                                                18. Compatibilidad de navegadores: El Campus Virtual está diseñado para funcionar de manera óptima en ordenadores personales que utilizan los navegadores Chrome y Firefox. No se puede garantizar un funcionamiento perfecto del Campus con otros dispositivos o navegadores.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                19. Recomendación de conexión a Internet: Se aconseja a los alumnos contar con una conexión de Internet de alta velocidad, como ADSL o Fibra Óptica.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                20. La entidad queda exonerada de los daños y perjuicios que puedan surgir como resultado de la indisponibilidad temporal de servicios telemáticos. Esta exoneración se aplica en situaciones específicas, como cuando la causa de la indisponibilidad es una fuerza mayor o errores en las redes telemáticas que están fuera del control de la entidad. 
+                                            </span>
+                                            <br/>
+                                            <br/>
+                                            <b>
+                                                DURACIÓN DEL CONTRATO
+                                            </b>
+                                            <br/>
+                                            <span>
+                                                21. La vigencia de esta matrícula es la misma que el calendario del programa. El contrato no se prorroga de forma automática. Las prórrogas condicionadas a la disponibilidad por parte de iRG no están incluidas en el precio.
+                                            </span>
+                                            <br/>
+                                            <span>
+                                                22. iRG se reserva el derecho de dejar de prestar el servicio cuando el alumno no cumpla con las obligaciones adquiridas, así como el derecho de reportar a ficheros de morosidad, solvencias patrimonial o crédito, en caso de que el alumno/titular no cumpla satisfactoriamente con las obligaciones de pago contempladas en este contrato. 
+                                            </span>
+                                            <br/>
+                                            <br/>
+                                            <b>
+                                                DATOS PERSONALES
+                                            </b>
+                                            <br/>
+                                            <span>
+                                                23. De acuerdo con la normativa vigente, iRG informa que los datos proporcionados se incorporarán al sistema de tratamiento, titularidad de iRG con finalidades de tramitar la matrícula, gestionar la inscripción y participación en la actividad formativa, finalidades administrativas y contables, gestión del expediente académico e instancias, finalidades comerciales y obligaciones legales. Para cumplimiento legal y gestión administrativa-contable, los datos se podrán ceder a Agencia Tributaria, bancos, cajas y organismos y/o administración pública. Puede ejercer sus derechos (acceso, rectificación, limitación, supresión portabilidad y oposición) o revocar el consentimiento por correo postal iRG o bien, por email: academica@institutoraimongaja.com, dirigirse a la autoridad competente si es oportuno. Más info. (finalidades, legitimación, destinatarios, derechos, etc): institutoraimongaja.com. 
+                                            </span>
+                                            <br/>
+                                            <br/>
+                                            <b>
+                                                LEGISLACIÓN APLICABLE Y JURISDICCIÓN COMPETENTE
+                                            </b>
+                                            <br/>
+                                            <span>
+                                                24. El contrato se considera formalizado en Barcelona, rigiéndose por la Ley Española. Si alguna cláusula incluida en el contrato se declara nula o ineficaz, ya sea total o parcialmente, esa nulidad o ineficiencia afectará solo a esa disposición específica o a la parte de ella que resulte nula o ineficaz, subsistiendo el resto de las condiciones pactadas.
+                                            </span>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="height: 1em;"/>
+                            <table style="width: 100%;">
+                                <colgroup>
+                                    <col style="width: 33.33%;"/>
+                                    <col style="width: 33.33%;"/>
+                                    <col style="width: 33.33%;"/>
+                                </colgroup>
+                                <tr>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p>
+                                            FIRMA DEL ALUMNO/A
+                                        </p>
+                                    </td>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p>
+                                            FIRMA DEL TITULAR (si es distinto al alumno/a)
+                                        </p>
+                                    </td>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p>
+                                            FIRMA IRG
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p/>
+                                    </td>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <p/>
+                                    </td>
+                                    <td class="borderless-td" style="text-align: center; font-size: smaller;">
+                                        <img t-if="o.company_id.signature_order" t-att-src="image_data_uri(o.company_id.signature_order)" style="max-height: 60px; max-width: 120px;" class="img-fluid" alt="Logo"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div t-if="o.payment_mode_id and o.payment_mode_id.display_name in ['IRG Domiciliado', 'Transferencia IRG', 'Datáfono', 'Stripe']" class="page" style="margin: 0; margin-top: 0; page-break-before: always;">
+                            <t t-if="o.payment_mode_id and o.payment_mode_id.display_name in ['IRG Domiciliado', 'Transferencia IRG']">
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td class="borderless-td" style="width: 50%; margin: 0;">
+                                            <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 60px; max-width: 120px;" class="img-fluid" alt="Logo"/>
+                                            <t t-if="o.company_id.website">
+                                                <p style="margin: 0; font-size: smaller;">
+                                                    <a t-att-href="o.company_id.website" style="color: blue; text-decoration: underline;">
+                                                        <t t-esc="o.company_id.website"/>
+                                                    </a>
+                                                </p>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td class="borderless-td" style="text-align: center;">
+                                            <span style="font-weight: bold;">
+                                                Fecha:
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td class="borderless-td" style="text-align: center; font-size: smaller">
+                                            <t t-if="o.date_order">
+                                                <t t-esc="o.date_order.strftime('%d/%m/%Y %H:%M:%S')"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </t>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
