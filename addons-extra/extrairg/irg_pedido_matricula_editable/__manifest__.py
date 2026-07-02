@@ -9,6 +9,7 @@
         'irg_sale_order_extended',
     ],
     'data': [
+        'reports/registration_order_editable_paperformat.xml',
         'reports/registration_order_editable_template.xml',
     ],
     'installable': True,

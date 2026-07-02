@@ -10,7 +10,7 @@
             <field name="print_report_name">object.name</field>
             <field name="binding_model_id" ref="sale.model_sale_order"/>
             <field name="binding_type">report</field>
-            <field name="paperformat_id" ref="irg_sale_order_extended.report_registration_order_paperformat"/>
+            <field name="paperformat_id" ref="report_registration_order_editable_paperformat"/>
         </record>
 
         <template id="registration_order_editable_template">
