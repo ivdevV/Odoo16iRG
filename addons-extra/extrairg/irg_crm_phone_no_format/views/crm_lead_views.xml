@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        IRG: Force phone/mobile fields on crm.lead to render as plain text (widget="char").
+        This bypasses the JS dynamic phone formatter which introduces spaces when editing.
+    -->
+    <record id="crm_lead_view_form_no_phone_format" model="ir.ui.view">
+        <field name="name">crm.lead.form.no.phone.format</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Replace the phone field widget to char to bypass dynamic frontend formatting -->
+            <xpath expr="//field[@name='phone']" position="attributes">
+                <attribute name="widget">char</attribute>
+            </xpath>
+            <!-- Replace the mobile field widget to char -->
+            <xpath expr="//field[@name='mobile']" position="attributes">
+                <attribute name="widget">char</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

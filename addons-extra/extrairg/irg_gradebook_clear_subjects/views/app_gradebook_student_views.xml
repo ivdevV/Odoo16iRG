@@ -17,6 +17,17 @@
                             confirm="¿Está seguro de que desea eliminar todas las asignaturas? Esta acción no se puede deshacer."
                             attrs="{'invisible': [('state', '!=', 'in_progress')]}"/>
                 </xpath>
+
+                <!-- Modifica el tree para que solo sea readonly en estado 'done', y permite la eliminación nativa de líneas (delete="1") -->
+                <xpath expr="//field[@name='gradebook_subject_ids']/tree" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state', '=', 'done')]}</attribute>
+                    <attribute name="delete">1</attribute>
+                </xpath>
+
+                <!-- Reemplaza el botón de papelera individual para remover cualquier atributo attrs de invisibilidad -->
+                <xpath expr="//field[@name='gradebook_subject_ids']/tree/button[@name='unlink_subject']" position="replace">
+                    <button name="unlink_subject" string="" type="object" class="btn-danger" icon="fa-trash"/>
+                </xpath>
             </field>
         </record>
     </data>
