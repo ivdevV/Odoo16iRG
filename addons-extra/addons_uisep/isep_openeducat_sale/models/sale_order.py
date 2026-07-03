@@ -12,7 +12,27 @@ from datetime import datetime
 from werkzeug.urls import url_parse
 
 class SaleOrder(models.Model):
-    _inherit = 'sale.order'    
+    _inherit = 'sale.order'
+
+    # Mapeo de valores de genero soportados: los propios de op.admission/op.student
+    # ('m'/'f'/'o') y los que guarda odoo_moodle_connector en res.partner.gender
+    # ('male'/'female'/'not-sure').
+    _IRG_GENDER_MAP = {
+        'm': 'm', 'f': 'f', 'o': 'o',
+        'male': 'm', 'female': 'f', 'not-sure': 'o',
+    }
+
+    def _irg_resolve_admission_gender(self, partner=None):
+        """Resuelve el genero a usar en la admision/estudiante.
+
+        Prioridad: genero del estudiante (partner indicado, o self.partner_id
+        por defecto) sobre el genero del pedido (self.gender). Devuelve False
+        si el valor crudo no puede mapearse (para que el llamador decida el
+        fallback, p.ej. 'o' o dejar que irg_admission_gender_fix adivine).
+        """
+        partner = partner or self.partner_id
+        raw = (partner and partner.gender) or self.gender
+        return self._IRG_GENDER_MAP.get(raw, False)
 
     website_send_mail = fields.Boolean('Correo enviado')
     is_from_website_origin = fields.Boolean('Venta desde ecommerce')
@@ -333,7 +353,7 @@ class SaleOrder(models.Model):
             'application_date': fields.Datetime.now(),
             'admission_date': start_date,
             'fees_term_id': self.env['op.fees.terms'].search([], limit=1).id,
-            'gender': self.gender or self.partner_id.gender or 'o',
+            'gender': self._irg_resolve_admission_gender(self.partner_id) or 'o',
             'batch_id': self.get_lot_id(admission_register_id.course_id).id,
             'order_id': self.id,    
             

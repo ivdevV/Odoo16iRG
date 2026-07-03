@@ -103,7 +103,7 @@ class SaleOrder(models.Model):
                     'mobile': target_partner.mobile,
                     'phone': target_partner.phone,
                     'partner_id': target_partner.id,
-                    'gender': self.gender or target_partner.gender or 'o',
+                    'gender': self._irg_resolve_admission_gender(target_partner) or 'o',
                 })
 
             if not admission:
@@ -124,7 +124,7 @@ class SaleOrder(models.Model):
                          'name': target_partner.name,
                          'first_name': (first_name or '-').strip(),
                          'last_name': (last_name or '-').strip(),
-                         'gender': self.gender or target_partner.gender or 'o',
+                         'gender': self._irg_resolve_admission_gender(target_partner) or 'o',
                          'partner_id': target_partner.id,
                          'user_id': target_user.id if target_user else False,
                          'email': target_partner.email,
@@ -154,7 +154,7 @@ class SaleOrder(models.Model):
                     'application_date': fields.Datetime.now(),
                     'admission_date': line.start_date_enroller or fields.Date.today(),
                     'fees_term_id': self.env['op.fees.terms'].search([], limit=1).id,
-                    'gender': self.gender or target_partner.gender or 'o',
+                    'gender': self._irg_resolve_admission_gender(target_partner) or 'o',
                     'batch_id': self.get_lot_id(course).id,
                     'order_id': self.id,
                 })
@@ -219,7 +219,7 @@ class SaleOrder(models.Model):
             'application_date': fields.Datetime.now(),
             'admission_date': self.order_line.filtered(lambda l: l.product_template_id.id == admission_register_id.course_id.product_template_id.id)[:1].start_date_enroller or fields.Date.today(),
             'fees_term_id': self.env['op.fees.terms'].search([], limit=1).id,
-            'gender': self.gender or target_partner.gender or 'o',
+            'gender': self._irg_resolve_admission_gender(target_partner) or 'o',
             'batch_id': self.get_lot_id(admission_register_id.course_id).id,
             'order_id': self.id,    
         })

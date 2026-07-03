@@ -121,7 +121,7 @@ class SaleOrderAdmission(models.Model):
                 'application_date': fields.Datetime.now(),
                 'admission_date': line.start_date_enroller or fields.Date.today(),
                 'fees_term_id': self.env['op.fees.terms'].search([], limit=1).id,
-                'gender': self.gender or partner.gender or 'o',
+                'gender': self._irg_resolve_admission_gender(partner) or 'o',
                 'batch_id': self.get_lot_id(course).id,
                 'order_id': self.id,
             })
@@ -270,7 +270,7 @@ class SaleOrderAdmission(models.Model):
             'application_date': fields.datetime.now(),
             'admission_date': start_date,
             'fees_term_id': self.env['op.fees.terms'].search([], limit=1).id,
-            'gender': self.gender or self.partner_id.gender or 'o',
+            'gender': self._irg_resolve_admission_gender(self.partner_id) or 'o',
             'batch_id': self.get_lot_id(admission_register_id.course_id).id,
             'order_id': self.id,    
             

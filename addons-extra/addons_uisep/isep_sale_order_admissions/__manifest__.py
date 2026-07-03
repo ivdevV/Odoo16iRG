@@ -6,7 +6,7 @@
     'author': 'Breithner Aquituari',
     'website': '',
     'category': '',
-    'depends': ['isep_openeducat_sale','isep_elearning_custom', 'isep_ecommerce_fix', 'isep_subject_precedence'],
+    'depends': ['isep_openeducat_sale','isep_elearning_custom', 'isep_ecommerce_fix', 'isep_subject_precedence', 'irg_admission_gender_fix'],
     "data": [
         "security/ir.model.access.csv",
         "views/sale_order_views.xml"

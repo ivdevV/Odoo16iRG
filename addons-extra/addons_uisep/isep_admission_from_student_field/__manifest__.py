@@ -16,7 +16,8 @@
         'isep_openeducat_sale',
         'isep_sale_order_admissions',
         'isep_elearning_custom',  # IMPORTANTE: para que nuestro override de submit_form se aplique después
-        'irg_sale_order_extended', 
+        'irg_sale_order_extended',
+        'irg_admission_gender_fix',
     ],
     'data': [
         'views/sale_order_line_views.xml',

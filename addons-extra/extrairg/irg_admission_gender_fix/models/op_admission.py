@@ -117,9 +117,11 @@ class OpAdmission(models.Model):
             elif incoming_gender in ('female', 'Female', 'Femenino'):
                 vals['gender'] = 'f'
             elif incoming_gender in ('other', 'not-sure', 'Other', 'Otro'):
+                # 'o'/"otro" explícito se respeta: no se sobreescribe adivinando.
                 vals['gender'] = 'o'
-            # If gender is not provided, or is the default 'o', check the partner
-            elif (not incoming_gender or incoming_gender == 'o') and partner:
+            # Solo adivinamos cuando el género llega vacío/False, NUNCA cuando
+            # viene 'o' explícito (requisito R3: respetar "Otro" informado).
+            elif not incoming_gender and partner:
                 mapped_gender = self._map_partner_gender(partner)
                 if mapped_gender in ('m', 'f'):
                     _logger.info("IRG Gender Fix: Mapping empty/default admission gender to partner's gender: %s -> %s", partner.name, mapped_gender)

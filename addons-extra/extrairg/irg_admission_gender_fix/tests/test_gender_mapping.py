@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
+from datetime import timedelta
 from odoo.tests.common import TransactionCase
+from odoo.tests import tagged
+from odoo import fields
 
 _logger = logging.getLogger(__name__)
 
+# Tag propio para poder ejecutar esta clase de forma aislada:
+# --test-tags irg_gender
+@tagged('irg_gender', 'post_install', '-at_install')
 class TestGenderMapping(TransactionCase):
 
     def setUp(self):
@@ -19,12 +25,16 @@ class TestGenderMapping(TransactionCase):
             'type': 'service',
         })
 
+        # Rango relativo a "hoy" (en vez de fechas fijas) para que
+        # application_date (default=Datetime.now()) siempre caiga dentro del
+        # registro, sin importar cuándo se ejecute la suite.
+        today = fields.Date.today()
         self.register = self.env['op.admission.register'].create({
             'name': 'Test Register G',
             'course_id': self.course.id,
             'period': '2026-06',
-            'start_date': '2026-06-01',
-            'end_date': '2026-06-30',
+            'start_date': today - timedelta(days=30),
+            'end_date': today + timedelta(days=30),
             'min_count': 1,
             'max_count': 100,
             'product_id': self.product.id,
@@ -34,8 +44,8 @@ class TestGenderMapping(TransactionCase):
             'name': 'Test Batch G',
             'code': 'TST-BG-01',
             'course_id': self.course.id,
-            'start_date': '2026-06-01',
-            'end_date': '2026-12-31',
+            'start_date': today - timedelta(days=30),
+            'end_date': today + timedelta(days=180),
         })
 
         self.fees_term = self.env['op.fees.terms'].search([], limit=1)
@@ -116,7 +126,6 @@ class TestGenderMapping(TransactionCase):
             'course_id': self.course.id,
             'batch_id': self.batch.id,
             'fees_term_id': self.fees_term.id,
-            'gender': 'o',
         })
         self.assertEqual(admission_female.gender, 'f')
 
@@ -275,3 +284,94 @@ class TestGenderMapping(TransactionCase):
             'fees_term_id': self.fees_term.id,
         })
         self.assertEqual(admission_other.gender, 'o')
+
+    def test_06_student_gender_over_order(self):
+        """A2: el género del estudiante (partner de la admisión) gana sobre el
+        género del pedido (self.gender), vía el helper
+        _irg_resolve_admission_gender de isep_openeducat_sale.
+
+        Se ejercita el helper directamente sobre un sale.order (en vez de
+        montar todo el flujo de confirmación/admisión de una venta, más
+        frágil de fixturar en este entorno), porque el helper es el único
+        punto donde se decide la prioridad estudiante > pedido (R1).
+        """
+        partner_payer = self.env['res.partner'].create({
+            'name': 'Payer Male',
+            'gender': 'm',
+        })
+        partner_student = self.env['res.partner'].create({
+            'name': 'Student Female',
+            'gender': 'f',
+        })
+
+        order = self.env['sale.order'].create({
+            'partner_id': partner_payer.id,
+            'gender': 'm',
+        })
+
+        # Pedido dice 'm' (pagador), pero el estudiante real es 'f': debe ganar 'f'.
+        resolved = order._irg_resolve_admission_gender(partner_student)
+        self.assertEqual(resolved, 'f')
+
+        # Sin partner explícito, cae al partner_id del pedido (pagador == 'm').
+        resolved_default = order._irg_resolve_admission_gender()
+        self.assertEqual(resolved_default, 'm')
+
+    def test_07_explicit_other_not_overwritten(self):
+        """A3: 'o' explícito en create/write de op.admission no se sobreescribe
+        por la adivinación de nombre/título, aunque el nombre sugiera 'f'/'m'."""
+        # "Laura Gomez" adivinaría 'f' (ver test_05), pero el 'o' explícito debe prevalecer.
+        partner = self.env['res.partner'].create({
+            'name': 'Laura Gomez',
+        })
+
+        admission = self.env['op.admission'].create({
+            'name': 'Laura Gomez',
+            'first_name': 'Laura',
+            'last_name': 'Gomez',
+            'partner_id': partner.id,
+            'register_id': self.register.id,
+            'course_id': self.course.id,
+            'batch_id': self.batch.id,
+            'fees_term_id': self.fees_term.id,
+            'gender': 'o',
+        })
+        self.assertEqual(admission.gender, 'o')
+
+        # Repetimos en write: forzar primero a 'm' y luego escribir 'o' explícito.
+        admission.write({'gender': 'm'})
+        self.assertEqual(admission.gender, 'm')
+        admission.write({'gender': 'o'})
+        self.assertEqual(admission.gender, 'o')
+
+    def test_08_moodle_value_mapped_by_helper(self):
+        """A4: un partner con valor Moodle 'female' se resuelve a 'f' a través
+        del helper _irg_resolve_admission_gender (mapeo hecho en el helper, sin
+        depender de la intercepción de irg_admission_gender_fix)."""
+        partner = self.env['res.partner'].create({
+            'name': 'Moodle Female Partner',
+            'gender': 'female',
+        })
+
+        order = self.env['sale.order'].create({
+            'partner_id': partner.id,
+        })
+
+        resolved = order._irg_resolve_admission_gender(partner)
+        self.assertEqual(resolved, 'f')
+
+        # Complementariamente: la admisión creada con ese valor resuelto por el
+        # helper (patrón usado en los módulos de venta: helper(...) or 'o')
+        # también queda en 'f'.
+        admission = self.env['op.admission'].create({
+            'name': partner.name,
+            'first_name': 'Moodle',
+            'last_name': 'Female',
+            'partner_id': partner.id,
+            'register_id': self.register.id,
+            'course_id': self.course.id,
+            'batch_id': self.batch.id,
+            'fees_term_id': self.fees_term.id,
+            'gender': order._irg_resolve_admission_gender(partner) or 'o',
+        })
+        self.assertEqual(admission.gender, 'f')
