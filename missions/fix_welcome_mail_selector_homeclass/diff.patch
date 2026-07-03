@@ -1,186 +1,46 @@
-diff --git a/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/models/op_admission.py b/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/models/op_admission.py
-index d2a468b4..cf801097 100644
---- a/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/models/op_admission.py
-+++ b/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/models/op_admission.py
-@@ -70,10 +70,17 @@ class OpAdmission(models.Model):
-                 modality_name = self.batch_id.modality_id.name.lower()
-                 if 'online' in modality_name:
-                     is_online = True
--            
--            # Fallback based on batch code/name
--            if not is_online and self.batch_id:
--                is_online = 'ONL' in (self.batch_id.code or '').upper() or 'ONL' in (self.batch_id.name or '').upper()
-+            else:
-+                # Fallback based on batch code/name (only if modality is not explicitly set)
-+                if self.batch_id:
-+                    batch_code = (self.batch_id.code or '').upper()
-+                    batch_name = (self.batch_id.name or '').upper()
-+                    # Must contain 'ONL' and must NOT contain 'HC' (HomeClass) nor 'PRS' (Presencial)
-+                    if ('ONL' in batch_code or 'ONL' in batch_name) and not (
-+                        'HC' in batch_code or 'HC' in batch_name or
-+                        'PRS' in batch_code or 'PRS' in batch_name
-+                    ):
-+                        is_online = True
+diff --git a/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/__manifest__.py b/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/__manifest__.py
+index 5b2eadc1..7cdb26f6 100644
+--- a/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/__manifest__.py
++++ b/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/__manifest__.py
+@@ -5,7 +5,7 @@
+     'category': 'OpenEduCat',
+     'summary': 'Selecciona la plantilla de correo de bienvenida según la modalidad del lote',
+     'author': 'iRG',
+-    'depends': ['isep_elearning_custom', 'isep_student_migration', 'isep_sale_order_admissions'],
++    'depends': ['isep_elearning_custom', 'isep_student_migration', 'isep_sale_order_admissions', 'irg_admission_gender_fix'],
+     'data': [
+         'data/mail_template_online.xml',
+     ],
+diff --git a/addons-extra/extrairg/irg_welcome_diplomado_template_selector/models/op_admission.py b/addons-extra/extrairg/irg_welcome_diplomado_template_selector/models/op_admission.py
+index 076a2985..23e5c372 100644
+--- a/addons-extra/extrairg/irg_welcome_diplomado_template_selector/models/op_admission.py
++++ b/addons-extra/extrairg/irg_welcome_diplomado_template_selector/models/op_admission.py
+@@ -51,12 +51,26 @@ class OpAdmission(models.Model):
  
-             if is_online:
-                 student_name = self.name
-diff --git a/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/tests/test_welcome_mail.py b/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/tests/test_welcome_mail.py
-index 64cad4d6..762ab42a 100644
---- a/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/tests/test_welcome_mail.py
-+++ b/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/tests/test_welcome_mail.py
-@@ -60,10 +60,14 @@ class TestWelcomeMailSafeguard(TransactionCase):
-             'modality_id': self.modality_online.id,
-             'start_date': '2026-06-01',
-             'end_date': '2026-12-31',
--            'date_start_class': False,  # Should remain False since it is not named 'ONL'
-+            'date_start_class': False,
-             'tutor_id': self.tutor_user.id,
-         })
+     def _irg_resolve_welcome_template(self, ad):
+         self.ensure_one()
+-        batch_code = self._irg_welcome_batch_code()
  
-+        # Force clear the date_start_class using SQL to bypass the default create/write hook of irg_openeducat_sale_lote_custom
-+        self.env.cr.execute("UPDATE op_batch SET date_start_class = NULL WHERE id = %s", [batch_regular.id])
-+        batch_regular.invalidate_recordset(['date_start_class'])
-+
-         # Verify that date_start_class is indeed False/empty initially
-         self.assertFalse(batch_regular.date_start_class)
+         if self._irg_is_diplomado_welcome():
+             return self._irg_diplomado_welcome_template(ad), 'diplomado'
  
-@@ -141,3 +145,60 @@ class TestWelcomeMailSafeguard(TransactionCase):
- 
-         # Verify the batch's date_start_class got auto-populated with start_date
-         self.assertEqual(batch_onl.date_start_class, batch_onl.start_date)
-+
-+    def test_send_mail_homeclass_batch_not_treated_as_online(self):
-+        """Test Case 3: HomeClass batch with code containing 'ONL' (like 'MONLHC2609') is NOT treated as Online"""
-+        # Find or create a HomeClass modality
-+        modality_hc = self.env['op.modality'].search([('code', '=', 'HC')], limit=1)
-+        if not modality_hc:
-+            modality_hc = self.env['op.modality'].create({
-+                'name': 'HomeClass',
-+                'code': 'HC',
-+                'new_code': 'HC',
-+                'analytic_code': 'HC',
-+            })
-+
-+        # Create a batch with 'MONLHC2609' as code and HomeClass modality
-+        batch_hc = self.env['op.batch'].create({
-+            'name': 'Master Online HomeClass Batch',
-+            'code': 'MONLHC2609',
-+            'course_id': self.course.id,
-+            'modality_id': modality_hc.id,
-+            'start_date': '2026-06-01',
-+            'end_date': '2026-12-31',
-+            'date_start_class': False,
-+            'tutor_id': self.tutor_user.id,
-+        })
-+
-+        # Verify initial state
-+        self.assertFalse(batch_hc.date_start_class)
-+
-+        # Create partner and admission
-+        partner = self.env['res.partner'].create({
-+            'name': 'Test Student HC',
-+            'email': 'student_hc@example.com',
-+        })
-+        admission = self.env['op.admission'].create({
-+            'name': 'Test Student HC',
-+            'first_name': 'Test',
-+            'last_name': 'Student HC',
-+            'birth_date': '2000-01-01',
-+            'gender': 'o',
-+            'email': 'student_hc@example.com',
-+            'partner_id': partner.id,
-+            'batch_id': batch_hc.id,
-+            'register_id': self.register.id,
-+            'course_id': self.course.id,
-+            'application_date': '2026-05-15',
-+            'email_send_ok': False,
-+        })
-+
-+        # We send the email. Since it is NOT treated as Online, it should fall back to super()
-+        # and therefore NOT trigger the auto-population of date_start_class.
-+        res = admission.send_mail(force=False)
-+        self.assertTrue(res)
-+        self.assertTrue(admission.email_send_ok)
-+
-+        # Crucial verification: date_start_class MUST still be False, proving it did NOT execute the Online selector logic
-+        self.assertFalse(batch_hc.date_start_class)
-+
-diff --git a/addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/models/op_batch.py b/addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/models/op_batch.py
-index 46335dc9..784887ae 100644
---- a/addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/models/op_batch.py
-+++ b/addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/models/op_batch.py
-@@ -7,10 +7,22 @@ _logger = logging.getLogger(__name__)
- class OpBatch(models.Model):
-     _inherit = 'op.batch'
- 
--    @api.onchange('start_date', 'code', 'name')
-+    def _check_is_online(self, modality_id, code, name):
-+        modality = self.env['op.modality'].browse(modality_id) if modality_id else self.env['op.modality']
-+        if modality:
-+            return 'online' in (modality.name or '').lower()
-+        
-+        code_up = (code or '').upper()
-+        name_up = (name or '').upper()
-+        return ('ONL' in code_up or 'ONL' in name_up) and not (
-+            'HC' in code_up or 'HC' in name_up or
-+            'PRS' in code_up or 'PRS' in name_up
-+        )
-+
-+    @api.onchange('start_date', 'code', 'name', 'modality_id')
-     def _onchange_start_date_for_class(self):
-         # Solo autocompletar para lotes de modalidad Online (ONL)
--        is_onl = 'ONL' in (self.code or '').upper() or 'ONL' in (self.name or '').upper()
-+        is_onl = self._check_is_online(self.modality_id.id, self.code, self.name)
-         if is_onl and self.start_date and not self.date_start_class:
-             self.date_start_class = self.start_date
-             _logger.info("IRG Custom: Onchange set date_start_class to %s for ONL batch", self.start_date)
-@@ -18,9 +30,7 @@ class OpBatch(models.Model):
-     @api.model_create_multi
-     def create(self, vals_list):
-         for vals in vals_list:
--            code = vals.get('code') or ''
--            name = vals.get('name') or ''
--            is_onl = 'ONL' in code.upper() or 'ONL' in name.upper()
-+            is_onl = self._check_is_online(vals.get('modality_id'), vals.get('code'), vals.get('name'))
-             if is_onl and vals.get('start_date') and not vals.get('date_start_class'):
-                 vals['date_start_class'] = vals['start_date']
-                 _logger.info("IRG Custom: Create set date_start_class to %s for ONL batch", vals['start_date'])
-@@ -28,9 +38,9 @@ class OpBatch(models.Model):
- 
-     def write(self, vals):
-         res = super(OpBatch, self).write(vals)
--        if 'start_date' in vals or 'date_start_class' in vals or 'code' in vals or 'name' in vals:
-+        if 'start_date' in vals or 'date_start_class' in vals or 'code' in vals or 'name' in vals or 'modality_id' in vals:
-             for record in self:
--                is_onl = 'ONL' in (record.code or '').upper() or 'ONL' in (record.name or '').upper()
-+                is_onl = record._check_is_online(record.modality_id.id, record.code, record.name)
-                 if is_onl and record.start_date and not record.date_start_class:
-                     super(OpBatch, record).write({'date_start_class': record.start_date})
-                     _logger.info("IRG Custom: Write set date_start_class to %s for ONL batch %s", record.start_date, record.name)
-diff --git a/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/models/op_admission.py b/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/models/op_admission.py
-index faa51441..bfda3d6b 100644
---- a/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/models/op_admission.py
-+++ b/addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/models/op_admission.py
-@@ -44,8 +44,20 @@ class OpAdmission(models.Model):
-         if not self.batch_id.start_date:
-             raise UserError(_('%s - Necesita establecer fecha de inicio de Clases.') % student_name)
- 
--        batch_code = (self.batch_id.code or '').upper()
--        is_online_batch = 'ONL' in batch_code
-+        is_online_batch = False
+-        if 'ONL' in batch_code:
++        is_online = False
 +        if self.batch_id.modality_id:
 +            modality_name = self.batch_id.modality_id.name.lower()
 +            if 'online' in modality_name:
-+                is_online_batch = True
++                is_online = True
 +        else:
 +            if self.batch_id:
-+                batch_code = (self.batch_id.code or '').upper()
++                batch_code = self._irg_welcome_batch_code()
 +                batch_name = (self.batch_id.name or '').upper()
 +                if ('ONL' in batch_code or 'ONL' in batch_name) and not (
 +                    'HC' in batch_code or 'HC' in batch_name or
 +                    'PRS' in batch_code or 'PRS' in batch_name
 +                ):
-+                    is_online_batch = True
- 
-         # Determine if the admission's course is a diplomado
-         categ_code = False
++                    is_online = True
++
++        if is_online:
+             template = ad.welcome_template_online_id or self.env.ref(
+                 'irg_elearning_correo_bienvenida_selector.email_op_admission_confirm_online',
+                 raise_if_not_found=False,

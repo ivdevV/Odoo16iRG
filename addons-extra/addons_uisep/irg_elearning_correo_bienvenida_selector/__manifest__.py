@@ -5,7 +5,7 @@
     'category': 'OpenEduCat',
     'summary': 'Selecciona la plantilla de correo de bienvenida según la modalidad del lote',
     'author': 'iRG',
-    'depends': ['isep_elearning_custom', 'isep_student_migration', 'isep_sale_order_admissions'],
+    'depends': ['isep_elearning_custom', 'isep_student_migration', 'isep_sale_order_admissions', 'irg_admission_gender_fix'],
     'data': [
         'data/mail_template_online.xml',
     ],
