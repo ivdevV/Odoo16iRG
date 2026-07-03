@@ -70,10 +70,17 @@ class OpAdmission(models.Model):
                 modality_name = self.batch_id.modality_id.name.lower()
                 if 'online' in modality_name:
                     is_online = True
-            
-            # Fallback based on batch code/name
-            if not is_online and self.batch_id:
-                is_online = 'ONL' in (self.batch_id.code or '').upper() or 'ONL' in (self.batch_id.name or '').upper()
+            else:
+                # Fallback based on batch code/name (only if modality is not explicitly set)
+                if self.batch_id:
+                    batch_code = (self.batch_id.code or '').upper()
+                    batch_name = (self.batch_id.name or '').upper()
+                    # Must contain 'ONL' and must NOT contain 'HC' (HomeClass) nor 'PRS' (Presencial)
+                    if ('ONL' in batch_code or 'ONL' in batch_name) and not (
+                        'HC' in batch_code or 'HC' in batch_name or
+                        'PRS' in batch_code or 'PRS' in batch_name
+                    ):
+                        is_online = True
 
             if is_online:
                 student_name = self.name

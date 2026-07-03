@@ -44,8 +44,20 @@ class OpAdmission(models.Model):
         if not self.batch_id.start_date:
             raise UserError(_('%s - Necesita establecer fecha de inicio de Clases.') % student_name)
 
-        batch_code = (self.batch_id.code or '').upper()
-        is_online_batch = 'ONL' in batch_code
+        is_online_batch = False
+        if self.batch_id.modality_id:
+            modality_name = self.batch_id.modality_id.name.lower()
+            if 'online' in modality_name:
+                is_online_batch = True
+        else:
+            if self.batch_id:
+                batch_code = (self.batch_id.code or '').upper()
+                batch_name = (self.batch_id.name or '').upper()
+                if ('ONL' in batch_code or 'ONL' in batch_name) and not (
+                    'HC' in batch_code or 'HC' in batch_name or
+                    'PRS' in batch_code or 'PRS' in batch_name
+                ):
+                    is_online_batch = True
 
         # Determine if the admission's course is a diplomado
         categ_code = False
