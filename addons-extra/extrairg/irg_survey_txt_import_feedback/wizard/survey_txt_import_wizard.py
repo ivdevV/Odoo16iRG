@@ -40,10 +40,9 @@ class SurveyTxtImportWizard(models.TransientModel):
         lines = []
         for idx, question in enumerate(parsed, start=1):
             lines.append(f"{idx}. {question['P']}")
-            lines.append(f"   A) {question['A']}")
-            lines.append(f"   B) {question['B']}")
-            lines.append(f"   C) {question['C']}")
-            lines.append(f"   D) {question['D']}")
+            option_keys = sorted([k for k in question.keys() if len(k) == 1 and k.isupper() and k != 'P'])
+            for option_key in option_keys:
+                lines.append(f"   {option_key}) {question[option_key]}")
             lines.append(f"   RC: {question['RC']}")
             if question.get('FG'):
                 lines.append(f"   FG: {question['FG']}")
@@ -83,7 +82,8 @@ class SurveyTxtImportWizard(models.TransientModel):
 
             new_question = question_model.create(question_vals)
 
-            for option_key in ('A', 'B', 'C', 'D'):
+            option_keys = sorted([k for k in question.keys() if len(k) == 1 and k.isupper() and k != 'P'])
+            for option_key in option_keys:
                 answer_vals = {
                     'question_id': new_question.id,
                     'value': question[option_key],
@@ -122,7 +122,7 @@ class SurveyTxtImportWizard(models.TransientModel):
             raise ValidationError(_('No se detectaron preguntas en el archivo.'))
 
         parsed = []
-        required = {'P', 'A', 'B', 'C', 'D', 'RC'}
+        required = {'P', 'RC'}
 
         for idx, block in enumerate(blocks, start=1):
             data = {}
@@ -141,8 +141,16 @@ class SurveyTxtImportWizard(models.TransientModel):
             if missing:
                 raise ValidationError(_('Pregunta %s: faltan campos obligatorios: %s') % (idx, ', '.join(missing)))
 
-            if data['RC'] not in ('A', 'B', 'C', 'D'):
-                raise ValidationError(_('Pregunta %s: RC invalida (%s). Debe ser A, B, C o D.') % (idx, data['RC']))
+            option_keys = sorted([k for k in data.keys() if len(k) == 1 and k.isupper() and k != 'P'])
+            if len(option_keys) < 2:
+                raise ValidationError(_('Pregunta %s: debe tener al menos dos opciones (A, B, ...).') % idx)
+
+            expected_options = [chr(65 + i) for i in range(len(option_keys))]
+            if option_keys != expected_options:
+                raise ValidationError(_('Pregunta %s: las opciones deben ser consecutivas empezando por la A (e.g. %s).') % (idx, ', '.join(expected_options)))
+
+            if data['RC'] not in option_keys:
+                raise ValidationError(_('Pregunta %s: RC invalida (%s). Debe ser una de las opciones (%s).') % (idx, data['RC'], ', '.join(option_keys)))
 
             parsed.append(data)
 
