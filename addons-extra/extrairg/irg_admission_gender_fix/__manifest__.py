@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Admission Gender Fix',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Education',
     'summary': 'Fixes contact to admission/student gender mapping conflicts.',
     'description': """
@@ -15,7 +15,6 @@
         'openeducat_core',
         'isep_openeducat_sale',
         'isep_admission_from_student_field',
-        'odoo_moodle_connector',
     ],
     'data': [],
     'demo': [],
