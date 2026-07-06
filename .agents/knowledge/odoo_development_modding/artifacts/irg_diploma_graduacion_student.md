@@ -33,8 +33,8 @@ El diploma está diseñado en orientación **Horizontal (Landscape)** utilizando
 
 | Elemento | Posición Y (pt) | Alineación | Fuente / Estilo |
 | :--- | :--- | :--- | :--- |
-| **Título en Español** | `660` | Centrado | `Inter-Bold` / `Helvetica-Bold` (24 pt, `#3092C0`) |
-| **Título en Catalán** | `632` | Centrado | `Inter-Bold` / `Helvetica-Bold` (24 pt, `#3092C0`) |
+| **Título en Español** | `620` | Centrado | `Inter-Bold` / `Helvetica-Bold` (24 pt, `#3092C0`) |
+| **Título en Catalán** | `592` | Centrado | `Inter-Bold` / `Helvetica-Bold` (24 pt, `#3092C0`) |
 | **Nombres del Curso (Cat / Es)** | `510` | Columna (`545.27` / `645.27`) | `Inter-Bold` (32 pt, `#02448A`), Salto de 36 pt |
 | **Conector "a"** | `430` | Centrado | `Inter-Regular` (16 pt) |
 | **Nombre del Estudiante** | `380` | Centrado | `Inter-Bold` (36 pt), Color Celeste Corporativo |
