@@ -2,15 +2,8 @@ pipeline {
     agent any
 
     options {
-        disableConcurrentBuilds()   // dos deploys a la vez pisarían el contenedor
+        disableConcurrentBuilds()
         timestamps()
-    }
-
-    environment {
-        REPO_SSH   = 'git@github.com:ivdevV/Odoo16iRG.git'
-        BRANCH     = 'Dev_iRG'
-        DEPLOY_DIR = 'betaodoo16'
-        CONTAINER  = 'nat16_odoo_latest'
     }
 
     stages {
@@ -18,72 +11,166 @@ pipeline {
         stage('TestPep8') {
             steps {
                 echo 'Testing Pep8..'
-                // Placeholder como en el original. Si quieres lint real:
-                // sh 'pip install flake8 --quiet && flake8 addons-extra --max-line-length=120'
             }
         }
 
+        // ==================== DEV (rama Dev_iRG -> beta) ====================
         stage('Deliver for development iRG Odoo') {
-            // NOTA: este job solo construye Dev_iRG (Branch Specifier del job),
-            // así que no hace falta 'when { branch ... }' — de hecho en un job
-            // Pipeline simple (no multibranch) BRANCH_NAME no existe y el when
-            // nunca se cumpliría, saltándose el deploy.
+            when { branch 'Dev_iRG' }
             steps {
                 echo 'Deploying to DEV..'
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'odoo-dev',   // tu config de Publish over SSH
+                        configName: 'odoo-dev',
                         verbose: true,
                         transfers: [
                             sshTransfer(
                                 execTimeout: 300000,
                                 execCommand: '''
 set -e
+APP_DIR=/root/betaodoo16
+CONTAINER=nat16_odoo_latest
+BRANCH=Dev_iRG
 
-cd /root/betaodoo16
+cd "$APP_DIR"
 
-# 1. Clonar PRIMERO a un directorio temporal (shallow: solo la rama, sin historia)
+# Clonar PRIMERO a temporal (solo la rama, sin historia)
 rm -rf Odoo16iRG_new
-git clone --depth 1 --branch Dev_iRG git@github.com:ivdevV/Odoo16iRG.git Odoo16iRG_new
+git clone --depth 1 --branch "$BRANCH" git@github.com:ivdevV/Odoo16iRG.git Odoo16iRG_new
 
-# 2. Solo si el clone fue bien, paramos Odoo y hacemos el swap
-docker container stop nat16_odoo_latest
-
+# Solo si el clone fue bien: parar, swap
+docker container stop "$CONTAINER"
 rm -rf addons-extra_old
 [ -d addons-extra ] && mv addons-extra addons-extra_old
 mv Odoo16iRG_new/addons-extra ./addons-extra
 rm -rf Odoo16iRG_new
 
-# 3. Permisos (rutas reales del proyecto)
+# Preservar datos no versionados (media SCORM y temporales) del deploy anterior
+if [ -d addons-extra_old/addons_uisep/isep_scorm_elearning/static/media ]; then
+    rm -rf addons-extra/addons_uisep/isep_scorm_elearning/static/media
+    mv addons-extra_old/addons_uisep/isep_scorm_elearning/static/media addons-extra/addons_uisep/isep_scorm_elearning/static/
+fi
+if [ -d addons-extra_old/addons_uisep/document_processing_with_ai/temporary_files ]; then
+    rm -rf addons-extra/addons_uisep/document_processing_with_ai/temporary_files
+    mv addons-extra_old/addons_uisep/document_processing_with_ai/temporary_files addons-extra/addons_uisep/document_processing_with_ai/
+fi
+
 chmod 777 -R addons-extra/addons_uisep/document_processing_with_ai/temporary_files || true
 chmod 775 -R addons-extra/addons_uisep/isep_scorm_elearning/static/media || true
 chown 101:101 -R addons-extra
 
-# 4. Arrancar y esperar
-docker container start nat16_odoo_latest
+docker container start "$CONTAINER"
 sleep 30
 
-# 5. Volcar log y VALIDAR que Odoo cargo bien
 echo "===== Logs de DEV ====="
-tail -n 500 /root/betaodoo16/log/odoo-bin.log
+tail -n 500 "$APP_DIR/log/odoo-bin.log"
 echo "===== Fin logs de DEV ====="
 
-if tail -n 300 /root/betaodoo16/log/odoo-bin.log | grep -q "Failed to load registry"; then
+if tail -n 300 "$APP_DIR/log/odoo-bin.log" | grep -q "Failed to load registry"; then
     echo "ERROR: Odoo no pudo cargar el registry tras el deploy"
     exit 1
 fi
-if ! docker ps --format '{{.Names}}' | grep -q "^nat16_odoo_latest$"; then
+if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
     echo "ERROR: el contenedor no esta corriendo tras el deploy"
     exit 1
 fi
-
-echo "Deploy OK"
+echo "Deploy DEV OK"
 '''
                             )
                         ]
                     )
                 ])
                 echo 'Deployed to DEV..'
+            }
+        }
+
+        // ==================== PROD (rama main -> app.institutoraimongaja.com) ====================
+        stage('Deploy for Production iRG') {
+            when { branch 'main' }
+            steps {
+                // Igual que el original: aprobacion manual con timeout de 5 min
+                timeout(time: 5, unit: 'MINUTES') {
+                    input message: 'Do you want to approve the deployment?', ok: 'Yes'
+                }
+
+                echo 'Deploying to Prod iRG..'
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'odoo-prod',
+                        verbose: true,
+                        transfers: [
+                            sshTransfer(
+                                execTimeout: 600000,
+                                execCommand: '''
+set -e
+APP_DIR=/root/nativo16
+CONTAINER=nat16_odoo_latest
+PG_CONTAINER=nat16_pgodoo_latest
+DB_NAME=Base16
+BRANCH=main
+
+cd "$APP_DIR"
+
+# 0. BACKUP de la BD antes de tocar nada (si falla, se aborta el deploy)
+mkdir -p /root/backups
+docker exec "$PG_CONTAINER" pg_dump -U odoo -Fc "$DB_NAME" > "/root/backups/pre-deploy-$(date +%Y%m%d-%H%M%S).dump"
+ls -t /root/backups/pre-deploy-*.dump | tail -n +11 | xargs -r rm
+echo "Backup de BD completado"
+
+# 1. Clonar PRIMERO a temporal
+rm -rf Odoo16iRG_new
+git clone --depth 1 --branch "$BRANCH" git@github.com:ivdevV/Odoo16iRG.git Odoo16iRG_new
+
+# 2. Solo si el clone fue bien: parar y archivar el addons actual por commit
+docker container stop "$CONTAINER"
+COMMIT=$(git -C Odoo16iRG_new rev-parse HEAD)
+mkdir -p old_addons-extra
+rm -rf "old_addons-extra/$COMMIT"
+[ -d addons-extra ] && mv addons-extra "old_addons-extra/$COMMIT"
+mv Odoo16iRG_new/addons-extra ./addons-extra
+rm -rf Odoo16iRG_new
+# conservar solo los 5 archivados mas recientes
+ls -dt old_addons-extra/*/ 2>/dev/null | tail -n +6 | xargs -r rm -rf
+
+# 3. Preservar datos NO versionados (media SCORM de alumnos y temporales IA)
+if [ -d "old_addons-extra/$COMMIT/addons_uisep/isep_scorm_elearning/static/media" ]; then
+    rm -rf addons-extra/addons_uisep/isep_scorm_elearning/static/media
+    mv "old_addons-extra/$COMMIT/addons_uisep/isep_scorm_elearning/static/media" addons-extra/addons_uisep/isep_scorm_elearning/static/
+fi
+if [ -d "old_addons-extra/$COMMIT/addons_uisep/document_processing_with_ai/temporary_files" ]; then
+    rm -rf addons-extra/addons_uisep/document_processing_with_ai/temporary_files
+    mv "old_addons-extra/$COMMIT/addons_uisep/document_processing_with_ai/temporary_files" addons-extra/addons_uisep/document_processing_with_ai/
+fi
+
+# 4. Permisos
+chmod 777 -R addons-extra/addons_uisep/document_processing_with_ai/temporary_files || true
+chmod 775 -R addons-extra/addons_uisep/isep_scorm_elearning/static/media || true
+chown 101:101 -R addons-extra
+
+# 5. Arrancar Odoo y nginx (como el original)
+docker container start "$CONTAINER"
+docker container restart nginx
+sleep 30
+
+echo "===== Logs de PRODUCTION ====="
+tail -n 500 "$APP_DIR/log/odoo-bin.log"
+echo "===== Fin logs de PRODUCTION ====="
+
+if tail -n 300 "$APP_DIR/log/odoo-bin.log" | grep -q "Failed to load registry"; then
+    echo "ERROR: Odoo PROD no pudo cargar el registry"
+    exit 1
+fi
+if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
+    echo "ERROR: el contenedor de PROD no esta corriendo"
+    exit 1
+fi
+echo "Deploy PROD OK"
+'''
+                            )
+                        ]
+                    )
+                ])
+                echo 'Deployed to Prod..'
             }
         }
     }
@@ -94,7 +181,7 @@ echo "Deploy OK"
             cleanWs()
         }
         failure {
-            echo 'Build FAILED — revisa la consola. El addons-extra anterior queda en addons-extra_old en el servidor por si hay que revertir a mano.'
+            echo 'Build FAILED. Rollback disponible: addons-extra_old (dev) / old_addons-extra/<commit> (prod) + dump en /root/backups (prod).'
         }
     }
 }
