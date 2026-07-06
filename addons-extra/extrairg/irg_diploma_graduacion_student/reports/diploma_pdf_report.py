@@ -101,8 +101,8 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         # --- HEADER ---
         c.setFillColor(header_blue)
         c.setFont(font_bold, 24)
-        c.drawCentredString(center_x, 660, "Diploma de Graduación")
-        c.drawCentredString(center_x, 632, "Diploma de Graduació")
+        c.drawCentredString(center_x, 620, "Diploma de Graduación")
+        c.drawCentredString(center_x, 592, "Diploma de Graduació")
         
         # --- COURSE NAMES (Columns) ---
         # Gutter margins: Left column aligned to the right at 545.27 pt

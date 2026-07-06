@@ -1,0 +1,4 @@
+[2026-07-06T14:47:35+02:00] Iniciando fase de implementación de la misión tweak_graduation_diploma_title_y.
+[2026-07-06T14:47:35+02:00] Tarea clasificada como trivial (cambio visual menor en un solo archivo).
+[2026-07-06T14:47:38+02:00] Modificado `addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py` para bajar los títulos 40 pt (Y_es de 660 a 620, Y_cat de 632 a 592).
+
