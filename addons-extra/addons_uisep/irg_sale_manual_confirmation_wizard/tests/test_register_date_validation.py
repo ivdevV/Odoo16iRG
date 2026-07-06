@@ -388,6 +388,61 @@ class TestRegisterDateValidation(TransactionCase):
         self.assertTrue(batch_master, "Should have created or found the batch for regular master course")
         self.assertTrue(batch_master.code.startswith('MPSC'), f"Expected code to start with MPSC, got {batch_master.code}")
 
+    def test_wizard_preview_master_prefix(self):
+        """The wizard 'Lote previsto' preview must apply the same MO/MP master
+        rule as get_lot_id, so it matches the batch created on confirm.
+        Non-official master -> MP; official master -> MO. Regression for the
+        preview showing e.g. 'MPCHC2609' instead of 'MPPCHC2609'.
+        """
+        master_category = self.env['product.category'].create({
+            'name': 'Máster',
+            'code': 'M',
+        })
+        pt = self.env['product.template'].create({
+            'name': 'Máster en Psicología Clínica y de la Salud',
+            'type': 'service',
+            'is_academic_program': True,
+            'recurring_invoice': True,
+            'categ_id': master_category.id,
+            'course_type': 'classroom',
+        })
+        course = self.env['op.course'].create({
+            'name': 'Máster en Psicología Clínica y de la Salud',
+            'code': 'PC',
+            'product_template_id': pt.id,
+        })
+        so = self.env['sale.order'].create({
+            'partner_id': self.env.ref('base.partner_admin').id,
+            'order_line': [(0, 0, {
+                'product_id': pt.product_variant_id.id,
+                'product_uom_qty': 1,
+                'price_unit': 1000,
+            })],
+        })
+        line = so.order_line[0]
+        wizard = self.env['irg.manual.confirmation.wizard'].create({
+            'order_id': so.id,
+            'admission_date': fields.Date.to_date('2027-05-15'),
+        })
+
+        # Date outside the current month to avoid the HC next-month shift.
+        preview = wizard._build_line_batch_code_preview(
+            line, course, 'HC', fields.Date.to_date('2027-05-15'))
+        self.assertTrue(
+            preview.startswith('MPPC'),
+            f"Non-official master HC preview should start with MPPC, got {preview}")
+
+        course_oficial = self.env['op.course'].create({
+            'name': 'Máster Oficial en Psicología Clínica y de la Salud',
+            'code': 'PC',
+            'product_template_id': pt.id,
+        })
+        preview_oficial = wizard._build_line_batch_code_preview(
+            line, course_oficial, 'HC', fields.Date.to_date('2027-05-15'))
+        self.assertTrue(
+            preview_oficial.startswith('MOPC'),
+            f"Official master HC preview should start with MOPC, got {preview_oficial}")
+
     def test_native_confirmation_es_ES_no_batch_creation(self):
         """Test that native confirmation of a sale order with an es_ES course:
         - Creates the admission in 'draft' or 'application' state.

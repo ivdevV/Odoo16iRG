@@ -60,9 +60,13 @@ class TestWelcomeMailSafeguard(TransactionCase):
             'modality_id': self.modality_online.id,
             'start_date': '2026-06-01',
             'end_date': '2026-12-31',
-            'date_start_class': False,  # Should remain False since it is not named 'ONL'
+            'date_start_class': False,
             'tutor_id': self.tutor_user.id,
         })
+
+        # Force clear the date_start_class using SQL to bypass the default create/write hook of irg_openeducat_sale_lote_custom
+        self.env.cr.execute("UPDATE op_batch SET date_start_class = NULL WHERE id = %s", [batch_regular.id])
+        batch_regular.invalidate_recordset(['date_start_class'])
 
         # Verify that date_start_class is indeed False/empty initially
         self.assertFalse(batch_regular.date_start_class)
@@ -141,3 +145,60 @@ class TestWelcomeMailSafeguard(TransactionCase):
 
         # Verify the batch's date_start_class got auto-populated with start_date
         self.assertEqual(batch_onl.date_start_class, batch_onl.start_date)
+
+    def test_send_mail_homeclass_batch_not_treated_as_online(self):
+        """Test Case 3: HomeClass batch with code containing 'ONL' (like 'MONLHC2609') is NOT treated as Online"""
+        # Find or create a HomeClass modality
+        modality_hc = self.env['op.modality'].search([('code', '=', 'HC')], limit=1)
+        if not modality_hc:
+            modality_hc = self.env['op.modality'].create({
+                'name': 'HomeClass',
+                'code': 'HC',
+                'new_code': 'HC',
+                'analytic_code': 'HC',
+            })
+
+        # Create a batch with 'MONLHC2609' as code and HomeClass modality
+        batch_hc = self.env['op.batch'].create({
+            'name': 'Master Online HomeClass Batch',
+            'code': 'MONLHC2609',
+            'course_id': self.course.id,
+            'modality_id': modality_hc.id,
+            'start_date': '2026-06-01',
+            'end_date': '2026-12-31',
+            'date_start_class': False,
+            'tutor_id': self.tutor_user.id,
+        })
+
+        # Verify initial state
+        self.assertFalse(batch_hc.date_start_class)
+
+        # Create partner and admission
+        partner = self.env['res.partner'].create({
+            'name': 'Test Student HC',
+            'email': 'student_hc@example.com',
+        })
+        admission = self.env['op.admission'].create({
+            'name': 'Test Student HC',
+            'first_name': 'Test',
+            'last_name': 'Student HC',
+            'birth_date': '2000-01-01',
+            'gender': 'o',
+            'email': 'student_hc@example.com',
+            'partner_id': partner.id,
+            'batch_id': batch_hc.id,
+            'register_id': self.register.id,
+            'course_id': self.course.id,
+            'application_date': '2026-05-15',
+            'email_send_ok': False,
+        })
+
+        # We send the email. Since it is NOT treated as Online, it should fall back to super()
+        # and therefore NOT trigger the auto-population of date_start_class.
+        res = admission.send_mail(force=False)
+        self.assertTrue(res)
+        self.assertTrue(admission.email_send_ok)
+
+        # Crucial verification: date_start_class MUST still be False, proving it did NOT execute the Online selector logic
+        self.assertFalse(batch_hc.date_start_class)
+

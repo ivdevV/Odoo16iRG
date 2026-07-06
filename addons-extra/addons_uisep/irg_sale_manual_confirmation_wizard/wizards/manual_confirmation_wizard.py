@@ -330,10 +330,26 @@ class ManualConfirmationWizard(models.TransientModel):
             if eff_date.month in (7, 8) or (eff_date.month == 9 and eff_date.day == 1):
                 eff_date = eff_date.replace(month=9, day=1)
 
-        is_diplomado = False
+        # Master detection: official (MO) vs propio (MP).
+        # Mirrors get_lot_id in irg_openeducat_sale_lote_custom so the preview
+        # matches the batch that is actually created on confirm.
         categ = line.product_id.categ_id
         if not categ and course_id.product_template_id:
             categ = course_id.product_template_id.categ_id
+        categ_name = (categ.name or '').lower() if categ else ''
+        is_master = (profix_01 and profix_01.startswith('M') and profix_01 != 'MB') \
+            or 'master' in categ_name or 'máster' in categ_name
+        if is_master:
+            course_name = (course_id.name or '').lower()
+            product_name = (line.product_id.name or '').lower() if line.product_id else ''
+            template_name = (line.product_id.product_tmpl_id.name or '').lower() \
+                if (line.product_id and line.product_id.product_tmpl_id) else ''
+            if not template_name and course_id.product_template_id:
+                template_name = (course_id.product_template_id.name or '').lower()
+            combined_names = f"{course_name} {product_name} {template_name}"
+            profix_01 = 'MO' if 'oficial' in combined_names else 'MP'
+
+        is_diplomado = False
         if categ:
             if categ.code and (categ.code.upper().startswith('DI') or categ.code.upper() == 'D'):
                 is_diplomado = True
@@ -342,6 +358,11 @@ class ManualConfirmationWizard(models.TransientModel):
         
         if is_diplomado:
             profix_01 = 'DI'
+
+        # Avoid duplicating the leading 'M' when both the master prefix (MO/MP)
+        # and the course code start with 'M' (mirrors get_lot_id).
+        if profix_01 and profix_01.startswith('M') and course_code and course_code.startswith('M'):
+            course_code = course_code[1:]
 
         # Si el modulo quarterly esta activo y modalidad = ONL, preview trimestral
         ad = self.env['auto.admission.required'].search([], limit=1)

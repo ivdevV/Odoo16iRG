@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "task": "fix_welcome_mail_selector_homeclass",
+  "checks": [
+    { "name": "unit_tests_selector", "result": "pass", "detail": "5 passed, 0 failed (module irg_elearning_correo_bienvenida_selector)" },
+    { "name": "unit_tests_wizard", "result": "pass", "detail": "13 passed, 0 failed (module irg_sale_manual_confirmation_wizard)" },
+    { "name": "unit_tests_diplomados", "result": "pass", "detail": "6 passed, 0 failed (module irg_welcome_diplomado_template_selector)" }
+  ],
+  "evidence": ["missions/fix_welcome_mail_selector_homeclass/diff.patch"],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

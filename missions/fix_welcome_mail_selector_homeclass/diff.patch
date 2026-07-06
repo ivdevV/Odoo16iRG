@@ -1,0 +1,46 @@
+diff --git a/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/__manifest__.py b/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/__manifest__.py
+index 5b2eadc1..7cdb26f6 100644
+--- a/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/__manifest__.py
++++ b/addons-extra/addons_uisep/irg_elearning_correo_bienvenida_selector/__manifest__.py
+@@ -5,7 +5,7 @@
+     'category': 'OpenEduCat',
+     'summary': 'Selecciona la plantilla de correo de bienvenida según la modalidad del lote',
+     'author': 'iRG',
+-    'depends': ['isep_elearning_custom', 'isep_student_migration', 'isep_sale_order_admissions'],
++    'depends': ['isep_elearning_custom', 'isep_student_migration', 'isep_sale_order_admissions', 'irg_admission_gender_fix'],
+     'data': [
+         'data/mail_template_online.xml',
+     ],
+diff --git a/addons-extra/extrairg/irg_welcome_diplomado_template_selector/models/op_admission.py b/addons-extra/extrairg/irg_welcome_diplomado_template_selector/models/op_admission.py
+index 076a2985..23e5c372 100644
+--- a/addons-extra/extrairg/irg_welcome_diplomado_template_selector/models/op_admission.py
++++ b/addons-extra/extrairg/irg_welcome_diplomado_template_selector/models/op_admission.py
+@@ -51,12 +51,26 @@ class OpAdmission(models.Model):
+ 
+     def _irg_resolve_welcome_template(self, ad):
+         self.ensure_one()
+-        batch_code = self._irg_welcome_batch_code()
+ 
+         if self._irg_is_diplomado_welcome():
+             return self._irg_diplomado_welcome_template(ad), 'diplomado'
+ 
+-        if 'ONL' in batch_code:
++        is_online = False
++        if self.batch_id.modality_id:
++            modality_name = self.batch_id.modality_id.name.lower()
++            if 'online' in modality_name:
++                is_online = True
++        else:
++            if self.batch_id:
++                batch_code = self._irg_welcome_batch_code()
++                batch_name = (self.batch_id.name or '').upper()
++                if ('ONL' in batch_code or 'ONL' in batch_name) and not (
++                    'HC' in batch_code or 'HC' in batch_name or
++                    'PRS' in batch_code or 'PRS' in batch_name
++                ):
++                    is_online = True
++
++        if is_online:
+             template = ad.welcome_template_online_id or self.env.ref(
+                 'irg_elearning_correo_bienvenida_selector.email_op_admission_confirm_online',
+                 raise_if_not_found=False,

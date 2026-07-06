@@ -51,12 +51,26 @@ class OpAdmission(models.Model):
 
     def _irg_resolve_welcome_template(self, ad):
         self.ensure_one()
-        batch_code = self._irg_welcome_batch_code()
 
         if self._irg_is_diplomado_welcome():
             return self._irg_diplomado_welcome_template(ad), 'diplomado'
 
-        if 'ONL' in batch_code:
+        is_online = False
+        if self.batch_id.modality_id:
+            modality_name = self.batch_id.modality_id.name.lower()
+            if 'online' in modality_name:
+                is_online = True
+        else:
+            if self.batch_id:
+                batch_code = self._irg_welcome_batch_code()
+                batch_name = (self.batch_id.name or '').upper()
+                if ('ONL' in batch_code or 'ONL' in batch_name) and not (
+                    'HC' in batch_code or 'HC' in batch_name or
+                    'PRS' in batch_code or 'PRS' in batch_name
+                ):
+                    is_online = True
+
+        if is_online:
             template = ad.welcome_template_online_id or self.env.ref(
                 'irg_elearning_correo_bienvenida_selector.email_op_admission_confirm_online',
                 raise_if_not_found=False,
