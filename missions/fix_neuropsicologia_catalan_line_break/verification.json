@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "task": "fix_neuropsicologia_catalan_line_break",
+  "checks": [
+    {
+      "name": "syntax_compilation",
+      "result": "pass",
+      "detail": "Python module compile checks passed successfully via py_compile on report and wizard"
+    },
+    {
+      "name": "pdf_generation_neuropsicologia_line_break",
+      "result": "pass",
+      "detail": "Successfully generated 72KB PDF locally for Catalan course name forcing line break before 'l\\'Evidència' using split('\\n') and simpleSplit in ReportLab without raising layout or font exceptions"
+    }
+  ],
+  "evidence": [
+    "missions/fix_neuropsicologia_catalan_line_break/artifacts/diploma_neuropsicologia_line_break.pdf"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}
