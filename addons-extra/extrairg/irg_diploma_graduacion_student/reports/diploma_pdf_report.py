@@ -107,7 +107,6 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         # --- COURSE NAMES (Columns) ---
         # Gutter margins: Left column aligned to the right at 545.27 pt
         # Right column aligned to the left at 645.27 pt
-        # Increase font size to 32 pt
         x1 = 397.6
         x2 = 792.9
         
@@ -116,22 +115,48 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         
         course_name_cat = self._normalize_catalan_course_name(course_name_cat)
         
-        c.setFont(font_bold, 32)
+        # Lógica adaptativa de tamaño de fuente e interlineado
+        font_size = 32
+        leading = 36
+        curr_y_start = 510
+        
+        # Evaluar con tamaño estándar de 32 pt
+        lines_course_cat = simpleSplit(course_name_cat, font_bold, font_size, 450)
+        lines_course_es = simpleSplit(course_name_es, font_bold, font_size, 450)
+        
+        # Escalado a 24 pt si excede 2 líneas
+        if len(lines_course_cat) > 2 or len(lines_course_es) > 2:
+            font_size = 24
+            leading = 28
+            lines_course_cat = simpleSplit(course_name_cat, font_bold, font_size, 450)
+            lines_course_es = simpleSplit(course_name_es, font_bold, font_size, 450)
+            
+        # Escalado a 20 pt si excede 3 líneas
+        if len(lines_course_cat) > 3 or len(lines_course_es) > 3:
+            font_size = 20
+            leading = 24
+            lines_course_cat = simpleSplit(course_name_cat, font_bold, font_size, 450)
+            lines_course_es = simpleSplit(course_name_es, font_bold, font_size, 450)
+            
+        # Ajustar ligeramente hacia arriba la posición Y si el texto tiene 3 o más líneas
+        max_lines = max(len(lines_course_cat), len(lines_course_es))
+        if max_lines >= 3:
+            curr_y_start = 525
+
+        c.setFont(font_bold, font_size)
         c.setFillColor(master_blue)
         
         # Left (Catalan) Column - Aligned to Right
-        lines_course_cat = simpleSplit(course_name_cat, font_bold, 32, 450)
-        curr_y = 510
+        curr_y = curr_y_start
         for line in lines_course_cat:
             c.drawRightString(545.27, curr_y, line)
-            curr_y -= 36
+            curr_y -= leading
             
         # Right (Spanish) Column - Aligned to Left
-        lines_course_es = simpleSplit(course_name_es, font_bold, 32, 450)
-        curr_y = 510
+        curr_y = curr_y_start
         for line in lines_course_es:
             c.drawString(645.27, curr_y, line)
-            curr_y -= 36
+            curr_y -= leading
         
         # --- MIDDLE CONTENT ---
         c.setFillColor(colors.black)

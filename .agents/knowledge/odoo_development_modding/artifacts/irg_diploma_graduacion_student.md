@@ -78,3 +78,18 @@ Dado que las descripciones del máster pueden variar de longitud según la titul
    ```
 
 Esta técnica garantiza que descripciones largas de cursos no se solapen con el nombre del alumno en la parte superior, ni con las firmas en la parte inferior.
+
+---
+
+## 5. Escalado Adaptativo para Nombres de Cursos
+
+Para evitar colisiones verticales cuando el nombre del máster es inusualmente largo (e.g., *Máster en Trastornos del Neurodesarrollo y Daño Cerebral Adquirido Infantojuvenil*), se utiliza una lógica adaptativa en el lienzo:
+
+1. **Evaluación de líneas**: El texto se divide dinámicamente usando `simpleSplit` a un ancho fijo de **450 pt**.
+2. **Esquema de Reducción**:
+   - **Hasta 2 líneas**: Se dibuja a **32 pt** con interlínea (leading) de **36 pt** comenzando en `Y = 510`.
+   - **3 líneas**: Se escala a **24 pt** con interlínea de **28 pt** comenzando en `Y = 525`.
+   - **4 o más líneas**: Se escala a **20 pt** con interlínea de **24 pt** comenzando en `Y = 525`.
+
+Este ajuste dinámico asegura que el título del curso nunca invada el espacio reservado para el conector `"a"` (`Y = 430`) ni el nombre del estudiante (`Y = 380`).
+
