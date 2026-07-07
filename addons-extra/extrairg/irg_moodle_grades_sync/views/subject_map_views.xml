@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_irg_moodle_subject_map_tree" model="ir.ui.view">
+        <field name="name">irg.moodle.subject.map.tree</field>
+        <field name="model">irg.moodle.subject.map</field>
+        <field name="arch" type="xml">
+            <tree string="Mapeo asignaturas Moodle" editable="bottom"
+                  decoration-warning="not subject_id">
+                <field name="moodle_course_id"/>
+                <field name="moodle_course_name" readonly="1"/>
+                <field name="moodle_course_shortname" readonly="1"/>
+                <field name="subject_id"/>
+                <field name="course_id"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_moodle_subject_map_form" model="ir.ui.view">
+        <field name="name">irg.moodle.subject.map.form</field>
+        <field name="model">irg.moodle.subject.map</field>
+        <field name="arch" type="xml">
+            <form string="Mapeo asignatura Moodle">
+                <sheet>
+                    <group>
+                        <group string="Moodle">
+                            <field name="moodle_course_id"/>
+                            <field name="moodle_course_name"/>
+                            <field name="moodle_course_shortname"/>
+                        </group>
+                        <group string="Odoo">
+                            <field name="subject_id"/>
+                            <field name="course_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_irg_moodle_subject_map_search" model="ir.ui.view">
+        <field name="name">irg.moodle.subject.map.search</field>
+        <field name="model">irg.moodle.subject.map</field>
+        <field name="arch" type="xml">
+            <search string="Mapeo asignaturas">
+                <field name="moodle_course_name"/>
+                <field name="subject_id"/>
+                <filter name="filter_pending" string="Sin mapear"
+                        domain="[('subject_id', '=', False)]"/>
+                <filter name="filter_mapped" string="Mapeadas"
+                        domain="[('subject_id', '!=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_irg_moodle_subject_map" model="ir.actions.act_window">
+        <field name="name">Mapeo asignaturas</field>
+        <field name="res_model">irg.moodle.subject.map</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_irg_moodle_subject_map_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin mapeos todavía</p>
+            <p>Pulsa <b>Importar cursos de Moodle</b> y vincula cada curso a su asignatura de Odoo.</p>
+        </field>
+    </record>
+
+    <record id="action_irg_import_moodle_courses_server" model="ir.actions.server">
+        <field name="name">Importar cursos de Moodle</field>
+        <field name="model_id" ref="model_irg_moodle_subject_map"/>
+        <field name="binding_model_id" ref="model_irg_moodle_subject_map"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = model.action_import_moodle_courses()</field>
+    </record>
+
+</odoo>
