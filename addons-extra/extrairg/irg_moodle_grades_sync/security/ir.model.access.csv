@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_moodle_subject_map,irg.moodle.subject.map,model_irg_moodle_subject_map,openeducat_core.group_op_back_office,1,1,1,1
+access_irg_moodle_student_map,irg.moodle.student.map,model_irg_moodle_student_map,openeducat_core.group_op_back_office,1,1,1,1
+access_irg_moodle_grade,irg.moodle.grade,model_irg_moodle_grade,openeducat_core.group_op_back_office,1,1,1,1
+access_irg_moodle_grade_admin,irg.moodle.grade.admin,model_irg_moodle_grade,openeducat_core.group_op_back_office_admin,1,1,1,1

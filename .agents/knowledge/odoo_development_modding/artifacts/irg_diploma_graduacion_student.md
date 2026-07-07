@@ -88,4 +88,15 @@ Para evitar colisiones verticales con los textos descriptivos inferiores, se apl
 - **Máster de Neurodesarrollo**: Se renderiza a **24 pt** con una interlínea (leading) de **28 pt** y posición Y de inicio en `Y = 525`. Esto evita que su longitud de 4 líneas a 32 pt solape al conector `"a"` (`Y = 430`).
 - **Resto de Másteres**: Todos los demás programas (incluyendo *Neuropsicología Clínica basada en la Evidencia* u otros) se mantienen inalterados en sus dimensiones predeterminadas de **32 pt**, interlínea de **36 pt** y posición Y de inicio en `Y = 510`.
 
+---
+
+## 6. Soporte de Saltos de Línea Manuales en Cursos
+
+Para permitir un mayor control estético sobre la distribución del texto, el motor de ReportLab interpreta y respeta los saltos de línea manuales (`\n`) inyectados en las variables `course_name_cat` y `course_name_es`:
+
+1. **Segmentación**: El texto se separa por el carácter `\n` mediante un `.split('\n')`.
+2. **División Interna**: A cada fragmento resultante se le aplica la rutina estándar de `simpleSplit` a un ancho de **450 pt**. Esto preserva los cortes de línea deseados sin riesgo de desborde horizontal.
+3. **Regla de Neuropsicología en Catalán**: En `_normalize_catalan_course_name`, se inserta automáticamente un salto de línea `\n` justo antes del término que define la evidencia (e.g., `l'Evidència`, `Evidència`, `la Evidencia` o `Evidencia`) para forzar un corte simétrico y estético en la versión en catalán del diploma de graduación.
+
+
 

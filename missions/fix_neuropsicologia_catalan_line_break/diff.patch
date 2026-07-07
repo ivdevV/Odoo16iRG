@@ -1,0 +1,55 @@
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py b/addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py
+index 3538e895..44ab4984 100644
+--- a/addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py
+@@ -64,6 +64,14 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
+         normalized = normalized.replace("salud", "salut")
+         normalized = normalized.replace(" y ", " i ")
+         normalized = normalized.replace(" Y ", " I ")
++        
++        # Forzar salto de línea antes de 'l'Evidència' / 'Evidència' en Neuropsicología
++        if "Neuropsicologia" in normalized or "Neuropsicología" in normalized:
++            for target in ["l'Evidència", "l'evidència", "la Evidencia", "la evidencia", "Evidència", "Evidencia"]:
++                if target in normalized and f"\n{target}" not in normalized:
++                    normalized = normalized.replace(f" {target}", f"\n{target}")
++                    normalized = normalized.replace(f" {target.lower()}", f"\n{target.lower()}")
++                    break
+         return normalized
+ 
+     @api.model
+@@ -126,8 +134,14 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
+             leading = 28
+             curr_y_start = 525
+             
+-        lines_course_cat = simpleSplit(course_name_cat, font_bold, font_size, 450)
+-        lines_course_es = simpleSplit(course_name_es, font_bold, font_size, 450)
++        # Dividir por saltos de línea explícitos \n y aplicar simpleSplit sobre cada segmento resultante
++        lines_course_cat = []
++        for part in course_name_cat.split('\n'):
++            lines_course_cat.extend(simpleSplit(part, font_bold, font_size, 450))
++            
++        lines_course_es = []
++        for part in course_name_es.split('\n'):
++            lines_course_es.extend(simpleSplit(part, font_bold, font_size, 450))
+ 
+         c.setFont(font_bold, font_size)
+         c.setFillColor(master_blue)
+diff --git a/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard.py b/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard.py
+index d01ee51f..004470e1 100644
+--- a/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard.py
++++ b/addons-extra/extrairg/irg_diploma_graduacion_student/wizard/diploma_graduacion_wizard.py
+@@ -51,6 +51,14 @@ class IrgDiplomaGraduacionWizard(models.TransientModel):
+         normalized = normalized.replace("salud", "salut")
+         normalized = normalized.replace(" y ", " i ")
+         normalized = normalized.replace(" Y ", " I ")
++        
++        # Forzar salto de línea antes de 'l'Evidència' / 'Evidència' en Neuropsicología
++        if "Neuropsicologia" in normalized or "Neuropsicología" in normalized:
++            for target in ["l'Evidència", "l'evidència", "la Evidencia", "la evidence", "Evidència", "Evidencia"]:
++                if target in normalized and f"\n{target}" not in normalized:
++                    normalized = normalized.replace(f" {target}", f"\n{target}")
++                    normalized = normalized.replace(f" {target.lower()}", f"\n{target.lower()}")
++                    break
+         return normalized
+ 
+     def action_print_pdf(self):

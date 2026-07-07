@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_irg_moodle_student_map_tree" model="ir.ui.view">
+        <field name="name">irg.moodle.student.map.tree</field>
+        <field name="model">irg.moodle.student.map</field>
+        <field name="arch" type="xml">
+            <tree string="Resoluciones de alumno" editable="bottom">
+                <field name="moodle_user_id"/>
+                <field name="moodle_fullname"/>
+                <field name="moodle_email"/>
+                <field name="student_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_moodle_student_map_form" model="ir.ui.view">
+        <field name="name">irg.moodle.student.map.form</field>
+        <field name="model">irg.moodle.student.map</field>
+        <field name="arch" type="xml">
+            <form string="Resolución de alumno Moodle">
+                <sheet>
+                    <group>
+                        <field name="moodle_user_id"/>
+                        <field name="moodle_fullname"/>
+                        <field name="moodle_email"/>
+                        <field name="student_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_moodle_student_map" model="ir.actions.act_window">
+        <field name="name">Emparejamientos de alumno</field>
+        <field name="res_model">irg.moodle.student.map</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

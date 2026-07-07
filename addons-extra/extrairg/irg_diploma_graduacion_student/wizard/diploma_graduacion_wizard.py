@@ -51,6 +51,14 @@ class IrgDiplomaGraduacionWizard(models.TransientModel):
         normalized = normalized.replace("salud", "salut")
         normalized = normalized.replace(" y ", " i ")
         normalized = normalized.replace(" Y ", " I ")
+        
+        # Forzar salto de línea antes de 'l'Evidència' / 'Evidència' en Neuropsicología
+        if "Neuropsicologia" in normalized or "Neuropsicología" in normalized:
+            for target in ["l'Evidència", "l'evidència", "la Evidencia", "la evidence", "Evidència", "Evidencia"]:
+                if target in normalized and f"\n{target}" not in normalized:
+                    normalized = normalized.replace(f" {target}", f"\n{target}")
+                    normalized = normalized.replace(f" {target.lower()}", f"\n{target.lower()}")
+                    break
         return normalized
 
     def action_print_pdf(self):

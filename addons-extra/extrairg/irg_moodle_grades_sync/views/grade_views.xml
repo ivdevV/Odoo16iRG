@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_irg_moodle_grade_tree" model="ir.ui.view">
+        <field name="name">irg.moodle.grade.tree</field>
+        <field name="model">irg.moodle.grade</field>
+        <field name="arch" type="xml">
+            <tree string="Notas Moodle" create="false"
+                  decoration-warning="state == 'unmatched_student'">
+                <field name="student_id"/>
+                <field name="moodle_fullname"/>
+                <field name="moodle_email"/>
+                <field name="subject_id"/>
+                <field name="grade_raw"/>
+                <field name="grade_numeric"/>
+                <field name="grade_max"/>
+                <field name="match_method"/>
+                <field name="state"/>
+                <field name="last_sync"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_moodle_grade_form" model="ir.ui.view">
+        <field name="name">irg.moodle.grade.form</field>
+        <field name="model">irg.moodle.grade</field>
+        <field name="arch" type="xml">
+            <form string="Nota Moodle" create="false">
+                <header>
+                    <button name="action_confirm_match" type="object"
+                            string="Confirmar emparejamiento" class="oe_highlight"
+                            attrs="{'invisible': [('state', '!=', 'unmatched_student')]}"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Alumno">
+                            <field name="student_id"
+                                   attrs="{'readonly': [('state', '=', 'synced')]}"/>
+                            <field name="match_method" readonly="1"/>
+                            <field name="moodle_fullname" readonly="1"/>
+                            <field name="moodle_email" readonly="1"/>
+                            <field name="moodle_user_id" readonly="1"/>
+                        </group>
+                        <group string="Asignatura y nota">
+                            <field name="subject_id" readonly="1"/>
+                            <field name="moodle_course_id" readonly="1"/>
+                            <field name="grade_raw" readonly="1"/>
+                            <field name="grade_numeric" readonly="1"/>
+                            <field name="grade_max" readonly="1"/>
+                            <field name="grade_percentage" readonly="1"/>
+                            <field name="last_sync" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_irg_moodle_grade_search" model="ir.ui.view">
+        <field name="name">irg.moodle.grade.search</field>
+        <field name="model">irg.moodle.grade</field>
+        <field name="arch" type="xml">
+            <search string="Notas Moodle">
+                <field name="student_id"/>
+                <field name="moodle_fullname"/>
+                <field name="subject_id"/>
+                <filter name="filter_synced" string="Sincronizadas"
+                        domain="[('state', '=', 'synced')]"/>
+                <filter name="filter_unmatched" string="Alumno sin emparejar"
+                        domain="[('state', '=', 'unmatched_student')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_subject" string="Asignatura"
+                            context="{'group_by': 'subject_id'}"/>
+                    <filter name="group_state" string="Estado"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_method" string="Método"
+                            context="{'group_by': 'match_method'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_irg_moodle_grade" model="ir.actions.act_window">
+        <field name="name">Notas Moodle</field>
+        <field name="res_model">irg.moodle.grade</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_irg_moodle_grade_search"/>
+    </record>
+
+    <record id="action_irg_moodle_grade_sync_server" model="ir.actions.server">
+        <field name="name">Sincronizar notas de Moodle ahora</field>
+        <field name="model_id" ref="model_irg_moodle_grade"/>
+        <field name="binding_model_id" ref="model_irg_moodle_grade"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = model.action_sync_now()</field>
+    </record>
+
+</odoo>
