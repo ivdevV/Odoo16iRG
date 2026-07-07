@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "task": "fix_graduation_diploma_long_title_wrapping",
+  "checks": [
+    {
+      "name": "syntax_compilation",
+      "result": "pass",
+      "detail": "Python module compile checks passed successfully via py_compile"
+    },
+    {
+      "name": "pdf_generation_rendering_long",
+      "result": "pass",
+      "detail": "Successfully generated 72KB PDF locally for a very long course title (Neurodesarrollo) using ReportLab adaptative font-size (24 pt, 28 pt leading, start Y=525) without raising any exceptions"
+    },
+    {
+      "name": "pdf_generation_rendering_short",
+      "result": "pass",
+      "detail": "Successfully generated 72KB PDF locally for a standard short course title using ReportLab default font-size (32 pt, 36 pt leading, start Y=510) without raising any exceptions"
+    }
+  ],
+  "evidence": [
+    "missions/fix_graduation_diploma_long_title_wrapping/artifacts/diploma_test_long.pdf",
+    "missions/fix_graduation_diploma_long_title_wrapping/artifacts/diploma_test_short.pdf"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}
