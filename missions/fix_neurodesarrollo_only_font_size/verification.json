@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "task": "fix_neurodesarrollo_only_font_size",
+  "checks": [
+    {
+      "name": "syntax_compilation",
+      "result": "pass",
+      "detail": "Python module compile checks passed successfully via py_compile"
+    },
+    {
+      "name": "pdf_generation_neurodesarrollo",
+      "result": "pass",
+      "detail": "Generated PDF with Neurodesarrollo course name scaled down to 24 pt (leading 28 pt, start Y=525) to avoid overlapping text"
+    },
+    {
+      "name": "pdf_generation_neuropsicologia",
+      "result": "pass",
+      "detail": "Generated PDF with Neuropsicología Clínica course name keeping default 32 pt size (leading 36 pt, start Y=510) as expected"
+    }
+  ],
+  "evidence": [
+    "missions/fix_neurodesarrollo_only_font_size/artifacts/diploma_neurodesarrollo.pdf",
+    "missions/fix_neurodesarrollo_only_font_size/artifacts/diploma_neuropsicologia.pdf"
+  ],
+  "model_tier_used": "trivial",
+  "escalations": 0
+}

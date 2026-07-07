@@ -1,0 +1,8 @@
+[2026-07-07T11:46:12+02:00] Iniciando implementación de la misión fix_neurodesarrollo_only_font_size.
+[2026-07-07T11:46:12+02:00] Tarea clasificada como trivial (cambio menor de condición en ReportLab).
+[2026-07-07T11:46:20+02:00] Modificado `addons-extra/extrairg/irg_diploma_graduacion_student/reports/diploma_pdf_report.py` para aplicar la condición restrictiva selectiva del curso de Neurodesarrollo.
+[2026-07-07T11:46:26+02:00] Ejecutadas pruebas locales en `.venv` verificando que el Máster de Neurodesarrollo se escala a 24 pt y el de Neuropsicología Clínica conserva sus 32 pt predeterminadas.
+[2026-07-07T11:46:28+02:00] Verificada la compilación exitosa del archivo de reporte.
+[2026-07-07T11:46:35+02:00] Creado `verification.json` con estado `passed`.
+[2026-07-07T11:46:41+02:00] Creado changelog local `CHANGELOG_2026-07-07_fix_neurodesarrollo_only_font_size.md`.
+[2026-07-07T11:46:43+02:00] Actualizada la Base de Conocimiento local en `.agents/knowledge/odoo_development_modding/artifacts/irg_diploma_graduacion_student.md` con la lógica restrictiva.

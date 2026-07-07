@@ -81,15 +81,11 @@ Esta técnica garantiza que descripciones largas de cursos no se solapen con el 
 
 ---
 
-## 5. Escalado Adaptativo para Nombres de Cursos
+## 5. Ajuste Selectivo Exclusivo para el Máster de Neurodesarrollo
 
-Para evitar colisiones verticales cuando el nombre del máster es inusualmente largo (e.g., *Máster en Trastornos del Neurodesarrollo y Daño Cerebral Adquirido Infantojuvenil*), se utiliza una lógica adaptativa en el lienzo:
+Para evitar colisiones verticales con los textos descriptivos inferiores, se aplica un ajuste tipográfico especial únicamente al **Máster de Neurodesarrollo** (identificado si `"Neurodesarrollo"` está en el nombre del curso):
 
-1. **Evaluación de líneas**: El texto se divide dinámicamente usando `simpleSplit` a un ancho fijo de **450 pt**.
-2. **Esquema de Reducción**:
-   - **Hasta 2 líneas**: Se dibuja a **32 pt** con interlínea (leading) de **36 pt** comenzando en `Y = 510`.
-   - **3 líneas**: Se escala a **24 pt** con interlínea de **28 pt** comenzando en `Y = 525`.
-   - **4 o más líneas**: Se escala a **20 pt** con interlínea de **24 pt** comenzando en `Y = 525`.
+- **Máster de Neurodesarrollo**: Se renderiza a **24 pt** con una interlínea (leading) de **28 pt** y posición Y de inicio en `Y = 525`. Esto evita que su longitud de 4 líneas a 32 pt solape al conector `"a"` (`Y = 430`).
+- **Resto de Másteres**: Todos los demás programas (incluyendo *Neuropsicología Clínica basada en la Evidencia* u otros) se mantienen inalterados en sus dimensiones predeterminadas de **32 pt**, interlínea de **36 pt** y posición Y de inicio en `Y = 510`.
 
-Este ajuste dinámico asegura que el título del curso nunca invada el espacio reservado para el conector `"a"` (`Y = 430`) ni el nombre del estudiante (`Y = 380`).
 
