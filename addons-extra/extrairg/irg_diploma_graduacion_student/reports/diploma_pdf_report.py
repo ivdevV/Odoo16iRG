@@ -115,33 +115,19 @@ class DiplomaGraduacionReportPDF(models.AbstractModel):
         
         course_name_cat = self._normalize_catalan_course_name(course_name_cat)
         
-        # Lógica adaptativa de tamaño de fuente e interlineado
+        # Lógica de tamaño de fuente e interlineado (estándar de 32 pt)
         font_size = 32
         leading = 36
         curr_y_start = 510
         
-        # Evaluar con tamaño estándar de 32 pt
-        lines_course_cat = simpleSplit(course_name_cat, font_bold, font_size, 450)
-        lines_course_es = simpleSplit(course_name_es, font_bold, font_size, 450)
-        
-        # Escalado a 24 pt si excede 2 líneas
-        if len(lines_course_cat) > 2 or len(lines_course_es) > 2:
+        # Reducción exclusiva y selectiva únicamente para el Máster de Neurodesarrollo
+        if "Neurodesarrollo" in course_name_es:
             font_size = 24
             leading = 28
-            lines_course_cat = simpleSplit(course_name_cat, font_bold, font_size, 450)
-            lines_course_es = simpleSplit(course_name_es, font_bold, font_size, 450)
-            
-        # Escalado a 20 pt si excede 3 líneas
-        if len(lines_course_cat) > 3 or len(lines_course_es) > 3:
-            font_size = 20
-            leading = 24
-            lines_course_cat = simpleSplit(course_name_cat, font_bold, font_size, 450)
-            lines_course_es = simpleSplit(course_name_es, font_bold, font_size, 450)
-            
-        # Ajustar ligeramente hacia arriba la posición Y si el texto tiene 3 o más líneas
-        max_lines = max(len(lines_course_cat), len(lines_course_es))
-        if max_lines >= 3:
             curr_y_start = 525
+            
+        lines_course_cat = simpleSplit(course_name_cat, font_bold, font_size, 450)
+        lines_course_es = simpleSplit(course_name_es, font_bold, font_size, 450)
 
         c.setFont(font_bold, font_size)
         c.setFillColor(master_blue)
