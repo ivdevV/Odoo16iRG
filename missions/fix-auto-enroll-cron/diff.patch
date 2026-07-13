@@ -1,0 +1,3289 @@
+diff --git a/.agents/knowledge/odoo_development_modding/artifacts/irg_auto_enroll_cron_robust.md b/.agents/knowledge/odoo_development_modding/artifacts/irg_auto_enroll_cron_robust.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..05c24755cf674b48850b82486aeaafb47cd410c3
+--- /dev/null
++++ b/.agents/knowledge/odoo_development_modding/artifacts/irg_auto_enroll_cron_robust.md
+@@ -0,0 +1,67 @@
++# Auto-enroll robusto: guardarraíl, unicidad por lote y triggers nativos
++
++## Contexto
++
++En Odoo 16, el cron de auto-enroll y el botón manual pueden modificar las mismas filas de
++`slide.channel.partner`. Además, cambios en las fechas de `op.subject.to.batch` necesitan
++activar el cron con baja latencia sin aumentar la frecuencia de un full-scan.
++
++## Gotcha: denominador del guardarraíl
++
++No se debe calcular un ratio de desmatriculación como
++`archived / (activated + archived)`. Si una ejecución pequeña solo archiva una membership,
++ese cálculo produce 100% aunque la población bajo control sea grande y bloquea el flujo
++normal de fecha pasada/futura.
++
++El patrón validado es:
++
++```python
++initial_active_count = sum(1 for active in before.values() if active)
++ratio = archived_count / initial_active_count if initial_active_count else 0.0
++if ratio > 0.30:
++    raise ValidationError(...)
++```
++
++El snapshot inicial debe cubrir todas las memberships de los pares alumno/lote de las
++admisiones objetivo, incluidas filas históricas visibles con `active_test=False`. Un
++savepoint exterior permite revertir todo el run; los savepoints interiores siguen aislando
++errores por admisión. El umbral `> 0.30` permite exactamente 30%.
++
++## Patrón: unicidad activa concurrente
++
++Para impedir duplicados confirmados por carreras cron/botón, la garantía debe estar en
++PostgreSQL y respetar la identidad académica completa:
++
++```sql
++CREATE UNIQUE INDEX ...
++ON slide_channel_partner (partner_id, channel_id, batch_id)
++WHERE active IS TRUE AND batch_id IS NOT NULL;
++```
++
++- Un preflight debe detectar duplicados activos y abortar sin modificar datos.
++- El uninstall hook debe retirar el índice con la firma Odoo 16
++  `tools.drop_index(cr, index_name, table_name)`.
++- Solo se captura la `IntegrityError` cuyo `constraint_name` coincide con ese índice; otras
++  violaciones se propagan.
++- Las búsquedas para reutilizar archivadas usan `active_test=False`, el `batch_id` actual y
++  `order='active DESC, create_date ASC'`.
++- La clave por lote permite Homeclass y Online en canales distintos y evita reutilizar una
++  membership de otra cohorte.
++
++## Patrón: trigger nativo ante cambios de lote
++
++Los hooks `create/write/unlink` de `op.subject.to.batch` pueden llamar directamente a
++`ir.cron._trigger()` cuando cambian `date_from`, `date_to` o `subject_id`. No hace falta una
++cola auxiliar ni bloquear `ir_cron`.
++
++Se aceptan triggers temporales redundantes: Odoo ejecuta el cron una vez y limpia los
++triggers vencidos. Bajo `REPEATABLE READ`, un trigger confirmado después del snapshot de un
++run no es visible para su limpieza final y queda disponible para el siguiente run.
++
++En pruebas concurrentes, registrar el baseline y eliminar exclusivamente los IDs creados
++por el test; nunca limpiar todos los triggers del cron.
++
++## Evidencia
++
++Misión `missions/fix-auto-enroll-cron`: suite robusta 27/27, regresiones 13/13, T4.2 manual
++pasado/futuro idempotente y rollback confirmado con 4 archivados de 10 activos iniciales.
+diff --git a/addons-extra/addons_uisep/isep_elearning_custom/data/cron_batch_slide_channel.xml b/addons-extra/addons_uisep/isep_elearning_custom/data/cron_batch_slide_channel.xml
+index 9cc479a86c10a727af15679dbd7cf7d906c7cac5..d19da0a62997cfcce8b69cae890bfde8ea18e1f9 100644
+--- a/addons-extra/addons_uisep/isep_elearning_custom/data/cron_batch_slide_channel.xml
++++ b/addons-extra/addons_uisep/isep_elearning_custom/data/cron_batch_slide_channel.xml
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<odoo>
+-    <data noupdate="0">
++<odoo noupdate="1">
++    <data>
+         <record id="ir_cron_auto_enroll_students" model="ir.cron">
+             <field name="name">Auto Enroll Students</field>
+             <field name="model_id" ref="model_op_admission"/>
+@@ -8,7 +8,7 @@
+             <field name="state">code</field>
+             <field name="code">model.cron_auto_enroll_student()</field>
+             <field name="interval_number">1</field>
+-            <field name="interval_type">days</field>
++            <field name="interval_type">hours</field>
+             <field name="numbercall">-1</field>
+             <field name="active" eval="True"/>
+         </record>
+diff --git a/addons-extra/addons_uisep/isep_elearning_custom/models/op_admission.py b/addons-extra/addons_uisep/isep_elearning_custom/models/op_admission.py
+index 3a9d5c4e3da03c5177523103c565e42795c76463..dfb758a4645e4c369f17058b18344b2d8133b417 100644
+--- a/addons-extra/addons_uisep/isep_elearning_custom/models/op_admission.py
++++ b/addons-extra/addons_uisep/isep_elearning_custom/models/op_admission.py
+@@ -409,6 +409,7 @@ class OpAdmission(models.Model):
+                     elif today > subject_batch.date_to and channel_partners:
+                         channel_partners.write({'active': False})
+
++    # Override histórico muerto: la MRO efectiva usa irg_online_subject_opening.
+     def cron_auto_enroll_student(self):
+
+         today = date.today()
+@@ -490,4 +491,4 @@ class OpAdmission(models.Model):
+                 duration = record.course_id.duration
+                 if duration > 0:
+                     record.due_date = record.admission_date + relativedelta(months=duration)
+-        return res
+\ No newline at end of file
++        return res
+diff --git a/addons-extra/extrairg/irg_auto_enroll_cron_robust/__init__.py b/addons-extra/extrairg/irg_auto_enroll_cron_robust/__init__.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..071962a3578c15dea98e3a6291cdb135bc79bc19
+--- /dev/null
++++ b/addons-extra/extrairg/irg_auto_enroll_cron_robust/__init__.py
+@@ -0,0 +1,2 @@
++from . import models
++from .hooks import uninstall_hook
+diff --git a/addons-extra/extrairg/irg_auto_enroll_cron_robust/__manifest__.py b/addons-extra/extrairg/irg_auto_enroll_cron_robust/__manifest__.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..2ab78e1a34af676ee5757638ac808cfdd5208296
+--- /dev/null
++++ b/addons-extra/extrairg/irg_auto_enroll_cron_robust/__manifest__.py
+@@ -0,0 +1,13 @@
++{
++    'name': 'IRG Auto Enroll Cron Robust',
++    'version': '16.0.1.0.0',
++    'summary': 'Programa de forma robusta el auto-enroll al cambiar asignaturas de lote',
++    'category': 'Education',
++    'author': 'IRG',
++    'license': 'LGPL-3',
++    'depends': ['irg_online_clone_access_fix'],
++    'data': [],
++    'uninstall_hook': 'uninstall_hook',
++    'installable': True,
++    'application': False,
++}
+diff --git a/addons-extra/extrairg/irg_auto_enroll_cron_robust/hooks.py b/addons-extra/extrairg/irg_auto_enroll_cron_robust/hooks.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..a6967961b1176006aa29baa7b8d4299fca128d43
+--- /dev/null
++++ b/addons-extra/extrairg/irg_auto_enroll_cron_robust/hooks.py
+@@ -0,0 +1,9 @@
++from odoo import tools
++
++
++def uninstall_hook(cr, registry):
++    tools.drop_index(
++        cr,
++        'irg_scp_active_partner_channel_batch_uniq',
++        'slide_channel_partner',
++    )
+diff --git a/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/__init__.py b/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/__init__.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..ca979fa237bfa26f67a420793bd0ecf919ac15b2
+--- /dev/null
++++ b/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/__init__.py
+@@ -0,0 +1,3 @@
++from . import op_admission
++from . import op_subject_to_batch
++from . import slide_channel_partner
+diff --git a/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/op_admission.py b/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/op_admission.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..46a3206a6fc029c9c51d55bd9433c483313ca396
+--- /dev/null
++++ b/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/op_admission.py
+@@ -0,0 +1,28 @@
++import logging
++
++from psycopg2 import IntegrityError
++
++from odoo import models
++
++
++_logger = logging.getLogger(__name__)
++
++_UNIQUE_INDEX = 'irg_scp_active_partner_channel_batch_uniq'
++
++
++class OpAdmission(models.Model):
++    _inherit = 'op.admission'
++
++    def auto_enroll_student(self):
++        for record in self:
++            try:
++                with self.env.cr.savepoint():
++                    super(OpAdmission, record).auto_enroll_student()
++            except IntegrityError as exc:
++                if exc.diag.constraint_name != _UNIQUE_INDEX:
++                    raise
++                _logger.info(
++                    'Concurrent auto-enroll membership already exists for admission %s',
++                    record.id,
++                )
++        return True
+diff --git a/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/op_subject_to_batch.py b/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/op_subject_to_batch.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..0a134a7eaf0e6960e8777f11604ccfafdf0c3a4e
+--- /dev/null
++++ b/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/op_subject_to_batch.py
+@@ -0,0 +1,29 @@
++from odoo import api, models
++
++
++class OpSubjectToBatch(models.Model):
++    _inherit = 'op.subject.to.batch'
++
++    _IRG_AUTO_ENROLL_TRIGGER_FIELDS = {'date_from', 'date_to', 'subject_id'}
++
++    def _irg_trigger_auto_enroll_cron(self):
++        self.env.ref('isep_elearning_custom.ir_cron_auto_enroll_students')._trigger()
++
++    @api.model_create_multi
++    def create(self, vals_list):
++        records = super().create(vals_list)
++        if any(self._IRG_AUTO_ENROLL_TRIGGER_FIELDS.intersection(vals) for vals in vals_list):
++            records._irg_trigger_auto_enroll_cron()
++        return records
++
++    def write(self, vals):
++        result = super().write(vals)
++        if self._IRG_AUTO_ENROLL_TRIGGER_FIELDS.intersection(vals):
++            self._irg_trigger_auto_enroll_cron()
++        return result
++
++    def unlink(self):
++        env = self.env
++        result = super().unlink()
++        env['op.subject.to.batch']._irg_trigger_auto_enroll_cron()
++        return result
+diff --git a/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/slide_channel_partner.py b/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/slide_channel_partner.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..fe6c43ebfaf50480c2fedfd27ed794fc0b0ed037
+--- /dev/null
++++ b/addons-extra/extrairg/irg_auto_enroll_cron_robust/models/slide_channel_partner.py
+@@ -0,0 +1,55 @@
++from odoo import api, models, tools, _
++from odoo.exceptions import ValidationError
++
++
++_UNIQUE_INDEX = 'irg_scp_active_partner_channel_batch_uniq'
++
++
++class SlideChannelPartner(models.Model):
++    _inherit = 'slide.channel.partner'
++
++    @api.constrains('channel_id', 'partner_id', 'batch_id', 'active')
++    def _check_unique_channel_partner_active(self):
++        """Align the inherited Python check with the approved per-batch key."""
++        for record in self.filtered('active'):
++            duplicate = self.search_count([
++                ('channel_id', '=', record.channel_id.id),
++                ('partner_id', '=', record.partner_id.id),
++                ('batch_id', '=', record.batch_id.id if record.batch_id else False),
++                ('active', '=', True),
++                ('id', '!=', record.id),
++            ])
++            if duplicate:
++                raise ValidationError(_(
++                    'An active membership already exists for this partner, channel and batch.'
++                ))
++
++    def _irg_assert_no_active_membership_duplicates(self):
++        self.env.cr.execute("""
++            SELECT partner_id, channel_id, batch_id
++              FROM slide_channel_partner
++             WHERE active IS TRUE AND batch_id IS NOT NULL
++          GROUP BY partner_id, channel_id, batch_id
++            HAVING count(*) > 1
++             LIMIT 1
++        """)
++        duplicate = self.env.cr.fetchone()
++        if duplicate:
++            raise ValidationError(_(
++                'Cannot install robust auto-enroll: duplicate active membership '
++                'for partner %(partner)s, channel %(channel)s and batch %(batch)s.',
++                partner=duplicate[0],
++                channel=duplicate[1],
++                batch=duplicate[2],
++            ))
++
++    def _auto_init(self):
++        result = super()._auto_init()
++        self._irg_assert_no_active_membership_duplicates()
++        if not tools.index_exists(self.env.cr, _UNIQUE_INDEX):
++            self.env.cr.execute("""
++                CREATE UNIQUE INDEX irg_scp_active_partner_channel_batch_uniq
++                    ON slide_channel_partner (partner_id, channel_id, batch_id)
++                 WHERE active IS TRUE AND batch_id IS NOT NULL
++            """)
++        return result
+diff --git a/addons-extra/extrairg/irg_auto_enroll_cron_robust/tests/__init__.py b/addons-extra/extrairg/irg_auto_enroll_cron_robust/tests/__init__.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..04d3b84826d9ae9733b2e3e8c5f9c73993a2b3b6
+--- /dev/null
++++ b/addons-extra/extrairg/irg_auto_enroll_cron_robust/tests/__init__.py
+@@ -0,0 +1 @@
++from . import test_auto_enroll_cron_robust
+diff --git a/addons-extra/extrairg/irg_auto_enroll_cron_robust/tests/test_auto_enroll_cron_robust.py b/addons-extra/extrairg/irg_auto_enroll_cron_robust/tests/test_auto_enroll_cron_robust.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..740d2fdde3a07d90c4391848739403da47d8b53b
+--- /dev/null
++++ b/addons-extra/extrairg/irg_auto_enroll_cron_robust/tests/test_auto_enroll_cron_robust.py
+@@ -0,0 +1,788 @@
++from datetime import date, timedelta
++from threading import Thread
++from unittest.mock import patch
++from uuid import uuid4
++
++from lxml import etree
++from psycopg2 import IntegrityError
++
++from odoo import api
++from odoo import tools
++from odoo.exceptions import ValidationError
++from odoo.modules.registry import Registry
++from odoo.modules.module import get_module_resource
++from odoo.tests.common import TransactionCase, tagged
++
++from ..hooks import uninstall_hook
++
++
++@tagged('post_install', '-at_install')
++class TestAutoEnrollCronRobust(TransactionCase):
++    def setUp(self):
++        super().setUp()
++        self.cron = self.env.ref('isep_elearning_custom.ir_cron_auto_enroll_students')
++
++    def _trigger_ids(self):
++        return set(self.env['ir.cron.trigger'].search([('cron_id', '=', self.cron.id)]).ids)
++
++    def _memberships(self, admission):
++        return self.env['slide.channel.partner'].sudo().with_context(active_test=False).search([
++            ('partner_id', '=', admission.partner_id.id),
++            ('batch_id', '=', admission.batch_id.id),
++        ])
++
++    def _subject_line_values(self):
++        subject = self.env['op.subject'].create({'name': 'Robust subject', 'code': 'ROBUST'})
++        course = self.env['op.course'].create({
++            'name': 'Robust course',
++            'code': 'ROBUST',
++            'subject_ids': [(6, 0, subject.ids)],
++            'lang': 'en_US',
++        })
++        batch = self.env['op.batch'].create({
++            'name': 'Robust batch',
++            'code': 'ROBUST',
++            'course_id': course.id,
++            'start_date': date.today() - timedelta(days=30),
++            'end_date': date.today() + timedelta(days=30),
++        })
++        line = batch.subject_to_batch_ids[:1]
++        if line:
++            return line, subject, batch
++        line = self.env['op.subject.to.batch'].create({
++            'subject_id': subject.id,
++            'batch_id': batch.id,
++            'date_from': date.today() - timedelta(days=1),
++            'date_to': date.today() + timedelta(days=1),
++        })
++        return line, subject, batch
++
++    def _create_admission_case(self, subject=None):
++        suffix = uuid4().hex[:8]
++        subject = subject or self.env['op.subject'].create({
++            'name': 'Robust admission subject %s' % suffix,
++            'code': 'ROBUST-ADM-%s' % suffix,
++        })
++        channel = self.env['slide.channel'].create({
++            'name': 'Robust admission channel %s' % suffix,
++        })
++        subject.slide_channel_id = channel
++        course = self.env['op.course'].create({
++            'name': 'Robust admission course %s' % suffix,
++            'code': 'ROBUST-ADM-%s' % suffix,
++            'subject_ids': [(6, 0, subject.ids)], 'lang': 'en_US',
++        })
++        batch = self.env['op.batch'].create({
++            'name': 'Robust admission batch %s' % suffix,
++            'code': 'ROBUST-ADM-%s' % suffix,
++            'course_id': course.id,
++            'start_date': date.today() - timedelta(days=30),
++            'end_date': date.today() + timedelta(days=30),
++        })
++        line = batch.subject_to_batch_ids.filtered(lambda item: item.subject_id == subject)[:1]
++        line.write({
++            'date_from': date.today() - timedelta(days=1),
++            'date_to': date.today() + timedelta(days=1),
++        })
++        product = self.env['product.product'].create({
++            'name': 'Robust admission fee', 'type': 'service',
++        })
++        register = self.env['op.admission.register'].create({
++            'name': 'Robust admission register %s' % suffix, 'course_id': course.id,
++            'product_id': product.id,
++            'start_date': date.today() - timedelta(days=30),
++            'end_date': date.today() + timedelta(days=30),
++            'min_count': 1, 'max_count': 30,
++        })
++        partner = self.env['res.partner'].create({
++            'name': 'Robust admission student %s' % suffix,
++            'email': 'robust.admission.%s@example.com' % suffix,
++        })
++        admission = self.env['op.admission'].create({
++            'first_name': 'Robust', 'last_name': 'Student', 'name': 'Robust Student',
++            'birth_date': date(1990, 1, 1), 'gender': 'o', 'email': partner.email,
++            'register_id': register.id, 'course_id': course.id, 'batch_id': batch.id,
++            'admission_date': date.today(), 'partner_id': partner.id,
++            'state': 'done', 'modality': 'manual',
++        })
++        return admission, subject, channel, batch, line
++
++    def _create_transition_case(
++        self, initial_active_count, archived_count, activated_count=0,
++    ):
++        subjects = self.env['op.subject']
++        for index in range(initial_active_count + activated_count):
++            subject = self.env['op.subject'].create({
++                'name': 'Guard subject %s' % index,
++                'code': 'GUARD-%s' % index,
++            })
++            subject.slide_channel_id = self.env['slide.channel'].create({
++                'name': 'Guard channel %s' % index,
++            })
++            subjects |= subject
++        course = self.env['op.course'].create({
++            'name': 'Guard course', 'code': 'GUARD',
++            'subject_ids': [(6, 0, subjects.ids)], 'lang': 'en_US',
++        })
++        batch = self.env['op.batch'].create({
++            'name': 'Guard batch', 'code': 'GUARD', 'course_id': course.id,
++            'start_date': date.today() - timedelta(days=30),
++            'end_date': date.today() + timedelta(days=30),
++        })
++        lines = batch.subject_to_batch_ids.sorted('id')
++        lines[:archived_count].write({
++            'date_from': date.today() - timedelta(days=2),
++            'date_to': date.today() - timedelta(days=1),
++        })
++        lines[archived_count:].write({
++            'date_from': date.today() - timedelta(days=1),
++            'date_to': date.today() + timedelta(days=1),
++        })
++        product = self.env['product.product'].create({'name': 'Guard fee', 'type': 'service'})
++        register = self.env['op.admission.register'].create({
++            'name': 'Guard register', 'course_id': course.id, 'product_id': product.id,
++            'start_date': date.today() - timedelta(days=30),
++            'end_date': date.today() + timedelta(days=30), 'min_count': 1, 'max_count': 30,
++        })
++        partner = self.env['res.partner'].create({'name': 'Guard student'})
++        admission = self.env['op.admission'].create({
++            'first_name': 'Guard', 'last_name': 'Student', 'name': 'Guard Student',
++            'birth_date': date(1990, 1, 1), 'gender': 'o',
++            'email': 'guard@example.com', 'register_id': register.id,
++            'course_id': course.id, 'batch_id': batch.id,
++            'admission_date': date.today(), 'partner_id': partner.id,
++            'state': 'done', 'modality': 'manual',
++        })
++        Membership = self.env['slide.channel.partner'].sudo().with_context(
++            active_test=False, irg_skip_partner_sync=True,
++        )
++        for index, line in enumerate(lines):
++            Membership.create({
++                'partner_id': partner.id,
++                'channel_id': line.subject_id.slide_channel_id.id,
++                'batch_id': batch.id,
++                'op_subject_id': line.subject_id.id,
++                'admission_id': admission.id,
++                'active': index < initial_active_count,
++            })
++        return admission, lines
++
++    def _link_online_clone(self, home_channel):
++        online_channel = self.env['slide.channel'].create({
++            'name': '%s Online' % home_channel.name,
++            'irg_homeclass_channel_id': home_channel.id,
++        })
++        home_channel.irg_online_channel_id = online_channel
++        return online_channel
++
++    def _create_committed_admission_case(self, registry):
++        suffix = uuid4().hex[:8]
++        with registry.cursor() as setup_cr:
++            env = api.Environment(setup_cr, self.env.uid, {})
++            cron_id = env.ref('isep_elearning_custom.ir_cron_auto_enroll_students').id
++            setup_cr.execute(
++                'SELECT id FROM ir_cron_trigger WHERE cron_id = %s', [cron_id]
++            )
++            trigger_baseline_ids = {row[0] for row in setup_cr.fetchall()}
++            subject = env['op.subject'].create({
++                'name': 'Concurrent subject %s' % suffix,
++                'code': 'CONCURRENT-%s' % suffix,
++            })
++            channel = env['slide.channel'].create({'name': 'Concurrent channel %s' % suffix})
++            subject.slide_channel_id = channel
++            course = env['op.course'].create({
++                'name': 'Concurrent course %s' % suffix,
++                'code': 'CONCURRENT-%s' % suffix,
++                'subject_ids': [(6, 0, subject.ids)], 'lang': 'en_US',
++            })
++            batch = env['op.batch'].create({
++                'name': 'Concurrent batch %s' % suffix,
++                'code': 'CONCURRENT-%s' % suffix, 'course_id': course.id,
++                'start_date': date.today() - timedelta(days=30),
++                'end_date': date.today() + timedelta(days=30),
++            })
++            batch.subject_to_batch_ids.write({
++                'date_from': date.today() - timedelta(days=1),
++                'date_to': date.today() + timedelta(days=1),
++            })
++            product = env['product.product'].create({
++                'name': 'Concurrent fee %s' % suffix, 'type': 'service',
++            })
++            register = env['op.admission.register'].create({
++                'name': 'Concurrent register %s' % suffix, 'course_id': course.id,
++                'product_id': product.id,
++                'start_date': date.today() - timedelta(days=30),
++                'end_date': date.today() + timedelta(days=30),
++                'min_count': 1, 'max_count': 30,
++            })
++            partner = env['res.partner'].create({'name': 'Concurrent student %s' % suffix})
++            admission = env['op.admission'].create({
++                'first_name': 'Concurrent', 'last_name': 'Student',
++                'name': 'Concurrent Student %s' % suffix,
++                'birth_date': date(1990, 1, 1), 'gender': 'o',
++                'email': 'concurrent.%s@example.com' % suffix,
++                'register_id': register.id, 'course_id': course.id,
++                'batch_id': batch.id, 'admission_date': date.today(),
++                'partner_id': partner.id, 'state': 'done', 'modality': 'manual',
++            })
++            identifiers = {
++                'admission': admission.id, 'partner': partner.id, 'channel': channel.id,
++                'batch': batch.id, 'register': register.id, 'course': course.id,
++                'subject': subject.id, 'product': product.id, 'cron': cron_id,
++                'trigger_baseline_ids': trigger_baseline_ids,
++            }
++            setup_cr.execute(
++                'SELECT id FROM ir_cron_trigger WHERE cron_id = %s', [cron_id]
++            )
++            identifiers['trigger_ids'] = {
++                row[0] for row in setup_cr.fetchall() if row[0] not in trigger_baseline_ids
++            }
++            setup_cr.commit()
++            return identifiers
++
++    def _cleanup_committed_admission_case(self, registry, identifiers):
++        with registry.cursor() as cleanup_cr:
++            env = api.Environment(cleanup_cr, self.env.uid, {})
++            cleanup_cr.execute(
++                'SELECT id FROM ir_cron_trigger WHERE cron_id = %s', [identifiers['cron']]
++            )
++            before_cleanup_trigger_ids = {row[0] for row in cleanup_cr.fetchall()}
++            env['slide.channel.partner'].sudo().with_context(active_test=False).search([
++                ('partner_id', '=', identifiers['partner']),
++                ('batch_id', '=', identifiers['batch']),
++            ]).with_context(irg_skip_partner_sync=True).unlink()
++            env['op.admission'].browse(identifiers['admission']).unlink()
++            env['op.admission.register'].browse(identifiers['register']).unlink()
++            env['op.batch'].browse(identifiers['batch']).unlink()
++            env['op.course'].browse(identifiers['course']).unlink()
++            env['op.subject'].browse(identifiers['subject']).unlink()
++            env['slide.channel'].browse(identifiers['channel']).unlink()
++            env['res.partner'].browse(identifiers['partner']).unlink()
++            env['product.product'].browse(identifiers['product']).unlink()
++            cleanup_cr.execute(
++                'SELECT id FROM ir_cron_trigger WHERE cron_id = %s', [identifiers['cron']]
++            )
++            unlink_trigger_ids = {
++                row[0] for row in cleanup_cr.fetchall()
++                if row[0] not in before_cleanup_trigger_ids
++            }
++            owned_trigger_ids = identifiers['trigger_ids'] | unlink_trigger_ids
++            if owned_trigger_ids:
++                cleanup_cr.execute(
++                    'DELETE FROM ir_cron_trigger WHERE id = ANY(%s)',
++                    [list(owned_trigger_ids)],
++                )
++            cleanup_cr.commit()
++
++    def test_auto_enroll_cron_has_hourly_default(self):
++        self.assertEqual((self.cron.interval_number, self.cron.interval_type), (1, 'hours'))
++
++    def test_auto_enroll_cron_xml_is_noupdate(self):
++        xml_path = get_module_resource(
++            'isep_elearning_custom', 'data', 'cron_batch_slide_channel.xml'
++        )
++        root = etree.parse(xml_path).getroot()
++        self.assertEqual(root.get('noupdate'), '1')
++
++    def test_create_schedules_one_pending_trigger(self):
++        baseline_ids = self._trigger_ids()
++        self._subject_line_values()
++        self.assertTrue(self._trigger_ids() - baseline_ids)
++
++    def test_relevant_write_schedules_trigger(self):
++        line, _subject, _batch = self._subject_line_values()
++        baseline_ids = self._trigger_ids()
++        line.write({'date_to': date.today() + timedelta(days=2)})
++        self.assertTrue(self._trigger_ids() - baseline_ids)
++
++    def test_irrelevant_write_does_not_schedule_trigger(self):
++        line, _subject, _batch = self._subject_line_values()
++        baseline_ids = self._trigger_ids()
++        line.write({'code': 'UNCHANGED-BEHAVIOUR'})
++        self.assertEqual(self._trigger_ids(), baseline_ids)
++
++    def test_unlink_schedules_trigger(self):
++        line, _subject, _batch = self._subject_line_values()
++        baseline_ids = self._trigger_ids()
++        line.unlink()
++        self.assertTrue(self._trigger_ids() - baseline_ids)
++
++    def test_change_committed_during_running_cron_keeps_trigger_for_next_run(self):
++        registry = Registry(self.env.cr.dbname)
++        cron_id = self.cron.id
++        owned_trigger_ids = set()
++        fixture_ids = {}
++        with registry.cursor() as setup_cr:
++            setup_env = api.Environment(setup_cr, self.env.uid, {})
++            setup_cr.execute(
++                'SELECT id FROM ir_cron_trigger WHERE cron_id = %s', [cron_id]
++            )
++            baseline_ids = {row[0] for row in setup_cr.fetchall()}
++            suffix = uuid4().hex[:8]
++            subject = setup_env['op.subject'].create({
++                'name': 'Concurrent trigger subject %s' % suffix,
++                'code': 'TRIGGER-%s' % suffix,
++            })
++            course = setup_env['op.course'].create({
++                'name': 'Concurrent trigger course %s' % suffix,
++                'code': 'TRIGGER-%s' % suffix,
++                'subject_ids': [(6, 0, subject.ids)],
++                'lang': 'en_US',
++            })
++            batch = setup_env['op.batch'].create({
++                'name': 'Concurrent trigger batch %s' % suffix,
++                'code': 'TRIGGER-%s' % suffix,
++                'course_id': course.id,
++                'start_date': date.today() - timedelta(days=30),
++                'end_date': date.today() + timedelta(days=30),
++            })
++            line = batch.subject_to_batch_ids[:1]
++            if not line:
++                line = setup_env['op.subject.to.batch'].create({
++                    'subject_id': subject.id,
++                    'batch_id': batch.id,
++                    'date_from': date.today() - timedelta(days=1),
++                    'date_to': date.today() + timedelta(days=1),
++                })
++            setup_cr.execute(
++                'SELECT id FROM ir_cron_trigger WHERE cron_id = %s', [cron_id]
++            )
++            setup_trigger_ids = {
++                row[0] for row in setup_cr.fetchall() if row[0] not in baseline_ids
++            }
++            owned_trigger_ids.update(setup_trigger_ids)
++            fixture_ids = {
++                'line': line.id,
++                'batch': batch.id,
++                'course': course.id,
++                'subject': subject.id,
++            }
++            setup_cr.commit()
++        try:
++            with registry.cursor() as running_cr:
++                running_cr.execute(
++                    'SELECT count(*) FROM ir_cron_trigger WHERE cron_id = %s', [cron_id]
++                )
++                running_cr.fetchone()
++                with registry.cursor() as change_cr:
++                    change_env = api.Environment(change_cr, self.env.uid, {})
++                    change_env['op.subject.to.batch'].browse(fixture_ids['line']).write({
++                        'date_to': date.today() + timedelta(days=2),
++                    })
++                    change_cr.execute(
++                        'SELECT id FROM ir_cron_trigger WHERE cron_id = %s', [cron_id]
++                    )
++                    write_trigger_ids = {
++                        row[0] for row in change_cr.fetchall()
++                        if row[0] not in baseline_ids and row[0] not in setup_trigger_ids
++                    }
++                    self.assertTrue(write_trigger_ids)
++                    owned_trigger_ids.update(write_trigger_ids)
++                    change_cr.commit()
++                if setup_trigger_ids:
++                    running_cr.execute(
++                        'DELETE FROM ir_cron_trigger WHERE id = ANY(%s)',
++                        [list(setup_trigger_ids)],
++                    )
++                running_cr.commit()
++            with registry.cursor() as verify_cr:
++                verify_cr.execute(
++                    'SELECT count(*) FROM ir_cron_trigger WHERE id = ANY(%s)',
++                    [list(write_trigger_ids)],
++                )
++                self.assertEqual(verify_cr.fetchone()[0], len(write_trigger_ids))
++        finally:
++            with registry.cursor() as cleanup_cr:
++                cleanup_env = api.Environment(cleanup_cr, self.env.uid, {})
++                cleanup_cr.execute(
++                    'SELECT id FROM ir_cron_trigger WHERE cron_id = %s', [cron_id]
++                )
++                before_unlink_ids = {row[0] for row in cleanup_cr.fetchall()}
++                line = cleanup_env['op.subject.to.batch'].browse(fixture_ids['line']).exists()
++                if line:
++                    line.unlink()
++                cleanup_cr.execute(
++                    'SELECT id FROM ir_cron_trigger WHERE cron_id = %s', [cron_id]
++                )
++                unlink_trigger_ids = {
++                    row[0] for row in cleanup_cr.fetchall() if row[0] not in before_unlink_ids
++                }
++                owned_trigger_ids.update(unlink_trigger_ids)
++                cleanup_env['op.batch'].browse(fixture_ids['batch']).exists().unlink()
++                cleanup_env['op.course'].browse(fixture_ids['course']).exists().unlink()
++                cleanup_env['op.subject'].browse(fixture_ids['subject']).exists().unlink()
++                if owned_trigger_ids:
++                    cleanup_cr.execute(
++                        'DELETE FROM ir_cron_trigger WHERE id = ANY(%s)',
++                        [list(owned_trigger_ids)],
++                    )
++                cleanup_cr.commit()
++            with registry.cursor() as cleanup_verify_cr:
++                cleanup_verify_cr.execute(
++                    'SELECT count(*) FROM ir_cron_trigger WHERE id = ANY(%s)',
++                    [list(owned_trigger_ids) or [0]],
++                )
++                self.assertEqual(cleanup_verify_cr.fetchone()[0], 0)
++                cleanup_verify_cr.execute(
++                    'SELECT count(*) FROM ir_cron_trigger WHERE id = ANY(%s)',
++                    [list(baseline_ids) or [0]],
++                )
++                self.assertEqual(cleanup_verify_cr.fetchone()[0], len(baseline_ids))
++            self.env.invalidate_all()
++
++    def test_mass_archive_ratio_zero_when_initial_scope_has_no_active_memberships(self):
++        admission, _lines = self._create_transition_case(
++            initial_active_count=0, archived_count=0, activated_count=1,
++        )
++
++        self.env['op.admission'].cron_auto_enroll_student()
++
++        self.assertEqual(len(self._memberships(admission).filtered('active')), 1)
++
++    def test_mass_archive_guard_allows_single_archive_in_larger_initial_scope(self):
++        admission, _lines = self._create_transition_case(
++            initial_active_count=10, archived_count=1,
++        )
++
++        self.env['op.admission'].cron_auto_enroll_student()
++
++        memberships = self._memberships(admission)
++        self.assertEqual(len(memberships.filtered('active')), 9)
++        self.assertEqual(len(memberships.filtered(lambda membership: not membership.active)), 1)
++
++    def test_mass_archive_guard_allows_exactly_thirty_percent(self):
++        admission, _lines = self._create_transition_case(
++            initial_active_count=10, archived_count=3,
++        )
++
++        self.env['op.admission'].cron_auto_enroll_student()
++
++        memberships = self._memberships(admission)
++        self.assertEqual(len(memberships.filtered('active')), 7)
++        self.assertEqual(len(memberships.filtered(lambda membership: not membership.active)), 3)
++
++    def test_same_partner_channel_batch_cannot_have_two_active_memberships(self):
++        _admission, _subject, channel, batch, _line = self._create_admission_case()
++        partner = self.env['res.partner'].create({'name': 'Unique membership student'})
++        values = {'partner_id': partner.id, 'channel_id': channel.id, 'batch_id': batch.id}
++        self.env['slide.channel.partner'].create(values)
++        with self.assertRaises(IntegrityError), self.env.cr.savepoint():
++            self.env['slide.channel.partner'].create(values)
++
++    def test_partial_unique_index_is_installed_and_uninstall_hook_drops_it(self):
++        index_name = 'irg_scp_active_partner_channel_batch_uniq'
++        self.assertTrue(tools.index_exists(self.env.cr, index_name))
++        uninstall_hook(self.env.cr, self.env.registry)
++        self.assertFalse(tools.index_exists(self.env.cr, index_name))
++        self.env.cr.execute("""
++            CREATE UNIQUE INDEX irg_scp_active_partner_channel_batch_uniq
++                ON slide_channel_partner (partner_id, channel_id, batch_id)
++             WHERE active IS TRUE AND batch_id IS NOT NULL
++        """)
++        self.assertTrue(tools.index_exists(self.env.cr, index_name))
++
++    def test_index_preflight_rejects_existing_active_duplicate_without_deleting_it(self):
++        _admission, _subject, channel, batch, _line = self._create_admission_case()
++        partner = self.env['res.partner'].create({'name': 'Preflight duplicate student'})
++        membership = self.env['slide.channel.partner'].create({
++            'partner_id': partner.id, 'channel_id': channel.id, 'batch_id': batch.id,
++        })
++        index_name = 'irg_scp_active_partner_channel_batch_uniq'
++        tools.drop_index(self.env.cr, index_name, 'slide_channel_partner')
++        try:
++            self.env.cr.execute("""
++                INSERT INTO slide_channel_partner
++                    (partner_id, channel_id, batch_id, active,
++                     create_uid, write_uid, create_date, write_date)
++                SELECT partner_id, channel_id, batch_id, active,
++                       create_uid, write_uid, create_date, write_date
++                  FROM slide_channel_partner
++                 WHERE id = %s
++                RETURNING id
++            """, [membership.id])
++            duplicate_id = self.env.cr.fetchone()[0]
++
++            with self.assertRaises(ValidationError):
++                self.env['slide.channel.partner']._irg_assert_no_active_membership_duplicates()
++
++            self.env.cr.execute(
++                'SELECT count(*) FROM slide_channel_partner WHERE id IN %s',
++                [(membership.id, duplicate_id)],
++            )
++            self.assertEqual(self.env.cr.fetchone()[0], 2)
++        finally:
++            self.env.cr.execute(
++                'DELETE FROM slide_channel_partner '
++                'WHERE partner_id = %s AND channel_id = %s AND batch_id = %s AND id != %s',
++                [partner.id, channel.id, batch.id, membership.id],
++            )
++            self.env.cr.execute("""
++                CREATE UNIQUE INDEX irg_scp_active_partner_channel_batch_uniq
++                    ON slide_channel_partner (partner_id, channel_id, batch_id)
++                 WHERE active IS TRUE AND batch_id IS NOT NULL
++            """)
++
++    def test_same_partner_channel_different_batch_is_allowed_by_index(self):
++        _admission, _subject, channel, batch, _line = self._create_admission_case()
++        other_batch = batch.copy({'name': 'Other robust batch', 'code': 'ROBUST-OTHER'})
++        partner = self.env['res.partner'].create({'name': 'Cross batch student'})
++        Membership = self.env['slide.channel.partner']
++        Membership.create({'partner_id': partner.id, 'channel_id': channel.id, 'batch_id': batch.id})
++        Membership.create({
++            'partner_id': partner.id, 'channel_id': channel.id, 'batch_id': other_batch.id,
++        })
++        self.assertEqual(Membership.search_count([
++            ('partner_id', '=', partner.id), ('channel_id', '=', channel.id),
++        ]), 2)
++
++    def test_concurrent_auto_enroll_keeps_one_active_membership(self):
++        registry = Registry(self.env.cr.dbname)
++        identifiers = self._create_committed_admission_case(registry)
++        button_cr = registry.cursor()
++        cron_errors = []
++
++        def run_cron_transaction():
++            try:
++                with registry.cursor() as cron_cr:
++                    cron_env = api.Environment(cron_cr, self.env.uid, {})
++                    cron_env['op.admission'].cron_auto_enroll_student()
++                    cron_cr.commit()
++            except Exception as exc:  # surfaced in the main test thread below
++                cron_errors.append(exc)
++
++        try:
++            button_env = api.Environment(button_cr, self.env.uid, {})
++            button_env['op.admission'].browse(identifiers['admission']).auto_enroll_student()
++            cron_thread = Thread(target=run_cron_transaction)
++            cron_thread.start()
++            cron_thread.join(timeout=0.25)
++            self.assertTrue(cron_thread.is_alive(), 'cron transaction did not contend on the membership')
++            button_cr.commit()
++            cron_thread.join(timeout=10)
++            self.assertFalse(cron_thread.is_alive(), 'cron transaction remained blocked')
++            self.assertFalse(cron_errors)
++            with registry.cursor() as verify_cr:
++                verify_env = api.Environment(verify_cr, self.env.uid, {})
++                count = verify_env['slide.channel.partner'].search_count([
++                    ('partner_id', '=', identifiers['partner']),
++                    ('channel_id', '=', identifiers['channel']),
++                    ('batch_id', '=', identifiers['batch']),
++                    ('active', '=', True),
++                ])
++                self.assertEqual(count, 1)
++        finally:
++            button_cr.rollback()
++            button_cr.close()
++            self._cleanup_committed_admission_case(registry, identifiers)
++            self.env.invalidate_all()
++
++    def test_homeclass_to_online_uses_clone_and_both_memberships_coexist(self):
++        admission, subject, home_channel, batch, _line = self._create_admission_case()
++        batch.code = 'ROBUST-ONL'
++        online_channel = self._link_online_clone(home_channel)
++        home_membership = self.env['slide.channel.partner'].with_context(
++            irg_skip_partner_sync=True,
++        ).create({
++            'partner_id': admission.partner_id.id, 'channel_id': home_channel.id,
++            'batch_id': batch.id, 'op_subject_id': subject.id,
++            'admission_id': admission.id,
++        })
++
++        admission._irg_reconcile_online_clone_channel_partners()
++
++        online_membership = self.env['slide.channel.partner'].search([
++            ('partner_id', '=', admission.partner_id.id),
++            ('channel_id', '=', online_channel.id), ('batch_id', '=', batch.id),
++        ])
++        self.assertEqual(len(online_membership), 1)
++        self.assertTrue(home_membership.active)
++        self.assertTrue(online_membership.active)
++
++    def test_clone_sync_does_not_reassign_membership_from_other_batch(self):
++        admission, subject, home_channel, batch, _line = self._create_admission_case()
++        batch.code = 'ROBUST-ONL'
++        online_channel = self._link_online_clone(home_channel)
++        other_batch = batch.copy({'name': 'Clone other batch', 'code': 'CLONE-OTHER'})
++        other_membership = self.env['slide.channel.partner'].with_context(
++            active_test=False, irg_skip_partner_sync=True,
++        ).create({
++            'partner_id': admission.partner_id.id, 'channel_id': online_channel.id,
++            'batch_id': other_batch.id, 'op_subject_id': subject.id, 'active': False,
++        })
++        self.env['slide.channel.partner'].with_context(irg_skip_partner_sync=True).create({
++            'partner_id': admission.partner_id.id, 'channel_id': home_channel.id,
++            'batch_id': batch.id, 'op_subject_id': subject.id,
++            'admission_id': admission.id,
++        })
++
++        admission._irg_reconcile_online_clone_channel_partners()
++
++        other_membership.invalidate_recordset()
++        self.assertEqual(other_membership.batch_id, other_batch)
++        self.assertEqual(self.env['slide.channel.partner'].with_context(active_test=False).search_count([
++            ('partner_id', '=', admission.partner_id.id),
++            ('channel_id', '=', online_channel.id), ('batch_id', '=', batch.id),
++        ]), 1)
++
++    def test_active_membership_is_preferred_over_older_archived_membership(self):
++        admission, subject, channel, batch, _line = self._create_admission_case()
++        Membership = self.env['slide.channel.partner'].with_context(active_test=False)
++        archived = Membership.create({
++            'partner_id': admission.partner_id.id, 'channel_id': channel.id,
++            'batch_id': batch.id, 'op_subject_id': subject.id, 'active': False,
++        })
++        active = Membership.create({
++            'partner_id': admission.partner_id.id, 'channel_id': channel.id,
++            'batch_id': batch.id, 'op_subject_id': subject.id,
++        })
++
++        admission.auto_enroll_student()
++
++        self.assertFalse(archived.active)
++        self.assertTrue(active.active)
++        self.assertEqual(active.admission_id, admission)
++
++    def test_archived_membership_is_reactivated_without_duplicate(self):
++        admission, subject, channel, batch, _line = self._create_admission_case()
++        membership = self.env['slide.channel.partner'].create({
++            'partner_id': admission.partner_id.id, 'channel_id': channel.id,
++            'batch_id': batch.id, 'op_subject_id': subject.id, 'active': False,
++        })
++        admission.auto_enroll_student()
++        memberships = self.env['slide.channel.partner'].with_context(active_test=False).search([
++            ('partner_id', '=', admission.partner_id.id), ('channel_id', '=', channel.id),
++            ('batch_id', '=', batch.id),
++        ])
++        self.assertEqual(memberships.ids, membership.ids)
++        self.assertTrue(memberships.active)
++
++    def test_historical_completed_parent_same_batch_unlocks_child(self):
++        parent = self.env['op.subject'].create({'name': 'Parent same batch', 'code': 'P-SAME'})
++        child = self.env['op.subject'].create({
++            'name': 'Child same batch', 'code': 'C-SAME', 'parent_subject_id': parent.id,
++        })
++        admission, _subject, _channel, batch, _line = self._create_admission_case(child)
++        parent_channel = self.env['slide.channel'].create({'name': 'Parent same channel'})
++        self.env['slide.channel.partner'].create({
++            'partner_id': admission.partner_id.id, 'channel_id': parent_channel.id,
++            'batch_id': batch.id, 'op_subject_id': parent.id,
++            'completed': True, 'active': False,
++        })
++        self.assertTrue(admission._irg_subject_precedence_is_satisfied(child))
++
++    def test_historical_completed_parent_other_batch_does_not_unlock_child(self):
++        parent = self.env['op.subject'].create({'name': 'Parent other batch', 'code': 'P-OTHER'})
++        child = self.env['op.subject'].create({
++            'name': 'Child other batch', 'code': 'C-OTHER', 'parent_subject_id': parent.id,
++        })
++        admission, _subject, _channel, batch, _line = self._create_admission_case(child)
++        other_batch = batch.copy({'name': 'Historical other batch', 'code': 'HIST-OTHER'})
++        parent_channel = self.env['slide.channel'].create({'name': 'Parent other channel'})
++        self.env['slide.channel.partner'].create({
++            'partner_id': admission.partner_id.id, 'channel_id': parent_channel.id,
++            'batch_id': other_batch.id, 'op_subject_id': parent.id,
++            'completed': True, 'active': False,
++        })
++        self.assertFalse(admission._irg_subject_precedence_is_satisfied(child))
++
++    def test_cron_processes_manual_modality(self):
++        admission, _subject, channel, batch, _line = self._create_admission_case()
++
++        self.env['op.admission'].cron_auto_enroll_student()
++
++        self.assertEqual(self.env['slide.channel.partner'].search_count([
++            ('partner_id', '=', admission.partner_id.id),
++            ('channel_id', '=', channel.id), ('batch_id', '=', batch.id),
++        ]), 1)
++
++    def test_cron_and_button_produce_equivalent_memberships(self):
++        button_admission, _subject, _channel, _batch, _line = self._create_admission_case()
++        cron_admission, _subject2, _channel2, _batch2, _line2 = self._create_admission_case()
++        cron_admission.partner_id = self.env['res.partner'].create({'name': 'Cron student'})
++        button_admission.auto_enroll_student()
++
++        self.env['op.admission'].cron_auto_enroll_student()
++
++        button_membership = self._memberships(button_admission)
++        cron_membership = self._memberships(cron_admission)
++        self.assertEqual(len(button_membership), 1)
++        self.assertEqual(len(cron_membership), 1)
++        compared_fields = ('active', 'date_from', 'date_to')
++        self.assertEqual(
++            [button_membership[field] for field in compared_fields],
++            [cron_membership[field] for field in compared_fields],
++        )
++        self.assertEqual(button_membership.course_id, button_admission.course_id)
++        self.assertEqual(cron_membership.course_id, cron_admission.course_id)
++        self.assertEqual(button_membership.register_id, button_admission.register_id)
++        self.assertEqual(cron_membership.register_id, cron_admission.register_id)
++        self.assertEqual(button_membership.op_subject_id, _subject)
++        self.assertEqual(cron_membership.op_subject_id, _subject2)
++
++    def test_cron_continues_after_one_admission_fails(self):
++        failing, _subject, _channel, _batch, _line = self._create_admission_case()
++        succeeding, _subject2, channel, batch, _line2 = self._create_admission_case()
++        original = type(failing).auto_enroll_student
++
++        def fail_one(records):
++            if failing.id in records.ids:
++                raise RuntimeError('expected isolated admission failure')
++            return original(records)
++
++        with patch.object(type(failing), 'auto_enroll_student', fail_one):
++            self.env['op.admission'].cron_auto_enroll_student()
++
++        self.assertFalse(self._memberships(failing))
++        self.assertEqual(self.env['slide.channel.partner'].search_count([
++            ('partner_id', '=', succeeding.partner_id.id),
++            ('channel_id', '=', channel.id), ('batch_id', '=', batch.id),
++        ]), 1)
++
++    def test_mass_archive_guard_rolls_back_above_thirty_percent(self):
++        admission, _lines = self._create_transition_case(
++            initial_active_count=10, archived_count=4,
++        )
++        before = {membership.id: membership.active for membership in self._memberships(admission)}
++
++        with self.assertRaises(ValidationError):
++            self.env['op.admission'].cron_auto_enroll_student()
++
++        self.env.invalidate_all()
++        after = {membership.id: membership.active for membership in self._memberships(admission)}
++        self.assertEqual(after, before)
++
++    def test_date_change_past_archives_future_reactivates_and_two_runs_are_idempotent(self):
++        admission, lines = self._create_transition_case(
++            initial_active_count=10, archived_count=0,
++        )
++        line = lines[:1]
++        memberships = self._memberships(admission)
++        membership_ids = memberships.ids
++        line.write({'date_to': date.today() - timedelta(days=1)})
++
++        self.env['op.admission'].cron_auto_enroll_student()
++        target_membership = self._memberships(admission).filtered(
++            lambda membership: membership.op_subject_id == line.subject_id
++        )
++        self.assertFalse(target_membership.active)
++        line.write({'date_to': date.today() + timedelta(days=1)})
++        self.env['op.admission'].cron_auto_enroll_student()
++        self.env['op.admission'].cron_auto_enroll_student()
++
++        memberships = self._memberships(admission)
++        self.assertEqual(memberships.ids, membership_ids)
++        self.assertEqual(len(memberships.filtered('active')), 10)
++
++    def test_cron_online_branch_end_to_end_without_batch_dates(self):
++        admission, subject, channel, batch, _line = self._create_admission_case()
++        batch.code = 'ROBUST-ONL'
++        batch.subject_to_batch_ids.unlink()
++        admission.admission_date = date.today()
++
++        self.env['op.admission'].cron_auto_enroll_student()
++
++        membership = self._memberships(admission).filtered(
++            lambda record: record.channel_id == channel and record.op_subject_id == subject
++        )
++        self.assertEqual(len(membership), 1)
++        self.assertTrue(membership.active)
+diff --git a/addons-extra/extrairg/irg_course_convocatorias_v2/models/slide_channel_partner.py b/addons-extra/extrairg/irg_course_convocatorias_v2/models/slide_channel_partner.py
+index 02690b4ff15b21a60ff19ed99a706dac2ef86492..97af7af668fdab5e472786cb3eccdb46454cddd8 100644
+--- a/addons-extra/extrairg/irg_course_convocatorias_v2/models/slide_channel_partner.py
++++ b/addons-extra/extrairg/irg_course_convocatorias_v2/models/slide_channel_partner.py
+@@ -1,6 +1,14 @@
++import logging
++
++from psycopg2 import IntegrityError
++
+ from odoo import api, fields, models
+
+
++_logger = logging.getLogger(__name__)
++_UNIQUE_INDEX = 'irg_scp_active_partner_channel_batch_uniq'
++
++
+ class SlideChannelPartner(models.Model):
+     _inherit = 'slide.channel.partner'
+
+@@ -17,14 +25,16 @@ class SlideChannelPartner(models.Model):
+                 # Check if partner is an Online student for this channel
+                 if channel._irg_is_partner_online_student_for_channel(rec.partner_id):
+                     # Check if already exists in the clone channel
+-                    exists = self.search([
++                    exists = self.with_context(active_test=False).search([
+                         ('channel_id', '=', channel.irg_online_channel_id.id),
+-                        ('partner_id', '=', rec.partner_id.id)
+-                    ], limit=1)
++                        ('partner_id', '=', rec.partner_id.id),
++                        ('batch_id', '=', rec.batch_id.id if rec.batch_id else False),
++                    ], order='active DESC, create_date ASC', limit=1)
+                     if not exists:
+                         vals = {
+                             'channel_id': channel.irg_online_channel_id.id,
+                             'partner_id': rec.partner_id.id,
++                            'batch_id': rec.batch_id.id if rec.batch_id else False,
+                         }
+                         # Sync standard fields if they exist
+                         for field in ['completed', 'completion', 'date_from', 'date_to']:
+@@ -32,8 +42,17 @@ class SlideChannelPartner(models.Model):
+                                 vals[field] = rec[field]
+                         to_create_vals.append(vals)
+
+-        if to_create_vals:
+-            self.with_context(irg_skip_partner_sync=True).create(to_create_vals)
++        for values in to_create_vals:
++            try:
++                with self.env.cr.savepoint():
++                    self.with_context(irg_skip_partner_sync=True).create(values)
++            except IntegrityError as exc:
++                if exc.diag.constraint_name != _UNIQUE_INDEX:
++                    raise
++                _logger.info(
++                    'Concurrent initial online clone membership already exists for partner %s',
++                    values['partner_id'],
++                )
+
+         return records
+
+@@ -49,10 +68,11 @@ class SlideChannelPartner(models.Model):
+         for rec in self:
+             channel = rec.channel_id
+             if channel.irg_online_channel_id:
+-                clone_partner_rec = self.search([
++                clone_partner_rec = self.with_context(active_test=False).search([
+                     ('channel_id', '=', channel.irg_online_channel_id.id),
+-                    ('partner_id', '=', rec.partner_id.id)
+-                ], limit=1)
++                    ('partner_id', '=', rec.partner_id.id),
++                    ('batch_id', '=', rec.batch_id.id if rec.batch_id else False),
++                ], order='active DESC, create_date ASC', limit=1)
+                 if clone_partner_rec:
+                     clone_partner_rec.with_context(irg_skip_partner_sync=True).write(sync_vals)
+
+@@ -63,9 +83,10 @@ class SlideChannelPartner(models.Model):
+             for rec in self:
+                 channel = rec.channel_id
+                 if channel.irg_online_channel_id:
+-                    clone_partner_rec = self.search([
++                    clone_partner_rec = self.with_context(active_test=False).search([
+                         ('channel_id', '=', channel.irg_online_channel_id.id),
+-                        ('partner_id', '=', rec.partner_id.id)
++                        ('partner_id', '=', rec.partner_id.id),
++                        ('batch_id', '=', rec.batch_id.id if rec.batch_id else False),
+                     ])
+                     if clone_partner_rec:
+                         clone_partner_rec.with_context(irg_skip_partner_sync=True).unlink()
+diff --git a/addons-extra/extrairg/irg_online_clone_access_fix/models/op_admission.py b/addons-extra/extrairg/irg_online_clone_access_fix/models/op_admission.py
+index b10acd6509d3a1ad414155f624a564fb3c25287a..c5b9111a760e1964a237081bb838e0829ec0c60e 100644
+--- a/addons-extra/extrairg/irg_online_clone_access_fix/models/op_admission.py
++++ b/addons-extra/extrairg/irg_online_clone_access_fix/models/op_admission.py
+@@ -1,13 +1,21 @@
+ from datetime import date
+
++import logging
++
++from psycopg2 import IntegrityError
++
+ from odoo import models
+
+
++_logger = logging.getLogger(__name__)
++_UNIQUE_INDEX = 'irg_scp_active_partner_channel_batch_uniq'
++
++
+ class OpAdmission(models.Model):
+     _inherit = 'op.admission'
+
+     def _irg_reconcile_online_clone_channel_partners(self):
+-        ChannelPartner = self.env['slide.channel.partner'].sudo()
++        ChannelPartner = self.env['slide.channel.partner'].sudo().with_context(active_test=False)
+         for record in self:
+             if not record.partner_id or not record.batch_id:
+                 continue
+@@ -17,6 +25,7 @@ class OpAdmission(models.Model):
+             source_partners = ChannelPartner.search([
+                 ('partner_id', '=', record.partner_id.id),
+                 ('admission_id', '=', record.id),
++                ('batch_id', '=', record.batch_id.id),
+                 ('op_subject_id', '!=', False),
+                 '|',
+                 ('active', '=', True),
+@@ -35,7 +44,7 @@ class OpAdmission(models.Model):
+                     '|',
+                     ('active', '=', True),
+                     ('active', '=', False),
+-                ], order='create_date ASC', limit=1)
++                ], order='active DESC, create_date ASC', limit=1)
+                 values = source_partner._irg_prepare_online_clone_sync_values()
+                 values.update({
+                     'channel_id': effective_channel.id,
+@@ -44,7 +53,16 @@ class OpAdmission(models.Model):
+                 if clone_partner:
+                     clone_partner.with_context(irg_skip_partner_sync=True).write(values)
+                 else:
+-                    ChannelPartner.with_context(irg_skip_partner_sync=True).create(values)
++                    try:
++                        with self.env.cr.savepoint():
++                            ChannelPartner.with_context(irg_skip_partner_sync=True).create(values)
++                    except IntegrityError as exc:
++                        if exc.diag.constraint_name != _UNIQUE_INDEX:
++                            raise
++                        _logger.info(
++                            'Concurrent online clone membership already exists for admission %s',
++                            record.id,
++                        )
+
+     def _irg_get_opening_effective_slide_channel(self, opening):
+         self.ensure_one()
+@@ -58,14 +76,14 @@ class OpAdmission(models.Model):
+         channel = self._irg_get_opening_effective_slide_channel(opening)
+         if not channel:
+             return self.env['slide.channel.partner']
+-        return self.env['slide.channel.partner'].sudo().search([
++        return self.env['slide.channel.partner'].sudo().with_context(active_test=False).search([
+             ('partner_id', '=', self.partner_id.id),
+             ('channel_id', '=', channel.id),
+             ('batch_id', '=', self.batch_id.id),
+             '|',
+             ('active', '=', True),
+             ('active', '=', False),
+-        ], order='create_date ASC', limit=1)
++        ], order='active DESC, create_date ASC', limit=1)
+
+     def _irg_sync_online_channel_partners(self, subject_domain=None):
+         today = date.today()
+@@ -112,13 +130,3 @@ class OpAdmission(models.Model):
+         res = super().auto_enroll_student_subject(subject_id)
+         self._irg_reconcile_online_clone_channel_partners()
+         return res
+-
+-    def cron_auto_enroll_student(self):
+-        res = super().cron_auto_enroll_student()
+-        self.search([
+-            ('state', '=', 'done'),
+-            ('batch_id', '!=', False),
+-            ('batch_id.code', 'ilike', 'ONL'),
+-            ('batch_id.code', 'not ilike', 'MONL'),
+-        ])._irg_reconcile_online_clone_channel_partners()
+-        return res
+diff --git a/addons-extra/extrairg/irg_online_clone_access_fix/models/slide_channel_partner.py b/addons-extra/extrairg/irg_online_clone_access_fix/models/slide_channel_partner.py
+index 48ebdab580b7dc4b10262c6593c51cad3f3e4fcb..b01cb16a37767e8e5dd57633732074017b97d53b 100644
+--- a/addons-extra/extrairg/irg_online_clone_access_fix/models/slide_channel_partner.py
++++ b/addons-extra/extrairg/irg_online_clone_access_fix/models/slide_channel_partner.py
+@@ -27,7 +27,7 @@ class SlideChannelPartner(models.Model):
+     def _irg_sync_academic_fields_to_online_clone(self):
+         if self.env.context.get('irg_skip_partner_sync'):
+             return
+-        Partner = self.sudo()
++        Partner = self.sudo().with_context(active_test=False)
+         for rec in Partner:
+             channel = rec.channel_id
+             online_channel = channel.irg_online_channel_id if channel and 'irg_online_channel_id' in channel._fields else False
+@@ -36,7 +36,8 @@ class SlideChannelPartner(models.Model):
+             clone_partner = Partner.search([
+                 ('channel_id', '=', online_channel.id),
+                 ('partner_id', '=', rec.partner_id.id),
+-            ], limit=1)
++                ('batch_id', '=', rec.batch_id.id if rec.batch_id else False),
++            ], order='active DESC, create_date ASC', limit=1)
+             if clone_partner:
+                 clone_partner.with_context(irg_skip_partner_sync=True).write(
+                     rec._irg_prepare_online_clone_sync_values()
+diff --git a/addons-extra/extrairg/irg_online_clone_access_fix/tests/test_online_clone_access_fix.py b/addons-extra/extrairg/irg_online_clone_access_fix/tests/test_online_clone_access_fix.py
+index 8b4d3f54c3658bac2d711347d90d6eda36a81b23..59e07d1415f40298d28379df7f83b9c944ac93e4 100644
+--- a/addons-extra/extrairg/irg_online_clone_access_fix/tests/test_online_clone_access_fix.py
++++ b/addons-extra/extrairg/irg_online_clone_access_fix/tests/test_online_clone_access_fix.py
+@@ -27,6 +27,7 @@ class TestOnlineCloneAccessFix(TransactionCase):
+             'name': 'Online Clone Access Course',
+             'code': 'IRGOCAF',
+             'subject_ids': [(6, 0, [self.subject.id])],
++            'lang': 'en_US',
+         })
+         self.product = self.env['product.product'].create({
+             'name': 'Online Clone Access Fee',
+diff --git a/addons-extra/extrairg/irg_online_subject_opening/models/op_admission.py b/addons-extra/extrairg/irg_online_subject_opening/models/op_admission.py
+index 7ab8e1198a5c381360b5c99fb27f828b3785d6e5..01fcd60f3b24b6609f4a80fa8d5106798356fd8a 100644
+--- a/addons-extra/extrairg/irg_online_subject_opening/models/op_admission.py
++++ b/addons-extra/extrairg/irg_online_subject_opening/models/op_admission.py
+@@ -1,6 +1,13 @@
+ from datetime import date, timedelta
+
++import logging
++
+ from odoo import api, fields, models
++from odoo.exceptions import ValidationError
++from odoo.osv import expression
++
++
++_logger = logging.getLogger(__name__)
+
+
+ class OpAdmission(models.Model):
+@@ -116,31 +123,17 @@ class OpAdmission(models.Model):
+             and self._irg_has_online_subject_opening_context()
+         )
+
+-    def _irg_subject_precedence_is_satisfied(self, subject):
+-        self.ensure_one()
+-        parent_subject = subject.parent_subject_id if hasattr(subject, 'parent_subject_id') else False
+-        if not parent_subject:
+-            return True
+-        # sudo: cron/enrollment must inspect the student's eLearning membership even when run by a limited backend user.
+-        parent_membership = self.env['slide.channel.partner'].sudo().search([
+-            ('partner_id', '=', self.partner_id.id),
+-            ('op_subject_id', '=', parent_subject.id),
+-            ('admission_id', '=', self.id),
+-            ('active', '=', True),
+-        ], limit=1)
+-        return bool(parent_membership and parent_membership.completed)
+-
+     def _irg_find_online_channel_partner(self, opening):
+         self.ensure_one()
+         # sudo: synchronization owns membership state for the admission and must see active and archived rows.
+-        return self.env['slide.channel.partner'].sudo().search([
++        return self.env['slide.channel.partner'].sudo().with_context(active_test=False).search([
+             ('partner_id', '=', self.partner_id.id),
+             ('channel_id', '=', opening.slide_channel_id.id),
+             ('batch_id', '=', self.batch_id.id),
+             '|',
+             ('active', '=', True),
+             ('active', '=', False),
+-        ], order='create_date ASC', limit=1)
++        ], order='active DESC, create_date ASC', limit=1)
+
+     def _irg_online_channel_partner_values(self, opening, active):
+         self.ensure_one()
+@@ -230,63 +223,65 @@ class OpAdmission(models.Model):
+         )
+         return True
+
+-    def cron_auto_enroll_student(self):
+-        today = date.today()
+-        admissions = self.search([
+-            ('state', '=', 'done'),
+-            ('batch_id', '!=', False),
++    def _irg_auto_enroll_membership_snapshot(self, admissions):
++        pairs = {(record.partner_id.id, record.batch_id.id) for record in admissions
++                 if record.partner_id and record.batch_id}
++        if not pairs:
++            return {}
++        domain = expression.OR([
++            [('partner_id', '=', partner_id), ('batch_id', '=', batch_id)]
++            for partner_id, batch_id in pairs
+         ])
++        memberships = self.env['slide.channel.partner'].sudo().with_context(
++            active_test=False,
++        ).search(domain)
++        return {membership.id: membership.active for membership in memberships}
++
++    def _irg_auto_enroll_transition_counts(self, before, after):
++        activated = sum(
++            1 for membership_id, is_active in after.items()
++            if is_active and not before.get(membership_id, False)
++        )
++        archived = sum(
++            1 for membership_id, was_active in before.items()
++            if was_active and membership_id in after and not after[membership_id]
++        )
++        return activated, archived
+
+-        online_admissions = admissions.filtered(lambda record: record._irg_has_online_subject_opening_context())
+-        other_admissions = admissions - online_admissions
+-
+-        online_admissions._irg_generate_online_subject_openings()
+-        online_admissions._irg_sync_online_channel_partners()
++    def _irg_mass_archive_ratio(self, initial_active_count, archived_count):
++        return archived_count / initial_active_count if initial_active_count else 0.0
+
+-        for record in other_admissions:
+-            if hasattr(record, 'modality') and record.modality == 'manual':
+-                continue
++    def _irg_auto_enroll_domain(self):
++        """Keep the effective cron autonomous from optional robustness extensions."""
++        return [('state', '=', 'done'), ('batch_id', '!=', False)]
+
+-            for subject_batch in record.batch_id.subject_to_batch_ids:
+-                subject = subject_batch.subject_id
+-                if not subject.slide_channel_id:
+-                    continue
+-                if not subject_batch.date_from or not subject_batch.date_to:
+-                    continue
+-
+-                if not record._irg_subject_precedence_is_satisfied(subject):
+-                    continue
+-
+-                # sudo: cron reconciles membership rows independently of the current backend user's access rights.
+-                channel_partner = self.env['slide.channel.partner'].sudo().search([
+-                    ('partner_id', '=', record.partner_id.id),
+-                    ('channel_id', '=', subject.slide_channel_id.id),
+-                    ('batch_id', '=', record.batch_id.id),
+-                    '|',
+-                    ('active', '=', True),
+-                    ('active', '=', False),
+-                ], order='create_date ASC', limit=1)
+-
+-                if subject_batch.date_from <= today <= subject_batch.date_to:
+-                    values = {
+-                        'active': True,
+-                        'course_id': record.course_id.id,
+-                        'register_id': record.register_id.id,
+-                        'admission_id': record.id,
+-                        'batch_id': record.batch_id.id,
+-                        'date_from': subject_batch.date_from,
+-                        'date_to': subject_batch.date_to,
+-                        'op_subject_id': subject.id,
+-                    }
+-                    if channel_partner:
+-                        channel_partner.write(values)
+-                    else:
+-                        values.update({
+-                            'channel_id': subject.slide_channel_id.id,
+-                            'partner_id': record.partner_id.id,
+-                        })
+-                        # sudo: cron creates the eLearning membership on behalf of the admitted student.
+-                        self.env['slide.channel.partner'].sudo().create(values)
+-                elif today > subject_batch.date_to and channel_partner:
+-                    channel_partner.write({'active': False})
++    def cron_auto_enroll_student(self):
++        admissions = self.search(self._irg_auto_enroll_domain())
++        _logger.info('Auto-enroll start: admissions=%s', len(admissions))
++        with self.env.cr.savepoint():
++            before = self._irg_auto_enroll_membership_snapshot(admissions)
++            processed = errors = 0
++            for record in admissions:
++                try:
++                    with self.env.cr.savepoint():
++                        record.auto_enroll_student()
++                    processed += 1
++                except Exception:
++                    errors += 1
++                    _logger.exception('Auto-enroll failed for admission %s', record.id)
++            after = self._irg_auto_enroll_membership_snapshot(admissions)
++            activated, archived = self._irg_auto_enroll_transition_counts(before, after)
++            initial_active = sum(1 for active in before.values() if active)
++            ratio = self._irg_mass_archive_ratio(initial_active, archived)
++            _logger.info(
++                'Auto-enroll end: processed=%s activated=%s archived=%s errors=%s',
++                processed, activated, archived, errors,
++            )
++            if ratio > 0.30:
++                _logger.warning(
++                    'Auto-enroll mass archive blocked: activated=%s archived=%s '
++                    'initial_active=%s ratio=%.2f%%',
++                    activated, archived, initial_active, ratio * 100,
++                )
++                raise ValidationError('Auto-enroll mass archive guard exceeded 30%')
+         return True
+diff --git a/addons-extra/extrairg/irg_online_subject_opening/tests/test_online_subject_opening.py b/addons-extra/extrairg/irg_online_subject_opening/tests/test_online_subject_opening.py
+index b75f1a7fea3a35046ba796d6af055a45b862e3ff..5d521108454eda54667e4f88883ee735efda9cb3 100644
+--- a/addons-extra/extrairg/irg_online_subject_opening/tests/test_online_subject_opening.py
++++ b/addons-extra/extrairg/irg_online_subject_opening/tests/test_online_subject_opening.py
+@@ -23,6 +23,7 @@ class TestOnlineSubjectOpening(TransactionCase):
+             'name': 'Online Opening Course',
+             'code': 'IRGOO',
+             'subject_ids': [(6, 0, [self.subject_c.id, self.subject_a.id, self.subject_b.id])],
++            'lang': 'en_US',
+         })
+         self.product = self.env['product.product'].create({
+             'name': 'Online Opening Fee',
+diff --git a/addons-extra/extrairg/irg_subject_fix/models/op_admission.py b/addons-extra/extrairg/irg_subject_fix/models/op_admission.py
+index 547b24f882014e66f470e7a43ee1ff7c616f4c66..861715f54ae2974abd186671b05b3841a31b53d3 100644
+--- a/addons-extra/extrairg/irg_subject_fix/models/op_admission.py
++++ b/addons-extra/extrairg/irg_subject_fix/models/op_admission.py
+@@ -9,6 +9,31 @@ _logger = logging.getLogger(__name__)
+ class OpAdmission(models.Model):
+     _inherit = 'op.admission'
+
++    def _irg_subject_precedence_is_satisfied(self, subject):
++        self.ensure_one()
++        parent_subject = subject.parent_subject_id
++        if not parent_subject:
++            return True
++
++        ChannelPartner = self.env['slide.channel.partner'].sudo()
++        current_membership = ChannelPartner.search([
++            ('partner_id', '=', self.partner_id.id),
++            ('op_subject_id', '=', parent_subject.id),
++            ('admission_id', '=', self.id),
++            ('active', '=', True),
++            ('completed', '=', True),
++        ], limit=1)
++        if current_membership:
++            return True
++
++        historical_membership = ChannelPartner.with_context(active_test=False).search([
++            ('partner_id', '=', self.partner_id.id),
++            ('op_subject_id', '=', parent_subject.id),
++            ('batch_id', '=', self.batch_id.id),
++            ('completed', '=', True),
++        ], limit=1)
++        return bool(historical_membership)
++
+     # ------------------------------------------------------------------
+     # Botón "Auto-Asignaturas": agrega verificación de precedencia
+     # ------------------------------------------------------------------
+@@ -28,26 +53,21 @@ class OpAdmission(models.Model):
+                 if not subject_batch.date_from or not subject_batch.date_to:
+                     continue
+
+-                # --- Verificar precedencia ---
+-                if subject.parent_subject_id:
+-                    parent_cp = self.env['slide.channel.partner'].sudo().search([
+-                        ('partner_id', '=', record.partner_id.id),
+-                        ('op_subject_id', '=', subject.parent_subject_id.id),
+-                        ('admission_id', '=', record.id),
+-                        ('active', '=', True),
+-                    ], limit=1)
+-                    if not parent_cp or not parent_cp.completed:
+-                        continue
++                if not record._irg_subject_precedence_is_satisfied(subject):
++                    continue
+
+-                channel_partners = self.env['slide.channel.partner'].search([
++                channel_partner = self.env['slide.channel.partner'].sudo().with_context(
++                    active_test=False,
++                ).search([
+                     ('partner_id', '=', record.partner_id.id),
+                     ('channel_id', '=', subject.slide_channel_id.id),
+                     ('batch_id', '=', record.batch_id.id),
+-                ])
++                    '|', ('active', '=', True), ('active', '=', False),
++                ], order='active DESC, create_date ASC', limit=1)
+
+                 if subject_batch.date_from <= today <= subject_batch.date_to:
+-                    if channel_partners:
+-                        channel_partners.write({
++                    if channel_partner:
++                        channel_partner.write({
+                             'active': True,
+                             'course_id': record.course_id.id,
+                             'register_id': record.register_id.id,
+@@ -69,12 +89,13 @@ class OpAdmission(models.Model):
+                             'admission_id': record.id,
+                         })
+
+-                elif today > subject_batch.date_to and channel_partners:
+-                    channel_partners.write({'active': False})
++                elif today > subject_batch.date_to and channel_partner:
++                    channel_partner.write({'active': False})
+
+     # ------------------------------------------------------------------
+     # Cron diario: agrega filtro de modalidad, precedencia y batch_id
+     # ------------------------------------------------------------------
++    # Override histórico muerto: la MRO efectiva usa irg_online_subject_opening.
+     def cron_auto_enroll_student(self):
+         """Sobreescribe el cron para:
+         - Omitir admisiones en modalidad 'manual'.
+diff --git a/missions/fix-auto-enroll-cron/CHANGELOG.md b/missions/fix-auto-enroll-cron/CHANGELOG.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..d7b3719ac628d0dae9c3083f05941eca415e4c01
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/CHANGELOG.md
+@@ -0,0 +1,48 @@
++# Changelog — `fix-auto-enroll-cron`
++
++## 2026-07-13
++
++### Cambiado
++
++- El cron `Auto Enroll Students` pasa de frecuencia diaria a horaria y su registro XML usa
++  `noupdate="1"` para conservar ajustes administrativos durante upgrades.
++- El cron procesa todas las admisiones finalizadas con lote, incluidas las de modalidad
++  `manual`, y delega cada una en el mismo entrypoint que el botón `Auto-Asignaturas`.
++- Cada admisión se aísla con savepoint y el run registra contadores de procesadas,
++  activadas, archivadas y errores.
++- El guardarraíl revierte todo el run cuando se archiva más del 30% de las memberships
++  activas al inicio; exactamente 30% está permitido.
++- La precedencia acepta una finalización histórica sin `admission_id` únicamente para el
++  mismo alumno, asignatura padre y lote.
++- La sincronización Homeclass/Online y la reutilización de memberships archivadas quedan
++  aisladas por lote y priorizan la fila activa.
++
++### Añadido
++
++- Micro-módulo `irg_auto_enroll_cron_robust` con hooks de cambios relevantes de
++  `op.subject.to.batch` que llaman al trigger nativo del cron.
++- Índice único parcial para impedir dos memberships activas del mismo
++  alumno/canal/lote, con preflight no destructivo y eliminación durante uninstall.
++- Aislamiento de la colisión concurrente exacta del índice mediante savepoints.
++- Suite conductual para cron, botón, triggers, concurrencia, Homeclass→Online,
++  guardarraíl, precedencia e idempotencia.
++- Informe SQL de gaps y backfill one-shot reversible, no cargados por Odoo y no ejecutados
++  en `Base16`.
++
++### Retirado
++
++- Override muerto del cron en `irg_online_clone_access_fix`; los demás overrides muertos
++  se conservan y se documentan con comentario, como exige el plan.
++
++### Validación
++
++- Suite robusta: 27/27.
++- Regresiones online/clone: 13/13.
++- T4.2 manual: archivado, reactivación del mismo ID e idempotencia verificadas.
++- Guardarraíl: rollback verificado con 4/10 (40%).
++- Estado contractual: `verification.json` en `passed`.
++
++### Pendiente de autorización
++
++- Despliegue y observación T4.3 en beta.
++- Commit, push y PR de T5.
+diff --git a/missions/fix-auto-enroll-cron/artifacts/MANIFEST.sha256 b/missions/fix-auto-enroll-cron/artifacts/MANIFEST.sha256
+new file mode 100644
+index 0000000000000000000000000000000000000000..f714007d99dd3041c159bed07c6210dcd47a9fe8
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/artifacts/MANIFEST.sha256
+@@ -0,0 +1,19 @@
++0ca3bc81d78af4e62fb520144438d8b647175db96602d2be3aec5f1c724ac852  missions/fix-auto-enroll-cron/artifacts/backfill_memberships.sql
++92449d9b6431d392e7d34a43a4d1b47ca68514e61e2a6701a0307919c5889f2d  missions/fix-auto-enroll-cron/artifacts/implementation-report.md
++02652d358a1a216845bae986f79cb1c92c03ec7f9d86b17fe2e96549d0f91e05  missions/fix-auto-enroll-cron/artifacts/manual-guardrail-revalidation.log
++b21142925ed19fa2e7df97c9763c59fc8ffe959ccab63a683ce3b69935cab1b1  missions/fix-auto-enroll-cron/artifacts/manual-t42-revalidation.log
++e3ab91c63aa3ea502a0bd730576ba1f05cba4c36e3631b7861f83ba085dfb424  missions/fix-auto-enroll-cron/artifacts/manual-t42-triggered.log
++cd447dfd4830108c26820a1df1385d4a3496618f93e2faa8259f4c901c0a5e03  missions/fix-auto-enroll-cron/artifacts/manual-t42.log
++df4325fc4ec1aa0675aae6fdab740e6db838daa5e340246e225f14e06751a8cf  missions/fix-auto-enroll-cron/artifacts/membership-gaps-report.sql
++394a9112c4b48a06fe944a4229467f6f0d5f6cc9d1ed30de9d131e98963fbf6a  missions/fix-auto-enroll-cron/artifacts/noupdate-upgrade-revalidation.log
++56ee09d179eb1ca674e4a3e9faa44c223d3f936d45fae9de9f2c9ae272846350  missions/fix-auto-enroll-cron/artifacts/noupdate-upgrade.log
++319d717c94a00da0d588e804dea55b71fadf97e42248d2b834e04c1af2aecf11  missions/fix-auto-enroll-cron/artifacts/phase0-diagnosis.md
++767b77e10abed25b296158ac7616fd0106d25d27112d0fe166e88a9cdd14d8df  missions/fix-auto-enroll-cron/artifacts/preflight-install-revalidation.log
++8829dbbaf5a93e81ff6d7df582766a725dd00bc14cdc5fc09f2fa4a8421cee3e  missions/fix-auto-enroll-cron/artifacts/preflight-install.log
++a8b24d89df084e72d9cc5f161bf98230a3978854ccfa9228ebeabc9ff8d9a3a2  missions/fix-auto-enroll-cron/artifacts/regression-suite-revalidation.log
++861343f0686dac4dae47237616bf9ba9672d516968a49cdbdf820f7d77cb09a3  missions/fix-auto-enroll-cron/artifacts/regression-suite.log
++1f9b44c3bf340eeefa72a72fd43daa753e146c2cdf3ea50b8d4250b8e87400dd  missions/fix-auto-enroll-cron/artifacts/robust-suite-revalidation.log
++ed84522794515a2b58aff0ead337b47adeaf19057270aabcad3f456f4dfcecf4  missions/fix-auto-enroll-cron/artifacts/robust-suite.log
++4268f6e4b88eb6d09685bd8fe554114a1b1792090e9498485addf7f9006891a3  missions/fix-auto-enroll-cron/artifacts/test-output.log
++b3f884748c98195bdb2099734ab4557b2a9214bc34a3a4c26b4a274a7d8e959e  missions/fix-auto-enroll-cron/artifacts/uninstall-cycle-revalidation.log
++f713fc8ee523ad39ce358bc8db4ce1988ed8d7fe24858d2fe2f7a0929070b7cb  missions/fix-auto-enroll-cron/artifacts/uninstall-cycle.log
+diff --git a/missions/fix-auto-enroll-cron/artifacts/backfill_memberships.sql b/missions/fix-auto-enroll-cron/artifacts/backfill_memberships.sql
+new file mode 100644
+index 0000000000000000000000000000000000000000..a5043e58edb7b760508b86fa09ca9e95120618cf
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/artifacts/backfill_memberships.sql
+@@ -0,0 +1,63 @@
++-- One-shot template. Review membership-gaps-report.sql first and replace the final
++-- ROLLBACK with COMMIT only after operations has approved the reported candidates.
++BEGIN;
++
++SELECT
++    count(*) FILTER (WHERE admission_id IS NULL) AS admission_missing_before,
++    count(*) FILTER (WHERE op_subject_id IS NULL) AS subject_missing_before
++  FROM slide_channel_partner;
++
++WITH candidates AS (
++    SELECT scp.id AS membership_id, oa.id AS candidate_id
++      FROM slide_channel_partner scp
++      JOIN op_admission oa
++        ON oa.partner_id = scp.partner_id
++       AND oa.batch_id = scp.batch_id
++     WHERE scp.admission_id IS NULL
++), unique_candidates AS (
++    SELECT membership_id, min(candidate_id) AS candidate_id
++      FROM candidates
++  GROUP BY membership_id
++    HAVING count(*) = 1
++)
++UPDATE slide_channel_partner scp
++   SET admission_id = unique_candidates.candidate_id
++  FROM unique_candidates
++ WHERE scp.id = unique_candidates.membership_id
++   AND scp.admission_id IS NULL;
++
++WITH candidates AS (
++    SELECT DISTINCT scp.id AS membership_id, ostb.subject_id AS candidate_id
++      FROM slide_channel_partner scp
++      JOIN op_subject_to_batch ostb ON ostb.batch_id = scp.batch_id
++      JOIN op_subject os
++        ON os.id = ostb.subject_id
++       AND os.slide_channel_id = scp.channel_id
++     WHERE scp.op_subject_id IS NULL
++    UNION
++    SELECT DISTINCT scp.id AS membership_id, rel.op_subject_id AS candidate_id
++      FROM slide_channel_partner scp
++      JOIN op_course_op_subject_rel rel ON rel.op_course_id = scp.course_id
++      JOIN op_subject os
++        ON os.id = rel.op_subject_id
++       AND os.slide_channel_id = scp.channel_id
++     WHERE scp.op_subject_id IS NULL
++       AND scp.batch_id IS NULL
++), unique_candidates AS (
++    SELECT membership_id, min(candidate_id) AS candidate_id
++      FROM candidates
++  GROUP BY membership_id
++    HAVING count(*) = 1
++)
++UPDATE slide_channel_partner scp
++   SET op_subject_id = unique_candidates.candidate_id
++  FROM unique_candidates
++ WHERE scp.id = unique_candidates.membership_id
++   AND scp.op_subject_id IS NULL;
++
++SELECT
++    count(*) FILTER (WHERE admission_id IS NULL) AS admission_missing_after,
++    count(*) FILTER (WHERE op_subject_id IS NULL) AS subject_missing_after
++  FROM slide_channel_partner;
++
++ROLLBACK;
+diff --git a/missions/fix-auto-enroll-cron/artifacts/implementation-report.md b/missions/fix-auto-enroll-cron/artifacts/implementation-report.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..8c65194471bebc9054c59a1455dcb137db87bc42
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/artifacts/implementation-report.md
+@@ -0,0 +1,173 @@
++# Informe de implementación — `fix-auto-enroll-cron`
++
++Estado de fase: `DONE_WITH_CONCERNS`.
++
++La implementación de Tareas 1–6 (T1.1–T3.2 y S1–S4) está aplicada en el worktree
++aislado. No se creó `verification.json`: corresponde a la validación independiente.
++
++## Archivos de producto
++
++Modificados:
++
++- `addons-extra/addons_uisep/isep_elearning_custom/data/cron_batch_slide_channel.xml`
++- `addons-extra/addons_uisep/isep_elearning_custom/models/op_admission.py`
++- `addons-extra/extrairg/irg_subject_fix/models/op_admission.py`
++- `addons-extra/extrairg/irg_online_subject_opening/models/op_admission.py`
++- `addons-extra/extrairg/irg_online_clone_access_fix/models/op_admission.py`
++- `addons-extra/extrairg/irg_online_clone_access_fix/models/slide_channel_partner.py`
++- `addons-extra/extrairg/irg_course_convocatorias_v2/models/slide_channel_partner.py`
++
++Creado el micro-módulo `addons-extra/extrairg/irg_auto_enroll_cron_robust/` con manifest,
++hooks, modelos y tests. No crea modelos nuevos, por lo que no necesita ACL propia.
++
++## Resultado funcional
++
++- Cron horario por defecto y XML `noupdate=1` conservando el XML ID.
++- Hooks relevantes de `op.subject.to.batch` llaman directamente a `_trigger()`.
++- Índice único parcial activo por alumno/canal/lote, preflight sin mutación y uninstall.
++- La constraint Python heredada se alinea con la misma clave por lote; sin ello el módulo
++  preexistente `isep_subject_precedence` bloqueaba lotes distintos antes del índice.
++- Colisiones exactas del índice se aíslan por savepoint en auto-enroll y clonación.
++- Todas las búsquedas que reutilizan archivadas usan `active_test=False`, lote actual y
++  orden `active DESC, create_date ASC`.
++- Precedencia: primero membership completada de la admisión; fallback histórico completado
++  limitado por alumno, asignatura padre y lote.
++- El cron procesa admisiones `done` con lote, incluidas manuales, delegando al botón por
++  admisión con savepoint individual.
++- Snapshot antes/después incluye memberships históricas de los pares alumno/lote; el ratio
++  global revierte el savepoint exterior si supera estrictamente el 30%.
++- Eliminado únicamente el override muerto del cron en `irg_online_clone_access_fix`; los
++  otros overrides históricos conservan cuerpo y reciben comentario.
++
++## Ciclos TDD y comandos
++
++RED en DB aislada `fix_auto_enroll_cron_red_20260713` mediante
++`docker-compose.local.yml`, montando este worktree en `/mnt/extra-addons`: 24 tests,
++4 failed y 15 errors. Las causas esperadas fueron XML diario, hooks/índice/helpers ausentes.
++
++Primer GREEN en DB nueva `fix_auto_enroll_cron_green_20260713`: 24 tests, 0 failed,
++0 errors. Tras reforzar tests conductuales apareció la constraint Python sin lote;
++se añadió la alineación mínima y el último rerun obtuvo de nuevo 24 tests, 0 failed,
++0 errors (1514 queries).
++
++Checks adicionales:
++
++- `python3 -m compileall`: PASS antes de retirar los `__pycache__` generados.
++- `xmllint --noout cron_batch_slide_channel.xml`: PASS.
++- `git diff --check`: PASS.
++- `membership-gaps-report.sql` con `psql -v ON_ERROR_STOP=1`: PASS.
++- `backfill_memberships.sql` con `psql -v ON_ERROR_STOP=1`: PASS; `UPDATE 0`, `UPDATE 0`
++  y `ROLLBACK` confirmado en la DB aislada.
++
++## Artefactos SQL
++
++- `membership-gaps-report.sql` es exclusivamente read-only.
++- `backfill_memberships.sql` usa candidatos únicos (`HAVING count(*) = 1`), muestra
++  conteos antes/después y termina en `ROLLBACK`.
++- Ningún manifest, hook o XML carga estos scripts. No se ejecutaron en `Base16`.
++
++## Riesgos y concerns para Validación
++
++1. Una instalación aislada de solo `irg_online_subject_opening` confirmó que
++   `irg_auto_enroll_cron_robust` está `uninstalled` y que `_irg_auto_enroll_domain()` pertenece
++   a `irg_online_subject_opening`, con el domain esperado. Dos tests históricos de esa
++   instalación mínima fallan por APIs/campos aportados por otros módulos no declarados como
++   dependencias (`get_subjects_visible_for_batch` y `nbr_certification`); no están relacionados
++   con el helper corregido. En el stack completo relevante, los 13 post-tests existentes pasan.
++2. El log del stack contiene warnings históricos de manifests ajenos al cambio.
++
++No se hizo commit, push, deploy, PR, merge ni escritura en `Base16`.
++
++## Corrección de hallazgos de revisión (2026-07-13)
++
++- `_irg_auto_enroll_domain()` se movió al módulo autónomo
++  `irg_online_subject_opening`; el micro-módulo ya no lo aporta accidentalmente.
++- `uninstall_hook` usa la firma Odoo 16 completa:
++  `tools.drop_index(cr, index_name, 'slide_channel_partner')`.
++- Se reemplazaron todos los placeholders señalados por pruebas conductuales reales:
++  guardarraíl 30% y >30% con rollback, dos transacciones cron/botón concurrentes,
++  Homeclass→Online, aislamiento de lote, preferencia de activa, equivalencia cron/botón,
++  aislamiento de fallo, ciclo de fechas e idempotencia, online sin fechas y modalidad manual.
++- El test concurrente de triggers registra baseline, confirma la limpieza desde el snapshot,
++  elimina solo sus IDs en `finally` y preserva triggers preexistentes.
++- Índice real comprobado en PostgreSQL. El preflight se prueba con un duplicado SQL temporal y
++  confirma que aborta sin borrarlo. El uninstall hook se ejecuta transaccionalmente y se verifica
++  que retira exactamente el índice antes de restaurarlo para el resto de la suite.
++- Se añadió `lang='en_US'` solo a los fixtures preexistentes de los dos módulos relevantes para
++  que sus tests alcancen el comportamiento.
++
++Resultados finales en `docker-compose.local.yml`, DB aislada
++`fix_auto_enroll_review_red_20260713`:
++
++- `irg_auto_enroll_cron_robust`: 26 post-tests, 0 failed, 0 errors, 4653 queries.
++- `irg_online_subject_opening` + `irg_online_clone_access_fix`: 13 post-tests,
++  0 failed, 0 errors, 2181 queries.
++- Preflight dirigido: 1 post-test, 0 failed, 0 errors, 175 queries.
++- `compileall`, `git diff --check` y ausencia de `__pycache__`/`.pyc` nuevos o no
++  versionados: PASS. Los binarios ya versionados por el repositorio se preservaron sin cambios.
++- Índice observado:
++  `UNIQUE (partner_id, channel_id, batch_id) WHERE active IS TRUE AND batch_id IS NOT NULL`.
++
++Recuento de tests de la suite robusta: 26 métodos conductuales. Escalados: 0.
++
++## Corrección final de triggers concurrentes (2026-07-13)
++
++- `test_change_committed_during_running_cron_keeps_trigger_for_next_run` ya no llama
++  directamente a `ir.cron._trigger()`: crea un fixture confirmado, abre el snapshot del run y
++  en una segunda transacción ejecuta `write({'date_to': ...})` y `commit()` reales sobre
++  `op.subject.to.batch`. El trigger posterior se origina exclusivamente en el hook del modelo.
++- El test registra por ID los triggers del fixture, del `write` y del `unlink`; su limpieza usa
++  únicamente esos IDs en `finally`. También verifica que todos desaparecen y que cada ID del
++  baseline sigue existiendo.
++- Se eliminó `_clear_triggers()` de la suite. Los cuatro tests create/write irrelevante/write
++  relevante/unlink comparan sets de IDs contra su baseline y nunca borran triggers ajenos.
++- El fixture confirmado del test concurrente cron/botón también rastrea y elimina selectivamente
++  los triggers generados al crear y desmontar su `op.subject.to.batch`.
++
++Evidencia final en base fresca `fix_auto_enroll_trigger_fresh2_20260713`:
++
++- Suite robusta completa: 26 post-tests, 0 failed, 0 errors, 4746 queries.
++- Consulta posterior del cron `isep_elearning_custom.ir_cron_auto_enroll_students`:
++  `ir_cron_trigger count = 0`.
++- Cambios de producto para esta corrección: 0; solo tests y artefactos de misión.
++
++## Reimplementación S1 aprobada tras T4.2 (2026-07-13)
++
++El único cambio funcional de esta reapertura es el denominador del guardarraíl:
++
++- Antes: `archived_count / (activated_count + archived_count)`.
++- Ahora: `archived_count / initial_active_count`, donde `initial_active_count` es el número
++  de memberships activas del snapshot anterior al run.
++- Si `initial_active_count == 0`, el ratio es `0.0`.
++
++Se conservan sin cambios el snapshot por pares alumno/lote, los contadores de activadas y
++archivadas, el umbral estrictamente mayor que 30%, el savepoint exterior, el rollback global y
++el aislamiento por admisión. El `WARNING` incluye ahora `activated`, `archived`,
++`initial_active` y `ratio`.
++
++TDD:
++
++- RED en `fix_auto_enroll_review_red_20260713`: 27 post-tests, 0 failed, 3 errors,
++  5739 queries. Fallaron exactamente el archivado único, el 30% exacto y el ciclo por cron
++  pasado/futuro porque el denominador anterior devolvía 100%.
++- GREEN tras el cambio mínimo: 27 post-tests, 0 failed, 0 errors, 5963 queries.
++
++Pruebas conductuales S1:
++
++- 1 archivada de 10 activas iniciales se aplica con 0 activaciones compensatorias.
++- 3 archivadas de 10 activas iniciales (30% exacto) se aplican.
++- 4 archivadas de 10 activas iniciales (40%) lanzan `ValidationError` y restauran todos los
++  estados iniciales.
++- 0 activas iniciales con 1 activación no divide por cero y finaliza correctamente.
++- El escenario `date_to` pasado/futuro usa el cron en sus tres ejecuciones: archiva 1 de 10,
++  reactiva la misma membership y conserva los 10 IDs tras una segunda ejecución idempotente.
++
++Evidencia final en DB nueva `fix_auto_enroll_s1_green_20260713`:
++
++- Suite robusta: 27 post-tests, 0 failed, 0 errors, 5963 queries.
++- Regresión `irg_online_subject_opening` + `irg_online_clone_access_fix`: 13 post-tests,
++  0 failed, 0 errors, 2181 queries.
++- Triggers persistentes del cron tras ambas suites: 0.
++- `compileall` y `git diff --check`: PASS; pycache generado retirado.
++
++No se modificó ningún otro comportamiento y no hubo commit, push, deploy ni acceso a Base16.
+diff --git a/missions/fix-auto-enroll-cron/artifacts/membership-gaps-report.sql b/missions/fix-auto-enroll-cron/artifacts/membership-gaps-report.sql
+new file mode 100644
+index 0000000000000000000000000000000000000000..113d88187a1d880213c06b2eab9a7521f518cb1f
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/artifacts/membership-gaps-report.sql
+@@ -0,0 +1,45 @@
++-- Read-only inventory for historical slide.channel.partner references.
++WITH admission_candidates AS (
++    SELECT scp.id AS membership_id, oa.id AS candidate_id
++      FROM slide_channel_partner scp
++      JOIN op_admission oa
++        ON oa.partner_id = scp.partner_id
++       AND oa.batch_id = scp.batch_id
++     WHERE scp.admission_id IS NULL
++), admission_summary AS (
++    SELECT membership_id, count(*) AS candidate_count
++      FROM admission_candidates
++  GROUP BY membership_id
++), subject_candidates AS (
++    SELECT DISTINCT scp.id AS membership_id, ostb.subject_id AS candidate_id
++      FROM slide_channel_partner scp
++      JOIN op_subject_to_batch ostb ON ostb.batch_id = scp.batch_id
++      JOIN op_subject os
++        ON os.id = ostb.subject_id
++       AND os.slide_channel_id = scp.channel_id
++     WHERE scp.op_subject_id IS NULL
++    UNION
++    SELECT DISTINCT scp.id AS membership_id, rel.op_subject_id AS candidate_id
++      FROM slide_channel_partner scp
++      JOIN op_course_op_subject_rel rel ON rel.op_course_id = scp.course_id
++      JOIN op_subject os
++        ON os.id = rel.op_subject_id
++       AND os.slide_channel_id = scp.channel_id
++     WHERE scp.op_subject_id IS NULL
++       AND scp.batch_id IS NULL
++), subject_summary AS (
++    SELECT membership_id, count(*) AS candidate_count
++      FROM subject_candidates
++  GROUP BY membership_id
++)
++SELECT
++    count(*) FILTER (WHERE scp.admission_id IS NULL) AS without_admission,
++    count(*) FILTER (WHERE scp.op_subject_id IS NULL) AS without_subject,
++    count(*) FILTER (WHERE scp.admission_id IS NULL OR scp.op_subject_id IS NULL) AS without_either,
++    count(*) FILTER (WHERE adm.candidate_count = 1) AS unique_admission_candidates,
++    count(*) FILTER (WHERE adm.candidate_count > 1) AS ambiguous_admission_candidates,
++    count(*) FILTER (WHERE sub.candidate_count = 1) AS unique_subject_candidates,
++    count(*) FILTER (WHERE sub.candidate_count > 1) AS ambiguous_subject_candidates
++  FROM slide_channel_partner scp
++  LEFT JOIN admission_summary adm ON adm.membership_id = scp.id
++  LEFT JOIN subject_summary sub ON sub.membership_id = scp.id;
+diff --git a/missions/fix-auto-enroll-cron/artifacts/phase0-diagnosis.md b/missions/fix-auto-enroll-cron/artifacts/phase0-diagnosis.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..d9f46f8a3bdf661f5ed0d1492fddf92a9bd84b82
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/artifacts/phase0-diagnosis.md
+@@ -0,0 +1,99 @@
++# Fase 0 — Diagnóstico de solo lectura
++
++Fecha: 2026-07-13
++
++Entornos consultados:
++
++- Local: contenedores `odoo16irg_local` / `pgodoo16irg_local`, base
++  `test_irg_db` (dataset local útil para este flujo).
++- Beta: `ssh odoobetairg`, contenedores `nat16_odoo_latest` /
++  `nat16_pgodoo_latest`, base `Base16`.
++
++Todas las consultas de base de datos fueron `SELECT`. No se ejecutó ninguna escritura,
++actualización de módulo, trigger manual, reinicio o despliegue.
++
++## T0.1 — Estado del cron
++
++| Entorno | Active | Intervalo | Nextcall | Lastcall |
++|---|---:|---|---|---|
++| Local (`test_irg_db`) | true | 1 day | 2026-06-19 07:17:44 | 2026-06-18 08:38:02 |
++| Beta (`Base16`) | true | 1 day | 2026-07-13 18:49:16 | 2026-07-12 18:49:25 |
++
++H1 queda confirmada en ambos entornos: el registro real es diario.
++
++## T0.2 — Logs
++
++Local:
++
++- `test_irg_db`: `Starting job Auto Enroll Students` y `Job ... done` el
++  2026-06-18; no aparece error en ese run.
++- La base local mínima `odoo16irg_local`, descartada como dataset de diagnóstico por no
++  tener instalado `isep_subject_precedence`, sí muestra un fallo el 2026-06-24:
++  `op.admission` no tenía `cron_auto_enroll_student`. No se atribuye este fallo al dataset
++  válido `test_irg_db`.
++
++Beta:
++
++- No hubo coincidencias en los logs retenidos de `nat16_odoo_latest` para
++  `Auto Enroll Students`, `cron_auto_enroll_student`, `Job .* failed`, límites CPU o
++  límites de tiempo real.
++- La ausencia de coincidencias no permite descartar H3; `lastcall` prueba que el cron sí
++  registró ejecución el 2026-07-12.
++
++## T0.3 — Modalidad
++
++| Entorno | Auto | Manual |
++|---|---:|---:|
++| Local (`test_irg_db`) | 30 | 0 |
++| Beta (`Base16`) | 666 | 522 |
++
++H2 queda confirmada en beta. Las 522 admisiones manuales incluyen cursos afectados de las
++dos familias señaladas por el plan. Ejemplos con admisiones manuales:
++
++- Máster en Psicología Clínica y de la Salud: 114.
++- Máster en Neuropsicología Clínica Basada en la Evidencia: 44.
++- Diplomado en Evaluación e Intervención desde las Terapias de Tercera Generación: 89.
++- Diplomado en Neuroeducación: Intervención y Desarrollo Cognitivo: 74.
++
++El checkpoint de Fase 0 es obligatorio antes de decidir el domain definitivo de T2.1.
++
++## T0.4 — Dimensionado y datos históricos
++
++| Métrica | Local (`test_irg_db`) | Beta (`Base16`) |
++|---|---:|---:|
++| Admisiones done con lote | 30 | 1,188 |
++| Media asignaturas por lote no vacío | 7.10 | 17.37 |
++| Máximo asignaturas en un lote | 40 | 535 |
++| Lotes con asignaturas | 10 | 117 |
++| Memberships totales | 20 | 5,283 |
++| Sin `admission_id` | 19 | 443 |
++| Sin `op_subject_id` | 19 | 354 |
++| Sin alguno de ambos | 19 | 443 |
++
++H4 queda confirmada en ambos entornos. Por tanto, Fase 3 aplica.
++
++El volumen beta respalda exactamente el trade-off del plan: cron horario como red de
++seguridad y `_trigger()` ante cambios, no full-scan cada 15 minutos.
++
++## Diagnóstico adicional de concurrencia autorizado
++
++Consulta read-only en beta del 2026-07-13:
++
++- Grupos duplicados activos por `partner_id + channel_id`: 0.
++- Grupos duplicados activos por `partner_id + channel_id + batch_id`: 0.
++- Grupos duplicados incluyendo activas y archivadas por alumno/canal/lote: 213
++  (215 filas adicionales), que no se modificarán.
++- Alumnos activos simultáneamente en un canal Homeclass y su clon Online: 92.
++
++Resultado: el índice parcial se restringe a activas por alumno/canal/lote. No bloquea
++Homeclass→Online porque los canales original y clonado son distintos, y tampoco bloquea
++lotes distintos aunque compartieran canal.
++
++## Estado de hipótesis
++
++| Hipótesis | Local | Beta |
++|---|---|---|
++| H1 intervalo diario / `noupdate=0` | Confirmada | Confirmada |
++| H2 modalidad manual excluida | No presente en el dataset | Confirmada |
++| H3 excepción/rollback | No confirmada en dataset válido | Sin evidencia suficiente |
++| H4 históricos sin referencias | Confirmada | Confirmada |
+diff --git a/missions/fix-auto-enroll-cron/execution.log b/missions/fix-auto-enroll-cron/execution.log
+new file mode 100644
+index 0000000000000000000000000000000000000000..82292bf0cee20e9b71651762f2f315165d775eca
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/execution.log
+@@ -0,0 +1,309 @@
++2026-07-13 PLAN
++- Leído el plan fuente completo y las reglas de proyecto/skills aplicables.
++- Clasificación: complex (>5 archivos, cross-module, cron/transacciones/triggers).
++- Creado worktree aislado en rama fix/auto-enroll-cron desde Dev_iRG @ d39c284d.
++- No se modificó el checkout Dev_iRG, que ya contenía cambios del usuario.
++
++2026-07-13 FASE 0 / T0.1-T0.4
++- Se identificó test_irg_db como la única base local con dataset útil para este flujo
++  (41 admisiones, 71 op_subject_to_batch y columna op_admission.modality).
++- Se ejecutaron exclusivamente SELECT en PostgreSQL local.
++- Se leyeron logs locales de odoo16irg_local sin alterar el contenedor.
++- Se accedió a beta por el canal habitual ssh odoobetairg.
++- Se ejecutaron exclusivamente SELECT en nat16_pgodoo_latest/Base16.
++- Se leyeron logs de nat16_odoo_latest; no hubo coincidencias retenidas para los patrones T0.2.
++- Resultado del gate: H2 confirmada en beta (522 admisiones manual).
++- Ejecución detenida antes de código de producción a la espera del checkpoint exigido.
++- Escalados: 0.
++
++2026-07-13 REIMPLEMENTACIÓN APROBADA S1 — RED
++- Leídas las secciones actualizadas S1 de spec.md/plan.md y verification.json failed.
++- Alcance autorizado: solo denominator archived_count / initial_active_count.
++- Tests escritos primero: archivado único 1/10 sin activaciones, 3/10 exacto, 4/10 con
++  rollback, cero inicial y ciclo pasado/futuro íntegramente por cron.
++- RED en fix_auto_enroll_review_red_20260713: 27 post-tests, 0 failed, 3 errors,
++  5739 queries. Los 3 errores esperados fueron archivado único, 30% exacto y ciclo por cron;
++  el código anterior informó ratio=100%.
++
++2026-07-13 REIMPLEMENTACIÓN APROBADA S1 — GREEN
++- Cambio mínimo en irg_online_subject_opening/models/op_admission.py:
++  _irg_mass_archive_ratio(initial_active_count, archived_count), cero con denominador cero.
++- initial_active se calcula desde before.values(); activaciones siguen contándose pero no
++  participan en el denominador.
++- WARNING actualizado con activated, archived, initial_active y ratio. Umbral >30%, savepoint
++  exterior, rollback e aislamiento por admisión permanecen intactos.
++- GREEN en DB de trabajo: 27 post-tests, 0 failed, 0 errors, 5963 queries.
++- Fresh DB fix_auto_enroll_s1_green_20260713: suite robusta 27 post-tests, 0 failed,
++  0 errors, 5963 queries.
++- Regresiones relevantes en la misma DB: 13 post-tests, 0 failed, 0 errors, 2181 queries.
++- Verificación posterior: 0 triggers persistentes del auto-enroll; compileall PASS;
++  git diff --check PASS; pycache generado eliminado.
++- Sin cambios adicionales, commit, push, deploy ni Base16. Escalados: 0.
++
++2026-07-13 VALIDACIÓN INDEPENDIENTE — FAILED T4.2
++- La prueba manual confirmó que un archivado aislado producía archived/touched=1/1=100%.
++- El guardarraíl revirtió el archivado, contradiciendo el ciclo funcional pasado→futuro de T4.2.
++- verification.json quedó en failed; no se cerró, documentó ni publicó la misión.
++
++2026-07-13 REPLANIFICACIÓN APROBADA — DENOMINADOR S1
++- El usuario aprobó explícitamente recalcular el ratio como
++  archived_count / initial_active_count dentro del snapshot inicial del run.
++- Se actualizaron spec.md y plan.md antes de tocar código.
++- Se mantiene el límite estrictamente >30%, el savepoint exterior y el rollback completo.
++- La corrección se ejecutará con TDD y una validación independiente completa posterior.
++- Tier: complex, porque afecta integridad de matrículas y el guardarraíl transaccional.
++
++2026-07-13 VALIDACIÓN INDEPENDIENTE — FAILED
++- Entorno exclusivo: docker-compose.local.yml, montando el addons-extra de este worktree
++  como /mnt/extra-addons:ro.
++- Bases aisladas: fix_auto_enroll_validation_20260713a y
++  fix_auto_enroll_validation_20260713b; sin Base16/beta/remoto.
++- Suite robusta fresca: 26 post-tests, 0 failed, 0 errors, 4746 queries.
++- Regresiones online + clone frescas: 13 post-tests, 0 failed, 0 errors, 2181 queries.
++- Sintaxis Python (17 archivos), XML y git diff --check: PASS.
++- T1.1: 2 horas sobrevivió a -u isep_elearning_custom; restaurado a 1 hora: PASS.
++- Índice/preflight/uninstall real y ausencia de triggers residuales: PASS.
++- SQL report + backfill con ROLLBACK y checksum inalterado: PASS.
++- T4.2 manual: FAIL. Una fecha pasada produjo un trigger y Run manually registró
++  processed=21, activated=0, archived=1, errors=0; el ratio 100% disparó el guardarraíl y
++  revirtió el archivado, dejando la membership activa.
++- Evidencia: artifacts/test-output.log, robust-suite.log, regression-suite.log,
++  noupdate-upgrade.log, manual-t42-triggered.log, uninstall-cycle.log y
++  preflight-install.log.
++- verification.json emitido con status=failed. Escalados del validador: 0.
++
++2026-07-13 REVALIDACIÓN INDEPENDIENTE TRAS AJUSTE S1 — PASSED
++- Entorno exclusivo: docker-compose.local.yml con el worktree montado read-only.
++- Bases nuevas: fix_auto_enroll_revalidation_20260713c y
++  fix_auto_enroll_revalidation_20260713d; sin Base16/beta/remoto.
++- Suite robusta fresca: 27 post-tests, 0 failed, 0 errors, 5963 queries.
++- Regresiones online + clone frescas: 13 post-tests, 0 failed, 0 errors, 2181 queries.
++- Sintaxis Python 17 archivos, XML, git diff --check y registry Odoo: PASS.
++- T1.1: valor local 2 horas sobrevivió a -u; restaurado a 1 hora: PASS.
++- T4.2 literal: 10 activas iniciales, 1 archivada sin activaciones compensatorias; fecha
++  futura reactivó el mismo ID; tercer run conservó los 10 IDs: PASS.
++- Guardarraíl separado: 4/10 = 40%, ValidationError esperado y todos los estados
++  restaurados: PASS.
++- Índice, preflight real, uninstall real, 0 duplicados activos y 0 triggers residuales: PASS.
++- Informe SQL y backfill ROLLBACK con rows=32 y checksum
++  71297b6448d98608f05b7f80f8cda298 inalterados: PASS.
++- Evidencia nueva: robust-suite-revalidation.log, regression-suite-revalidation.log,
++  noupdate-upgrade-revalidation.log, manual-t42-revalidation.log,
++  manual-guardrail-revalidation.log, uninstall-cycle-revalidation.log y
++  preflight-install-revalidation.log.
++- verification.json sobrescrito con status=passed. Escalados de esta revalidación: 0.
++
++2026-07-13 IMPLEMENTACIÓN — RED TAREAS 1–5
++- Comando: docker compose ... run --rm --no-deps -v <worktree>/addons-extra:/mnt/extra-addons:ro
++  odoo_local odoo ... -d fix_auto_enroll_cron_red_20260713 -i irg_auto_enroll_cron_robust
++  --test-enable --test-tags /irg_auto_enroll_cron_robust --stop-after-init.
++- Resultado RED esperado: 24 tests ejecutados; 4 failed y 15 errors.
++- Causas funcionales confirmadas: XML diario/noupdate ausente, hooks sin trigger, índice
++  inexistente y helpers de cron no implementados.
++- Hallazgo de fixture: op.course.lang es NOT NULL en este stack; se corrige solo el fixture.
++- Se inicia GREEN con implementación mínima ajustada a plan/spec, sin extras.
++
++2026-07-13 IMPLEMENTACIÓN — TAREA 6
++- Creados membership-gaps-report.sql (solo SELECT) y backfill_memberships.sql.
++- El backfill usa CTEs con GROUP BY/HAVING count(*) = 1, muestra conteos antes/después,
++  abre transacción explícita y finaliza siempre en ROLLBACK.
++- Ningún manifest/hook referencia estos scripts y no se ejecutaron contra Base16.
++
++2026-07-13 IMPLEMENTACIÓN — PRIMER GREEN PARCIAL
++- Sintaxis Python: compileall PASS.
++- Sintaxis XML: el host no dispone de lxml para Python; xmllint PASS.
++- SQL one-shot validado con ON_ERROR_STOP en la DB local aislada: informe PASS; backfill
++  UPDATE 0/0 y ROLLBACK confirmado.
++- Primer rerun tras implementar: 24 tests, 1 failed y 4 errors.
++- Los 4 errors son del fixture: op.course.lang es Selection (código `en_US`), no Many2one;
++  corregido. El fallo restante corresponde al intervalo persistido de la instalación RED,
++  comportamiento esperado al pasar el XML a noupdate=1; el GREEN se ejecutará en DB nueva.
++
++2026-07-13 IMPLEMENTACIÓN — GREEN Y HALLAZGO DE REGRESIÓN
++- Instalación nueva fix_auto_enroll_cron_green_20260713: 24 tests, 0 failed, 0 errors.
++- Tras reforzar pruebas conductuales, se detectó que la constraint Python heredada de
++  isep_subject_precedence seguía usando partner+channel sin batch y bloqueaba lotes distintos.
++- Corrección estricta dentro del micro-módulo: override de la misma constraint para alinear
++  su clave con partner+channel+batch; el índice parcial sigue siendo la garantía concurrente.
++- No se editó isep_subject_precedence ni se amplió el alcance funcional aprobado de S2.
++
++2026-07-13 IMPLEMENTACIÓN — CIERRE DE FASE
++- Rerun final del micro-módulo: 24 tests, 0 failed, 0 errors (1514 queries).
++- Regresión online/clone existente: 13 errors de fixture por op.course.lang requerido;
++  no alcanza el comportamiento modificado y no se corrige por estar fuera de Tareas 1–6.
++- git diff --check PASS; XML PASS; Python PASS; SQL read-only/backfill+ROLLBACK PASS.
++- Se retirarán todos los __pycache__/.pyc generados antes de entregar.
++- Informe: artifacts/implementation-report.md.
++- Sin commit, push, deploy, PR, merge ni escritura en Base16.
++- Estado de implementación: DONE_WITH_CONCERNS; pendiente validador independiente.
++
++2026-07-13 CORRECCIÓN DE HALLAZGOS DE REVISIÓN — RED
++- Leídos spec.md, plan.md, artifacts/implementation-report.md, diff, knowledge y workflow Odoo.
++- Se sustituyeron primero los placeholders por escenarios conductuales completos.
++- DB aislada: fix_auto_enroll_review_red_20260713 mediante docker-compose.local.yml.
++- Primer run revisado: 24 post-tests, 0 failed, 2 errors. Ambos errores reprodujeron una
++  colisión de fixture por código de asignatura repetido; se hicieron únicos los códigos.
++- Sin cambios remotos, commits, despliegues ni acceso a Base16.
++
++2026-07-13 CORRECCIÓN DE HALLAZGOS DE REVISIÓN — GREEN
++- Corregida autonomía: _irg_auto_enroll_domain definido en irg_online_subject_opening y
++  retirado de irg_auto_enroll_cron_robust.
++- Corregida firma Odoo 16: tools.drop_index(cr, index_name, table_name).
++- Concurrencia cron/botón ejecutada en dos cursores/transacciones: la transacción cron queda
++  bloqueada por el insert sin confirmar del botón, continúa tras commit y el count activo es 1;
++  todos los registros confirmados por el test se eliminan en finally.
++- Trigger concurrente: baseline por IDs, limpieza confirmada desde snapshot, verificación y
++  cleanup exclusivo de IDs creados por el test en finally.
++- Guardarraíl conductual: 3 archivadas/7 activadas persiste; 4 archivadas/6 activadas lanza
++  ValidationError y el mapa de estados antes/después queda idéntico.
++- Índice/preflight/uninstall: índice real consultado en pg_indexes; duplicado temporal provoca
++  ValidationError sin borrado; uninstall hook retira el índice y el test lo restaura.
++- Suite robusta final: 26 post-tests, 0 failed, 0 errors, 4653 queries.
++- Regresión existente online opening + clone access: 13 post-tests, 0 failed, 0 errors,
++  2181 queries. Se añadió lang solo a esos fixtures preexistentes.
++- Autonomía sin robust: estado uninstalled; owner del helper =
++  odoo.addons.irg_online_subject_opening.models.op_admission; domain correcto. La suite mínima
++  aislada conserva 2 errores históricos por dependencias no declaradas ajenas al helper.
++- compileall PASS; git diff --check PASS; pycache/pyc generados o no versionados eliminados.
++  Los pycache que ya estaban versionados en HEAD se restauraron para evitar cambios ajenos.
++- Escalados: 0. Estado: DONE_WITH_CONCERNS únicamente por los 2 errores históricos de la
++  instalación mínima; el stack completo relevante queda verde.
++
++2026-07-13 REVISIÓN FINAL — TRIGGERS CONCURRENTES
++- RED de especificación: el test concurrente invocaba _trigger() directamente y la suite tenía
++  un helper _clear_triggers() que borraba temporalmente triggers preexistentes.
++- GREEN dirigido: el segundo cursor modifica date_to de un op.subject.to.batch confirmado;
++  el hook crea un trigger nuevo tras el snapshot. Resultado: 1 test, 0 failed, 0 errors,
++  137 queries.
++- Sustituido _clear_triggers por comparaciones selectivas de IDs contra baseline en create,
++  relevant write, irrelevant write y unlink.
++- La limpieza en finally acumula exclusivamente IDs creados por fixture, write y unlink,
++  elimina esos IDs y verifica tanto owned=0 como baseline intacto.
++- Detectados 2 triggers persistentes de un segundo fixture concurrente (cron/botón) en la primera
++  base fresca. Root cause: la creación confirmada de su batch disparaba los mismos hooks.
++- Corrección mínima solo en tests: ese fixture también registra baseline/owned IDs y elimina los
++  triggers de creación y teardown sin tocar baseline.
++- Suite completa ejecutada de cero en fix_auto_enroll_trigger_fresh2_20260713:
++  26 post-tests, 0 failed, 0 errors, 4746 queries.
++- Verificación SQL posterior: 0 filas ir_cron_trigger para
++  isep_elearning_custom.ir_cron_auto_enroll_students.
++- Código de producto modificado en esta iteración: ninguno. Sin commit/push/deploy/Base16.
++- Escalados: 0.
++
++2026-07-13 CHECKPOINT H2
++- Decisión explícita del usuario: las admisiones modality='manual' deben entrar en
++  auto-enroll.
++- Consecuencia estricta para T2.1: el domain del cron no excluirá modality='manual'.
++- No se autoriza ningún otro cambio de alcance.
++
++2026-07-13 SECURITY ADVISOR
++- Revisión read-only completada; no se modificó código.
++- Veredicto: NO.
++- Bloqueadores: T1.4 solo avisa y no protege integridad; carrera cron/botón sin unicidad
++  SQL; ráfagas/pérdida de triggers `_trigger()` sin deduplicación; fallback T3.1 ambiguo
++  entre cohortes.
++- La implementación queda detenida porque corregir estos puntos ampliaría/modificaría el
++  plan y el usuario pidió ejecución estricta sin extras.
++- Escalados: 0.
++
++2026-07-13 REVISIÓN DE DISEÑO
++- El usuario autorizó revisar exclusivamente los cuatro bloqueadores.
++- El usuario confirmó rollback total si archived/(activated+archived) > 30%.
++- Diseño aprobado: rollback global, FOR UPDATE por admisión, trigger deduplicado bajo lock
++  del cron y fallback histórico con batch_id obligatorio.
++- Especificación persistida en spec.md; no se hace commit antes del PASS global.
++
++2026-07-13 PLAN REVISADO
++- spec.md aprobado explícitamente por el usuario.
++- plan.md ampliado con tareas TDD, interfaces, archivos y verificaciones exactas.
++- Auto-revisión: cobertura T1.1-T4.2 y S1-S4 completa; sin placeholders.
++- Se documentó la semántica Odoo 16 de noupdate: valor horario en instalación nueva y
++  persistencia del valor manual en upgrades.
++
++2026-07-13 SECURITY ADVISOR — REVISIONES SEGUNDA Y TERCERA
++- Segunda revisión: NO; se corrigió la comparación temporal que duplicaba triggers cuando
++  avanzaba el reloj dentro de una misma transacción.
++- Tercera revisión: NO; esperar el row lock de ir_cron bajo REPEATABLE READ puede terminar
++  en SerializationFailure después de que el worker actualice la fila.
++- Los gates S1, S2, S4, modalidad manual y backfill quedaron aprobados.
++- Rediseño S3 propuesto: marcador técnico atómico con unicidad por cron; pendiente de
++  aprobación del usuario por añadir un modelo técnico al micro-módulo.
++
++2026-07-13 DECISIÓN S3 FINAL
++- Tras explicar el comportamiento nativo, el usuario autorizó continuar sin modelo técnico.
++- S3 vuelve al alcance original: hooks relevantes llaman directamente a `_trigger()`.
++- Se aceptan triggers temporales redundantes: Odoo selecciona el cron una vez y limpia los
++  vencidos conjuntamente.
++- Se elimina del plan todo lock, deduplicación o estado auxiliar sobre `ir_cron`.
++- Se exige test de que un trigger confirmado durante un run sobrevive al snapshot del run.
++
++2026-07-13 DECISIÓN S2 FINAL
++- El usuario señaló el caso Homeclass→Online antes de autorizar el índice.
++- Beta read-only: 0 duplicados activos por alumno/canal/lote y 92 alumnos activos a la vez
++  en canal Homeclass + clon Online.
++- Se descarta la clave amplia alumno/canal.
++- El usuario aprueba índice parcial solo para active=True con clave
++  partner_id/channel_id/batch_id; no afecta lotes distintos ni canales clonados.
++- Se añade test explícito de transición Homeclass→Online.
++- Se elimina todo row lock de op.admission del plan.
++
++2026-07-13 SECURITY ADVISOR — S2 DATA ROUTING
++- Índice parcial, preflight, uninstall y Homeclass/Online aprobados.
++- Veredicto aún NO por búsquedas de clon sin batch y selección de archivada antigua antes
++  que activa.
++- Corrección acotada: batch_id en búsquedas/sync del clon y orden active DESC,
++  create_date ASC; regresiones para dos lotes y activa + archivada.
++
++2026-07-13 SECURITY ADVISOR — ACTIVE_TEST
++- Todos los gates sustantivos aprobados.
++- Veredicto NO por faltar `with_context(active_test=False)` explícito: el OR del domain no
++  muestra archivadas bajo el contexto Odoo por defecto.
++- Corrección mecánica añadida a todas las búsquedas auto-enroll/clone que reutilizan
++  memberships archivadas.
++
++2026-07-13 SECURITY ADVISOR — PASS
++- Veredicto final: YES.
++- Aprobados S1-S4, modalidad manual, índice/preflight/uninstall, Homeclass→Online,
++  aislamiento por lote, active_test=False y backfill reversible.
++- Se autoriza iniciar la fase de implementación; sin commit ni acciones remotas.
++
++
++
++
++
++
++2026-07-13 SECURITY ADVISOR — SEGUNDA REVISIÓN
++- Veredicto: NO por un único punto restante en S3.
++- Aprobados: rollback >30%, lock cron/botón, fallback por batch, modalidad manual,
++  savepoints y aislamiento del backfill.
++- Defecto: `call_at >= fields.Datetime.now()` deja de ver el primer trigger cuando el reloj
++  avanza dentro de una transacción larga.
++- Corrección mínima: considerar pendiente cualquier trigger que venza hasta `now + 1 min`,
++  sin límite inferior; añadir test con avance de reloj.
++
++2026-07-13 IMPLEMENTACIÓN — INICIO
++- Worktree verificado: /Users/ivrogo/.codex/worktrees/Odoo16iRG/fix-auto-enroll-cron.
++- Leídos completos AGENTS.md, skill Odoo 16, spec.md, plan.md, diagnóstico de Fase 0,
++  knowledge de routing y workflow del proyecto.
++- Alcance: exclusivamente Tareas 1–6 (T1.1–T3.2 y S1–S4), tier complex.
++- TDD RED: creado primero el armazón del micro-módulo y las pruebas obligatorias; todavía
++  no hay implementación de modelos/hooks/índice ni cambios en los módulos existentes.
++- Escalados: 0.
++
++2026-07-13 DOCUMENTACIÓN — CIERRE
++- El documentador verificó `verification.json` válido y en `passed` antes de iniciar.
++- Se consolidaron `progress.md` y `review.md` para retirar estados históricos obsoletos y
++  reflejar la evidencia final: suite robusta 27/27, regresiones 13/13, T4.2 completo y
++  rollback 4/10 = 40%.
++- `validation.md` no se alteró: ya era coherente con la evidencia y el contrato aprobado.
++- Se creó `CHANGELOG.md` con cambios, validación, límites y trabajo remoto pendiente.
++- Se persistió el aprendizaje reutilizable en
++  `.agents/knowledge/odoo_development_modding/artifacts/irg_auto_enroll_cron_robust.md`:
++  denominador del guardarraíl, índice parcial por lote y trigger nativo.
++- Se generó `diff.patch` de forma mecánica con todos los cambios tracked y los archivos
++  nuevos de producto/misión/conocimiento, excluyendo el propio parche y los logs ignorados
++  para evitar recursión y ruido de whitespace. Estos logs quedan trazados por ruta y SHA-256
++  en `artifacts/MANIFEST.sha256`.
++- JSON, rutas de evidencia y `git diff --check`: verificados al cierre.
++- Sin cambios de producto/tests durante esta fase; sin commit, push, deploy, PR ni Base16.
++- Escalados de documentación: 0.
+diff --git a/missions/fix-auto-enroll-cron/plan.md b/missions/fix-auto-enroll-cron/plan.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..2fbdf99bcf5c38e9da50251976353e9068b345d8
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/plan.md
+@@ -0,0 +1,484 @@
++# Misión `fix-auto-enroll-cron`
++
++## Fuente y alcance vinculante
++
++Esta misión ejecuta exclusivamente el plan
++`/Users/ivrogo/.claude/plans/quiero-que-revises-el-moonlit-ripple.md`.
++No se autoriza ninguna mejora, refactorización ni corrección fuera de sus tareas T0.1–T5.
++
++Conocimiento recuperado y aplicado:
++
++- `.agents/knowledge/odoo_development_modding/artifacts/irg_auto_enroll_cron_routing_fix.md`:
++  el cron y el botón deben compartir el mismo criterio de segmentación.
++- `.agents/workflows/odoo16_codebase_knowledge.md`: se respetan la estructura
++  `addons-extra/extrairg/` y las reglas de conocimiento del proyecto.
++
++La instrucción directa del plan de editar cuatro módulos existentes prevalece, para esta
++misión concreta, sobre la regla general de crear siempre un módulo nuevo. El único módulo
++nuevo será el micro-módulo expresamente pedido por T1.2.
++
++## Clasificación de complejidad
++
++Tier: `complex`.
++
++Justificación objetiva: afecta a más de cinco archivos, cruza varios módulos, modifica la
++ejecución programada y su aislamiento transaccional, introduce triggers de cron y requiere
++razonar sobre MRO, precedencia, datos históricos y concurrencia potencial. Por tocar
++programación/concurrencia del cron se activa una revisión Security Advisor antes de escribir
++código de producción.
++
++Modelos/roles:
++
++- Plan/orquestación: modelo de razonamiento alto.
++- Implementación: subagente codificador de tier `complex`, aplicando Odoo 16 y TDD.
++- Validación: subagente testeador de tier `standard`, con escalado a `complex` si falla.
++- Documentación: subagente ligero, solo después de `verification.json` en `passed`.
++- Security Advisor: subagente de razonamiento alto antes de implementación.
++
++## Ejecución estricta por fases
++
++1. Fase 0: ejecutar T0.1–T0.4 únicamente con consultas de solo lectura en local y beta;
++   guardar evidencia y tabla de hipótesis por entorno.
++2. Gate H2: resuelto por el usuario el 2026-07-13. Las admisiones `manual` deben entrar
++   en auto-enroll; T2.1 no debe excluirlas del domain.
++3. Fase 1: implementar únicamente T1.1–T1.4 mediante TDD.
++4. Fase 2: implementar únicamente T2.1–T2.4 mediante TDD.
++5. Fase 3: ejecutar T3.1–T3.2 solo si H4 queda confirmada en Fase 0.
++6. Fase 4 local: ejecutar T4.1–T4.2 en `docker-compose.local.yml` y producir evidencia.
++7. Validación independiente: producir `verification.json`; solo `passed` permite avanzar.
++8. Documentación: completar los artefactos de misión, changelog y conocimiento reutilizable.
++9. Fase 4 beta y Fase 5 remota: no desplegar, hacer push ni abrir PR hasta recibir el OK
++   explícito nuevo que exige `AGENTS.md`. El merge queda excluido en todo caso.
++
++## Artefactos obligatorios
++
++- `execution.log`: comandos, decisiones, resultados y escalados durante la ejecución.
++- `artifacts/`: evidencia de diagnóstico y pruebas.
++- `diff.patch`: diff completo de la misión.
++- `verification.json`: contrato objetivo del validador.
++- `spec.md`, `progress.md`, `review.md`, `validation.md`: cierre SDD solicitado por Fase 5.
++
++## Criterios de parada
++
++- H2 confirmada: checkpoint resuelto; incluir modalidad `manual` en auto-enroll.
++- Bloqueo o ambigüedad del plan: no adivinar.
++- Validación fallida: registrar y escalar `standard -> complex`; no documentar como cerrado.
++- Ningún commit ni acción remota antes de `PASS global` y autorización explícita del usuario.
++
++---
++
++# Plan de implementación revisado
++
++> **Para subagentes:** usar desarrollo dirigido por subagentes y TDD rojo→verde. Cada tarea
++> se revisa contra este documento y `spec.md`. No hacer commits: `AGENTS.md` exige
++> `verification.json: passed` y un OK explícito nuevo antes de cualquier commit/push.
++
++**Objetivo:** hacer robusto el auto-enroll horario y bajo demanda, unificando cron y botón,
++incluyendo modalidad manual, preservando históricos y evitando desmatriculaciones masivas,
++duplicados concurrentes y triggers perdidos.
++
++**Arquitectura:** `irg_online_subject_opening` seguirá siendo la implementación efectiva del
++cron y delegará cada admisión en `auto_enroll_student()`. `irg_subject_fix` concentrará la
++precedencia común y la reactivación idempotente. El nuevo micro-módulo
++`irg_auto_enroll_cron_robust` observará cambios en `op.subject.to.batch` y usará el trigger
++nativo de Odoo sin locks ni estado auxiliar. El mismo micro-módulo impondrá la unicidad
++activa por alumno/canal/lote y envolverá el entrypoint completo de auto-enroll para aislar
++únicamente colisiones concurrentes de ese índice.
++
++**Stack:** Odoo 16, Python ORM, PostgreSQL row locks/savepoints, XML data y tests Odoo
++`TransactionCase`/cursores de registro para concurrencia.
++
++## Restricciones globales
++
++- Procesar admisiones `state='done'` con `batch_id`, incluida `modality='manual'`.
++- Intervalo por defecto: 1 hora; XML con `noupdate="1"`.
++- Abort/rollback global solo si `archived / (activated + archived) > 0.30`.
++- Savepoint individual por admisión; `except` fuera de ese savepoint.
++- Fallback histórico siempre restringido por `partner_id + op_subject_id + batch_id`.
++- Backfill solo como artefacto one-shot, no cargado ni ejecutado en `Base16`.
++- Entorno de validación local obligatorio: `docker-compose.local.yml`.
++- Ningún cambio fuera de T1.1–T4.2 y los cuatro requisitos S1–S4 de `spec.md`.
++
++## Mapa de archivos
++
++**Modificar**
++
++- `addons-extra/addons_uisep/isep_elearning_custom/data/cron_batch_slide_channel.xml`:
++  propiedad `noupdate` e intervalo horario.
++- `addons-extra/extrairg/irg_online_subject_opening/models/op_admission.py`:
++  cron efectivo, logging, savepoints, guardarraíl, lock compartido y delegación al botón.
++- `addons-extra/extrairg/irg_online_subject_opening/tests/test_online_subject_opening.py`:
++  pruebas end-to-end, equivalencia, aislamiento, guardarraíl, concurrencia y precedencia.
++- `addons-extra/extrairg/irg_online_clone_access_fix/models/op_admission.py`:
++  retirar únicamente el override muerto de cron.
++- `addons-extra/extrairg/irg_subject_fix/models/op_admission.py`:
++  helper de precedencia, búsqueda activa/archivada y comentario del cron muerto.
++- `addons-extra/extrairg/irg_online_clone_access_fix/models/slide_channel_partner.py`:
++  sincronización de clon aislada por lote y selección activa primero.
++- `addons-extra/extrairg/irg_course_convocatorias_v2/models/slide_channel_partner.py`:
++  creación/sincronización inicial del clon aislada por lote.
++- `addons-extra/addons_uisep/isep_elearning_custom/models/op_admission.py`:
++  comentario sobre el override muerto; no borrar lógica.
++
++**Crear**
++
++- `addons-extra/extrairg/irg_auto_enroll_cron_robust/__init__.py`.
++- `addons-extra/extrairg/irg_auto_enroll_cron_robust/__manifest__.py`.
++- `addons-extra/extrairg/irg_auto_enroll_cron_robust/models/__init__.py`.
++- `addons-extra/extrairg/irg_auto_enroll_cron_robust/models/op_subject_to_batch.py`.
++- `addons-extra/extrairg/irg_auto_enroll_cron_robust/models/op_admission.py`.
++- `addons-extra/extrairg/irg_auto_enroll_cron_robust/models/slide_channel_partner.py`.
++- `addons-extra/extrairg/irg_auto_enroll_cron_robust/hooks.py`.
++- `addons-extra/extrairg/irg_auto_enroll_cron_robust/tests/__init__.py`.
++- `addons-extra/extrairg/irg_auto_enroll_cron_robust/tests/test_auto_enroll_cron_robust.py`.
++- `missions/fix-auto-enroll-cron/artifacts/backfill_memberships.sql`.
++- `missions/fix-auto-enroll-cron/artifacts/membership-gaps-report.sql`.
++
++### Tarea 1 — Configuración del cron T1.1
++
++**Prueba primero**
++
++Añadir en el nuevo test del micro-módulo:
++
++```python
++from lxml import etree
++from odoo.modules.module import get_module_resource
++
++def test_auto_enroll_cron_has_hourly_default(self):
++    cron = self.env.ref('isep_elearning_custom.ir_cron_auto_enroll_students')
++    self.assertEqual((cron.interval_number, cron.interval_type), (1, 'hours'))
++
++def test_auto_enroll_cron_xml_is_noupdate(self):
++    xml_path = get_module_resource(
++        'isep_elearning_custom', 'data', 'cron_batch_slide_channel.xml'
++    )
++    root = etree.parse(xml_path).getroot()
++    self.assertEqual(root.get('noupdate'), '1')
++```
++
++Ejecutar solo los tests y comprobar que fallan con `days`/`noupdate="0"`. El test de
++intervalo se ejecutará en la base nueva de validación; en una base ya actualizada el XML
++`noupdate="1"` no modifica retroactivamente el valor existente, por diseño de Odoo 16.
++
++**Implementación mínima**
++
++Cambiar el wrapper a `<odoo noupdate="1">`, conservar el mismo XML ID y cambiar solo:
++
++```xml
++<field name="interval_number">1</field>
++<field name="interval_type">hours</field>
++```
++
++Ejecutar de nuevo el test hasta `PASS`.
++
++### Tarea 2 — Trigger nativo T1.2 + S3
++
++**Interfaces**
++
++- Modelo heredado: `op.subject.to.batch`.
++- Helper: `_irg_trigger_auto_enroll_cron()` sin argumentos ni retorno funcional.
++- Campos observados: `{'date_from', 'date_to', 'subject_id'}`.
++
++**Pruebas rojas**
++
++Crear tests con nombres exactos:
++
++- `test_create_schedules_one_pending_trigger`.
++- `test_relevant_write_schedules_trigger`.
++- `test_irrelevant_write_does_not_schedule_trigger`.
++- `test_unlink_schedules_trigger`.
++- `test_change_committed_during_running_cron_keeps_trigger_for_next_run`.
++
++Los tests limpiarán únicamente triggers del cron creados dentro de su transacción y contarán:
++
++```python
++domain = [
++    ('cron_id', '=', cron.id),
++]
++```
++
++El test concurrente abrirá dos cursores mediante `registry(dbname).cursor()`: el primero
++establecerá el snapshot equivalente a un cron en curso; el segundo confirmará un cambio y
++su trigger. La limpieza ejecutada con el primer snapshot no debe ver ni borrar el trigger
++nuevo. Los cursores se cerrarán y limpiarán en `finally`.
++
++**Implementación mínima**
++
++Manifest exacto:
++
++```python
++{
++    'name': 'IRG Auto Enroll Cron Robust',
++    'version': '16.0.1.0.0',
++    'summary': 'Programa de forma robusta el auto-enroll al cambiar asignaturas de lote',
++    'category': 'Education',
++    'author': 'IRG',
++    'license': 'LGPL-3',
++    'depends': ['irg_online_clone_access_fix'],
++    'data': [],
++    'uninstall_hook': 'uninstall_hook',
++    'installable': True,
++    'application': False,
++}
++```
++
++Helper obligatorio:
++
++```python
++def _irg_trigger_auto_enroll_cron(self):
++    cron = self.env.ref('isep_elearning_custom.ir_cron_auto_enroll_students')
++    cron._trigger()
++```
++
++`create`, `write` y `unlink` llamarán al helper después de `super()` solo cuando aplique.
++`unlink` conservará el `env` y llamará al helper tras borrar; el helper no leerá campos de
++las filas eliminadas. No añadir locks, deduplicación ni estado auxiliar para los triggers.
++Ejecutar los cinco tests hasta `PASS`.
++
++En `slide.channel.partner._auto_init()`, después de `super()`, comprobar que esta consulta no
++devuelve filas:
++
++```sql
++SELECT partner_id, channel_id, batch_id
++FROM slide_channel_partner
++WHERE active IS TRUE AND batch_id IS NOT NULL
++GROUP BY partner_id, channel_id, batch_id
++HAVING count(*) > 1
++LIMIT 1
++```
++
++Si devuelve una fila, lanzar `ValidationError` y no modificar datos. Si no devuelve nada,
++crear mediante `tools.index_exists()` + SQL el índice:
++
++```sql
++CREATE UNIQUE INDEX irg_scp_active_partner_channel_batch_uniq
++ON slide_channel_partner (partner_id, channel_id, batch_id)
++WHERE active IS TRUE AND batch_id IS NOT NULL
++```
++
++`uninstall_hook` usará `tools.drop_index()` para retirar solo ese índice.
++
++Añadir pruebas rojas/verdes:
++
++- `test_same_partner_channel_batch_cannot_have_two_active_memberships`.
++- `test_same_partner_channel_different_batch_is_allowed_by_index`.
++- `test_homeclass_to_online_uses_clone_and_both_memberships_coexist`.
++- `test_concurrent_auto_enroll_keeps_one_active_membership`.
++- `test_clone_sync_does_not_reassign_membership_from_other_batch`.
++- `test_active_membership_is_preferred_over_older_archived_membership`.
++
++El override superior de `op.admission.auto_enroll_student()` iterará admisiones y envolverá
++todo `super(OpAdmission, record).auto_enroll_student()` en un savepoint. Solo capturará
++`IntegrityError` cuando `exc.diag.constraint_name` sea exactamente
++`irg_scp_active_partner_channel_batch_uniq`; registrará la colisión concurrente y continuará.
++Cualquier otra constraint se volverá a lanzar.
++
++En las búsquedas de `slide.channel.partner` del botón, sincronización online y reconciliación
++de clones, añadir `batch_id` y usar:
++
++```python
++ChannelPartner = self.env['slide.channel.partner'].sudo().with_context(active_test=False)
++order='active DESC, create_date ASC'
++```
++
++La sincronización inicial de `irg_course_convocatorias_v2` copiará `batch_id` al clon y lo
++usará en su domain cuando el origen lo tenga. Si el origen no tiene lote, conservará el
++comportamiento `batch_id=False`. No modificar memberships de otros lotes.
++
++### Tarea 3 — Precedencia histórica y botón idempotente T2.3, T3.1, S4
++
++**Interfaces**
++
++- `_irg_subject_precedence_is_satisfied(subject)` devuelve `bool`.
++- `auto_enroll_student()` conserva su contrato actual.
++
++**Pruebas rojas**
++
++Añadir:
++
++- `test_archived_membership_is_reactivated_without_duplicate`.
++- `test_historical_completed_parent_same_batch_unlocks_child`.
++- `test_historical_completed_parent_other_batch_does_not_unlock_child`.
++
++La reactivación debe conservar el ID original y el count. El fallback del mismo lote usará
++una membership padre `completed=True`, `active=False`, sin `admission_id`; el caso negativo
++usará otro `batch_id`.
++
++**Implementación mínima**
++
++El helper de precedencia buscará primero una membership activa y completada con
++`admission_id=self.id`; si no existe, buscará con `active_test=False` una completada con el
++mismo alumno, padre y lote, sin filtrar `admission_id`.
++
++La búsqueda del botón será exactamente una fila, incluyendo archivadas:
++
++```python
++channel_partner = self.env['slide.channel.partner'].sudo().with_context(
++    active_test=False,
++).search([
++    ('partner_id', '=', record.partner_id.id),
++    ('channel_id', '=', subject.slide_channel_id.id),
++    ('batch_id', '=', record.batch_id.id),
++    '|', ('active', '=', True), ('active', '=', False),
++], order='active DESC, create_date ASC', limit=1)
++```
++
++Sustituir el check inline por el helper. En `irg_online_subject_opening`, retirar el helper
++duplicado para usar el heredado. No añadir row locks. Ejecutar tests hasta `PASS`.
++
++### Tarea 4 — Cron unificado, aislamiento, logging y guardarraíl T1.3, T1.4, T2.1, S1
++
++**Interfaces**
++
++- `_irg_auto_enroll_membership_snapshot(admissions)` devuelve `{membership_id: active}` y
++  abarca pares exactos `(partner_id, batch_id)`.
++- `_irg_auto_enroll_transition_counts(before, after)` devuelve
++  `(activated_count, archived_count)`; nuevas filas activas cuentan como activadas.
++- `_irg_mass_archive_ratio(initial_active_count, archived_count)` devuelve `float`.
++
++**Pruebas rojas**
++
++Añadir:
++
++- `test_cron_processes_manual_modality`.
++- `test_cron_and_button_produce_equivalent_memberships`.
++- `test_cron_continues_after_one_admission_fails`.
++- `test_mass_archive_ratio_zero_when_untouched`.
++- `test_mass_archive_guard_allows_single_archive_in_larger_initial_scope`.
++- `test_mass_archive_guard_allows_exactly_thirty_percent`.
++- `test_mass_archive_guard_rolls_back_above_thirty_percent`.
++- `test_date_change_past_archives_future_reactivates_and_two_runs_are_idempotent`.
++- `test_cron_online_branch_end_to_end_without_batch_dates`.
++
++Para el fallo aislado, parchear `auto_enroll_student` solo para una admisión y comprobar que
++otra se procesa. Para rollback >30%, crear suficientes transiciones reales y comprobar tras
++la excepción que cada `active` conserva su valor inicial.
++
++**Implementación mínima**
++
++Domain del cron:
++
++```python
++admissions = self.search([
++    ('state', '=', 'done'),
++    ('batch_id', '!=', False),
++])
++```
++
++No habrá filtro `modality`. El cuerpo seguirá esta forma:
++
++```python
++_logger.info('Auto-enroll start: admissions=%s', len(admissions))
++with self.env.cr.savepoint():
++    before = self._irg_auto_enroll_membership_snapshot(admissions)
++    processed = errors = 0
++    for record in admissions:
++        try:
++            with self.env.cr.savepoint():
++                record.auto_enroll_student()
++            processed += 1
++        except Exception:
++            errors += 1
++            _logger.exception('Auto-enroll failed for admission %s', record.id)
++    after = self._irg_auto_enroll_membership_snapshot(admissions)
++    activated, archived = self._irg_auto_enroll_transition_counts(before, after)
++    initial_active = sum(1 for active in before.values() if active)
++    ratio = self._irg_mass_archive_ratio(initial_active, archived)
++    _logger.info(
++        'Auto-enroll end: processed=%s activated=%s archived=%s errors=%s',
++        processed, activated, archived, errors,
++    )
++    if ratio > 0.30:
++        _logger.warning(
++            'Auto-enroll mass archive blocked: activated=%s archived=%s initial_active=%s ratio=%.2f%%',
++            activated, archived, initial_active, ratio * 100,
++        )
++        raise ValidationError('Auto-enroll mass archive guard exceeded 30%')
++return True
++```
++
++La excepción del guardarraíl no se captura dentro del método; debe salir del savepoint
++exterior y hacer rollback de todo el run. Los errores individuales sí se capturan fuera de
++su savepoint. Ejecutar todos los tests hasta `PASS`.
++
++**Ajuste aprobado tras validación T4.2 (2026-07-13)**
++
++La validación manual demostró que el denominador anterior `activated + archived` convertía
++un único archivado sin activaciones en un falso 100% y revertía el cambio de fechas requerido
++por T4.2. El usuario aprobó calcular el 30% sobre todas las memberships activas del snapshot
++inicial dentro de los pares alumno/lote objetivo. La reimplementación debe hacerse con TDD y
++repetir íntegramente la validación automática y manual antes de cerrar la misión.
++
++### Tarea 5 — Limpieza estricta de MRO T2.2, T2.4
++
++**Pruebas/revisión roja**
++
++- Confirmar por introspección que el cron efectivo es el de `irg_online_subject_opening`.
++- Ejecutar los tests existentes de clones antes de modificar y conservar su salida.
++
++**Implementación mínima**
++
++- Borrar únicamente `cron_auto_enroll_student` de
++  `irg_online_clone_access_fix/models/op_admission.py`.
++- Añadir comentario sobre override muerto encima de los métodos de cron de
++  `irg_subject_fix` e `isep_elearning_custom`; no borrarlos ni cambiar su cuerpo.
++- Ejecutar tests de clones y online; deben seguir `PASS`.
++
++### Tarea 6 — Informe y backfill one-shot T3.2
++
++Crear `membership-gaps-report.sql` solo con `SELECT` que agrupe:
++
++- totales sin `admission_id`/`op_subject_id`;
++- candidatos únicos y ambiguos para admisión por `partner_id + batch_id`;
++- candidatos únicos y ambiguos para asignatura por canal y lote/curso.
++
++Crear `backfill_memberships.sql` con una transacción explícita. Los `UPDATE` solo afectarán
++filas con exactamente un candidato obtenido por CTE `GROUP BY ... HAVING count(*) = 1`.
++El script mostrará conteos antes/después y terminará en `ROLLBACK`; ops deberá sustituirlo
++conscientemente por `COMMIT` tras revisar el informe. No referenciar estos archivos desde
++ningún manifest/hook y no ejecutarlos contra `Base16`.
++
++Validar sintaxis dentro de una transacción siempre revertida en una copia local.
++
++### Tarea 7 — Validación local T4.1–T4.2
++
++Usar exclusivamente `docker-compose.local.yml`. Preparar una base de validación aislada y
++actualizar:
++
++```text
++isep_elearning_custom
++irg_subject_fix
++irg_online_subject_opening
++irg_online_clone_access_fix
++irg_auto_enroll_cron_robust
++```
++
++Ejecutar con `--test-enable --stop-after-init` y tags de los módulos tocados. Guardar salida
++completa en `missions/fix-auto-enroll-cron/artifacts/test-output.log`.
++
++Prueba T1.1 de upgrade:
++
++1. Cambiar en la BD local el intervalo del cron a 2 horas.
++2. Ejecutar `-u isep_elearning_custom`.
++3. Consultar el registro y comprobar que sigue en 2 horas por `noupdate=1`.
++4. Restaurarlo por ORM/SQL local a 1 hora para el resto de validación.
++
++Prueba manual T4.2:
++
++1. Cambiar `date_to` de una línea al pasado.
++2. Comprobar que existe un único `ir.cron.trigger` pendiente.
++3. Ejecutar “Run manually”.
++4. Verificar archivado y logs con contadores.
++5. Mover `date_to` al futuro, ejecutar otra vez y verificar reactivación sin duplicado.
++
++Ejecutar lint/sintaxis Python/XML aplicable. El validador independiente emitirá
++`verification.json`; cualquier check relevante fallido implica `status: failed`.
++
++### Tarea 8 — Cierre local y gate remoto
++
++Después de `verification.json: passed`, el documentador completará `validation.md`,
++`review.md`, `diff.patch`, changelog y la entrada reutilizable de knowledge base. El
++orquestador comprobará el diff contra este plan y que no haya extras.
++
++No se hará commit, push, despliegue beta ni PR en esta ejecución sin un OK explícito nuevo.
++T4.3 y la parte remota de T5 permanecen como gate posterior del usuario.
+diff --git a/missions/fix-auto-enroll-cron/progress.md b/missions/fix-auto-enroll-cron/progress.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..6b28bb1f6f3ca898ac9662d387f6069d841144e0
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/progress.md
+@@ -0,0 +1,21 @@
++# Progreso — `fix-auto-enroll-cron`
++
++Fecha de cierre documental: 2026-07-13.
++
++- Plan: completado y limitado a T0.1–T5 del plan fuente.
++- Fase 0 (T0.1–T0.4): completada con evidencia de solo lectura en local y beta.
++- Gate H2: resuelto por el usuario; las admisiones `manual` entran en auto-enroll.
++- Security Advisor: diseño S1–S4 revisado hasta veredicto final `YES`.
++- Implementación T1.1–T3.2: completada con TDD en el worktree aislado.
++- Revisión de código y especificación: completada; los hallazgos sobre autonomía, hooks,
++  concurrencia, triggers y pruebas conductuales fueron corregidos y revisados de nuevo.
++- Validación local T4.1–T4.2: completada mediante `docker-compose.local.yml`.
++- Revalidación final: `verification.json` en `passed`.
++- Suite robusta: 27/27, 0 fallos y 0 errores.
++- Regresiones online/clone: 13/13, 0 fallos y 0 errores.
++- Prueba manual T4.2: fecha pasada archivó 1/10; fecha futura reactivó el mismo ID;
++  tercera ejecución idempotente sin duplicados.
++- Guardarraíl: 4/10 activas iniciales (40%) provocó `ValidationError` y rollback completo.
++- Documentación: completada con changelog, parche de misión y aprendizaje reutilizable.
++- T4.3 beta y cierre remoto T5: pendientes del OK explícito nuevo del usuario.
++- Commit, push, despliegue, PR, merge y escrituras en `Base16`: no realizados.
+diff --git a/missions/fix-auto-enroll-cron/review.md b/missions/fix-auto-enroll-cron/review.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..cd8db6639ac48f56ad79ea1d5d729d93884c2d36
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/review.md
+@@ -0,0 +1,61 @@
++# Revisión final — `fix-auto-enroll-cron`
++
++Fecha: 2026-07-13.
++
++Resultado: **APROBADA** para revisión del usuario. La validación independiente posterior
++está en `passed`; no se autoriza por ello ningún commit, push o despliegue.
++
++## Alcance revisado
++
++- Correspondencia con T1.1–T4.2 y S1–S4 del plan/especificación aprobados.
++- MRO de `op.admission`, unificación cron/botón y procesamiento de modalidad `manual`.
++- Savepoints por admisión y savepoint exterior del guardarraíl.
++- Concurrencia cron/botón, índice único parcial, preflight y uninstall.
++- Reutilización de memberships archivadas, aislamiento por lote y transición
++  Homeclass→Online.
++- Triggers nativos de `ir.cron` creados por `create/write/unlink`.
++- Fallback de precedencia histórica limitado al lote actual.
++- Scripts SQL de informe/backfill y su ausencia de referencias desde manifests o hooks.
++- Pruebas nuevas y regresiones existentes de online opening/clone access.
++
++## Hallazgos cerrados
++
++1. `_irg_auto_enroll_domain()` quedó en `irg_online_subject_opening`, por lo que ese módulo
++   no depende accidentalmente del micro-módulo robusto.
++2. El uninstall usa la firma Odoo 16 correcta de `tools.drop_index`.
++3. Los placeholders se sustituyeron por escenarios conductuales reales, incluidos dos
++   cursores para concurrencia y limpieza selectiva de triggers por ID.
++4. Las búsquedas de memberships archivadas usan `active_test=False`, `batch_id` y orden
++   `active DESC, create_date ASC`.
++5. La constraint Python y el índice parcial usan la misma clave
++   `(partner_id, channel_id, batch_id)` para registros activos con lote.
++6. El guardarraíl se corrigió, tras el fallo real de T4.2 y aprobación del usuario, para
++   calcular `archived_count / initial_active_count`. Exactamente 30% se permite y más de
++   30% revierte el run completo.
++7. El cambio de fechas concurrente crea el trigger mediante el hook real; los tests no
++   borran triggers preexistentes ni dejan triggers residuales.
++
++## Evidencia de cierre
++
++- Suite `irg_auto_enroll_cron_robust`: 27/27, 0 fallos, 0 errores, 5963 queries.
++- Regresiones `irg_online_subject_opening` + `irg_online_clone_access_fix`: 13/13,
++  0 fallos, 0 errores, 2181 queries.
++- T4.2 manual: archivado 1/10, reactivación del mismo ID e idempotencia sin duplicados.
++- Guardarraíl manual: 4/10 = 40%, excepción esperada y estados restaurados.
++- Persistencia `noupdate`, índice/preflight/uninstall, SQL con `ROLLBACK`, sintaxis,
++  registry y `git diff --check`: PASS.
++
++La evidencia detallada está en `validation.md`, `verification.json` y `artifacts/`.
++
++## Riesgos y límites conocidos
++
++- `noupdate="1"` conserva modificaciones administrativas posteriores; cambios futuros del
++  XML del cron requerirán migración o edición explícita.
++- Se aceptan triggers nativos redundantes durante cambios masivos, según S3; no se añadió
++  cola, lock ni modelo técnico auxiliar.
++- El índice no corrige históricos automáticamente. El preflight aborta ante duplicados
++  activos y el backfill entregado termina siempre en `ROLLBACK` hasta que Operaciones decida
++  revisarlo y ejecutarlo fuera de esta misión.
++- T4.3 en beta no se ejecutó: requiere despliegue y autorización explícita nueva.
++
++No quedan hallazgos bloqueantes dentro del alcance aprobado.
+diff --git a/missions/fix-auto-enroll-cron/spec.md b/missions/fix-auto-enroll-cron/spec.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..dda08a1852e57ec13ab8f49ec5f1e9678678d898
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/spec.md
+@@ -0,0 +1,140 @@
++# Especificación de seguridad — `fix-auto-enroll-cron`
++
++Fecha de aprobación del diseño: 2026-07-13
++
++## Alcance
++
++Esta especificación modifica exclusivamente cuatro puntos del plan fuente para resolver el
++rechazo del Security Advisor. El resto de T0.1–T5 permanece sin cambios.
++
++Decisión funcional previa: las admisiones con `modality='manual'` deben entrar en
++auto-enroll. El cron buscará todas las admisiones `done` con `batch_id`, sin filtrar por
++modalidad.
++
++## S1 — Guardarraíl transaccional del 30%
++
++El cron conservará el aislamiento mediante savepoint por admisión para que una admisión que
++falle no impida procesar las demás. Además, el run completo estará protegido por un
++savepoint exterior.
++
++Antes y después de procesar se comparará el campo `active` de todas las memberships cuyos
++pares `(partner_id, batch_id)` correspondan a las admisiones objetivo. Este alcance incluye
++filas históricas sin `admission_id`. Solo cuentan memberships cuyo estado cambie durante el
++run:
++
++- `activated_count`: `False -> True`.
++- Una membership nueva creada activa también suma en `activated_count`.
++- `archived_count`: `True -> False`.
++- `initial_active_count`: número total de memberships activas incluidas en el snapshot
++  anterior al run.
++
++Tras el fallo detectado por la validación T4.2 y la aprobación explícita del usuario del
++2026-07-13, el ratio será `archived_count / initial_active_count`. Si
++`initial_active_count == 0`, el ratio será cero. Las activaciones se mantienen como contador
++de observabilidad, pero no forman parte del denominador. Así, archivar una membership entre
++un conjunto amplio no se interpreta como una desmatriculación masiva solo porque sea el único
++cambio del run.
++Si el ratio es estrictamente mayor que `0.30`, el cron debe:
++
++1. Emitir un `WARNING` con activadas, archivadas, activas iniciales y porcentaje.
++2. Lanzar una excepción fuera de los savepoints individuales.
++3. Revertir todas las altas, reactivaciones, archivados y actualizaciones del run.
++4. Dejar que Odoo registre el traceback y haga rollback. Odoo 16 actualizará después
++   `lastcall/nextcall`; no se promete un estado persistente nativo de “fallido” ni reintento
++   inmediato.
++
++El umbral se aplica al run completo, no por admisión. Exactamente 30% no aborta.
++
++## S2 — Unicidad concurrente por alumno, canal y lote
++
++El micro-módulo añadirá un índice único parcial sobre `slide_channel_partner` para filas
++`active=True` y `batch_id IS NOT NULL`, con clave:
++
++- `partner_id`.
++- `channel_id`.
++- `batch_id`.
++
++Así cron y botón no pueden confirmar dos memberships activas para el mismo alumno, canal y
++lote aunque partan de snapshots concurrentes. Las filas archivadas y las memberships de
++lotes distintos seguirán permitidas.
++
++Antes de crear el índice, la instalación comprobará que no existen duplicados activos con
++esa clave y abortará sin modificar datos si encuentra alguno. El diagnóstico read-only de
++beta del 2026-07-13 encontró 0 grupos duplicados activos por esa clave y 213 grupos
++históricos con duplicados al contar activas y archivadas; estos últimos no se tocarán.
++
++El conflicto exacto del índice se aislará con savepoint en `auto_enroll_student()` y en la
++reconciliación del canal clonado. Si otra transacción ya confirmó la misma membership, se
++registrará el conflicto concurrente y se continuará; cualquier otra `IntegrityError` se
++propagará.
++
++Todas las búsquedas de memberships realizadas por auto-enroll y por la sincronización del
++clon incluirán el `batch_id` actual. Cuando coexistan una fila activa y filas archivadas de
++la misma clave, se seleccionará primero la activa; solo si no existe activa se reutilizará la
++archivada más antigua. Nunca se trasladará una membership de otro lote cambiándole sus
++metadatos.
++
++Las búsquedas que deban reutilizar archivadas usarán explícitamente
++`with_context(active_test=False)`; el domain por sí solo no desactiva el filtro implícito de
++Odoo sobre el campo `active`.
++
++Homeclass y Online pueden coexistir: normalmente usan el canal original y su clon Online,
++respectivamente. El índice también permite el mismo canal si el `batch_id` es distinto. La
++beta contiene 92 alumnos activos simultáneamente en un canal Homeclass y su clon Online.
++
++## S3 — Trigger nativo bajo demanda
++
++Los hooks `create/write/unlink` de `op.subject.to.batch` llamarán a un helper del
++micro-módulo `irg_auto_enroll_cron_robust` únicamente cuando cambien `date_from`, `date_to`
++o `subject_id`.
++
++El helper resolverá el cron por su XML ID y llamará directamente a `_trigger()`, sin bloquear
++ni modificar la fila de `ir_cron` y sin mantener estado auxiliar.
++
++Se aceptan varias filas temporales `ir.cron.trigger` cuando una operación modifica muchas
++líneas. Odoo selecciona el `ir.cron` una sola vez aunque existan varias filas vencidas y las
++elimina conjuntamente al finalizar; no equivalen a múltiples ejecuciones del job.
++
++Bajo `REPEATABLE READ`, un trigger confirmado después del snapshot de una ejecución en curso
++no es visible para su `DELETE` final y permanece para provocar la siguiente ejecución. Un
++cambio confirmado antes del snapshot sí es visible para el run actual y puede limpiarse.
++
++No se modificará el código base de `ir.cron` ni se creará una cola adicional.
++
++## S4 — Fallback histórico aislado por lote
++
++El helper compartido de precedencia primero buscará la membership del padre para la
++admisión actual, como hace el código vigente. Si no existe una completada, el fallback
++histórico exigirá simultáneamente:
++
++- `partner_id` del alumno actual.
++- `op_subject_id` de la asignatura padre.
++- `batch_id` del lote actual.
++- `completed=True`.
++
++El fallback incluirá memberships activas y archivadas y no exigirá `admission_id`. Una
++membership completada en otro lote nunca podrá desbloquear la asignatura hija.
++
++## Pruebas obligatorias añadidas al plan
++
++- El guardarraíl deja pasar exactamente 30% de las activas iniciales, aborta con más de 30%
++  y prueba que el rollback restaura todos los estados.
++- Un único archivado dentro de un alcance con suficientes memberships activas se aplica sin
++  que las activaciones del mismo run tengan que compensarlo.
++- Dos transacciones concurrentes cron/botón sobre la misma admisión no incrementan el número
++  de memberships.
++- Un cambio Homeclass→Online conserva la membership Homeclass y crea/reutiliza la del canal
++  Online clonado sin conflicto.
++- Dos lotes que comparten canal no reutilizan ni reasignan la membership del otro lote.
++- Una activa actual se prioriza sobre una archivada histórica más antigua.
++- Cada hook relevante crea al menos un trigger pendiente.
++- Un cambio confirmado durante una ejecución en curso conserva un trigger para otro run.
++- El fallback acepta una completada histórica del mismo lote y rechaza una de otro lote.
++
++## Restricciones de entrega
++
++- El backfill de T3.2 será un script one-shot entregado como artefacto, no cargado por ningún
++  manifest, hook o data XML y nunca ejecutado en `Base16`.
++- No habrá push, despliegue beta ni PR hasta `verification.json: passed` y un OK explícito
++  nuevo del usuario.
++- No se realizará merge.
+diff --git a/missions/fix-auto-enroll-cron/validation.md b/missions/fix-auto-enroll-cron/validation.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c61ded5578174f775fe455783b450c3a72f421a
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/validation.md
+@@ -0,0 +1,97 @@
++# Revalidación independiente — `fix-auto-enroll-cron`
++
++Fecha: 2026-07-13
++
++Resultado global: **PASSED**.
++
++La validación se repitió íntegramente después del ajuste S1 aprobado. Se usó exclusivamente
++`/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml`, montando
++`/Users/ivrogo/.codex/worktrees/Odoo16iRG/fix-auto-enroll-cron/addons-extra` en modo lectura.
++Las bases `fix_auto_enroll_revalidation_20260713c` y
++`fix_auto_enroll_revalidation_20260713d` son nuevas y aisladas. No hubo acceso de escritura
++a `Base16`, beta o sistemas remotos, ni commit, push o despliegue.
++
++## Evidencia automática fresca
++
++- `irg_auto_enroll_cron_robust`: 27/27, 0 fallos, 0 errores, 5963 queries.
++- `irg_online_subject_opening` + `irg_online_clone_access_fix`: 13/13, 0 fallos,
++  0 errores, 2181 queries.
++- Sintaxis Python: PASS en 17 archivos.
++- XML: PASS con `xmllint`.
++- Diff: PASS con `git diff --check`.
++- Instalación y carga de registry Odoo en bases nuevas: PASS.
++
++## T1.1 — persistencia `noupdate`
++
++En `fix_auto_enroll_revalidation_20260713c`, el cron empezó en 1 hora. Se cambió localmente
++a 2 horas, se ejecutó `-u isep_elearning_custom` y permaneció en 2 horas. Después se
++restauró a 1 hora. PASS.
++
++## T4.2 — reproducción literal del fallo previo
++
++Se creó una admisión `done`, `manual`, con diez memberships activas y se movió al pasado una
++sola línea. No hubo activaciones compensatorias en ese run:
++
++```text
++initial_active=10
++pending triggers=1
++processed=21 activated=0 archived=1 errors=0
++```
++
++“Run manually” archivó la membership objetivo. El ratio fue 1/10, por debajo del umbral.
++Se conservaron los diez IDs y quedaron nueve memberships activas.
++
++Al mover la fecha al futuro apareció de nuevo exactamente un trigger. “Run manually”
++registró `activated=1, archived=0`, reactivó el mismo ID y no creó duplicados. Una tercera
++ejecución registró `activated=0, archived=0` y conservó los mismos diez IDs activos. PASS.
++
++## Guardarraíl >30% y rollback
++
++En un caso separado se partió de las mismas diez memberships activas y se llevaron cuatro
++líneas al pasado. El cron registró:
++
++```text
++processed=21 activated=0 archived=4 errors=0
++initial_active=10 ratio=40.00%
++```
++
++Se lanzó el `ValidationError` esperado y el savepoint exterior restauró exactamente los diez
++estados iniciales. PASS.
++
++## Índice, preflight, uninstall y triggers
++
++- Índice instalado con la clave y predicado requeridos.
++- Cero grupos activos duplicados.
++- Desinstalación real: módulo `uninstalled` e índice ausente.
++- Preflight real: dos filas duplicadas provocaron exit 255; ambas quedaron intactas y el
++  índice no se creó. El fixture se retiró después.
++- Estado final del cron en la base principal de revalidación: activo, cada 1 hora y cero
++  triggers residuales.
++
++Todos los checks pasan.
++
++## SQL reversible
++
++El informe read-only se ejecutó correctamente. El backfill produjo `UPDATE 0`, `UPDATE 0` y
++`ROLLBACK`; filas y checksum fueron idénticos antes y después:
++
++```text
++rows=32
++checksum=71297b6448d98608f05b7f80f8cda298
++```
++
++Los scripts no están cargados por ningún manifest, XML o Python.
++
++## Evidencia
++
++- `artifacts/test-output.log`
++- `artifacts/robust-suite-revalidation.log`
++- `artifacts/regression-suite-revalidation.log`
++- `artifacts/noupdate-upgrade-revalidation.log`
++- `artifacts/manual-t42-revalidation.log`
++- `artifacts/manual-guardrail-revalidation.log`
++- `artifacts/uninstall-cycle-revalidation.log`
++- `artifacts/preflight-install-revalidation.log`
++
++El contrato `verification.json` queda en `passed`. La misión puede avanzar a la fase de
++Documentación, manteniendo el gate de no commit/push/deploy sin autorización explícita nueva.
+diff --git a/missions/fix-auto-enroll-cron/verification.json b/missions/fix-auto-enroll-cron/verification.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..4b47381c769bc959daf9e2f57dc864ee4af20f58
+--- /dev/null
++++ b/missions/fix-auto-enroll-cron/verification.json
+@@ -0,0 +1,68 @@
++{
++  "status": "passed",
++  "task": "fix-auto-enroll-cron",
++  "checks": [
++    {
++      "name": "unit_tests",
++      "result": "pass",
++      "detail": "irg_auto_enroll_cron_robust: 27 passed, 0 failed, 0 errors, 5963 queries"
++    },
++    {
++      "name": "integration_tests",
++      "result": "pass",
++      "detail": "irg_online_subject_opening + irg_online_clone_access_fix: 13 passed, 0 failed, 0 errors, 2181 queries"
++    },
++    {
++      "name": "cron_upgrade_persistence",
++      "result": "pass",
++      "detail": "Cron changed to 2 hours remained at 2 hours after -u isep_elearning_custom; restored to 1 hour in isolated DB"
++    },
++    {
++      "name": "manual_t4_2",
++      "result": "pass",
++      "detail": "With 10 initially active memberships and no compensating activations, past date archived 1; future date reactivated the same ID; third run preserved all 10 IDs without duplicates"
++    },
++    {
++      "name": "mass_archive_guardrail",
++      "result": "pass",
++      "detail": "4 archives / 10 initially active produced 40%, raised ValidationError and restored every membership active state"
++    },
++    {
++      "name": "index_preflight_uninstall",
++      "result": "pass",
++      "detail": "Partial unique index verified; actual preflight preserved 2 duplicate fixture rows while aborting install; actual uninstall removed index"
++    },
++    {
++      "name": "trigger_cleanup",
++      "result": "pass",
++      "detail": "Past and future date changes each produced exactly 1 committed trigger; final residual auto-enroll triggers: 0"
++    },
++    {
++      "name": "sql_report_and_rollback",
++      "result": "pass",
++      "detail": "Read-only report executed; backfill UPDATE 0/0 ended ROLLBACK; row count 32 and checksum 71297b6448d98608f05b7f80f8cda298 unchanged"
++    },
++    {
++      "name": "lint",
++      "result": "pass",
++      "detail": "Python syntax compiled for 17 files; xmllint passed; git diff --check passed"
++    },
++    {
++      "name": "build",
++      "result": "pass",
++      "detail": "Fresh Odoo module installation and registry initialization completed in both isolated validation databases"
++    }
++  ],
++  "evidence": [
++    "artifacts/test-output.log",
++    "artifacts/robust-suite-revalidation.log",
++    "artifacts/regression-suite-revalidation.log",
++    "artifacts/noupdate-upgrade-revalidation.log",
++    "artifacts/manual-t42-revalidation.log",
++    "artifacts/manual-guardrail-revalidation.log",
++    "artifacts/uninstall-cycle-revalidation.log",
++    "artifacts/preflight-install-revalidation.log"
++  ],
++  "model_tier_used": "standard",
++  "escalations": 0
++}

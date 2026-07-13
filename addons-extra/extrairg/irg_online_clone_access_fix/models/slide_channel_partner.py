@@ -27,7 +27,7 @@ class SlideChannelPartner(models.Model):
     def _irg_sync_academic_fields_to_online_clone(self):
         if self.env.context.get('irg_skip_partner_sync'):
             return
-        Partner = self.sudo()
+        Partner = self.sudo().with_context(active_test=False)
         for rec in Partner:
             channel = rec.channel_id
             online_channel = channel.irg_online_channel_id if channel and 'irg_online_channel_id' in channel._fields else False
@@ -36,7 +36,8 @@ class SlideChannelPartner(models.Model):
             clone_partner = Partner.search([
                 ('channel_id', '=', online_channel.id),
                 ('partner_id', '=', rec.partner_id.id),
-            ], limit=1)
+                ('batch_id', '=', rec.batch_id.id if rec.batch_id else False),
+            ], order='active DESC, create_date ASC', limit=1)
             if clone_partner:
                 clone_partner.with_context(irg_skip_partner_sync=True).write(
                     rec._irg_prepare_online_clone_sync_values()
