@@ -1,0 +1,68 @@
+{
+  "status": "passed",
+  "task": "fix-auto-enroll-cron",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "result": "pass",
+      "detail": "irg_auto_enroll_cron_robust: 27 passed, 0 failed, 0 errors, 5963 queries"
+    },
+    {
+      "name": "integration_tests",
+      "result": "pass",
+      "detail": "irg_online_subject_opening + irg_online_clone_access_fix: 13 passed, 0 failed, 0 errors, 2181 queries"
+    },
+    {
+      "name": "cron_upgrade_persistence",
+      "result": "pass",
+      "detail": "Cron changed to 2 hours remained at 2 hours after -u isep_elearning_custom; restored to 1 hour in isolated DB"
+    },
+    {
+      "name": "manual_t4_2",
+      "result": "pass",
+      "detail": "With 10 initially active memberships and no compensating activations, past date archived 1; future date reactivated the same ID; third run preserved all 10 IDs without duplicates"
+    },
+    {
+      "name": "mass_archive_guardrail",
+      "result": "pass",
+      "detail": "4 archives / 10 initially active produced 40%, raised ValidationError and restored every membership active state"
+    },
+    {
+      "name": "index_preflight_uninstall",
+      "result": "pass",
+      "detail": "Partial unique index verified; actual preflight preserved 2 duplicate fixture rows while aborting install; actual uninstall removed index"
+    },
+    {
+      "name": "trigger_cleanup",
+      "result": "pass",
+      "detail": "Past and future date changes each produced exactly 1 committed trigger; final residual auto-enroll triggers: 0"
+    },
+    {
+      "name": "sql_report_and_rollback",
+      "result": "pass",
+      "detail": "Read-only report executed; backfill UPDATE 0/0 ended ROLLBACK; row count 32 and checksum 71297b6448d98608f05b7f80f8cda298 unchanged"
+    },
+    {
+      "name": "lint",
+      "result": "pass",
+      "detail": "Python syntax compiled for 17 files; xmllint passed; git diff --check passed"
+    },
+    {
+      "name": "build",
+      "result": "pass",
+      "detail": "Fresh Odoo module installation and registry initialization completed in both isolated validation databases"
+    }
+  ],
+  "evidence": [
+    "artifacts/test-output.log",
+    "artifacts/robust-suite-revalidation.log",
+    "artifacts/regression-suite-revalidation.log",
+    "artifacts/noupdate-upgrade-revalidation.log",
+    "artifacts/manual-t42-revalidation.log",
+    "artifacts/manual-guardrail-revalidation.log",
+    "artifacts/uninstall-cycle-revalidation.log",
+    "artifacts/preflight-install-revalidation.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

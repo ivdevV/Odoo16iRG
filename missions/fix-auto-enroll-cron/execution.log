@@ -1,0 +1,309 @@
+2026-07-13 PLAN
+- Leído el plan fuente completo y las reglas de proyecto/skills aplicables.
+- Clasificación: complex (>5 archivos, cross-module, cron/transacciones/triggers).
+- Creado worktree aislado en rama fix/auto-enroll-cron desde Dev_iRG @ d39c284d.
+- No se modificó el checkout Dev_iRG, que ya contenía cambios del usuario.
+
+2026-07-13 FASE 0 / T0.1-T0.4
+- Se identificó test_irg_db como la única base local con dataset útil para este flujo
+  (41 admisiones, 71 op_subject_to_batch y columna op_admission.modality).
+- Se ejecutaron exclusivamente SELECT en PostgreSQL local.
+- Se leyeron logs locales de odoo16irg_local sin alterar el contenedor.
+- Se accedió a beta por el canal habitual ssh odoobetairg.
+- Se ejecutaron exclusivamente SELECT en nat16_pgodoo_latest/Base16.
+- Se leyeron logs de nat16_odoo_latest; no hubo coincidencias retenidas para los patrones T0.2.
+- Resultado del gate: H2 confirmada en beta (522 admisiones manual).
+- Ejecución detenida antes de código de producción a la espera del checkpoint exigido.
+- Escalados: 0.
+
+2026-07-13 REIMPLEMENTACIÓN APROBADA S1 — RED
+- Leídas las secciones actualizadas S1 de spec.md/plan.md y verification.json failed.
+- Alcance autorizado: solo denominator archived_count / initial_active_count.
+- Tests escritos primero: archivado único 1/10 sin activaciones, 3/10 exacto, 4/10 con
+  rollback, cero inicial y ciclo pasado/futuro íntegramente por cron.
+- RED en fix_auto_enroll_review_red_20260713: 27 post-tests, 0 failed, 3 errors,
+  5739 queries. Los 3 errores esperados fueron archivado único, 30% exacto y ciclo por cron;
+  el código anterior informó ratio=100%.
+
+2026-07-13 REIMPLEMENTACIÓN APROBADA S1 — GREEN
+- Cambio mínimo en irg_online_subject_opening/models/op_admission.py:
+  _irg_mass_archive_ratio(initial_active_count, archived_count), cero con denominador cero.
+- initial_active se calcula desde before.values(); activaciones siguen contándose pero no
+  participan en el denominador.
+- WARNING actualizado con activated, archived, initial_active y ratio. Umbral >30%, savepoint
+  exterior, rollback e aislamiento por admisión permanecen intactos.
+- GREEN en DB de trabajo: 27 post-tests, 0 failed, 0 errors, 5963 queries.
+- Fresh DB fix_auto_enroll_s1_green_20260713: suite robusta 27 post-tests, 0 failed,
+  0 errors, 5963 queries.
+- Regresiones relevantes en la misma DB: 13 post-tests, 0 failed, 0 errors, 2181 queries.
+- Verificación posterior: 0 triggers persistentes del auto-enroll; compileall PASS;
+  git diff --check PASS; pycache generado eliminado.
+- Sin cambios adicionales, commit, push, deploy ni Base16. Escalados: 0.
+
+2026-07-13 VALIDACIÓN INDEPENDIENTE — FAILED T4.2
+- La prueba manual confirmó que un archivado aislado producía archived/touched=1/1=100%.
+- El guardarraíl revirtió el archivado, contradiciendo el ciclo funcional pasado→futuro de T4.2.
+- verification.json quedó en failed; no se cerró, documentó ni publicó la misión.
+
+2026-07-13 REPLANIFICACIÓN APROBADA — DENOMINADOR S1
+- El usuario aprobó explícitamente recalcular el ratio como
+  archived_count / initial_active_count dentro del snapshot inicial del run.
+- Se actualizaron spec.md y plan.md antes de tocar código.
+- Se mantiene el límite estrictamente >30%, el savepoint exterior y el rollback completo.
+- La corrección se ejecutará con TDD y una validación independiente completa posterior.
+- Tier: complex, porque afecta integridad de matrículas y el guardarraíl transaccional.
+
+2026-07-13 VALIDACIÓN INDEPENDIENTE — FAILED
+- Entorno exclusivo: docker-compose.local.yml, montando el addons-extra de este worktree
+  como /mnt/extra-addons:ro.
+- Bases aisladas: fix_auto_enroll_validation_20260713a y
+  fix_auto_enroll_validation_20260713b; sin Base16/beta/remoto.
+- Suite robusta fresca: 26 post-tests, 0 failed, 0 errors, 4746 queries.
+- Regresiones online + clone frescas: 13 post-tests, 0 failed, 0 errors, 2181 queries.
+- Sintaxis Python (17 archivos), XML y git diff --check: PASS.
+- T1.1: 2 horas sobrevivió a -u isep_elearning_custom; restaurado a 1 hora: PASS.
+- Índice/preflight/uninstall real y ausencia de triggers residuales: PASS.
+- SQL report + backfill con ROLLBACK y checksum inalterado: PASS.
+- T4.2 manual: FAIL. Una fecha pasada produjo un trigger y Run manually registró
+  processed=21, activated=0, archived=1, errors=0; el ratio 100% disparó el guardarraíl y
+  revirtió el archivado, dejando la membership activa.
+- Evidencia: artifacts/test-output.log, robust-suite.log, regression-suite.log,
+  noupdate-upgrade.log, manual-t42-triggered.log, uninstall-cycle.log y
+  preflight-install.log.
+- verification.json emitido con status=failed. Escalados del validador: 0.
+
+2026-07-13 REVALIDACIÓN INDEPENDIENTE TRAS AJUSTE S1 — PASSED
+- Entorno exclusivo: docker-compose.local.yml con el worktree montado read-only.
+- Bases nuevas: fix_auto_enroll_revalidation_20260713c y
+  fix_auto_enroll_revalidation_20260713d; sin Base16/beta/remoto.
+- Suite robusta fresca: 27 post-tests, 0 failed, 0 errors, 5963 queries.
+- Regresiones online + clone frescas: 13 post-tests, 0 failed, 0 errors, 2181 queries.
+- Sintaxis Python 17 archivos, XML, git diff --check y registry Odoo: PASS.
+- T1.1: valor local 2 horas sobrevivió a -u; restaurado a 1 hora: PASS.
+- T4.2 literal: 10 activas iniciales, 1 archivada sin activaciones compensatorias; fecha
+  futura reactivó el mismo ID; tercer run conservó los 10 IDs: PASS.
+- Guardarraíl separado: 4/10 = 40%, ValidationError esperado y todos los estados
+  restaurados: PASS.
+- Índice, preflight real, uninstall real, 0 duplicados activos y 0 triggers residuales: PASS.
+- Informe SQL y backfill ROLLBACK con rows=32 y checksum
+  71297b6448d98608f05b7f80f8cda298 inalterados: PASS.
+- Evidencia nueva: robust-suite-revalidation.log, regression-suite-revalidation.log,
+  noupdate-upgrade-revalidation.log, manual-t42-revalidation.log,
+  manual-guardrail-revalidation.log, uninstall-cycle-revalidation.log y
+  preflight-install-revalidation.log.
+- verification.json sobrescrito con status=passed. Escalados de esta revalidación: 0.
+
+2026-07-13 IMPLEMENTACIÓN — RED TAREAS 1–5
+- Comando: docker compose ... run --rm --no-deps -v <worktree>/addons-extra:/mnt/extra-addons:ro
+  odoo_local odoo ... -d fix_auto_enroll_cron_red_20260713 -i irg_auto_enroll_cron_robust
+  --test-enable --test-tags /irg_auto_enroll_cron_robust --stop-after-init.
+- Resultado RED esperado: 24 tests ejecutados; 4 failed y 15 errors.
+- Causas funcionales confirmadas: XML diario/noupdate ausente, hooks sin trigger, índice
+  inexistente y helpers de cron no implementados.
+- Hallazgo de fixture: op.course.lang es NOT NULL en este stack; se corrige solo el fixture.
+- Se inicia GREEN con implementación mínima ajustada a plan/spec, sin extras.
+
+2026-07-13 IMPLEMENTACIÓN — TAREA 6
+- Creados membership-gaps-report.sql (solo SELECT) y backfill_memberships.sql.
+- El backfill usa CTEs con GROUP BY/HAVING count(*) = 1, muestra conteos antes/después,
+  abre transacción explícita y finaliza siempre en ROLLBACK.
+- Ningún manifest/hook referencia estos scripts y no se ejecutaron contra Base16.
+
+2026-07-13 IMPLEMENTACIÓN — PRIMER GREEN PARCIAL
+- Sintaxis Python: compileall PASS.
+- Sintaxis XML: el host no dispone de lxml para Python; xmllint PASS.
+- SQL one-shot validado con ON_ERROR_STOP en la DB local aislada: informe PASS; backfill
+  UPDATE 0/0 y ROLLBACK confirmado.
+- Primer rerun tras implementar: 24 tests, 1 failed y 4 errors.
+- Los 4 errors son del fixture: op.course.lang es Selection (código `en_US`), no Many2one;
+  corregido. El fallo restante corresponde al intervalo persistido de la instalación RED,
+  comportamiento esperado al pasar el XML a noupdate=1; el GREEN se ejecutará en DB nueva.
+
+2026-07-13 IMPLEMENTACIÓN — GREEN Y HALLAZGO DE REGRESIÓN
+- Instalación nueva fix_auto_enroll_cron_green_20260713: 24 tests, 0 failed, 0 errors.
+- Tras reforzar pruebas conductuales, se detectó que la constraint Python heredada de
+  isep_subject_precedence seguía usando partner+channel sin batch y bloqueaba lotes distintos.
+- Corrección estricta dentro del micro-módulo: override de la misma constraint para alinear
+  su clave con partner+channel+batch; el índice parcial sigue siendo la garantía concurrente.
+- No se editó isep_subject_precedence ni se amplió el alcance funcional aprobado de S2.
+
+2026-07-13 IMPLEMENTACIÓN — CIERRE DE FASE
+- Rerun final del micro-módulo: 24 tests, 0 failed, 0 errors (1514 queries).
+- Regresión online/clone existente: 13 errors de fixture por op.course.lang requerido;
+  no alcanza el comportamiento modificado y no se corrige por estar fuera de Tareas 1–6.
+- git diff --check PASS; XML PASS; Python PASS; SQL read-only/backfill+ROLLBACK PASS.
+- Se retirarán todos los __pycache__/.pyc generados antes de entregar.
+- Informe: artifacts/implementation-report.md.
+- Sin commit, push, deploy, PR, merge ni escritura en Base16.
+- Estado de implementación: DONE_WITH_CONCERNS; pendiente validador independiente.
+
+2026-07-13 CORRECCIÓN DE HALLAZGOS DE REVISIÓN — RED
+- Leídos spec.md, plan.md, artifacts/implementation-report.md, diff, knowledge y workflow Odoo.
+- Se sustituyeron primero los placeholders por escenarios conductuales completos.
+- DB aislada: fix_auto_enroll_review_red_20260713 mediante docker-compose.local.yml.
+- Primer run revisado: 24 post-tests, 0 failed, 2 errors. Ambos errores reprodujeron una
+  colisión de fixture por código de asignatura repetido; se hicieron únicos los códigos.
+- Sin cambios remotos, commits, despliegues ni acceso a Base16.
+
+2026-07-13 CORRECCIÓN DE HALLAZGOS DE REVISIÓN — GREEN
+- Corregida autonomía: _irg_auto_enroll_domain definido en irg_online_subject_opening y
+  retirado de irg_auto_enroll_cron_robust.
+- Corregida firma Odoo 16: tools.drop_index(cr, index_name, table_name).
+- Concurrencia cron/botón ejecutada en dos cursores/transacciones: la transacción cron queda
+  bloqueada por el insert sin confirmar del botón, continúa tras commit y el count activo es 1;
+  todos los registros confirmados por el test se eliminan en finally.
+- Trigger concurrente: baseline por IDs, limpieza confirmada desde snapshot, verificación y
+  cleanup exclusivo de IDs creados por el test en finally.
+- Guardarraíl conductual: 3 archivadas/7 activadas persiste; 4 archivadas/6 activadas lanza
+  ValidationError y el mapa de estados antes/después queda idéntico.
+- Índice/preflight/uninstall: índice real consultado en pg_indexes; duplicado temporal provoca
+  ValidationError sin borrado; uninstall hook retira el índice y el test lo restaura.
+- Suite robusta final: 26 post-tests, 0 failed, 0 errors, 4653 queries.
+- Regresión existente online opening + clone access: 13 post-tests, 0 failed, 0 errors,
+  2181 queries. Se añadió lang solo a esos fixtures preexistentes.
+- Autonomía sin robust: estado uninstalled; owner del helper =
+  odoo.addons.irg_online_subject_opening.models.op_admission; domain correcto. La suite mínima
+  aislada conserva 2 errores históricos por dependencias no declaradas ajenas al helper.
+- compileall PASS; git diff --check PASS; pycache/pyc generados o no versionados eliminados.
+  Los pycache que ya estaban versionados en HEAD se restauraron para evitar cambios ajenos.
+- Escalados: 0. Estado: DONE_WITH_CONCERNS únicamente por los 2 errores históricos de la
+  instalación mínima; el stack completo relevante queda verde.
+
+2026-07-13 REVISIÓN FINAL — TRIGGERS CONCURRENTES
+- RED de especificación: el test concurrente invocaba _trigger() directamente y la suite tenía
+  un helper _clear_triggers() que borraba temporalmente triggers preexistentes.
+- GREEN dirigido: el segundo cursor modifica date_to de un op.subject.to.batch confirmado;
+  el hook crea un trigger nuevo tras el snapshot. Resultado: 1 test, 0 failed, 0 errors,
+  137 queries.
+- Sustituido _clear_triggers por comparaciones selectivas de IDs contra baseline en create,
+  relevant write, irrelevant write y unlink.
+- La limpieza en finally acumula exclusivamente IDs creados por fixture, write y unlink,
+  elimina esos IDs y verifica tanto owned=0 como baseline intacto.
+- Detectados 2 triggers persistentes de un segundo fixture concurrente (cron/botón) en la primera
+  base fresca. Root cause: la creación confirmada de su batch disparaba los mismos hooks.
+- Corrección mínima solo en tests: ese fixture también registra baseline/owned IDs y elimina los
+  triggers de creación y teardown sin tocar baseline.
+- Suite completa ejecutada de cero en fix_auto_enroll_trigger_fresh2_20260713:
+  26 post-tests, 0 failed, 0 errors, 4746 queries.
+- Verificación SQL posterior: 0 filas ir_cron_trigger para
+  isep_elearning_custom.ir_cron_auto_enroll_students.
+- Código de producto modificado en esta iteración: ninguno. Sin commit/push/deploy/Base16.
+- Escalados: 0.
+
+2026-07-13 CHECKPOINT H2
+- Decisión explícita del usuario: las admisiones modality='manual' deben entrar en
+  auto-enroll.
+- Consecuencia estricta para T2.1: el domain del cron no excluirá modality='manual'.
+- No se autoriza ningún otro cambio de alcance.
+
+2026-07-13 SECURITY ADVISOR
+- Revisión read-only completada; no se modificó código.
+- Veredicto: NO.
+- Bloqueadores: T1.4 solo avisa y no protege integridad; carrera cron/botón sin unicidad
+  SQL; ráfagas/pérdida de triggers `_trigger()` sin deduplicación; fallback T3.1 ambiguo
+  entre cohortes.
+- La implementación queda detenida porque corregir estos puntos ampliaría/modificaría el
+  plan y el usuario pidió ejecución estricta sin extras.
+- Escalados: 0.
+
+2026-07-13 REVISIÓN DE DISEÑO
+- El usuario autorizó revisar exclusivamente los cuatro bloqueadores.
+- El usuario confirmó rollback total si archived/(activated+archived) > 30%.
+- Diseño aprobado: rollback global, FOR UPDATE por admisión, trigger deduplicado bajo lock
+  del cron y fallback histórico con batch_id obligatorio.
+- Especificación persistida en spec.md; no se hace commit antes del PASS global.
+
+2026-07-13 PLAN REVISADO
+- spec.md aprobado explícitamente por el usuario.
+- plan.md ampliado con tareas TDD, interfaces, archivos y verificaciones exactas.
+- Auto-revisión: cobertura T1.1-T4.2 y S1-S4 completa; sin placeholders.
+- Se documentó la semántica Odoo 16 de noupdate: valor horario en instalación nueva y
+  persistencia del valor manual en upgrades.
+
+2026-07-13 SECURITY ADVISOR — REVISIONES SEGUNDA Y TERCERA
+- Segunda revisión: NO; se corrigió la comparación temporal que duplicaba triggers cuando
+  avanzaba el reloj dentro de una misma transacción.
+- Tercera revisión: NO; esperar el row lock de ir_cron bajo REPEATABLE READ puede terminar
+  en SerializationFailure después de que el worker actualice la fila.
+- Los gates S1, S2, S4, modalidad manual y backfill quedaron aprobados.
+- Rediseño S3 propuesto: marcador técnico atómico con unicidad por cron; pendiente de
+  aprobación del usuario por añadir un modelo técnico al micro-módulo.
+
+2026-07-13 DECISIÓN S3 FINAL
+- Tras explicar el comportamiento nativo, el usuario autorizó continuar sin modelo técnico.
+- S3 vuelve al alcance original: hooks relevantes llaman directamente a `_trigger()`.
+- Se aceptan triggers temporales redundantes: Odoo selecciona el cron una vez y limpia los
+  vencidos conjuntamente.
+- Se elimina del plan todo lock, deduplicación o estado auxiliar sobre `ir_cron`.
+- Se exige test de que un trigger confirmado durante un run sobrevive al snapshot del run.
+
+2026-07-13 DECISIÓN S2 FINAL
+- El usuario señaló el caso Homeclass→Online antes de autorizar el índice.
+- Beta read-only: 0 duplicados activos por alumno/canal/lote y 92 alumnos activos a la vez
+  en canal Homeclass + clon Online.
+- Se descarta la clave amplia alumno/canal.
+- El usuario aprueba índice parcial solo para active=True con clave
+  partner_id/channel_id/batch_id; no afecta lotes distintos ni canales clonados.
+- Se añade test explícito de transición Homeclass→Online.
+- Se elimina todo row lock de op.admission del plan.
+
+2026-07-13 SECURITY ADVISOR — S2 DATA ROUTING
+- Índice parcial, preflight, uninstall y Homeclass/Online aprobados.
+- Veredicto aún NO por búsquedas de clon sin batch y selección de archivada antigua antes
+  que activa.
+- Corrección acotada: batch_id en búsquedas/sync del clon y orden active DESC,
+  create_date ASC; regresiones para dos lotes y activa + archivada.
+
+2026-07-13 SECURITY ADVISOR — ACTIVE_TEST
+- Todos los gates sustantivos aprobados.
+- Veredicto NO por faltar `with_context(active_test=False)` explícito: el OR del domain no
+  muestra archivadas bajo el contexto Odoo por defecto.
+- Corrección mecánica añadida a todas las búsquedas auto-enroll/clone que reutilizan
+  memberships archivadas.
+
+2026-07-13 SECURITY ADVISOR — PASS
+- Veredicto final: YES.
+- Aprobados S1-S4, modalidad manual, índice/preflight/uninstall, Homeclass→Online,
+  aislamiento por lote, active_test=False y backfill reversible.
+- Se autoriza iniciar la fase de implementación; sin commit ni acciones remotas.
+
+
+
+
+
+
+2026-07-13 SECURITY ADVISOR — SEGUNDA REVISIÓN
+- Veredicto: NO por un único punto restante en S3.
+- Aprobados: rollback >30%, lock cron/botón, fallback por batch, modalidad manual,
+  savepoints y aislamiento del backfill.
+- Defecto: `call_at >= fields.Datetime.now()` deja de ver el primer trigger cuando el reloj
+  avanza dentro de una transacción larga.
+- Corrección mínima: considerar pendiente cualquier trigger que venza hasta `now + 1 min`,
+  sin límite inferior; añadir test con avance de reloj.
+
+2026-07-13 IMPLEMENTACIÓN — INICIO
+- Worktree verificado: /Users/ivrogo/.codex/worktrees/Odoo16iRG/fix-auto-enroll-cron.
+- Leídos completos AGENTS.md, skill Odoo 16, spec.md, plan.md, diagnóstico de Fase 0,
+  knowledge de routing y workflow del proyecto.
+- Alcance: exclusivamente Tareas 1–6 (T1.1–T3.2 y S1–S4), tier complex.
+- TDD RED: creado primero el armazón del micro-módulo y las pruebas obligatorias; todavía
+  no hay implementación de modelos/hooks/índice ni cambios en los módulos existentes.
+- Escalados: 0.
+
+2026-07-13 DOCUMENTACIÓN — CIERRE
+- El documentador verificó `verification.json` válido y en `passed` antes de iniciar.
+- Se consolidaron `progress.md` y `review.md` para retirar estados históricos obsoletos y
+  reflejar la evidencia final: suite robusta 27/27, regresiones 13/13, T4.2 completo y
+  rollback 4/10 = 40%.
+- `validation.md` no se alteró: ya era coherente con la evidencia y el contrato aprobado.
+- Se creó `CHANGELOG.md` con cambios, validación, límites y trabajo remoto pendiente.
+- Se persistió el aprendizaje reutilizable en
+  `.agents/knowledge/odoo_development_modding/artifacts/irg_auto_enroll_cron_robust.md`:
+  denominador del guardarraíl, índice parcial por lote y trigger nativo.
+- Se generó `diff.patch` de forma mecánica con todos los cambios tracked y los archivos
+  nuevos de producto/misión/conocimiento, excluyendo el propio parche y los logs ignorados
+  para evitar recursión y ruido de whitespace. Estos logs quedan trazados por ruta y SHA-256
+  en `artifacts/MANIFEST.sha256`.
+- JSON, rutas de evidencia y `git diff --check`: verificados al cierre.
+- Sin cambios de producto/tests durante esta fase; sin commit, push, deploy, PR ni Base16.
+- Escalados de documentación: 0.

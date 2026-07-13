@@ -1,13 +1,21 @@
 from datetime import date
 
+import logging
+
+from psycopg2 import IntegrityError
+
 from odoo import models
+
+
+_logger = logging.getLogger(__name__)
+_UNIQUE_INDEX = 'irg_scp_active_partner_channel_batch_uniq'
 
 
 class OpAdmission(models.Model):
     _inherit = 'op.admission'
 
     def _irg_reconcile_online_clone_channel_partners(self):
-        ChannelPartner = self.env['slide.channel.partner'].sudo()
+        ChannelPartner = self.env['slide.channel.partner'].sudo().with_context(active_test=False)
         for record in self:
             if not record.partner_id or not record.batch_id:
                 continue
@@ -17,6 +25,7 @@ class OpAdmission(models.Model):
             source_partners = ChannelPartner.search([
                 ('partner_id', '=', record.partner_id.id),
                 ('admission_id', '=', record.id),
+                ('batch_id', '=', record.batch_id.id),
                 ('op_subject_id', '!=', False),
                 '|',
                 ('active', '=', True),
@@ -35,7 +44,7 @@ class OpAdmission(models.Model):
                     '|',
                     ('active', '=', True),
                     ('active', '=', False),
-                ], order='create_date ASC', limit=1)
+                ], order='active DESC, create_date ASC', limit=1)
                 values = source_partner._irg_prepare_online_clone_sync_values()
                 values.update({
                     'channel_id': effective_channel.id,
@@ -44,7 +53,16 @@ class OpAdmission(models.Model):
                 if clone_partner:
                     clone_partner.with_context(irg_skip_partner_sync=True).write(values)
                 else:
-                    ChannelPartner.with_context(irg_skip_partner_sync=True).create(values)
+                    try:
+                        with self.env.cr.savepoint():
+                            ChannelPartner.with_context(irg_skip_partner_sync=True).create(values)
+                    except IntegrityError as exc:
+                        if exc.diag.constraint_name != _UNIQUE_INDEX:
+                            raise
+                        _logger.info(
+                            'Concurrent online clone membership already exists for admission %s',
+                            record.id,
+                        )
 
     def _irg_get_opening_effective_slide_channel(self, opening):
         self.ensure_one()
@@ -58,14 +76,14 @@ class OpAdmission(models.Model):
         channel = self._irg_get_opening_effective_slide_channel(opening)
         if not channel:
             return self.env['slide.channel.partner']
-        return self.env['slide.channel.partner'].sudo().search([
+        return self.env['slide.channel.partner'].sudo().with_context(active_test=False).search([
             ('partner_id', '=', self.partner_id.id),
             ('channel_id', '=', channel.id),
             ('batch_id', '=', self.batch_id.id),
             '|',
             ('active', '=', True),
             ('active', '=', False),
-        ], order='create_date ASC', limit=1)
+        ], order='active DESC, create_date ASC', limit=1)
 
     def _irg_sync_online_channel_partners(self, subject_domain=None):
         today = date.today()
@@ -111,14 +129,4 @@ class OpAdmission(models.Model):
     def auto_enroll_student_subject(self, subject_id):
         res = super().auto_enroll_student_subject(subject_id)
         self._irg_reconcile_online_clone_channel_partners()
-        return res
-
-    def cron_auto_enroll_student(self):
-        res = super().cron_auto_enroll_student()
-        self.search([
-            ('state', '=', 'done'),
-            ('batch_id', '!=', False),
-            ('batch_id.code', 'ilike', 'ONL'),
-            ('batch_id.code', 'not ilike', 'MONL'),
-        ])._irg_reconcile_online_clone_channel_partners()
         return res

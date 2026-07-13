@@ -9,6 +9,31 @@ _logger = logging.getLogger(__name__)
 class OpAdmission(models.Model):
     _inherit = 'op.admission'
 
+    def _irg_subject_precedence_is_satisfied(self, subject):
+        self.ensure_one()
+        parent_subject = subject.parent_subject_id
+        if not parent_subject:
+            return True
+
+        ChannelPartner = self.env['slide.channel.partner'].sudo()
+        current_membership = ChannelPartner.search([
+            ('partner_id', '=', self.partner_id.id),
+            ('op_subject_id', '=', parent_subject.id),
+            ('admission_id', '=', self.id),
+            ('active', '=', True),
+            ('completed', '=', True),
+        ], limit=1)
+        if current_membership:
+            return True
+
+        historical_membership = ChannelPartner.with_context(active_test=False).search([
+            ('partner_id', '=', self.partner_id.id),
+            ('op_subject_id', '=', parent_subject.id),
+            ('batch_id', '=', self.batch_id.id),
+            ('completed', '=', True),
+        ], limit=1)
+        return bool(historical_membership)
+
     # ------------------------------------------------------------------
     # Botón "Auto-Asignaturas": agrega verificación de precedencia
     # ------------------------------------------------------------------
@@ -28,26 +53,21 @@ class OpAdmission(models.Model):
                 if not subject_batch.date_from or not subject_batch.date_to:
                     continue
 
-                # --- Verificar precedencia ---
-                if subject.parent_subject_id:
-                    parent_cp = self.env['slide.channel.partner'].sudo().search([
-                        ('partner_id', '=', record.partner_id.id),
-                        ('op_subject_id', '=', subject.parent_subject_id.id),
-                        ('admission_id', '=', record.id),
-                        ('active', '=', True),
-                    ], limit=1)
-                    if not parent_cp or not parent_cp.completed:
-                        continue
+                if not record._irg_subject_precedence_is_satisfied(subject):
+                    continue
 
-                channel_partners = self.env['slide.channel.partner'].search([
+                channel_partner = self.env['slide.channel.partner'].sudo().with_context(
+                    active_test=False,
+                ).search([
                     ('partner_id', '=', record.partner_id.id),
                     ('channel_id', '=', subject.slide_channel_id.id),
                     ('batch_id', '=', record.batch_id.id),
-                ])
+                    '|', ('active', '=', True), ('active', '=', False),
+                ], order='active DESC, create_date ASC', limit=1)
 
                 if subject_batch.date_from <= today <= subject_batch.date_to:
-                    if channel_partners:
-                        channel_partners.write({
+                    if channel_partner:
+                        channel_partner.write({
                             'active': True,
                             'course_id': record.course_id.id,
                             'register_id': record.register_id.id,
@@ -69,12 +89,13 @@ class OpAdmission(models.Model):
                             'admission_id': record.id,
                         })
 
-                elif today > subject_batch.date_to and channel_partners:
-                    channel_partners.write({'active': False})
+                elif today > subject_batch.date_to and channel_partner:
+                    channel_partner.write({'active': False})
 
     # ------------------------------------------------------------------
     # Cron diario: agrega filtro de modalidad, precedencia y batch_id
     # ------------------------------------------------------------------
+    # Override histórico muerto: la MRO efectiva usa irg_online_subject_opening.
     def cron_auto_enroll_student(self):
         """Sobreescribe el cron para:
         - Omitir admisiones en modalidad 'manual'.

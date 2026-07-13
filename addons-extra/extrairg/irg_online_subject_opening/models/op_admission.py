@@ -1,6 +1,13 @@
 from datetime import date, timedelta
 
+import logging
+
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.osv import expression
+
+
+_logger = logging.getLogger(__name__)
 
 
 class OpAdmission(models.Model):
@@ -116,31 +123,17 @@ class OpAdmission(models.Model):
             and self._irg_has_online_subject_opening_context()
         )
 
-    def _irg_subject_precedence_is_satisfied(self, subject):
-        self.ensure_one()
-        parent_subject = subject.parent_subject_id if hasattr(subject, 'parent_subject_id') else False
-        if not parent_subject:
-            return True
-        # sudo: cron/enrollment must inspect the student's eLearning membership even when run by a limited backend user.
-        parent_membership = self.env['slide.channel.partner'].sudo().search([
-            ('partner_id', '=', self.partner_id.id),
-            ('op_subject_id', '=', parent_subject.id),
-            ('admission_id', '=', self.id),
-            ('active', '=', True),
-        ], limit=1)
-        return bool(parent_membership and parent_membership.completed)
-
     def _irg_find_online_channel_partner(self, opening):
         self.ensure_one()
         # sudo: synchronization owns membership state for the admission and must see active and archived rows.
-        return self.env['slide.channel.partner'].sudo().search([
+        return self.env['slide.channel.partner'].sudo().with_context(active_test=False).search([
             ('partner_id', '=', self.partner_id.id),
             ('channel_id', '=', opening.slide_channel_id.id),
             ('batch_id', '=', self.batch_id.id),
             '|',
             ('active', '=', True),
             ('active', '=', False),
-        ], order='create_date ASC', limit=1)
+        ], order='active DESC, create_date ASC', limit=1)
 
     def _irg_online_channel_partner_values(self, opening, active):
         self.ensure_one()
@@ -230,63 +223,65 @@ class OpAdmission(models.Model):
         )
         return True
 
-    def cron_auto_enroll_student(self):
-        today = date.today()
-        admissions = self.search([
-            ('state', '=', 'done'),
-            ('batch_id', '!=', False),
+    def _irg_auto_enroll_membership_snapshot(self, admissions):
+        pairs = {(record.partner_id.id, record.batch_id.id) for record in admissions
+                 if record.partner_id and record.batch_id}
+        if not pairs:
+            return {}
+        domain = expression.OR([
+            [('partner_id', '=', partner_id), ('batch_id', '=', batch_id)]
+            for partner_id, batch_id in pairs
         ])
+        memberships = self.env['slide.channel.partner'].sudo().with_context(
+            active_test=False,
+        ).search(domain)
+        return {membership.id: membership.active for membership in memberships}
 
-        online_admissions = admissions.filtered(lambda record: record._irg_has_online_subject_opening_context())
-        other_admissions = admissions - online_admissions
+    def _irg_auto_enroll_transition_counts(self, before, after):
+        activated = sum(
+            1 for membership_id, is_active in after.items()
+            if is_active and not before.get(membership_id, False)
+        )
+        archived = sum(
+            1 for membership_id, was_active in before.items()
+            if was_active and membership_id in after and not after[membership_id]
+        )
+        return activated, archived
 
-        online_admissions._irg_generate_online_subject_openings()
-        online_admissions._irg_sync_online_channel_partners()
+    def _irg_mass_archive_ratio(self, initial_active_count, archived_count):
+        return archived_count / initial_active_count if initial_active_count else 0.0
 
-        for record in other_admissions:
-            if hasattr(record, 'modality') and record.modality == 'manual':
-                continue
+    def _irg_auto_enroll_domain(self):
+        """Keep the effective cron autonomous from optional robustness extensions."""
+        return [('state', '=', 'done'), ('batch_id', '!=', False)]
 
-            for subject_batch in record.batch_id.subject_to_batch_ids:
-                subject = subject_batch.subject_id
-                if not subject.slide_channel_id:
-                    continue
-                if not subject_batch.date_from or not subject_batch.date_to:
-                    continue
-
-                if not record._irg_subject_precedence_is_satisfied(subject):
-                    continue
-
-                # sudo: cron reconciles membership rows independently of the current backend user's access rights.
-                channel_partner = self.env['slide.channel.partner'].sudo().search([
-                    ('partner_id', '=', record.partner_id.id),
-                    ('channel_id', '=', subject.slide_channel_id.id),
-                    ('batch_id', '=', record.batch_id.id),
-                    '|',
-                    ('active', '=', True),
-                    ('active', '=', False),
-                ], order='create_date ASC', limit=1)
-
-                if subject_batch.date_from <= today <= subject_batch.date_to:
-                    values = {
-                        'active': True,
-                        'course_id': record.course_id.id,
-                        'register_id': record.register_id.id,
-                        'admission_id': record.id,
-                        'batch_id': record.batch_id.id,
-                        'date_from': subject_batch.date_from,
-                        'date_to': subject_batch.date_to,
-                        'op_subject_id': subject.id,
-                    }
-                    if channel_partner:
-                        channel_partner.write(values)
-                    else:
-                        values.update({
-                            'channel_id': subject.slide_channel_id.id,
-                            'partner_id': record.partner_id.id,
-                        })
-                        # sudo: cron creates the eLearning membership on behalf of the admitted student.
-                        self.env['slide.channel.partner'].sudo().create(values)
-                elif today > subject_batch.date_to and channel_partner:
-                    channel_partner.write({'active': False})
+    def cron_auto_enroll_student(self):
+        admissions = self.search(self._irg_auto_enroll_domain())
+        _logger.info('Auto-enroll start: admissions=%s', len(admissions))
+        with self.env.cr.savepoint():
+            before = self._irg_auto_enroll_membership_snapshot(admissions)
+            processed = errors = 0
+            for record in admissions:
+                try:
+                    with self.env.cr.savepoint():
+                        record.auto_enroll_student()
+                    processed += 1
+                except Exception:
+                    errors += 1
+                    _logger.exception('Auto-enroll failed for admission %s', record.id)
+            after = self._irg_auto_enroll_membership_snapshot(admissions)
+            activated, archived = self._irg_auto_enroll_transition_counts(before, after)
+            initial_active = sum(1 for active in before.values() if active)
+            ratio = self._irg_mass_archive_ratio(initial_active, archived)
+            _logger.info(
+                'Auto-enroll end: processed=%s activated=%s archived=%s errors=%s',
+                processed, activated, archived, errors,
+            )
+            if ratio > 0.30:
+                _logger.warning(
+                    'Auto-enroll mass archive blocked: activated=%s archived=%s '
+                    'initial_active=%s ratio=%.2f%%',
+                    activated, archived, initial_active, ratio * 100,
+                )
+                raise ValidationError('Auto-enroll mass archive guard exceeded 30%')
         return True

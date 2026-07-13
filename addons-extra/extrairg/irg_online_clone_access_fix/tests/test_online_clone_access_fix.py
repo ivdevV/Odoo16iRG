@@ -27,6 +27,7 @@ class TestOnlineCloneAccessFix(TransactionCase):
             'name': 'Online Clone Access Course',
             'code': 'IRGOCAF',
             'subject_ids': [(6, 0, [self.subject.id])],
+            'lang': 'en_US',
         })
         self.product = self.env['product.product'].create({
             'name': 'Online Clone Access Fee',

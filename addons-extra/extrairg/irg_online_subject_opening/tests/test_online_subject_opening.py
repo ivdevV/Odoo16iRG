@@ -23,6 +23,7 @@ class TestOnlineSubjectOpening(TransactionCase):
             'name': 'Online Opening Course',
             'code': 'IRGOO',
             'subject_ids': [(6, 0, [self.subject_c.id, self.subject_a.id, self.subject_b.id])],
+            'lang': 'en_US',
         })
         self.product = self.env['product.product'].create({
             'name': 'Online Opening Fee',

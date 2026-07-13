@@ -409,6 +409,7 @@ class OpAdmission(models.Model):
                     elif today > subject_batch.date_to and channel_partners:
                         channel_partners.write({'active': False})
 
+    # Override histórico muerto: la MRO efectiva usa irg_online_subject_opening.
     def cron_auto_enroll_student(self):
 
         today = date.today()
