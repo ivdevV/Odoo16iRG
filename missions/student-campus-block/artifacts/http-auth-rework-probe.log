@@ -1,0 +1,12 @@
+{
+  "active_auth_uid": 525,
+  "active_portal_status": 200,
+  "blocked_existing_session_location": "http://127.0.0.1:8069/web/login?redirect=%2Fmy%2Fhome%3F",
+  "blocked_existing_session_next_request_status": 303,
+  "blocked_new_auth_uid": null,
+  "faculty_denial_error": "odoo.exceptions.AccessError",
+  "redis_session_deletion_asserted": false,
+  "restored_auth_uid": 525,
+  "restored_portal_status": 200,
+  "target_active_after_faculty_denial": true
+}

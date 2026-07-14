@@ -1,0 +1,4 @@
+services:
+  odoo_local:
+    volumes:
+      - /Users/ivrogo/.codex/worktrees/Odoo16iRG/student-campus-block/addons-extra:/mnt/extra-addons:ro

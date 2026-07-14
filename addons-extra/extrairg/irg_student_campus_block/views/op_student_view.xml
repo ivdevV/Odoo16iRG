@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_campus_block" model="ir.ui.view">
+        <field name="name">op.student.form.campus.block</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/header" position="inside">
+                <button name="action_block_campus_access"
+                        type="object"
+                        string="Bloquear acceso campus"
+                        class="btn-secondary"
+                        groups="openeducat_core.group_op_back_office_admin"
+                        attrs="{'invisible': ['|', ('user_id', '=', False), ('irg_campus_blocked', '=', True)]}"
+                        confirm="Esta acción bloqueará todo acceso autenticado del alumno a Odoo (portal, eLearning y otros servicios Odoo) desde su siguiente petición. No afecta a Moodle. ¿Desea continuar?"/>
+                <button name="action_unblock_campus_access"
+                        type="object"
+                        string="Desbloquear acceso campus"
+                        class="btn-primary"
+                        groups="openeducat_core.group_op_back_office_admin"
+                        attrs="{'invisible': ['|', ('user_id', '=', False), ('irg_campus_blocked', '=', False)]}"
+                        confirm="Esta acción restaurará el acceso autenticado del alumno a Odoo desde su siguiente petición. No afecta a Moodle. ¿Desea continuar?"/>
+            </xpath>
+            <xpath expr="//form/sheet" position="inside">
+                <field name="irg_campus_blocked" invisible="1"/>
+                <widget name="web_ribbon"
+                        title="Campus bloqueado"
+                        bg_color="bg-danger"
+                        attrs="{'invisible': ['|', ('irg_campus_blocked', '=', False), ('active', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
