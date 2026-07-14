@@ -1,0 +1,827 @@
+2026-07-14 13:01:25,199 1 INFO ? odoo: Odoo version 16.0-20250909 
+2026-07-14 13:01:25,199 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-07-14 13:01:25,199 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-07-14 13:01:25,199 1 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-07-14 13:01:25,251 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-07-14 13:01:25,298 1 INFO ? odoo.service.server: Initiating shutdown 
+2026-07-14 13:01:25,298 1 INFO ? odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-07-14 13:01:25,304 1 INFO ? odoo.modules.loading: loading 1 modules... 
+2026-07-14 13:01:25,307 1 INFO ? odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-07-14 13:01:25,337 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-07-14 13:01:25,364 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-07-14 13:01:25,431 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-07-14 13:01:25,462 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-07-14 13:01:25,486 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-07-14 13:01:25,491 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-07-14 13:01:25,494 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-07-14 13:01:25,495 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-07-14 13:01:25,522 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-07-14 13:01:25,620 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-07-14 13:01:25,634 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-07-14 13:01:25,646 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-07-14 13:01:25,662 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-07-14 13:01:25,666 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-07-14 13:01:25,680 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-07-14 13:01:25,686 1 WARNING ? py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 372, in load_marked_modules
+    graph.add_modules(cr, module_list, force)
+  File "/usr/lib/python3/dist-packages/odoo/modules/graph.py", line 61, in add_modules
+    info = odoo.modules.module.get_manifest(module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:25,706 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-07-14 13:01:25,714 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-07-14 13:01:25,753 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-07-14 13:01:25,756 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-07-14 13:01:25,786 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-07-14 13:01:25,798 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-07-14 13:01:25,804 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-07-14 13:01:25,805 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-07-14 13:01:25,821 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-07-14 13:01:25,825 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-07-14 13:01:25,829 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-07-14 13:01:25,869 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-07-14 13:01:25,910 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-07-14 13:01:25,956 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-07-14 13:01:25,984 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-07-14 13:01:26,008 1 WARNING ? py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 372, in load_marked_modules
+    graph.add_modules(cr, module_list, force)
+  File "/usr/lib/python3/dist-packages/odoo/modules/graph.py", line 61, in add_modules
+    info = odoo.modules.module.get_manifest(module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:26,024 1 WARNING ? odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-07-14 13:01:26,033 1 INFO ? odoo.modules.loading: loading 719 modules... 
+2026-07-14 13:01:26,233 1 WARNING ? odoo.models: The model allowed.ips has no _description 
+2026-07-14 13:01:26,249 1 WARNING ? odoo.models: The model allowed.ips has no _description 
+2026-07-14 13:01:26,405 1 WARNING ? odoo.models: The model allowed.ips has no _description 
+2026-07-14 13:01:26,428 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/data_cleaning/models/data_cleaning_rule.py:41: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/data_cleaning/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/data_cleaning/models/__init__.py", line 5, in <module>
+    from . import data_cleaning_rule
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:26,479 1 WARNING ? odoo.models: The model allowed.ips has no _description 
+2026-07-14 13:01:26,584 1 WARNING ? odoo.models: The model zk.machine.location has no _description 
+2026-07-14 13:01:26,584 1 WARNING ? odoo.models: The model zk.machine has no _description 
+2026-07-14 13:01:26,584 1 WARNING ? odoo.models: The model zk.employee.location.line has no _description 
+2026-07-14 13:01:26,685 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/web_studio/models/ir_model.py:41: DeprecationWarning: invalid escape sequence \W
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/web_studio/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/web_studio/models/__init__.py", line 11, in <module>
+    from . import ir_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:26,685 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/web_studio/models/ir_model.py:42: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/web_studio/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/web_studio/models/__init__.py", line 11, in <module>
+    from . import ir_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:26,697 1 WARNING ? odoo.models: The model allowed.ips has no _description 
+2026-07-14 13:01:26,698 1 WARNING ? odoo.models: The model zk.machine.location has no _description 
+2026-07-14 13:01:26,698 1 WARNING ? odoo.models: The model zk.machine has no _description 
+2026-07-14 13:01:26,698 1 WARNING ? odoo.models: The model zk.employee.location.line has no _description 
+2026-07-14 13:01:26,699 1 WARNING ? odoo.models: The model allowed.ips has no _description 
+2026-07-14 13:01:26,700 1 WARNING ? odoo.models: The model zk.machine.location has no _description 
+2026-07-14 13:01:26,700 1 WARNING ? odoo.models: The model zk.machine has no _description 
+2026-07-14 13:01:26,700 1 WARNING ? odoo.models: The model zk.employee.location.line has no _description 
+2026-07-14 13:01:26,799 1 WARNING ? odoo.models: The model allowed.ips has no _description 
+2026-07-14 13:01:26,800 1 WARNING ? odoo.models: The model zk.machine.location has no _description 
+2026-07-14 13:01:26,800 1 WARNING ? odoo.models: The model zk.machine has no _description 
+2026-07-14 13:01:26,800 1 WARNING ? odoo.models: The model zk.employee.location.line has no _description 
+2026-07-14 13:01:26,943 1 WARNING ? odoo.models: The model cambiar.factura.de.compania has no _description 
+2026-07-14 13:01:26,997 1 WARNING ? odoo.api.create: The model odoo.addons.isep_account_move_field_static.models.account_move is not overriding the create method in batch 
+2026-07-14 13:01:27,005 1 WARNING ? odoo.models: The model crm.checklist has no _description 
+2026-07-14 13:01:27,005 1 WARNING ? odoo.models: The model crm.checklist.line has no _description 
+2026-07-14 13:01:27,018 1 WARNING ? odoo.models: The model isep.payment.recurring.wizard has no _description 
+2026-07-14 13:01:27,123 1 WARNING ? odoo.models: The model payment.flywire.recipient has no _description 
+2026-07-14 13:01:27,165 1 WARNING ? odoo.api.create: The model odoo.addons.plaid_sync.models.online_sync_plaid is not overriding the create method in batch 
+2026-07-14 13:01:27,197 1 WARNING ? py.warnings: /usr/local/lib/python3.9/dist-packages/google/oauth2/__init__.py:40: FutureWarning: 
+    You are using a Python version 3.9 past its end of life. Google will update
+    google-auth with critical bug fixes on a best-effort basis, but not
+    with any other fixes or features. Please upgrade your Python version,
+    and then update google-auth.
+    
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/social_push_notifications/__init__.py", line 7, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/social_push_notifications/models/__init__.py", line 6, in <module>
+    from . import social_account
+  File "/mnt/extra-addons/ent_addons/social_push_notifications/models/social_account.py", line 23, in <module>
+    from google.oauth2 import service_account
+  File "/usr/local/lib/python3.9/dist-packages/google/oauth2/__init__.py", line 40, in <module>
+    warnings.warn(eol_message.format("3.9"), FutureWarning)
+ 
+2026-07-14 13:01:27,198 1 WARNING ? py.warnings: /usr/local/lib/python3.9/dist-packages/google/auth/__init__.py:54: FutureWarning: 
+    You are using a Python version 3.9 past its end of life. Google will update
+    google-auth with critical bug fixes on a best-effort basis, but not
+    with any other fixes or features. Please upgrade your Python version,
+    and then update google-auth.
+    
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/social_push_notifications/__init__.py", line 7, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/social_push_notifications/models/__init__.py", line 6, in <module>
+    from . import social_account
+  File "/mnt/extra-addons/ent_addons/social_push_notifications/models/social_account.py", line 23, in <module>
+    from google.oauth2 import service_account
+  File "/usr/local/lib/python3.9/dist-packages/google/oauth2/service_account.py", line 76, in <module>
+    from google.auth import _constants
+  File "/usr/local/lib/python3.9/dist-packages/google/auth/__init__.py", line 54, in <module>
+    warnings.warn(eol_message.format("3.9"), FutureWarning)
+ 
+2026-07-14 13:01:27,225 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/account_accountant_batch_payment/models/account_reconcile_model.py:44: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/account_accountant_batch_payment/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/account_accountant_batch_payment/models/__init__.py", line 5, in <module>
+    from . import account_reconcile_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:27,308 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/account_sepa/models/account_journal.py:359: DeprecationWarning: invalid escape sequence \.
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/account_sepa/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/account_sepa/models/__init__.py", line 6, in <module>
+    from . import account_journal
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:27,308 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/account_sepa/models/account_journal.py:493: DeprecationWarning: invalid escape sequence \d
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/account_sepa/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/account_sepa/models/__init__.py", line 6, in <module>
+    from . import account_journal
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:27,317 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/account_sepa_direct_debit/models/res_company.py:12: DeprecationWarning: invalid escape sequence \d
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/account_sepa_direct_debit/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/account_sepa_direct_debit/models/__init__.py", line 9, in <module>
+    from . import res_company
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:27,400 1 WARNING ? odoo.api.create: The model odoo.addons.irg_auto_translate.models.translate_auto is not overriding the create method in batch 
+2026-07-14 13:01:27,400 1 WARNING ? odoo.api.create: The model odoo.addons.irg_auto_translate.models.translate_auto is not overriding the create method in batch 
+2026-07-14 13:01:27,403 1 WARNING ? odoo.api.create: The model odoo.addons.irg_generacion_diplomados.models.diplomado_registry is not overriding the create method in batch 
+2026-07-14 13:01:27,422 1 WARNING ? odoo.api.create: The model odoo.addons.isep_documents_portal.models.folders is not overriding the create method in batch 
+2026-07-14 13:01:27,424 1 WARNING ? odoo.api.create: The model odoo.addons.isep_share_link_purchase.models.purchase_order is not overriding the create method in batch 
+2026-07-14 13:01:27,436 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/l10n_mx_edi/models/account_edi_format.py:36: DeprecationWarning: invalid escape sequence \d
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/l10n_mx_edi/__init__.py", line 3, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/l10n_mx_edi/models/__init__.py", line 4, in <module>
+    from . import account_edi_format
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:27,470 1 WARNING ? odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch 
+2026-07-14 13:01:27,577 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/website_helpdesk_livechat/models/helpdesk.py:86: DeprecationWarning: invalid escape sequence \w
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/website_helpdesk_livechat/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/website_helpdesk_livechat/models/__init__.py", line 6, in <module>
+    from . import helpdesk
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:27,675 1 WARNING ? odoo.models: The model res.card has no _description 
+2026-07-14 13:01:27,675 1 WARNING ? odoo.models: The model isep.form.data.wizard has no _description 
+2026-07-14 13:01:27,677 1 WARNING ? odoo.api.create: The model odoo.addons.isep_google_ads.models.isep_google_leads is not overriding the create method in batch 
+2026-07-14 13:01:27,678 1 WARNING ? odoo.models: The model isep.google.forms has no _description 
+2026-07-14 13:01:27,678 1 WARNING ? odoo.models: The model isep.google.leads has no _description 
+2026-07-14 13:01:27,707 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/l10n_es_reports/wizard/aeat_boe_export_wizards.py:72: DeprecationWarning: invalid escape sequence \D
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/l10n_es_reports/__init__.py", line 5, in <module>
+    from . import wizard
+  File "/mnt/extra-addons/ent_addons/l10n_es_reports/wizard/__init__.py", line 4, in <module>
+    from . import aeat_boe_export_wizards
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:27,754 1 WARNING ? py.warnings: /mnt/extra-addons/ent_addons/sale_account_accountant/models/account_reconcile_model.py:64: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/models/__init__.py", line 4, in <module>
+    from . import account_reconcile_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-07-14 13:01:27,833 1 WARNING ? odoo.api.create: The model odoo.addons.connect_chatgpt.models.helpdesk_team is not overriding the create method in batch 
+2026-07-14 13:01:27,834 1 WARNING ? odoo.api.create: The model odoo.addons.connect_chatgpt.models.mail_parser_config is not overriding the create method in batch 
+2026-07-14 13:01:27,851 1 WARNING ? py.warnings: <frozen importlib._bootstrap>:228: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+ 
+2026-07-14 13:01:27,851 1 WARNING ? py.warnings: <frozen importlib._bootstrap>:228: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+ 
+2026-07-14 13:01:27,862 1 WARNING ? py.warnings: <frozen importlib._bootstrap>:228: DeprecationWarning: builtin type swigvarlink has no __module__ attribute
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 123, in run
+    self.shell(config['db_name'])
+  File "/usr/lib/python3/dist-packages/odoo/cli/shell.py", line 109, in shell
+    registry = odoo.registry(dbname)
+  File "/usr/lib/python3/dist-packages/odoo/__init__.py", line 126, in registry
+    return modules.registry.Registry(database_name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 66, in __new__
+    return cls.new(db_name)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+ 
+2026-07-14 13:01:27,873 1 WARNING ? odoo.models: The model helpdesk.finish.gpt has no _description 
+2026-07-14 13:01:27,873 1 WARNING ? odoo.models: The model models.config.consul.line has no _description 
+2026-07-14 13:01:27,873 1 WARNING ? odoo.models: The model article.embedding has no _description 
+2026-07-14 13:01:27,880 1 WARNING ? odoo.api.create: The model odoo.addons.irg_admission_class_start_date.models.op_admission is not overriding the create method in batch 
+2026-07-14 13:01:27,917 1 WARNING ? odoo.models: The model res.card has no _description 
+2026-07-14 13:01:27,930 1 WARNING ? odoo.api.create: The model odoo.addons.isep_practices_2.models.a_practice_request is not overriding the create method in batch 
+2026-07-14 13:01:27,938 1 WARNING ? odoo.models: The model report.isep_practices_2.t_practices has no _description 
+2026-07-14 13:01:27,945 1 WARNING ? odoo.models: The model lms.session.info has no _description 
+2026-07-14 13:01:27,948 1 WARNING ? odoo.api.create: The model odoo.addons.isep_tesis_model.models.a_tesis_model is not overriding the create method in batch 
+2026-07-14 13:01:27,954 1 WARNING ? odoo.api.create: The model odoo.addons.knowledge_slides.models.slide_channel is not overriding the create method in batch 
+2026-07-14 13:01:28,000 1 WARNING ? odoo.api.create: The model odoo.addons.l10n_es_ticketbai.models.account_move is not overriding the create method in batch 
+2026-07-14 13:01:28,041 1 WARNING ? odoo.api.create: The model odoo.addons.odoo_moodle_connector.models.calendar_event_custom is not overriding the create method in batch 
+2026-07-14 13:01:28,280 1 WARNING ? odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-07-14 13:01:28,280 1 WARNING ? odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-07-14 13:01:28,281 1 WARNING ? odoo.api.create: The model odoo.addons.isep_survey.models.survey_user_input is not overriding the create method in batch 
+2026-07-14 13:01:28,358 1 WARNING ? odoo.models: The model silon.configuration has no _description 
+2026-07-14 13:01:28,424 1 WARNING ? odoo.models: The model dv.config.ia has no _description 
+2026-07-14 13:01:28,498 1 WARNING ? odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-07-14 13:01:28,498 1 WARNING ? odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-07-14 13:01:28,499 1 WARNING ? odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch 
+2026-07-14 13:01:28,500 1 WARNING ? odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch 
+2026-07-14 13:01:28,534 1 WARNING ? odoo.api.create: The model odoo.addons.isep_gradebook.models.app_gradebook_result is not overriding the create method in batch 
+2026-07-14 13:01:28,535 1 WARNING ? odoo.api.create: The model odoo.addons.isep_gradebook.models.survey_user_input is not overriding the create method in batch 
+2026-07-14 13:01:28,540 1 WARNING ? odoo.models: The model app.gradebook.template.line has no _description 
+2026-07-14 13:01:28,540 1 WARNING ? odoo.models: The model app.gradebook has no _description 
+2026-07-14 13:01:28,540 1 WARNING ? odoo.models: The model app.gradebook.result has no _description 
+2026-07-14 13:01:28,540 1 WARNING ? odoo.models: The model survey.user_input.write has no _description 
+2026-07-14 13:01:28,540 1 WARNING ? odoo.models: The model app.gradebook.subject has no _description 
+2026-07-14 13:01:28,540 1 WARNING ? odoo.models: The model app.gradebook.student has no _description 
+2026-07-14 13:01:28,543 1 WARNING ? odoo.models: The model op.session.wizard has no _description 
+2026-07-14 13:01:28,551 1 WARNING ? odoo.models: The model record.request has no _description 
+2026-07-14 13:01:28,551 1 WARNING ? odoo.models: The model record.request.line has no _description 
+2026-07-14 13:01:28,551 1 WARNING ? odoo.models: The model record.request.list.line has no _description 
+2026-07-14 13:01:28,552 1 WARNING ? odoo.models: The model res.partner.document has no _description 
+2026-07-14 13:01:28,558 1 WARNING ? odoo.models: The model op.course.type has no _description 
+2026-07-14 13:01:28,558 1 WARNING ? odoo.models: The model op.area.course has no _description 
+2026-07-14 13:01:28,562 1 WARNING ? odoo.api.create: The model odoo.addons.isep_subject_precedence.wizard.subject_wizard is not overriding the create method in batch 
+2026-07-14 13:01:28,589 1 WARNING ? odoo.api.create: The model odoo.addons.irg_batch_homeclass_api_scheduler.models.op_batch is not overriding the create method in batch 
+2026-07-14 13:01:28,598 1 WARNING ? odoo.api.create: The model odoo.addons.irg_diplomado_portal_request.models.diplomado_portal_request is not overriding the create method in batch 
+2026-07-14 13:01:28,598 1 WARNING ? odoo.api.create: The model odoo.addons.irg_diplomado_portal_request.models.diplomado_registry is not overriding the create method in batch 
+2026-07-14 13:01:28,606 1 WARNING ? odoo.api.create: The model odoo.addons.irg_exam_second_attempt.models.survey is not overriding the create method in batch 
+2026-07-14 13:01:28,611 1 WARNING ? odoo.models: The model app.gradebook.student has no _description 
+2026-07-14 13:01:28,613 1 WARNING ? odoo.models: The model app.gradebook.student has no _description 
+2026-07-14 13:01:28,613 1 WARNING ? odoo.models: The model app.gradebook.subject has no _description 
+2026-07-14 13:01:28,614 1 WARNING ? odoo.models: The model app.gradebook.subject has no _description 
+2026-07-14 13:01:28,616 1 WARNING ? odoo.models: The model app.gradebook.subject has no _description 
+2026-07-14 13:01:28,632 1 WARNING ? odoo.models: The model app.gradebook.student has no _description 
+2026-07-14 13:01:28,635 1 WARNING ? odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.op_admission is not overriding the create method in batch 
+2026-07-14 13:01:28,638 1 WARNING ? odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.auto_admission_required is not overriding the create method in batch 
+2026-07-14 13:01:28,648 1 WARNING ? odoo.api.create: The model odoo.addons.isep_tag_custom.models.crm_tag is not overriding the create method in batch 
+2026-07-14 13:01:28,648 1 WARNING ? odoo.api.create: The model odoo.addons.isep_tag_custom.models.crm_tag is not overriding the create method in batch 
+2026-07-14 13:01:28,650 1 WARNING ? odoo.api.create: The model odoo.addons.isep_tag_custom.models.crm_lead is not overriding the create method in batch 
+2026-07-14 13:01:28,651 1 WARNING ? odoo.models: The model op.course.type has no _description 
+2026-07-14 13:01:28,651 1 WARNING ? odoo.models: The model op.area.course has no _description 
+2026-07-14 13:01:28,693 1 WARNING ? odoo.models: The model schedule.date.due.line has no _description 
+2026-07-14 13:01:28,708 1 WARNING ? odoo.api.create: The model odoo.addons.irg_gradebook_certificates.models.irg_certificate_request is not overriding the create method in batch 
+2026-07-14 13:01:28,712 1 WARNING ? odoo.models: The model app.gradebook.student has no _description 
+2026-07-14 13:01:28,731 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_certificado9 has no _description 
+2026-07-14 13:01:28,731 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_certificado8 has no _description 
+2026-07-14 13:01:28,731 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_certificado7 has no _description 
+2026-07-14 13:01:28,731 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_certificado6 has no _description 
+2026-07-14 13:01:28,731 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_certificado5 has no _description 
+2026-07-14 13:01:28,731 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_certificado4 has no _description 
+2026-07-14 13:01:28,732 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_certificado3 has no _description 
+2026-07-14 13:01:28,732 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_certificado2 has no _description 
+2026-07-14 13:01:28,732 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_certificado1 has no _description 
+2026-07-14 13:01:28,732 1 WARNING ? odoo.models: The model report.isep_openeducat_reports.t_cert_diploma has no _description 
+2026-07-14 13:01:28,732 1 WARNING ? odoo.models: The model diplomas.certifies has no _description 
+2026-07-14 13:01:28,735 1 WARNING ? odoo.api.create: The model odoo.addons.isep_payment_cron_extend.models.payment_retry_log is not overriding the create method in batch 
+2026-07-14 13:01:28,746 1 WARNING ? odoo.models: The model app.gradebook.student has no _description 
+2026-07-14 13:01:28,788 1 WARNING ? odoo.models: The model schedule.date.due.line has no _description 
+2026-07-14 13:01:28,841 1 WARNING ? odoo.models: The model app.gradebook.student has no _description 
+2026-07-14 13:01:28,848 1 WARNING ? odoo.api.create: The model odoo.addons.irg_campus_diplomados_portal.models.diplomado_request is not overriding the create method in batch 
+2026-07-14 13:01:28,849 1 WARNING ? odoo.api.create: The model odoo.addons.irg_campus_diplomados_portal.models.diplomado_registry is not overriding the create method in batch 
+2026-07-14 13:01:28,873 1 INFO ? odoo.modules.loading: 719 modules loaded in 2.84s, 0 queries (+0 extra) 
+2026-07-14 13:01:28,938 1 WARNING ? odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-07-14 13:01:28,938 1 WARNING ? odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-07-14 13:01:28,960 1 WARNING ? odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-07-14 13:01:28,960 1 WARNING ? odoo.fields: survey.user_input.line.survey_type: selection attribute will be ignored as the field is related 
+2026-07-14 13:01:28,979 1 WARNING ? odoo.fields: crm.checklist.type: selection attribute will be ignored as the field is related 
+2026-07-14 13:01:28,988 1 WARNING ? odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-07-14 13:01:29,013 1 WARNING ? odoo.fields: Field test.case.num1: unknown parameter 'primary_key', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,018 1 WARNING ? odoo.fields: Field res.partner.tags.color: unknown parameter 'String', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,028 1 WARNING ? odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,028 1 WARNING ? odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,032 1 WARNING ? odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,032 1 WARNING ? odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,032 1 WARNING ? odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,032 1 WARNING ? odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,032 1 WARNING ? odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,032 1 WARNING ? odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,032 1 WARNING ? odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,034 1 WARNING ? odoo.fields: Field forum.forum.irg_course_id: unknown parameter 'options', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,034 1 WARNING ? odoo.fields: Field forum.forum.irg_subject_id: unknown parameter 'options', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,035 1 WARNING ? odoo.fields: Field models.config.consul.line.config_consul_id: unknown parameter 'requerid', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,035 1 WARNING ? odoo.fields: Field practice.practice.status_phase: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,035 1 WARNING ? odoo.fields: Field practice.practice.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,035 1 WARNING ? odoo.fields: Field practice.practice.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,035 1 WARNING ? odoo.fields: Field practice.practice.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,035 1 WARNING ? odoo.fields: Field practice.type.form.center.status_form_center: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,035 1 WARNING ? odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,035 1 WARNING ? odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,036 1 WARNING ? odoo.fields: Redundant default on practice.request.user_id 
+2026-07-14 13:01:29,036 1 WARNING ? odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,036 1 WARNING ? odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,036 1 WARNING ? odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,036 1 WARNING ? odoo.fields: Field tesis.model.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,036 1 WARNING ? odoo.fields: Field tesis.model.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,036 1 WARNING ? odoo.fields: Field tesis.model.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-07-14 13:01:29,174 1 INFO ? odoo.modules.loading: Modules loaded. 
+2026-07-14 13:01:29,199 1 INFO ? odoo.modules.registry: Registry loaded in 3.901s 
+action_runtime=PASS id=1758 target=new
+button_combined_arch=PASS name=1758 groups=openeducat_admission.group_op_admission_admin
+wizard_view_runtime=PASS fields=register_id,admission_ids/application_number,name,state,oficialidad_sent_date
+traceability_column_runtime=PASS optional=hide
+model_fields_runtime=PASS
+sys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute

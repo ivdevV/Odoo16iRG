@@ -1,0 +1,18 @@
+RUNTIME SUMMARY oficialidad-webhook
+started_tests=21
+2026-07-14 13:00:25,599 1 INFO test_irg_db odoo.modules.loading: loading irg_admission_oficialidad_webhook/security/ir.model.access.csv 
+2026-07-14 13:00:25,606 1 INFO test_irg_db odoo.modules.loading: loading irg_admission_oficialidad_webhook/data/oficialidad_webhook_params.xml 
+2026-07-14 13:00:25,608 1 INFO test_irg_db odoo.modules.loading: loading irg_admission_oficialidad_webhook/wizard/oficialidad_send_wizard_view.xml 
+2026-07-14 13:00:25,615 1 INFO test_irg_db odoo.modules.loading: loading irg_admission_oficialidad_webhook/views/op_admission_register_view.xml 
+2026-07-14 13:00:25,623 1 INFO test_irg_db odoo.modules.loading: loading irg_admission_oficialidad_webhook/views/op_admission_view.xml 
+2026-07-14 13:00:29,177 1 INFO test_irg_db odoo.service.server: 21 post-tests in 1.06s, 2218 queries 
+2026-07-14 13:00:29,177 1 INFO test_irg_db odoo.tests.stats: irg_admission_oficialidad_webhook: 23 tests 1.06s 2218 queries 
+2026-07-14 13:00:29,177 1 INFO test_irg_db odoo.tests.result: 0 failed, 0 error(s) of 21 tests when loading database 'test_irg_db' 
+module_specific_errors:
+none
+ui_assertions:
+action_runtime=PASS id=1758 target=new
+button_combined_arch=PASS name=1758 groups=openeducat_admission.group_op_admission_admin
+wizard_view_runtime=PASS fields=register_id,admission_ids/application_number,name,state,oficialidad_sent_date
+traceability_column_runtime=PASS optional=hide
+model_fields_runtime=PASS
