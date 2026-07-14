@@ -1,0 +1,6 @@
+Actualización final ejecutada en docker-compose.local.yml el 2026-07-14.
+
+- `-u irg_student_birth_citizenship`: exit code 0.
+- Cargadas views/res_partner_views.xml y views/op_student_views.xml.
+- Módulo cargado en 0.11 s, 118 queries.
+- Registro final: Modules loaded.

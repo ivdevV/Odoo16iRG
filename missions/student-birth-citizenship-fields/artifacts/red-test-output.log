@@ -1,0 +1,5 @@
+RED ejecutado en docker-compose.local.yml el 2026-07-14.
+
+Comando: instalación limpia de irg_student_birth_citizenship con --test-enable y --test-tags /irg_student_birth_citizenship.
+Resultado: exit code 1; 5 pruebas ejecutadas; 1 fallo y 4 errores.
+Motivo esperado observado: KeyError/Invalid field para birth_place, birth_country_id y citizenship_country_id, y ausencia de los campos en las vistas.

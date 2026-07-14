@@ -1,0 +1,7 @@
+Validación final ejecutada en docker-compose.local.yml el 2026-07-14.
+
+Base limpia: irg_test_student_birth_fields.
+Módulo instalado: irg_student_birth_citizenship.
+Casos post-install iniciados: 5.
+Resultado Odoo: 0 failed, 0 error(s) of 5 tests.
+Duración de post-tests: 0.07 s; 89 queries.

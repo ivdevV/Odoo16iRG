@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "task": "student-birth-citizenship-fields",
+  "checks": [
+    {
+      "name": "tdd_red_green",
+      "result": "pass",
+      "detail": "RED confirmado con 5 casos fallando por campos ausentes; GREEN y validación final con 0 fallos y 0 errores de 5 casos."
+    },
+    {
+      "name": "odoo_post_install_tests",
+      "result": "pass",
+      "detail": "Las pruebas validan tipos y etiquetas, delegación bidireccional contacto/estudiante, ambas vistas e independencia de nationality."
+    },
+    {
+      "name": "odoo_module_upgrade",
+      "result": "pass",
+      "detail": "La actualización -u cargó correctamente los modelos y las dos vistas heredadas con exit code 0."
+    },
+    {
+      "name": "static_python_xml_manifest",
+      "result": "pass",
+      "detail": "6 Python parseados, 2 XML parseados, manifest validado y git diff --check sin errores."
+    },
+    {
+      "name": "documentation",
+      "result": "pass",
+      "detail": "README, instrucciones de instalación, pruebas, changelog y conocimiento reutilizable documentados."
+    },
+    {
+      "name": "isolated_runtime_mount",
+      "result": "pass",
+      "detail": "La validación usó docker-compose.local.yml con addons-extra del worktree montado en solo lectura; no se mezclaron los cambios locales del checkout principal."
+    }
+  ],
+  "evidence": [
+    "artifacts/red-test-output.log",
+    "artifacts/odoo-test-output.log",
+    "artifacts/odoo-upgrade-output.log",
+    "artifacts/static-validation.log"
+  ],
+  "model_tier_used": "complex",
+  "escalations": 0
+}
