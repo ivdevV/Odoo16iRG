@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_admission_register_form_oficialidad_column" model="ir.ui.view">
+        <field name="name">op.admission.register.form.oficialidad.column</field>
+        <field name="model">op.admission.register</field>
+        <field name="inherit_id" ref="openeducat_admission.view_op_admission_register_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='admission_ids']/tree/field[@name='state']"
+                   position="after">
+                <field name="oficialidad_sent_date" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_admission_register_form_oficialidad" model="ir.ui.view">
+        <field name="name">op.admission.register.form.oficialidad</field>
+        <field name="model">op.admission.register</field>
+        <field name="inherit_id" ref="openeducat_admission.view_op_admission_register_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_oficialidad_send_wizard)d"
+                        type="action" string="Oficialidad"
+                        class="oe_highlight"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

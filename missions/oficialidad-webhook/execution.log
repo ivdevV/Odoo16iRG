@@ -1,0 +1,10 @@
+2026-07-14T00:00:00+02:00 PLAN Misión clasificada como complex (>5 archivos, integración Odoo/webhook y token de autenticación).
+2026-07-14T00:00:01+02:00 PLAN Consultadas skill Odoo 16, workflow y knowledge base obligatoria.
+2026-07-14T00:00:02+02:00 PLAN Worktree aislado creado en /Users/ivrogo/.codex/worktrees/Odoo16iRG/oficialidad-webhook sobre feat/oficialidad-webhook desde origin/Dev_iRG.
+2026-07-14T00:00:03+02:00 PLAN La API de subagentes no expone selector de modelo; se usarán roles especializados con asignación de plataforma.
+2026-07-14T14:31:00+02:00 IMPLEMENTATION Leídas spec, plan detallado, AGENTS.md, skill Odoo 16, workflow, knowledge obligatoria y patrones de referencia. Confirmada rama feat/oficialidad-webhook basada en Dev_iRG.
+2026-07-14T14:32:00+02:00 IMPLEMENTATION Se aplicará TDD: suite Odoo escrita antes del código productivo y ejecución RED intentada contra docker-compose.local.yml sin copiar archivos al checkout original.
+2026-07-14T14:32:03+02:00 TDD RED Suite ejecutada en contenedor efímero odoo16irg:16.0-local, red odoo16irg_local_default y montaje read-only del worktree. Resultado esperado: 7 errores por modelos inexistentes oficialidad.send.wizard / irg.oficialidad.webhook.service; 0 failed, 7 errors. Evidencia: /tmp/oficialidad_red.log.
+2026-07-14T14:38:00+02:00 IMPLEMENTATION Creado exclusivamente el módulo nuevo irg_admission_oficialidad_webhook: campo de trazabilidad, servicio urllib con serialización dinámica, wizard, vistas heredadas, ACL y parámetros vacíos/default. No se editaron módulos existentes.
+2026-07-14T14:39:00+02:00 TDD GREEN Actualización e instalación de datos/vistas completada en test_irg_db desde el worktree aislado. Resultado Odoo: 7 post-tests, 0 failed, 0 errors. Evidencia: /tmp/oficialidad_green.log.
+2026-07-14T14:41:00+02:00 IMPLEMENTATION Verificación final propia: criterios estáticos Python/XML/manifest y git diff --check OK; runtime aislado 7/7 post-tests, 0 failed, 0 errors. Log local: /tmp/oficialidad_final.log. La validación independiente y verification.json quedan pendientes de la fase Validator.
