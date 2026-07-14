@@ -20,7 +20,8 @@
                 </field>
                 <footer>
                     <button name="action_send" string="Enviar" type="object"
-                            class="btn-primary"/>
+                            class="btn-primary"
+                            groups="openeducat_admission.group_op_admission_admin"/>
                     <button string="Cerrar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
@@ -32,5 +33,7 @@
         <field name="res_model">oficialidad.send.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
+        <field name="groups_id"
+               eval="[(6, 0, [ref('openeducat_admission.group_op_admission_admin')])]"/>
     </record>
 </odoo>

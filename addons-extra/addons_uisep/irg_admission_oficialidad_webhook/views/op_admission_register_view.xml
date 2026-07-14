@@ -8,7 +8,8 @@
             <xpath expr="//header" position="inside">
                 <button name="%(action_oficialidad_send_wizard)d"
                         type="action" string="Oficialidad"
-                        class="oe_highlight"/>
+                        class="oe_highlight"
+                        groups="openeducat_admission.group_op_admission_admin"/>
             </xpath>
         </field>
     </record>

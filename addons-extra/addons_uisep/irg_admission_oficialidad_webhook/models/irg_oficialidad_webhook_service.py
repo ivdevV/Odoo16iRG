@@ -1,10 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import ipaddress
 import json
-from urllib import error, request
+import socket
+from urllib import error, parse, request
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
+
+
+class _NoRedirectHandler(request.HTTPRedirectHandler):
+
+    def redirect_request(
+        self, req, fp, code, msg, headers, newurl
+    ):
+        return None
 
 
 class IrgOficialidadWebhookService(models.AbstractModel):
@@ -31,6 +41,11 @@ class IrgOficialidadWebhookService(models.AbstractModel):
         'access_token',
         'access_url',
         'access_warning',
+        'signup_token',
+        'signup_type',
+        'signup_expiration',
+        'new_password_user',
+        'password',
         '__last_update',
         'image',
         'image_1920',
@@ -51,6 +66,15 @@ class IrgOficialidadWebhookService(models.AbstractModel):
         'float',
         'monetary',
     })
+    _SECRET_FIELD_PATTERNS = (
+        'token',
+        'secret',
+        'password',
+        'passwd',
+        'apikey',
+        'privatekey',
+        'credential',
+    )
 
     @api.model
     def _get_int_param(self, key, default=0, minimum=None, maximum=None):
@@ -97,13 +121,80 @@ class IrgOficialidadWebhookService(models.AbstractModel):
             headers=headers,
             method='POST',
         )
+        opener = request.build_opener(_NoRedirectHandler())
         try:
-            with request.urlopen(req, timeout=timeout) as response:
+            with opener.open(req, timeout=timeout) as response:
                 body = response.read().decode('utf-8', errors='replace')[:2000]
                 return response.getcode(), body
         except error.HTTPError as exc:
             body = exc.read().decode('utf-8', errors='replace')[:2000]
             return exc.code, body
+
+    @api.model
+    def _is_sensitive_field_name(self, field_name):
+        lowered_name = field_name.lower()
+        if lowered_name in self._TECHNICAL_FIELDS:
+            return True
+        normalized_name = ''.join(
+            character for character in lowered_name if character.isalnum()
+        )
+        return any(
+            pattern in normalized_name
+            for pattern in self._SECRET_FIELD_PATTERNS
+        )
+
+    @api.model
+    def _validate_webhook_url(self, webhook_url):
+        try:
+            parsed_url = parse.urlsplit(webhook_url)
+            hostname = parsed_url.hostname
+            port = parsed_url.port or 443
+        except (TypeError, ValueError):
+            raise UserError(_(
+                'La URL configurada para el webhook de oficialidad no es segura.'
+            )) from None
+        if (
+            parsed_url.scheme.lower() != 'https'
+            or not hostname
+            or parsed_url.username is not None
+            or parsed_url.password is not None
+            or bool(parsed_url.fragment)
+        ):
+            raise UserError(_(
+                'La URL configurada para el webhook de oficialidad no es segura.'
+            ))
+
+        normalized_hostname = hostname.rstrip('.').lower()
+        if (
+            normalized_hostname == 'localhost'
+            or normalized_hostname.endswith('.localhost')
+        ):
+            raise UserError(_(
+                'La URL configurada para el webhook de oficialidad no es segura.'
+            ))
+
+        try:
+            addresses = [ipaddress.ip_address(normalized_hostname)]
+        except ValueError:
+            try:
+                address_info = socket.getaddrinfo(
+                    hostname,
+                    port,
+                    type=socket.SOCK_STREAM,
+                )
+                addresses = [
+                    ipaddress.ip_address(item[4][0].split('%', 1)[0])
+                    for item in address_info
+                ]
+            except (OSError, ValueError):
+                raise UserError(_(
+                    'No se pudo validar el destino del webhook de oficialidad.'
+                )) from None
+        if not addresses or any(not address.is_global for address in addresses):
+            raise UserError(_(
+                'La URL configurada para el webhook de oficialidad no es segura.'
+            ))
+        return webhook_url
 
     @api.model
     def _serialize_record(self, record):
@@ -114,7 +205,7 @@ class IrgOficialidadWebhookService(models.AbstractModel):
         for field_name, field_definition in record._fields.items():
             field_type = field_definition.type
             if (
-                field_name in self._TECHNICAL_FIELDS
+                self._is_sensitive_field_name(field_name)
                 or field_type in ('binary', 'image')
             ):
                 continue
@@ -202,6 +293,12 @@ class IrgOficialidadWebhookService(models.AbstractModel):
 
     @api.model
     def send_oficialidad(self, register, admissions):
+        if not self.env.is_superuser() and not self.env.user.has_group(
+            'openeducat_admission.group_op_admission_admin'
+        ):
+            raise AccessError(_(
+                'Solo los administradores de admisiones pueden enviar oficialidad.'
+            ))
         config = self._get_config()
         missing = []
         if not config['webhook_url']:
@@ -212,6 +309,7 @@ class IrgOficialidadWebhookService(models.AbstractModel):
             raise UserError(_(
                 'Configure los siguientes parámetros del webhook de oficialidad: %s'
             ) % ', '.join(missing))
+        self._validate_webhook_url(config['webhook_url'])
 
         payload_json = json.dumps(
             self._build_payload(register, admissions),
@@ -224,16 +322,13 @@ class IrgOficialidadWebhookService(models.AbstractModel):
                 config['auth_token'],
                 config['timeout'],
             )
-        except Exception as exc:
-            raise UserError(
-                _('No se pudo contactar con el webhook de oficialidad: %s') % exc
-            ) from exc
+        except Exception:
+            raise UserError(_(
+                'No se pudo contactar con el webhook de oficialidad. '
+                'Revise su configuración e inténtelo de nuevo.'
+            )) from None
         if not 200 <= status < 300:
             raise UserError(_(
-                'El webhook de oficialidad respondió con estado HTTP %(status)s: '
-                '%(detail)s'
-            ) % {
-                'status': status,
-                'detail': (body or '')[:500],
-            })
+                'El webhook de oficialidad respondió con estado HTTP %s.'
+            ) % status)
         return status, body

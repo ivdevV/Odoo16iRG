@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 
 
 class OficialidadSendWizard(models.TransientModel):
@@ -20,11 +20,26 @@ class OficialidadSendWizard(models.TransientModel):
         domain="[('register_id', '=', register_id)]",
     )
 
+    def _check_admission_admin(self):
+        if not self.env.is_superuser() and not self.env.user.has_group(
+            'openeducat_admission.group_op_admission_admin'
+        ):
+            raise AccessError(_(
+                'Solo los administradores de admisiones pueden enviar oficialidad.'
+            ))
+
     @api.model
     def default_get(self, fields_list):
+        self._check_admission_admin()
         values = super().default_get(fields_list)
         active_id = self.env.context.get('active_id')
+        active_model = self.env.context.get('active_model')
         if active_id:
+            if active_model != 'op.admission.register':
+                raise UserError(_(
+                    'El asistente de oficialidad debe abrirse desde un registro '
+                    'de admisión.'
+                ))
             register = self.env['op.admission.register'].browse(active_id).exists()
             if register:
                 values.update({
@@ -35,13 +50,29 @@ class OficialidadSendWizard(models.TransientModel):
 
     def action_send(self):
         self.ensure_one()
-        if not self.admission_ids:
+        self._check_admission_admin()
+        register = self.register_id.exists()
+        if not register:
+            raise UserError(_('El registro de admisión ya no existe.'))
+        register.check_access_rights('read')
+        register.check_access_rule('read')
+        admissions = self.admission_ids.exists()
+        if not admissions:
             raise UserError(_('Seleccione al menos una admisión para enviar.'))
+        admissions.check_access_rights('read')
+        admissions.check_access_rule('read')
+        admissions.check_access_rights('write')
+        admissions.check_access_rule('write')
+        if any(admission.register_id != register for admission in admissions):
+            raise UserError(_(
+                'Todas las admisiones seleccionadas deben pertenecer al registro '
+                'de admisión abierto.'
+            ))
         self.env['irg.oficialidad.webhook.service'].send_oficialidad(
-            self.register_id,
-            self.admission_ids,
+            register,
+            admissions,
         )
-        self.admission_ids.write({
+        admissions.write({
             'oficialidad_sent_date': fields.Datetime.now(),
         })
         return {
@@ -51,7 +82,7 @@ class OficialidadSendWizard(models.TransientModel):
                 'title': _('Oficialidad enviada'),
                 'message': _(
                     'Se enviaron correctamente %(count)s admisiones.'
-                ) % {'count': len(self.admission_ids)},
+                ) % {'count': len(admissions)},
                 'type': 'success',
                 'sticky': False,
                 'next': {'type': 'ir.actions.act_window_close'},
