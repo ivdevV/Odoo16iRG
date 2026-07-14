@@ -96,11 +96,20 @@ class TestOficialidadWebhook(TransactionCase):
     def test_payload_serializacion_completa(self):
         captured = {}
 
-        def capture_post(webhook_url, payload_json, auth_token, timeout):
+        def capture_post(
+            webhook_url,
+            payload_json,
+            auth_token,
+            timeout,
+            pinned_ip=None,
+            server_hostname=None,
+        ):
             captured['webhook_url'] = webhook_url
             captured['payload_json'] = payload_json
             captured['auth_token'] = auth_token
             captured['timeout'] = timeout
+            captured['pinned_ip'] = pinned_ip
+            captured['server_hostname'] = server_hostname
             return 200, '{"ok": true}'
 
         service = self.env['irg.oficialidad.webhook.service']
@@ -112,6 +121,8 @@ class TestOficialidadWebhook(TransactionCase):
             set(payload), {'odoo', 'register', 'students', 'sent_at', 'sent_by'}
         )
         self.assertEqual(payload['register']['id'], self.register.id)
+        self.assertEqual(captured['pinned_ip'], '8.8.8.8')
+        self.assertEqual(captured['server_hostname'], '8.8.8.8')
         self.assertEqual(len(payload['students']), 2)
         by_admission_id = {
             row['admission']['id']: row for row in payload['students']
@@ -414,7 +425,12 @@ class TestOficialidadWebhook(TransactionCase):
 
         self.assertEqual(status, 302)
         build_opener.assert_called_once()
-        redirect_handler = build_opener.call_args.args[0]
+        redirect_handler = next(
+            handler for handler in build_opener.call_args.args
+            if isinstance(
+                handler, service_module.request.HTTPRedirectHandler
+            )
+        )
         self.assertIsInstance(
             redirect_handler, service_module.request.HTTPRedirectHandler
         )
@@ -423,6 +439,84 @@ class TestOficialidadWebhook(TransactionCase):
                 None, None, 302, 'Found', {}, 'https://1.1.1.1/other'
             )
         )
+
+    def test_respuesta_http_limita_lectura_a_2001_bytes(self):
+        service = self.env['irg.oficialidad.webhook.service']
+        response = MagicMock()
+        response.__enter__.return_value = response
+        response.read.return_value = b'x' * 2001
+        response.getcode.return_value = 200
+        opener = MagicMock()
+        opener.open.return_value = response
+
+        with patch.object(
+            service_module.request,
+            'build_opener',
+            return_value=opener,
+        ):
+            status, body = service._post_json(
+                'https://8.8.8.8/oficialidad', '{}', 'test-token', 15
+            )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(len(body), 2000)
+        response.read.assert_called_once_with(2001)
+
+    def test_conexion_https_usa_ip_pinnada_y_hostname_original(self):
+        context = MagicMock()
+        raw_socket = MagicMock()
+        connection = service_module._PinnedHTTPSConnection(
+            'n8n.example.com',
+            pinned_ip='2001:4860:4860::8888',
+            server_hostname='n8n.example.com',
+            context=context,
+        )
+        connection._create_connection = MagicMock(return_value=raw_socket)
+
+        connection.connect()
+
+        connection._create_connection.assert_called_once_with(
+            ('2001:4860:4860::8888', 443),
+            connection.timeout,
+            connection.source_address,
+        )
+        context.wrap_socket.assert_called_once_with(
+            raw_socket,
+            server_hostname='n8n.example.com',
+        )
+
+    def test_envio_entrega_ip_validada_sin_segunda_resolucion(self):
+        self.params.set_param(
+            'irg_oficialidad_webhook.webhook_url',
+            'https://n8n.example.com/hook',
+        )
+        service = self.env['irg.oficialidad.webhook.service']
+        public_dns_result = [(2, 1, 6, '', ('8.8.8.8', 443))]
+        response = MagicMock()
+        response.__enter__.return_value = response
+        response.read.return_value = b'{}'
+        response.getcode.return_value = 200
+        opener = MagicMock()
+        opener.open.return_value = response
+
+        with patch.object(
+            service_module.socket,
+            'getaddrinfo',
+            return_value=public_dns_result,
+        ) as resolver, patch.object(
+            service_module.request,
+            'build_opener',
+            return_value=opener,
+        ) as build_opener:
+            service.send_oficialidad(self.register, self.admission_linked)
+
+        resolver.assert_called_once()
+        pinned_handler = next(
+            handler for handler in build_opener.call_args.args
+            if isinstance(handler, service_module._PinnedHTTPSHandler)
+        )
+        self.assertEqual(pinned_handler.pinned_ip, '8.8.8.8')
+        self.assertEqual(pinned_handler.server_hostname, 'n8n.example.com')
 
     def test_error_de_conexion_no_expone_detalle_interno(self):
         wizard = self._new_wizard(self.admission_linked)

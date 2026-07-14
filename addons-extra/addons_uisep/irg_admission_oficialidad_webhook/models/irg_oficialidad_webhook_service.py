@@ -3,6 +3,7 @@
 import ipaddress
 import json
 import socket
+from http import client as http_client
 from urllib import error, parse, request
 
 from odoo import _, api, fields, models
@@ -15,6 +16,58 @@ class _NoRedirectHandler(request.HTTPRedirectHandler):
         self, req, fp, code, msg, headers, newurl
     ):
         return None
+
+
+class _PinnedHTTPSConnection(http_client.HTTPSConnection):
+
+    def __init__(
+        self,
+        host,
+        port=None,
+        *,
+        pinned_ip,
+        server_hostname,
+        **kwargs
+    ):
+        self.pinned_ip = pinned_ip
+        self.server_hostname = server_hostname
+        super().__init__(host, port=port, **kwargs)
+
+    def connect(self):
+        self.sock = self._create_connection(
+            (self.pinned_ip, self.port),
+            self.timeout,
+            self.source_address,
+        )
+        if self._tunnel_host:
+            self._tunnel()
+        self.sock = self._context.wrap_socket(
+            self.sock,
+            server_hostname=self.server_hostname,
+        )
+
+
+class _PinnedHTTPSHandler(request.HTTPSHandler):
+
+    def __init__(self, pinned_ip, server_hostname, **kwargs):
+        self.pinned_ip = pinned_ip
+        self.server_hostname = server_hostname
+        super().__init__(**kwargs)
+
+    def https_open(self, req):
+        def connection_factory(host, **kwargs):
+            return _PinnedHTTPSConnection(
+                host,
+                pinned_ip=self.pinned_ip,
+                server_hostname=self.server_hostname,
+                **kwargs
+            )
+
+        return self.do_open(
+            connection_factory,
+            req,
+            context=self._context,
+        )
 
 
 class IrgOficialidadWebhookService(models.AbstractModel):
@@ -110,7 +163,19 @@ class IrgOficialidadWebhookService(models.AbstractModel):
         }
 
     @api.model
-    def _post_json(self, webhook_url, payload_json, auth_token, timeout):
+    def _post_json(
+        self,
+        webhook_url,
+        payload_json,
+        auth_token,
+        timeout,
+        pinned_ip=None,
+        server_hostname=None,
+    ):
+        if not pinned_ip or not server_hostname:
+            destination = self._validate_webhook_url(webhook_url)
+            pinned_ip = destination['pinned_ip']
+            server_hostname = destination['server_hostname']
         headers = {
             'Content-Type': 'application/json; charset=utf-8',
             'Authorization': 'Bearer %s' % auth_token,
@@ -121,14 +186,24 @@ class IrgOficialidadWebhookService(models.AbstractModel):
             headers=headers,
             method='POST',
         )
-        opener = request.build_opener(_NoRedirectHandler())
+        opener = request.build_opener(
+            request.ProxyHandler({}),
+            _NoRedirectHandler(),
+            _PinnedHTTPSHandler(pinned_ip, server_hostname),
+        )
         try:
             with opener.open(req, timeout=timeout) as response:
-                body = response.read().decode('utf-8', errors='replace')[:2000]
+                body = self._read_response_body(response)
                 return response.getcode(), body
         except error.HTTPError as exc:
-            body = exc.read().decode('utf-8', errors='replace')[:2000]
+            body = self._read_response_body(exc)
             return exc.code, body
+
+    @api.model
+    def _read_response_body(self, response):
+        return response.read(2001)[:2000].decode(
+            'utf-8', errors='replace'
+        )
 
     @api.model
     def _is_sensitive_field_name(self, field_name):
@@ -194,7 +269,10 @@ class IrgOficialidadWebhookService(models.AbstractModel):
             raise UserError(_(
                 'La URL configurada para el webhook de oficialidad no es segura.'
             ))
-        return webhook_url
+        return {
+            'pinned_ip': str(addresses[0]),
+            'server_hostname': normalized_hostname,
+        }
 
     @api.model
     def _serialize_record(self, record):
@@ -309,7 +387,7 @@ class IrgOficialidadWebhookService(models.AbstractModel):
             raise UserError(_(
                 'Configure los siguientes parámetros del webhook de oficialidad: %s'
             ) % ', '.join(missing))
-        self._validate_webhook_url(config['webhook_url'])
+        destination = self._validate_webhook_url(config['webhook_url'])
 
         payload_json = json.dumps(
             self._build_payload(register, admissions),
@@ -321,6 +399,8 @@ class IrgOficialidadWebhookService(models.AbstractModel):
                 payload_json,
                 config['auth_token'],
                 config['timeout'],
+                pinned_ip=destination['pinned_ip'],
+                server_hostname=destination['server_hostname'],
             )
         except Exception:
             raise UserError(_(
