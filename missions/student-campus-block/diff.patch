@@ -1,0 +1,597 @@
+diff --git a/addons-extra/extrairg/irg_student_campus_block/__init__.py b/addons-extra/extrairg/irg_student_campus_block/__init__.py
+new file mode 100644
+index 000000000..cde864bae
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_campus_block/__init__.py
+@@ -0,0 +1,3 @@
++# -*- coding: utf-8 -*-
++
++from . import models
+diff --git a/addons-extra/extrairg/irg_student_campus_block/__manifest__.py b/addons-extra/extrairg/irg_student_campus_block/__manifest__.py
+new file mode 100644
+index 000000000..70558672f
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_campus_block/__manifest__.py
+@@ -0,0 +1,13 @@
++# -*- coding: utf-8 -*-
++{
++    "name": "IRG Student Campus Block",
++    "summary": "Block and restore student portal access from the student form",
++    "version": "16.0.1.0.0",
++    "category": "Education",
++    "author": "Instituto Raimon Gaja",
++    "license": "LGPL-3",
++    "depends": ["openeducat_core"],
++    "data": ["views/op_student_view.xml"],
++    "installable": True,
++    "application": False,
++}
+diff --git a/addons-extra/extrairg/irg_student_campus_block/models/__init__.py b/addons-extra/extrairg/irg_student_campus_block/models/__init__.py
+new file mode 100644
+index 000000000..9e187ddf3
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_campus_block/models/__init__.py
+@@ -0,0 +1,4 @@
++# -*- coding: utf-8 -*-
++
++from . import op_student
++
+diff --git a/addons-extra/extrairg/irg_student_campus_block/models/op_student.py b/addons-extra/extrairg/irg_student_campus_block/models/op_student.py
+new file mode 100644
+index 000000000..ee6a9192f
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_campus_block/models/op_student.py
+@@ -0,0 +1,78 @@
++# -*- coding: utf-8 -*-
++
++from odoo import _, api, fields, models
++from odoo.exceptions import AccessError, UserError
++from odoo.tools import html_escape
++
++
++class OpStudent(models.Model):
++    _inherit = "op.student"
++
++    irg_campus_blocked = fields.Boolean(
++        string="Campus bloqueado",
++        compute="_compute_irg_campus_blocked",
++    )
++
++    @api.depends("user_id", "user_id.active")
++    def _compute_irg_campus_blocked(self):
++        for student in self:
++            user = student.with_context(active_test=False).user_id
++            student.irg_campus_blocked = bool(user) and not user.active
++
++    def action_block_campus_access(self):
++        return self._irg_set_campus_access(active=False)
++
++    def action_unblock_campus_access(self):
++        return self._irg_set_campus_access(active=True)
++
++    def _irg_set_campus_access(self, active):
++        if not self.env.user.has_group(
++            "openeducat_core.group_op_back_office_admin"
++        ):
++            raise AccessError(_("No tiene permisos para cambiar el acceso al campus."))
++
++        targets = []
++        for student in self:
++            linked_user_id = student.with_context(active_test=False).user_id.id
++            if not linked_user_id:
++                raise UserError(_("El alumno no tiene un usuario portal vinculado."))
++
++            target_user = (
++                self.env["res.users"]
++                .with_context(active_test=False)
++                .browse(linked_user_id)
++                .exists()
++            )
++            if not target_user:
++                raise UserError(_("El usuario portal vinculado ya no existe."))
++            if (
++                not target_user.has_group("base.group_portal")
++                or target_user.has_group("base.group_user")
++            ):
++                raise UserError(
++                    _("El usuario vinculado no es un usuario portal externo válido.")
++                )
++            targets.append((student, target_user))
++
++        for student, target_user in targets:
++            if target_user.active == active:
++                continue
++
++            target_user.sudo().write({"active": active})
++            if active:
++                body = _(
++                    "Acceso autenticado a Odoo desbloqueado por %(operator)s "
++                    "para el usuario portal %(target)s.",
++                    operator=html_escape(self.env.user.name),
++                    target=html_escape(target_user.name),
++                )
++            else:
++                body = _(
++                    "Acceso autenticado a Odoo bloqueado por %(operator)s "
++                    "para el usuario portal %(target)s.",
++                    operator=html_escape(self.env.user.name),
++                    target=html_escape(target_user.name),
++                )
++            student.message_post(body=body)
++
++        return False
+diff --git a/addons-extra/extrairg/irg_student_campus_block/views/op_student_view.xml b/addons-extra/extrairg/irg_student_campus_block/views/op_student_view.xml
+new file mode 100644
+index 000000000..a57814480
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_campus_block/views/op_student_view.xml
+@@ -0,0 +1,33 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <record id="view_op_student_form_campus_block" model="ir.ui.view">
++        <field name="name">op.student.form.campus.block</field>
++        <field name="model">op.student</field>
++        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
++        <field name="arch" type="xml">
++            <xpath expr="//form/header" position="inside">
++                <button name="action_block_campus_access"
++                        type="object"
++                        string="Bloquear acceso campus"
++                        class="btn-secondary"
++                        groups="openeducat_core.group_op_back_office_admin"
++                        attrs="{'invisible': ['|', ('user_id', '=', False), ('irg_campus_blocked', '=', True)]}"
++                        confirm="Esta acción bloqueará todo acceso autenticado del alumno a Odoo (portal, eLearning y otros servicios Odoo) desde su siguiente petición. No afecta a Moodle. ¿Desea continuar?"/>
++                <button name="action_unblock_campus_access"
++                        type="object"
++                        string="Desbloquear acceso campus"
++                        class="btn-primary"
++                        groups="openeducat_core.group_op_back_office_admin"
++                        attrs="{'invisible': ['|', ('user_id', '=', False), ('irg_campus_blocked', '=', False)]}"
++                        confirm="Esta acción restaurará el acceso autenticado del alumno a Odoo desde su siguiente petición. No afecta a Moodle. ¿Desea continuar?"/>
++            </xpath>
++            <xpath expr="//form/sheet" position="inside">
++                <field name="irg_campus_blocked" invisible="1"/>
++                <widget name="web_ribbon"
++                        title="Campus bloqueado"
++                        bg_color="bg-danger"
++                        attrs="{'invisible': ['|', ('irg_campus_blocked', '=', False), ('active', '=', False)]}"/>
++            </xpath>
++        </field>
++    </record>
++</odoo>
+diff --git a/addons-extra/extrairg/irg_student_campus_block/tests/__init__.py b/addons-extra/extrairg/irg_student_campus_block/tests/__init__.py
+new file mode 100644
+index 000000000..db0cd1de6
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_campus_block/tests/__init__.py
+@@ -0,0 +1,4 @@
++# -*- coding: utf-8 -*-
++
++from . import test_student_campus_block
++
+diff --git a/addons-extra/extrairg/irg_student_campus_block/tests/test_student_campus_block.py b/addons-extra/extrairg/irg_student_campus_block/tests/test_student_campus_block.py
+new file mode 100644
+index 000000000..9deb1d5b5
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_campus_block/tests/test_student_campus_block.py
+@@ -0,0 +1,190 @@
++# -*- coding: utf-8 -*-
++
++from lxml import etree
++from odoo.exceptions import AccessError, UserError, ValidationError
++from odoo.tests.common import TransactionCase, new_test_user, tagged
++
++
++@tagged("post_install", "-at_install", "irg_student_campus_block")
++class TestStudentCampusBlock(TransactionCase):
++    @classmethod
++    def setUpClass(cls):
++        super().setUpClass()
++        cls.back_office_user = new_test_user(
++            cls.env,
++            login="campus.block.admin@example.test",
++            groups="openeducat_core.group_op_back_office_admin",
++            name="Campus Block Administrator",
++        )
++        cls.faculty_user = new_test_user(
++            cls.env,
++            login="campus.block.faculty@example.test",
++            groups="openeducat_core.group_op_faculty",
++            name="Campus Faculty",
++        )
++
++    def _create_student(self, suffix, user_groups="base.group_portal"):
++        partner = self.env["res.partner"].create({
++            "name": "Campus Student %s" % suffix,
++            "email": "campus.student.%s@example.test" % suffix,
++        })
++        user = False
++        if user_groups is not None:
++            user = new_test_user(
++                self.env,
++                login=partner.email,
++                groups=user_groups,
++                name=partner.name,
++            )
++            user.partner_id = partner
++        student = self.env["op.student"].create({
++            "partner_id": partner.id,
++            "first_name": "Campus",
++            "last_name": "Student %s" % suffix,
++            "gender": "o",
++            "user_id": user.id if user else False,
++        })
++        return student, user
++
++    def test_block_deactivates_portal_user_and_updates_computed_state(self):
++        student, user = self._create_student("block")
++
++        student.with_user(self.back_office_user).action_block_campus_access()
++
++        self.assertFalse(user.with_context(active_test=False).active)
++        self.assertTrue(student.irg_campus_blocked)
++
++    def test_unblock_reactivates_portal_user_and_updates_computed_state(self):
++        student, user = self._create_student("unblock")
++        user.active = False
++
++        student.with_user(self.back_office_user).action_unblock_campus_access()
++
++        self.assertTrue(user.with_context(active_test=False).active)
++        self.assertFalse(student.irg_campus_blocked)
++
++    def test_actions_are_idempotent_against_stale_requests(self):
++        student, user = self._create_student("idempotent")
++
++        student.with_user(self.back_office_user).action_block_campus_access()
++        messages_after_block = len(student.message_ids)
++        student.with_user(self.back_office_user).action_block_campus_access()
++
++        self.assertFalse(user.with_context(active_test=False).active)
++        self.assertEqual(len(student.message_ids), messages_after_block)
++
++        student.with_user(self.back_office_user).action_unblock_campus_access()
++        messages_after_unblock = len(student.message_ids)
++        student.with_user(self.back_office_user).action_unblock_campus_access()
++
++        self.assertTrue(user.with_context(active_test=False).active)
++        self.assertEqual(len(student.message_ids), messages_after_unblock)
++
++    def test_missing_user_is_rejected(self):
++        student, _user = self._create_student("without-user", user_groups=None)
++
++        with self.assertRaisesRegex(UserError, "usuario portal"):
++            student.with_user(self.back_office_user).action_block_campus_access()
++
++    def test_effective_change_posts_chatter_as_real_operator(self):
++        student, user = self._create_student("chatter")
++        before = student.message_ids
++
++        student.with_user(self.back_office_user).action_block_campus_access()
++
++        message = (student.message_ids - before).sorted("id")[-1]
++        self.assertEqual(message.author_id, self.back_office_user.partner_id)
++        self.assertIn(self.back_office_user.name, message.body)
++        self.assertIn(user.name, message.body)
++        self.assertIn("bloqueado", message.body.lower())
++
++    def test_faculty_cannot_call_action_through_orm(self):
++        student, user = self._create_student("faculty-denied")
++
++        with self.assertRaises(AccessError):
++            student.with_user(self.faculty_user).action_block_campus_access()
++
++        self.assertTrue(user.active)
++
++    def test_internal_target_is_rejected(self):
++        student, user = self._create_student("internal", "base.group_user")
++
++        with self.assertRaisesRegex(UserError, "portal"):
++            student.with_user(self.back_office_user).action_block_campus_access()
++
++        self.assertTrue(user.active)
++
++    def test_public_non_portal_target_is_rejected(self):
++        student, user = self._create_student("public", "base.group_public")
++
++        with self.assertRaisesRegex(UserError, "portal"):
++            student.with_user(self.back_office_user).action_block_campus_access()
++
++        self.assertTrue(user.active)
++
++    def test_blocked_linked_user_stays_inactive_during_optional_rematriculation(self):
++        admission_model = self.env["op.admission"]
++        if not hasattr(admission_model, "_ensure_portal_user"):
++            self.skipTest("Optional manual confirmation wizard is not installed")
++
++        student, user = self._create_student("rematriculation")
++        student.with_user(self.back_office_user).action_block_campus_access()
++        admission = admission_model.new({
++            "name": student.name,
++            "first_name": student.first_name,
++            "last_name": student.last_name,
++            "gender": student.gender,
++            "email": student.email,
++            "partner_id": student.partner_id.id,
++            "student_id": student.id,
++        })
++
++        admission._ensure_portal_user()
++
++        self.assertEqual(student.user_id.with_context(active_test=False), user)
++        self.assertFalse(user.with_context(active_test=False).active)
++
++    def test_optional_rematriculation_exposes_unlinked_archived_user_collision(self):
++        admission_model = self.env["op.admission"]
++        if not hasattr(admission_model, "_ensure_portal_user"):
++            self.skipTest("Optional manual confirmation wizard is not installed")
++
++        student, user = self._create_student("rematriculation-unlinked")
++        student.with_user(self.back_office_user).action_block_campus_access()
++        student.user_id = False
++        admission = admission_model.new({
++            "name": student.name,
++            "first_name": student.first_name,
++            "last_name": student.last_name,
++            "gender": student.gender,
++            "email": student.email,
++            "partner_id": student.partner_id.id,
++            "student_id": student.id,
++        })
++
++        with self.assertRaises(ValidationError), self.env.cr.savepoint():
++            admission._ensure_portal_user()
++
++        self.assertFalse(student.user_id)
++        self.assertFalse(user.with_context(active_test=False).active)
++
++    def test_view_exposes_explicit_restricted_actions_and_ribbon(self):
++        view = self.env.ref("irg_student_campus_block.view_op_student_form_campus_block")
++        arch = etree.fromstring(view.arch_db.encode())
++
++        for action in (
++            "action_block_campus_access",
++            "action_unblock_campus_access",
++        ):
++            buttons = arch.xpath("//button[@name='%s']" % action)
++            self.assertEqual(len(buttons), 1)
++            self.assertEqual(
++                buttons[0].get("groups"),
++                "openeducat_core.group_op_back_office_admin",
++            )
++            self.assertTrue(buttons[0].get("confirm"))
++        ribbons = arch.xpath(
++            "//widget[@name='web_ribbon'][@title='Campus bloqueado']"
++        )
++        self.assertEqual(len(ribbons), 1)
++        self.assertIn("('active', '=', False)", ribbons[0].get("attrs", ""))
+diff --git a/missions/student-campus-block/CHANGELOG.md b/missions/student-campus-block/CHANGELOG.md
+new file mode 100644
+index 000000000..e7bcef3d1
+--- /dev/null
++++ b/missions/student-campus-block/CHANGELOG.md
+@@ -0,0 +1,33 @@
++# Changelog — student-campus-block
++
++## 16.0.1.0.0 — 2026-07-14
++
++### Añadido
++
++- Nuevo módulo aislado `irg_student_campus_block`, dependiente únicamente de `openeducat_core`.
++- Campo computado no almacenado `op.student.irg_campus_blocked`, derivado del estado real de `user_id.active`.
++- Acciones explícitas e idempotentes para bloquear y desbloquear el acceso autenticado del usuario portal vinculado.
++- Botones mutuamente excluyentes y con confirmación en el formulario de estudiante.
++- Ribbon rojo «Campus bloqueado», coordinado con el ribbon «Archived» de OpenEduCat para evitar solapamientos.
++- Registro en chatter del operador real, usuario objetivo y resultado cuando existe un cambio efectivo.
++- Suite de 11 pruebas Odoo para comportamiento, permisos, idempotencia, chatter, vista y cruces de rematrícula.
++
++### Seguridad
++
++- Acciones disponibles únicamente para `openeducat_core.group_op_back_office_admin`, tanto en vista como en servidor.
++- Rechazo de usuarios internos, públicos o sin grupo portal antes de elevar permisos.
++- Uso de `sudo()` limitado a `res.users.write({'active': ...})`; el chatter conserva la autoría del operador real.
++- Sustitución del toggle ambiguo inicial por dos acciones explícitas para resistir peticiones obsoletas o repetidas.
++
++### Validación
++
++- Upgrade e instalación en Odoo 16: 11/11 métodos de test, 0 fallos y 0 errores.
++- Verificación HTTP/JSON-RPC real de denegación a faculty, bloqueo, invalidación del acceso en la siguiente petición y restauración tras desbloqueo.
++- Compilación Python, Ruff, parseo XML, carga de vista, alcance de `sudo()` y tabla de visibilidad de ribbons validados.
++
++### Limitaciones conocidas
++
++- El bloqueo afecta al acceso autenticado a Odoo, no a Moodle.
++- No se elimina físicamente una sesión de Redis; Odoo rechaza la sesión del usuario inactivo en su siguiente petición.
++- Si un usuario archivado se desvincula de `op.student`, el flujo opcional de rematrícula de `irg_sale_manual_confirmation_wizard` no lo encuentra con su búsqueda actual y puede producir `ValidationError` por login duplicado. Es un comportamiento preexistente y queda fuera del alcance de este módulo.
++
+diff --git a/missions/student-campus-block/artifacts/implementation-report.md b/missions/student-campus-block/artifacts/implementation-report.md
+new file mode 100644
+index 000000000..b0c9ca43e
+--- /dev/null
++++ b/missions/student-campus-block/artifacts/implementation-report.md
+@@ -0,0 +1,116 @@
++# Informe de implementación — `irg_student_campus_block`
++
++## Objetivo y alcance
++
++Se creó un módulo nuevo para bloquear o restaurar, desde el formulario de `op.student`, el acceso autenticado a Odoo del usuario portal actualmente vinculado al estudiante. No se modificó OpenEduCat ni ningún otro módulo existente.
++
++El bloqueo se implementa mediante `res.users.active = False`. Esto afecta al portal, eLearning, foros y cualquier otro acceso autenticado a la misma instancia Odoo. Moodle no forma parte de esta implementación.
++
++## Arquitectura
++
++El módulo depende únicamente de `openeducat_core` y extiende `op.student` mediante `_inherit`.
++
++- `irg_campus_blocked` es un booleano computado y no almacenado. Su valor es verdadero cuando existe `user_id` y ese usuario está inactivo. El compute usa `active_test=False`, por lo que también puede leer usuarios archivados.
++- `action_block_campus_access()` y `action_unblock_campus_access()` son acciones públicas separadas. Ambas delegan en una operación interna idempotente con el estado final explícito.
++- Antes de cualquier elevación de permisos se valida en servidor que el operador pertenezca a `group_op_back_office_admin`, que el usuario vinculado exista y que sea portal externo, no interno ni público.
++- El único `sudo()` productivo está acotado a la escritura de `active` en el usuario objetivo. `message_post()` se ejecuta con el usuario operador real.
++- Solo se publica chatter cuando cambia efectivamente el estado. Repetir la misma acción no genera mensajes duplicados.
++- La vista hereda `openeducat_core.view_op_student_form` mediante XPath, sin editar la vista original.
++
++## Archivos del módulo
++
++- `addons-extra/extrairg/irg_student_campus_block/__manifest__.py`: metadatos, versión `16.0.1.0.0`, dependencia y carga de vista.
++- `addons-extra/extrairg/irg_student_campus_block/__init__.py`: registro del paquete de modelos.
++- `addons-extra/extrairg/irg_student_campus_block/models/__init__.py`: registro de la extensión de estudiante.
++- `addons-extra/extrairg/irg_student_campus_block/models/op_student.py`: campo computado, autorización, validación de objetivo, cambio de estado y chatter.
++- `addons-extra/extrairg/irg_student_campus_block/views/op_student_view.xml`: botones, confirmaciones y ribbon.
++- `addons-extra/extrairg/irg_student_campus_block/tests/__init__.py`: descubrimiento obligatorio de tests Odoo.
++- `addons-extra/extrairg/irg_student_campus_block/tests/test_student_campus_block.py`: suite funcional, de seguridad, integración opcional y vista.
++
++No se añade `ir.model.access.csv` porque el módulo no crea modelos ni concede accesos nuevos. La restricción se aplica al grupo de la vista y se vuelve a comprobar dentro del método de servidor.
++
++## Configuración e instalación
++
++No existen parámetros de sistema, cron, datos maestros ni secretos nuevos. Basta con que `addons-extra/extrairg` esté incluido en `addons_path`.
++
++Instalación local en la base de pruebas:
++
++```bash
++docker compose -f docker-compose.local.yml exec -T odoo_local \
++  odoo -c /etc/odoo/odoo.conf -d test_irg_db \
++  -i irg_student_campus_block --stop-after-init
++```
++
++Actualización posterior:
++
++```bash
++docker compose -f docker-compose.local.yml exec -T odoo_local \
++  odoo -c /etc/odoo/odoo.conf -d test_irg_db \
++  -u irg_student_campus_block --stop-after-init
++```
++
++En un worktree, un contenedor ya creado conserva su volumen anterior. Para probar un overlay sin recrear el servicio se debe usar un contenedor efímero con `docker compose ... run --rm --no-deps odoo_local ...`; `exec` no cambia los mounts del contenedor existente.
++
++## Uso
++
++1. Acceder a OpenEduCat como administrador de back-office.
++2. Abrir el formulario del estudiante.
++3. Si tiene un usuario portal activo, pulsar «Bloquear acceso campus» y confirmar.
++4. Si el usuario está inactivo, pulsar «Desbloquear acceso campus» y confirmar.
++
++Los botones no aparecen si no existe `user_id`. El ribbon «Campus bloqueado» se muestra cuando el estudiante está activo y su usuario portal está bloqueado. Si el propio estudiante está archivado, prevalece el ribbon base «Archived» y no se muestran ambos simultáneamente.
++
++Las acciones son idempotentes: una petición repetida de bloqueo deja el usuario bloqueado, y una petición repetida de desbloqueo lo deja activo, sin chatter adicional.
++
++## Permisos y errores controlados
++
++- Solo `openeducat_core.group_op_back_office_admin` puede ejecutar las acciones.
++- Un faculty recibe `AccessError` incluso si intenta invocar el método por JSON-RPC.
++- Un estudiante sin usuario vinculado produce `UserError`.
++- Un objetivo inexistente o que no sea portal externo produce `UserError`.
++- No se permite archivar mediante estas acciones un usuario interno o público.
++
++## Autenticación y sesiones
++
++Al bloquear, Odoo marca el usuario como inactivo. La validación HTTP demostró que:
++
++- una sesión portal ya autenticada recibe una redirección `303` a `/web/login` en la siguiente petición;
++- una nueva autenticación no obtiene `uid` mientras el usuario está bloqueado;
++- tras desbloquear, el usuario vuelve a autenticarse y `/my/home` responde `200`.
++
++El módulo no borra físicamente registros de sesión ni afirma que Redis sea purgado. El efecto garantizado es el rechazo de la autenticación y de la sesión en la siguiente petición procesada por Odoo.
++
++## Moodle
++
++Moodle está expresamente fuera de alcance. El manifest no declara módulos Moodle, el código no llama APIs de Moodle y las confirmaciones de la interfaz avisan de que Moodle no se ve afectado. Si se requiere bloqueo coordinado, debe diseñarse como una fase independiente con su propia integración, manejo de errores y política de reversión.
++
++## Pruebas realizadas
++
++La validación independiente, ejecutada contra `docker-compose.local.yml` y el overlay del worktree, obtuvo:
++
++- 11/11 métodos Odoo, 0 fallos y 0 errores;
++- upgrade del módulo y carga de los 718 módulos instalados;
++- bloqueo, desbloqueo y compute real;
++- idempotencia y ausencia de chatter duplicado;
++- autoría real del chatter;
++- rechazo de faculty por ORM y por JSON-RPC real;
++- rechazo de objetivos internos y públicos/no portal;
++- ausencia de usuario vinculado;
++- estructura de botones, grupos, confirmaciones y ribbon;
++- tabla de verdad de ribbons Campus/Archived sin solapamiento;
++- compileall, AST, manifest, XML y Ruff;
++- alcance exacto de `sudo()` y ausencia de integración Moodle;
++- login, sesión existente y restauración mediante HTTP real;
++- limpieza de usuarios desechables y restauración del contenedor al mount del checkout principal.
++
++La evidencia final está referenciada en `missions/student-campus-block/verification.json` y en los archivos `artifacts/final-validation-*.log`.
++
++## Rematrícula y limitaciones conocidas
++
++Se caracterizaron dos escenarios cuando el módulo opcional `irg_sale_manual_confirmation_wizard` está instalado:
++
++1. Si el usuario bloqueado sigue vinculado al estudiante, `_ensure_portal_user()` reutiliza ese vínculo y el usuario permanece inactivo. La rematrícula no lo reactiva.
++2. Si el usuario archivado fue desvinculado del estudiante, la búsqueda actual del wizard no usa `active_test=False`. Intenta crear otro usuario con el mismo login y Odoo produce `ValidationError`. El usuario original permanece inactivo y el estudiante continúa sin vínculo.
++
++El segundo caso es un riesgo preexistente del wizard y no se corrige aquí para evitar una dependencia funcional y una ampliación de alcance injustificadas.
++
+diff --git a/.agents/knowledge/odoo_development_modding/artifacts/irg_student_campus_block.md b/.agents/knowledge/odoo_development_modding/artifacts/irg_student_campus_block.md
+new file mode 100644
+index 000000000..0a6d977d7
+--- /dev/null
++++ b/.agents/knowledge/odoo_development_modding/artifacts/irg_student_campus_block.md
+@@ -0,0 +1,63 @@
++# Patrón reutilizable: bloquear acceso portal desde un modelo de negocio
++
++## Contexto
++
++En Odoo 16, `op.student.user_id` enlaza el estudiante con `res.users`. Para impedir realmente el login sin dejar una cuenta autenticable, el mecanismo usado por `irg_student_campus_block` es archivar el usuario mediante `active=False`, no retirar únicamente `base.group_portal`.
++
++## Decisiones de diseño
++
++1. Usar acciones explícitas `block` y `unblock`, no un toggle. Una petición repetida u obsoleta debe converger al estado solicitado y no invertir el estado fijado por otro operador.
++2. Aplicar doble control de autorización: `groups` en la vista para UX y `has_group()` en el servidor para proteger ORM/JSON-RPC.
++3. Resolver usuarios archivados con `active_test=False` y confirmar `.exists()` antes de escribir.
++4. Validar el objetivo antes de `sudo()`: debe tener `base.group_portal` y no `base.group_user`. Un usuario público/no portal también se rechaza.
++5. Limitar `sudo()` al write mínimo de `res.users.active`. El registro de chatter debe ejecutarse sin sudo para conservar el autor real.
++6. Publicar chatter solo cuando el estado cambia; la idempotencia también evita ruido de auditoría.
++7. Modelar el estado visual como compute no almacenado dependiente de `user_id` y `user_id.active`, evitando una segunda fuente de verdad.
++8. Si se añade un ribbon a una vista que ya posee otro, modelar explícitamente la precedencia. En este caso «Campus bloqueado» se oculta cuando `op.student.active=False`, dejando visible únicamente «Archived».
++
++## Patrón de seguridad
++
++Orden recomendado dentro de la acción:
++
++1. comprobar el grupo del operador;
++2. obtener el identificador del usuario actualmente vinculado;
++3. recuperar el usuario con `active_test=False` y `.exists()`;
++4. comprobar portal externo/no interno;
++5. comparar el estado deseado para mantener idempotencia;
++6. ejecutar únicamente `target_user.sudo().write({'active': desired})`;
++7. publicar el chatter con el recordset del operador real.
++
++La restricción visual nunca sustituye la autorización server-side. Una prueba HTTP debe invocar `/web/dataset/call_kw` con un usuario no autorizado y comprobar tanto `error.data.name == 'odoo.exceptions.AccessError'` como que `active` no cambió, leído con `active_test=False`.
++
++## Semántica de sesión
++
++`res.users.active=False` impide nuevas autenticaciones y provoca que una sesión existente sea rechazada en la siguiente petición. No debe documentarse como eliminación física inmediata de la sesión Redis salvo que exista evidencia específica de esa operación. La afirmación segura es: «el acceso queda bloqueado en la siguiente petición procesada por Odoo».
++
++## Integraciones opcionales sin dependencia funcional
++
++Para caracterizar convivencia con un módulo opcional sin añadirlo a `depends`:
++
++- detectar la extensión con `hasattr(env['modelo'], 'metodo_opcional')`;
++- usar `skipTest` si no está instalada;
++- preferir `model.new({...})` cuando solo se prueba un método y persistir el registro obligaría a crear curso, register u otros datos ajenos al escenario.
++
++Esto permitió probar `_ensure_portal_user()` de `irg_sale_manual_confirmation_wizard` sin convertirlo en requisito de instalación.
++
++## Gotcha de rematrícula
++
++- Usuario archivado aún vinculado: el wizard conserva el vínculo y no reactiva el usuario.
++- Usuario archivado y desvinculado: el wizard busca usuarios sin `active_test=False`, no encuentra el archivado e intenta crear otro con el mismo login. Odoo eleva `ValidationError` por login duplicado.
++
++Este segundo caso pertenece al módulo que asegura el usuario portal. Corregirlo desde el módulo de bloqueo introduciría acoplamiento y responsabilidad cruzada. Una solución futura debe modificar aquel flujo mediante un nuevo módulo heredado y cubrir búsqueda por partner/login con `active_test=False`, política explícita de relink y prohibición de reactivar silenciosamente una cuenta bloqueada.
++
++## Gotcha de Docker Compose con worktrees
++
++`docker compose exec` utiliza los mounts con los que se creó el contenedor; añadir un overlay al comando no reemplaza el volumen de un contenedor ya existente. Para validar un worktree sin recrear el servicio persistente, usar `docker compose -f base -f overlay run --rm --no-deps ...`. Después de pruebas que sí recreen el servicio, restaurar y verificar el mount del checkout principal.
++
++## Evidencia de referencia
++
++- Misión: `missions/student-campus-block/`.
++- Resultado final: `verification.json` con `status: passed`.
++- Suite: 11/11 métodos, 0 fallos, 0 errores.
++- HTTP: denegación faculty por JSON-RPC, redirección `303` de sesión bloqueada y restauración completa tras desbloqueo.
++

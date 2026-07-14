@@ -1,0 +1,6 @@
+STATIC_OK manifest, Python AST, XML inheritance/actions/groups/ribbon
+SECURITY_OK exactly one sudo(), limited to res.users active write
+MOODLE_SCOPE_OK no Moodle dependency or model integration; UI explicitly says unaffected
+All checks passed!
+RIBBON_EXCLUSION_OK active,blocked,archived_visible,campus_visible=[(True, True, False, True), (True, False, False, False), (False, True, True, False), (False, False, True, False)]
+SCOPE_OK module dependency is openeducat_core only; no Moodle API/integration

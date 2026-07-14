@@ -1,0 +1,5 @@
+STATIC_OK manifest, Python AST, XML inheritance/actions/groups/ribbon
+SECURITY_OK exactly one sudo(), limited to res.users active write
+MOODLE_SCOPE_OK no Moodle dependency or model integration; UI explicitly says unaffected
+All checks passed!
+LINTER_NOTE F401 ignored only for mandatory Odoo package registration imports

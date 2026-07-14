@@ -1,0 +1,58 @@
+{
+  "status": "passed",
+  "task": "student-campus-block",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "result": "pass",
+      "detail": "Final independent docker-compose.local.yml + worktree overlay run upgraded the module and executed 11/11 Odoo test methods: 0 failed, 0 errors. Coverage includes block/unblock, idempotence, chatter, ORM authorization, invalid targets, both re-matriculation scenarios, and view/ribbon assertions."
+    },
+    {
+      "name": "integration_tests",
+      "result": "pass",
+      "detail": "Fresh real HTTP/JSON-RPC probe: portal authenticated and /my/home returned 200; faculty call through /web/dataset/call_kw returned error.data.name=odoo.exceptions.AccessError and an admin search_read with active_test=False confirmed the target remained active=True; admin block redirected the existing portal session's next request with 303 to /web/login and prevented new authentication; admin unblock restored authentication and /my/home 200. No Redis-session deletion claim was made."
+    },
+    {
+      "name": "lint",
+      "result": "pass",
+      "detail": "Fresh Python compileall and AST parsing passed; Ruff 0.12.0 passed with F401 ignored only for mandatory Odoo package registration imports; XML parsing and static security/scope assertions passed."
+    },
+    {
+      "name": "build",
+      "result": "pass",
+      "detail": "Odoo 16 upgraded irg_student_campus_block in test_irg_db, loaded all 718 installed modules and the inherited view, then exited 0."
+    },
+    {
+      "name": "view_and_groups",
+      "result": "pass",
+      "detail": "Inherited OpenEduCat student form loaded; both explicit actions are limited to group_op_back_office_admin with confirmations and mutually exclusive state visibility. The Campus ribbon is visible only for active students whose portal is blocked, while OpenEduCat's Archived ribbon is visible only for inactive students; the full four-state truth table proved they cannot overlap."
+    },
+    {
+      "name": "moodle_scope",
+      "result": "pass",
+      "detail": "Manifest depends only on openeducat_core, production code contains no Moodle API/integration, and both confirmations explicitly state Moodle is unaffected. Moodle remains outside scope."
+    },
+    {
+      "name": "change_scope",
+      "result": "pass",
+      "detail": "git diff --quiet confirmed no tracked file was modified; every untracked path is under the new irg_student_campus_block module or its mission directory. No existing module was changed."
+    },
+    {
+      "name": "cleanup_and_restore",
+      "result": "pass",
+      "detail": "Disposable operator, faculty and portal users were archived and direct PostgreSQL read-back showed active=false for all three. The persistent odoo16irg_local service was recreated and verified running with /mnt/extra-addons restored to the main checkout."
+    }
+  ],
+  "evidence": [
+    "artifacts/final-validation-module-tests.log",
+    "artifacts/final-validation-static.log",
+    "artifacts/final-validation-http-seed.log",
+    "artifacts/final-validation-http-probe.log",
+    "artifacts/final-validation-http-cleanup.log",
+    "artifacts/final-validation-cleanup-state.log",
+    "artifacts/final-validation-restoration.log",
+    "artifacts/final-validation-scope.log"
+  ],
+  "model_tier_used": "complex",
+  "escalations": 0
+}
