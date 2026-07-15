@@ -158,10 +158,27 @@ def verification_example(source: str) -> tuple[bool, bool]:
             payload = json.loads(match.group(1))
         except json.JSONDecodeError:
             continue
-        required_keys = {"status", "checks"}
+        required_keys = {
+            "status", "task", "checks", "environment", "model_tier_used",
+            "escalations", "evidence",
+        }
         if not isinstance(payload, dict) or not required_keys.issubset(payload):
             continue
         if payload["status"] not in {"passed", "failed"}:
+            continue
+        if not isinstance(payload["task"], str) or not payload["task"].strip():
+            continue
+        if not isinstance(payload["environment"], dict) or not payload["environment"]:
+            continue
+        if not isinstance(payload["model_tier_used"], str) or not payload["model_tier_used"].strip():
+            continue
+        if (isinstance(payload["escalations"], bool)
+                or not isinstance(payload["escalations"], int)
+                or payload["escalations"] < 0):
+            continue
+        evidence = payload["evidence"]
+        if (not isinstance(evidence, list) or not evidence
+                or not all(isinstance(item, str) and item.strip() for item in evidence)):
             continue
         checks = payload["checks"]
         if not isinstance(checks, list) or not checks:
@@ -172,13 +189,21 @@ def verification_example(source: str) -> tuple[bool, bool]:
                 break
             if not isinstance(check.get("name"), str) or not check["name"].strip():
                 break
+            if not isinstance(check.get("command"), str) or not check["command"].strip():
+                break
             if check.get("result") not in {"pass", "fail", "skipped"}:
                 break
             if not isinstance(check.get("detail"), str):
                 break
+            if not isinstance(check.get("evidence"), str) or not check["evidence"].strip():
+                break
             if check["result"] == "skipped" and not check["detail"].strip():
                 skips_justified = False
         else:
+            if payload["status"] == "passed" and any(
+                check["result"] == "fail" for check in checks
+            ):
+                continue
             return True, skips_justified
     return False, False
 
@@ -220,6 +245,17 @@ def validate(source: str) -> list[tuple[str, str]]:
         )
         and not has_contradiction(source, "lifecycle"),
         "declare the exact six-stage canonical lifecycle",
+    )
+    require(
+        "final_revalidation",
+        paragraph_matches(
+            source,
+            r"despues\s+de\s+documentacion.{0,30}antes\s+de\s+publicacion\s+autorizada",
+            r"revalidacion\s+final.{0,30}arbol\s+final",
+            r"actualiza[n]?.{0,20}verification\.json.{0,30}evidencia",
+            r"estado\s+entregado",
+        ),
+        "require final-tree revalidation after documentation and before publication",
     )
     require(
         "coder_tdd",
@@ -361,7 +397,7 @@ def main() -> int:
 
     failures = validate(POLICY.read_text(encoding="utf-8"))
     if not failures:
-        print("PASS: AGENTS.md satisfies all policy contracts")
+        print("AGENTS policy validation: PASS")
         return 0
 
     print(f"FAIL: AGENTS.md is missing {len(failures)} policy contract(s)")

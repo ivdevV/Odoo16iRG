@@ -10,6 +10,8 @@ Las consultas, diagnósticos y revisiones de solo lectura no crean misión (`non
 
 El flujo canónico exacto es: `Plan → Implementación/TDD → Review → Validación → Documentación → Publicación autorizada`.
 
+Después de Documentación y antes de Publicación autorizada se ejecuta una revalidación final sobre el árbol final; se actualizan `verification.json` y la evidencia para que cubran exactamente el estado entregado.
+
 Las fases tienen propietarios distintos y gates explícitos:
 
 1. **Plan — orquestador.** Define alcance, criterios de aceptación, riesgos, tier, capacidad requerida, roles, pruebas y artefactos. Consulta la knowledge base antes de descomponer el trabajo y crea `plan.md` antes de cualquier cambio funcional. Si el usuario pidió implementar, el trabajo continúa después del plan salvo que haya una decisión material abierta, un riesgo sensible sin aprobar o una petición de «solo plan».

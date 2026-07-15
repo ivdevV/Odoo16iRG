@@ -17,6 +17,10 @@ VALID_POLICY = r"""
 El flujo canónico exacto es:
 `Plan -> Implementación/TDD -> Review -> Validación -> Documentación -> Publicación autorizada`.
 
+Después de Documentación y antes de Publicación autorizada se ejecuta una
+revalidación final sobre el árbol final; se actualizan `verification.json` y la
+evidencia para que cubran exactamente el estado entregado.
+
 ## Implementación/TDD
 
 El codificador es propietario de TDD: escribe y ejecuta RED antes de modificar código
@@ -45,11 +49,15 @@ El siguiente bloque es el ejemplo canónico de `verification.json`:
 ```json
 {
   "status": "passed",
+  "task": "example-mission",
   "checks": [
-    {"name": "unit_tests", "result": "pass", "detail": "12 passed"},
-    {"name": "integration_tests", "result": "skipped", "detail": "No aplica: cambio documental"},
-    {"name": "lint", "result": "fail", "detail": "Ejemplo del estado permitido"}
-  ]
+    {"name": "unit_tests", "command": "python3 -m unittest", "result": "pass", "detail": "12 passed", "evidence": "artifacts/unit-tests.txt"},
+    {"name": "integration_tests", "command": "not run", "result": "skipped", "detail": "No aplica: cambio documental", "evidence": "artifacts/scope.txt"}
+  ],
+  "environment": {"runtime": "not invoked", "base_commit": "0123456789abcdef"},
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": ["artifacts/unit-tests.txt", "artifacts/scope.txt"]
 }
 ```
 
@@ -115,6 +123,15 @@ class PolicyValidatorTests(unittest.TestCase):
             VALID_POLICY.replace("El flujo canónico exacto es:", "El flujo canónico no es:"),
             "lifecycle",
         )
+
+    def test_requires_final_revalidation_after_documentation(self) -> None:
+        invalid = VALID_POLICY.replace(
+            "Después de Documentación y antes de Publicación autorizada se ejecuta una\n"
+            "revalidación final sobre el árbol final; se actualizan `verification.json` y la\n"
+            "evidencia para que cubran exactamente el estado entregado.\n",
+            "",
+        )
+        self.assert_rejects(invalid, "final_revalidation")
 
     def test_rejects_tdd_not_owned_by_coder(self) -> None:
         self.assert_rejects(
@@ -196,8 +213,6 @@ class PolicyValidatorTests(unittest.TestCase):
         mutations = (
             ('"status": "passed"', '"status": true'),
             ('"checks": [', '"checks": {"items": ['),
-            ('  ]\n}', '  ]}\n}'),
-            ('{"name": "unit_tests", "result": "pass", "detail": "12 passed"}', '"pass"'),
             ('"result": "pass"', '"result": "ok"'),
         )
         for old, new in mutations:
@@ -225,10 +240,41 @@ class PolicyValidatorTests(unittest.TestCase):
             with self.subTest(payload=payload):
                 self.assert_rejects(replace_json_example(VALID_POLICY, payload), "verification_json")
 
+    def test_rejects_passed_status_when_any_check_failed(self) -> None:
+        invalid = VALID_POLICY.replace(
+            '"result": "pass", "detail": "12 passed"',
+            '"result": "fail", "detail": "1 failed"',
+        )
+        self.assert_rejects(invalid, "verification_json")
+
+    def test_rejects_missing_complete_verification_top_level_schema(self) -> None:
+        removals = (
+            '  "task": "example-mission",\n',
+            '  "environment": {"runtime": "not invoked", "base_commit": "0123456789abcdef"},\n',
+            '  "model_tier_used": "standard",\n',
+            '  "escalations": 0,\n',
+            '  "evidence": ["artifacts/unit-tests.txt", "artifacts/scope.txt"]\n',
+        )
+        for removal in removals:
+            with self.subTest(removal=removal.strip()):
+                self.assert_rejects(
+                    VALID_POLICY.replace(removal, "", 1),
+                    "verification_json",
+                )
+
+    def test_rejects_check_without_command_or_evidence(self) -> None:
+        removals = (
+            '"command": "python3 -m unittest", ',
+            ', "evidence": "artifacts/unit-tests.txt"',
+        )
+        for removal in removals:
+            with self.subTest(removal=removal):
+                self.assert_rejects(VALID_POLICY.replace(removal, "", 1), "verification_json")
+
     def test_rejects_skip_without_justification(self) -> None:
         invalid = VALID_POLICY.replace(
-            '{"name": "integration_tests", "result": "skipped", "detail": "No aplica: cambio documental"}',
-            '{"name": "integration_tests", "result": "skipped", "detail": ""}',
+            '"result": "skipped", "detail": "No aplica: cambio documental"',
+            '"result": "skipped", "detail": ""',
         )
         self.assert_rejects(invalid, "verification_json")
         self.assert_rejects(invalid, "check_results")
