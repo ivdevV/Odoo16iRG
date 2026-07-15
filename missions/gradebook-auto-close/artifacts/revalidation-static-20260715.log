@@ -1,0 +1,24 @@
+ Container pgodoo16irg_local Running 
+ Container redisodoo16irg_local Running 
+ Container odoo16irg_local-odoo_local-run-8d74e876dc63 Creating 
+ Container odoo16irg_local-odoo_local-run-8d74e876dc63 Created 
+PYTHON_COMPILE=PASS 7/7
+MANIFEST=PASS version=16.0.1.0.0 depends=[isep_gradebook] installable=true
+IMPORT_CHAIN=PASS
+TEST_METHODS=PASS count=12
+TEST=test_create_last_positive_result_closes_gradebook
+TEST=test_last_grade_write_closes_complete_gradebook
+TEST=test_line_without_assignments_can_close
+TEST=test_multi_record_write_closes_each_affected_gradebook
+TEST=test_ready_condition_accepts_complete_lines
+TEST=test_ready_condition_rejects_zero_grade
+TEST=test_ready_condition_skips_assignments_when_hidden
+TEST=test_reopened_gradebook_waits_for_next_result_write
+TEST=test_template_validation_error_does_not_abort_grade_write
+TEST=test_unlink_blocking_result_rechecks_after_super_and_closes
+TEST=test_write_subject_move_rechecks_previous_and_current_gradebooks
+TEST=test_zero_final_grade_keeps_gradebook_in_progress
+STATIC_ANTIPATTERNS=PASS no broad/bare except, sudo, direct done assignment, trailing whitespace
+irg_gradebook_auto_close|installed|16.0.1.0.0
+isep_gradebook|installed|16.0.1
+REVALIDATION_STATIC_EXIT_CODE=0

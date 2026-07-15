@@ -1,0 +1,32 @@
+Independent validation run: 2026-07-15 Europe/Madrid
+
+All runtime-dependent commands used docker-compose.local.yml.
+
+Module state query (pgodoo_local, database test_irg_db):
+irg_gradebook_auto_close|installed|16.0.1.0.0
+isep_gradebook|installed|16.0.1
+
+In-container Python syntax/manifest/import-chain check, exit code 0:
+COMPILE_PASS files=7
+MANIFEST_PASS version=16.0.1.0.0 depends=['isep_gradebook'] installable=True
+IMPORT_CHAIN_PASS module, models, tests init imports present
+TEST_DISCOVERY_PASS methods=9
+
+In-container AST/static check, exit code 0:
+STATIC_PASS no trailing whitespace, bare/broad exceptions, direct state=done
+assignments, or sudo()
+
+No ruff, flake8, or pylint executable was available in the odoo_local image. The
+reasonable available static fallback was syntax compilation plus manifest parsing,
+import-chain assertions, test discovery, whitespace scan, and targeted AST checks.
+
+Original-module scope check, exit code 0:
+git status --short -- addons-extra/addons_uisep/isep_gradebook
+git diff --no-ext-diff --exit-code -- addons-extra/addons_uisep/isep_gradebook
+test -z "$(git ls-files --others --exclude-standard addons-extra/addons_uisep/isep_gradebook)"
+ISEP_GRADEBOOK_SCOPE_PASS
+
+Regenerated diff.patch scope/content check, exit code 0:
+DIFF_SCOPE_PASS paths=10 foreign=0 isep_gradebook_changes=0
+DIFF_HASH_PASS for all seven addon Python files; each git blob hash in diff.patch
+matches the current addon file exactly.

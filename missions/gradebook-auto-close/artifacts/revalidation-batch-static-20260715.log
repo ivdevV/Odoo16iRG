@@ -1,0 +1,54 @@
+STATIC_VALIDATION_FRESH=2026-07-15T15:29:00+02:00
+PYTHON_COMPILE_MANIFEST_TEST_DISCOVERY
+ Container pgodoo16irg_local Running 
+ Container redisodoo16irg_local Running 
+ Container odoo16irg_local-odoo_local-run-ed2c35603340 Creating 
+ Container odoo16irg_local-odoo_local-run-ed2c35603340 Created 
+compiled=7/7
+manifest_version=16.0.1.0.0
+manifest_depends=['isep_gradebook']
+manifest_installable=True
+test_methods=13
+test_names=test_batch_create_defers_nested_rounding_write_auto_close,test_create_last_positive_result_closes_gradebook,test_last_grade_write_closes_complete_gradebook,test_line_without_assignments_can_close,test_multi_record_write_closes_each_affected_gradebook,test_ready_condition_accepts_complete_lines,test_ready_condition_rejects_zero_grade,test_ready_condition_skips_assignments_when_hidden,test_reopened_gradebook_waits_for_next_result_write,test_template_validation_error_does_not_abort_grade_write,test_unlink_blocking_result_rechecks_after_super_and_closes,test_write_subject_move_rechecks_previous_and_current_gradebooks,test_zero_final_grade_keeps_gradebook_in_progress
+IMPORT_EVIDENCE_FROM_FRESH_ODOO_RUN
+1156:2026-07-15 13:27:14,202 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_batch_create_defers_nested_rounding_write_auto_close ... 
+1159:2026-07-15 13:27:14,294 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_create_last_positive_result_closes_gradebook ... 
+1161:2026-07-15 13:27:14,327 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_last_grade_write_closes_complete_gradebook ... 
+1163:2026-07-15 13:27:14,401 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_line_without_assignments_can_close ... 
+1165:2026-07-15 13:27:14,467 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_multi_record_write_closes_each_affected_gradebook ... 
+1168:2026-07-15 13:27:14,515 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_ready_condition_accepts_complete_lines ... 
+1170:2026-07-15 13:27:14,579 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_ready_condition_rejects_zero_grade ... 
+1172:2026-07-15 13:27:14,641 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_ready_condition_skips_assignments_when_hidden ... 
+1174:2026-07-15 13:27:14,702 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_reopened_gradebook_waits_for_next_result_write ... 
+1176:2026-07-15 13:27:14,732 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_template_validation_error_does_not_abort_grade_write ... 
+1179:2026-07-15 13:27:14,794 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_unlink_blocking_result_rechecks_after_super_and_closes ... 
+1182:2026-07-15 13:27:14,858 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_write_subject_move_rechecks_previous_and_current_gradebooks ... 
+1185:2026-07-15 13:27:14,900 1 INFO test_irg_db odoo.addons.irg_gradebook_auto_close.tests.test_auto_close: Starting TestGradebookAutoClose.test_zero_final_grade_keeps_gradebook_in_progress ... 
+1222:2026-07-15 13:27:15,132 1 INFO test_irg_db odoo.service.server: 13 post-tests in 0.95s, 2757 queries 
+1224:2026-07-15 13:27:15,132 1 INFO test_irg_db odoo.tests.result: 0 failed, 0 error(s) of 13 tests when loading database 'test_irg_db' 
+1230:COMMAND_EXIT_CODE=0
+TARGET_REGRESSION_ASSERTIONS
+128:    def test_last_grade_write_closes_complete_gradebook(self):
+138:        last_result.write({"scoring_total": 9.0})
+153:        zero_result.write({"scoring_total": 0.0})
+166:        result.write({"scoring_total": 9.0})
+172:    def test_reopened_gradebook_waits_for_next_result_write(self):
+179:        result.write({"scoring_total": 9.0})
+185:        result.write({"scoring_total": 9.0})
+201:        result.write({"scoring_total": 9.0})
+264:    def test_create_last_positive_result_closes_gradebook(self):
+309:        moving_result.write({"gradebook_subject_id": current_line.id})
+314:    def test_batch_create_defers_nested_rounding_write_auto_close(self):
+338:        self.assertEqual(len(results), 2)
+339:        self.assertNotIn(
+344:        self.assertEqual(line.point_average_exam, 0.0)
+345:        self.assertEqual(line.final_subject_note, 4.5)
+FORBIDDEN_PATTERNS
+broad_exception_or_sudo=none
+direct_done_assignment=none
+trailing_whitespace=none
+DATABASE_MODULE_STATE
+irg_gradebook_auto_close|installed|16.0.1.0.0
+isep_gradebook|installed|16.0.1
+
+STATIC_COMMAND_EXIT_CODE=0

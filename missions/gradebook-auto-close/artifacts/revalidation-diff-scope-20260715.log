@@ -1,0 +1,32 @@
+3	0	addons-extra/extrairg/irg_gradebook_auto_close/__init__.py
+13	0	addons-extra/extrairg/irg_gradebook_auto_close/__manifest__.py
+4	0	addons-extra/extrairg/irg_gradebook_auto_close/models/__init__.py
+40	0	addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_result.py
+43	0	addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_student.py
+4	0	addons-extra/extrairg/irg_gradebook_auto_close/tests/__init__.py
+312	0	addons-extra/extrairg/irg_gradebook_auto_close/tests/test_auto_close.py
+82	0	missions/gradebook-auto-close/00-plan.md
+142	0	missions/gradebook-auto-close/execution.log
+125	0	missions/gradebook-auto-close/plan.md
+DIFF_PARSE=PASS
+PATCH_PATH=addons-extra/extrairg/irg_gradebook_auto_close/__init__.py
+PATCH_PATH=addons-extra/extrairg/irg_gradebook_auto_close/__manifest__.py
+PATCH_PATH=addons-extra/extrairg/irg_gradebook_auto_close/models/__init__.py
+PATCH_PATH=addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_result.py
+PATCH_PATH=addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_student.py
+PATCH_PATH=addons-extra/extrairg/irg_gradebook_auto_close/tests/__init__.py
+PATCH_PATH=addons-extra/extrairg/irg_gradebook_auto_close/tests/test_auto_close.py
+PATCH_PATH=missions/gradebook-auto-close/00-plan.md
+PATCH_PATH=missions/gradebook-auto-close/execution.log
+PATCH_PATH=missions/gradebook-auto-close/plan.md
+DIFF_SCOPE=PASS paths=10 foreign=0 isep_gradebook=0
+BLOB_MATCH=addons-extra/extrairg/irg_gradebook_auto_close/__init__.py patch=cde864bae current=cde864bae21a11c0e4f50067aa46b4c497549b4c
+BLOB_MATCH=addons-extra/extrairg/irg_gradebook_auto_close/__manifest__.py patch=0bc0f8546 current=0bc0f85461f8da6682db5b99ef4d8fe3211d42ba
+BLOB_MATCH=addons-extra/extrairg/irg_gradebook_auto_close/models/__init__.py patch=8e999b9eb current=8e999b9eb2ec38f6c22deb92f93b4db99d284c7a
+BLOB_MATCH=addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_result.py patch=2d6eaf2b1 current=2d6eaf2b1b6950324e73f7ad2ae7869d05784195
+BLOB_MATCH=addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_student.py patch=2ff37f9f1 current=2ff37f9f15900a15c09a9c57e4c8454f7ef6a7c4
+BLOB_MATCH=addons-extra/extrairg/irg_gradebook_auto_close/tests/__init__.py patch=344b97c29 current=344b97c29e62da8f442e50fc029f4de199a9de5e
+BLOB_MATCH=addons-extra/extrairg/irg_gradebook_auto_close/tests/test_auto_close.py patch=2676e4278 current=2676e4278a0f43e6d8a95f6e020e23a42f15d5ad
+ADDON_BLOBS=PASS 7/7
+ISEP_GRADEBOOK_SCOPE=PASS no tracked or untracked changes
+REVALIDATION_DIFF_EXIT_CODE=0

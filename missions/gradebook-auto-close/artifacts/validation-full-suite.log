@@ -1,0 +1,40 @@
+Independent validation run: 2026-07-15 Europe/Madrid
+
+Command:
+docker compose -f docker-compose.local.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_auto_close --test-enable --test-tags /irg_gradebook_auto_close --stop-after-init --log-level=test
+
+Exit code: 0
+Database: test_irg_db
+Upgrade evidence:
+ALLOW access to module.button_upgrade on ['IRG Gradebook Auto Close'] to user __system__ #1
+
+Discovered/executed methods:
+1. test_last_grade_write_closes_complete_gradebook
+2. test_line_without_assignments_can_close
+3. test_multi_record_write_closes_each_affected_gradebook
+4. test_ready_condition_accepts_complete_lines
+5. test_ready_condition_rejects_zero_grade
+6. test_ready_condition_skips_assignments_when_hidden
+7. test_reopened_gradebook_waits_for_next_result_write
+8. test_template_validation_error_does_not_abort_grade_write
+9. test_zero_final_grade_keeps_gradebook_in_progress
+
+Captured-UserError evidence:
+WARNING odoo.addons.irg_gradebook_auto_close.models.app_gradebook_student:
+Automatic close skipped for gradebook 603: AD001145 - IRG Auto Close Subject 9-1:
+Debe tener 1 evaluacion de tipo "Interaccion".
+
+Odoo summary:
+9 post-tests in 0.85s, 2026 queries
+irg_gradebook_auto_close: 11 tests 0.84s 2026 queries
+0 failed, 0 error(s) of 9 tests when loading database 'test_irg_db'
+
+Note: Odoo's stats line counts 11 assertion-level tests, while the runner result and
+Python discovery report exactly 9 test methods: five approved scenarios, three direct
+readiness conditions, and one multi-record regression.
+
+Unrelated database warnings observed:
+- irg_student_campus_block: not installable, skipped
+- irg_admission_oficialidad_webhook: not installable, skipped
+These pre-existing/other-mission modules did not prevent the target registry, module
+upgrade, or target tests from completing with exit code 0.

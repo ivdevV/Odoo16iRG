@@ -1,0 +1,308 @@
+2026-07-15T00:00:00+02:00 PLAN mission initialized from approved 00-plan.md
+2026-07-15T00:00:00+02:00 PLAN tier=standard; no security trigger; remote operations disabled pending explicit user OK
+2026-07-15T00:00:00+02:00 PLAN existing unrelated working-tree changes identified and excluded from scope
+2026-07-15 IMPLEMENTATION tier=standard started.
+Scope: create only addons-extra/extrairg/irg_gradebook_auto_close; no existing addon edits.
+Read: missions/gradebook-auto-close/00-plan.md and plan.md.
+Read: .agents/skills/odoo16_developer/SKILL.md, .agents/workflows/odoo16_codebase_knowledge.md,
+      .agents/knowledge/odoo_development_modding/artifacts/modding_rules_and_email_analysis.md,
+      .agents/knowledge/odoo_development_modding/artifacts/irg_nlex_grade_exemption_singleton_and_test_fix.md.
+Read relevant original models: app.gradebook.student, app.gradebook.subject,
+      app.gradebook.result, app.gradebook and app.gradebook.template.line.
+Decision: no ACL/security file because this addon creates no model and grants no access.
+Decision: tests are post_install and exercise five functional scenarios plus the three
+          direct readiness-condition cases required by the approved micro-spec.
+TDD RED preparation: created installable manifest and tests only; production models are
+                     intentionally absent until an expected feature-missing RED is captured.
+Runtime recovery: docker compose initially failed because /Users/ivrogo/.docker/run/docker.sock
+                  did not exist. Ran `open -a Docker`; daemon became ready. Started only
+                  pgodoo_local and redisodoo_local with docker-compose.local.yml. Confirmed
+                  test_irg_db exists.
+TDD RED command:
+  docker compose -f docker-compose.local.yml run --rm odoo_local odoo \
+    -c /etc/odoo/odoo.conf -d test_irg_db -i irg_gradebook_auto_close \
+    --test-enable --test-tags /irg_gradebook_auto_close --stop-after-init \
+    --log-level=test
+TDD RED result: exit 1; 8 tests executed; 3 failed and 3 errored.
+Expected evidence:
+  - autoclose scenarios stayed `in_progress` instead of `done`;
+  - direct condition tests raised AttributeError because
+    `_irg_is_ready_to_close` did not exist.
+The other two cases (zero grade and captured-template behavior expectation) already stayed
+in progress, as expected without the feature.
+GREEN implementation:
+  - added app.gradebook.student readiness helper and UserError-only close attempt;
+  - added create/write/unlink triggers after super; create processes vals_list safely one
+    at a time because the inherited isep_gradebook create implementation is singleton-only;
+  - write/unlink preserve previous gradebooks and evaluate only after super;
+  - no direct state assignment is used for closure.
+Test correction before GREEN: direct positive readiness tests reopen their already-complete
+gradebook before calling the condition directly, because production create-trigger closure
+would otherwise make the required `state == in_progress` precondition false.
+First GREEN attempt: exit 1; 7/8 tests passed. The remaining scenario-2 fixture created
+the final result initially at 1.0, which correctly closed the gradebook via the create
+trigger before the test wrote 0.0. Corrected the test setup to create that final result at
+0.0, matching the required scenario "one line with final = 0 remains in_progress"; no
+production change was needed.
+Final GREEN command:
+  docker compose -f docker-compose.local.yml run --rm odoo_local odoo \
+    -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_auto_close \
+    --test-enable --test-tags /irg_gradebook_auto_close --stop-after-init \
+    --log-level=test
+Final GREEN result: exit 0; 8 post-install test methods; 0 failed, 0 errors.
+Evidence included the expected module warning for the captured UserError case:
+  Automatic close skipped ... Debe tener 1 evaluacion de tipo "Interaccion".
+Runtime notes: test_irg_db contains two unrelated partially present/non-installable local
+modules (`irg_admission_oficialidad_webhook`, `irg_student_campus_block`) and emits numerous
+pre-existing manifest/field warnings. They did not prevent the target suite from passing.
+Static check attempt with `python3 -m compileall` could not write `__pycache__` because the
+compose mounts addons read-only. Safe retry compiled all 7 Python files in memory inside the
+same compose service with Python's `compile()` and passed. No trailing whitespace found.
+Scope check: `git status --short -- addons-extra/addons_uisep/isep_gradebook` produced no
+entry; the existing module was not modified. Only the new addon and mission artifacts are
+untracked in this scope. No commit, pull, push or remote operation was performed.
+Post-GREEN robustness review: the inherited isep_gradebook `write()` reads
+`self.gradebook_subject_id.gradebook_id` as a singleton. Added a regression test before any
+production adjustment for a multi-record write spanning two distinct templates/libretas.
+Multi-record RED command used the same compose/database/update invocation with test tag
+`/irg_gradebook_auto_close:TestGradebookAutoClose.test_multi_record_write_closes_each_affected_gradebook`.
+Result: exit 1; expected `ValueError: Expected singleton: app.gradebook(82, 83)` from the
+inherited write, proving the compatibility defect. Minimal implementation now delegates the
+inherited write one record at a time with an independent values dict, then evaluates the
+union of previous/current affected gradebooks once after all super calls.
+Final full-suite rerun after the multi-record fix: exit 0; 9 post-install test methods;
+0 failed, 0 errors. This consists of the five approved functional scenarios, the three
+direct readiness-condition cases, and one multi-record robustness regression.
+Final static evidence:
+  - all 7 Python files compiled in memory inside the docker-compose.local.yml service;
+  - manifest parses, version is 16.0.1.0.0 and depends exactly on isep_gradebook;
+  - no direct `state = done`, broad `except Exception`, or `sudo()` in the addon;
+  - no trailing whitespace;
+  - no tracked/untracked change under addons-extra/addons_uisep/isep_gradebook.
+Implementation phase handed off for independent validation. `verification.json` was not
+created or modified by the coder, per role separation.
+2026-07-15 VALIDATION tier=standard started independently; implementation report was not trusted.
+Read approved 00-plan.md, mission plan.md, all seven addon Python files, original
+isep_gradebook student/result/subject models, project Odoo skill/workflow/knowledge, and
+the live working-tree scope. Initial inspection found diff.patch absent and reported the
+process gap to the orchestrator; implementation was reopened only to generate that artifact.
+Fresh full target-suite/upgrade command used docker-compose.local.yml and test_irg_db.
+Result: exit 0; exactly 9 test methods executed, 0 failed and 0 errors. Coverage comprises
+the five approved scenarios, three direct readiness-condition cases, and the multi-record
+regression. Odoo additionally reports 11 assertion-level tests. The log contains the
+expected warning proving the template UserError was caught without aborting the write.
+Fresh module-state query: irg_gradebook_auto_close installed at 16.0.1.0.0 and
+isep_gradebook installed at 16.0.1 in test_irg_db.
+Fresh static checks inside odoo_local: 7/7 Python files compile; manifest parses with
+depends exactly [isep_gradebook]; init import chain and nine test methods verified; no
+trailing whitespace, bare/broad exception, direct state='done', or sudo() found. No ruff,
+flake8, or pylint executable exists in the image, so syntax/AST checks were the available
+reasonable static fallback.
+Fresh scope checks: no tracked or untracked changes under addons-extra/addons_uisep/isep_gradebook.
+Evidence: artifacts/validation-full-suite.log and artifacts/validation-static.log.
+After implementation regenerated diff.patch, independent validation inspected its ten
+file paths: all are confined to the new addon or this mission, none modifies
+addons-extra/addons_uisep/isep_gradebook, and all seven addon blob hashes match the live
+files exactly. Diff scope/content check passed.
+Delivery correction: independent validation reported that the mandatory `diff.patch`
+mission artifact was missing. Regenerating it exclusively from the new addon files and
+mission-local plan/artifact files against `/dev/null`; unrelated working-tree changes and
+other mission directories are explicitly excluded. The artifact excludes itself to avoid
+self-reference. No production or test source is changed by this correction.
+Anti-pattern IMPORTANT correction (real-record hook coverage):
+  - Added `test_create_last_positive_result_closes_gradebook`.
+    Temporary RED mutation removed only the post-create `_irg_try_auto_close()` call.
+    Target command used test tag
+    `/irg_gradebook_auto_close:TestGradebookAutoClose.test_create_last_positive_result_closes_gradebook`.
+    RED evidence: `AssertionError: 'in_progress' != 'done'`; 1 failed, 0 errors.
+    Restored the create hook immediately after the run.
+  - Added `test_unlink_blocking_result_rechecks_after_super_and_closes` with two real
+    exam results against a qty=1 template; removing the zero/excess result leaves exactly
+    one positive exam and therefore valid template quantities.
+    Temporary RED mutation invoked the unlink trigger before `super().unlink()` only.
+    Target tag ended in `.test_unlink_blocking_result_rechecks_after_super_and_closes`.
+    RED evidence: `AssertionError: 'in_progress' != 'done'`; 1 failed, 0 errors.
+    Restored post-super evaluation immediately after the run.
+  - Added `test_write_subject_move_rechecks_previous_and_current_gradebooks` with two real
+    libretas. Both start in draft during setup; moving one positive exam leaves one valid
+    positive exam in each line after the relation change.
+    Temporary RED mutation evaluated only `current_gradebooks`, omitting the preserved
+    previous relation. Target tag ended in
+    `.test_write_subject_move_rechecks_previous_and_current_gradebooks`.
+    RED evidence: previous libreta remained open,
+    `AssertionError: 'in_progress' != 'done'`; 1 failed, 0 errors.
+    Restored union `(previous_gradebooks | current_gradebooks)` immediately after the run.
+Final GREEN after all restorations:
+  docker compose -f docker-compose.local.yml run --rm odoo_local odoo \
+    -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_auto_close \
+    --test-enable --test-tags /irg_gradebook_auto_close --stop-after-init \
+    --log-level=test
+Result: exit 0; 12 post-install tests; 0 failed, 0 errors; 2525 queries.
+No temporary mutation remains. No existing addon, commit, pull, push or remote state was
+modified. `diff.patch` is regenerated after this log/test update.
+2026-07-15T15:11:49+02:00 REVALIDATION_FRESH tier=standard started after Important correction.
+Validator reread the approved 00-plan.md, mission plan.md, current addon/models/tests,
+execution.log and diff.patch. No previous test result was trusted and no production or test
+file was modified.
+Fresh upgrade/full-suite command:
+  docker compose -f docker-compose.local.yml run --rm odoo_local odoo \
+    -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_auto_close \
+    --test-enable --test-tags /irg_gradebook_auto_close --stop-after-init \
+    --log-level=test
+Fresh result: command exit 0; exactly 12 post-install test methods, 0 failed, 0 errors,
+2525 queries. The run covers the five original scenarios, the three direct readiness
+helpers, multi-record write, create of the last positive result, unlink evaluation after
+super, and preservation/recheck of old and new gradebooks after relinking a result.
+The expected `Automatic close skipped` warning for the caught template UserError was
+observed; the write completed and the scenario remained open as asserted.
+Fresh static checks ran inside the odoo_local service: 7/7 Python files compiled, manifest
+version/dependency/installability parsed, init import chain passed, exactly 12 test methods
+were discovered, and forbidden-pattern/trailing-whitespace checks passed. A fresh query in
+test_irg_db reports irg_gradebook_auto_close installed at 16.0.1.0.0 and isep_gradebook
+installed at 16.0.1.
+Fresh patch/scope audit: `git apply --numstat` parsed diff.patch; all 10 paths are confined
+to the new addon or mission; no isep_gradebook path is present; all 7 addon/test git blob
+hashes in the patch match current files exactly. Git status/diff/untracked checks found no
+change under addons-extra/addons_uisep/isep_gradebook.
+Environmental warnings were separated from the target result: test_irg_db still reports
+the unrelated local modules irg_admission_oficialidad_webhook and irg_student_campus_block
+as non-installable/partially unloaded, plus pre-existing manifest/field/deprecation warnings.
+They did not prevent registry load, the target upgrade, or the 12/12 target suite.
+Fresh evidence:
+  artifacts/revalidation-full-suite-20260715.log
+  artifacts/revalidation-static-20260715.log
+  artifacts/revalidation-diff-scope-20260715.log
+No commit, pull, push or remote operation was performed.
+2026-07-15 BUGFIX IMPORTANT systematic-debugging + TDD.
+Fase 1 - causa raíz y traza:
+  Reproducción reportada y localizada: template exam qty=1 con
+  `round_subject_result=True`; create multi con notas [9.0, 0.0] termina con libreta
+  `done`, `point_average_exam=0.0` y `final_subject_note=4.5`.
+  Traza de datos/calls confirmada en código: nuestro create exterior
+  `@api.model_create_multi` itera cada valor -> llama al create original de
+  isep_gradebook -> el original crea el resultado y, al estar activo el redondeo,
+  ejecuta `res.scoring_total = ...` -> esa asignación ORM invoca nuestro override
+  `write()` durante el create exterior -> `write()` llama `_irg_try_auto_close()` cuando
+  aún existe solo el primer resultado positivo -> `state_to_done()` cierra -> el segundo
+  resultado cero se crea después, pero la condición exige `state == in_progress` y no
+  revierte el cierre ya realizado. El estado final queda inconsistente con los promedios.
+  La reproducción automatizada dirigida en docker-compose.local.yml/test_irg_db se
+  registra abajo en Fase 4 antes de cualquier cambio de producción.
+Fase 2 - comparación de rutas/contexto:
+  - create simple: cualquier write interno por redondeo ocurre durante el único elemento;
+    evaluar una vez al terminar produce el mismo cierre válido que evaluar dentro.
+  - create múltiple: cada create base se ejecuta secuencialmente; sin marcador contextual,
+    los writes internos no se distinguen de un write externo y observan lotes parciales.
+  - write normal externo, unlink y cambios de relación no atraviesan el create exterior y
+    deben conservar su trigger inmediato actual.
+  - el contexto Odoo acompaña el recordset creado por el create base, por lo que sirve para
+    distinguir únicamente los writes ORM anidados sin cambiar la lógica original de notas.
+Fase 3 - hipótesis única:
+  Diferir solo `_irg_try_auto_close()` en writes anidados bajo el create exterior, usando
+  una clave de contexto namespaced del módulo, y reevaluar una sola vez al final del lote
+  en contexto normal elimina el cierre prematuro. La lógica base de redondeo/límite sigue
+  ejecutándose y los writes externos normales mantienen el comportamiento actual.
+Fase 4 - regresión RED, fix mínimo y GREEN:
+  Se añadió primero
+  `test_batch_create_defers_nested_rounding_write_auto_close`, usando create real
+  `@api.model_create_multi`, template exam qty=1, `round_subject_result=True` y lote
+  `[9.0, 0.0]`. El test exige dos resultados, contexto retornado sin la clave interna,
+  libreta `in_progress`, promedio de examen 0.0 y final 4.5.
+  RED dirigido:
+    docker compose -f docker-compose.local.yml run --rm odoo_local odoo \
+      -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_auto_close \
+      --test-enable \
+      --test-tags /irg_gradebook_auto_close:TestGradebookAutoClose.test_batch_create_defers_nested_rounding_write_auto_close \
+      --stop-after-init --log-level=test
+  Resultado RED consistente: exit 1; `AssertionError: 'done' != 'in_progress'`;
+  1 failed, 0 errors. Esto confirma en compose/test_irg_db la reproducción de Fase 1.
+  Fix único:
+  - clave `_IRG_SKIP_NESTED_WRITE_AUTO_CLOSE` con valor técnico
+    `irg_gradebook_auto_close_skip_nested_write_auto_close`;
+  - el create base se ejecuta con esa clave solo durante cada elemento del create exterior;
+  - el write sigue ejecutando íntegramente el super original y omite únicamente el trigger
+    de autocierre cuando detecta la clave;
+  - cada registro creado se rebrowsea con `self` en contexto normal, evitando que la clave
+    se filtre al recordset devuelto o a escrituras futuras;
+  - el create exterior reevalúa todas las libretas una vez al final en contexto normal.
+  GREEN dirigido: exit 0; 1 test, 0 failed, 0 errors; 355 queries.
+  GREEN completo con el mismo compose/db y tag de módulo: exit 0; 13 post-install tests,
+  0 failed, 0 errors; 2757 queries.
+ No se usaron savepoints ni se cambió isep_gradebook. Sin commit, pull o push.
+2026-07-15T15:26:32+02:00 VALIDACION_INDEPENDIENTE_POST_BUGFIX tier=standard iniciada.
+El validador releyó 00-plan.md, plan.md, el addon y sus 13 tests, el modelo base de
+isep_gradebook, el workflow/knowledge Odoo y los artefactos actuales. No se confió en
+resultados previos y no se modificó ningún archivo de producción ni tests.
+Primer intento de upgrade/suite: Odoo ejecutó 13 post-tests, 0 failed, 0 errors, pero el
+wrapper zsh terminó con exit 1 después de Odoo porque usó por error la variable reservada
+`status`. La depuración sistemática confirmó que el fallo era exclusivamente del harness;
+esa ejecución no se usó como evidencia de cierre y quedó preservada en
+artifacts/revalidation-batch-full-suite-20260715.log.
+Repetición completa fresca con el wrapper corregido (`cmd_rc`), siempre mediante
+docker-compose.local.yml y test_irg_db:
+  docker compose -f docker-compose.local.yml run --rm odoo_local odoo \
+    -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_auto_close \
+    --test-enable --test-tags /irg_gradebook_auto_close --stop-after-init \
+    --log-level=test
+Resultado válido: exit 0; exactamente 13 post-tests, 0 failed, 0 errors y 2757 queries.
+El log contiene exactamente 13 líneas `Starting TestGradebookAutoClose.test_*`.
+La regresión `model_create_multi` pasó con template exam qty=1,
+round_subject_result=True y lote [9.0, 0.0]: se devolvieron 2 registros sin la clave
+interna en el contexto, la libreta quedó in_progress, point_average_exam=0.0 y
+final_subject_note=4.5. En la misma suite pasaron de forma fresca tanto create simple
+(`test_create_last_positive_result_closes_gradebook`, termina done) como write externo
+normal (`test_last_grade_write_closes_complete_gradebook`, termina done).
+Auditoría estática fresca: 7/7 Python compilan dentro de odoo_local; manifest versión
+16.0.1.0.0, depends exactamente [isep_gradebook], installable=True; AST descubre
+exactamente 13 tests; el upgrade/suite demuestra la cadena de imports del paquete,
+models y tests. No se detectaron excepciones amplias/bare, sudo, asignación directa a
+done ni whitespace final. La BD informa ambos módulos instalados.
+Auditoría de alcance/parche fresca: diff.patch SHA-256
+f4cc2d4a2f6fc15b264dee7366f0ac4d5b0b7753d1c71cb36cd53dc292312bc3;
+git apply --numstat lo parsea; 10 paths, todos limitados al addon nuevo o a la misión,
+0 paths de isep_gradebook; los 7 hashes blob de addon/tests coinciden con los hashes
+index actuales del parche. No existe cambio tracked/untracked bajo isep_gradebook.
+Evidencias frescas:
+  artifacts/revalidation-batch-full-suite-20260715-rerun.log
+    sha256 4698a1fd417c85045f145b9ff761c8477d448edff4ef58e66fbf60435173e2cb
+  artifacts/revalidation-batch-static-20260715.log
+    sha256 3eda4343234aaa2ab461c5f566aa6b592659dd49afa1c5d1ed8eeb821d938462
+  artifacts/revalidation-batch-diff-scope-20260715.log
+    sha256 86cbdeced50badfc9c10d22203bd2c2a91d813d1c713ae4e48ababec970869fb
+Persistencia autorizada limitada a artifacts/, verification.json y execution.log. No se
+realizó commit, pull, push ni operación remota.
+2026-07-15T15:34:40+02:00 DOCUMENTACION tier=standard iniciada tras compuertas de cierre.
+El orquestador confirmó `verification.json` status=passed y revisiones finales de
+anti-patrones/calidad `LISTO`, sin Critical, Important ni Minor pendientes. El
+documentador leyó el plan aprobado, plan de misión, implementación, 13 tests,
+verification.json, execution.log, workflow/knowledge Odoo y evidencias referenciadas.
+Documentación añadida:
+  doc/micro-specs/2026-07-15-irg_gradebook_auto_close.md
+  addons-extra/extrairg/irg_gradebook_auto_close/README.md
+  missions/gradebook-auto-close/CHANGELOG.md
+  .agents/knowledge/odoo_development_modding/artifacts/irg_gradebook_auto_close.md
+La micro-spec conserva la decisión aprobada: `state_to_done()` mantiene las validaciones
+del template y se captura únicamente `UserError`, sin asignación directa a `done`.
+El aprendizaje reusable registra el gotcha del create base que escribe `scoring_total` y
+el patrón de diferimiento con contexto namespaced seguido de rebrowse en contexto normal.
+No se modificaron Python, tests, manifest ni módulos existentes. El snapshot `diff.patch`
+se regenerará tras esta entrada e incluirá solo el addon nuevo, documentos versionados y
+archivos de misión seleccionados. Se excluirán `artifacts/`, `verification.json`, el propio
+`diff.patch` y todo cambio ajeno. Esta frontera evita autorreferencia y mantiene la evidencia
+de validación independiente fuera del parche de entrega. No se realizó commit, pull, push
+ni operación remota.
+Comprobación documental final:
+  - las cuatro rutas documentales existen y las rutas técnicas referenciadas existen;
+  - `verification.json` continúa en `passed` y la suite fuente contiene exactamente
+    13 métodos `test_*`, consistente con README, micro-spec y changelog;
+  - la documentación incluye alcance/no alcance, decisión `state_to_done()` +
+    `UserError`, triggers, creación por lotes/contexto, reapertura, instalación,
+    pruebas, limitaciones y warnings;
+  - los hashes SHA-256 de Python, tests y manifest coinciden con el snapshot tomado
+    antes de la fase DOC; no hubo cambios de código;
+  - la frontera final de `diff.patch` contiene 14 rutas: ocho del addon nuevo
+    (incluido README), cuatro archivos seleccionados de la misión, la micro-spec y la
+    entrada de knowledge. Excluye `artifacts/`, `verification.json`, `diff.patch`,
+    otros módulos y otras misiones.
+Fase DOCUMENTACION completada; procede regeneración mecánica final de `diff.patch` con
+esa frontera y auditoría de parseo/alcance. Sin commit, pull, push ni despliegue.
