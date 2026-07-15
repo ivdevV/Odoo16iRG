@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="app_gradebook_form_final_calculation_mode" model="ir.ui.view">
+        <field name="name">app.gradebook.form.final.calculation.mode</field>
+        <field name="model">app.gradebook</field>
+        <field name="inherit_id" ref="isep_gradebook.app_gradebook_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="final_calculation_mode"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="app_gradebook_tree_final_calculation_mode" model="ir.ui.view">
+        <field name="name">app.gradebook.tree.final.calculation.mode</field>
+        <field name="model">app.gradebook</field>
+        <field name="inherit_id" ref="isep_gradebook.app_gradebook_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="final_calculation_mode" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

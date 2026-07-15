@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="gradebook_diploma_exam_50_50" model="app.gradebook">
+            <field name="name">Diplomado - Solo examen - Ponderación 50/50</field>
+            <field name="final_calculation_mode">diploma_50_50</field>
+            <field name="grading_scale">10.0</field>
+            <field name="gradebook_template_ids" eval="[(0, 0, {
+                'type': 'exam',
+                'weight': 100.0,
+                'qty': 1,
+            })]"/>
+        </record>
+    </data>
+</odoo>
