@@ -99,7 +99,14 @@ class PolicyValidatorTests(unittest.TestCase):
         self.assertEqual([], validate(VALID_POLICY))
 
     def test_rejects_editorial_placeholders(self) -> None:
-        for placeholder in ("TODO", "PENDIENTE", "<NOMBRE_PROYECTO>", "[NOMBRE DEL PROYECTO]"):
+        for placeholder in (
+            "TODO",
+            "PENDIENTE",
+            "[TODO]",
+            "[PENDIENTE]",
+            "<NOMBRE_PROYECTO>",
+            "[NOMBRE DEL PROYECTO]",
+        ):
             with self.subTest(placeholder=placeholder):
                 self.assert_rejects(VALID_POLICY + "\n" + placeholder, "project_identity")
 
@@ -127,6 +134,13 @@ class PolicyValidatorTests(unittest.TestCase):
             "independent_validator",
         )
 
+    def test_rejects_valid_independence_clause_followed_by_contradiction(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nComo excepción, el validador también puede editar y corregir código de "
+            "producción antes de emitir evidencia."
+        )
+        self.assert_rejects(invalid, "independent_validator")
+
     def test_rejects_failed_gate_that_does_not_reopen_implementation(self) -> None:
         self.assert_rejects(
             VALID_POLICY.replace("reabre la fase de Implementación", "no reabre la fase de Implementación"),
@@ -141,6 +155,20 @@ class PolicyValidatorTests(unittest.TestCase):
             ),
             "gate_rework",
         )
+
+    def test_rejects_valid_gate_clause_followed_by_contradiction(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nEn tareas urgentes, si un gate falla no reabre la fase de Implementación; "
+            "validación continúa igualmente."
+        )
+        self.assert_rejects(invalid, "gate_rework")
+
+    def test_rejects_valid_tdd_clause_followed_by_conflicting_owner(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nEl validador es responsable de TDD y ejecuta RED y GREEN después del "
+            "codificador."
+        )
+        self.assert_rejects(invalid, "coder_tdd")
 
     def test_rejects_inverted_mission_proportionality(self) -> None:
         self.assert_rejects(
@@ -188,6 +216,15 @@ class PolicyValidatorTests(unittest.TestCase):
             with self.subTest(payload=payload):
                 self.assert_rejects(replace_json_example(VALID_POLICY, payload), "verification_json")
 
+    def test_rejects_missing_required_json_keys_even_with_extra_keys(self) -> None:
+        invalid_payloads = (
+            '{"checks": [], "task": "demo"}',
+            '{"status": "passed", "task": "demo"}',
+        )
+        for payload in invalid_payloads:
+            with self.subTest(payload=payload):
+                self.assert_rejects(replace_json_example(VALID_POLICY, payload), "verification_json")
+
     def test_rejects_skip_without_justification(self) -> None:
         invalid = VALID_POLICY.replace(
             '{"name": "integration_tests", "result": "skipped", "detail": "No aplica: cambio documental"}',
@@ -217,6 +254,13 @@ class PolicyValidatorTests(unittest.TestCase):
         )
         self.assert_rejects(invalid, "worktree_runtime")
 
+    def test_rejects_valid_runtime_clause_followed_by_no_overlay_exception(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nPara cambios documentales, el worktree no usa overlay y no requiere "
+            "cleanup ni restauración del servicio."
+        )
+        self.assert_rejects(invalid, "worktree_runtime")
+
     def test_pr_must_be_a_token_not_a_substring_of_proyecto(self) -> None:
         invalid = VALID_POLICY.replace("push y PR son acciones separadas", "push y proyecto son acciones separadas")
         invalid = invalid.replace("ni PR", "ni proyecto").replace("autoriza PR", "autoriza proyecto")
@@ -229,10 +273,22 @@ class PolicyValidatorTests(unittest.TestCase):
         )
         self.assert_rejects(invalid, "publication_separation")
 
+    def test_rejects_valid_publication_clause_followed_by_bundled_authorization(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nEn cambios triviales, autorizar commit también autoriza push y PR."
+        )
+        self.assert_rejects(invalid, "publication_separation")
+
     def test_rejects_reusable_or_unscoped_push_authorization(self) -> None:
         invalid = VALID_POLICY.replace(
             "Cada autorización de push es de un solo uso y queda ligada al remoto, rama y alcance\nconcretos indicados.",
             "Cada autorización de push es reutilizable y no queda ligada al remoto, rama ni alcance\nconcretos indicados.",
+        )
+        self.assert_rejects(invalid, "single_use_push")
+
+    def test_rejects_valid_push_clause_followed_by_reusable_authorization(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nLa autorización de push es reutilizable para cualquier remoto, rama y alcance."
         )
         self.assert_rejects(invalid, "single_use_push")
 
@@ -247,6 +303,13 @@ class PolicyValidatorTests(unittest.TestCase):
         invalid = VALID_POLICY.replace(
             "Las restricciones de UI no sustituyen los controles del servidor para acciones\nprotegidas; toda acción protegida exige autorización server-side.",
             "Las restricciones de UI sustituyen los controles del servidor para acciones\nprotegidas; ninguna acción protegida exige autorización server-side.",
+        )
+        self.assert_rejects(invalid, "server_security")
+
+    def test_rejects_valid_server_clause_followed_by_ui_only_exception(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nPara acciones internas protegidas, las restricciones de UI sí sustituyen "
+            "los controles del servidor y bastan por sí solas."
         )
         self.assert_rejects(invalid, "server_security")
 

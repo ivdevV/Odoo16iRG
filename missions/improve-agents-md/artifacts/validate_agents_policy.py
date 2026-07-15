@@ -14,6 +14,62 @@ ROOT = Path(__file__).resolve().parents[3]
 POLICY = ROOT / "AGENTS.md"
 
 
+# Each alternative is a tuple of relationships that must coexist in one paragraph.
+# These explicit prohibitions complement the required affirmative clauses: a valid
+# rule cannot hide a contradictory exception elsewhere in the document.
+CONTRADICTION_PATTERNS: dict[str, tuple[tuple[str, ...], ...]] = {
+    "coder_tdd": (
+        (r"validador\s+(?:es\s+)?(?:el\s+)?(?:responsable|propietari[oa]).{0,20}tdd",),
+        (r"codificador.{0,30}no\s+(?:es\s+)?(?:responsable|propietari[oa]).{0,20}tdd",),
+        (r"red.{0,40}(?:despues|posterior).{0,40}(?:codigo\s+de\s+produccion|implementacion)",),
+    ),
+    "independent_validator": (
+        (
+            r"validador.{0,30}(?:tambien\s+)?(?:si\s+)?(?:puede|debe|podra)"
+            r".{0,15}(?:editar|corregir|modificar).{0,30}codigo\s+de\s+produccion",
+        ),
+        (r"validador\s+(?:edita|corrige|modifica).{0,30}codigo\s+de\s+produccion",),
+        (r"validador.{0,30}no\s+es\s+independiente",),
+    ),
+    "gate_rework": (
+        (r"gate.{0,20}fall[ao].{0,15}no\s+reabre.{0,30}implementacion",),
+        (
+            r"(?:correccion|corregir).{0,30}(?:es\s+la\s+misma|siempre\s+implica)"
+            r".{0,20}(?:decision\s+que\s+el\s+)?escalad",
+        ),
+        (r"correccion.{0,30}escalado.{0,30}(?:misma\s+decision|inseparables)",),
+        (r"corregir\s+siempre\s+implica\s+escalar",),
+    ),
+    "worktree_runtime": (
+        (r"worktree.{0,20}no\s+(?:usa|aplica|requiere).{0,20}overlay",),
+        (r"worktree.{0,50}no\s+requiere.{0,30}(?:cleanup|limpieza).{0,20}restaur",),
+    ),
+    "publication_separation": (
+        (
+            r"autorizar\s+commit\s+(?:tambien\s+)?autoriza.{0,15}push",
+            r"(?<!\w)pr(?!\w)",
+        ),
+        (r"autorizar\s+push\s+(?:tambien\s+)?autoriza.{0,15}(?<!\w)pr(?!\w)",),
+    ),
+    "single_use_push": (
+        (r"autorizacion\s+de\s+push.{0,20}(?:es\s+)?reutilizable",),
+        (r"autorizacion\s+de\s+push.{0,30}no\s+(?:queda\s+)?(?:ligada|vinculada|limitada).{0,20}remoto",),
+        (r"autorizacion\s+de\s+push.{0,30}cualquier\s+remoto.{0,20}rama.{0,20}alcance",),
+    ),
+    "server_security": (
+        (
+            r"(?:restricciones|permisos|controles).{0,20}(?<!\w)ui(?!\w)"
+            r"\s+(?:si\s+)?sustituyen.{0,30}controles?\s+(?:del\s+servidor|server.side)",
+        ),
+        (r"(?<!\w)ui(?!\w).{0,30}(?:basta|es\s+suficiente).{0,20}(?:por\s+si\s+sola)?",),
+        (
+            r"accion\s+protegida.{0,30}no\s+(?:exige|requiere).{0,30}"
+            r"(?:autorizacion|control).{0,20}(?:server.side|servidor)",
+        ),
+    ),
+}
+
+
 def normalized(value: str) -> str:
     """Return case-folded text without accents and with collapsed whitespace."""
     decomposed = unicodedata.normalize("NFKD", value.casefold())
@@ -29,6 +85,16 @@ def paragraphs(source: str) -> list[str]:
 def paragraph_matches(source: str, *patterns: str) -> bool:
     """Require all regex relationships to occur in one policy paragraph."""
     return any(all(re.search(pattern, block) for pattern in patterns) for block in paragraphs(source))
+
+
+def has_contradiction(source: str, contract: str) -> bool:
+    """Find an explicit prohibited relationship within a single paragraph."""
+    alternatives = CONTRADICTION_PATTERNS.get(contract, ())
+    return any(
+        all(re.search(pattern, block) for pattern in alternative)
+        for block in paragraphs(source)
+        for alternative in alternatives
+    )
 
 
 def token_pattern(token: str) -> str:
@@ -47,7 +113,8 @@ def verification_example(source: str) -> tuple[bool, bool]:
             payload = json.loads(match.group(1))
         except json.JSONDecodeError:
             continue
-        if not isinstance(payload, dict) or set(payload) < {"status", "checks"}:
+        required_keys = {"status", "checks"}
+        if not isinstance(payload, dict) or not required_keys.issubset(payload):
             continue
         if payload["status"] not in {"passed", "failed"}:
             continue
@@ -87,7 +154,7 @@ def validate(source: str) -> list[tuple[str, str]]:
         and not re.search(
             r"(?m)^\s*(?:[-*]\s*)?(?:todo|pendiente)(?:\s*:.*)?\s*$"
             r"|<\s*(?:nombre|indicar|adaptar)[^>]*>"
-            r"|\[\s*(?:nombre|indicar|adaptar)[^\]]*\]"
+            r"|\[\s*(?:todo|pendiente|nombre|indicar|adaptar)[^\]]*\]"
             r"|nombre[_ -]+del?[_ -]+proyecto",
             line_text,
         ),
@@ -115,7 +182,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"(?:\s+de)?\s+tdd",
             r"red.{0,80}(?:antes|previo).{0,80}(?:codigo\s+de\s+produccion|produccion|implement)",
             r"(?:despues|luego|entonces).{0,80}(?:implement|cambio).{0,80}green",
-        ),
+        )
+        and not has_contradiction(source, "coder_tdd"),
         "assign RED and GREEN TDD ownership to the coder",
     )
     require(
@@ -125,7 +193,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"validador.{0,50}independiente|independiente.{0,50}validador",
             r"no\s+(?:edita(?:\s+ni|\s+o)?\s+)?corrige.{0,30}codigo\s+de\s+produccion"
             r"|no\s+edita.{0,30}codigo\s+de\s+produccion",
-        ),
+        )
+        and not has_contradiction(source, "independent_validator"),
         "make validation independent and forbid production-code corrections by the validator",
     )
     require(
@@ -135,7 +204,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"gate.{0,20}fall[ao]\s*,?\s*reabre.{0,30}implementacion",
             r"(?:correccion.{0,40}escalado|escalado.{0,40}correccion).{0,50}(?:separad|distint)",
             r"(?:corregir|correccion).{0,30}no.{0,30}(?:implica|requiere).{0,20}escalar",
-        ),
+        )
+        and not has_contradiction(source, "gate_rework"),
         "reopen implementation on failed gates and separate correction from escalation",
     )
     require(
@@ -187,7 +257,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"docker.compose\.local\.yml",
             r"worktree\s+(?:se\s+aplica|usa|requiere).{0,20}(?:un\s+)?overlay",
             r"(?:cleanup|limpieza|limpiar).{0,100}restaur",
-        ),
+        )
+        and not has_contradiction(source, "worktree_runtime"),
         "specify compose worktree overlay, cleanup and restoration",
     )
     require(
@@ -200,7 +271,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"(?:acciones|autorizaciones).{0,30}separad",
             r"autorizar\s+commit.{0,20}no\s+autoriza\s+push.{0,20}" + token_pattern("PR"),
             r"autorizar\s+push.{0,20}(?:no|tampoco)\s+autoriza\s+" + token_pattern("PR"),
-        ),
+        )
+        and not has_contradiction(source, "publication_separation"),
         "distinguish commit, push and PR authorization",
     )
     require(
@@ -210,7 +282,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"autorizacion\s+de\s+push.{0,30}(?:un\s+solo\s+uso|una\s+sola\s+vez|uso\s+unico)",
             r"(?:ligad[ao]|vinculad[ao]|limitad[ao]).{0,20}remoto.{0,20}rama.{0,20}alcance",
             r"(?:despues\s+de\s+usarla|cambio.{0,20}material).{0,80}(?:autorizacion\s+nueva|ok\s+nuevo)",
-        ),
+        )
+        and not has_contradiction(source, "single_use_push"),
         "make push authorization single-use and bind it to remote, branch and scope",
     )
     require(
@@ -221,7 +294,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             + r".{0,20}(?:no|nunca)\s+sustituyen",
             r"controles?\s+(?:del\s+servidor|server.side).{0,30}acciones?\s+protegidas?",
             r"accion\s+protegida.{0,30}(?:exige|requiere).{0,30}(?:autorizacion|control).{0,20}(?:server.side|servidor)",
-        ),
+        )
+        and not has_contradiction(source, "server_security"),
         "require server-side controls for protected actions, beyond UI restrictions",
     )
     return failures

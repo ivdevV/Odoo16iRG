@@ -27,3 +27,18 @@
 - Implementación: relaciones normativas acotadas por párrafo, tokens con límites,
   placeholders editoriales explícitos y validación tipada del ejemplo identificado
   como `verification.json`, incluida justificación no vacía para `skipped`.
+
+## Task 1: segunda corrección tras revisión
+
+- RED de regresión: la suite ampliada terminó con exit `1`, `Ran 30 tests`, con
+  9 fallos y 2 errores `KeyError`. Reprodujo `[TODO]`/`[PENDIENTE]`, ausencia de
+  claves JSON con claves extra y cláusulas válidas coexistiendo con excepciones
+  contradictorias.
+- Corrección: las claves obligatorias usan `required_keys.issubset(payload)` antes
+  de acceder a ellas. Un catálogo de prohibiciones por contrato busca relaciones
+  contradictorias completas dentro de cada párrafo, no términos globales sueltos.
+- GREEN: `python3 -m unittest
+  missions/improve-agents-md/artifacts/test_validate_agents_policy.py` terminó con
+  exit `0`: `Ran 30 tests`, `OK`.
+- El RED contra `AGENTS.md` vigente se volvió a ejecutar sin editarlo y mantuvo
+  exit `1` con las 14 categorías de contrato ausentes.
