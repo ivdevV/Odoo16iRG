@@ -1,0 +1,25 @@
+Validation date: 2026-07-15
+Compose file: docker-compose.local.yml
+
+Database isolation:
+- Source: test_irg_diploma_beta_detect_20260715, itself an isolated test DB.
+- Final target: test_irg_diploma_authoritative_v2_20260715.
+- Target was created with CREATE DATABASE ... TEMPLATE; no database was dropped.
+- No development, mirror or production database was modified.
+
+Runtime:
+- Executed through the running odoo_local service from docker-compose.local.yml.
+- The empty legacy root /mnt/extra-addons/addons_irg was omitted from the
+  command-only addons path because Odoo rejects it as an invalid addons root.
+- /mnt/extra-addons/account_related15 was appended only to the command.
+- PyPDF2 3.0.1 was reused only from /tmp/codex-pypdf2-301 through the process
+  PYTHONPATH; repository, image and persistent configuration were unchanged.
+- A dedicated HTTP port 8099 avoided collision with the running local service.
+
+Final result:
+- Odoo process exit code: 0.
+- Addon installed as module 231/231.
+- Registry loaded successfully.
+- 5 post-install tests executed.
+- 0 failures and 0 errors.
+- 825 queries in 0.76 seconds.

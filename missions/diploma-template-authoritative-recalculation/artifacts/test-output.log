@@ -1,0 +1,29 @@
+Odoo 16 validation summary
+Database: test_irg_diploma_authoritative_v2_20260715 (isolated)
+Module: irg_diploma_gradebook_template_authoritative
+Test tags: /irg_diploma_gradebook_template_authoritative
+
+PASS test_special_template_is_authoritative_when_detector_is_false
+The inherited Diplomado detector was forced to False and was not called;
+six ordinary scores of 10 plus presencial 8.44 produced total_final=9.22 and
+avg_score=9.22.
+
+PASS test_switching_template_recomputes_immediately
+The standard template initially produced 9.78; writing the special template
+immediately changed total_final and avg_score to 9.22.
+
+PASS test_standard_template_keeps_inherited_average
+The standard template preserved the inherited simple average of 9.78.
+
+PASS test_nlex_subject_remains_excluded
+An additional NLEX subject scored at 1.0 did not alter the special result 9.22.
+
+PASS test_invalid_presential_count_falls_back_safely
+Two presencial candidates disabled the special helper and preserved the safe
+inherited average ((8.44 * 2) + (10 * 6)) / 8.
+
+Odoo log summary:
+- Starting post tests
+- 5 post-tests in 0.76s, 825 queries
+- 0 failed, 0 error(s) of 5 tests
+- Process exit code: 0

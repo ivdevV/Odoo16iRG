@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "task": "diploma-template-authoritative-recalculation",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "result": "pass",
+      "detail": "5 Odoo TransactionCase post-install tests passed, 0 failed and 0 errors; 825 queries in 0.76 seconds."
+    },
+    {
+      "name": "integration_tests",
+      "result": "pass",
+      "detail": "Isolated-database installation validated authoritative 9.22 with detector false, immediate 9.78 to 9.22 template switch, standard fallback, NLEX exclusion and invalid-presencial fallback."
+    },
+    {
+      "name": "lint",
+      "result": "pass",
+      "detail": "All 6 Python files parsed to AST inside the Odoo container; manifest version/dependency, imports, five-test inventory and diff whitespace check passed."
+    },
+    {
+      "name": "build",
+      "result": "pass",
+      "detail": "Odoo exited 0 after installing the addon as module 231/231 in an isolated database via docker-compose.local.yml."
+    }
+  ],
+  "evidence": [
+    "artifacts/static-validation.log",
+    "artifacts/docker-runtime.log",
+    "artifacts/test-output.log",
+    "artifacts/logic-review.md",
+    "diff.patch"
+  ],
+  "model_tier_used": "complex",
+  "escalations": 0
+}
