@@ -1,0 +1,21 @@
+Validation date: 2026-07-15
+Compose file: docker-compose.local.yml
+
+Database isolation:
+- Source: previous isolated compatibility test database.
+- Target: test_irg_diploma_beta_detect_20260715.
+- Target database creation exit code: 0.
+- No existing development, mirror or production database was modified.
+
+Runtime command characteristics:
+- Executed through docker-compose.local.yml.
+- account_related15 appended only to the command addons_path.
+- PyPDF2 3.0.1 reused only from /tmp/codex-pypdf2-301 through process-local
+  PYTHONPATH; no image or repository dependency was changed.
+
+Final result:
+- Odoo process exit code: 0.
+- Target addon installed as module 230/230.
+- Post-install tests: 3 executed, 0 failed, 0 errors.
+- Queries: 568.
+- Duration: 0.87 seconds.

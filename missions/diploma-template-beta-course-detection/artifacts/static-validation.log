@@ -1,0 +1,29 @@
+Validation date: 2026-07-15
+Scope: addons-extra/extrairg/irg_diploma_gradebook_beta_course_detection
+
+PASS python_ast_compile
+Detail: 6/6 Python files parsed and compiled to AST in memory with bundled Python;
+no pyc files generated.
+
+PASS manifest
+Detail: Odoo version 16.0.1.0.0, installable=True, LGPL-3 and explicit dependency
+on irg_diploma_gradebook_template_nlex_compat.
+
+PASS imports
+Detail: root, models and tests package imports all resolve statically.
+
+PASS dependency_presence
+Detail: irg_diploma_gradebook_template_nlex_compat and its template-weighting
+dependency exist in the configured addons tree.
+
+PASS test_inventory
+Detail: exactly 3 TransactionCase post-install tests found for beta mismatch 9.22,
+template switch 9.78 to 9.22 and non-Diplomado 9.78.
+
+PASS git_diff_check
+Command: git diff --check
+Detail: exit code 0; no whitespace errors.
+
+PASS compose_config
+Command: docker compose -f docker-compose.local.yml config -q
+Detail: exit code 0.

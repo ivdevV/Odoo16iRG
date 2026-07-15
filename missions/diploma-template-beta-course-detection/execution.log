@@ -1,0 +1,20 @@
+2026-07-15 PLAN Diagnostico basado en evidencia visual y revision de computes.
+2026-07-15 PLAN Tier standard; sin disparadores de Security Advisor.
+2026-07-15 IMPLEMENTATION Leida la skill Odoo 16, el workflow y la knowledge base citada en plan.md.
+2026-07-15 IMPLEMENTATION Definidos primero tres casos TDD: categoria beta inconsistente, cambio de template y curso no Diplomado.
+2026-07-15 IMPLEMENTATION Creado addon puente irg_diploma_gradebook_beta_course_detection sin modificar addons existentes.
+2026-07-15 IMPLEMENTATION El override conserva super() y solo acepta nombres inequivocos "Diplomado" al inicio o tras un prefijo separado por " - ".
+2026-07-15 VALIDACION tier=standard resultado=passed
+- Leidas skill Odoo 16, workflow, knowledge base, plan, addon nuevo y dependencias relacionadas; implementacion preservada.
+- Python AST 6/6, manifest Odoo 16, imports, dependencia explicita, inventario de 3 tests, `git diff --check` y compose config: passed.
+- Generado `diff.patch` limitado a los seis archivos del addon nuevo, sin incluir cambios sucios ajenos.
+- DB aislada `test_irg_diploma_beta_detect_20260715` creada con exit 0 a partir de una DB de test aislada previa; no se modificaron bases existentes.
+- Ejecucion obligatoria con `docker-compose.local.yml`; addon instalado como modulo 230/230, proceso Odoo exit 0.
+- Suite post-install: 3 tests, `0 failed, 0 error(s)`, 568 queries, 0.87 s.
+- Verificados: beta inconsistente 9.22; cambio de template 9.78 -> 9.22; no-Diplomado 9.78.
+- Workarounds de entorno solo por comando: addons_path adicional para `account_related15` y PyPDF2 3.0.1 desde `/tmp`; sin modificar imagen, repo o configuracion persistente.
+- Evidencias guardadas bajo `artifacts/`. Sin cambios de implementacion/documentacion, commit o push.
+2026-07-15 DOCUMENTACION fase completada despues de verification.json passed.
+- Documentado problema, arquitectura, dependencias, instalacion/actualizacion en beta, uso, calculo 9.22, pruebas y limitaciones.
+- Agregado changelog 16.0.1.0.0 y persistido el diagnostico reutilizable sobre guard clauses y clasificaciones inconsistentes en la knowledge base.
+- Sin cambios de implementacion, commit ni push; preservados los cambios sucios ajenos.

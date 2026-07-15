@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "task": "diploma-template-beta-course-detection",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "result": "pass",
+      "detail": "3 Odoo TransactionCase post-install tests passed, 0 failed and 0 errors; 568 queries in 0.87 seconds."
+    },
+    {
+      "name": "integration_tests",
+      "result": "pass",
+      "detail": "Isolated-database validation passed for beta 9.22, template switch 9.78 to 9.22 and non-Diplomado 9.78."
+    },
+    {
+      "name": "lint",
+      "result": "pass",
+      "detail": "All 6 Python files compiled to AST; manifest, imports, dependency presence, test inventory and git diff --check passed."
+    },
+    {
+      "name": "build",
+      "result": "pass",
+      "detail": "Odoo process exited 0 after installing the addon as module 230/230 in an isolated database via docker-compose.local.yml."
+    }
+  ],
+  "evidence": [
+    "artifacts/static-validation.log",
+    "artifacts/logic-review.md",
+    "artifacts/docker-runtime.log",
+    "artifacts/test-output.log",
+    "diff.patch"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

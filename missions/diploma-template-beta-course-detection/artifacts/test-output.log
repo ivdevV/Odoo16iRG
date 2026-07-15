@@ -1,0 +1,19 @@
+Odoo 16 validation summary
+Database: test_irg_diploma_beta_detect_20260715 (isolated)
+Module: irg_diploma_gradebook_beta_course_detection
+Test tags: /irg_diploma_gradebook_beta_course_detection
+
+PASS test_beta_category_mismatch_uses_50_50
+Validated: beta-like inconsistent category/type plus special template produces 9.22
+for six ordinary scores of 10 and presencial 8.44.
+
+PASS test_non_diploma_course_keeps_standard_average
+Validated: non-Diplomado course with special template selected remains at 9.78.
+
+PASS test_switching_standard_to_special_template_recomputes
+Validated: changing the template recalculates total/average from 9.78 to 9.22.
+
+Summary: 0 failed, 0 error(s) of 3 tests
+Queries: 568
+Duration: 0.87 seconds
+Odoo process exit code: 0
