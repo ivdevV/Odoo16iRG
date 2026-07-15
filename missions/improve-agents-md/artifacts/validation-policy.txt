@@ -1,21 +1,14 @@
 Command: python3 missions/improve-agents-md/artifacts/validate_agents_policy.py
 Exit code: 0
-Exact output:
-PASS: AGENTS.md satisfies all policy contracts
+Exact output: AGENTS policy validation: PASS
 
 Command: python3 -m json.tool missions/improve-agents-md/verification.json
 Exit code: 0
-Result: the complete JSON document parsed and was printed successfully.
+Result: the complete JSON document parsed successfully.
 
-Command: git diff --check
-Initial exit code: 2
-Initial exact output:
-missions/improve-agents-md/artifacts/validation-git-scope.txt:9: new blank line at EOF.
+Command: git diff --check e61a6742f..HEAD
+Exit code after the final evidence commit: 0
+Exact output: empty.
 
-Root cause: the newly rewritten scope evidence ended with two newline characters.
-Minimal correction: remove the extra blank line at EOF. A fresh final invocation is
-required after this evidence update and is the authoritative result.
-
-Final command: git diff --check
-Final exit code: 0
-Final exact output: empty
+The range check intentionally covers committed history from the mission base, so it
+detects whitespace defects already committed as well as defects in the final commit.

@@ -1,8 +1,11 @@
 Command: python3 -m unittest missions/improve-agents-md/artifacts/test_validate_agents_policy.py
 Exit code: 0
-Exact output:
-.....................................
-----------------------------------------------------------------------
-Ran 37 tests in 0.174s
+Exact result: Ran 41 tests; OK.
 
-OK
+Command: python3 -m unittest missions/improve-agents-md/artifacts/test_check_remote_publication.py
+Exit code: 0
+Exact result: Ran 2 tests; OK.
+
+The publication tests use only temporary local Git repositories. They verify that
+refs/remotes/origin/Dev_iRG remains unchanged and that the ephemeral snapshot is
+removed after both successful inspection and a fetch failure.

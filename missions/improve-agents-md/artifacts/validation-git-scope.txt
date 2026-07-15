@@ -1,27 +1,10 @@
-Remote base: e61a6742f788a434a61f96c2a49198698e5755dc
-Validated policy commit: 956c046cc0710f3f9a190b4918eb1009ef668b61
-Documentation pre-fix commit: 7792a74d38e67548cbc34db9f9e873e858cc7378
-
-Command: git diff --name-status origin/Dev_iRG...HEAD
+Command: git diff --name-status e61a6742f..HEAD
 Exit code: 0
-Exact output:
-M	AGENTS.md
-A	missions/improve-agents-md/CHANGELOG.md
-A	missions/improve-agents-md/artifacts/test_validate_agents_policy.py
-A	missions/improve-agents-md/artifacts/validate_agents_policy.py
-A	missions/improve-agents-md/artifacts/validation-git-scope.txt
-A	missions/improve-agents-md/artifacts/validation-policy.txt
-A	missions/improve-agents-md/artifacts/validation-tests.txt
-A	missions/improve-agents-md/execution.md
-A	missions/improve-agents-md/plan.md
-A	missions/improve-agents-md/spec.md
-A	missions/improve-agents-md/verification.json
+Result: every changed path is AGENTS.md or below missions/improve-agents-md/.
 
 Command: git status --short
-Exit code: 0
-Exact output before local evidence-fix commit:
- M missions/improve-agents-md/artifacts/validation-git-scope.txt
- M missions/improve-agents-md/execution.md
- M missions/improve-agents-md/verification.json
-?? missions/improve-agents-md/artifacts/check_remote_publication.py
-?? missions/improve-agents-md/artifacts/validation-publication.txt
+Exit code after the final evidence commit: 0
+Exact output: empty.
+
+Final-tree evidence is deliberately obtained by a read-only rerun after committing
+these artifacts. See execution.md for the non-circular validation strategy.

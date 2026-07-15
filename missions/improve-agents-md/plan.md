@@ -132,4 +132,3 @@ Crear changelog conciso. Solo crear una entrada de knowledge si existe un aprend
 - [ ] **Step 4: Gate final local**
 
 Verificar que el diff contiene únicamente `AGENTS.md` y `missions/improve-agents-md/`, que no existe push/PR y que el checkout principal continúa intacto.
-

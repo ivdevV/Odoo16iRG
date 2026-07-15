@@ -127,3 +127,38 @@
 - Los checks redundantes de JSON embebido, placeholders y contradicciones se
   consolidaron en el checker real de política. Cada check restante de
   `verification.json` contiene el comando exacto reproducible que lo sustenta.
+
+## Correcciones del review global: TDD y causa raíz
+
+- Causa raíz del schema: `verification_example()` solo exigía `status` y `checks`;
+  no comprobaba las claves completas ni la coherencia entre `status: passed` y un
+  check `fail`.
+- RED exacto: `python3 -m unittest
+  missions/improve-agents-md/artifacts/test_validate_agents_policy.py` terminó con
+  exit `1`, `Ran 41 tests`, 8 fallos esperados. Cubrió `passed` con `fail`, claves
+  top-level ausentes, `command`/`evidence` ausentes y el gate de revalidación final.
+- GREEN exacto: el mismo comando terminó con exit `0`, `Ran 41 tests`, `OK`.
+- Implementación mínima: schema completo, coherencia `passed`/`fail`, salida exacta
+  `AGENTS policy validation: PASS` y revalidación entre Documentación y Publicación.
+- Causa raíz del inspector remoto: el checker hacía fetch a refs del repositorio
+  compartido y actualizaba `refs/remotes/origin/Dev_iRG`.
+- RED exacto: `python3 -m unittest
+  missions/improve-agents-md/artifacts/test_check_remote_publication.py` terminó
+  con exit `1` por ausencia de `PublicationCheckError` e
+  `inspect_remote_publication`.
+- GREEN exacto: el mismo comando terminó con exit `0`, `Ran 2 tests`, `OK`. Las
+  pruebas usan repositorios Git locales, sin red, confirman que `origin/Dev_iRG` no
+  cambia y que el snapshot se elimina tanto en éxito como en error.
+- Corrección mínima: inspección dentro de un bare repo efímero gestionado por
+  `TemporaryDirectory`; el checkout compartido solo se lee.
+- Se eliminaron las líneas vacías finales de `plan.md` y `spec.md`; el gate final
+  usa `git diff --check e61a6742f..HEAD`, no solo el working tree.
+
+## Estrategia de revalidación final no circular
+
+Los artefactos versionados registran los gates sobre el último commit funcional.
+Después de crear el commit final de evidencia se vuelven a ejecutar, sin editar
+ningún archivo, las dos suites, el checker, el parseo JSON, el diff completo, el
+scope, el estado y el inspector remoto. Ese rerun post-commit es el veredicto sobre
+el árbol realmente entregado y evita pretender que un archivo pueda certificar por
+anticipado el commit que lo contiene.

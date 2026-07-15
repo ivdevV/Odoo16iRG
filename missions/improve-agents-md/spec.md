@@ -86,4 +86,3 @@ El flujo canónico será:
 - Las reglas de evidencia son compatibles con `.gitignore`.
 - Worktrees, compose, cleanup y publicación tienen contratos verificables.
 - Las reglas conservan la prohibición de push a `Dev_iRG` sin autorización explícita nueva.
-
