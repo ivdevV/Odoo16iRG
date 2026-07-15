@@ -1,0 +1,12 @@
+2026-07-14 Plan: se confirmó que op.student delega en res.partner mediante _inherits.
+2026-07-14 Plan: se decidió almacenar los tres campos exclusivamente en res.partner y no tocar nationality.
+2026-07-14 Entorno: se creó el worktree aislado codex/student-birth-citizenship-fields desde origin/Dev_iRG para preservar cambios locales ajenos.
+2026-07-14 Implementación RED: se creó el esqueleto instalable y cinco pruebas antes de añadir campos o vistas.
+2026-07-14 Implementación RED verificada: 5 pruebas, 1 fallo y 4 errores causados por la ausencia de los campos y vistas solicitados.
+2026-07-14 Implementación GREEN: se añadieron los tres campos a res.partner y las vistas heredadas de contacto y estudiante.
+2026-07-14 Implementación GREEN verificada: 5 casos post-install, 0 fallos y 0 errores en docker-compose.local.yml.
+2026-07-14 Documentación: se añadió README, changelog y una entrada reutilizable sobre campos delegados op.student/res.partner.
+2026-07-14 Validación: 6 Python y 2 XML correctos; manifest y git diff --check correctos.
+2026-07-14 Validación final: 5 casos post-install, 0 fallos y 0 errores; actualización -u completada con exit code 0.
+2026-07-14 Cierre: verification.json emitido con status passed; no se realizó commit ni push.
+2026-07-14 Publicación: el usuario autorizó explícitamente la subida directa a Dev_iRG; alcance y sincronización remota comprobados antes del commit.

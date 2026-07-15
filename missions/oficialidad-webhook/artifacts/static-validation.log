@@ -1,0 +1,17 @@
+STATIC VALIDATION oficialidad-webhook
+UTC 2026-07-14T12:59:55Z
+branch=feat/oficialidad-webhook
+origin_dev_ancestor_exit=0
+commits=3
+python_ast=PASS files=9
+xml_parse=PASS files=4
+manifest=PASS
+acl_csv=PASS
+test_count_static=PASS count=21
+service_contract_grep=PASS
+no_python_dependencies=PASS
+git_diff_check_exit=0
+addons-extra/addons_uisep/irg_admission_oficialidad_webhook/tests/test_oficialidad_webhook.py:525:            'Bearer super-secret https://n8n.example.com/hook?token=leak'
+sensitive_dependency_scan=REVIEW
+sensitive_scan_resolution:
+production_sensitive_scan=PASS (earlier REVIEW match was an intentional test fixture)

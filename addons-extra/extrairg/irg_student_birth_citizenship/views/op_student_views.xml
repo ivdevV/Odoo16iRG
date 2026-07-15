@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_birth_citizenship" model="ir.ui.view">
+        <field name="name">op.student.form.birth.citizenship</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <field name="birth_date" position="after">
+                <field name="birth_place"/>
+                <field name="birth_country_id" options="{'no_open': True}"/>
+                <field name="citizenship_country_id" options="{'no_open': True}"/>
+            </field>
+        </field>
+    </record>
+</odoo>

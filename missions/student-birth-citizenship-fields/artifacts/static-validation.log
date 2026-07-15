@@ -1,0 +1,8 @@
+Validación estática ejecutada el 2026-07-14.
+
+- Python AST: 6 archivos correctos.
+- XML: 2 archivos correctos.
+- Manifest: sintaxis, versión 16.0.1.0.0 y dependencia openeducat_core correctas.
+- git diff --check: sin errores.
+
+Nota: la primera ejecución intentó usar lxml en el host y no estaba instalado. Se repitió con xml.etree.ElementTree y el parser XML completo de Odoo quedó además validado durante instalación y actualización del módulo.

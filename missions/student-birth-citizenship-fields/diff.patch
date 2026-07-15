@@ -1,0 +1,284 @@
+diff --git a/.agents/knowledge/odoo_development_modding/artifacts/student_partner_delegated_fields.md b/.agents/knowledge/odoo_development_modding/artifacts/student_partner_delegated_fields.md
+new file mode 100644
+index 000000000..f4e0c23a5
+--- /dev/null
++++ b/.agents/knowledge/odoo_development_modding/artifacts/student_partner_delegated_fields.md
+@@ -0,0 +1,8 @@
++# Campos compartidos entre `op.student` y `res.partner`
++
++En OpenEducat 16, `op.student` declara `_inherits = {"res.partner": "partner_id"}`. Para un dato que debe ser idéntico en la ficha del estudiante y en la del contacto, el patrón más simple y seguro es definir el campo físico únicamente en `res.partner`.
++
++Durante la carga del registro, Odoo expone esos campos también en `op.student` como campos delegados. Las escrituras realizadas mediante el estudiante se almacenan en su `partner_id`, y los cambios realizados en el contacto se leen directamente desde el estudiante. No hace falta declarar campos `related`, métodos `compute` ni lógica de sincronización.
++
++Las dos vistas sí deben heredarse por separado para mostrar los campos en ambas interfaces. Este patrón quedó cubierto por pruebas de escritura en ambos sentidos en `irg_student_birth_citizenship`.
++
+diff --git a/addons-extra/extrairg/irg_student_birth_citizenship/README.md b/addons-extra/extrairg/irg_student_birth_citizenship/README.md
+new file mode 100644
+index 000000000..d19c2a903
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_birth_citizenship/README.md
+@@ -0,0 +1,35 @@
++# IRG - Datos de nacimiento y ciudadanía del estudiante
++
++Este módulo añade tres datos personales compartidos entre el contacto de Odoo y el perfil de estudiante de OpenEducat:
++
++- Población de nacimiento (`birth_place`).
++- País de nacimiento (`birth_country_id`).
++- País de ciudadanía (`citizenship_country_id`).
++
++## Funcionamiento
++
++Los campos se definen y almacenan en `res.partner`. El modelo `op.student` de OpenEducat delega en su contacto mediante `_inherits`, por lo que los mismos campos se pueden leer y editar desde ambos modelos sin copias ni procesos de sincronización.
++
++El campo existente `op.student.nationality` permanece independiente y no se modifica.
++
++## Interfaz
++
++- En el estudiante aparecen después de la fecha de nacimiento, dentro de la información personal.
++- En el contacto aparecen en la pestaña **Nacimiento y ciudadanía**.
++
++## Instalación
++
++Instalar o actualizar el módulo técnico `irg_student_birth_citizenship` desde Aplicaciones.
++
++## Pruebas
++
++Las pruebas automatizadas verifican la definición de los campos, la escritura bidireccional contacto/estudiante, su presencia en ambas vistas y la independencia respecto a `nationality`.
++
++## Changelog
++
++### 16.0.1.0.0
++
++- Añadidos los tres campos compartidos de nacimiento y ciudadanía.
++- Añadidos los campos a las fichas de estudiante y contacto.
++- Añadida cobertura automatizada de modelo, delegación y vistas.
++
+diff --git a/addons-extra/extrairg/irg_student_birth_citizenship/__init__.py b/addons-extra/extrairg/irg_student_birth_citizenship/__init__.py
+new file mode 100644
+index 000000000..cde864bae
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_birth_citizenship/__init__.py
+@@ -0,0 +1,3 @@
++# -*- coding: utf-8 -*-
++
++from . import models
+diff --git a/addons-extra/extrairg/irg_student_birth_citizenship/__manifest__.py b/addons-extra/extrairg/irg_student_birth_citizenship/__manifest__.py
+new file mode 100644
+index 000000000..029e8387c
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_birth_citizenship/__manifest__.py
+@@ -0,0 +1,16 @@
++# -*- coding: utf-8 -*-
++
++{
++    "name": "IRG - Datos de nacimiento y ciudadanía del estudiante",
++    "version": "16.0.1.0.0",
++    "category": "Education",
++    "summary": "Comparte los datos de nacimiento y ciudadanía entre estudiante y contacto",
++    "license": "AGPL-3",
++    "depends": ["openeducat_core"],
++    "data": [
++        "views/res_partner_views.xml",
++        "views/op_student_views.xml",
++    ],
++    "installable": True,
++    "application": False,
++}
+diff --git a/addons-extra/extrairg/irg_student_birth_citizenship/models/__init__.py b/addons-extra/extrairg/irg_student_birth_citizenship/models/__init__.py
+new file mode 100644
+index 000000000..9a9555c1b
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_birth_citizenship/models/__init__.py
+@@ -0,0 +1,4 @@
++# -*- coding: utf-8 -*-
++
++from . import res_partner
++
+diff --git a/addons-extra/extrairg/irg_student_birth_citizenship/models/res_partner.py b/addons-extra/extrairg/irg_student_birth_citizenship/models/res_partner.py
+new file mode 100644
+index 000000000..20c2da0f6
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_birth_citizenship/models/res_partner.py
+@@ -0,0 +1,20 @@
++# -*- coding: utf-8 -*-
++
++from odoo import fields, models
++
++
++class ResPartner(models.Model):
++    _inherit = "res.partner"
++
++    birth_place = fields.Char(string="Población de nacimiento")
++    birth_country_id = fields.Many2one(
++        "res.country",
++        string="País de nacimiento",
++        ondelete="restrict",
++    )
++    citizenship_country_id = fields.Many2one(
++        "res.country",
++        string="País de ciudadanía",
++        ondelete="restrict",
++    )
++
+diff --git a/addons-extra/extrairg/irg_student_birth_citizenship/tests/__init__.py b/addons-extra/extrairg/irg_student_birth_citizenship/tests/__init__.py
+new file mode 100644
+index 000000000..4df7bfbc9
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_birth_citizenship/tests/__init__.py
+@@ -0,0 +1,4 @@
++# -*- coding: utf-8 -*-
++
++from . import test_student_birth_citizenship
++
+diff --git a/addons-extra/extrairg/irg_student_birth_citizenship/tests/test_student_birth_citizenship.py b/addons-extra/extrairg/irg_student_birth_citizenship/tests/test_student_birth_citizenship.py
+new file mode 100644
+index 000000000..54dc753d4
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_birth_citizenship/tests/test_student_birth_citizenship.py
+@@ -0,0 +1,99 @@
++# -*- coding: utf-8 -*-
++
++from lxml import etree
++
++from odoo.tests.common import TransactionCase, tagged
++
++
++@tagged("post_install", "-at_install")
++class TestStudentBirthCitizenship(TransactionCase):
++
++    @classmethod
++    def setUpClass(cls):
++        super().setUpClass()
++        cls.spain = cls.env.ref("base.es")
++        cls.france = cls.env.ref("base.fr")
++        cls.partner = cls.env["res.partner"].create({"name": "Alumno Compartido"})
++        cls.student = cls.env["op.student"].create({
++            "name": "Alumno Compartido",
++            "partner_id": cls.partner.id,
++        })
++
++    def test_partner_owns_the_three_fields_and_student_delegates_them(self):
++        partner_fields = self.env["res.partner"]._fields
++        student_fields = self.env["op.student"]._fields
++
++        self.assertEqual(partner_fields["birth_place"].type, "char")
++        self.assertEqual(
++            partner_fields["birth_place"].string,
++            "Población de nacimiento",
++        )
++        self.assertEqual(partner_fields["birth_country_id"].comodel_name, "res.country")
++        self.assertEqual(
++            partner_fields["birth_country_id"].string,
++            "País de nacimiento",
++        )
++        self.assertEqual(
++            partner_fields["citizenship_country_id"].comodel_name,
++            "res.country",
++        )
++        self.assertEqual(
++            partner_fields["citizenship_country_id"].string,
++            "País de ciudadanía",
++        )
++        for field_name in (
++            "birth_place",
++            "birth_country_id",
++            "citizenship_country_id",
++        ):
++            self.assertIn(field_name, student_fields)
++
++    def test_values_written_from_student_are_stored_on_partner(self):
++        self.student.write({
++            "birth_place": "Madrid",
++            "birth_country_id": self.spain.id,
++            "citizenship_country_id": self.france.id,
++        })
++
++        self.assertEqual(self.partner.birth_place, "Madrid")
++        self.assertEqual(self.partner.birth_country_id, self.spain)
++        self.assertEqual(self.partner.citizenship_country_id, self.france)
++
++    def test_values_written_from_partner_are_visible_on_student(self):
++        self.partner.write({
++            "birth_place": "París",
++            "birth_country_id": self.france.id,
++            "citizenship_country_id": self.spain.id,
++        })
++
++        self.assertEqual(self.student.birth_place, "París")
++        self.assertEqual(self.student.birth_country_id, self.france)
++        self.assertEqual(self.student.citizenship_country_id, self.spain)
++
++    def test_both_forms_show_the_three_shared_fields(self):
++        expected_fields = {
++            "birth_place",
++            "birth_country_id",
++            "citizenship_country_id",
++        }
++        student_arch = self.env["op.student"].get_view(
++            view_id=self.env.ref("openeducat_core.view_op_student_form").id,
++            view_type="form",
++        )["arch"]
++        partner_arch = self.env["res.partner"].get_view(
++            view_id=self.env.ref("base.view_partner_form").id,
++            view_type="form",
++        )["arch"]
++
++        for arch in (student_arch, partner_arch):
++            field_names = set(etree.fromstring(arch.encode()).xpath("//field/@name"))
++            self.assertTrue(expected_fields.issubset(field_names))
++
++    def test_existing_nationality_remains_independent(self):
++        self.student.write({
++            "nationality": self.spain.id,
++            "citizenship_country_id": self.france.id,
++        })
++
++        self.assertEqual(self.student.nationality, self.spain)
++        self.assertEqual(self.student.citizenship_country_id, self.france)
+diff --git a/addons-extra/extrairg/irg_student_birth_citizenship/views/op_student_views.xml b/addons-extra/extrairg/irg_student_birth_citizenship/views/op_student_views.xml
+new file mode 100644
+index 000000000..e0662dd9e
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_birth_citizenship/views/op_student_views.xml
+@@ -0,0 +1,16 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <record id="view_op_student_form_birth_citizenship" model="ir.ui.view">
++        <field name="name">op.student.form.birth.citizenship</field>
++        <field name="model">op.student</field>
++        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
++        <field name="arch" type="xml">
++            <field name="birth_date" position="after">
++                <field name="birth_place"/>
++                <field name="birth_country_id" options="{'no_open': True}"/>
++                <field name="citizenship_country_id" options="{'no_open': True}"/>
++            </field>
++        </field>
++    </record>
++</odoo>
+diff --git a/addons-extra/extrairg/irg_student_birth_citizenship/views/res_partner_views.xml b/addons-extra/extrairg/irg_student_birth_citizenship/views/res_partner_views.xml
+new file mode 100644
+index 000000000..f25d31630
+--- /dev/null
++++ b/addons-extra/extrairg/irg_student_birth_citizenship/views/res_partner_views.xml
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="utf-8"?>
++<odoo>
++    <record id="view_partner_form_birth_citizenship" model="ir.ui.view">
++        <field name="name">res.partner.form.birth.citizenship</field>
++        <field name="model">res.partner</field>
++        <field name="inherit_id" ref="base.view_partner_form"/>
++        <field name="arch" type="xml">
++            <xpath expr="//sheet/notebook" position="inside">
++                <page name="birth_citizenship" string="Nacimiento y ciudadanía">
++                    <group>
++                        <field name="birth_place"/>
++                        <field name="birth_country_id" options="{'no_open': True}"/>
++                        <field name="citizenship_country_id" options="{'no_open': True}"/>
++                    </group>
++                </page>
++            </xpath>
++        </field>
++    </record>
++</odoo>
++

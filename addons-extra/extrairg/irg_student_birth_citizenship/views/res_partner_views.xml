@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_birth_citizenship" model="ir.ui.view">
+        <field name="name">res.partner.form.birth.citizenship</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/notebook" position="inside">
+                <page name="birth_citizenship" string="Nacimiento y ciudadanía">
+                    <group>
+                        <field name="birth_place"/>
+                        <field name="birth_country_id" options="{'no_open': True}"/>
+                        <field name="citizenship_country_id" options="{'no_open': True}"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

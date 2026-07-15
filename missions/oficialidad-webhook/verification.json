@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "task": "oficialidad-webhook",
+  "checks": [
+    {
+      "name": "static_python_xml_manifest_acl",
+      "result": "pass",
+      "detail": "9 Python files parse with ast, 4 XML files parse, manifest/data order and dependencies are valid, ACL CSV is valid, git diff --check passes, and 21 test methods are present."
+    },
+    {
+      "name": "odoo_module_update",
+      "result": "pass",
+      "detail": "Fresh -u irg_admission_oficialidad_webhook completed with exit code 0 in test_irg_db; security, parameter, wizard, button, and admission view data files all loaded."
+    },
+    {
+      "name": "odoo_post_install_tests",
+      "result": "pass",
+      "detail": "21 TestOficialidadWebhook methods started; Odoo reports 0 failed, 0 error(s) of 21 tests."
+    },
+    {
+      "name": "runtime_action_button_views",
+      "result": "pass",
+      "detail": "Odoo registry assertions confirm the modal action (target=new), one Oficialidad action button in the combined register header, the wizard fields/send button, the optional traceability column, and the readonly/copy=False datetime field."
+    },
+    {
+      "name": "code_review_scope_security",
+      "result": "pass",
+      "detail": "Reviewed commits ebd8fc32c..3feaee155 against origin/Dev_iRG and the complete spec/plan. No Critical or Important defect found; admin-only access, sanitized errors, secret-field filtering, HTTPS/global-IP validation, redirect blocking, bounded response reads, and DNS pinning are documented Security Advisor hardening and covered by tests."
+    },
+    {
+      "name": "isolated_runtime_mount",
+      "result": "pass",
+      "detail": "Validation used the docker-compose.local.yml image/network/config/database with this worktree's addons-extra bind-mounted read-only; no files were copied to the original checkout."
+    }
+  ],
+  "evidence": [
+    "artifacts/static-validation.log",
+    "artifacts/odoo-test-output.log",
+    "artifacts/ui-runtime-validation.log",
+    "artifacts/runtime-summary.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}
