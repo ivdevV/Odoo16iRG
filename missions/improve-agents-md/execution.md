@@ -42,3 +42,18 @@
   exit `0`: `Ran 30 tests`, `OK`.
 - El RED contra `AGENTS.md` vigente se volvió a ejecutar sin editarlo y mantuvo
   exit `1` con las 14 categorías de contrato ausentes.
+
+## Task 1: tercera corrección tras revisión
+
+- RED: la suite ampliada terminó con exit `1`, `Ran 37 tests`, con 7 fallos
+  esperados. Cada fallo mantuvo una política conforme y añadió en otro párrafo una
+  excepción contradictoria para identidad, lifecycle, niveles/artefactos de misión,
+  verification JSON, resultados o ruta knowledge.
+- Se extendió el catálogo local de prohibiciones a todas las categorías normativas.
+  Incluye expresamente el caso `solo lectura -> misión full`, omitir gates del flujo,
+  hacer obligatorio `diff.patch`, admitir YAML en `verification.json`, permitir skips
+  sin justificación y aceptar rutas knowledge arbitrarias.
+- GREEN: `python3 -m unittest
+  missions/improve-agents-md/artifacts/test_validate_agents_policy.py` terminó con
+  exit `0`: `Ran 37 tests`, `OK`.
+- El RED vigente mantuvo exit `1` y 14 contratos ausentes sin editar `AGENTS.md`.

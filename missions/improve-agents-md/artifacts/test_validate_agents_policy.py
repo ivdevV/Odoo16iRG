@@ -313,6 +313,53 @@ class PolicyValidatorTests(unittest.TestCase):
         )
         self.assert_rejects(invalid, "server_security")
 
+    def test_rejects_valid_identity_clause_followed_by_editorial_exception(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nComo excepción, se permiten marcadores editoriales genéricos en el nombre "
+            "del encabezado."
+        )
+        self.assert_rejects(invalid, "project_identity")
+
+    def test_rejects_valid_lifecycle_followed_by_omitted_review_exception(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nEn tareas urgentes, el flujo omite Review y continúa directamente con "
+            "Validación."
+        )
+        self.assert_rejects(invalid, "lifecycle")
+
+    def test_rejects_read_only_exception_using_full_mission(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nComo excepción, una consulta de solo lectura usa misión `full` para dejar "
+            "evidencia completa."
+        )
+        self.assert_rejects(invalid, "mission_levels")
+
+    def test_rejects_valid_artifacts_followed_by_mandatory_diff_exception(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nEn misiones de código, `diff.patch` es obligatorio aunque Git ya conserve "
+            "el diff."
+        )
+        self.assert_rejects(invalid, "mission_artifacts")
+
+    def test_rejects_valid_verification_example_followed_by_yaml_exception(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nPara tareas documentales, `verification.json` puede contener YAML y no "
+            "necesita ser JSON válido."
+        )
+        self.assert_rejects(invalid, "verification_json")
+
+    def test_rejects_valid_results_followed_by_unjustified_skip_exception(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nEn checks costosos, un resultado `skipped` puede carecer de justificación."
+        )
+        self.assert_rejects(invalid, "check_results")
+
+    def test_rejects_canonical_knowledge_path_followed_by_arbitrary_path_exception(self) -> None:
+        invalid = VALID_POLICY + (
+            "\n\nCada misión puede usar cualquier ruta alternativa para persistir knowledge."
+        )
+        self.assert_rejects(invalid, "knowledge_path")
+
 
 if __name__ == "__main__":
     unittest.main()

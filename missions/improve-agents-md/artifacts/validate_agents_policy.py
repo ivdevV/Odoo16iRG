@@ -18,6 +18,16 @@ POLICY = ROOT / "AGENTS.md"
 # These explicit prohibitions complement the required affirmative clauses: a valid
 # rule cannot hide a contradictory exception elsewhere in the document.
 CONTRADICTION_PATTERNS: dict[str, tuple[tuple[str, ...], ...]] = {
+    "project_identity": (
+        (
+            r"(?:se\s+permiten|pueden\s+usarse).{0,30}"
+            r"(?:marcadores|placeholders).{0,20}editoriales",
+        ),
+    ),
+    "lifecycle": (
+        (r"flujo.{0,30}(?:omite|salta|no\s+incluye).{0,20}(?:review|validacion|documentacion)",),
+        (r"flujo.{0,30}publicacion.{0,20}no\s+requiere.{0,20}autorizacion",),
+    ),
     "coder_tdd": (
         (r"validador\s+(?:es\s+)?(?:el\s+)?(?:responsable|propietari[oa]).{0,20}tdd",),
         (r"codificador.{0,30}no\s+(?:es\s+)?(?:responsable|propietari[oa]).{0,20}tdd",),
@@ -39,6 +49,41 @@ CONTRADICTION_PATTERNS: dict[str, tuple[tuple[str, ...], ...]] = {
         ),
         (r"correccion.{0,30}escalado.{0,30}(?:misma\s+decision|inseparables)",),
         (r"corregir\s+siempre\s+implica\s+escalar",),
+    ),
+    "mission_levels": (
+        (
+            r"(?:consulta|tarea).{0,20}solo\s+lectura.{0,30}"
+            r"(?:usa|crea|requiere).{0,20}(?:mision\s+completa|(?<!\w)full(?!\w))",
+        ),
+        (r"cambio.{0,20}trivial.{0,30}(?:usa|crea|requiere).{0,20}(?:mision\s+completa|(?<!\w)full(?!\w))",),
+        (
+            r"(?:feature|bugfix|seguridad|cross.module).{0,40}"
+            r"(?:no\s+crea\s+mision|mision\s+ligera|(?<!\w)light(?!\w))",
+        ),
+    ),
+    "mission_artifacts": (
+        (r"diff\.patch.{0,20}(?:es\s+)?(?:obligatorio|required)",),
+        (r"mision.{0,30}no\s+(?:usa|requiere|genera).{0,20}execution\.md",),
+        (r"evidencia.{0,20}(?:debe|puede).{0,20}(?:incluir|guardar).{0,20}logs?\s+completos?",),
+    ),
+    "verification_json": (
+        (r"verification\.json.{0,30}(?:puede\s+contener|admite).{0,20}yaml",),
+        (r"verification\.json.{0,40}no\s+necesita.{0,20}json\s+valido",),
+        (r"verification\.json.{0,30}no\s+(?:tiene|necesita).{0,20}(?:ser\s+)?objeto",),
+    ),
+    "check_results": (
+        (
+            r"(?<!\w)(?:skip|skipped)(?!\w).{0,30}"
+            r"(?:puede\s+carecer\s+de|no\s+(?:requiere|exige)).{0,20}justificacion",
+        ),
+        (r"(?:result|resultado).{0,30}(?:admite|puede\s+usar).{0,20}(?<!\w)(?:ok|success|error)(?!\w)",),
+    ),
+    "knowledge_path": (
+        (
+            r"(?:puede|se\s+permite).{0,30}(?:cualquier|otra).{0,20}ruta"
+            r".{0,40}(?:knowledge|conocimiento)",
+        ),
+        (r"ruta.{0,20}knowledge.{0,30}no\s+necesita.{0,20}ser\s+canonica",),
     ),
     "worktree_runtime": (
         (r"worktree.{0,20}no\s+(?:usa|aplica|requiere).{0,20}overlay",),
@@ -157,7 +202,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"|\[\s*(?:todo|pendiente|nombre|indicar|adaptar)[^\]]*\]"
             r"|nombre[_ -]+del?[_ -]+proyecto",
             line_text,
-        ),
+        )
+        and not has_contradiction(source, "project_identity"),
         "use the real Odoo16iRG name and remove editorial placeholders",
     )
     lifecycle_chain = (
@@ -171,7 +217,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             source,
             r"flujo\s+canonico(?:\s+exacto)?\s+(?:es|sera)\s*:",
             lifecycle_chain,
-        ),
+        )
+        and not has_contradiction(source, "lifecycle"),
         "declare the exact six-stage canonical lifecycle",
     )
     require(
@@ -215,7 +262,8 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"(?:solo\s+lectura|read.only).{0,30}(?:no\s+crea[n]?\s+mision|sin\s+mision|none)",
             r"(?:trivial|documentacion|configuracion).{0,40}(?:mision\s+ligera|light)",
             r"(?:feature|bugfix|seguridad|cross.module|cambio\s+de\s+comportamiento).{0,80}(?:mision\s+completa|full)",
-        ),
+        )
+        and not has_contradiction(source, "mission_levels"),
         "define proportional none, light and full mission levels",
     )
     require(
@@ -225,12 +273,15 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"execution\.md",
             r"evidencia\s+concisa",
             r"`?diff\.patch`?\s+(?:es\s+)?opcional",
-        ),
+        )
+        and not has_contradiction(source, "mission_artifacts"),
         "use execution.md, concise evidence and an optional diff.patch",
     )
     require(
         "verification_json",
-        verification_valid and skips_justified,
+        verification_valid
+        and skips_justified
+        and not has_contradiction(source, "verification_json"),
         "include an explicitly labelled, schema-valid verification.json example",
     )
     require(
@@ -242,12 +293,14 @@ def validate(source: str) -> list[tuple[str, str]]:
             r"(?:result|resultado).{0,30}solo\s+admite.{0,30}" + token_pattern("pass")
             + r".{0,20}" + token_pattern("fail") + r".{0,20}" + token_pattern("skipped"),
             r"(?:skip|skipped).{0,50}(?:requiere|exige).{0,30}justificacion",
-        ),
+        )
+        and not has_contradiction(source, "check_results"),
         "allow pass/fail/skipped results and require skip justification",
     )
     require(
         "knowledge_path",
-        ".agents/knowledge/odoo_development_modding/artifacts/" in source,
+        ".agents/knowledge/odoo_development_modding/artifacts/" in source
+        and not has_contradiction(source, "knowledge_path"),
         "set the canonical reusable-knowledge path",
     )
     require(
