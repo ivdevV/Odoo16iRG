@@ -107,3 +107,23 @@
 - La entrega se limita a un commit local de los artefactos pendientes bajo
   `missions/improve-agents-md/`. No se modificó `AGENTS.md`, el checker, sus tests
   ni `verification.json` durante documentación; no se realizó push ni PR.
+
+## Task 3: corrección de evidencia post-rebase
+
+- Trazabilidad del plan: el plan detallado se escribió antes de comenzar Task 1.
+  Permaneció sin commit durante Task 1 y Task 2 para aislar el staging de cada fase,
+  y se versionó finalmente en Task 3 junto con la documentación de misión.
+- Estado rebasado: base remota `e61a6742f`, política validada `956c046cc` y commit
+  de documentación anterior a esta corrección `7792a74d3`.
+- Se reemplazó la inferencia por igualdad de SHA con un checker versionable que
+  hace fetch explícito de `refs/heads/*` y `refs/pull/*/head` a un namespace local,
+  y comprueba por ancestry todos los commits de `origin/Dev_iRG..HEAD` contra cada
+  ref obtenida.
+- El checker ejecuta además exactamente `gh pr list --repo ivdevV/Odoo16iRG
+  --state all --head codex/improve-agents-md --json number`. La consulta API no
+  pudo resolver el repositorio; se conserva su salida y exit `1` como concern. El
+  veredicto de publicación se limita al estado remoto Git observado actualmente y
+  no afirma que históricamente nunca hubiera push o PR.
+- Los checks redundantes de JSON embebido, placeholders y contradicciones se
+  consolidaron en el checker real de política. Cada check restante de
+  `verification.json` contiene el comando exacto reproducible que lo sustenta.

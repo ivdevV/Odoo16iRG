@@ -13,21 +13,14 @@
       "name": "policy_checker",
       "command": "python3 missions/improve-agents-md/artifacts/validate_agents_policy.py",
       "result": "pass",
-      "detail": "All 14 executable policy contracts passed, exit 0",
+      "detail": "All 14 contracts passed, including the embedded JSON schema, editorial placeholders and contradictory exceptions",
       "evidence": "artifacts/validation-policy.txt"
     },
     {
-      "name": "verification_example_json",
-      "command": "extract labelled JSON fence from AGENTS.md and parse with Python json.loads",
+      "name": "verification_file_json",
+      "command": "python3 -m json.tool missions/improve-agents-md/verification.json",
       "result": "pass",
-      "detail": "Exactly one labelled verification.json example parsed as an object, exit 0",
-      "evidence": "artifacts/validation-policy.txt"
-    },
-    {
-      "name": "placeholder_and_contradiction_scan",
-      "command": "independent Python regex scan of AGENTS.md plus semantic review",
-      "result": "pass",
-      "detail": "No editorial placeholders or contradictory policy exceptions found",
+      "detail": "The mission verification artifact is valid JSON, exit 0",
       "evidence": "artifacts/validation-policy.txt"
     },
     {
@@ -38,25 +31,25 @@
       "evidence": "artifacts/validation-policy.txt"
     },
     {
-      "name": "branch_scope",
-      "command": "git diff --name-status origin/Dev_iRG...HEAD plus git status --porcelain --untracked-files=all",
+      "name": "committed_branch_scope",
+      "command": "git diff --name-status origin/Dev_iRG...HEAD",
       "result": "pass",
-      "detail": "Committed and uncommitted versionable changes are limited to AGENTS.md and missions/improve-agents-md/",
+      "detail": "Committed branch changes are limited to AGENTS.md and missions/improve-agents-md/",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
+      "name": "working_tree_scope",
+      "command": "git status --short",
+      "result": "pass",
+      "detail": "Evidence-fix working changes are limited to missions/improve-agents-md/",
       "evidence": "artifacts/validation-git-scope.txt"
     },
     {
       "name": "publication_gate",
-      "command": "git ls-remote --heads origin and git ls-remote origin refs/pull/*/head",
+      "command": "python3 missions/improve-agents-md/artifacts/check_remote_publication.py",
       "result": "pass",
-      "detail": "No remote work branch exists and no unique branch commit is a PR head",
-      "evidence": "artifacts/validation-git-scope.txt"
-    },
-    {
-      "name": "main_checkout_isolation",
-      "command": "git -C /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG status --short --branch",
-      "result": "pass",
-      "detail": "Main checkout remains on Dev_iRG and was inspected read-only; unrelated local changes were not touched",
-      "evidence": "artifacts/validation-git-scope.txt"
+      "detail": "At observation time, no commit in origin/Dev_iRG..HEAD was reachable from any freshly fetched remote branch or PR-head ref; the supplemental gh query was unavailable",
+      "evidence": "artifacts/validation-publication.txt"
     },
     {
       "name": "odoo_runtime_validation",
@@ -70,18 +63,19 @@
     "runtime": "not invoked; documentation-only scope",
     "database": "not used",
     "branch": "codex/improve-agents-md",
-    "head_commit": "51f577a5bfe2fffcfa5626bf239e79326949245b",
-    "remote_base_commit": "fa1361b7c6359532b5b8548c8562056aabac8447",
-    "merge_base_commit": "a28524e5a3132aeba84b8b87aac2e6fa97ea1fb5"
+    "remote_base_commit": "e61a6742f788a434a61f96c2a49198698e5755dc",
+    "validated_policy_commit": "956c046cc0710f3f9a190b4918eb1009ef668b61",
+    "documentation_pre_fix_commit": "7792a74d38e67548cbc34db9f9e873e858cc7378"
   },
   "model_tier_used": "standard",
   "escalations": 0,
   "evidence": [
     "artifacts/validation-tests.txt",
     "artifacts/validation-policy.txt",
-    "artifacts/validation-git-scope.txt"
+    "artifacts/validation-git-scope.txt",
+    "artifacts/validation-publication.txt"
   ],
   "concerns": [
-    "The branch is one commit behind the current remote Dev_iRG and must be reconciled before integration."
+    "The exact gh PR query was attempted but the configured API identity could not resolve ivdevV/Odoo16iRG; the passing publication claim is limited to current ancestry across freshly fetched Git remote heads and PR-head refs."
   ]
 }

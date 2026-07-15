@@ -1,39 +1,27 @@
-Independent Git scope/publication validation: 2026-07-15 (Europe/Madrid)
+Remote base: e61a6742f788a434a61f96c2a49198698e5755dc
+Validated policy commit: 956c046cc0710f3f9a190b4918eb1009ef668b61
+Documentation pre-fix commit: 7792a74d38e67548cbc34db9f9e873e858cc7378
 
-Branch: codex/improve-agents-md
-HEAD: 51f577a5bfe2fffcfa5626bf239e79326949245b
-Remote Dev_iRG after fresh fetch: fa1361b7c6359532b5b8548c8562056aabac8447
-Merge base: a28524e5a3132aeba84b8b87aac2e6fa97ea1fb5
-Divergence: behind 1, ahead 6
+Command: git diff --name-status origin/Dev_iRG...HEAD
+Exit code: 0
+Exact output:
+M	AGENTS.md
+A	missions/improve-agents-md/CHANGELOG.md
+A	missions/improve-agents-md/artifacts/test_validate_agents_policy.py
+A	missions/improve-agents-md/artifacts/validate_agents_policy.py
+A	missions/improve-agents-md/artifacts/validation-git-scope.txt
+A	missions/improve-agents-md/artifacts/validation-policy.txt
+A	missions/improve-agents-md/artifacts/validation-tests.txt
+A	missions/improve-agents-md/execution.md
+A	missions/improve-agents-md/plan.md
+A	missions/improve-agents-md/spec.md
+A	missions/improve-agents-md/verification.json
 
-Branch-introduced paths (git diff --name-status origin/Dev_iRG...HEAD):
-  M AGENTS.md
-  A missions/improve-agents-md/artifacts/test_validate_agents_policy.py
-  A missions/improve-agents-md/artifacts/validate_agents_policy.py
-  A missions/improve-agents-md/execution.md
-  A missions/improve-agents-md/plan.md
-  A missions/improve-agents-md/spec.md
-
-Conclusion: committed branch scope is limited to AGENTS.md and
-missions/improve-agents-md/. Validation artifacts added afterward remain in the
-same allowed mission directory.
-
-No-push evidence:
-  git ls-remote --heads origin Dev_iRG codex/improve-agents-md improve-agents-md
-  returned only refs/heads/Dev_iRG; no work-branch ref exists on origin.
-
-No-PR evidence:
-  gh pr list could not resolve the private repository through its configured API
-  identity, so no conclusion was drawn from that command. As an independent Git
-  fallback, git ls-remote origin 'refs/pull/*/head' returned PR heads 1-10; none
-  equals any of the six commits unique to this branch. Thus no current branch
-  commit has been published as a PR head.
-
-Main checkout:
-  /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG was inspected read-only. It
-  remains on Dev_iRG. Existing unrelated modified/untracked files were not touched.
-
-Concern:
-  The branch is one commit behind the current remote Dev_iRG. A later integration
-  should reconcile that divergence and re-run validation; this does not change the
-  branch-introduced path scope validated above.
+Command: git status --short
+Exit code: 0
+Exact output before local evidence-fix commit:
+ M missions/improve-agents-md/artifacts/validation-git-scope.txt
+ M missions/improve-agents-md/execution.md
+ M missions/improve-agents-md/verification.json
+?? missions/improve-agents-md/artifacts/check_remote_publication.py
+?? missions/improve-agents-md/artifacts/validation-publication.txt
