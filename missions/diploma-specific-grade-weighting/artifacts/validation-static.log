@@ -1,0 +1,39 @@
+Validation date: 2026-07-15
+Scope: addons-extra/extrairg/irg_diploma_gradebook_template_weighting
+
+PASS git_diff_check
+Command: git diff --check
+Detail: exit code 0; no whitespace errors reported.
+
+PASS xml_parse
+Method: PowerShell System.Xml parser, read-only.
+Files:
+- data/gradebook_template_data.xml
+- views/app_gradebook_views.xml
+Detail: both XML files parsed without errors.
+
+PASS compose_config
+Command: docker compose -f docker-compose.local.yml config -q
+Detail: exit code 0; compose definition is syntactically valid.
+
+PASS manifest_structure_review
+Detail: manifest exists, declares Odoo 16 version 16.0.1.0.0, required dependencies,
+data XML, LGPL-3 license, installable=True and imports the model package.
+
+PASS test_inventory
+Detail: 17 TransactionCase test methods found. Static coverage includes template data,
+HOMECLASS suffix, exact 50/7 weighting, variable 3/6/7 module counts, non-Diplomado,
+zero/multiple presencial candidates, electives, recomputation, standard template,
+Master safeguard, authoritative product category, course-name fallback, recovery and
+the production regression 8.44 + six 10 = 9.22.
+
+PASS python_ast_compile
+Runtime: bundled Codex Python, compile performed in memory without writing pyc files.
+Detail: all 7 Python files parsed and compiled to AST without syntax errors.
+
+PASS manifest_ast
+Detail: __manifest__.py parsed with ast.literal_eval; required keys are present,
+version is 16.0.1.0.0, installable=True, and declared dependencies/data are valid
+Python structures.
+
+Final reactive retry tier: complex.

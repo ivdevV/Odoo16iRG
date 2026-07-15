@@ -1,0 +1,39 @@
+2026-07-15 IMPLEMENTACION tier=complex
+- Leidos AGENTS.md, la skill de desarrollo Odoo 16, el workflow y la knowledge base relevante.
+- Confirmado el alcance aprobado y preservados los cambios locales preexistentes.
+- TDD rojo: definidos primero los tests del addon nuevo. En este punto los modelos, campos, datos y vistas requeridos aun no existen, por lo que la suite no puede pasar hasta implementar el comportamiento.
+- No se han consultado ni registrado credenciales ni datos personales.
+- Implementados por herencia `app.gradebook` y `app.gradebook.student` en el addon nuevo; no se modificaron addons existentes.
+- Aniadido modo `standard`/`diploma_50_50`, template seleccionable independiente y vista de configuracion.
+- La formula usa `final_subject_note` sin redondeo intermedio, exige exactamente un presencial y excluye subjects no obligatorios.
+- La deteccion soporta categoria de producto, tipo de curso y fallback conservador por nombre; los sufijos presenciales se normalizan con acentos y HOMECLASS.
+- Comprobaciones ligeras de implementacion: los 2 XML parsean correctamente y `git diff --check` no reporta errores. No se ejecuto la validacion formal ni el compose, reservado para la fase de Validacion. El host no expone un binario Python directo para una comprobacion AST adicional.
+- Revision del orquestador: endurecida la clasificacion para que una categoria de producto configurada como no-Diplomado sea autoritativa sobre tipo/nombre inconsistentes; agregada regresion especifica con categoria Master y curso llamado Diplomado.
+
+2026-07-15 VALIDACION tier=standard resultado=failed
+- Leidos AGENTS.md, la skill Odoo 16 completa, el workflow y la knowledge base relevante antes de validar.
+- Revisados el addon nuevo, su cadena de herencia y sus 17 tests sin modificar implementacion.
+- `git diff --check`: passed.
+- Parseo de los dos XML mediante System.Xml: passed.
+- Estructura/imports/manifest y referencias de vistas: revision estatica passed.
+- `docker compose -f docker-compose.local.yml config -q`: passed.
+- Runtime Docker: failed; `com.docker.service` estaba detenido y `docker_engine` no existia. El intento sin elevacion no tuvo permisos. La solicitud elevada quedo esperando aprobacion y fue abortada, sin ejecutar cambios.
+- Compilacion Python: no ejecutada; el host no expone Python, WSL no tiene distribucion y el contenedor no estuvo disponible.
+- No se creo DB aislada; instalacion/actualizacion del addon y suite Odoo de 17 tests no ejecutadas.
+- Evidencia saneada guardada en `artifacts/validation-static.log`, `artifacts/docker-runtime.log` y `artifacts/test-coverage-review.md`.
+- Escalado reactivo: standard -> complex requerido por validacion fallida/no ejecutable. La implementacion no fue modificada.
+
+2026-07-15 VALIDACION REINTENTO tier=complex resultado=failed
+- Reintento final limitado a estaticos: el usuario no autorizo iniciar Docker.
+- Python bundled ejecutado sobre los 7 archivos Python del addon: compilacion AST en memoria passed, sin generar `__pycache__`.
+- Manifest parseado con `ast.literal_eval`: claves obligatorias, version Odoo 16, dependencias, data e `installable=True` passed.
+- Parseo XML reejecutado: 2/2 passed.
+- `git diff --check` reejecutado: passed.
+- `docker compose -f docker-compose.local.yml config -q`: passed; `com.docker.service` sigue `Stopped`.
+- Lint/estaticos queda passed. Unit tests, integracion e instalacion/build siguen failed/no ejecutados por ausencia de daemon y rechazo explicito a iniciarlo.
+- No se modifico implementacion ni documentacion funcional; no hubo commit ni push.
+
+2026-07-15 ENTREGA A ODOO DEV
+- El usuario confirmo que el resultado esperado del caso real es 9.22.
+- El usuario autorizo explicitamente commit y push a `Dev_iRG` para probar el addon en Odoo Dev.
+- `verification.json` se mantiene en `failed` hasta ejecutar la suite Odoo; el push de prueba no implica el cierre de la mision.

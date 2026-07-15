@@ -1,0 +1,28 @@
+Validation date: 2026-07-15
+Compose file: docker-compose.local.yml
+
+Initial state:
+- com.docker.service: Stopped (Manual)
+- Docker CLI: available, client 29.4.3
+- docker_engine named pipe: absent
+
+Observed commands and results:
+1. docker compose -f docker-compose.local.yml ps
+   Result: FAIL, could not connect to npipe:////./pipe/docker_engine.
+2. docker version
+   Result: client available; server unavailable because docker_engine does not exist.
+3. Start-Service -Name com.docker.service (non-escalated diagnostic)
+   Result: FAIL, current process cannot open/start the service.
+4. Escalated Start-Service request
+   Result: ABORTED while waiting for user approval; no service action completed.
+5. docker compose -f docker-compose.local.yml config -q
+   Result: PASS, compose YAML/configuration accepted.
+6. docker info and final docker compose ps
+   Result: FAIL, daemon still unavailable.
+
+Consequences:
+- No isolated test database was created.
+- Addon installation/update was not executed.
+- Odoo test suite (17 tests) was not executed.
+- No production or mirror database was accessed or modified.
+- No secrets or personal data are present in this evidence.

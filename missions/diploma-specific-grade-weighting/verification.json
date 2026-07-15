@@ -1,0 +1,33 @@
+{
+  "status": "failed",
+  "task": "diploma-specific-grade-weighting",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "result": "fail",
+      "detail": "17 Odoo TransactionCase tests identified but not executed: Docker daemon unavailable; no isolated test database could be created."
+    },
+    {
+      "name": "integration_tests",
+      "result": "fail",
+      "detail": "Addon installation/update and Odoo integration validation were not executed because docker_engine was unavailable."
+    },
+    {
+      "name": "lint",
+      "result": "pass",
+      "detail": "All 7 Python files compiled to AST with bundled Python; manifest AST, both XML files, git diff --check and compose config validation passed."
+    },
+    {
+      "name": "build",
+      "result": "fail",
+      "detail": "docker-compose.local.yml config passed, but addon install/update could not run because com.docker.service remained stopped."
+    }
+  ],
+  "evidence": [
+    "artifacts/validation-static.log",
+    "artifacts/docker-runtime.log",
+    "artifacts/test-coverage-review.md"
+  ],
+  "model_tier_used": "complex",
+  "escalations": 1
+}
