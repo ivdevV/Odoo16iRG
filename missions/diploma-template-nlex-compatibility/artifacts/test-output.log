@@ -1,0 +1,20 @@
+Odoo 16 validation summary
+Database: isolated test database
+Module: irg_diploma_gradebook_template_nlex_compat
+Test tags: /irg_diploma_gradebook_template_nlex_compat
+
+PASS test_nlex_remains_excluded_from_special_ordinary_block
+PASS test_non_diploma_special_template_keeps_inherited_average
+PASS test_special_diploma_keeps_9_22_with_nlex_installed
+PASS test_standard_template_keeps_inherited_nlex_average
+
+Summary: 0 failed, 0 error(s) of 4 tests
+Queries: 611
+Duration: 1.23 seconds
+Odoo process exit code: 0
+
+Validated outcomes:
+- Six ordinary scores of 10 plus presencial 8.44 produce total_final=avg_score=9.22.
+- Standard template preserves inherited NLEX-filtered simple average.
+- Non-Diplomado course preserves inherited average with the special template selected.
+- NLEX subject remains excluded from the special ordinary block.

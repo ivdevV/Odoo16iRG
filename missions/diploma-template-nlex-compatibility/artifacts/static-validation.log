@@ -1,0 +1,35 @@
+Validation date: 2026-07-15
+Scope: addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat
+
+PASS python_ast_compile
+Runtime: bundled Codex Python; compilation performed in memory.
+Detail: 6/6 Python files parsed and compiled to AST; no pyc files generated.
+
+PASS manifest_ast
+Detail: version 16.0.1.0.0, installable=True, LGPL-3, empty data list and both
+required bridge dependencies are present:
+- irg_diploma_gradebook_template_weighting
+- irg_nlex_grade_exemption
+
+PASS imports
+Detail: root imports models, models imports app_gradebook_student, and tests import
+test_diploma_template_nlex_compat.
+
+PASS dependency_presence
+Detail: both dependency addon directories exist in the mounted addons tree.
+
+PASS test_inventory
+Detail: 4 TransactionCase tests found, covering 9.22 regression, standard template,
+non-Diplomado course and NLEX exclusion.
+
+PASS git_diff_check
+Command: git diff --check
+Detail: exit code 0; no whitespace errors.
+
+PASS compose_config
+Command: docker compose -f docker-compose.local.yml config -q
+Detail: exit code 0; compose configuration is syntactically valid.
+
+NOT RUN odoo_runtime
+Detail: com.docker.service is Stopped and docker_engine is unavailable. The user
+previously declined authorization to start Docker, so no further start request was made.

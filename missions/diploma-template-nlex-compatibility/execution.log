@@ -1,0 +1,31 @@
+2026-07-15 PLAN Se diagnosticó colisión entre los cálculos finales de la ponderación por plantilla y la exclusión NLEX.
+2026-07-15 PLAN Misión clasificada complex por interacción cross-module y addon nuevo de más de cinco archivos.
+2026-07-15 IMPLEMENTACION Leidos AGENTS.md, skill Odoo 16, workflow, knowledge NLEX y plan aprobado.
+2026-07-15 IMPLEMENTACION TDD rojo: creados primero cuatro tests de integracion para 9.22, templates/cursos no aplicables y exclusion NLEX. Sin el puente de herencia, NLEX sobrescribe el calculo 50/50.
+2026-07-15 IMPLEMENTACION Preservados todos los cambios locales preexistentes; no se modificaron addons existentes.
+2026-07-15 IMPLEMENTACION Creado puente de herencia `app.gradebook.student`: ejecuta primero cada calculo heredado y reaplica `_get_diploma_final_score()` solo cuando la plantilla especial es valida.
+2026-07-15 IMPLEMENTACION La funcion de valores 50/50 excluye subjects `irg_is_grade_exempt()` antes de identificar presencial y calcular el bloque ordinario.
+2026-07-15 IMPLEMENTACION El orden de carga queda garantizado por dependencias explicitas hacia ponderacion por template y exclusion NLEX.
+2026-07-15 IMPLEMENTACION Comprobacion ligera: `git diff --check` limpio para el addon y artefactos de mision. La ejecucion Odoo/compose queda reservada a Validacion formal.
+2026-07-15 VALIDACION tier=complex resultado=failed
+- Revisados AGENTS.md, plan, implementation log, addon puente y los dos addons dependientes sin modificar implementacion.
+- Python AST 6/6, manifest, imports, dependencias, inventario de 4 tests y `git diff --check`: passed.
+- Revision estatica MRO: el puente carga despues de ambos addons por dependencias explicitas, llama primero a `super()` y reaplica 50/50 solo cuando procede; exclusion NLEX se conserva mediante `irg_is_grade_exempt()`.
+- `docker compose -f docker-compose.local.yml config -q`: passed.
+- Runtime Odoo no ejecutado: `com.docker.service` sigue detenido, `docker_engine` no existe y el usuario rechazo previamente autorizar su inicio. No se repitio la solicitud.
+- No se creo DB aislada ni se ejecutaron instalacion/update o los 4 TransactionCase; unit/integration/build quedan failed objetivamente.
+- Evidencia saneada guardada bajo `artifacts/`. Sin cambios de implementacion, documentacion, commit o push.
+2026-07-15 REVALIDACION tier=complex resultado=passed
+- Docker y servicios locales disponibles mediante el proceso root autorizado; puertos 5433 y 8069 verificados.
+- Creada DB aislada `test_irg_diploma_nlex_compat_20260715`; no se modificaron bases existentes.
+- Primer intento exit 1 antes del addon: `account_payment_term_extension` existia en `account_related15`, ruta ausente del addons_path por defecto.
+- Reintento con `/mnt/extra-addons/account_related15` solo en el comando de validacion progreso hasta 221/229 y detecto PyPDF2 antiguo en `isep_openeducat_reports`.
+- Instalado PyPDF2 3.0.1 con exit 0 solo en `/tmp/codex-pypdf2-301`; `PYTHONPATH` se aplico exclusivamente al proceso final, sin cambiar imagen, repo o configuracion persistente.
+- Ejecucion final Odoo exit 0: addon instalado, 229 modulos cargados, 4 tests post-install ejecutados, `0 failed, 0 error(s)`, 611 queries, 1.23 s.
+- Verificados 9.22 con seis 10 + presencial 8.44, template estandar, curso no Diplomado y exclusion NLEX.
+- Evidencia actualizada en `artifacts/docker-runtime.log` y `artifacts/test-output.log`. Sin cambios de implementacion/documentacion, commit o push.
+2026-07-15 DOCUMENTACION
+- Creada documentacion funcional y tecnica del addon bajo `doc/modules/extrairg/`.
+- Persistido el patron MRO reutilizable en la knowledge base del proyecto.
+- Registrados instalacion, uso, pruebas, limitaciones y changelog.
+- Preparado `diff.patch` acotado a los archivos de esta mision; no incluye cambios locales preexistentes ni secretos.

@@ -1,0 +1,36 @@
+Revalidation date: 2026-07-15
+Compose file: docker-compose.local.yml
+
+Runtime availability:
+- Docker Desktop and docker_engine available through the authorized root process.
+- odoo_local and pgodoo_local services active.
+- localhost PostgreSQL port 5433 reachable.
+- localhost Odoo port 8069 reachable.
+
+Isolated database:
+- test_irg_diploma_nlex_compat_20260715
+- Created specifically for this validation; no existing local, mirror or production
+  database was modified.
+
+Dependency diagnostics:
+1. Initial install attempt stopped before the target addon because
+   account_payment_term_extension existed under /mnt/extra-addons/account_related15
+   but that directory was absent from the default addons_path.
+2. Re-run added account_related15 only to the validation command's addons_path.
+3. A second attempt stopped at isep_openeducat_reports because the container's bundled
+   PyPDF2 lacked PdfReader/PdfWriter.
+4. PyPDF2 3.0.1 was installed successfully only under /tmp/codex-pypdf2-301 and exposed
+   with PYTHONPATH only to the final validation process. The image, repository and
+   persistent dependency configuration were not changed.
+
+Final result:
+- Temporary PyPDF2 install exit code: 0.
+- Odoo install/test command exit code: 0.
+- Registry: 229 modules loaded.
+- Target addon: installed successfully.
+- Post-install tests: 4 executed, 0 failed, 0 errors.
+- Queries: 611.
+- Test duration: 1.23 seconds.
+
+A non-fatal schema log about setting NOT NULL on op_course.lang occurred during an
+earlier dependency-install pass; installation continued and the final Odoo run exited 0.

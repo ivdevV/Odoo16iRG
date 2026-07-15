@@ -1,0 +1,806 @@
+diff --git a/.agents/knowledge/odoo_development_modding/artifacts/irg_diploma_gradebook_template_nlex_compat.md b/.agents/knowledge/odoo_development_modding/artifacts/irg_diploma_gradebook_template_nlex_compat.md
+new file mode 100644
+index 000000000..2b7ff572c
+--- /dev/null
++++ b/.agents/knowledge/odoo_development_modding/artifacts/irg_diploma_gradebook_template_nlex_compat.md
+@@ -0,0 +1,45 @@
++# Compatibilidad de campos calculados entre addons Odoo
++
++## Contexto
++
++`irg_diploma_gradebook_template_weighting` aplica una ponderación 50/50 a
++Diplomados, mientras `irg_nlex_grade_exemption` excluye asignaturas cuyo código
++contiene `EX`. Ambos addons redefinen los cálculos `total_final` y `avg_score`.
++
++## Gotcha descubierto
++
++Un override de un método compute que no llama a `super()` puede cortar la
++cadena MRO y reemplazar silenciosamente el resultado de otro addon. El síntoma
++fue una media simple de 9,78 en lugar del resultado especial 9,22, aunque el
++template correcto estaba seleccionado y las notas por asignatura eran válidas.
++
++Los tests aislados de un solo addon no detectan este problema: es necesario
++cargar juntos todos los módulos que redefinen el mismo método.
++
++## Patrón aplicado
++
++Crear un addon puente que:
++
++1. dependa explícitamente de todos los addons en conflicto para asegurar su
++   carga posterior;
++2. extienda el mismo modelo mediante `_inherit`;
++3. ejecute primero `super()` para conservar el comportamiento heredado; y
++4. reaplique al final el resultado especial únicamente cuando su helper indique
++   que la regla funcional es aplicable.
++
++Cuando existe una exclusión transversal como NLEX, el helper especial también
++debe usar la misma fuente de verdad (`irg_is_grade_exempt()`) antes de formar
++sus conjuntos y promedios.
++
++## Regresión mínima reutilizable
++
++- Instalar simultáneamente los addons en conflicto y el puente.
++- Probar el caso especial con valores que difieran claramente de la media
++  estándar: seis notas 10 y presencial 8,44 deben producir 9,22, no 9,78.
++- Probar template estándar y curso no aplicable para garantizar fallback.
++- Probar una asignatura `EX` puntuada para asegurar que sigue excluida.
++
++## Resultado validado
++
++El addon `irg_diploma_gradebook_template_nlex_compat` pasó cuatro pruebas Odoo
++en una base aislada: 0 fallos y 0 errores.
+
+diff --git a/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/__init__.py b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/__init__.py
+new file mode 100644
+index 000000000..a0fdc10fe
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import models
+
+diff --git a/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/__manifest__.py b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/__manifest__.py
+new file mode 100644
+index 000000000..c733df2c8
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/__manifest__.py
+@@ -0,0 +1,17 @@
++# -*- coding: utf-8 -*-
++{
++    'name': 'IRG Diploma Gradebook Template NLEX Compatibility',
++    'version': '16.0.1.0.0',
++    'category': 'Education',
++    'summary': 'Compatibiliza la ponderacion 50/50 con la exclusion NLEX.',
++    'author': 'IRG',
++    'license': 'LGPL-3',
++    'depends': [
++        'irg_diploma_gradebook_template_weighting',
++        'irg_nlex_grade_exemption',
++    ],
++    'data': [],
++    'installable': True,
++    'application': False,
++    'auto_install': False,
++}
+
+diff --git a/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/models/__init__.py b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/models/__init__.py
+new file mode 100644
+index 000000000..3b3d45152
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/models/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import app_gradebook_student
+
+diff --git a/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/models/app_gradebook_student.py b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/models/app_gradebook_student.py
+new file mode 100644
+index 000000000..597b0d4d8
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/models/app_gradebook_student.py
+@@ -0,0 +1,115 @@
++# -*- coding: utf-8 -*-
++from odoo import api, models
++
++
++class AppGradebookStudent(models.Model):
++    _inherit = 'app.gradebook.student'
++
++    @api.depends(
++        'gradebook_id.final_calculation_mode',
++        'course_id.name',
++        'course_id.code',
++        'course_id.course_type_id.name',
++        'course_id.course_type_id.code',
++        'course_id.product_template_id.categ_id.name',
++        'course_id.product_template_id.categ_id.code',
++        'gradebook_subject_ids.final_subject_note',
++        'gradebook_subject_ids.op_subject_id.name',
++        'gradebook_subject_ids.op_subject_id.code',
++        'gradebook_subject_ids.op_subject_id.subject_type',
++    )
++    def _compute_diploma_recovery_required(self):
++        return super()._compute_diploma_recovery_required()
++
++    @api.depends(
++        'gradebook_id.final_calculation_mode',
++        'course_id.name',
++        'course_id.code',
++        'course_id.course_type_id.name',
++        'course_id.course_type_id.code',
++        'course_id.product_template_id.categ_id.name',
++        'course_id.product_template_id.categ_id.code',
++        'gradebook_subject_ids.final_subject_note',
++        'gradebook_subject_ids.op_subject_id.name',
++        'gradebook_subject_ids.op_subject_id.code',
++        'gradebook_subject_ids.op_subject_id.subject_type',
++        'diploma_recovery_required',
++        'diploma_recovery_score',
++        'diploma_recovery_applied',
++    )
++    def _amount_prod_final(self):
++        """Keep NLEX's inherited average, then restore special weighting."""
++        super()._amount_prod_final()
++        for gradebook in self:
++            diploma_final = gradebook._get_diploma_final_score()
++            if diploma_final is not False:
++                gradebook.total_final = diploma_final
++
++    @api.depends(
++        'student_id',
++        'gradebook_id.final_calculation_mode',
++        'course_id.name',
++        'course_id.code',
++        'course_id.course_type_id.name',
++        'course_id.course_type_id.code',
++        'course_id.product_template_id.categ_id.name',
++        'course_id.product_template_id.categ_id.code',
++        'gradebook_subject_ids',
++        'gradebook_subject_ids.final_subject_note',
++        'gradebook_subject_ids.op_subject_id',
++        'gradebook_subject_ids.op_subject_id.name',
++        'gradebook_subject_ids.op_subject_id.code',
++        'gradebook_subject_ids.op_subject_id.subject_type',
++        'diploma_recovery_required',
++        'diploma_recovery_score',
++        'diploma_recovery_applied',
++    )
++    def compute_avg_score(self):
++        """Keep NLEX's inherited average, then restore special weighting."""
++        super().compute_avg_score()
++        for gradebook in self:
++            diploma_final = gradebook._get_diploma_final_score()
++            if diploma_final is not False:
++                gradebook.avg_score = diploma_final
++
++    def _get_diploma_weighting_values(self):
++        """Return the 50/50 inputs after removing all NLEX/EX subjects."""
++        self.ensure_one()
++        if not self.gradebook_id:
++            return False
++        if self.gradebook_id.final_calculation_mode != 'diploma_50_50':
++            return False
++        if not self._is_diplomado_course():
++            return False
++
++        compulsory_subjects = self.gradebook_subject_ids.filtered(
++            lambda line: (
++                line.op_subject_id.subject_type == 'compulsory'
++                and not line.op_subject_id.irg_is_grade_exempt()
++            )
++        )
++        presencial_subjects = compulsory_subjects.filtered(
++            lambda line: self._is_presential_module_subject(line)
++        )
++        if len(presencial_subjects) != 1:
++            return False
++
++        non_presential_subjects = compulsory_subjects - presencial_subjects
++        if not non_presential_subjects:
++            return False
++
++        presencial_score = presencial_subjects.final_subject_note
++        non_presential_average = (
++            sum(non_presential_subjects.mapped('final_subject_note'))
++            / len(non_presential_subjects)
++        )
++        return {
++            'base_final': (
++                presencial_score * 0.5
++                + non_presential_average * 0.5
++            ),
++            'presencial_score': presencial_score,
++            'non_presential_average': non_presential_average,
++            'non_presential_count': len(non_presential_subjects),
++            'non_presential_weight': 50.0 / len(non_presential_subjects),
++        }
+
+diff --git a/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/tests/__init__.py b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/tests/__init__.py
+new file mode 100644
+index 000000000..04d960374
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/tests/__init__.py
+@@ -0,0 +1,2 @@
++# -*- coding: utf-8 -*-
++from . import test_diploma_template_nlex_compat
+
+diff --git a/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/tests/test_diploma_template_nlex_compat.py b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/tests/test_diploma_template_nlex_compat.py
+new file mode 100644
+index 000000000..225058eef
+--- /dev/null
++++ b/addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat/tests/test_diploma_template_nlex_compat.py
+@@ -0,0 +1,182 @@
++# -*- coding: utf-8 -*-
++from odoo import fields
++from odoo.tests.common import TransactionCase, tagged
++
++
++@tagged('post_install', '-at_install')
++class TestDiplomaTemplateNlexCompatibility(TransactionCase):
++
++    @classmethod
++    def setUpClass(cls):
++        super().setUpClass()
++        cls.course_index = 0
++        cls.registration_product = cls.env['product.product'].create({
++            'name': 'IRG Diploma NLEX Registration',
++            'type': 'service',
++        })
++        cls.diploma_type = cls.env['op.course.type'].create({
++            'name': 'Diplomado',
++            'code': 'DI',
++        })
++        cls.master_type = cls.env['op.course.type'].create({
++            'name': 'Master',
++            'code': 'M',
++        })
++        cls.special_template = cls.env.ref(
++            'irg_diploma_gradebook_template_weighting.'
++            'gradebook_diploma_exam_50_50'
++        )
++        cls.standard_template = cls.env['app.gradebook'].create({
++            'name': 'IRG NLEX Standard Template',
++            'final_calculation_mode': 'standard',
++            'gradebook_template_ids': [(0, 0, {
++                'type': 'exam',
++                'weight': 100.0,
++                'qty': 1,
++            })],
++        })
++
++    def _create_course(self, course_type, name):
++        type(self).course_index += 1
++        return self.env['op.course'].create({
++            'name': name,
++            'code': 'IRGDNX%03d' % type(self).course_index,
++            'course_type_id': course_type.id,
++        })
++
++    def _create_gradebook(self, course, template):
++        partner = self.env['res.partner'].create({
++            'name': 'IRG Diploma NLEX Student',
++        })
++        student = self.env['op.student'].create({
++            'partner_id': partner.id,
++            'first_name': 'IRG',
++            'last_name': 'Student',
++            'gender': 'm',
++        })
++        register = self.env['op.admission.register'].create({
++            'name': 'IRG Diploma NLEX Register',
++            'course_id': course.id,
++            'start_date': fields.Date.today(),
++            'end_date': fields.Date.today(),
++            'min_count': 1,
++            'max_count': 100,
++            'product_id': self.registration_product.id,
++        })
++        admission = self.env['op.admission'].create({
++            'name': 'IRG Diploma NLEX Admission',
++            'first_name': 'IRG',
++            'last_name': 'Student',
++            'birth_date': '2000-01-01',
++            'gender': 'm',
++            'email': 'irg.diploma.nlex@example.com',
++            'partner_id': partner.id,
++            'student_id': student.id,
++            'course_id': course.id,
++            'register_id': register.id,
++        })
++        gradebook = self.env['app.gradebook.student'].create({
++            'admission_id': admission.id,
++        })
++        gradebook.write({'gradebook_id': template.id})
++        return gradebook
++
++    def _add_note(self, gradebook, name, code, score):
++        subject = self.env['op.subject'].create({
++            'name': name,
++            'code': code,
++            'subject_type': 'compulsory',
++            'course_id': gradebook.course_id.id,
++        })
++        line = self.env['app.gradebook.subject'].create({
++            'gradebook_student_id': gradebook.id,
++            'op_subject_id': subject.id,
++        })
++        self.env['app.gradebook.result'].create({
++            'gradebook_subject_id': line.id,
++            'survey_type': 'exam',
++            'scoring_total': score,
++        })
++        return line
++
++    def _refresh(self, gradebook):
++        self.env.flush_all()
++        gradebook.invalidate_recordset()
++
++    def test_special_diploma_keeps_9_22_with_nlex_installed(self):
++        course = self._create_course(
++            self.diploma_type, 'Diplomado en Terapias'
++        )
++        gradebook = self._create_gradebook(course, self.special_template)
++        self._add_note(
++            gradebook,
++            'Diplomado en Terapias - MODULO PRESENCIAL/HOMECLASS',
++            'PRES01',
++            8.44,
++        )
++        for index in range(6):
++            self._add_note(
++                gradebook,
++                'Modulo ordinario %s' % (index + 1),
++                'ORD%02d' % (index + 1),
++                10.0,
++            )
++        self._add_note(gradebook, 'Nivelacion NLEX', 'NLEX01', 0.0)
++        self._refresh(gradebook)
++
++        self.assertAlmostEqual(gradebook.total_final, 9.22)
++        self.assertAlmostEqual(gradebook.avg_score, 9.22)
++
++    def test_standard_template_keeps_inherited_nlex_average(self):
++        course = self._create_course(
++            self.diploma_type, 'Diplomado con template estandar'
++        )
++        gradebook = self._create_gradebook(course, self.standard_template)
++        self._add_note(gradebook, 'Modulo Presencial', 'PRES02', 4.0)
++        for index in range(3):
++            self._add_note(
++                gradebook,
++                'Modulo ordinario %s' % (index + 1),
++                'STD%02d' % (index + 1),
++                10.0,
++            )
++        self._add_note(gradebook, 'Nivelacion NLEX', 'NLEX02', 0.0)
++        self._refresh(gradebook)
++
++        self.assertAlmostEqual(gradebook.total_final, 8.5)
++        self.assertAlmostEqual(gradebook.avg_score, 8.5)
++
++    def test_non_diploma_special_template_keeps_inherited_average(self):
++        course = self._create_course(
++            self.master_type, 'Master en Terapias'
++        )
++        gradebook = self._create_gradebook(course, self.special_template)
++        self._add_note(gradebook, 'Modulo Presencial', 'PRES03', 4.0)
++        for index in range(3):
++            self._add_note(
++                gradebook,
++                'Modulo ordinario %s' % (index + 1),
++                'MAS%02d' % (index + 1),
++                10.0,
++            )
++        self._add_note(gradebook, 'Nivelacion NLEX', 'NLEX03', 0.0)
++        self._refresh(gradebook)
++
++        self.assertAlmostEqual(gradebook.total_final, 8.5)
++        self.assertAlmostEqual(gradebook.avg_score, 8.5)
++
++    def test_nlex_remains_excluded_from_special_ordinary_block(self):
++        course = self._create_course(
++            self.diploma_type, 'Diplomado con NLEX puntuado'
++        )
++        gradebook = self._create_gradebook(course, self.special_template)
++        self._add_note(gradebook, 'Modulo Presencial', 'PRES04', 8.0)
++        self._add_note(gradebook, 'Modulo ordinario', 'ORD99', 10.0)
++        self._add_note(gradebook, 'Nivelacion NLEX', 'NLEX99', 2.0)
++        self._refresh(gradebook)
++
++        values = gradebook._get_diploma_weighting_values()
++        self.assertEqual(values['non_presential_count'], 1)
++        self.assertAlmostEqual(values['non_presential_average'], 10.0)
++        self.assertAlmostEqual(gradebook.total_final, 9.0)
++        self.assertAlmostEqual(gradebook.avg_score, 9.0)
+
+diff --git a/doc/modules/extrairg/irg_diploma_gradebook_template_nlex_compat.md b/doc/modules/extrairg/irg_diploma_gradebook_template_nlex_compat.md
+new file mode 100644
+index 000000000..a658a5944
+--- /dev/null
++++ b/doc/modules/extrairg/irg_diploma_gradebook_template_nlex_compat.md
+@@ -0,0 +1,91 @@
++# IRG Diploma Gradebook Template NLEX Compatibility
++
++## Propósito
++
++`irg_diploma_gradebook_template_nlex_compat` compatibiliza la ponderación final
++de Diplomados con la exclusión de asignaturas NLEX/EX. Corrige el caso donde
++un override compute sin `super()` dejaba la media simple `9,78` en lugar de
++`9,22` para una nota presencial `8,44` y seis módulos ordinarios con `10`.
++
++## Arquitectura y MRO
++
++El addon no crea modelos ni campos. Extiende `app.gradebook.student` y depende
++explícitamente de:
++
++- `irg_diploma_gradebook_template_weighting`;
++- `irg_nlex_grade_exemption`.
++
++Ese orden topológico registra el puente después de ambos addons. Sus métodos
++`_amount_prod_final()` y `compute_avg_score()` ejecutan primero `super()` para
++conservar el cálculo heredado. Después consultan `_get_diploma_final_score()`
++y solo reaplican el resultado cuando la regla especial es válida. Si el helper
++devuelve `False`, se mantiene intacta la media heredada.
++
++El helper `_get_diploma_weighting_values()` filtra primero los subjects donde
++`irg_is_grade_exempt()` es verdadero. Luego exige un único módulo presencial y
++promedia los módulos obligatorios ordinarios restantes.
++
++## Instalación y configuración
++
++Instalar `irg_diploma_gradebook_template_nlex_compat`. Odoo resolverá sus dos
++dependencias antes del puente.
++
++No añade opciones de interfaz. Para usar la regla:
++
++1. Seleccionar `Diplomado - Solo examen - Ponderación 50/50` en la libreta.
++2. Verificar que el curso esté clasificado como Diplomado.
++3. Mantener exactamente un subject obligatorio que identifique el presencial.
++4. Usar el marcador de código `EX` para subjects exentos, incluida la familia
++   `NLEX`, conforme al contrato de `irg_nlex_grade_exemption`.
++
++## Cálculo
++
++```text
++final = presencial * 0,50 + promedio(ordinarios no exentos) * 0,50
++```
++
++Caso validado:
++
++```text
++presencial = 8,44
++ordinarios = 10, 10, 10, 10, 10, 10
++NLEX       = excluido
++final      = 8,44 * 0,50 + 10 * 0,50 = 9,22
++```
++
++Templates estándar, cursos no-Diplomado y configuraciones ambiguas conservan
++el cálculo heredado filtrado por NLEX.
++
++## Pruebas
++
++La validación se ejecutó con `docker-compose.local.yml` en la base aislada
++`test_irg_diploma_nlex_compat_20260715`. Odoo instaló el addon, cargó 229
++módulos y ejecutó cuatro pruebas `TransactionCase` post-install:
++
++- regresión `8,44 + seis notas 10 = 9,22` en `total_final` y `avg_score`;
++- template estándar conserva la media heredada;
++- curso no-Diplomado conserva la media heredada con el template especial; y
++- un NLEX puntuado queda fuera del bloque ordinario 50 %.
++
++Resultado: 4 pruebas superadas, 0 fallos y 0 errores. También pasaron la
++compilación AST de seis archivos Python, manifest/imports, instalación y
++`git diff --check`.
++
++## Limitaciones conocidas
++
++- Depende de los contratos internos `_get_diploma_final_score()`,
++  `_get_diploma_weighting_values()` e `irg_is_grade_exempt()`.
++- Requiere exactamente un presencial obligatorio y al menos un módulo
++  ordinario obligatorio no exento.
++- La exención coincide con cualquier código que contenga `EX`, no solo `NLEX`.
++- No migra datos históricos ni fuerza recálculos masivos.
++- No sustituye la configuración del template ni la clasificación del curso.
++
++## Changelog
++
++### 16.0.1.0.0 — 2026-07-15
++
++- Añadido puente final para `total_final` y `avg_score`.
++- Conservado el cálculo heredado para casos no aplicables.
++- Excluidos NLEX/EX antes de formar el bloque ordinario 50 %.
++- Añadidas cuatro pruebas de integración y regresión.
+
+diff --git a/missions/diploma-template-nlex-compatibility/plan.md b/missions/diploma-template-nlex-compatibility/plan.md
+new file mode 100644
+index 000000000..23508eb2c
+--- /dev/null
++++ b/missions/diploma-template-nlex-compatibility/plan.md
+@@ -0,0 +1,68 @@
++# Plan: compatibilidad ponderación 50/50 con NLEX
++
++## Objetivo
++
++Corregir el conflicto de herencia entre
++`irg_diploma_gradebook_template_weighting` e `irg_nlex_grade_exemption` para
++que la plantilla especial calcule 50 % del módulo presencial y 50 % del
++promedio de los demás módulos obligatorios, sin alterar cursos que no sean
++diplomados ni las exclusiones NLEX.
++
++## Evidencia del problema
++
++- Caso reproducido: seis módulos con 10 y módulo presencial con 8,44.
++- Resultado observado: 9,78, que corresponde a la media simple
++  `(6 * 10 + 8,44) / 7`.
++- Resultado esperado: 9,22, calculado como `(10 * 0,5) + (8,44 * 0,5)`.
++- `irg_nlex_grade_exemption` redefine `_amount_prod_final` y
++  `compute_avg_score` sin encadenar `super()`, por lo que puede sobrescribir la
++  ponderación especial según el orden de carga de módulos.
++
++## Alcance
++
++1. Crear un addon nuevo en `addons-extra/extrairg/` que dependa explícitamente
++   de los módulos de ponderación por plantilla y de exclusión NLEX.
++2. Extender `app.gradebook.student` mediante `_inherit`.
++3. Ejecutar primero el cálculo heredado y aplicar después el resultado especial
++   devuelto por `_get_diploma_final_score()` cuando corresponda.
++4. Conservar el resultado heredado para plantillas estándar, cursos no
++   diplomados y configuraciones donde la regla 50/50 no sea válida.
++5. Añadir pruebas de regresión para el caso 9,22, cursos no diplomados y
++   exclusiones NLEX.
++
++## Fuera de alcance
++
++- Modificar módulos existentes.
++- Cambiar la definición funcional de `survey_type = exam`.
++- Modificar datos históricos o ejecutar migraciones.
++- Hacer commit o push sin autorización posterior del usuario.
++
++## Complejidad y routing
++
++- **Tier:** `complex`.
++- **Justificación objetiva:** aunque la lógica es acotada, el cambio requiere
++  un addon nuevo con más de cinco archivos y valida interacción cross-module y
++  orden de herencia Odoo.
++- **Implementación:** subagente codificador de alta capacidad.
++- **Validación:** subagente testeador; pruebas Odoo mediante
++  `docker-compose.local.yml` cuando el runtime esté disponible.
++- **Documentación:** subagente documentador ligero después de una verificación
++  `passed`.
++- **Security Advisor:** no aplica; no se tocan autenticación, secretos,
++  despliegue, concurrencia, migraciones ni borrado de datos.
++
++## Validación prevista
++
++- Instalación/actualización del addon en Odoo 16 local.
++- Test de integración con ambos módulos instalados:
++  seis notas 10 y presencial 8,44 producen `total_final = avg_score = 9,22`.
++- Plantilla estándar conserva media simple.
++- Curso no diplomado conserva comportamiento estándar.
++- Asignaturas NLEX continúan excluidas.
++- Python/manifest/XML, lint disponible y `git diff --check`.
++
++## Conocimiento aplicado
++
++- `.agents/knowledge/odoo_development_modding/artifacts/modding_rules_and_email_analysis.md`:
++  addon bajo `addons-extra/extrairg/`, prefijo `irg_`, herencia Odoo y ausencia
++  de modificaciones directas a módulos existentes.
+
+diff --git a/missions/diploma-template-nlex-compatibility/execution.log b/missions/diploma-template-nlex-compatibility/execution.log
+new file mode 100644
+index 000000000..c910fcbcd
+--- /dev/null
++++ b/missions/diploma-template-nlex-compatibility/execution.log
+@@ -0,0 +1,31 @@
++2026-07-15 PLAN Se diagnosticó colisión entre los cálculos finales de la ponderación por plantilla y la exclusión NLEX.
++2026-07-15 PLAN Misión clasificada complex por interacción cross-module y addon nuevo de más de cinco archivos.
++2026-07-15 IMPLEMENTACION Leidos AGENTS.md, skill Odoo 16, workflow, knowledge NLEX y plan aprobado.
++2026-07-15 IMPLEMENTACION TDD rojo: creados primero cuatro tests de integracion para 9.22, templates/cursos no aplicables y exclusion NLEX. Sin el puente de herencia, NLEX sobrescribe el calculo 50/50.
++2026-07-15 IMPLEMENTACION Preservados todos los cambios locales preexistentes; no se modificaron addons existentes.
++2026-07-15 IMPLEMENTACION Creado puente de herencia `app.gradebook.student`: ejecuta primero cada calculo heredado y reaplica `_get_diploma_final_score()` solo cuando la plantilla especial es valida.
++2026-07-15 IMPLEMENTACION La funcion de valores 50/50 excluye subjects `irg_is_grade_exempt()` antes de identificar presencial y calcular el bloque ordinario.
++2026-07-15 IMPLEMENTACION El orden de carga queda garantizado por dependencias explicitas hacia ponderacion por template y exclusion NLEX.
++2026-07-15 IMPLEMENTACION Comprobacion ligera: `git diff --check` limpio para el addon y artefactos de mision. La ejecucion Odoo/compose queda reservada a Validacion formal.
++2026-07-15 VALIDACION tier=complex resultado=failed
++- Revisados AGENTS.md, plan, implementation log, addon puente y los dos addons dependientes sin modificar implementacion.
++- Python AST 6/6, manifest, imports, dependencias, inventario de 4 tests y `git diff --check`: passed.
++- Revision estatica MRO: el puente carga despues de ambos addons por dependencias explicitas, llama primero a `super()` y reaplica 50/50 solo cuando procede; exclusion NLEX se conserva mediante `irg_is_grade_exempt()`.
++- `docker compose -f docker-compose.local.yml config -q`: passed.
++- Runtime Odoo no ejecutado: `com.docker.service` sigue detenido, `docker_engine` no existe y el usuario rechazo previamente autorizar su inicio. No se repitio la solicitud.
++- No se creo DB aislada ni se ejecutaron instalacion/update o los 4 TransactionCase; unit/integration/build quedan failed objetivamente.
++- Evidencia saneada guardada bajo `artifacts/`. Sin cambios de implementacion, documentacion, commit o push.
++2026-07-15 REVALIDACION tier=complex resultado=passed
++- Docker y servicios locales disponibles mediante el proceso root autorizado; puertos 5433 y 8069 verificados.
++- Creada DB aislada `test_irg_diploma_nlex_compat_20260715`; no se modificaron bases existentes.
++- Primer intento exit 1 antes del addon: `account_payment_term_extension` existia en `account_related15`, ruta ausente del addons_path por defecto.
++- Reintento con `/mnt/extra-addons/account_related15` solo en el comando de validacion progreso hasta 221/229 y detecto PyPDF2 antiguo en `isep_openeducat_reports`.
++- Instalado PyPDF2 3.0.1 con exit 0 solo en `/tmp/codex-pypdf2-301`; `PYTHONPATH` se aplico exclusivamente al proceso final, sin cambiar imagen, repo o configuracion persistente.
++- Ejecucion final Odoo exit 0: addon instalado, 229 modulos cargados, 4 tests post-install ejecutados, `0 failed, 0 error(s)`, 611 queries, 1.23 s.
++- Verificados 9.22 con seis 10 + presencial 8.44, template estandar, curso no Diplomado y exclusion NLEX.
++- Evidencia actualizada en `artifacts/docker-runtime.log` y `artifacts/test-output.log`. Sin cambios de implementacion/documentacion, commit o push.
++2026-07-15 DOCUMENTACION
++- Creada documentacion funcional y tecnica del addon bajo `doc/modules/extrairg/`.
++- Persistido el patron MRO reutilizable en la knowledge base del proyecto.
++- Registrados instalacion, uso, pruebas, limitaciones y changelog.
++- Preparado `diff.patch` acotado a los archivos de esta mision; no incluye cambios locales preexistentes ni secretos.
+
+diff --git a/missions/diploma-template-nlex-compatibility/verification.json b/missions/diploma-template-nlex-compatibility/verification.json
+new file mode 100644
+index 000000000..c1bb2af92
+--- /dev/null
++++ b/missions/diploma-template-nlex-compatibility/verification.json
+@@ -0,0 +1,34 @@
++{
++  "status": "passed",
++  "task": "diploma-template-nlex-compatibility",
++  "checks": [
++    {
++      "name": "unit_tests",
++      "result": "pass",
++      "detail": "4 Odoo TransactionCase post-install tests passed, 0 failed and 0 errors; 611 queries in 1.23 seconds."
++    },
++    {
++      "name": "integration_tests",
++      "result": "pass",
++      "detail": "Isolated-database runtime validation passed for 9.22 weighting, standard template, non-Diplomado safeguard and NLEX exclusion."
++    },
++    {
++      "name": "lint",
++      "result": "pass",
++      "detail": "All 6 Python files compiled to AST; manifest, imports, dependencies, test inventory and git diff --check passed. No XML files are present or required."
++    },
++    {
++      "name": "build",
++      "result": "pass",
++      "detail": "Odoo process exited 0 after loading 229 modules and installing irg_diploma_gradebook_template_nlex_compat in an isolated test database."
++    }
++  ],
++  "evidence": [
++    "artifacts/static-validation.log",
++    "artifacts/mro-logic-review.md",
++    "artifacts/docker-runtime.log",
++    "artifacts/test-output.log"
++  ],
++  "model_tier_used": "complex",
++  "escalations": 0
++}
+
+diff --git a/missions/diploma-template-nlex-compatibility/artifacts/docker-runtime.log b/missions/diploma-template-nlex-compatibility/artifacts/docker-runtime.log
+new file mode 100644
+index 000000000..6334e7766
+--- /dev/null
++++ b/missions/diploma-template-nlex-compatibility/artifacts/docker-runtime.log
+@@ -0,0 +1,36 @@
++Revalidation date: 2026-07-15
++Compose file: docker-compose.local.yml
++
++Runtime availability:
++- Docker Desktop and docker_engine available through the authorized root process.
++- odoo_local and pgodoo_local services active.
++- localhost PostgreSQL port 5433 reachable.
++- localhost Odoo port 8069 reachable.
++
++Isolated database:
++- test_irg_diploma_nlex_compat_20260715
++- Created specifically for this validation; no existing local, mirror or production
++  database was modified.
++
++Dependency diagnostics:
++1. Initial install attempt stopped before the target addon because
++   account_payment_term_extension existed under /mnt/extra-addons/account_related15
++   but that directory was absent from the default addons_path.
++2. Re-run added account_related15 only to the validation command's addons_path.
++3. A second attempt stopped at isep_openeducat_reports because the container's bundled
++   PyPDF2 lacked PdfReader/PdfWriter.
++4. PyPDF2 3.0.1 was installed successfully only under /tmp/codex-pypdf2-301 and exposed
++   with PYTHONPATH only to the final validation process. The image, repository and
++   persistent dependency configuration were not changed.
++
++Final result:
++- Temporary PyPDF2 install exit code: 0.
++- Odoo install/test command exit code: 0.
++- Registry: 229 modules loaded.
++- Target addon: installed successfully.
++- Post-install tests: 4 executed, 0 failed, 0 errors.
++- Queries: 611.
++- Test duration: 1.23 seconds.
++
++A non-fatal schema log about setting NOT NULL on op_course.lang occurred during an
++earlier dependency-install pass; installation continued and the final Odoo run exited 0.
+
+diff --git a/missions/diploma-template-nlex-compatibility/artifacts/mro-logic-review.md b/missions/diploma-template-nlex-compatibility/artifacts/mro-logic-review.md
+new file mode 100644
+index 000000000..9a5208d26
+--- /dev/null
++++ b/missions/diploma-template-nlex-compatibility/artifacts/mro-logic-review.md
+@@ -0,0 +1,22 @@
++# MRO and logic review
++
++The compatibility addon explicitly depends on both interacting addons, so it is loaded
++after their model extensions. Its `_amount_prod_final()` and `compute_avg_score()` call
++`super()` first, preserving the inherited NLEX calculation, then overwrite the result
++only when `_get_diploma_final_score()` returns a valid special-template result.
++
++The special value helper retains all activation gates:
++
++- template mode must be `diploma_50_50`;
++- course must be identified as Diplomado;
++- exactly one compulsory presencial subject must remain;
++- at least one ordinary compulsory subject must remain.
++
++Before identifying presencial/ordinary subjects, it excludes every subject for which
++`op.subject.irg_is_grade_exempt()` is true. The NLEX addon defines that helper as a
++case-insensitive `EX` marker check, which covers the test codes `NLEX01` through
++`NLEX99`.
++
++Static inspection finds no direct modification of existing addons and no missing import
++or manifest dependency. Runtime MRO/registry behavior remains unverified because the
++mandatory Docker compose environment could not be started.
+
+diff --git a/missions/diploma-template-nlex-compatibility/artifacts/static-validation.log b/missions/diploma-template-nlex-compatibility/artifacts/static-validation.log
+new file mode 100644
+index 000000000..5a673abd2
+--- /dev/null
++++ b/missions/diploma-template-nlex-compatibility/artifacts/static-validation.log
+@@ -0,0 +1,35 @@
++Validation date: 2026-07-15
++Scope: addons-extra/extrairg/irg_diploma_gradebook_template_nlex_compat
++
++PASS python_ast_compile
++Runtime: bundled Codex Python; compilation performed in memory.
++Detail: 6/6 Python files parsed and compiled to AST; no pyc files generated.
++
++PASS manifest_ast
++Detail: version 16.0.1.0.0, installable=True, LGPL-3, empty data list and both
++required bridge dependencies are present:
++- irg_diploma_gradebook_template_weighting
++- irg_nlex_grade_exemption
++
++PASS imports
++Detail: root imports models, models imports app_gradebook_student, and tests import
++test_diploma_template_nlex_compat.
++
++PASS dependency_presence
++Detail: both dependency addon directories exist in the mounted addons tree.
++
++PASS test_inventory
++Detail: 4 TransactionCase tests found, covering 9.22 regression, standard template,
++non-Diplomado course and NLEX exclusion.
++
++PASS git_diff_check
++Command: git diff --check
++Detail: exit code 0; no whitespace errors.
++
++PASS compose_config
++Command: docker compose -f docker-compose.local.yml config -q
++Detail: exit code 0; compose configuration is syntactically valid.
++
++NOT RUN odoo_runtime
++Detail: com.docker.service is Stopped and docker_engine is unavailable. The user
++previously declined authorization to start Docker, so no further start request was made.
+
+diff --git a/missions/diploma-template-nlex-compatibility/artifacts/test-output.log b/missions/diploma-template-nlex-compatibility/artifacts/test-output.log
+new file mode 100644
+index 000000000..d015b9452
+--- /dev/null
++++ b/missions/diploma-template-nlex-compatibility/artifacts/test-output.log
+@@ -0,0 +1,20 @@
++Odoo 16 validation summary
++Database: isolated test database
++Module: irg_diploma_gradebook_template_nlex_compat
++Test tags: /irg_diploma_gradebook_template_nlex_compat
++
++PASS test_nlex_remains_excluded_from_special_ordinary_block
++PASS test_non_diploma_special_template_keeps_inherited_average
++PASS test_special_diploma_keeps_9_22_with_nlex_installed
++PASS test_standard_template_keeps_inherited_nlex_average
++
++Summary: 0 failed, 0 error(s) of 4 tests
++Queries: 611
++Duration: 1.23 seconds
++Odoo process exit code: 0
++
++Validated outcomes:
++- Six ordinary scores of 10 plus presencial 8.44 produce total_final=avg_score=9.22.
++- Standard template preserves inherited NLEX-filtered simple average.
++- Non-Diplomado course preserves inherited average with the special template selected.
++- NLEX subject remains excluded from the special ordinary block.
