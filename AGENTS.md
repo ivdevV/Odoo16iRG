@@ -1,129 +1,102 @@
-# AGENTS.md - [NOMBRE_DEL_PROYECTO]
+# AGENTS.md — Odoo16iRG
 
-## Regla obligatoria de desarrollo
+Este archivo es la política canónica para cualquier agente que trabaje en Odoo16iRG. Las instrucciones directas del usuario prevalecen cuando amplían o restringen el alcance, pero no eliminan los controles de seguridad, la evidencia ni la autorización de publicación.
 
-Todo desarrollo en este proyecto debe seguir siempre el flujo:
+## Alcance y proporcionalidad
 
-1. Plan
-2. Implementacion
-3. Validacion
-4. Documentacion
+Las consultas, diagnósticos y revisiones de solo lectura no crean misión (`none`). Los cambios triviales de documentación o configuración no sensible usan misión ligera (`light`). Features, bugfixes, cambios de comportamiento, seguridad, datos o trabajo cross-module usan misión completa (`full`). La clasificación mide solo el cambio funcional: los archivos y artefactos de la propia misión no cuentan para determinar el nivel.
 
-Cada fase se delegara o ejecutara con el rol indicado, y los subagentes solo se lanzaran cuando llegue su fase correspondiente:
+## Ciclo de vida obligatorio
 
-- **Plan**: lo realiza el agente principal, actuando como orquestador del trabajo. Define el alcance, descompone la tarea, **clasifica su complejidad** (ver "Routing dinamico de modelos"), decide que subagentes y modelos se usaran en cada fase, y crea el directorio de mision (ver "Artefactos de mision").
-- **Implementacion**: la realiza un subagente codificador. [Indicar aqui la skill o convencion de codigo del proyecto si aplica, p. ej. `documentation-writer`, lint/formatters, guia de estilo, etc.]
-- **Validacion**: la realiza un subagente testeador. La regla de cierre es la **verificacion explicita con evidencia** (ver "Contrato de verificacion"): ninguna tarea se considera terminada sin un `verification.json` con estado `passed`. Cuando el cambio sea una feature, bugfix o cambio de comportamiento, debera aplicar TDD siempre que sea viable.
-- **Documentacion**: la realiza un subagente documentador despues de que el validador haya pasado los testeos. Documentara todos los cambios, modulos/componentes nuevos, configuracion, pruebas realizadas, criterios de uso y limitaciones conocidas. Tambien debera incluir un changelog claro y conciso al cierre, y **persistir aprendizajes** en la knowledge base (ver "Knowledge base").
+El flujo canónico exacto es: `Plan → Implementación/TDD → Review → Validación → Documentación → Publicación autorizada`.
 
-## Routing dinamico de modelos
+Las fases tienen propietarios distintos y gates explícitos:
 
-El modelo no se asigna de forma fija por rol, sino **por tarea en tiempo de ejecucion**, segun una clasificacion de complejidad que produce el orquestador en la fase de Plan. El principio sigue siendo el coste: usar el modelo mas barato capaz de cumplir la fase con garantias, y escalar solo cuando la evidencia lo justifique.
+1. **Plan — orquestador.** Define alcance, criterios de aceptación, riesgos, tier, capacidad requerida, roles, pruebas y artefactos. Consulta la knowledge base antes de descomponer el trabajo y crea `plan.md` antes de cualquier cambio funcional. Si el usuario pidió implementar, el trabajo continúa después del plan salvo que haya una decisión material abierta, un riesgo sensible sin aprobar o una petición de «solo plan».
+2. **Implementación/TDD — codificador.** El codificador es propietario de TDD: escribe y ejecuta RED antes de modificar código de producción; después implementa el cambio mínimo, ejecuta GREEN y refactoriza manteniendo GREEN. Cuando TDD no sea viable, registra en `execution.md` la causa objetiva y la alternativa de verificación antes de implementar.
+3. **Review — revisor.** Una persona o agente distinto del codificador comprueba requisitos, calidad, antipatrones, alcance y seguridad. No aprueba con observaciones bloqueantes abiertas.
+4. **Validación — validador.** El validador es independiente del codificador, repite los checks sin confiar en resultados previos y no edita ni corrige código de producción. Emite `verification.json` y evidencia objetiva; si detecta un fallo, lo devuelve a Implementación.
+5. **Documentación — documentador.** Solo empieza tras Review y Validación satisfactorios. Actualiza uso, configuración, pruebas, limitaciones y changelog, y persiste únicamente conocimiento reutilizable.
+6. **Publicación autorizada — responsable de entrega.** Solo realiza la acción concreta que el usuario haya autorizado y después de los gates aplicables. Nunca infiere permiso para commit, push o PR a partir de otra acción.
 
-### Clasificacion de complejidad (la realiza el orquestador antes de delegar)
+Si cualquier gate falla, reabre la fase de Implementación para corregir y repetir Review y Validación; la corrección y el escalado de capacidad son decisiones separadas, y corregir no implica escalar automáticamente. El fallo se registra con su evidencia. Si la capacidad fue insuficiente, se escala `trivial → standard → complex`; en `complex` se corrige y revalida sin afirmar un escalado adicional inexistente.
 
-Cada tarea se etiqueta en un tier usando senales **objetivas**, no juicio difuso:
+## Routing de capacidad
 
-| Tier | Senales | Modelo |
-|------|---------|--------|
-| `trivial` | 1 archivo afectado, sin logica nueva, sin riesgo: renombrados, formateo, boilerplate, edicion repetitiva, lookups, parsing simple, resumenes rutinarios | Modelo ligero/barato (gama `mini`/`nano` o equivalente Groq) |
-| `standard` | 2-5 archivos, logica acotada con contexto claro, fixes localizados, sin decisiones de arquitectura ni riesgo de seguridad | Modelo intermedio fuerte de codigo |
-| `complex` | >5 archivos o cross-module, requiere razonar sobre trade-offs, diseno de arquitectura, debugging no reproducible, o toca seguridad/concurrencia/datos | Modelo de razonamiento de gama alta |
+El orquestador clasifica con señales objetivas y justifica el tier en `plan.md`:
 
-Senales que **fuerzan** subir de tier independientemente del resto: cualquier cambio que toque autenticacion, concurrencia, migraciones de datos, secretos/configuracion de despliegue, o borrado de datos historicos. Estos van como minimo a `standard` y disparan al Security Advisor.
+| Tier | Señales funcionales | Capacidad requerida |
+| --- | --- | --- |
+| `trivial` | Un archivo, sin lógica nueva ni riesgo; edición mecánica o documental | Capacidad ligera con seguimiento preciso de instrucciones |
+| `standard` | Dos a cinco archivos, lógica acotada, fix localizado y contexto claro | Capacidad sólida de implementación y pruebas |
+| `complex` | Más de cinco archivos, cross-module, arquitectura, debugging no reproducible, seguridad, concurrencia o datos | Máxima capacidad de razonamiento disponible |
 
-El orquestador deja registrada la clasificacion y su justificacion en `plan.md` (ver artefactos), para que la decision sea auditable.
+Autenticación, concurrencia, migraciones de datos, secretos o configuración de despliegue y borrado de datos históricos fuerzan como mínimo `standard` y activan al Security Advisor. La política expresa capacidad requerida: solo se registra una selección de modelo cuando el runtime permite seleccionarlo realmente; en otro caso se documenta la capacidad usada sin inventar control sobre el modelo.
 
-### Escalado reactivo
+## Artefactos de misión
 
-El tier inicial es una apuesta optimista, no un compromiso. Si una tarea **falla la verificacion** (su `verification.json` sale `failed`), se re-encola automaticamente al siguiente tier superior, hasta un maximo de un escalado por nivel. La cadena es: `trivial -> standard -> complex`. Cada reintento se registra en `execution.log` con el motivo del fallo anterior.
+Toda misión usa `execution.md` y evidencia concisa compatible con `.gitignore`; `diff.patch` es opcional porque Git conserva el diff canónico. Una misión ligera contiene `plan.md`, `execution.md` y `verification.json`. Una misión completa añade `artifacts/`, `CHANGELOG.md` y documentación o knowledge cuando correspondan. La evidencia versionada guarda la salida final, el RED relevante y diagnósticos necesarios; no duplica logs completos repetitivos. Los outputs grandes se resumen o comprimen y se prefieren extensiones versionables como `.txt` y `.json`.
 
-Esto hace que en agregado se pague el modelo caro solo cuando hace falta de verdad, en lugar de asignarlo por defecto "por si acaso".
+`execution.md` se actualiza durante el trabajo con comandos, decisiones, reintentos, escalados y sus motivos. `plan.md` siempre precede a cambios funcionales. `verification.json` es el gate de cierre: sin estado `passed` no se considera terminada la misión.
 
-### Modelo por rol (punto de partida, modulado por el tier de la tarea)
+## Contrato de verificación
 
-- **Orquestador / Plan**: siempre el modelo de razonamiento mas capaz disponible. El planning no se abarata: un mal plan contamina todas las fases siguientes.
-- **Codificador / Implementacion**: el modelo lo determina el tier de la tarea (tabla anterior), no el rol.
-- **Testeador / Validacion**: modelo intermedio por defecto; escala al modelo del orquestador si aparecen fallos complejos o no reproducibles.
-- **Documentador / Documentacion**: modelo ligero/barato, salvo documentacion critica o de arquitectura compleja.
-- **Security Advisor**: modelo de razonamiento alto, unicamente cuando se revisen acciones con riesgo.
+Cada check registra nombre, comando, resultado y detalle. El resultado solo admite `pass`, `fail` o `skipped`; todo `skipped` requiere una justificación no vacía y aceptable para el alcance. `status` solo puede ser `passed` cuando no existe ningún fallo y todos los skips están justificados; cualquier `fail` obliga a `status: failed` y reabre Implementación.
 
-Si el modelo preferido no esta disponible, se usara el equivalente mas cercano en capacidad.
-
-## Artefactos de mision
-
-Cada tarea o conjunto coherente de cambios se ejecuta dentro de un directorio de mision versionado, que sirve como evidencia trazable del trabajo (no solo del resultado final). Estructura:
-
-```
-missions/<nombre-mision>/
-  plan.md            # Plan antes de ejecutar: alcance, descomposicion,
-                     #   clasificacion de complejidad + justificacion, modelos elegidos
-  execution.log      # Que se hizo: comandos, decisiones, reintentos y escalados
-  diff.patch         # Cambios concretos aplicados
-  verification.json  # Resultado del validador (ver contrato abajo)
-  artifacts/         # Outputs intermedios: capturas, logs de tests, datos de prueba
-```
-
-Reglas:
-
-- `plan.md` se crea **antes** de tocar codigo. Es el "Plan Artifact": el usuario puede revisarlo y corregir el rumbo antes de gastar en ejecucion.
-- `execution.log` se va escribiendo durante la implementacion, no al final. Debe registrar cada escalado de modelo con su motivo.
-- El orquestador lee `verification.json` para decidir si la mision esta cerrada o si hay que re-encolar (escalado reactivo).
-- Una mision sin `verification.json` con estado `passed` **no se considera completada**, aunque el codigo "parezca" funcionar.
-
-## Contrato de verificacion
-
-La validacion no es un juicio textual ("parece correcto" / "notificar al usuario"), sino la produccion de **evidencia objetiva**. El subagente testeador prueba su propio trabajo y emite un `verification.json` con esta forma minima:
+Este es un ejemplo válido de `verification.json`:
 
 ```json
 {
-  "status": "passed",            // "passed" | "failed"
-  "task": "<nombre-mision>",
+  "status": "passed",
+  "task": "example-mission",
   "checks": [
-    { "name": "unit_tests",       "result": "pass", "detail": "42 passed, 0 failed" },
-    { "name": "integration_tests","result": "pass", "detail": "..." },
-    { "name": "lint",             "result": "pass", "detail": "..." },
-    { "name": "build",            "result": "pass", "detail": "..." }
+    {
+      "name": "unit_tests",
+      "command": "python3 -m unittest discover",
+      "result": "pass",
+      "detail": "42 passed, 0 failed",
+      "evidence": "artifacts/unit-tests.txt"
+    },
+    {
+      "name": "integration_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "No aplica: cambio exclusivamente documental",
+      "evidence": "artifacts/scope-review.txt"
+    }
   ],
-  "evidence": ["artifacts/test-output.log", "artifacts/screenshot.png"],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "odoo16irg_test",
+    "base_commit": "0123456789abcdef"
+  },
   "model_tier_used": "standard",
-  "escalations": 0
+  "escalations": 0,
+  "evidence": [
+    "artifacts/unit-tests.txt",
+    "artifacts/scope-review.txt"
+  ]
 }
 ```
 
-La validacion debe incluir, como minimo:
+La validación incluye pruebas unitarias o automatizadas apropiadas, integración o extremo a extremo cuando cruza componentes, y lint, formato y build cuando apliquen. Cada entrada conserva el comando ejecutado, resultado, evidencia, entorno, base o commit y tier efectivo cuando puedan obtenerse.
 
-- Testeos unitarios o pruebas automatizadas adecuadas al cambio.
-- Testeos de integracion o de extremo a extremo cuando el cambio afecte a varios componentes.
-- Linters/formatters y build cuando apliquen al stack.
+## Runtime local, worktrees y limpieza
 
-`status` solo puede ser `passed` si **todos** los checks relevantes pasan. Cualquier check en `fail` -> `status: failed` -> dispara escalado reactivo o, si ya se agoto la cadena de tiers, se detiene y se reporta al usuario.
+Las validaciones Odoo, pruebas de módulos, renderizados y checks dependientes del runtime usan siempre `docker-compose.local.yml`. Si se trabaja en un worktree y el compose monta el checkout principal, en el worktree se aplica un overlay que monta el código aislado. Al finalizar se ejecuta cleanup o limpieza de fixtures, usuarios y datos temporales, se restaura el servicio original y se registra evidencia tanto de la limpieza como de la restauración. Ninguna prueba debe dejar el entorno compartido apuntando al worktree.
 
-Una vez `passed`, se notificara al usuario para que revise el resultado. **No se subira nada al repositorio remoto hasta recibir su OK explicito.**
+## Seguridad
 
-Para pruebas locales en este proyecto se debe usar siempre el entorno definido en `docker-compose.local.yml`. Las validaciones Odoo, pruebas de modulos, renderizados de reportes y comprobaciones que dependan del runtime local deben ejecutarse contra ese compose cuando aplique.
+El Security Advisor revisa obligatoriamente cambios de autenticación, concurrencia, migraciones, secretos o despliegue y borrado histórico antes de implementar. Examina alcance, integridad, pérdida de datos, comandos, contratos funcionales, APIs y sintaxis; su última línea debe ser `[YES] Reason: ...` o `[NO] Reason: ...`. Un `[NO]` bloquea Implementación: el orquestador enmienda el plan y solicita una revisión nueva hasta obtener `[YES]`.
 
-Queda prohibido subir cambios a la rama remota de desarrollo `Dev_iRG` sin autorizacion explicita del usuario en ese momento. Haber recibido una peticion previa de push o haber completado la validacion no autoriza pushes posteriores; cada subida a `Dev_iRG` requiere un OK explicito nuevo.
-
-No se debe dar por terminado un cambio sin `verification.json` `passed` y sin documentar que se ha seguido este flujo, o explicar explicitamente por que una parte concreta no pudo ejecutarse.
+Las restricciones, permisos o controles de UI nunca sustituyen los controles del servidor para acciones protegidas; toda acción protegida exige autorización server-side o un control equivalente en el servidor. Se aplican mínimo privilegio, reglas de acceso, validación de entradas y protección de datos en la capa que ejecuta la operación.
 
 ## Knowledge base
 
-El aprendizaje es un primitivo del flujo, no un efecto secundario. Al cerrar cada mision, el documentador persiste lo reutilizable para que las misiones futuras planifiquen mejor.
+La ruta canónica de conocimiento reutilizable es `.agents/knowledge/odoo_development_modding/artifacts/`. Durante Plan se consultan y citan las entradas relevantes. Al documentar se guardan solo decisiones de arquitectura con su motivo, patrones probados, gotchas y convenciones implícitas útiles; no se crean entradas vacías, resúmenes duplicados ni copias de evidencia específica de una misión. Si una entrada resulta incorrecta, se corrige.
 
-- **Que se guarda**: decisiones de arquitectura y su motivo, snippets/patrones que funcionaron, gotchas del proyecto (APIs inexistentes detectadas, sintaxis imposible, configuraciones fragiles), y convenciones implicitas que se descubrieron durante el trabajo.
-- **Donde**: [adaptar al stack del proyecto. Recomendado: indice vectorial — p. ej. Postgres + pgvector — para recuperacion semantica; alternativa simple: `knowledge/*.md` indexado por tema.]
-- **Cuando se recupera**: el orquestador consulta la knowledge base **en la fase de Plan**, antes de descomponer, para reutilizar decisiones previas y no repetir errores ya resueltos. Las entradas recuperadas relevantes se citan en `plan.md`.
-- **Mantenimiento**: las entradas son editables y revisables; una entrada incorrecta detectada en una mision posterior se corrige, no se acumula ruido.
+## Commit, push y PR
 
-## Perfil de seguridad para revisiones sensibles
+Commit, push y PR son acciones y autorizaciones separadas: autorizar commit no autoriza push ni PR; autorizar push tampoco autoriza PR. La autorización debe identificar la acción y su alcance; completar los tests, crear un commit local o recibir una autorización anterior no amplía el permiso.
 
-Cuando una fase proponga comandos, cambios de archivos o acciones con riesgo de seguridad, integridad o perdida de datos, se usara el siguiente perfil de revision:
-
-- **Nombre**: Security Advisor.
-- **Rol**: experto estricto en seguridad y revisor de codigo.
-- **Criterio**: verificar la seguridad de cambios de archivos, comandos shell y ejecuciones de herramientas antes de aprobarlos.
-- **Herramientas esperadas**: lectura de archivos, listado de directorios, busqueda de texto y busqueda web si hiciera falta contexto.
-- **Estilo de decision**: respuesta final obligatoria con `[YES] Reason: ...` o `[NO] Reason: ...`, siendo el veredicto la ultima linea.
-- **Reglas clave**: ignorar urgencias retoricas, comprobar alcance, proteger datos valiosos como logs o historicos, preservar contratos funcionales, detectar APIs inexistentes o sintaxis imposible, comprobar que la justificacion coincide con el cambio real y rechazar operaciones destructivas o degradaciones no justificadas.
-- **Disparadores automaticos**: las senales que fuerzan subida de tier (auth, concurrencia, migraciones, secretos/despliegue, borrado de datos) invocan al Security Advisor obligatoriamente, sin esperar a que el orquestador lo decida.
+Cada autorización de push es de un solo uso y queda ligada al remoto, rama y alcance concretos indicados. Después de usarla, o ante cualquier cambio material posterior, se requiere una autorización nueva o un OK nuevo. En particular, queda prohibido hacer push a `Dev_iRG` sin autorización explícita nueva del usuario en ese momento; no se hace push ni se abre PR por iniciativa del agente.
