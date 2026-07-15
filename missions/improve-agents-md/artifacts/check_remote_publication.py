@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check current remote publication state for the improve-agents-md branch."""
+"""Check remote publication state without modifying refs in the shared checkout."""
 
 from __future__ import annotations
 
@@ -7,141 +7,142 @@ import json
 import shlex
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-NAMESPACE = "refs/validation/improve-agents-md"
 BRANCH = "codex/improve-agents-md"
 REPOSITORY = "ivdevV/Odoo16iRG"
 
 
-def run(
-    command: list[str], input_text: str | None = None
-) -> subprocess.CompletedProcess[str]:
-    """Run a command from the repository root and print exact captured output."""
-    print(f"$ {shlex.join(command)}")
-    if input_text:
-        print(input_text, end="" if input_text.endswith("\n") else "\n")
+class PublicationCheckError(RuntimeError):
+    """Raised when current remote publication state cannot be inspected safely."""
+
+
+def run(command: list[str], cwd: Path, *, verbose: bool = False) -> subprocess.CompletedProcess[str]:
+    """Run a command with captured output and optional reproducibility logging."""
+    if verbose:
+        print(f"$ {shlex.join(command)}")
     result = subprocess.run(
-        command,
-        cwd=ROOT,
-        text=True,
-        input=input_text,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        check=False,
+        command, cwd=cwd, text=True, stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, check=False,
     )
-    if result.stdout:
+    if verbose and result.stdout:
         print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
-    print(f"[exit {result.returncode}]")
+    if verbose:
+        print(f"[exit {result.returncode}]")
     return result
 
 
-def required(command: list[str], input_text: str | None = None) -> str:
-    result = run(command, input_text=input_text)
+def required(command: list[str], cwd: Path, *, verbose: bool = False) -> str:
+    result = run(command, cwd, verbose=verbose)
     if result.returncode:
-        raise RuntimeError(f"required command failed: {shlex.join(command)}")
+        raise PublicationCheckError(f"required command failed: {shlex.join(command)}")
     return result.stdout
+
+
+def inspect_remote_publication(
+    root: Path,
+    origin_url: str,
+    *,
+    temporary_parent: Path | None = None,
+    verbose: bool = False,
+) -> dict[str, object]:
+    """Inspect remote ancestry in an ephemeral bare repo, cleaned on every exit."""
+    remote_output = required(
+        ["git", "ls-remote", origin_url, "refs/heads/*", "refs/pull/*/head"],
+        root, verbose=verbose,
+    )
+    remote_entries = [line.split("\t", 1) for line in remote_output.splitlines() if line]
+    if not remote_entries:
+        raise PublicationCheckError("origin returned no branch or PR-head refs")
+
+    with tempfile.TemporaryDirectory(
+        prefix="improve-agents-publication-", dir=temporary_parent
+    ) as snapshot_name:
+        snapshot = Path(snapshot_name)
+        required(["git", "init", "--bare", str(snapshot)], root, verbose=verbose)
+        required(
+            ["git", "--git-dir", str(snapshot), "fetch", "--no-tags",
+             "--no-write-fetch-head", str(root), "+HEAD:refs/local/head"],
+            root, verbose=verbose,
+        )
+
+        destinations: dict[str, str] = {}
+        refspecs: list[str] = []
+        base_ref: str | None = None
+        for index, (_sha, source_ref) in enumerate(remote_entries, start=1):
+            destination = f"refs/snapshot/{index:04d}"
+            destinations[destination] = source_ref
+            refspecs.append(f"+{source_ref}:{destination}")
+            if source_ref == "refs/heads/Dev_iRG":
+                base_ref = destination
+        if base_ref is None:
+            raise PublicationCheckError("origin has no refs/heads/Dev_iRG")
+
+        required(
+            ["git", "--git-dir", str(snapshot), "fetch", "--no-tags",
+             "--no-write-fetch-head", origin_url, *refspecs],
+            root, verbose=verbose,
+        )
+        base = required(
+            ["git", "--git-dir", str(snapshot), "rev-parse", base_ref],
+            root, verbose=verbose,
+        ).strip()
+        head = required(
+            ["git", "--git-dir", str(snapshot), "rev-parse", "refs/local/head"],
+            root, verbose=verbose,
+        ).strip()
+        unique_output = required(
+            ["git", "--git-dir", str(snapshot), "rev-list", "--reverse",
+             f"{base_ref}..refs/local/head"],
+            root, verbose=verbose,
+        )
+        unique_commits = [line for line in unique_output.splitlines() if line]
+
+        contained: list[dict[str, str]] = []
+        for commit in unique_commits:
+            for local_ref, remote_ref in destinations.items():
+                result = run(
+                    ["git", "--git-dir", str(snapshot), "merge-base",
+                     "--is-ancestor", commit, local_ref],
+                    root,
+                )
+                if result.returncode == 0:
+                    contained.append({
+                        "commit": commit,
+                        "snapshot_ref": local_ref,
+                        "remote_ref": remote_ref,
+                    })
+                elif result.returncode != 1:
+                    raise PublicationCheckError(
+                        f"merge-base returned {result.returncode} for {commit} in {local_ref}"
+                    )
+
+        return {
+            "observed_base": base,
+            "observed_head": head,
+            "unique_commit_count": len(unique_commits),
+            "fetched_remote_ref_count": len(remote_entries),
+            "contained_unique_commits": contained,
+        }
 
 
 def main() -> int:
     try:
-        remote_output = required(
-            ["git", "ls-remote", "origin", "refs/heads/*", "refs/pull/*/head"]
-        )
-        remote_entries = []
-        for line in remote_output.splitlines():
-            sha, source_ref = line.split("\t", 1)
-            remote_entries.append((sha, source_ref))
-        if not remote_entries:
-            raise RuntimeError("origin returned no branch or PR-head refs")
-
-        stale_output = required(
-            ["git", "for-each-ref", "--format=%(refname)", NAMESPACE]
-        )
-        stale_refs = [line for line in stale_output.splitlines() if line]
-        delete_input = "".join(f"delete {refname}\n" for refname in stale_refs)
-        required(["git", "update-ref", "--stdin"], input_text=delete_input)
-
-        destinations: dict[str, str] = {}
-        refspecs = []
-        for index, (_sha, source_ref) in enumerate(remote_entries, start=1):
-            destination = f"{NAMESPACE}/snapshot/{index:04d}"
-            destinations[destination] = source_ref
-            refspecs.append(f"+{source_ref}:{destination}")
-        required(
-            [
-                "git",
-                "fetch",
-                "--no-tags",
-                "origin",
-                *refspecs,
-                "+refs/heads/Dev_iRG:refs/remotes/origin/Dev_iRG",
-            ]
-        )
-        base = required(["git", "rev-parse", "origin/Dev_iRG"]).strip()
-        head = required(["git", "rev-parse", "HEAD"]).strip()
-        unique_output = required(
-            ["git", "rev-list", "--reverse", "origin/Dev_iRG..HEAD"]
-        )
-        unique_commits = [line for line in unique_output.splitlines() if line]
-        refs_output = required(
-            [
-                "git",
-                "for-each-ref",
-                "--format=%(refname)",
-                f"{NAMESPACE}/snapshot",
-            ]
-        )
-        remote_refs = [line for line in refs_output.splitlines() if line]
-        if len(remote_refs) != len(remote_entries):
-            raise RuntimeError(
-                f"fetched {len(remote_refs)} of {len(remote_entries)} remote refs"
-            )
-    except RuntimeError as error:
+        origin_url = required(
+            ["git", "remote", "get-url", "origin"], ROOT, verbose=True
+        ).strip()
+        summary = inspect_remote_publication(ROOT, origin_url, verbose=True)
+    except PublicationCheckError as error:
         print(f"PUBLICATION CHECK FAILED: {error}")
         return 2
 
-    contained: list[dict[str, str]] = []
-    for commit in unique_commits:
-        for refname in remote_refs:
-            result = subprocess.run(
-                ["git", "merge-base", "--is-ancestor", commit, refname],
-                cwd=ROOT,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                check=False,
-            )
-            if result.returncode == 0:
-                contained.append(
-                    {
-                        "commit": commit,
-                        "local_ref": refname,
-                        "remote_ref": destinations[refname],
-                    }
-                )
-            elif result.returncode != 1:
-                print(
-                    "PUBLICATION CHECK FAILED: merge-base returned "
-                    f"{result.returncode} for {commit} in {refname}"
-                )
-                return 2
-
     gh_result = run(
-        [
-            "gh",
-            "pr",
-            "list",
-            "--repo",
-            REPOSITORY,
-            "--state",
-            "all",
-            "--head",
-            BRANCH,
-            "--json",
-            "number",
-        ]
+        ["gh", "pr", "list", "--repo", REPOSITORY, "--state", "all",
+         "--head", BRANCH, "--json", "number"],
+        ROOT, verbose=True,
     )
     gh_status = "unavailable"
     gh_prs: list[object] | None = None
@@ -156,36 +157,25 @@ def main() -> int:
             print(f"PUBLICATION CHECK FAILED: invalid gh JSON: {error}")
             return 2
 
-    summary = {
-        "observed_base": base,
-        "observed_head": head,
-        "unique_commit_count": len(unique_commits),
-        "fetched_remote_ref_count": len(remote_refs),
-        "contained_unique_commits": contained,
-        "gh_query_status": gh_status,
-        "gh_pull_requests": gh_prs,
-    }
+    summary["gh_query_status"] = gh_status
+    summary["gh_pull_requests"] = gh_prs
     print("CURRENT REMOTE STATE SUMMARY")
     print(json.dumps(summary, indent=2, sort_keys=True))
 
-    if contained:
-        print(
-            "PUBLICATION CHECK FAILED: branch-unique commits are currently "
-            "reachable from fetched remote head/PR refs"
-        )
+    if summary["contained_unique_commits"]:
+        print("PUBLICATION CHECK FAILED: branch-unique commits are reachable remotely")
         return 1
     if gh_prs:
         print("PUBLICATION CHECK FAILED: gh reports a current matching PR")
         return 1
 
     print(
-        "PUBLICATION CHECK PASS: at observation time, no commit in "
-        "origin/Dev_iRG..HEAD is reachable from any fetched remote branch head "
-        "or refs/pull/*/head"
+        "PUBLICATION CHECK PASS: current remote Git refs contain no branch-unique commit; "
+        "inspection used an automatically cleaned ephemeral bare repository"
     )
     if gh_status == "unavailable":
         print(
-            "CONCERN: the required gh PR query was attempted but unavailable; "
+            "CONCERN: the gh PR query was attempted but unavailable; "
             "no historical no-push/no-PR claim is made"
         )
     return 0
