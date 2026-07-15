@@ -69,12 +69,14 @@ class RemotePublicationIsolationTests(unittest.TestCase):
         self.assertEqual(1, summary["unique_commit_count"])
         self.assertEqual([], summary["contained_unique_commits"])
 
-    def test_snapshot_is_cleaned_when_remote_fetch_fails(self) -> None:
+    def test_snapshot_is_cleaned_when_snapshot_fetch_fails_after_bare_init(self) -> None:
+        missing_snapshot_origin = self.root / "missing-snapshot-origin.git"
         with self.assertRaises(PublicationCheckError):
             inspect_remote_publication(
                 self.checkout,
-                str(self.root / "missing-origin.git"),
+                str(self.origin),
                 temporary_parent=self.snapshots,
+                snapshot_origin_url=str(missing_snapshot_origin),
             )
 
         self.assertEqual([], list(self.snapshots.iterdir()))

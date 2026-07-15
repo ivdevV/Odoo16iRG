@@ -47,6 +47,7 @@ def inspect_remote_publication(
     origin_url: str,
     *,
     temporary_parent: Path | None = None,
+    snapshot_origin_url: str | None = None,
     verbose: bool = False,
 ) -> dict[str, object]:
     """Inspect remote ancestry in an ephemeral bare repo, cleaned on every exit."""
@@ -83,7 +84,7 @@ def inspect_remote_publication(
 
         required(
             ["git", "--git-dir", str(snapshot), "fetch", "--no-tags",
-             "--no-write-fetch-head", origin_url, *refspecs],
+             "--no-write-fetch-head", snapshot_origin_url or origin_url, *refspecs],
             root, verbose=verbose,
         )
         base = required(
