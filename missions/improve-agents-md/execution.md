@@ -162,3 +162,23 @@ ningún archivo, las dos suites, el checker, el parseo JSON, el diff completo, e
 scope, el estado y el inspector remoto. Ese rerun post-commit es el veredicto sobre
 el árbol realmente entregado y evita pretender que un archivo pueda certificar por
 anticipado el commit que lo contiene.
+
+## Corrección final del cleanup remoto
+
+- RED: `python3 -m unittest
+  missions/improve-agents-md/artifacts/test_check_remote_publication.py` terminó
+  con exit `1`, `Ran 2 tests`, por `TypeError: unexpected keyword argument
+  snapshot_origin_url`.
+- La regresión hace que `ls-remote` use un origen local válido, permite crear el
+  repositorio bare y solo entonces inyecta un origen inexistente para el fetch del
+  snapshot. Así prueba un error dentro de `TemporaryDirectory`, no un fallo previo.
+- GREEN: el mismo comando terminó con exit `0`, `Ran 2 tests`, `OK`.
+- Se eliminaron 25 refs heredadas bajo el prefijo exacto
+  `refs/validation/improve-agents-md/snapshot/*`. El comando incluyó un `case` que
+  aborta ante cualquier nombre fuera del prefijo. Los listados posteriores del
+  prefijo y del namespace de misión devolvieron salida vacía; no se tocaron otras
+  refs.
+- `validation-publication.txt` conserva el rerun post-commit de `eeea9ed58` y la
+  observación posterior del commit funcional `4fb2ea17f`. Tras versionar esta
+  evidencia se ejecuta otra vez el gate contra el nuevo HEAD y se entrega su SHA
+  sin reabrir ni modificar los artefactos, manteniendo la validación no circular.

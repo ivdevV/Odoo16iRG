@@ -13,7 +13,7 @@
       "name": "publication_isolation_unit_tests",
       "command": "python3 -m unittest missions/improve-agents-md/artifacts/test_check_remote_publication.py",
       "result": "pass",
-      "detail": "2 offline tests passed, including success/error cleanup and unchanged shared remote-tracking ref",
+      "detail": "2 offline tests passed: success preserves the shared remote-tracking ref, and an injected snapshot-fetch failure after bare initialization still cleans the temporary repository",
       "evidence": "artifacts/validation-tests.txt"
     },
     {
@@ -52,6 +52,13 @@
       "evidence": "artifacts/validation-git-scope.txt"
     },
     {
+      "name": "inherited_validation_ref_cleanup",
+      "command": "git for-each-ref --format='%(refname)' 'refs/validation/improve-agents-md/snapshot'",
+      "result": "pass",
+      "detail": "Empty output after deleting exactly 25 inherited refs below refs/validation/improve-agents-md/snapshot/*; no other ref namespace was targeted",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
       "name": "publication_gate",
       "command": "python3 missions/improve-agents-md/artifacts/check_remote_publication.py",
       "result": "pass",
@@ -73,8 +80,10 @@
     "mission_base_commit": "e61a6742f788a434a61f96c2a49198698e5755dc",
     "observed_remote_dev_commit": "581bd1d5cb2e8e2f4b79726c553ef40f10ccb07c",
     "policy_correction_commit": "6774ab1c9e86e88067513f16e61c487938240ae8",
-    "publication_correction_commit": "edd0d558efc4a2b968d5401c50177635c0805873",
-    "final_tree_validation": "post-evidence-commit rerun; see execution.md"
+    "publication_isolation_commit": "edd0d558efc4a2b968d5401c50177635c0805873",
+    "preserved_post_commit_rerun_head": "eeea9ed583a9b31fde33e8119bd0fcaa61277854",
+    "cleanup_regression_commit": "4fb2ea17f8b0ae569e89cc91c1da6734b5540736",
+    "final_tree_validation": "authoritative read-only rerun occurs after the evidence commit; its HEAD is emitted in the handoff without changing the validated tree"
   },
   "model_tier_used": "standard",
   "escalations": 0,

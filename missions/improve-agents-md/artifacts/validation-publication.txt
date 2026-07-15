@@ -1,14 +1,20 @@
 Command: python3 missions/improve-agents-md/artifacts/check_remote_publication.py
 Exit code: 0
 
-Functional-head observation before evidence commit:
+Post-commit rerun preserved from the preceding final evidence commit:
+- observed local head: eeea9ed583a9b31fde33e8119bd0fcaa61277854
+- fetched current remote branch/PR-head refs: 25
+- contained branch-unique commits: 0
+
+Correction-head observation before this evidence update:
 - observed remote Dev_iRG: 581bd1d5cb2e8e2f4b79726c553ef40f10ccb07c
-- observed local head: edd0d558efc4a2b968d5401c50177635c0805873
+- observed local head: 4fb2ea17f8b0ae569e89cc91c1da6734b5540736
 - fetched current remote branch/PR-head refs: 25
 - contained branch-unique commits: 0
 - temporary bare snapshot: automatically cleaned
 - shared checkout refs, including origin/Dev_iRG: not modified
 
-The same command is rerun read-only after the evidence commit to cover the final
-tree. The supplemental gh query remained unavailable, so this evidence makes only
-a current Git-ref ancestry claim, never a historical no-push/no-PR claim.
+The same command is rerun read-only after the new evidence commit; its authoritative
+HEAD is returned in the final handoff without mutating this file. The supplemental
+gh query remained unavailable, so this evidence makes only a current Git-ref
+ancestry claim, never a historical no-push/no-PR claim.
