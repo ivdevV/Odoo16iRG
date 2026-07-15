@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "task": "diploma-template-nlex-compatibility",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "result": "pass",
+      "detail": "4 Odoo TransactionCase post-install tests passed, 0 failed and 0 errors; 611 queries in 1.23 seconds."
+    },
+    {
+      "name": "integration_tests",
+      "result": "pass",
+      "detail": "Isolated-database runtime validation passed for 9.22 weighting, standard template, non-Diplomado safeguard and NLEX exclusion."
+    },
+    {
+      "name": "lint",
+      "result": "pass",
+      "detail": "All 6 Python files compiled to AST; manifest, imports, dependencies, test inventory and git diff --check passed. No XML files are present or required."
+    },
+    {
+      "name": "build",
+      "result": "pass",
+      "detail": "Odoo process exited 0 after loading 229 modules and installing irg_diploma_gradebook_template_nlex_compat in an isolated test database."
+    }
+  ],
+  "evidence": [
+    "artifacts/static-validation.log",
+    "artifacts/mro-logic-review.md",
+    "artifacts/docker-runtime.log",
+    "artifacts/test-output.log"
+  ],
+  "model_tier_used": "complex",
+  "escalations": 0
+}
