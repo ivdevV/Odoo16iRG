@@ -1,0 +1,87 @@
+{
+  "status": "passed",
+  "task": "improve-agents-md",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "command": "python3 -m unittest missions/improve-agents-md/artifacts/test_validate_agents_policy.py",
+      "result": "pass",
+      "detail": "37 tests passed, 0 failures, exit 0",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "policy_checker",
+      "command": "python3 missions/improve-agents-md/artifacts/validate_agents_policy.py",
+      "result": "pass",
+      "detail": "All 14 executable policy contracts passed, exit 0",
+      "evidence": "artifacts/validation-policy.txt"
+    },
+    {
+      "name": "verification_example_json",
+      "command": "extract labelled JSON fence from AGENTS.md and parse with Python json.loads",
+      "result": "pass",
+      "detail": "Exactly one labelled verification.json example parsed as an object, exit 0",
+      "evidence": "artifacts/validation-policy.txt"
+    },
+    {
+      "name": "placeholder_and_contradiction_scan",
+      "command": "independent Python regex scan of AGENTS.md plus semantic review",
+      "result": "pass",
+      "detail": "No editorial placeholders or contradictory policy exceptions found",
+      "evidence": "artifacts/validation-policy.txt"
+    },
+    {
+      "name": "diff_check",
+      "command": "git diff --check",
+      "result": "pass",
+      "detail": "Exit 0 with no whitespace errors",
+      "evidence": "artifacts/validation-policy.txt"
+    },
+    {
+      "name": "branch_scope",
+      "command": "git diff --name-status origin/Dev_iRG...HEAD plus git status --porcelain --untracked-files=all",
+      "result": "pass",
+      "detail": "Committed and uncommitted versionable changes are limited to AGENTS.md and missions/improve-agents-md/",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
+      "name": "publication_gate",
+      "command": "git ls-remote --heads origin and git ls-remote origin refs/pull/*/head",
+      "result": "pass",
+      "detail": "No remote work branch exists and no unique branch commit is a PR head",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
+      "name": "main_checkout_isolation",
+      "command": "git -C /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG status --short --branch",
+      "result": "pass",
+      "detail": "Main checkout remains on Dev_iRG and was inspected read-only; unrelated local changes were not touched",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
+      "name": "odoo_runtime_validation",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "No aplica: cambio exclusivamente documental y de checker; no modifica módulos, runtime ni comportamiento Odoo",
+      "evidence": "artifacts/validation-policy.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "not invoked; documentation-only scope",
+    "database": "not used",
+    "branch": "codex/improve-agents-md",
+    "head_commit": "51f577a5bfe2fffcfa5626bf239e79326949245b",
+    "remote_base_commit": "fa1361b7c6359532b5b8548c8562056aabac8447",
+    "merge_base_commit": "a28524e5a3132aeba84b8b87aac2e6fa97ea1fb5"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/validation-policy.txt",
+    "artifacts/validation-git-scope.txt"
+  ],
+  "concerns": [
+    "The branch is one commit behind the current remote Dev_iRG and must be reconciled before integration."
+  ]
+}

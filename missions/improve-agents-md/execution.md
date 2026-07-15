@@ -57,3 +57,53 @@
   missions/improve-agents-md/artifacts/test_validate_agents_policy.py` terminó con
   exit `0`: `Ran 37 tests`, `OK`.
 - El RED vigente mantuvo exit `1` y 14 contratos ausentes sin editar `AGENTS.md`.
+
+## Task 3: review y validación independiente
+
+- Validador: agente distinto del codificador; no se editó `AGENTS.md`, el checker
+  ni su suite de tests.
+- Suite fresh: `python3 -m unittest
+  missions/improve-agents-md/artifacts/test_validate_agents_policy.py` terminó con
+  exit `0`: `Ran 37 tests`, `OK`.
+- Checker fresh: `python3
+  missions/improve-agents-md/artifacts/validate_agents_policy.py` terminó con exit
+  `0`: `PASS: AGENTS.md satisfies all policy contracts`.
+- El ejemplo `verification.json` de `AGENTS.md` se extrajo y parseó de forma
+  independiente con `json.loads`; exit `0`, `PARSE PASS`.
+- El scan independiente no encontró placeholders editoriales ni excepciones
+  contradictorias conocidas. La revisión semántica confirmó propietarios, gates,
+  capacidad soportada, proporcionalidad, runtime/worktrees, seguridad y publicación.
+- `git diff --check` terminó con exit `0` y salida vacía. Las rutas `.txt`/`.json`
+  de evidencia no están ignoradas por Git.
+- Tras actualizar `origin/Dev_iRG`, la rama quedó `ahead 6, behind 1`; su diff
+  triple-dot desde el merge-base contiene exclusivamente `AGENTS.md` y
+  `missions/improve-agents-md/`. El commit remoto nuevo explica diferencias
+  aparentes fuera de alcance en un diff directo y no pertenece a esta rama.
+- No existe `codex/improve-agents-md` en el remoto. Ninguno de los seis commits
+  únicos de la rama aparece en `refs/pull/*/head`; no hubo push ni PR de este
+  trabajo. `gh pr list` no pudo resolver el repositorio privado con su identidad
+  API, por lo que se usó la evidencia Git remota anterior.
+- El checkout principal se inspeccionó en modo lectura y permanece en `Dev_iRG`;
+  no se tocaron sus cambios locales ajenos.
+- No se ejecutó runtime Odoo: el cambio es exclusivamente documental y de checker,
+  sin módulos, configuración de runtime ni comportamiento Odoo modificado.
+- Evidencia: `artifacts/validation-tests.txt`,
+  `artifacts/validation-policy.txt` y `artifacts/validation-git-scope.txt`.
+
+## Task 3: documentación
+
+- La fase comenzó únicamente después de confirmar que
+  `verification.json.status` era `passed` y que toda la evidencia referenciada
+  estaba presente.
+- Se creó `CHANGELOG.md` con el alcance funcional de la política, el checker, los
+  gates de publicación y el resumen de validación independiente.
+- Decisión de knowledge: no se creó una entrada separada. El aprendizaje
+  reutilizable ya está expresado en el `AGENTS.md` canónico; duplicarlo en la
+  knowledge base generaría dos fuentes susceptibles de divergir y contradiría la
+  regla de evitar resúmenes duplicados.
+- Concern de integración: la rama está un commit por detrás de
+  `origin/Dev_iRG`. Antes de integrar se requiere rebase sobre la base remota
+  actual y una nueva ejecución completa de los checks de validación.
+- La entrega se limita a un commit local de los artefactos pendientes bajo
+  `missions/improve-agents-md/`. No se modificó `AGENTS.md`, el checker, sus tests
+  ni `verification.json` durante documentación; no se realizó push ni PR.

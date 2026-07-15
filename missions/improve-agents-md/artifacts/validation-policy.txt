@@ -1,0 +1,29 @@
+Independent policy validation: 2026-07-15 (Europe/Madrid)
+
+Checker:
+  Command: python3 missions/improve-agents-md/artifacts/validate_agents_policy.py
+  Exit code: 0
+  Output: PASS: AGENTS.md satisfies all policy contracts
+
+Embedded verification.json example:
+  Method: extract the explicitly labelled JSON fence from AGENTS.md and parse it
+          with json.loads; assert one labelled object.
+  Exit code: 0
+  Output: PARSE PASS
+
+Placeholder and contradiction scan:
+  Scope: AGENTS.md
+  Editorial placeholders found: 0
+  Known contradictory exceptions found: 0
+  Exit code: 0
+
+Whitespace validation:
+  Command: git diff --check
+  Exit code: 0
+  Output: empty
+
+Artifact trackability:
+  Command: git check-ignore -v --no-index <validation .txt files> verification.json
+  Exit code: 1
+  Output: empty
+  Interpretation: none of the requested .txt/.json evidence paths is ignored.
