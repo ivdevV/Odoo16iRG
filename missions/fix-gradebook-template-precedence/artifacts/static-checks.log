@@ -1,0 +1,29 @@
+FINAL_INDEPENDENT_VALIDATION 2026-07-16T14:37:00+02:00
+ODOO_COUNTS_PASS odoo.tests.result="0 failed, 0 error(s) of 22 tests"; starting_methods=22; container_exit=0
+STALE_STORE_EXECUTION_PASS test_result_write_refreshes_stale_stored_visibility executed exactly once
+STALE_STORE_ASSERTIONS_PASS main=Solo Exam; line=Assignment+Exam; SQL-forced show_assignment=TRUE; result.write(scoring_total=9.0); final show_assignment=FALSE; gradebook.state=done
+PRECEDENCE_EXECUTION_PASS 8/8 regression methods found exactly once in fresh Odoo log
+TRIGGER_SCOPE_PASS _irg_try_auto_close refreshes gradebook.gradebook_subject_ids only when state=in_progress and lines are non-empty; done/empty skip compute; no model search or global/install-time sweep
+PYTHON_PARSE_PASS 8/8 Python files parsed inside docker-compose.local.yml
+MANIFEST_PASS depends=[isep_gradebook]; installable=True
+IMPORT_PASS models/__init__.py imports app_gradebook_subject
+QUALITY_PASS effective_types intersection; canonical state_to_done; no direct done write, broad exception, sudo, production SQL or monkey-patch
+ISEP_SCOPE_PASS no tracked or untracked changes under addons-extra/addons_uisep/isep_gradebook
+DIFF_CHECK_PASS no whitespace errors in tracked mission changes
+DIFF_PATCH_PASS 10 exact approved paths; applies to HEAD; reconstructed postimages match workspace; excludes verification.json, mission artifacts, patch self and unrelated changes
+UNRELATED_LOCAL_CHANGES_PRESERVED irg_pedido_matricula_editable and unrelated mission files untouched
+SAFETY_PASS no commit, pull, push, PR, SSH, deployment or Dev server/database action
+POST_DOCUMENTATION_CURRENT_PATCH_AUDIT 2026-07-16T14:44:00+02:00
+PATCH_MTIME 2026-07-16T14:40:14+02:00
+POST_DOCUMENTATION_CURRENT_PATCH_PASS post-documentation current patch entries=10; approved headers=10/10; git apply check against HEAD=pass; reconstructed postimages=10/10 byte-identical
+POST_DOCUMENTATION_EXCLUSIONS_PASS verification.json, mission artifacts, diff.patch self, unrelated worktree changes and isep_gradebook excluded
+RUN22_SOURCE_TEST_HASHES_PASS all 8 Python/manifest inputs predate the 2026-07-16T14:33:50+02:00 run22 log and retain these SHA-256 values:
+031e2a2f175bf404e4d39305edc490d01769602a46558172f67e14e333837fda  addons-extra/extrairg/irg_gradebook_auto_close/__init__.py
+4de22a4e55d3721df61d8b828ee31b1b88e69f528d92cb778b5875547a408e60  addons-extra/extrairg/irg_gradebook_auto_close/__manifest__.py
+0a37bd48cecda4f54387cc8d29c08fdddb8902acc3eec81d511088808599dfa3  addons-extra/extrairg/irg_gradebook_auto_close/models/__init__.py
+231b808a0dba358b0e1c9b0c5924be630b21cc2f3968180b7aaefc48e814e235  addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_result.py
+67f6a750444a4c7d18ee0e3ed9d5a6e3f755a16d9f6131be2b1039998258c2b2  addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_student.py
+9763164d52fefd96e6f9b74ec37bd887ec8053a58584ed0d1f9ba85d63253226  addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_subject.py
+1e3dd90084f7bb4643e1bb5be4b97fac07b29eabd9509543b1d97b44cf2b19cf  addons-extra/extrairg/irg_gradebook_auto_close/tests/__init__.py
+22c2b736ae35e271993a9e020eecd2a2a7b16387a6db739fbd5d8dce0c86137c  addons-extra/extrairg/irg_gradebook_auto_close/tests/test_auto_close.py
+POST_DOCUMENTATION_SAFETY_PASS no diff.patch/execution/docs/code/tests/manifest modification; no commit/push/deploy/SSH

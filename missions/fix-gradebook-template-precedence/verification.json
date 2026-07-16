@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "task": "fix-gradebook-template-precedence",
+  "validated_at": "2026-07-16T14:44:00+02:00",
+  "checks": [
+    {
+      "name": "odoo_upgrade_and_full_suite",
+      "result": "pass",
+      "detail": "Fresh docker-compose.local.yml run against test_irg_db upgraded irg_gradebook_auto_close; odoo.tests.result reports exactly 22 tests, 0 failed, 0 errors; container exit 0"
+    },
+    {
+      "name": "stale_stored_visibility_regression",
+      "result": "pass",
+      "detail": "test_result_write_refreshes_stale_stored_visibility executed: Solo Exam main template plus mixed line template, persisted show_assignment forced TRUE, result.write recomputed the affected line to FALSE and transitioned the gradebook to done"
+    },
+    {
+      "name": "precedence_regressions",
+      "result": "pass",
+      "detail": "All 8/8 precedence methods executed exactly once: Assignment/Exam and Interaction/Foro cannot-add/may-remove rules, matching-template preservation, no-line-template inheritance, Assignment-only ceiling, and missing-main base fallback"
+    },
+    {
+      "name": "trigger_scope_and_skip_guards",
+      "result": "pass",
+      "detail": "Refresh uses only gradebook.gradebook_subject_ids for each affected in-progress non-empty gradebook; done and empty gradebooks skip compute; no model search, migration or global/install-time sweep exists"
+    },
+    {
+      "name": "python_syntax",
+      "result": "pass",
+      "detail": "All 8/8 Python files in irg_gradebook_auto_close parsed successfully inside docker-compose.local.yml"
+    },
+    {
+      "name": "imports_manifest_and_dependencies",
+      "result": "pass",
+      "detail": "Manifest parsed with depends=['isep_gradebook'] and installable=True; models/__init__.py imports app_gradebook_subject; module upgraded and loaded"
+    },
+    {
+      "name": "quality_and_isep_scope",
+      "result": "pass",
+      "detail": "Effective categories use the approved intersection and state_to_done(); no direct done write, broad exception, sudo, production SQL or monkey-patch; no tracked or untracked changes under addons-extra/addons_uisep/isep_gradebook"
+    },
+    {
+      "name": "diff_scope_and_patch",
+      "result": "pass",
+      "detail": "post-documentation current patch entries=10; all 10 headers are approved, git apply check against HEAD passes and reconstructed postimages match the workspace byte-for-byte 10/10; verification.json, artifacts, patch self, unrelated local changes and isep_gradebook are excluded; audit timestamp is later than diff.patch mtime 2026-07-16T14:40:14+02:00"
+    },
+    {
+      "name": "run22_source_test_hashes",
+      "result": "pass",
+      "detail": "All 8 Python/manifest inputs predate the fresh 22-test log and current SHA-256 values are persisted in artifacts/static-checks.log; odoo.tests.result remains exactly 22 tests, 0 failed, 0 errors"
+    }
+  ],
+  "evidence": [
+    "artifacts/odoo-test-full.log",
+    "artifacts/static-checks.log",
+    "diff.patch"
+  ],
+  "environment_warnings": [
+    "Registry loading emitted pre-existing warnings from unrelated addons, including missing manifest licenses, deprecations, invalid field parameters and selection overrides",
+    "Python emitted an unrelated swigvarlink deprecation during shutdown"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}
