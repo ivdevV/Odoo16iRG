@@ -1,0 +1,14 @@
+Static validation executed inside odoo_local:
+- Addon manifest exists in mounted /mnt/extra-addons/extrairg path: pass.
+- python3 -m compileall -q addon: pass (STATIC_OK).
+- Manifest ast.literal_eval: pass.
+- Version starts with 16.0: 16.0.1.0.0.
+- License: LGPL-3.
+- Dependency list exactly: irg_diploma_gradebook_template_authoritative.
+- installable: true.
+- Root __init__.py imports models: pass.
+- models/__init__.py imports app_gradebook_student: pass.
+- tests/__init__.py imports test_presential_detection: pass.
+- git diff --check for tracked changes: pass.
+- Trailing whitespace scan for new addon, plan and micro-spec: pass.
+- Dirty worktree reviewed before/after; unrelated pre-existing changes preserved.

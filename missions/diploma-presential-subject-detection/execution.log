@@ -1,0 +1,17 @@
+2026-07-16 PLAN Log beta: gradebook 719 found 0 presential subject candidates.
+2026-07-16 PLAN Tier complex por addon cross-module; sin riesgo de seguridad.
+
+2026-07-16 IMPLEMENTATION TDD: creado esqueleto del addon nuevo irg_diploma_gradebook_presential_detection y cinco pruebas de regresion antes del override.
+2026-07-16 IMPLEMENTATION: override aislado de _is_presential_module_subject; comprueba por separado op_subject_id.name y line.name normalizados con limites de palabra.
+
+2026-07-16 VALIDATION: leidos skill Odoo 16, workflow, knowledge reutilizable, plan, manifest, modelo y tests antes de ejecutar.
+2026-07-16 VALIDATION: Docker Desktop iniciado y servicios de docker-compose.local.yml confirmados en ejecucion.
+2026-07-16 VALIDATION: creada sin DROP la base aislada test_irg_diploma_presential_detection_20260716 desde test_irg_diploma_authoritative_v2_20260715 mediante CREATE DATABASE WITH TEMPLATE.
+2026-07-16 VALIDATION: compileall dentro de odoo_local paso. Primer intento Odoo no ejecuto tests porque el addons_path incluia addons_irg, directorio sin manifests en este checkout; se corrigio la lista a directorios validos, sin cambio de tier porque no fue un fallo funcional ni de tests.
+2026-07-16 VALIDATION: instalacion inicial y actualizacion limpia del addon completadas con 232 modulos cargados. Suite post_install: 5 pruebas, 0 fallos, 0 errores, 638 queries, 0.69 s, proceso Odoo exit 0.
+2026-07-16 VALIDATION: verificados prefijo/sufijo, fallback por line.name, formula 6x10 + 8.44 = 9.22 en total_final y avg_score, rechazo de frases parciales y fallback seguro con dos candidatos.
+2026-07-16 VALIDATION: manifest/imports/dependencia/estado installed, compileall, git diff --check y whitespace pasaron. Dirty tree ajeno preservado. verification.json emitido con status passed.
+
+2026-07-16 DOCUMENTATION: documentada la causa confirmada por el warning found 0: el detector heredado cortocircuitaba op_subject_id.name sobre el nombre visible de la linea y exigia una posicion final demasiado estricta.
+2026-07-16 DOCUMENTATION: creado doc/modules/extrairg/irg_diploma_gradebook_presential_detection.md con arquitectura, dependencia, instalacion/uso beta, resultado 9.22, pruebas, limites y changelog.
+2026-07-16 DOCUMENTATION: persistido el patron reutilizable de comparar etiquetas relacionadas y almacenadas por separado en .agents/knowledge/odoo_development_modding/artifacts/irg_diploma_gradebook_presential_detection.md.

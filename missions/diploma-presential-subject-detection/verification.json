@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "task": "diploma-presential-subject-detection",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "result": "pass",
+      "detail": "5 post_install Odoo tests passed, 0 failed, 0 errors; prefix/suffix, visible line.name fallback and partial phrase rejection verified."
+    },
+    {
+      "name": "integration_tests",
+      "result": "pass",
+      "detail": "Addon installed and updated with 232 modules in isolated DB via docker-compose.local.yml; six 10.00 plus presential 8.44 produced total_final=9.22 and avg_score=9.22; two candidates preserved safe fallback."
+    },
+    {
+      "name": "lint",
+      "result": "pass",
+      "detail": "Container compileall, manifest AST validation, import-chain checks, git diff --check and trailing-whitespace scan passed."
+    },
+    {
+      "name": "build",
+      "result": "pass",
+      "detail": "irg_diploma_gradebook_presential_detection installed as version 16.0.1.0.0 with authoritative dependency installed; Odoo process exited 0."
+    }
+  ],
+  "evidence": [
+    "artifacts/test-output.log",
+    "artifacts/static-checks.log",
+    "diff.patch"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}
