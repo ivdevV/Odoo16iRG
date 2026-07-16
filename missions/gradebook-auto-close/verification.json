@@ -1,0 +1,66 @@
+{
+  "status": "passed",
+  "task": "gradebook-auto-close",
+  "validated_at": "2026-07-15T15:29:37+02:00",
+  "checks": [
+    {
+      "name": "fresh_upgrade_and_exact_full_suite",
+      "result": "pass",
+      "detail": "docker-compose.local.yml upgrade of irg_gradebook_auto_close against test_irg_db exited 0; exactly 13 TestGradebookAutoClose methods started; Odoo reported exactly 13 post-tests, 0 failed, 0 errors, and 2757 queries."
+    },
+    {
+      "name": "model_create_multi_nested_rounding_regression",
+      "result": "pass",
+      "detail": "Fresh passing test uses an exam template qty=1 with round_subject_result=True and batch scores [9.0, 0.0]; it asserts 2 returned records, no internal skip key in the returned environment context, state in_progress, point_average_exam 0.0, and final_subject_note 4.5."
+    },
+    {
+      "name": "simple_create_still_closes",
+      "result": "pass",
+      "detail": "test_create_last_positive_result_closes_gradebook ran in the fresh 13-test suite and asserts that a simple create of the last positive exam result closes the gradebook to done."
+    },
+    {
+      "name": "normal_write_still_triggers",
+      "result": "pass",
+      "detail": "test_last_grade_write_closes_complete_gradebook ran in the fresh 13-test suite and asserts that a normal external write of the last grade triggers closure to done."
+    },
+    {
+      "name": "remaining_functional_and_hook_regressions",
+      "result": "pass",
+      "detail": "The same fresh suite passed zero-final, no-assignment, reopen-then-write, caught template UserError, readiness helper, multi-record write, post-super unlink, and old/new gradebook relink coverage."
+    },
+    {
+      "name": "syntax_manifest_imports_and_discovery",
+      "result": "pass",
+      "detail": "Inside odoo_local, 7/7 Python files compiled; manifest parsed as version 16.0.1.0.0, depends exactly [isep_gradebook], installable true; AST discovered exactly 13 test methods; the fresh Odoo upgrade and execution of all tests proves package/model/test import chains."
+    },
+    {
+      "name": "module_database_state",
+      "result": "pass",
+      "detail": "Fresh test_irg_db query reports irg_gradebook_auto_close installed at 16.0.1.0.0 and isep_gradebook installed at 16.0.1."
+    },
+    {
+      "name": "static_scope_and_antipatterns",
+      "result": "pass",
+      "detail": "No broad or bare exception, sudo call, direct state done assignment, or trailing whitespace was found; git status/diff/untracked checks show no change under addons-extra/addons_uisep/isep_gradebook."
+    },
+    {
+      "name": "diff_patch_integrity_and_current_hashes",
+      "result": "pass",
+      "detail": "diff.patch SHA-256 is f4cc2d4a2f6fc15b264dee7366f0ac4d5b0b7753d1c71cb36cd53dc292312bc3; git apply --numstat parsed it; all 10 paths are limited to the new addon or mission, none targets isep_gradebook, and all 7 current addon/test git blob hashes match the patch index hashes."
+    }
+  ],
+  "environment_warnings": [
+    "The first wrapper attempt is excluded from closure evidence: Odoo itself passed 13/13, but zsh rejected assignment to its reserved status variable after shutdown and made the wrapper exit 1; the complete suite was rerun with a corrected wrapper and exited 0.",
+    "test_irg_db contains unrelated partially unloaded/non-installable irg_admission_oficialidad_webhook and irg_student_campus_block modules.",
+    "The environment emits pre-existing manifest license, field-definition, and Python deprecation warnings outside irg_gradebook_auto_close; they did not prevent registry load, upgrade, or the valid 13/13 result."
+  ],
+  "evidence": [
+    "artifacts/revalidation-batch-full-suite-20260715-rerun.log",
+    "artifacts/revalidation-batch-static-20260715.log",
+    "artifacts/revalidation-batch-diff-scope-20260715.log",
+    "diff.patch",
+    "execution.log"
+  ],
+  "model_tier_used": "standard",
+  "escalations": 0
+}

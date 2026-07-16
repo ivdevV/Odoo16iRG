@@ -1,0 +1,40 @@
+DIFF_SCOPE_VALIDATION_FRESH=2026-07-15T15:30:00+02:00
+PATCH_SHA256
+f4cc2d4a2f6fc15b264dee7366f0ac4d5b0b7753d1c71cb36cd53dc292312bc3  missions/gradebook-auto-close/diff.patch
+PATCH_NUMSTAT
+3	0	addons-extra/extrairg/irg_gradebook_auto_close/__init__.py
+13	0	addons-extra/extrairg/irg_gradebook_auto_close/__manifest__.py
+4	0	addons-extra/extrairg/irg_gradebook_auto_close/models/__init__.py
+51	0	addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_result.py
+43	0	addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_student.py
+4	0	addons-extra/extrairg/irg_gradebook_auto_close/tests/__init__.py
+345	0	addons-extra/extrairg/irg_gradebook_auto_close/tests/test_auto_close.py
+82	0	missions/gradebook-auto-close/00-plan.md
+231	0	missions/gradebook-auto-close/execution.log
+125	0	missions/gradebook-auto-close/plan.md
+PATCH_PATHS
+diff --git a/addons-extra/extrairg/irg_gradebook_auto_close/__init__.py b/addons-extra/extrairg/irg_gradebook_auto_close/__init__.py
+diff --git a/addons-extra/extrairg/irg_gradebook_auto_close/__manifest__.py b/addons-extra/extrairg/irg_gradebook_auto_close/__manifest__.py
+diff --git a/addons-extra/extrairg/irg_gradebook_auto_close/models/__init__.py b/addons-extra/extrairg/irg_gradebook_auto_close/models/__init__.py
+diff --git a/addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_result.py b/addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_result.py
+diff --git a/addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_student.py b/addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_student.py
+diff --git a/addons-extra/extrairg/irg_gradebook_auto_close/tests/__init__.py b/addons-extra/extrairg/irg_gradebook_auto_close/tests/__init__.py
+diff --git a/addons-extra/extrairg/irg_gradebook_auto_close/tests/test_auto_close.py b/addons-extra/extrairg/irg_gradebook_auto_close/tests/test_auto_close.py
+diff --git a/missions/gradebook-auto-close/00-plan.md b/missions/gradebook-auto-close/00-plan.md
+diff --git a/missions/gradebook-auto-close/execution.log b/missions/gradebook-auto-close/execution.log
+diff --git a/missions/gradebook-auto-close/plan.md b/missions/gradebook-auto-close/plan.md
+patch_path_count=10
+foreign_path_count=0
+isep_gradebook_patch_count=
+LIVE_ISEP_GRADEBOOK_SCOPE
+untracked_isep_gradebook_count=0
+ADDON_PATCH_BLOB_HASHES
+addons-extra/extrairg/irg_gradebook_auto_close/__init__.py patch=cde864bae live=cde864bae21a11c0e4f50067aa46b4c497549b4c match=yes
+addons-extra/extrairg/irg_gradebook_auto_close/__manifest__.py patch=0bc0f8546 live=0bc0f85461f8da6682db5b99ef4d8fe3211d42ba match=yes
+addons-extra/extrairg/irg_gradebook_auto_close/models/__init__.py patch=8e999b9eb live=8e999b9eb2ec38f6c22deb92f93b4db99d284c7a match=yes
+addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_result.py patch=f2977c9d8 live=f2977c9d83bd57b835d3d9181aff86ad470948ff match=yes
+addons-extra/extrairg/irg_gradebook_auto_close/models/app_gradebook_student.py patch=2ff37f9f1 live=2ff37f9f15900a15c09a9c57e4c8454f7ef6a7c4 match=yes
+addons-extra/extrairg/irg_gradebook_auto_close/tests/__init__.py patch=344b97c29 live=344b97c29e62da8f442e50fc029f4de199a9de5e match=yes
+addons-extra/extrairg/irg_gradebook_auto_close/tests/test_auto_close.py patch=07504c71f live=07504c71f252ec2a838b9e88091d0be7a6cd6eff match=yes
+
+DIFF_SCOPE_COMMAND_EXIT_CODE=0

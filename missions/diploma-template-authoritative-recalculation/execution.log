@@ -1,0 +1,23 @@
+2026-07-15 PLAN Capturas confirman addon instalado y modo diploma_50_50 correcto.
+2026-07-15 PLAN Tier complex por conflicto cross-module no reproducible con datos beta.
+
+2026-07-15 IMPLEMENTATION Leidas completamente la skill Odoo 16, el workflow y las entradas de knowledge relevantes.
+2026-07-15 IMPLEMENTATION Creado addon nuevo irg_diploma_gradebook_template_authoritative; no se modificaron addons existentes.
+2026-07-15 IMPLEMENTATION El modo diploma_50_50 pasa a ser autoritativo, conserva exclusion NLEX/EX y fallback si no hay exactamente un presencial.
+2026-07-15 IMPLEMENTATION Anadida recomputacion explicita y protegida al escribir gradebook_id, mas dependencias directas del selector.
+2026-07-15 IMPLEMENTATION Anadidas cinco regresiones: detector falso, cambio de template, estandar, NLEX y presencial invalido.
+2026-07-15 IMPLEMENTATION git diff --check no reporto errores en archivos versionados; la comprobacion local de sintaxis no pudo ejecutarse porque python no esta disponible en PATH. El runtime Odoo queda reservado a Validacion en docker-compose.local.yml.
+2026-07-15 VALIDACION tier=complex resultado=passed
+- Leidas completamente skill Odoo 16, workflow, knowledge relevante, plan, implementacion y tests; no se cambio implementacion.
+- docker-compose.local.yml valido y servicios locales disponibles.
+- Primeros intentos de runtime se detuvieron antes de Odoo porque el addons_path explicito contenia la raiz vacia addons_irg; se corrigio solo en el comando, sin cambiar configuracion.
+- Creadas bases aisladas por clonacion sin drop; ejecucion final limpia en test_irg_diploma_authoritative_v2_20260715.
+- Addon instalado como modulo 231/231; Odoo exit 0; 5 post-tests, 0 failed, 0 errors, 825 queries, 0.76s.
+- Verificados detector falso=9.22, cambio inmediato 9.78->9.22, template estandar, exclusion NLEX y fallback con presencial invalido.
+- AST dentro del contenedor 6/6, manifest/imports/dependencia, inventario de 5 tests y diff whitespace: passed.
+- Workarounds solo de proceso: account_related15 en addons_path, PyPDF2 3.0.1 desde /tmp y puerto 8099; sin cambios persistentes.
+- Evidencias, diff.patch y verification.json generados. Sin documentacion, commit o push; cambios sucios ajenos preservados.
+2026-07-15 DOCUMENTACION Leidas completamente la skill Odoo 16, el workflow, knowledge previa, plan, addon y evidencias de validacion.
+2026-07-15 DOCUMENTACION Creada doc/modules/extrairg/irg_diploma_gradebook_template_authoritative.md con problema real, arquitectura, dependencias, instalacion beta, uso, formula, pruebas, limitaciones y changelog.
+2026-07-15 DOCUMENTACION Persistido el aprendizaje reutilizable en .agents/knowledge/odoo_development_modding/artifacts/irg_diploma_gradebook_template_authoritative.md.
+2026-07-15 DOCUMENTACION No se modifico implementacion y no se realizo commit ni push; cambios ajenos preservados.

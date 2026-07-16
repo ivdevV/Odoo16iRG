@@ -1,0 +1,20 @@
+Command: git diff --name-status e61a6742f..HEAD
+Exit code: 0
+Result: every changed path is AGENTS.md or below missions/improve-agents-md/.
+
+Command: git status --short
+Exit code after the final evidence commit: 0
+Exact output: empty.
+
+Final-tree evidence is deliberately obtained by a read-only rerun after committing
+these artifacts. See execution.md for the non-circular validation strategy.
+
+Inherited-ref cleanup command:
+for ref in $(git for-each-ref --format='%(refname)' 'refs/validation/improve-agents-md/snapshot'); do case "$ref" in refs/validation/improve-agents-md/snapshot/*) git update-ref -d "$ref" ;; *) exit 2 ;; esac; done
+
+Verification command:
+git for-each-ref --format='%(refname)' 'refs/validation/improve-agents-md/snapshot'
+
+Exact output after deleting the 25 mission-owned inherited refs: empty. A second
+listing of refs/validation/improve-agents-md was also empty. No ref outside the
+exact refs/validation/improve-agents-md/snapshot/* prefix was targeted.

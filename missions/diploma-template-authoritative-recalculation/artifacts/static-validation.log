@@ -1,0 +1,26 @@
+Validation date: 2026-07-15
+Validator tier: complex
+
+Docker compose configuration:
+- docker compose -f docker-compose.local.yml config -q: PASS
+- odoo_local and pgodoo_local were running.
+
+Container AST validation:
+- AST_PASS files=6
+- MANIFEST_PASS version=16.0.1.0.0
+- Required dependency: irg_diploma_gradebook_beta_course_detection
+- Root, models and tests imports: PASS
+- TEST_INVENTORY_PASS count=5
+
+Test methods discovered:
+- test_invalid_presential_count_falls_back_safely
+- test_nlex_subject_remains_excluded
+- test_special_template_is_authoritative_when_detector_is_false
+- test_standard_template_keeps_inherited_average
+- test_switching_template_recomputes_immediately
+
+Whitespace validation:
+- git diff --no-index --check over all 6 addon files: PASS
+- whitespace_errors=0
+
+Implementation was not modified by validation.

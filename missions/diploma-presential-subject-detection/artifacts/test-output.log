@@ -1,0 +1,33 @@
+Validation runtime: docker-compose.local.yml
+Date: 2026-07-16
+Source database: test_irg_diploma_authoritative_v2_20260715
+Isolated database: test_irg_diploma_presential_detection_20260716
+Database handling: CREATE DATABASE ... WITH TEMPLATE; no DROP executed.
+
+Addon install/update:
+- irg_diploma_gradebook_template_authoritative|installed|16.0.1.0.0
+- irg_diploma_gradebook_presential_detection|installed|16.0.1.0.0
+- Odoo registry loaded 232 modules.
+- Final run used isolated HTTP/long-polling ports 8079/8080, avoiding the port conflict from the first runtime invocation.
+- Exit status: 0.
+
+Post-install suite:
+Starting TestDiplomaPresentialDetection.test_internal_subject_name_accepts_prefix_and_suffix
+Starting TestDiplomaPresentialDetection.test_partial_phrase_does_not_match
+Starting TestDiplomaPresentialDetection.test_six_tens_and_presential_844_equal_922
+Starting TestDiplomaPresentialDetection.test_two_candidates_keep_safe_fallback
+Starting TestDiplomaPresentialDetection.test_visible_line_name_is_checked_when_internal_name_does_not_match
+
+Odoo result:
+5 post-tests in 0.69s, 638 queries
+0 failed, 0 error(s) of 5 tests
+Database: test_irg_diploma_presential_detection_20260716
+
+Acceptance coverage:
+- Prefix and suffix around normalized "modulo presencial": pass.
+- Visible app.gradebook.subject.name fallback when op.subject.name differs: pass.
+- Six ordinary scores 10.00 + presential 8.44 => total_final 9.22 and avg_score 9.22: pass.
+- Partial/non-complete phrases rejected: pass.
+- Two presential candidates => _get_diploma_weighting_values() false and safe simple-average fallback: pass.
+
+Runtime warnings belonged to pre-existing third-party modules (manifest licenses, field declarations, non-batch create methods). No test failure or error was emitted by this addon.

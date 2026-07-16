@@ -1,0 +1,100 @@
+{
+  "status": "passed",
+  "task": "improve-agents-md",
+  "checks": [
+    {
+      "name": "policy_unit_tests",
+      "command": "python3 -m unittest missions/improve-agents-md/artifacts/test_validate_agents_policy.py",
+      "result": "pass",
+      "detail": "41 tests passed, 0 failures, exit 0",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "publication_isolation_unit_tests",
+      "command": "python3 -m unittest missions/improve-agents-md/artifacts/test_check_remote_publication.py",
+      "result": "pass",
+      "detail": "2 offline tests passed: success preserves the shared remote-tracking ref, and an injected snapshot-fetch failure after bare initialization still cleans the temporary repository",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "policy_checker",
+      "command": "python3 missions/improve-agents-md/artifacts/validate_agents_policy.py",
+      "result": "pass",
+      "detail": "All 15 contracts passed; exact output was AGENTS policy validation: PASS",
+      "evidence": "artifacts/validation-policy.txt"
+    },
+    {
+      "name": "verification_file_json",
+      "command": "python3 -m json.tool missions/improve-agents-md/verification.json",
+      "result": "pass",
+      "detail": "The complete verification artifact parsed as JSON, exit 0",
+      "evidence": "artifacts/validation-policy.txt"
+    },
+    {
+      "name": "committed_range_diff_check",
+      "command": "git diff --check e61a6742f..HEAD",
+      "result": "pass",
+      "detail": "Exit 0 with no whitespace errors across the complete committed mission range",
+      "evidence": "artifacts/validation-policy.txt"
+    },
+    {
+      "name": "committed_branch_scope",
+      "command": "git diff --name-status e61a6742f..HEAD",
+      "result": "pass",
+      "detail": "Committed changes are limited to AGENTS.md and missions/improve-agents-md/",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
+      "name": "final_working_tree",
+      "command": "git status --short",
+      "result": "pass",
+      "detail": "Post-commit revalidation returned empty output",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
+      "name": "inherited_validation_ref_cleanup",
+      "command": "git for-each-ref --format='%(refname)' 'refs/validation/improve-agents-md/snapshot'",
+      "result": "pass",
+      "detail": "Empty output after deleting exactly 25 inherited refs below refs/validation/improve-agents-md/snapshot/*; no other ref namespace was targeted",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
+      "name": "publication_gate",
+      "command": "python3 missions/improve-agents-md/artifacts/check_remote_publication.py",
+      "result": "pass",
+      "detail": "No branch-unique commit was reachable from current remote branch/PR-head refs; inspection used an automatically cleaned ephemeral bare repository",
+      "evidence": "artifacts/validation-publication.txt"
+    },
+    {
+      "name": "odoo_runtime_validation",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "No aplica: cambio exclusivamente documental y de checkers; no modifica módulos, runtime ni comportamiento Odoo",
+      "evidence": "artifacts/validation-policy.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "not invoked; documentation/checker-only scope",
+    "database": "not used",
+    "branch": "codex/improve-agents-md",
+    "mission_base_commit": "e61a6742f788a434a61f96c2a49198698e5755dc",
+    "observed_remote_dev_commit": "581bd1d5cb2e8e2f4b79726c553ef40f10ccb07c",
+    "policy_correction_commit": "6774ab1c9e86e88067513f16e61c487938240ae8",
+    "publication_isolation_commit": "edd0d558efc4a2b968d5401c50177635c0805873",
+    "preserved_post_commit_rerun_head": "eeea9ed583a9b31fde33e8119bd0fcaa61277854",
+    "cleanup_regression_commit": "4fb2ea17f8b0ae569e89cc91c1da6734b5540736",
+    "final_tree_validation": "authoritative read-only rerun occurs after the evidence commit; its HEAD is emitted in the handoff without changing the validated tree"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/validation-policy.txt",
+    "artifacts/validation-git-scope.txt",
+    "artifacts/validation-publication.txt"
+  ],
+  "concerns": [
+    "Dev_iRG advanced after this branch base; rebase and repeat full validation before integration.",
+    "The gh PR query was unavailable for the configured API identity; the passing publication claim is limited to current Git remote refs and makes no historical claim."
+  ]
+}
