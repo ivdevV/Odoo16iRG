@@ -1,0 +1,9 @@
+GREEN intento 3 — 2026-07-16
+
+Comando: suite Odoo completa de irg_student_payment_status sobre test_irg_db recreada.
+Resultado: exit 0; 0 failures, 0 errors of 10 tests.
+
+Cobertura confirmada: deuda/gracia/umbral, actividad única, pagador tercero, exclusión de rectificativas, pago y conciliación reales, parámetros seguros y lectura académica sin permisos contables.
+
+Extracto relevante:
+- odoo.tests.result: 0 failed, 0 error(s) of 10 tests

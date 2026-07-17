@@ -1,0 +1,14 @@
+GREEN intento 2 — 2026-07-16
+
+Comando: suite Odoo completa de irg_student_payment_status sobre test_irg_db recreada.
+Resultado: exit 1; 1 failure, 1 error of 10 tests (8 tests pasaron).
+
+Causas raíz:
+1. El fixture de parámetro inválido creó una deuda de 1 día, correctamente excluida por el fallback de gracia de 15 días.
+2. El diario bancario de prueba no tenía payment_account_id para cobros pendientes.
+
+Extractos relevantes:
+- AssertionError: 'al_dia' != 'atrasado'
+- UserError: You can't create a new payment without an outstanding payments/receipts account
+
+Correcciones aplicadas: deuda de 16 días y cuenta de cobros pendientes en el método de pago del diario.

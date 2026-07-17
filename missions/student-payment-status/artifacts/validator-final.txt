@@ -1,0 +1,71 @@
+Independent final validation — 2026-07-17
+
+Verdict: PASS. This validation was run after documentation on the final tree.
+
+Fresh database and authoritative Odoo suite
+- Runtime: docker-compose.local.yml plus
+  missions/student-payment-status/docker-compose.worktree.yml.
+- Database: test_irg_db was dropped with forced connection cleanup and
+  recreated before installation.
+- Command: docker compose -f BASE -f OVERLAY run --rm --no-deps odoo_local
+  odoo -c /etc/odoo/odoo.conf -d test_irg_db
+  -i irg_student_payment_status --test-enable
+  --test-tags /irg_student_payment_status --without-demo=all
+  --max-cron-threads=0 --stop-after-init --log-level=test.
+- Exit code: 0.
+- Authoritative result: 0 failed, 0 errors of 15 tests.
+- The run covered cutoff/grace, threshold, partial/unpaid/refund handling,
+  third-party payer, real regularization, invalid parameters, accounting-less
+  academic access, company-currency residuals, manual group/ACL/rule gates,
+  cron, chatter, activity closure/re-entry and idempotency.
+- Existing warnings about unrelated addon manifests and sale.order digits were
+  preserved in the raw transient log and did not produce test failures.
+
+Final static, security and documentation checks
+- python3 -m compileall passed; generated __pycache__ directories were removed
+  and the final count is 0.
+- xml.etree.ElementTree parsed all 3 module XML files.
+- Manifest passed: version 16.0.1.0.0, LGPL-3, exact minimal dependencies
+  openeducat_core and irg_student_invoice_payment_link, and expected data.
+- Source inspection confirmed the manual path checks back-office group, write
+  ACL and write record rules before entering the update path; the cron keeps
+  its explicit privileged route. Company-currency residuals use
+  amount_residual_signed and owned activities close with action_feedback().
+- Final UI structure contains precise inherited ribbons, smart button,
+  decorated tree, three filters and payment-status group-by.
+- Markdown checks passed for README, mission plan/execution/changelog and the
+  new knowledge entry: balanced fences, no tabs/trailing whitespace, single
+  final newline.
+- git diff HEAD --check and git diff --check passed. Untracked additions were
+  also checked with git diff --no-index --check.
+- Scope: 25 status entries, all additions confined to the new module, mission
+  artifacts or the single new knowledge entry. No existing addon was changed.
+
+Browser evidence review
+- artifacts/ui-validation.txt is complete and marked PASS by direct rendered
+  UI observation. It covers Morosos/Atrasados/Al día filters, status group-by,
+  Moroso tree value and red decoration, red ribbon, `2 · 200.00 €` smart
+  button, transition chatter, assigned To Do activity and the exact two
+  overdue invoice rows opened by the smart button.
+
+Cleanup and shared runtime restoration
+- Ephemeral compose run containers remaining: 0.
+- Persistent odoo16irg_local status: exited.
+- Its /mnt/extra-addons mount remains
+  /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra, the principal
+  checkout rather than the worktree.
+- Final database counts: 0 students, 0 customer invoices, 0 owned delinquency
+  activities and 0 other active test_irg_db connections.
+
+Validator harness diagnostics
+- An initial host createdb verification connected to the absent default
+  database `odoo`; using the explicit maintenance database `postgres`
+  confirmed test_irg_db already existed because the preceding creation had
+  succeeded.
+- Two early static assertions encoded validator-only assumptions (an extra
+  direct `mail` dependency, then double-quoted source/name matching). Reading
+  the final manifest/source established the intended minimal dependencies and
+  exact implementation. The complete corrected static batch was rerun and
+  passed; no product or documentation file was edited.
+
+No commit, push or pull request was performed.

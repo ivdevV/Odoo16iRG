@@ -1,0 +1,11 @@
+GREEN intento 1 — 2026-07-16
+
+Comando: suite Odoo completa de irg_student_payment_status sobre test_irg_db recreada.
+Resultado: exit 255; instalación detenida antes de tests.
+Causa raíz: el XPath de búsqueda usaba @string como selector, prohibido por Odoo 16.
+
+Extracto relevante:
+- ParseError: View inheritance may not use attribute 'string' as a selector.
+- Vista: op.student.search.payment.status
+
+Corrección aplicada: selector basado en filter[@name='blood_group'].

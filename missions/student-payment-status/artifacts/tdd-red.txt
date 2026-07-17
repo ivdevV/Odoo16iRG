@@ -1,0 +1,14 @@
+TDD RED inicial — 2026-07-16
+
+Comando:
+docker compose -f docker-compose.local.yml -f docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_student_payment_status --test-enable --test-tags /irg_student_payment_status --without-demo=all --max-cron-threads=0 --stop-after-init --log-level=test
+
+Preparación: test_irg_db eliminada con dropdb --if-exists.
+Resultado: exit 1; 0 failures, 10 errors of 10 tests.
+RED esperado: el scaffold cargó, pero la API productiva todavía no existía.
+
+Extractos relevantes:
+- AttributeError: 'op.student' object has no attribute 'irg_overdue_invoice_count'
+- AttributeError: 'op.student' object has no attribute '_irg_compute_payment_status'
+- AttributeError: 'op.student' object has no attribute 'action_irg_update_payment_status'
+- odoo.tests.result: 0 failed, 10 error(s) of 10 tests
