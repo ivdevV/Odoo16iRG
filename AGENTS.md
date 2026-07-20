@@ -8,20 +8,20 @@ Las consultas, diagnósticos y revisiones de solo lectura no crean misión (`non
 
 ## Ciclo de vida obligatorio
 
-El flujo canónico exacto es: `Plan → Implementación/TDD → Review → Validación → Documentación → Publicación autorizada`.
+El flujo canónico exacto es: `Plan → Implementación/TDD → Review de código → Validación → Documentación → Publicación autorizada`.
 
-Después de Documentación y antes de Publicación autorizada se ejecuta una revalidación final sobre el árbol final; se actualizan `verification.json` y la evidencia para que cubran exactamente el estado entregado.
+Después de Documentación y antes de Publicación autorizada se hace únicamente una comprobación final acotada del estado Git y de la coherencia de los artefactos. Esta comprobación no es una nueva Review, no repite la validación ni revisa la calidad editorial de la documentación. Solo se reabren Review y Validación si durante Documentación se modificó código, pruebas, seguridad, datos, configuración funcional o comportamiento de runtime.
 
 Las fases tienen propietarios distintos y gates explícitos:
 
 1. **Plan — orquestador.** Define alcance, criterios de aceptación, riesgos, tier, capacidad requerida, roles, pruebas y artefactos. Consulta la knowledge base antes de descomponer el trabajo y crea `plan.md` antes de cualquier cambio funcional. Si el usuario pidió implementar, el trabajo continúa después del plan salvo que haya una decisión material abierta, un riesgo sensible sin aprobar o una petición de «solo plan».
 2. **Implementación/TDD — codificador.** El codificador es propietario de TDD: escribe y ejecuta RED antes de modificar código de producción; después implementa el cambio mínimo, ejecuta GREEN y refactoriza manteniendo GREEN. Cuando TDD no sea viable, registra en `execution.md` la causa objetiva y la alternativa de verificación antes de implementar.
-3. **Review — revisor.** Una persona o agente distinto del codificador comprueba requisitos, calidad, antipatrones, alcance y seguridad. No aprueba con observaciones bloqueantes abiertas.
+3. **Review de código — revisor.** Una persona o agente distinto del codificador revisa exclusivamente los cambios de código y los elementos funcionales asociados, como pruebas, seguridad, datos y configuración de runtime. Comprueba requisitos, calidad, antipatrones y alcance, y no aprueba con observaciones bloqueantes abiertas. No revisa `plan.md`, `execution.md`, `verification.json`, evidencias, changelog, documentación ni knowledge, salvo cuando alguno de esos archivos contenga código ejecutable o cambie el comportamiento del producto. La Review se ejecuta una sola vez por versión funcional del código y solo se repite cuando el código o el comportamiento cambian.
 4. **Validación — validador.** El validador es independiente del codificador, repite los checks sin confiar en resultados previos y no edita ni corrige código de producción. Emite `verification.json` y evidencia objetiva; si detecta un fallo, lo devuelve a Implementación.
-5. **Documentación — documentador.** Solo empieza tras Review y Validación satisfactorios. Actualiza uso, configuración, pruebas, limitaciones y changelog, y persiste únicamente conocimiento reutilizable.
+5. **Documentación — documentador.** Solo empieza tras Review de código y Validación satisfactorias. Actualiza uso, configuración, pruebas, limitaciones y changelog, y persiste únicamente conocimiento reutilizable. El propio documentador comprueba alcance, enlaces, formato y ausencia de contradicciones; esta fase no requiere revisor independiente ni una nueva ronda de Review o Validación.
 6. **Publicación autorizada — responsable de entrega.** Solo realiza la acción concreta que el usuario haya autorizado y después de los gates aplicables. Nunca infiere permiso para commit, push o PR a partir de otra acción.
 
-Si cualquier gate falla, reabre la fase de Implementación para corregir y repetir Review y Validación; la corrección y el escalado de capacidad son decisiones separadas, y corregir no implica escalar automáticamente. El fallo se registra con su evidencia. Si la capacidad fue insuficiente, se escala `trivial → standard → complex`; en `complex` se corrige y revalida sin afirmar un escalado adicional inexistente.
+Si falla un gate de código o de validación funcional, se reabre la fase de Implementación para corregir y repetir Review de código y Validación. Los defectos exclusivos de documentación o de artefactos se corrigen dentro de Documentación y solo requieren la comprobación final acotada; no reabren Implementación, Review ni Validación. La corrección y el escalado de capacidad son decisiones separadas, y corregir no implica escalar automáticamente. El fallo se registra con su evidencia. Si la capacidad fue insuficiente, se escala `trivial → standard → complex`; en `complex` se corrige y revalida sin afirmar un escalado adicional inexistente.
 
 ## Routing de capacidad
 
