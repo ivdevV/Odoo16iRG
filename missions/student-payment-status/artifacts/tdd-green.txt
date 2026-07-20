@@ -1,0 +1,21 @@
+GREEN final tras correcciones de Review — 2026-07-16
+
+Comando:
+docker compose -f docker-compose.local.yml -f docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_student_payment_status --test-enable --test-tags /irg_student_payment_status --without-demo=all --max-cron-threads=0 --stop-after-init --log-level=test
+
+Preparación: test_irg_db eliminada con dropdb --if-exists.
+Resultado: exit 0; 0 failures, 0 errors of 15 tests.
+
+Nuevas comprobaciones de Review:
+- residual multimoneda en compañía: 50.0 frente a 100.0 de factura y chatter formateado en moneda de compañía;
+- acción manual bloqueada sin grupo, permitida con back-office y bloqueada por regla global de escritura;
+- salida de moroso completa la actividad con action_feedback;
+- reincidencia crea una nueva actividad y el rerun no duplica;
+- chatter valida transición, count, importe, gracia y moneda; actividad valida To Do y gestor.
+
+Extractos relevantes:
+- Access Denied by record rules for operation: write on op.student (test esperado)
+- cron: changed=1 moroso=1; después changed=1 moroso=0; reincidencia changed=1 moroso=1; rerun changed=0
+- odoo.tests.result: 0 failed, 0 error(s) of 15 tests
+
+Warnings conservadas: parámetros digits desconocidos y labels duplicados en dependencias, y tag report deprecado en irg_sale_order_extended. No proceden de este módulo.

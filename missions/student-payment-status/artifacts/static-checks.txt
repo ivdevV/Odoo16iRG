@@ -1,0 +1,32 @@
+Checks estáticos/globales finales — 2026-07-16
+
+1. python3 -m compileall addons-extra/extrairg/irg_student_payment_status
+   PASS: 6 archivos Python compilados; __pycache__ eliminado tras el check.
+
+2. Parseo XML con xml.etree.ElementTree
+   PASS: 3 archivos XML parseados.
+
+3. Parseo de __manifest__.py con ast.literal_eval
+   PASS: versión 16.0.1.0.0, LGPL-3 y dependencias exactas openeducat_core + irg_student_invoice_payment_link.
+
+4. git diff HEAD --check
+   PASS: sin salida. Cubre el árbol de trabajo combinado respecto a HEAD.
+
+5. git diff --check
+   PASS: sin salida.
+
+6. rg de whitespace final y comprobación binaria de EOF
+   PASS: sin trailing whitespace; todos los archivos de módulo/misión/informe terminan en un único LF.
+
+7. Suite Odoo final fresca sobre test_irg_db recreada
+   PASS: 15 tests, 0 failures, 0 errors.
+   Evidencia funcional: artifacts/tdd-green.txt.
+
+8. Servicio persistente
+   PASS: /mnt/extra-addons sigue montado desde /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra.
+
+9. Tamaño de evidencia
+   PASS: 118 líneas en 7 artefactos TXT; los cinco logs completos fueron sustituidos por resúmenes concisos.
+
+Resultado global: PASS.
+Warnings no bloqueantes conservadas en evidencia funcional: digits/labels/report de módulos dependientes; no originadas por irg_student_payment_status.

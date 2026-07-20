@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_payment_status" model="ir.ui.view">
+        <field name="name">op.student.form.payment.status</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="irg_student_invoice_payment_link.view_op_student_form_invoice_payment_link"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='active']" position="after">
+                <field name="irg_payment_status" invisible="1"/>
+                <field name="irg_payment_currency_id" invisible="1"/>
+                <field name="irg_payment_status_date" invisible="1"/>
+            </xpath>
+            <xpath expr="//sheet/field[@name='active']/following-sibling::widget[@name='web_ribbon'][1]" position="after">
+                <widget name="web_ribbon" title="Moroso" bg_color="bg-danger"
+                        attrs="{'invisible': ['|', ('active', '=', False), ('irg_payment_status', '!=', 'moroso')]}"/>
+                <widget name="web_ribbon" title="Atrasado" bg_color="bg-warning"
+                        attrs="{'invisible': ['|', ('active', '=', False), ('irg_payment_status', '!=', 'atrasado')]}"/>
+            </xpath>
+            <xpath expr="//button[@name='action_view_academic_payments']" position="after">
+                <button name="action_view_irg_overdue_invoices"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-exclamation-triangle">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="irg_overdue_invoice_count"/>
+                            <span> · </span>
+                            <field name="irg_overdue_amount" widget="monetary"
+                                   options="{'currency_field': 'irg_payment_currency_id'}"/>
+                        </span>
+                        <span class="o_stat_text">Deuda vencida</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_op_student_tree_payment_status" model="ir.ui.view">
+        <field name="name">op.student.tree.payment.status</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="decoration-danger">irg_payment_status == 'moroso'</attribute>
+                <attribute name="decoration-warning">irg_payment_status == 'atrasado'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="irg_payment_status" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_op_student_search_payment_status" model="ir.ui.view">
+        <field name="name">op.student.search.payment.status</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='blood_group']" position="after">
+                <filter name="irg_payment_moroso" string="Morosos"
+                        domain="[('irg_payment_status', '=', 'moroso')]"/>
+                <filter name="irg_payment_atrasado" string="Atrasados"
+                        domain="[('irg_payment_status', '=', 'atrasado')]"/>
+                <filter name="irg_payment_al_dia" string="Al día"
+                        domain="[('irg_payment_status', '=', 'al_dia')]"/>
+            </xpath>
+            <xpath expr="//filter[@name='blood_group']/.." position="inside">
+                <filter name="irg_payment_status_group" string="Estado de pago"
+                        domain="[]" context="{'group_by': 'irg_payment_status'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

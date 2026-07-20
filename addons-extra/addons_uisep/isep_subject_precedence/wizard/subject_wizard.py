@@ -18,7 +18,7 @@ class OpElearningSubjectWizard(models.TransientModel):
             rec.can_be_taken = False
             user_id = rec.admission_wizard_id.admission_id.student_id.user_id.id or False
             if user_id:
-                rec.can_be_taken = rec.op_subject_id.can_be_taken(user_id)
+                rec.can_be_taken = rec.op_subject_id.can_be_taken(user_id, admission=rec.admission_wizard_id.admission_id)
 
 
     @api.model

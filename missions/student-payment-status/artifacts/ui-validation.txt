@@ -1,0 +1,27 @@
+UI visual validation — 2026-07-16
+
+Runtime:
+- Ephemeral Odoo 16 server on test_irg_db using docker-compose.local.yml plus the worktree overlay.
+- Browser: Codex in-app browser at http://127.0.0.1:8069.
+- Fixture: one student with two posted, not-paid invoices overdue by 20 and 30 days.
+
+Observed in the rendered UI:
+- Student list Filters menu exposed Morosos, Atrasados and Al día.
+- Applying Morosos returned the fixture student.
+- Group By exposed Estado de pago.
+- Tree view exposed the optional Estado de pago column with value Moroso.
+- The moroso tree row rendered class `o_data_row text-danger`.
+- Student form rendered the red Moroso ribbon.
+- Smart button rendered `2 · 200.00 € Deuda vencida`.
+- Chatter rendered transition Al día → Moroso, count 2, amount 200.00 € and grace 15 days.
+- Planned activity rendered Seguimiento de morosidad assigned to Administrator.
+- Clicking Deuda vencida opened an invoice list with exactly two rows; both were Posted, Not Paid, due 20/30 days ago, total 200.00 €.
+
+Fixture note:
+- The first navigation attempt was blocked by the base OpenEduCat form requiring Mobile on save; the test-only fixture was completed with a mobile number and the action then navigated correctly. This was fixture data validation, not a module defect.
+
+Cleanup:
+- Browser tab finalized.
+- Ephemeral UI server stopped and removed.
+- Student, invoices, activity, partner, product, journal and test accounts removed.
+- Scratch fixture scripts removed.

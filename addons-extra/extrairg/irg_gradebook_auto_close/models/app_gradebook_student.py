@@ -31,6 +31,9 @@ class AppGradebookStudent(models.Model):
 
     def _irg_try_auto_close(self):
         for gradebook in self:
+            lines = gradebook.gradebook_subject_ids
+            if gradebook.state == "in_progress" and lines:
+                lines.compute_data_show()
             if not gradebook._irg_is_ready_to_close():
                 continue
             try:

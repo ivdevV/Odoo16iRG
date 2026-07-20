@@ -32,7 +32,9 @@ class TestGradebookAutoClose(TransactionCase):
             }
         )
 
-    def _create_student_gradebook(self, template, subject_count=1):
+    def _create_student_gradebook(
+        self, template, subject_count=1, subject_templates=None
+    ):
         type(self).course_index += 1
         index = type(self).course_index
         course = self.env["op.course"].create(
@@ -86,6 +88,11 @@ class TestGradebookAutoClose(TransactionCase):
         )
         lines = self.GradebookSubject.browse()
         for subject_index in range(1, subject_count + 1):
+            subject_template = (
+                subject_templates[subject_index - 1]
+                if subject_templates
+                else self.Gradebook.browse()
+            )
             subject = self.env["op.subject"].create(
                 {
                     "name": "IRG Auto Close Subject %s-%s"
@@ -93,6 +100,7 @@ class TestGradebookAutoClose(TransactionCase):
                     "code": "IRGAC-%s-%s" % (index, subject_index),
                     "subject_type": "compulsory",
                     "course_id": course.id,
+                    "gradebook_id": subject_template.id,
                 }
             )
             lines |= self.GradebookSubject.create(
@@ -108,6 +116,15 @@ class TestGradebookAutoClose(TransactionCase):
             [
                 {"type": "exam", "weight": 50.0, "qty": 1},
                 {"type": "assignment", "weight": 50.0, "qty": 1},
+            ]
+        )
+
+    def _template_exam_interaction_and_foro(self):
+        return self._create_gradebook_template(
+            [
+                {"type": "exam", "weight": 80.0, "qty": 1},
+                {"type": "interaction", "weight": 10.0, "qty": 1},
+                {"type": "foro", "weight": 10.0, "qty": 1},
             ]
         )
 
@@ -168,6 +185,162 @@ class TestGradebookAutoClose(TransactionCase):
 
         self.assertFalse(lines.show_assignment)
         self.assertEqual(gradebook.state, "done")
+
+    def test_main_exam_only_template_limits_assignment_exam_subject(self):
+        """A subject template cannot add a requirement absent in the book."""
+        main_template = self._create_gradebook_template(
+            [{"type": "exam", "weight": 100.0, "qty": 1}]
+        )
+        subject_template = self._template_exam_and_assignment()
+        gradebook, line = self._create_student_gradebook(
+            main_template, subject_templates=[subject_template]
+        )
+
+        self._add_result(line, "exam", 9.0)
+        self._flush_gradebook(gradebook)
+
+        self.assertFalse(line.show_assignment)
+        self.assertEqual(gradebook.state, "done")
+
+    def test_result_write_refreshes_stale_stored_visibility(self):
+        """A result trigger refreshes visibility stored before an upgrade."""
+        main_template = self._create_gradebook_template(
+            [{"type": "exam", "weight": 100.0, "qty": 1}]
+        )
+        subject_template = self._template_exam_and_assignment()
+        gradebook, line = self._create_student_gradebook(
+            main_template, subject_templates=[subject_template]
+        )
+        result = self._add_result(line, "exam", 0.0)
+        self._flush_gradebook(gradebook)
+
+        self.env.cr.execute(
+            "UPDATE app_gradebook_subject "
+            "SET show_assignment = TRUE WHERE id = %s",
+            [line.id],
+        )
+        line.invalidate_recordset(["show_assignment"])
+        self.assertTrue(line.show_assignment)
+
+        result.write({"scoring_total": 9.0})
+        self._flush_gradebook(gradebook)
+
+        self.assertFalse(line.show_assignment)
+        self.assertEqual(gradebook.state, "done")
+
+    def test_exam_only_subject_removes_main_assignment_requirement(self):
+        """A subject template may remove a main-template requirement."""
+        main_template = self._template_exam_and_assignment()
+        subject_template = self._create_gradebook_template(
+            [{"type": "exam", "weight": 100.0, "qty": 1}]
+        )
+        gradebook, line = self._create_student_gradebook(
+            main_template, subject_templates=[subject_template]
+        )
+
+        self._add_result(line, "exam", 9.0)
+        self._flush_gradebook(gradebook)
+
+        self.assertFalse(line.show_assignment)
+        self.assertEqual(gradebook.state, "done")
+
+    def test_subject_without_template_inherits_main_requirements(self):
+        """A subject without its own template inherits all main requirements."""
+        main_template = self._template_exam_and_assignment()
+        gradebook, line = self._create_student_gradebook(main_template)
+
+        self._add_result(line, "exam", 9.0)
+        self._flush_gradebook(gradebook)
+
+        self.assertTrue(line.show_assignment)
+        self.assertEqual(gradebook.state, "in_progress")
+
+        self._add_result(line, "assignment", 8.0)
+        self._flush_gradebook(gradebook)
+
+        self.assertEqual(gradebook.state, "done")
+
+    def test_main_exam_only_limits_subject_interaction_and_foro(self):
+        """A subject cannot add interaction or forum to an exam-only book."""
+        main_template = self._create_gradebook_template(
+            [{"type": "exam", "weight": 100.0, "qty": 1}]
+        )
+        subject_template = self._template_exam_interaction_and_foro()
+        gradebook, line = self._create_student_gradebook(
+            main_template, subject_templates=[subject_template]
+        )
+
+        self._add_result(line, "exam", 9.0)
+        self._flush_gradebook(gradebook)
+
+        self.assertFalse(line.show_interaction)
+        self.assertFalse(line.show_foro)
+        self.assertEqual(gradebook.state, "done")
+
+    def test_exam_only_subject_removes_main_interaction_and_foro(self):
+        """An exam-only subject may remove main interaction and forum."""
+        main_template = self._template_exam_interaction_and_foro()
+        subject_template = self._create_gradebook_template(
+            [{"type": "exam", "weight": 100.0, "qty": 1}]
+        )
+        gradebook, line = self._create_student_gradebook(
+            main_template, subject_templates=[subject_template]
+        )
+
+        self._add_result(line, "exam", 9.0)
+        self._flush_gradebook(gradebook)
+
+        self.assertFalse(line.show_interaction)
+        self.assertFalse(line.show_foro)
+        self.assertEqual(gradebook.state, "done")
+
+    def test_matching_assignment_exam_templates_keep_both_requirements(self):
+        """Matching main and subject templates preserve every requirement."""
+        template = self._template_exam_and_assignment()
+        gradebook, line = self._create_student_gradebook(
+            template, subject_templates=[template]
+        )
+
+        self._add_result(line, "exam", 9.0)
+        self._flush_gradebook(gradebook)
+
+        self.assertTrue(line.show_assignment)
+        self.assertEqual(gradebook.state, "in_progress")
+
+        self._add_result(line, "assignment", 8.0)
+        self._flush_gradebook(gradebook)
+
+        self.assertEqual(gradebook.state, "done")
+
+    def test_main_assignment_only_limits_subject_exam_requirement(self):
+        """A subject cannot add exam to an assignment-only book."""
+        main_template = self._create_gradebook_template(
+            [{"type": "assignment", "weight": 100.0, "qty": 1}]
+        )
+        subject_template = self._template_exam_and_assignment()
+        gradebook, line = self._create_student_gradebook(
+            main_template, subject_templates=[subject_template]
+        )
+
+        self._flush_gradebook(gradebook)
+
+        self.assertTrue(line.show_assignment)
+        self.assertFalse(line.show_exam)
+
+    def test_missing_main_template_preserves_base_line_visibility(self):
+        """Without a main template, the base line-template result is kept."""
+        subject_template = self._template_exam_and_assignment()
+        gradebook, line = self._create_student_gradebook(
+            self.Gradebook.browse(), subject_templates=[subject_template]
+        )
+
+        self._flush_gradebook(gradebook)
+
+        self.assertFalse(gradebook.gradebook_id)
+        self.assertTrue(line.show_assignment)
+        self.assertTrue(line.show_exam)
+        self.assertFalse(line.show_interaction)
+        self.assertFalse(line.show_foro)
 
     def test_reopened_gradebook_waits_for_next_result_write(self):
         """Scenario 4: reopening alone never triggers an immediate re-close."""

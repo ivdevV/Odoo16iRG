@@ -1,0 +1,17 @@
+TDD RED de corrección de Review — 2026-07-16
+
+Comando: suite Odoo completa de irg_student_payment_status sobre test_irg_db recreada.
+Resultado RED válido: exit 1; 4 failures, 0 errors of 15 tests.
+
+Fallos esperados:
+- Multimoneda: irg_overdue_amount devolvió 100.0 (moneda de factura) frente a 50.0 (moneda de compañía).
+- Seguridad: usuario académico sin grupo no recibió AccessError.
+- Regla: una regla global write-deny no produjo AccessError en la acción manual.
+- Actividad: la actividad To Do seguía pendiente después de salir de moroso.
+
+Reintento previo no considerado RED válido:
+- El dominio de regla [(1, '=', 0)] fue rechazado como Invalid leaf antes de probar producción.
+- Investigación sistemática: Odoo 16 exige una hoja con campo real; se corrigió el fixture a [('id', '=', 0)].
+
+Extracto final:
+- odoo.tests.result: 4 failed, 0 error(s) of 15 tests

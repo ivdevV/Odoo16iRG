@@ -1,0 +1,80 @@
+{
+  "status": "passed",
+  "task": "student-payment-status",
+  "checks": [
+    {
+      "name": "database_recreation",
+      "command": "docker exec pgodoo16irg_local dropdb --if-exists --force -U odoo test_irg_db && docker exec pgodoo16irg_local createdb --maintenance-db=postgres -U odoo test_irg_db",
+      "result": "pass",
+      "detail": "test_irg_db was recreated before the final installation and confirmed present through the postgres maintenance database.",
+      "evidence": "artifacts/validator-final.txt"
+    },
+    {
+      "name": "odoo_install_and_full_tagged_suite",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f missions/student-payment-status/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_student_payment_status --test-enable --test-tags /irg_student_payment_status --without-demo=all --max-cron-threads=0 --stop-after-init --log-level=test",
+      "result": "pass",
+      "detail": "Fresh installation exited 0; authoritative Odoo result: 15 tests, 0 failed, 0 errors.",
+      "evidence": "artifacts/validator-final.txt"
+    },
+    {
+      "name": "security_and_structure",
+      "command": "fresh 15-test suite plus source-order and inherited-view assertions",
+      "result": "pass",
+      "detail": "Group, ACL and record-rule gates precede the manual update path; cron privilege, company-currency residuals, activity closure, filters, group-by, decorations, ribbons and smart button were confirmed.",
+      "evidence": "artifacts/validator-final.txt"
+    },
+    {
+      "name": "python_compile",
+      "command": "python3 -m compileall -q addons-extra/extrairg/irg_student_payment_status; remove generated __pycache__",
+      "result": "pass",
+      "detail": "All Python files compiled and the final __pycache__ count is 0.",
+      "evidence": "artifacts/validator-final.txt"
+    },
+    {
+      "name": "xml_manifest_dependencies",
+      "command": "Python xml.etree.ElementTree and ast.literal_eval assertions over module XML and __manifest__.py",
+      "result": "pass",
+      "detail": "All 3 XML files parsed; version, license, exact minimal dependencies and loaded data match the final contract.",
+      "evidence": "artifacts/validator-final.txt"
+    },
+    {
+      "name": "documentation_quality",
+      "command": "Python Markdown fence, tab, trailing-whitespace and EOF assertions over README, mission docs and knowledge",
+      "result": "pass",
+      "detail": "All 5 final Markdown documents passed structural and whitespace checks.",
+      "evidence": "artifacts/validator-final.txt"
+    },
+    {
+      "name": "diff_and_scope",
+      "command": "git diff HEAD --check; git diff --check; git diff --no-index --check for untracked files; git status scope assertions",
+      "result": "pass",
+      "detail": "All diff checks passed; 25 final entries are additions only in the new addon, mission or new knowledge entry, with no existing module changed.",
+      "evidence": "artifacts/validator-final.txt"
+    },
+    {
+      "name": "browser_visual_ui",
+      "command": "Codex in-app browser rendered validation at http://127.0.0.1:8069 on test_irg_db",
+      "result": "pass",
+      "detail": "Rendered filters, group-by, tree value/decoration, ribbon, smart button, chatter, activity and exact overdue-invoice action all matched the plan.",
+      "evidence": "artifacts/ui-validation.txt"
+    },
+    {
+      "name": "cleanup_and_persistent_service_restoration",
+      "command": "docker inspect odoo16irg_local; docker ps -a run-container filter; SQL student/invoice/activity/connection counts",
+      "result": "pass",
+      "detail": "0 ephemeral containers and 0 test fixtures/connections remain; the persistent exited service mounts the principal checkout.",
+      "evidence": "artifacts/validator-final.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml + missions/student-payment-status/docker-compose.worktree.yml (run --rm --no-deps)",
+    "database": "test_irg_db",
+    "base_commit": "104c638bc"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validator-final.txt",
+    "artifacts/ui-validation.txt"
+  ]
+}

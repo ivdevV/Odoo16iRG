@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="ir_cron_update_student_payment_status" model="ir.cron">
+        <field name="name">Actualizar estado de pago de alumnos</field>
+        <field name="model_id" ref="openeducat_core.model_op_student"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_update_payment_status()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

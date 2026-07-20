@@ -10,15 +10,14 @@ class OpSubject(models.Model):
     course_subject_ids = fields.Many2many(related="course_id.subject_ids")
 
 
-    def can_be_taken(self, user_id):
+    def can_be_taken(self, user_id, admission=None):
         self.ensure_one()
         user = self.env['res.users'].sudo().browse(user_id)
         if not user:
             return False
-        course_id = self.course_id or False
-        if not course_id:
-            return False
-        admission_id = self.env['op.admission'].sudo().search([('course_id','=',course_id.id),('student_id.user_id','=',user.id),('state','=','done')], limit=1)
+        admission_id = admission
+        if not admission_id:
+            admission_id = self.env['op.admission'].sudo().search([('student_id.user_id','=',user.id),('state','=','done'),('course_id.subject_ids','in',self.id)], limit=1)
         if not admission_id:
             return False
         if  admission_id.modality == 'manual':
