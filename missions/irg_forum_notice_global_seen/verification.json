@@ -1,0 +1,66 @@
+{
+  "status": "passed",
+  "task": "irg_forum_notice_global_seen_final_review_fix_wave",
+  "tree_state": "final validated tree under explicit database-level concurrency scope",
+  "checks": [
+    {
+      "name": "final_review_tdd_regressions",
+      "command": "focused Odoo test commands recorded in artifacts/final-review-green.txt",
+      "result": "pass",
+      "detail": "XSS, unrelated integrity propagation, real course-less student and synchronized two-transaction duplicate recovery passed.",
+      "evidence": "artifacts/final-review-green.txt"
+    },
+    {
+      "name": "static_runtime_security_and_documentation",
+      "command": "PYTHONPYCACHEPREFIX=/tmp/irg-forum-global-seen-final-pycache python3 -m compileall -q addons-extra/extrairg/irg_forum_notice_global_seen && python3 missions/irg_forum_notice_global_seen/artifacts/final_static_validation.py && node --check addons-extra/extrairg/irg_forum_notice_global_seen/static/src/js/forum_notice_popup.js && git diff --check",
+      "result": "pass",
+      "detail": "Python, JS, safe rendering, URL policy, narrowed integrity catch, manifest/security, docs and whitespace passed.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "clean_odoo_module_tests",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos\\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen_finalreview -i irg_forum_notice_global_seen --test-enable --test-tags /irg_forum_notice_global_seen --stop-after-init --log-level=test",
+      "result": "pass",
+      "detail": "Exit 0; 28 attempted, 27 completed, one environmental browser skip; stats 31; 0 failures/errors.",
+      "evidence": "artifacts/odoo-tests.txt"
+    },
+    {
+      "name": "browser_javascript",
+      "command": "same clean Odoo module test command",
+      "result": "skipped",
+      "detail": "Browser method was invoked but not executed because websocket-client is absent; prior environment probe also found no Chrome/Chromium.",
+      "evidence": "artifacts/odoo-tests.txt"
+    },
+    {
+      "name": "cleanup_and_scope",
+      "command": "drop exact isolated databases; bash missions/irg_forum_notice_global_seen/artifacts/final_scope_validation.sh",
+      "result": "pass",
+      "detail": "Test databases and pycache removed; exact porcelain/services allowlists passed; shared runtime remained restored.",
+      "evidence": "artifacts/cleanup-scope.txt"
+    },
+    {
+      "name": "concurrency_scope_decision",
+      "command": "explicit user scope decision",
+      "result": "pass",
+      "detail": "Two synchronized independent database transactions executing the real model method are accepted; an authenticated second-server HTTP race is out of scope.",
+      "evidence": "artifacts/final-review-green.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml",
+    "overlay": "missions/irg_forum_notice_global_seen/docker-compose.worktree.yml",
+    "database": "test_irg_forum_global_seen_finalreview (clean-created, tested, removed)",
+    "base_commit": "ff32a4022fab7f16d621ed471729e1a3efc85c27",
+    "browser_runtime": "websocket-client absent; Chrome/Chromium absent"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/red-final-review-xss.txt",
+    "artifacts/red-final-review-integrity.txt",
+    "artifacts/final-review-green.txt",
+    "artifacts/static-validation.txt",
+    "artifacts/odoo-tests.txt",
+    "artifacts/cleanup-scope.txt"
+  ]
+}

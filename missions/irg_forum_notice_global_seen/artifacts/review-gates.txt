@@ -1,0 +1,75 @@
+IRG Forum Notice Global Seen — Independent Review gates
+Date: 2026-07-20
+
+This artifact persists the independent Review results in their execution
+order. It records review evidence only and does not assert that any commit,
+push, or pull request occurred.
+
+Task 1 — mission and Security Advisor corrections
+
+Reviewer agent: /root/task1_review
+Review package: .superpowers/sdd/task-1-review.patch
+Implementer report: .superpowers/sdd/task-1-report.md
+Security evidence: missions/irg_forum_notice_global_seen/artifacts/security-advisor.txt
+
+The mission and security design were approved after the review-driven fixes.
+Exact final verdict text:
+
+Spec Compliance: Approved
+No remaining Critical or Important findings
+Task quality: Approved
+
+Task 2 — global model and security controls
+
+Reviewer agent: /root/task2_review
+Review package: .superpowers/sdd/task-2-review.patch
+Implementer report: .superpowers/sdd/task-2-report.md
+
+The model and security review reported no issues. Exact final verdict text:
+
+Spec Compliance ✅
+Critical: None
+Important: None
+Minor: None
+Task quality: Approved
+
+Task 3 — controllers and course-less discovery
+
+Reviewer agent: /root/task3_review
+Review package: .superpowers/sdd/task-3-review.patch
+Implementer report: .superpowers/sdd/task-3-report.md
+RED evidence: missions/irg_forum_notice_global_seen/artifacts/red-controller.txt
+GREEN evidence: missions/irg_forum_notice_global_seen/artifacts/green-controller.txt
+
+The initial review found an Important gap: campus-wide discovery could return
+an already globally seen post when no course context existed. The codifier
+added the course-less regression first, captured RED, made the minimal fix,
+and returned the full suite to GREEN before independent re-review.
+Exact final verdict text:
+
+Spec Compliance: Compliant
+Remaining findings: None
+Task quality: Approved
+
+Task 4 — race-safe frontend
+
+Reviewer agent: /root/task4_review
+Review package: .superpowers/sdd/task-4-review.patch
+Implementer report: .superpowers/sdd/task-4-report.md
+
+The frontend review had no blocking issues. It retained one Minor note at test
+line 139: harden the static test so it structurally proves the navigation call
+is inside the finally block. Exact final verdict text:
+
+Spec Compliance: Compliant
+Critical: None
+Important: None
+Minor: test line 139 (structural finally assertion hardening)
+Task quality: Approved
+
+Gate order conclusion
+
+Tasks 1 through 4 passed their independent Review gates in the order above.
+The Task 3 Important finding was fixed with strict RED/GREEN evidence and
+passed re-review. The Task 4 Minor note was non-blocking. Therefore Review was
+passed before Task 5 preliminary Validation and Documentation began.

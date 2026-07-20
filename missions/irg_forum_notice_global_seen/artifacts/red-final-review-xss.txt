@@ -1,0 +1,19 @@
+Final-review XSS RED — 2026-07-20
+
+Focused command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -i irg_forum_notice_global_seen --test-enable --test-tags '/irg_forum_notice_global_seen:TestForumNoticeGlobalSeen.test_frontend_renders_untrusted_notice_content_safely' --stop-after-init --log-level=test
+
+Valid RED before production JavaScript changed:
+
+```text
+Starting TestForumNoticeGlobalSeen.test_frontend_renders_untrusted_notice_content_safely ...
+FAIL: TestForumNoticeGlobalSeen.test_frontend_renders_untrusted_notice_content_safely
+AssertionError: '${' unexpectedly found in 'wrapper.innerHTML = `...'
+odoo.tests.stats: irg_forum_notice_global_seen: 3 tests 0.18s 227 queries
+odoo.tests.result: 1 failed, 0 error(s) of 1 tests
+```
+
+Exit code: 1.  The failure identified all four unsafe template interpolations:
+notice title, forum name, preview and URL.  The test fixture includes malicious
+HTML/event-handler values and a `javascript:` URL and requires a static
+skeleton, `textContent` assignments and same-origin HTTP(S) URL validation.

@@ -1,0 +1,52 @@
+Task 4 frontend asset resolution
+
+The module was updated by the full Odoo test command through the mission
+overlay. A separate ephemeral `run --rm --no-deps` Odoo process was published
+only on isolated host port `18069`; the persistent shared service on `8069`
+was not recreated, repointed, stopped, or used for the check.
+
+Requests:
+
+```text
+GET http://localhost:18069/?debug=assets&db=test_irg_forum_global_seen
+HTTP/1.0 200 OK
+GET /web/assets/debug/1/web.assets_frontend_lazy.js
+HTTP 200
+GET /web/assets/debug/1/web.assets_frontend.css
+HTTP 200
+```
+
+Resolved debug bundle counts:
+
+```text
+replacement_count=1
+parent_popup_count=0
+share_override_count=1
+parent_scss_count=1
+```
+
+Relevant resolved paths:
+
+```text
+/irg_forum_notice_global_seen/static/src/js/forum_notice_popup.js
+/irg_forum_notice_popup/static/src/js/forum_share_override.js
+/irg_forum_notice_popup/static/src/scss/forum_notice_popup.scss
+```
+
+The removed path
+`/irg_forum_notice_popup/static/src/js/forum_notice_popup.js` did not occur in
+the resolved JS bundle. The replacement occurred once; the parent share
+override and SCSS were each preserved once. The ephemeral server was stopped
+after the requests.
+
+Independent preliminary recheck — 2026-07-20: a fresh authenticated
+`/?debug=assets` request returned HTTP 200 and three debug bundle URLs were
+fetched. Counts: replacement 1, parent popup 0, share override 1, parent SCSS
+1. PASS. The ephemeral server/container were removed and port 18069 closed.
+
+Final documented-tree recheck — 2026-07-20: authenticated debug page HTTP 200;
+three referenced bundle URLs fetched. Replacement 1, parent popup 0, parent
+share override 1 and parent SCSS 1. PASS. The ephemeral server was stopped.
+
+Exact evidence-fix command executed successfully:
+`python3 missions/irg_forum_notice_global_seen/artifacts/final_http_validation.py`.

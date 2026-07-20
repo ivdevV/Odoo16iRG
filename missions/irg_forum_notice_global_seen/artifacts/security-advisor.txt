@@ -1,0 +1,170 @@
+IRG Forum Notice Global Seen — Independent Security Advisor review
+Date: 2026-07-20
+Mission: irg_forum_notice_global_seen
+Status: BLOCKED pending plan corrections
+
+Scope reviewed
+
+- Mission plan and approved controller/model design.
+- Existing popup routes and legacy seen model access.
+- `forum.post._is_visible_for_user()` and its forum, batch, exclusion and
+  system-user semantics.
+- Authorization order, `sudo()` scope, ACLs, legacy-data integrity,
+  concurrency/idempotence and inherited route semantics.
+
+Controls that are sound
+
+- Republished `@http.route()` methods retain the parent JSON, `auth='user'`
+  and website route metadata. The explicit public-user rejection is an
+  appropriate defense in depth.
+- The proposed mark-seen flow parses the ID, resolves the post with `sudo()`,
+  returns the same `{\"ok\": false}` for a missing or inaccessible post, and
+  calls `post._is_visible_for_user(request.env.user)` before the technical
+  seen write. The visibility helper evaluates the requesting user and keeps
+  forum, course/effective-course, inclusion-batch and exclusion-batch rules.
+  `sudo()` on the post is acceptable here because it supplies the record to
+  the authorization helper; it does not replace that helper.
+- Ignoring optional `course_id` for the persisted identity is consistent with
+  `(user_id, post_id)`. Keeping both existing route shapes preserves callers,
+  including the no-course global route.
+- A database uniqueness constraint on `(user_id, post_id)` plus a savepoint
+  around create is sufficient to serialize duplicate concurrent inserts.
+  Catching `IntegrityError` only after savepoint rollback and re-reading the
+  winner makes repeated requests non-failing. Updating `seen_at` on repeats is
+  acceptable for this contract, although it is not a side-effect-free retry.
+- The proposed compatibility lookup reads legacy rows only and introduces no
+  migration, update or deletion. Cascade behavior on the new foreign keys is
+  normal lifecycle integrity, not a legacy-data migration.
+
+Blocking findings
+
+1. The proposed model APIs `irg_is_seen` and `irg_mark_seen` are public Odoo
+   methods. Odoo ACLs protect CRUD operations but do not make a public custom
+   method unavailable through generic `call_kw`/`execute_kw`. Because
+   `irg_mark_seen(user_id, post_id)` performs its own `sudo()`, an authenticated
+   caller could invoke it directly, choose another user and arbitrary post,
+   and bypass the route's post-visibility authorization. `irg_is_seen` also
+   exposes another user's seen state. Rename them to private methods (for
+   example `_irg_is_seen` and `_irg_mark_seen`, which generic RPC rejects) and
+   call them only from trusted server code, or add an equivalent non-bypassable
+   server-side guard before any `sudo()`.
+
+2. The existing legacy model grants `base.group_portal` read/create and
+   `base.group_user` full CRUD, without a user-scoped record rule. Since the new
+   compatibility lookup treats any legacy `(user_id, post_id)` row as
+   authoritative, an authenticated caller can use the generic ORM API to
+   create or alter legacy rows for another user and suppress that user's
+   notices globally. This contradicts the stated route-only architecture and
+   makes legacy input mutable/untrusted. Amend the new-addon design so
+   non-system callers cannot create, modify or delete legacy seen rows outside
+   the existing visibility-checked controller path, and cannot read other
+   users' rows. This can be implemented by a new-addon model extension and
+   restrictive record rules/server-side guards while leaving existing source
+   files unchanged; the legacy controller's narrowly scoped `sudo()` can
+   remain the trusted writer. Add RPC-level tests proving both internal and
+   portal users cannot forge another user's legacy or global seen state.
+
+Required gate conditions before implementation
+
+- Make both global seen service methods non-RPC-callable or independently
+  authorization-safe.
+- Harden legacy direct ORM access because legacy rows become authoritative
+  global suppression input.
+- Preserve the approved route authorization order and add negative RPC tests
+  for direct method invocation and legacy-row forgery.
+
+[NO] Reason: Public sudo-backed model methods and writable unscoped legacy rows allow authenticated callers to bypass route visibility checks and forge global seen state.
+
+Re-review after amended design and plan
+Date: 2026-07-20
+Status: BLOCKED; one legacy-write path remains insufficiently controlled
+
+Amendments confirmed
+
+- The services are now named `_irg_is_seen` and `_irg_mark_seen`. Odoo generic
+  RPC rejects underscore-prefixed methods, while trusted controller/model code
+  can call them after authorization. Together with the system-only global-model
+  ACL and the proposed negative `call_kw` tests, this closes the original
+  public sudo-backed method bypass.
+- The new addon, rather than the existing addon, owns the proposed legacy
+  security XML. The manifest order
+  `security/forum_notice_seen_rules.xml` then
+  `security/ir.model.access.csv` is explicit and valid after the dependency has
+  registered the legacy model external ID.
+- Separate owner rules for `base.group_user` and `base.group_portal`, plus the
+  `base.group_system` allow-all group rule, correctly prevent direct reads,
+  creates and operations targeting an already foreign legacy row. The system
+  rule combines with the internal-user rule to preserve unrestricted system
+  access.
+- The plan now requires direct ORM and JSON-RPC negative tests for internal and
+  portal actors, verifies unchanged target row counts, and retains the correct
+  route authorization order. These are appropriate regression gates.
+
+Remaining blocking finding
+
+- A record rule with `[('user_id', '=', user.id)]` authorizes `write()` against
+  the record as selected before the update; it is not, by itself, a guarantee
+  that the new `user_id` still belongs to the caller. Because the pre-existing
+  `base.group_user` ACL grants write access, an internal user can select one of
+  their own legacy rows and attempt `write({'user_id': victim.id})`. The row
+  satisfies the owner rule at authorization time, so the plan's XML alone does
+  not reliably prevent the ownership transfer that turns it into authoritative
+  suppression state for the victim.
+
+Required correction
+
+- Add a new-addon server-side extension of `irg.forum.notice.seen` that rejects
+  changing `user_id` to any other user for non-system callers (or equivalently
+  makes legacy writes system-only without breaking the trusted sudo route).
+  Keep create ownership enforced by the record rule and retain system bypass.
+- Make the negative internal-user ORM and generic-RPC tests explicit: create an
+  actor-owned legacy row, attempt to reassign that same row's `user_id` to the
+  victim, assert `AccessError`, and assert both actor/victim rows and values are
+  unchanged. Testing only a write to a row already owned by the victim would
+  miss this bypass. Portal write denial remains covered by its ACL.
+
+[NO] Reason: Private global methods and scoped rules fix most bypasses, but an internal user can still reassign an owned legacy row to another user unless a server-side ownership-transfer guard and explicit test are added.
+
+Third re-review after server-side legacy mutation guard
+Date: 2026-07-20
+Status: APPROVED for implementation/TDD
+
+Findings closed
+
+- The new-addon `models/forum_notice_seen_legacy.py` inherits the legacy model
+  and rejects `create`, `write`, and `unlink` unless `env.su` is true or the
+  caller belongs to `base.group_system`. This is a server-side control on every
+  legacy mutation entry point, so it also blocks the previously missed case in
+  which an internal owner reassigns an owned row's `user_id` to a victim.
+- Generic ORM/RPC callers cannot manufacture `env.su` through request values or
+  context. Internal and portal callers therefore reach the guard as
+  non-superuser environments and are denied before mutation.
+- The existing controller obtains the legacy model through `sudo()`, so its
+  trusted write path remains allowed. Direct system-administrator management
+  also remains allowed through the explicit group check. The required positive
+  tests cover both paths.
+- Owner-scoped `ir.rule` records for `base.group_user` and
+  `base.group_portal` now serve the remaining direct-read requirement, while
+  the `base.group_system` allow-all rule preserves administrative visibility.
+  The security XML loads after the dependency has registered the legacy model
+  and before the new global-model ACL, as planned.
+- Global persistence remains protected by a system-only ACL, and its services
+  are private `_irg_is_seen` and `_irg_mark_seen`; generic Odoo RPC rejects
+  both underscore-prefixed names. The visibility-checked JSON route is the
+  authorized non-system gateway before technical `sudo()` access.
+- The amended negative test contract explicitly covers internal and portal
+  direct create/write/unlink attempts, mutation of rows initially owned by the
+  actor, owned-row `user_id` reassignment, foreign-user global CRUD, and generic
+  RPC calls to both private services. It requires unchanged rows/counts after
+  each denial, avoiding false positives that only check an exception.
+
+Implementation conditions retained
+
+- Implement all three legacy ORM overrides with Odoo 16-compatible decorators
+  and perform the `env.su`/system check before calling `super()`.
+- Keep the existing post visibility check before every global seen write, the
+  system-only global ACL, the declared security load order, and the complete
+  negative and positive tests. Any divergence reopens the security gate during
+  independent review/validation.
+
+[YES] Reason: Server-side legacy CRUD guards, owner-scoped reads, private global services, visibility-first routes, and explicit negative/positive tests now close the identified ORM and RPC bypasses while preserving trusted sudo and system paths.

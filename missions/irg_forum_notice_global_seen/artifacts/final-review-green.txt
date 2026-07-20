@@ -1,0 +1,9 @@
+Final-review focused GREEN evidence — 2026-07-20
+
+Safe frontend rendering: PASS; focused malicious-payload regression, 1 method, 0 failures, 0 errors.
+
+Narrow integrity recovery and real course-less student: PASS; 2 methods, 0 failures, 0 errors; stats 6 tests / 1.28s / 681 queries. The PostgreSQL foreign-key error is expected inside assertRaises and propagated by the model.
+
+Deterministic concurrent duplicate recovery: PASS; 1 method, 0 failures, 0 errors; stats 3 tests / 0.92s / 292 queries. Both synchronized independent transactions reached the real model method, PostgreSQL raised the expected UniqueViolation for the loser, both returned the same row id, exactly one row existed, the duplicate-recovery log fired, and the committed fixture was removed.
+
+The failed HTTP/TestCursor and uncommitted-fixture instrumentation attempts are documented in final-review-concurrency-attempt.txt and are not counted as RED or GREEN product evidence.

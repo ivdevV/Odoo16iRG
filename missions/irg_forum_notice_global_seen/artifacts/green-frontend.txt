@@ -1,0 +1,42 @@
+Task 4 GREEN — race-safe replacement frontend
+
+Focused asset-contract command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -i irg_forum_notice_global_seen --test-enable --test-tags '/irg_forum_notice_global_seen:TestForumNoticeGlobalSeen.test_frontend_replacement_asset_contract' --stop-after-init --log-level=test
+
+```text
+Starting TestForumNoticeGlobalSeen.test_frontend_replacement_asset_contract ...
+odoo.tests.stats: irg_forum_notice_global_seen: 3 tests 0.13s 227 queries
+odoo.tests.result: 0 failed, 0 error(s) of 1 tests when loading database
+'test_irg_forum_global_seen'
+```
+
+Full module command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -i irg_forum_notice_global_seen --test-enable --test-tags /irg_forum_notice_global_seen --stop-after-init --log-level=test
+
+```text
+Starting TestForumNoticeGlobalSeen.test_frontend_replacement_asset_contract ...
+Starting TestForumNoticeGlobalSeenHttp.test_browser_dismiss_persists_before_next_poll ...
+skipped TestForumNoticeGlobalSeenHttp.test_browser_dismiss_persists_before_next_poll : websocket-client module is not installed
+odoo.tests.stats: irg_forum_notice_global_seen: 27 tests 3.59s 2055 queries
+odoo.tests.result: 0 failed, 0 error(s) of 23 tests when loading database
+'test_irg_forum_global_seen'
+```
+
+Exit code: 0. The browser skip is justified by the exact environment evidence
+in `red-frontend.txt`; a focused retry with websocket support also reported
+`Chrome executable not found`. No application assertion failure was skipped.
+
+Static checks:
+
+- Python source compilation in memory: PASS.
+- Manifest `ast.literal_eval`: PASS.
+- `node --input-type=module --check` for replacement JS: PASS.
+- `git diff --check`: PASS.
+- Existing addons outside `irg_forum_notice_global_seen`: unchanged.
+- Ephemeral `odoo_local-run-*` containers after cleanup: none.
+
+The replacement uses a per-notice Promise map, suppresses before awaiting,
+accepts a missing `course_id`, rejects falsy or `{ok: false}` persistence
+responses, removes close UI only in `finally`, and prevents/awaits/navigates in
+the open handler's `finally`. Failures are warned and suppression remains only
+in the current page session.

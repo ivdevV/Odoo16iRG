@@ -1,0 +1,9 @@
+Final-review concurrency instrumentation note
+
+The first attempted test used two authenticated HTTP sessions and synchronized both initial global-model searches with a threading barrier. It did not produce a valid product result: Odoo's HttpCase request handling serialized the two requests within the test harness, so the barrier timed out with BrokenBarrierError. An explicit commit in that draft also invalidated HttpCase's enclosing savepoint during teardown.
+
+The first model-level revision used `registry.cursor()`, but Odoo replaces that API with one locked `TestCursor` while tests run. Its barrier therefore also timed out before any product assertion. This was another instrumentation result, not a product RED or GREEN.
+
+By explicit user scope decision, the accepted regression is model-level: a dedicated forum/post fixture is inserted and committed explicitly without ORM side effects; two synchronized independent connections obtained through Odoo's own `sql_db.db_connect(...).cursor()` call the real `_irg_mark_seen` method, commit independently, verify exactly one row and the duplicate-recovery log, then clean the global row, post, and forum through a separate transaction. It bypasses only the test cursor proxy, not the model under test.
+
+The first raw-connection run proved both connections reached the barrier, but also showed that HttpCase-created users and posts are deliberately uncommitted outside the test proxy. The final setup therefore uses the committed superuser plus an explicit committed forum/post fixture; no uncommitted HttpCase fixture is shared across transaction boundaries. Because Odoo cursors use REPEATABLE READ, the test-only search wrapper ends both synchronized initial read snapshots, releases the designated winner first, and releases the loser only after the winner commits. The loser then executes a real conflicting insert, catches the real unique violation, and can see the winning row during recovery.

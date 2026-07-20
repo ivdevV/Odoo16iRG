@@ -1,0 +1,67 @@
+Independent preliminary validation — 2026-07-20
+
+1. Python compilation
+Command: PYTHONPYCACHEPREFIX=<isolated-temp-dir> python3 -m compileall -q addons-extra/extrairg/irg_forum_notice_global_seen
+Result: PASS (exit 0, no output)
+Cleanup: isolated bytecode directory removed; no __pycache__ left in the addon.
+
+2. Manifest, assets and security declarations
+Command: python3 inline assertions using ast.literal_eval, csv.DictReader and xml.etree.ElementTree
+Result: PASS (exit 0)
+manifest_parse: PASS
+asset_remove_replace_order: PASS
+acl_single_system_row: PASS
+security_xml_3_rules_parse: PASS
+
+Assertions include:
+- version 16.0.1.0.0 and sole dependency irg_forum_notice_popup;
+- security XML loads before CSV;
+- parent popup JS is removed exactly once before the replacement is added exactly once;
+- one ACL row only, for base.group_system and the new global model;
+- all four ACL permissions are 1;
+- three expected legacy record rules parse successfully.
+
+3. JavaScript syntax
+Command: node --check addons-extra/extrairg/irg_forum_notice_global_seen/static/src/js/forum_notice_popup.js
+Result: PASS (exit 0, no output)
+
+4. Whitespace and untracked scope
+Commands: git diff --check; Python trailing-whitespace scan over the new addon and mission
+Result: PASS (exit 0)
+git_diff_check: PASS
+untracked_text_trailing_whitespace: PASS
+
+Final documented-tree revalidation — 2026-07-20
+
+- compileall with isolated PYTHONPYCACHEPREFIX: PASS (exit 0); temporary
+  bytecode directory removed and no addon __pycache__ remains.
+- manifest literal/version/dependency/data order: PASS.
+- parent asset remove exactly once before replacement exactly once: PASS.
+- one base.group_system ACL row with all four permissions: PASS.
+- three expected legacy record rules and XML parse: PASS.
+- `node --check` replacement JS: PASS (exit 0).
+- README required content: purpose, dependency, install/update, global identity,
+  legacy compatibility, security, test command and failed-persistence/full-page
+  limitation: PASS.
+- CHANGELOG version and explicit no-migration/no-modification/no-deletion: PASS.
+- reusable knowledge content: PASS.
+- placeholder scan: PASS; exactly one intentional `<database>` CLI parameter,
+  and no TODO/TBD/FIXME/XXX/PLACEHOLDER markers.
+- `git diff --check`, untracked text whitespace and allowed scope: PASS.
+
+The first two documentation assertions used overly literal phrases split by
+Markdown wrapping/wording; after whitespace normalization and checking the
+actual required semantics, the unchanged documentation passed.
+
+Exact reproducible command executed successfully:
+`test ! -e /tmp/irg-forum-global-seen-final-pycache && PYTHONPYCACHEPREFIX=/tmp/irg-forum-global-seen-final-pycache python3 -m compileall -q addons-extra/extrairg/irg_forum_notice_global_seen && rm -r /tmp/irg-forum-global-seen-final-pycache && python3 missions/irg_forum_notice_global_seen/artifacts/final_static_validation.py && node --check addons-extra/extrairg/irg_forum_notice_global_seen/static/src/js/forum_notice_popup.js && git diff --check`
+
+Final-review implementation-wave static rerun — 2026-07-20
+
+- Python compileall with isolated cache and generated-cache cleanup: PASS.
+- Manifest/assets, ACL/rules, XML/CSV, docs/placeholders and whitespace: PASS.
+- Static popup skeleton without interpolated untrusted fields: PASS.
+- title/forum/preview textContent assignments: PASS.
+- same-origin HTTP(S) URL guard and safe link creation: PASS.
+- model catches UniqueViolation and contains no broad IntegrityError catch: PASS.
+- separate README install/update commands, node --check and git diff --check: PASS.
