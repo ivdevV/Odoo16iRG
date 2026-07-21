@@ -102,7 +102,7 @@ class IrgCertificateRequest(models.Model):
     _GRADEBOOK_COMPACT_TOP_MARGIN = Pt(48)
     _GRADEBOOK_COMPACT_BOTTOM_MARGIN = Pt(20)
     # Spacer under the header logo for many-subject certificates (MNC).
-    _GRADEBOOK_COMPACT_LOGO_SPACER_AFTER = Pt(48)
+    _GRADEBOOK_COMPACT_LOGO_SPACER_AFTER = Pt(36)
     _DPTO_ACADEMICO_INTRO = 'El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona.'
 
     def _replace_dpto_academico_intro(self, doc):
