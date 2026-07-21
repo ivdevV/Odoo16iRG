@@ -516,6 +516,7 @@ class IrgCertificateRequest(models.Model):
                 if not p.text.strip() and not drawings:
                     p_xml.getparent().remove(p_xml)
 
+            first_text = True
             for p in doc.paragraphs:
                 txt = p.text.strip()
                 p.paragraph_format.line_spacing = 1.0
@@ -534,9 +535,14 @@ class IrgCertificateRequest(models.Model):
                 elif txt.startswith('Que '):
                     p.paragraph_format.space_before = Pt(4)
                     p.paragraph_format.space_after = Pt(6)
+                elif txt and first_text:
+                    p.paragraph_format.space_before = Pt(18)
+                    p.paragraph_format.space_after = Pt(5)
+                    first_text = False
                 else:
                     p.paragraph_format.space_before = Pt(4)
                     p.paragraph_format.space_after = Pt(5)
+
 
 
 
