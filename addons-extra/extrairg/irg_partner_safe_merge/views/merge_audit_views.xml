@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_partner_safe_merge_audit_tree" model="ir.ui.view">
+        <field name="name">irg.partner.safe.merge.audit.tree</field>
+        <field name="model">irg.partner.safe.merge.audit</field>
+        <field name="arch" type="xml">
+            <tree string="Safe merge audits" create="0" edit="0" delete="0">
+                <field name="merged_at"/>
+                <field name="master_partner_id"/>
+                <field name="origin_partner_id"/>
+                <field name="actor_id"/>
+                <field name="preview_hash" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_partner_safe_merge_audit_form" model="ir.ui.view">
+        <field name="name">irg.partner.safe.merge.audit.form</field>
+        <field name="model">irg.partner.safe.merge.audit</field>
+        <field name="arch" type="xml">
+            <form string="Safe merge audit" create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="master_partner_id"/>
+                            <field name="origin_partner_id" context="{'active_test': False}"/>
+                        </group>
+                        <group>
+                            <field name="actor_id"/>
+                            <field name="merged_at"/>
+                            <field name="preview_hash"/>
+                        </group>
+                    </group>
+                    <separator string="Recommendation"/>
+                    <field name="recommendation_reason" nolabel="1"/>
+                    <notebook>
+                        <page string="Decisions">
+                            <field name="decisions_json" nolabel="1" widget="text"/>
+                        </page>
+                        <page string="Relation inventory">
+                            <field name="inventory_json" nolabel="1" widget="text"/>
+                        </page>
+                        <page string="Applied actions">
+                            <field name="actions_json" nolabel="1" widget="text"/>
+                        </page>
+                        <page string="Before snapshot">
+                            <field name="before_snapshot_json" nolabel="1" widget="text"/>
+                        </page>
+                        <page string="After snapshot">
+                            <field name="after_snapshot_json" nolabel="1" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_partner_safe_merge_audit" model="ir.actions.act_window">
+        <field name="name">Safe merge audits</field>
+        <field name="res_model">irg.partner.safe.merge.audit</field>
+        <field name="view_mode">tree,form</field>
+        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <menuitem id="menu_irg_partner_safe_merge_audit"
+              name="Safe merge audits"
+              parent="contacts.res_partner_menu_config"
+              action="action_irg_partner_safe_merge_audit"
+              groups="base.group_system"
+              sequence="95"/>
+</odoo>

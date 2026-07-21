@@ -1,0 +1,80 @@
+Final required Odoo runtime validation - 2026-07-20
+
+Runtime precondition
+--------------------
+Command: docker version
+Result: exit 0
+Client/Server: 29.4.3
+Context: desktop-linux
+Server: Docker Desktop 4.74.0 (227015), linux/amd64
+
+Canonical compose prestate:
+- odoo_local: Up, ports 8069/8072
+- pgodoo_local: Up, port 5433
+
+Isolation
+---------
+Temporary overlay content (deleted after cleanup):
+
+services:
+  odoo_local:
+    volumes:
+      - C:/tmp/Odoo16iRG-irg-partner-safe-merge/addons-extra:/mnt/extra-addons
+      - irg_psm_val_filestore:/var/lib/odoo
+volumes:
+  irg_psm_val_filestore:
+    name: irg_psm_val_0ea0c8f_20260720_02_filestore
+
+Merged `docker compose config` result: exit 0. It resolved exactly:
+- source C:/tmp/Odoo16iRG-irg-partner-safe-merge/addons-extra -> /mnt/extra-addons
+- source irg_psm_val_filestore -> /var/lib/odoo
+- volume name irg_psm_val_0ea0c8f_20260720_02_filestore
+
+Prechecks:
+- database irg_psm_val_0ea0c8f_20260720_02: absent (catalog query exit 0, empty result)
+- volume irg_psm_val_0ea0c8f_20260720_02_filestore: absent (inspect exit 1)
+
+Clean installation and complete focused suite
+---------------------------------------------
+Command:
+docker compose -f C:\Users\admin\Documents\iRG\Odoo16iRG\docker-compose.local.yml -f C:\tmp\Odoo16iRG-irg-partner-safe-merge\missions\irg-partner-safe-merge\artifacts\docker-compose.worktree.yml run --rm --no-deps odoo_local odoo --stop-after-init --test-enable --test-tags /irg_partner_safe_merge -i irg_partner_safe_merge -d irg_psm_val_0ea0c8f_20260720_02 --log-level=error --log-handler=odoo.addons.irg_partner_safe_merge.tests.test_partner_safe_merge:INFO --log-handler=odoo.tests.stats:INFO --log-handler=odoo.tests.result:INFO --log-handler=odoo.service.model:INFO --log-handler=odoo.sql_db:ERROR
+
+Result: exit 0
+
+Exact Odoo totals:
+2026-07-20 14:18:29,670 1 INFO irg_psm_val_0ea0c8f_20260720_02 odoo.tests.stats: irg_partner_safe_merge: 33 tests 9.37s 15324 queries
+2026-07-20 14:18:29,671 1 INFO irg_psm_val_0ea0c8f_20260720_02 odoo.tests.result: 0 failed, 0 error(s) of 31 tests when loading database 'irg_psm_val_0ea0c8f_20260720_02'
+
+Installed state check before cleanup:
+Command: psql query of ir_module_module in the isolated DB
+Result: exit 0
+irg_partner_safe_merge:installed
+
+Concurrency evidence
+--------------------
+Both concurrent tests started and produced real PostgreSQL lock contention.
+Odoo retried the conflicting transaction and the complete suite remained green.
+
+Inverse confirmation:
+2026-07-20 14:18:21,700 ... Starting TestPartnerSafeMerge.test_concurrent_inverse_confirmation_blocks_loser ...
+2026-07-20 14:18:22,298 1 ERROR ? odoo.sql_db: bad query: SELECT id FROM res_partner WHERE id IN (113, 114) ORDER BY id FOR UPDATE
+ERROR: could not serialize access due to concurrent update
+2026-07-20 14:18:22,298 1 INFO ? odoo.service.model: SERIALIZATION_FAILURE, 4 tries left, try again in 1.2299 sec...
+
+Same-direction confirmation:
+2026-07-20 14:18:23,601 ... Starting TestPartnerSafeMerge.test_concurrent_same_confirmation_is_idempotent ...
+2026-07-20 14:18:24,225 1 ERROR ? odoo.sql_db: bad query: SELECT id FROM res_partner WHERE id IN (115, 116) ORDER BY id FOR UPDATE
+ERROR: could not serialize access due to concurrent update
+2026-07-20 14:18:24,225 1 INFO ? odoo.service.model: SERIALIZATION_FAILURE, 4 tries left, try again in 0.8106 sec...
+
+The serialization errors above are expected evidence of contention, not test
+failures; both retry paths completed before Odoo reported 31/31 passing.
+
+Non-target diagnostics
+----------------------
+During clean dependency installation, pre-existing modules emitted schema logs
+about NOT NULL columns (`sign_template.sale_id`, `op_course.lang`,
+`product_template.course_type`) and duplicate `ir.model.data` in
+`isep_sale_subscription_custom`. They did not abort installation: the target
+module reached state `installed`, the process exited 0 and its complete focused
+suite passed. These diagnostics are unrelated to files in the new addon scope.

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_partner_safe_merge_wizard_system,irg.partner.safe.merge.wizard system,model_irg_partner_safe_merge_wizard,base.group_system,1,1,1,1
+access_irg_partner_safe_merge_conflict_system,irg.partner.safe.merge.wizard.conflict system,model_irg_partner_safe_merge_wizard_conflict,base.group_system,1,1,1,1
+access_irg_partner_safe_merge_audit_system,irg.partner.safe.merge.audit system,model_irg_partner_safe_merge_audit,base.group_system,1,0,0,0
