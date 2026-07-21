@@ -1,3 +1,3 @@
-FIX create-hook: 0 failed, 0 error(s) of 7 tests
-Database: test_irg_agtpl_20260721_fix
-Root cause: template only on enroll_student; manual create with admission missed it.
+PRESERVE notes: 0 failed, 0 error(s) of 17 tests
+DB: test_irg_agtpl_20260721_preserve
+Modules: irg_admission_auto_gradebook_templates + irg_gradebook_partial_averages

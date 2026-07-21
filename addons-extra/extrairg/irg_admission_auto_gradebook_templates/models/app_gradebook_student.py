@@ -36,7 +36,13 @@ class AppGradebookStudent(models.Model):
         return res
 
     def _irg_assign_canonical_gradebook_template(self):
-        """Fill empty gradebook_id from course or canonical master/diplomado."""
+        """Fill empty gradebook_id from course or canonical master/diplomado.
+
+        Solo escribe gradebook_id. No crea, borra ni modifica
+        app.gradebook.result ni líneas de asignatura. Los promedios se
+        recalculan por compute; irg_gradebook_partial_averages evita
+        ponerlos a 0 cuando ya hay resultados.
+        """
         if self.env.context.get('irg_skip_canonical_template'):
             return
         for record in self:

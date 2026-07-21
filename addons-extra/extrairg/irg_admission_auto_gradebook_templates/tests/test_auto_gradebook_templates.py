@@ -165,3 +165,73 @@ class TestAutoGradebookTemplates(TransactionCase):
         self.assertFalse(gradebook.gradebook_id)
         gradebook.write({'admission_id': admission.id})
         self.assertEqual(gradebook.gradebook_id, self.solo_examen)
+
+    def test_assigning_template_preserves_existing_results(self):
+        """Aplicar plantilla con qty distinta no altera notas ni promedios."""
+        multi_exam = self.env['app.gradebook'].sudo().create({
+            'name': 'Template Multi Exam AG',
+            'gradebook_template_ids': [(0, 0, {
+                'type': 'exam',
+                'weight': 100.0,
+                'qty': 2,
+            })],
+        })
+        empty_course, subject = self._create_course(
+            'Taller Sin Template Prev',
+            'AGTPREV08',
+        )
+        empty_admission = self._create_admission(empty_course, '08a')
+        gradebook = self._create_gradebook_with_admission(empty_admission)
+        self.assertFalse(gradebook.gradebook_id)
+
+        line = self.env['app.gradebook.subject'].sudo().create({
+            'gradebook_student_id': gradebook.id,
+            'op_subject_id': subject.id,
+        })
+        result = self.env['app.gradebook.result'].sudo().create({
+            'gradebook_subject_id': line.id,
+            'survey_type': 'exam',
+            'scoring_total': 8.5,
+        })
+
+        gradebook.with_context(irg_skip_canonical_template=True).write({
+            'gradebook_id': multi_exam.id,
+        })
+        line.invalidate_recordset()
+        result.invalidate_recordset()
+
+        self.assertEqual(result.scoring_total, 8.5)
+        self.assertEqual(result.exists().id, result.id)
+        self.assertAlmostEqual(line.point_average_exam, 8.5, places=2)
+
+    def test_admission_change_preserves_existing_results(self):
+        """Cambiar admisión a máster pone Solo Examen sin tocar resultados."""
+        empty_course, subject = self._create_course(
+            'Taller Sin Template Adm',
+            'AGTPREV09',
+        )
+        master_course, _ = self._create_course(
+            'EN - Máster en Evaluación Neuropsicológica',
+            'AGTMST09',
+        )
+        empty_admission = self._create_admission(empty_course, '09a')
+        master_admission = self._create_admission(master_course, '09b')
+        gradebook = self._create_gradebook_with_admission(empty_admission)
+        line = self.env['app.gradebook.subject'].sudo().create({
+            'gradebook_student_id': gradebook.id,
+            'op_subject_id': subject.id,
+        })
+        result = self.env['app.gradebook.result'].sudo().create({
+            'gradebook_subject_id': line.id,
+            'survey_type': 'exam',
+            'scoring_total': 7.25,
+        })
+
+        gradebook.write({'admission_id': master_admission.id})
+        line.invalidate_recordset()
+        result.invalidate_recordset()
+
+        self.assertEqual(gradebook.gradebook_id, self.solo_examen)
+        self.assertEqual(result.scoring_total, 7.25)
+        self.assertEqual(result.exists().id, result.id)
+        self.assertAlmostEqual(line.point_average_exam, 7.25, places=2)
