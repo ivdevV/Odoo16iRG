@@ -101,6 +101,7 @@ class IrgCertificateRequest(models.Model):
     )
     _GRADEBOOK_COMPACT_TOP_MARGIN = Pt(42)
     _GRADEBOOK_COMPACT_BOTTOM_MARGIN = Pt(22)
+    _GRADEBOOK_COMPACT_LOGO_SPACER_AFTER = Pt(36)
     _DPTO_ACADEMICO_INTRO = 'El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona.'
 
     def _replace_dpto_academico_intro(self, doc):
@@ -1167,7 +1168,10 @@ class IrgCertificateRequest(models.Model):
                 section.bottom_margin = self._GRADEBOOK_COMPACT_BOTTOM_MARGIN
 
             if doc.paragraphs:
-                doc.paragraphs[0].paragraph_format.space_after = Pt(20)
+                # The first body paragraph is the spacer below the header logo.
+                doc.paragraphs[0].paragraph_format.space_after = (
+                    self._GRADEBOOK_COMPACT_LOGO_SPACER_AFTER
+                )
 
             for p in list(doc.paragraphs):
                 p_xml = p._p
