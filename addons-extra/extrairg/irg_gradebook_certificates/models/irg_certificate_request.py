@@ -99,6 +99,8 @@ class IrgCertificateRequest(models.Model):
     _GRADEBOOK_TEXT_RIGHT_INDENT = (
         _GRADEBOOK_PAGE_TEXT_WIDTH - _GRADEBOOK_TEXT_INDENT - _GRADEBOOK_TABLE_WIDTH
     )
+    _GRADEBOOK_COMPACT_TOP_MARGIN = Pt(42)
+    _GRADEBOOK_COMPACT_BOTTOM_MARGIN = Pt(22)
     _DPTO_ACADEMICO_INTRO = 'El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona.'
 
     def _replace_dpto_academico_intro(self, doc):
@@ -1161,8 +1163,8 @@ class IrgCertificateRequest(models.Model):
 
         if has_many_subjects:
             for section in doc.sections:
-                section.top_margin = Pt(36)
-                section.bottom_margin = Pt(28)
+                section.top_margin = self._GRADEBOOK_COMPACT_TOP_MARGIN
+                section.bottom_margin = self._GRADEBOOK_COMPACT_BOTTOM_MARGIN
 
             if doc.paragraphs:
                 doc.paragraphs[0].paragraph_format.space_after = Pt(20)

@@ -512,8 +512,8 @@ class IrgCertificateRequest(models.Model):
 
         if has_many_subjects:
             for section in doc.sections:
-                section.top_margin = Pt(36)
-                section.bottom_margin = Pt(28)
+                section.top_margin = self._GRADEBOOK_COMPACT_TOP_MARGIN
+                section.bottom_margin = self._GRADEBOOK_COMPACT_BOTTOM_MARGIN
 
             if doc.paragraphs:
                 doc.paragraphs[0].paragraph_format.space_after = Pt(20)
