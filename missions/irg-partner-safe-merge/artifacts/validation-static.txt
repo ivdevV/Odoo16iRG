@@ -1,0 +1,38 @@
+Final independent static validation - 2026-07-20
+
+Base commit: 0ea0c8fdb0ab18bfcbbfc76160920c3103fd23b7
+
+Command:
+C:\Users\admin\.local\bin\python3.11.exe addons-extra\extrairg\irg_partner_safe_merge\tests\test_static_contract.py
+
+Result: exit 0
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.026s
+
+OK
+
+Command:
+C:\Users\admin\.local\bin\python3.11.exe -c "compile every addon *.py source in memory"
+
+Result: exit 0
+compiled_in_memory=10
+
+The static contract includes Python AST checks and parsing of the addon XML/CSV files.
+
+Command:
+rg -n --glob '!**/tests/**' '\._merge\(|cr\.commit\(|DELETE\s+FROM' addons-extra/extrairg/irg_partner_safe_merge
+
+Result: exit 1, expected for no matches
+no matches
+
+Command:
+PowerShell Select-String '[ \t]+$' over addon *.py, *.xml and *.csv
+
+Result: pass
+no trailing whitespace in 14 files
+
+Command:
+git diff --check
+
+Result: exit 0, no output

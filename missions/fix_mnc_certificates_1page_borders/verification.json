@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "task": "fix_mnc_certificates_1page_borders",
+  "checks": [
+    {
+      "name": "gradebook_certificates_unit_test",
+      "command": "docker exec odoo16irg_local python3 -m unittest addons-extra/extrairg/irg_gradebook_certificates/tests/test_certificate_request.py",
+      "result": "pass",
+      "detail": "test_19_mnc_23_subjects_fits_one_page_and_fixes_borders passed (1 page PDF, row 12 dee2e6 border, row 23 000000 border)",
+      "evidence": "missions/fix_mnc_certificates_1page_borders/execution.md"
+    },
+    {
+      "name": "certificate_partial_unit_test",
+      "command": "docker exec odoo16irg_local python3 -m unittest addons-extra/extrairg/irg_certificate_partial/tests/test_partial.py",
+      "result": "pass",
+      "detail": "test_09_partial_mnc_23_subjects_fits_one_page_and_fixes_borders passed (1 page PDF, row 12 dee2e6 border, row 23 000000 border)",
+      "evidence": "missions/fix_mnc_certificates_1page_borders/execution.md"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_db",
+    "base_commit": "HEAD"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "missions/fix_mnc_certificates_1page_borders/execution.md",
+    "missions/fix_mnc_certificates_1page_borders/plan.md"
+  ]
+}

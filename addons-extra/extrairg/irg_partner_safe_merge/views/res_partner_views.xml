@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_irg_safe_merge" model="ir.ui.view">
+        <field name="name">res.partner.form.irg.safe.merge</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Safe merge" groups="base.group_system"
+                       attrs="{'invisible': [('irg_merged_into_partner_id', '=', False)]}">
+                    <field name="irg_merged_into_partner_id" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_server_irg_partner_safe_merge" model="ir.actions.server">
+        <field name="name">Safe merge</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">list</field>
+        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_irg_safe_merge()</field>
+    </record>
+</odoo>

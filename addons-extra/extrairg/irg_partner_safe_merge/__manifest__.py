@@ -1,0 +1,27 @@
+{
+    "name": "IRG Partner Safe Merge",
+    "version": "16.0.1.0.0",
+    "category": "Contacts",
+    "summary": "Atomic and auditable consolidation of duplicate personal contacts",
+    "author": "IRG",
+    "license": "LGPL-3",
+    "depends": [
+        "contacts",
+        "crm",
+        "sale",
+        "mail",
+        "website_slides",
+        "openeducat_core",
+        "openeducat_admission",
+        "isep_gradebook",
+        "isep_sale_subscription_extension",
+    ],
+    "data": [
+        "security/ir.model.access.csv",
+        "views/partner_safe_merge_wizard_views.xml",
+        "views/res_partner_views.xml",
+        "views/merge_audit_views.xml",
+    ],
+    "installable": True,
+    "application": False,
+}

@@ -347,8 +347,9 @@ class IrgCertificateRequest(models.Model):
             if not exam_results or len(exam_results) < qty_configured:
                 note_str = 'Pendiente'
             else:
-                note_str = '%.2f' % (subj.final_subject_note or 0.0)
-                valid_notes.append(subj.final_subject_note or 0.0)
+                grade_value = self._certificate_grade_value(subj.final_subject_note)
+                note_str = self._format_certificate_grade(subj.final_subject_note)
+                valid_notes.append(grade_value)
                 
             subject_notes.append({
                 'code': subj.op_subject_id.code or '',
@@ -432,6 +433,10 @@ class IrgCertificateRequest(models.Model):
                 self._format_partial_body_paragraph(para, justify=False)
                 para.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
 
+        has_many_subjects = len(subject_notes) > 15
+        sp_after_body = Pt(4) if has_many_subjects else Pt(12)
+        sp_after_p3 = Pt(7) if has_many_subjects else Pt(12)
+
         for para in list(doc.paragraphs):
             full_text = ''.join(r.text for r in para.runs)
             if target_text in full_text:
@@ -444,7 +449,7 @@ class IrgCertificateRequest(models.Model):
                     (' durante el período académico %s.' % periodo_str, False),
                 ])
                 self._format_partial_body_paragraph(para, justify=True)
-                para.paragraph_format.space_after = Pt(12)
+                para.paragraph_format.space_after = sp_after_body
                 
                 # Crear el segundo párrafo copiando estilo, márgenes y alineación justificada
                 p_2 = doc.add_paragraph(sentence_2)
@@ -452,7 +457,7 @@ class IrgCertificateRequest(models.Model):
                 self._format_partial_body_paragraph(p_2, justify=True)
                 p_2.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
                 p_2.paragraph_format.space_before = para.paragraph_format.space_before
-                p_2.paragraph_format.space_after = Pt(12)
+                p_2.paragraph_format.space_after = sp_after_body
                 p_2.paragraph_format.line_spacing = para.paragraph_format.line_spacing
                 para._p.addnext(p_2._p)
                 
@@ -462,10 +467,11 @@ class IrgCertificateRequest(models.Model):
                 self._format_partial_body_paragraph(p_3, justify=True)
                 p_3.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
                 p_3.paragraph_format.space_before = para.paragraph_format.space_before
-                p_3.paragraph_format.space_after = Pt(12)
+                p_3.paragraph_format.space_after = sp_after_p3
                 p_3.paragraph_format.line_spacing = para.paragraph_format.line_spacing
                 p_2._p.addnext(p_3._p)
                 break
+
 
         replacements = {
             '<<NombreAlumno>>': partner.name or '',
@@ -500,6 +506,64 @@ class IrgCertificateRequest(models.Model):
                         for old, new in replacements.items():
                             self._replace_in_paragraph(para, old, new)
 
+        # Check if course has many subjects (e.g. MNC with 23 subjects)
+        has_many_subjects = len(subject_notes) > 15
+        target_row_height = '235' if has_many_subjects else '315'
+        table_font_size = Pt(7.5) if has_many_subjects else (Pt(7.5) if is_physical else (top_font_size or Pt(7.5)))
+
+        if has_many_subjects:
+            for section in doc.sections:
+                section.top_margin = self._GRADEBOOK_COMPACT_TOP_MARGIN
+                section.bottom_margin = self._GRADEBOOK_COMPACT_BOTTOM_MARGIN
+
+            if doc.paragraphs:
+                # The first body paragraph is the spacer below the header logo.
+                doc.paragraphs[0].paragraph_format.space_after = (
+                    self._GRADEBOOK_COMPACT_LOGO_SPACER_AFTER
+                )
+
+            # Keep the first paragraph even if empty: it is the logo spacer.
+            for p in list(doc.paragraphs)[1:]:
+                p_xml = p._p
+                drawings = p_xml.findall('.//' + qn('w:drawing')) + p_xml.findall('.//' + qn('w:pict'))
+                if not p.text.strip() and not drawings:
+                    p_xml.getparent().remove(p_xml)
+
+            for p in doc.paragraphs[1:]:
+                txt = p.text.strip()
+                p.paragraph_format.line_spacing = 1.0
+                if 'CERTIFICA' in txt:
+                    p.paragraph_format.space_before = Pt(14)
+                    p.paragraph_format.space_after = Pt(14)
+                elif 'Las calificaciones obtenidas son:' in txt:
+                    p.paragraph_format.space_before = Pt(8)
+                    p.paragraph_format.space_after = Pt(10)
+                elif 'Para que así conste' in txt:
+                    p.paragraph_format.space_before = Pt(8)
+                    p.paragraph_format.space_after = Pt(4)
+                elif (
+                    'con CIF' in txt
+                    or 'con DNI' in txt
+                    or 'en calidad de Director' in txt
+                ):
+                    # Issuer intro line above CERTIFICA.
+                    p.paragraph_format.space_before = Pt(4)
+                    p.paragraph_format.space_after = Pt(14)
+                elif txt.startswith('Que '):
+                    p.paragraph_format.space_before = Pt(12)
+                    p.paragraph_format.space_after = Pt(6)
+                elif 'Departamento Académico' in txt or txt.startswith('Raimon Gaja'):
+                    p.paragraph_format.space_before = Pt(4)
+                    p.paragraph_format.space_after = Pt(2)
+                else:
+                    p.paragraph_format.space_before = Pt(4)
+                    p.paragraph_format.space_after = Pt(5)
+
+
+
+
+
+
         # Rellenar la tabla de notas
         table = doc.tables[0]
         tbl_xml = table._tbl
@@ -510,7 +574,7 @@ class IrgCertificateRequest(models.Model):
         for idx, row_xml in enumerate(data_rows):
             cells = row_xml.findall(qn('w:tc'))
             if idx < len(subject_notes):
-                # Normalize row height to 315 dxa with hRule="atLeast"
+                # Normalize row height with hRule="atLeast"
                 trPr = row_xml.find(qn('w:trPr'))
                 if trPr is None:
                     trPr = row_xml.makeelement(qn('w:trPr'), {})
@@ -518,7 +582,7 @@ class IrgCertificateRequest(models.Model):
                 for h in trPr.findall(qn('w:trHeight')):
                     trPr.remove(h)
                 trHeight = trPr.makeelement(qn('w:trHeight'), {
-                    qn('w:val'): '315',
+                    qn('w:val'): target_row_height,
                     qn('w:hRule'): 'atLeast',
                 })
                 trPr.append(trHeight)
@@ -558,7 +622,7 @@ class IrgCertificateRequest(models.Model):
             for idx in range(len(data_rows), len(subject_notes)):
                 subj_data = subject_notes[idx]
                 new_row = deepcopy(ref_row)
-                # Normalize row height to 315 dxa with hRule="atLeast"
+                # Normalize row height with hRule="atLeast"
                 trPr = new_row.find(qn('w:trPr'))
                 if trPr is None:
                     trPr = new_row.makeelement(qn('w:trPr'), {})
@@ -566,7 +630,7 @@ class IrgCertificateRequest(models.Model):
                 for h in trPr.findall(qn('w:trHeight')):
                     trPr.remove(h)
                 trHeight = trPr.makeelement(qn('w:trHeight'), {
-                    qn('w:val'): '315',
+                    qn('w:val'): target_row_height,
                     qn('w:hRule'): 'atLeast',
                 })
                 trPr.append(trHeight)
@@ -586,6 +650,47 @@ class IrgCertificateRequest(models.Model):
                                     break
                             break
                 footer_row.addprevious(new_row)
+
+        # Normalize cell top and bottom borders and remove cell shading for all data rows
+        all_data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
+        for r_idx, r_xml in enumerate(all_data_rows):
+            for c in r_xml.findall(qn('w:tc')):
+                tcPr = c.find(qn('w:tcPr'))
+                if tcPr is None:
+                    tcPr = c.makeelement(qn('w:tcPr'), {})
+                    c.insert(0, tcPr)
+                for shd in tcPr.findall(qn('w:shd')):
+                    tcPr.remove(shd)
+                tcBorders = tcPr.find(qn('w:tcBorders'))
+                if tcBorders is None:
+                    tcBorders = tcPr.makeelement(qn('w:tcBorders'), {})
+                    tcPr.append(tcBorders)
+                for b_name in ('top', 'bottom'):
+                    for b in tcBorders.findall(qn(f'w:{b_name}')):
+                        tcBorders.remove(b)
+                t_elem = tcBorders.makeelement(qn('w:top'), {
+                    qn('w:val'): 'single',
+                    qn('w:color'): 'dee2e6',
+                    qn('w:sz'): '5',
+                    qn('w:space'): '0',
+                })
+                tcBorders.append(t_elem)
+                if r_idx < len(all_data_rows) - 1:
+                    b_elem = tcBorders.makeelement(qn('w:bottom'), {
+                        qn('w:val'): 'single',
+                        qn('w:color'): 'dee2e6',
+                        qn('w:sz'): '5',
+                        qn('w:space'): '0',
+                    })
+                else:
+                    b_elem = tcBorders.makeelement(qn('w:bottom'), {
+                        qn('w:val'): 'single',
+                        qn('w:color'): '000000',
+                        qn('w:sz'): '10',
+                        qn('w:space'): '0',
+                    })
+                tcBorders.append(b_elem)
+
 
         # Nota Media
         footer_cells = footer_row.findall(qn('w:tc'))
@@ -635,15 +740,13 @@ class IrgCertificateRequest(models.Model):
                 for r in para.runs:
                     r.font.size = Pt(9.25)
 
-        if top_font_size:
-            table_font_size = Pt(7.5) if is_physical else top_font_size
-            for tbl in doc.tables:
-                for row in tbl.rows:
-                    for cell in row.cells:
-                        for para in cell.paragraphs:
-                            for r in para.runs:
-                                if r.font:
-                                    r.font.size = table_font_size
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        for r in para.runs:
+                            if r.font:
+                                r.font.size = table_font_size
 
         tmp_docx = tempfile.NamedTemporaryFile(
             suffix='.docx', delete=False, prefix='cert_partial_'

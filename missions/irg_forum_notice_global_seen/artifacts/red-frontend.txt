@@ -1,0 +1,42 @@
+Task 4 RED — replacement frontend asset absent
+
+Focused command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -i irg_forum_notice_global_seen --test-enable --test-tags '/irg_forum_notice_global_seen:TestForumNoticeGlobalSeen.test_frontend_replacement_asset_contract' --stop-after-init --log-level=test
+
+Valid deterministic RED before any JS/manifest production change:
+
+```text
+Starting TestForumNoticeGlobalSeen.test_frontend_replacement_asset_contract ...
+FAIL: TestForumNoticeGlobalSeen.test_frontend_replacement_asset_contract
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_forum_notice_global_seen/tests/test_forum_notice_global_seen.py", line 110, in test_frontend_replacement_asset_contract
+    self.assertEqual(frontend_assets.count(parent_asset), 1)
+AssertionError: 0 != 1
+odoo.tests.stats: irg_forum_notice_global_seen: 3 tests 0.14s 227 queries
+odoo.tests.result: 1 failed, 0 error(s) of 1 tests when loading database
+'test_irg_forum_global_seen'
+```
+
+Exit code: 1. The failure is functional and expected: the child manifest had
+no frontend asset replacement yet. The remainder of the same test already
+specified the required replacement file, data-notice-id hook, page-session
+suppression, one-request-per-notice map, `{ok: false}` failure handling,
+suppression-before-await, and awaited open/navigation ordering.
+
+Browser environment blockers (not counted as RED):
+
+1. The full module run omitted the browser scenario before executing its JS:
+   `skipped ... : websocket-client module is not installed`.
+2. Retrying the focused scenario with `websocket-client` installed only under
+   the ephemeral container's `/tmp` reached the next environment check and
+   omitted it with: `skipped ... : Chrome executable not found`.
+3. Browser runtime discovery returned no controllable browsers. An attempt to
+   install Chromium inside another disposable container was stopped after the
+   unprivileged image reported:
+   `E: List directory /var/lib/apt/lists/partial is missing. - Acquire (13:
+   Permission denied)`.
+
+Per the Task 4 direction, these objective environment limitations justify the
+browser check being skipped. No application assertion failure was reclassified
+as an environment skip. Every runtime command used the mission overlay and
+ephemeral `run --rm --no-deps`; no shared service was recreated or repointed.

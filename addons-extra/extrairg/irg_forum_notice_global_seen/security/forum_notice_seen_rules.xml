@@ -1,0 +1,32 @@
+<odoo>
+    <record id="irg_forum_notice_seen_rule_user_own" model="ir.rule">
+        <field name="name">Forum notice seen: internal users own rows</field>
+        <field name="model_id" ref="irg_forum_notice_popup.model_irg_forum_notice_seen"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+    <record id="irg_forum_notice_seen_rule_portal_own" model="ir.rule">
+        <field name="name">Forum notice seen: portal users own rows</field>
+        <field name="model_id" ref="irg_forum_notice_popup.model_irg_forum_notice_seen"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+    <record id="irg_forum_notice_seen_rule_system_all" model="ir.rule">
+        <field name="name">Forum notice seen: system users all rows</field>
+        <field name="model_id" ref="irg_forum_notice_popup.model_irg_forum_notice_seen"/>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+</odoo>

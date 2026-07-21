@@ -1,0 +1,49 @@
+Independent preliminary Odoo validation — 2026-07-20
+
+The isolated database was dropped before the test through the mission overlay
+and `docker compose ... run --rm --no-deps`. The complete command was:
+
+docker compose -f <main>/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -i irg_forum_notice_global_seen --test-enable --test-tags /irg_forum_notice_global_seen --stop-after-init --log-level=test
+
+Result: PASS (exit 0)
+- 23 post-test methods in 15.44s.
+- Odoo stats: 27 tests, 4.46s, 2055 queries.
+- Odoo result: 0 failed, 0 error(s) of 23 tests.
+- 22 methods completed and exactly 1 was skipped.
+
+Skipped method:
+TestForumNoticeGlobalSeenHttp.test_browser_dismiss_persists_before_next_poll
+
+Exact Odoo reason: websocket-client module is not installed.
+Fresh image probe: {"websocket_client_available": false, "chrome": null}.
+
+Browser behavior was not executed or claimed. Frontend contract and live asset
+resolution were validated separately.
+
+Final documented-tree run — 2026-07-20
+
+Preparation: test_irg_forum_global_seen was absent before the run.
+Command: docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -i irg_forum_notice_global_seen --test-enable --test-tags /irg_forum_notice_global_seen --stop-after-init --log-level=test
+
+Result: PASS (exit 0)
+- 23 post-test methods in 14.93s, 2526 queries.
+- Odoo stats: 27 tests in 3.85s, 2055 queries.
+- Odoo result: 0 failed, 0 error(s) of 23 tests.
+- 22 methods completed; exactly 1 browser method skipped.
+- Exact skip: websocket-client module is not installed.
+- Fresh image probe: {"websocket_client_available": false, "chrome": null}.
+
+Browser behavior was not executed or claimed in the final run.
+
+Evidence-fix rerun: 23 post-tests in 14.70s; stats 27 tests in 3.93s;
+0 failed, 0 errors, exactly one websocket-client browser skip.
+Exact probe command:
+`docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local python3 - < missions/irg_forum_notice_global_seen/artifacts/final_browser_probe.py`
+Output: `{"chrome": null, "websocket_client_available": false}`.
+
+Final-review implementation-wave clean suite — 2026-07-20
+
+Database `test_irg_forum_global_seen_finalreview` was absent before `-i`.
+Exact command: `docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen_finalreview -i irg_forum_notice_global_seen --test-enable --test-tags /irg_forum_notice_global_seen --stop-after-init --log-level=test`.
+
+Result: PASS, exit 0. 28 methods attempted, 27 completed, one browser skip, 0 failures and 0 errors. Odoo stats: 31 tests, 4.53s, 2356 queries. Exact skip: `websocket-client module is not installed`. The XSS, unrelated-integrity, real course-less student and synchronized concurrent-transaction regressions all ran and passed. Logged foreign-key and unique violations are expected assertions/recovery events, not suite failures.

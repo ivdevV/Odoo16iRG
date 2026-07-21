@@ -1,0 +1,51 @@
+Task 3 RED — controller/global discovery routes absent
+
+Command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -i irg_forum_notice_global_seen --test-enable --test-tags /irg_forum_notice_global_seen --stop-after-init --log-level=test
+
+Valid RED result (before creating controller production files):
+- TestForumNoticeGlobalSeenHttp.test_mark_seen_without_course_id: FAIL,
+  parent route returned {'ok': False} instead of {'ok': True}.
+- TestForumNoticeGlobalSeenHttp.test_course_mark_seen_route_uses_global_state:
+  FAIL, parent route wrote no global row.
+- TestForumNoticeGlobalSeenHttp.test_same_post_is_suppressed_after_seen_from_any_course:
+  FAIL, parent course discovery returned the globally seen post.
+- TestForumNoticeGlobalSeenHttp.test_any_campus_discovery_uses_global_state:
+  FAIL, parent campus discovery returned the globally seen post.
+- Internal/portal ORM and generic-RPC negatives, private-method RPC rejection,
+  public/invalid/invisible route negatives, and system/sudo controls passed.
+
+odoo.tests.result: 4 failed, 0 error(s) of 20 tests when loading database
+'test_irg_forum_global_seen'
+Exit code: 1.
+
+Fixture correction before counting RED:
+`op.course.code` is required in this checkout. The brief's two HTTP course
+fixtures were given unique codes `GS-HTTP-A` and `GS-HTTP-B` before this run.
+
+Reviewer regression RED — no course context:
+
+The same full module command was run after adding
+`test_any_campus_suppresses_seen_post_without_course_context` and before the
+production override. The first attempt was not counted: equal-second
+`create_date` values made the parent select the class fixture post instead of
+the new post. The fixture was corrected by deactivating that prior candidate.
+
+Valid RED output:
+
+```text
+Starting TestForumNoticeGlobalSeenHttp.test_any_campus_suppresses_seen_post_without_course_context ...
+FAIL: TestForumNoticeGlobalSeenHttp.test_any_campus_suppresses_seen_post_without_course_context
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_forum_notice_global_seen/tests/test_forum_notice_global_seen.py", line 514, in test_any_campus_suppresses_seen_post_without_course_context
+    self.assertTrue(
+AssertionError: False is not true
+odoo.tests.stats: irg_forum_notice_global_seen: 25 tests 3.62s 2045 queries
+odoo.tests.result: 1 failed, 0 error(s) of 21 tests when loading database
+'test_irg_forum_global_seen'
+```
+
+The preceding assertion proved that the unrestricted post was the selected
+candidate before marking. The failure proves the same post was returned again
+after its global seen row was created while `course_id` remained false.
+Exit code: 1.

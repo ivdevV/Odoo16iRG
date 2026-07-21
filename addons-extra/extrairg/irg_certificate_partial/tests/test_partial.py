@@ -792,5 +792,125 @@ class TestIrgCertificatePartial(TransactionCase):
         if 'l10n_latam_identification_type_id' in self.partner._fields:
             self.assertNotIn('DNI PARTNER-VAT-999', paragraph_text)
 
+    def test_09_partial_mnc_23_subjects_fits_one_page_and_fixes_borders(self):
+        """Verify that partial MNC certificates with 23 subjects generate 1 page PDF and normalize table row borders."""
+        course_mnc = self.env['op.course'].create({
+            'name': 'Máster en Neuropsicología Clínica basada en la Evidencia',
+        })
+        gradebook_mnc = self.env['app.gradebook.student'].create({
+            'student_id': self.student.id,
+            'course_id': course_mnc.id,
+            'total_final': 8.50,
+        })
+        for i in range(1, 24):
+            code = f'EN{i:02d}' if i <= 12 else f'RN{i-12:02d}'
+            subj = self.env['op.subject'].create({'name': f'Subject {i}', 'code': code})
+            self.env['app.gradebook.subject'].create({
+                'gradebook_student_id': gradebook_mnc.id,
+                'op_subject_id': subj.id,
+                'final_subject_note': 9.00,
+            })
 
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': gradebook_mnc.id,
+            'certificate_type': 'digital',
+            'document_type': 'gradebook_partial',
+            'signer': 'raimon',
+            'state': 'draft',
+        })
+        res_docx = cert._fill_template()
+        doc = DocxDocument(res_docx)
+        self.assertEqual(doc.sections[0].top_margin.pt, 48.0)
+        self.assertEqual(doc.sections[0].bottom_margin.pt, 20.0)
+        self.assertEqual(doc.paragraphs[0].paragraph_format.space_after.pt, 36.0)
+        tbl_xml = doc.tables[0]._tbl
+        all_data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
+        self.assertEqual(len(all_data_rows), 23)
+
+        # Check row 11 (EN12 / 12th data row) has thin bottom border dee2e6 and no shading
+        row_12_tc = all_data_rows[11].findall(qn('w:tc'))[0]
+        row_12_border = row_12_tc.find('.//' + qn('w:bottom'))
+        self.assertIsNotNone(row_12_border)
+        self.assertEqual(row_12_border.attrib.get(qn('w:color')), 'dee2e6')
+        self.assertEqual(len(row_12_tc.findall('.//' + qn('w:shd'))), 0)
+
+        # Check row 12 (RN01 / 13th data row) has thin top border dee2e6
+        row_13_tc = all_data_rows[12].findall(qn('w:tc'))[0]
+        row_13_top = row_13_tc.find('.//' + qn('w:top'))
+        self.assertIsNotNone(row_13_top)
+        self.assertEqual(row_13_top.attrib.get(qn('w:color')), 'dee2e6')
+
+        # Check row 22 (23rd data row) has thick bottom border 000000 and no shading
+        last_row_tc = all_data_rows[22].findall(qn('w:tc'))[0]
+        last_row_border = last_row_tc.find('.//' + qn('w:bottom'))
+        self.assertIsNotNone(last_row_border)
+        self.assertEqual(last_row_border.attrib.get(qn('w:color')), '000000')
+        self.assertEqual(len(last_row_tc.findall('.//' + qn('w:shd'))), 0)
+
+
+        # Verify PDF conversion yields 1 page
+        pdf_bytes = cert._convert_to_pdf(res_docx)
+        import fitz
+        pdf_doc = fitz.open(stream=pdf_bytes, filetype='pdf')
+        self.assertEqual(len(pdf_doc), 1, f"Expected 1 page for partial MNC gradebook certificate, got {len(pdf_doc)}")
+
+    def test_10_partial_grades_below_seven_display_as_zero(self):
+        """Completed subject grades below 7 must appear as 0.00 in partial certificates."""
+        from docx.oxml.ns import qn
+
+        subject_low = self.env['op.subject'].create({
+            'name': 'Partial Low Grade',
+            'code': 'PLOW01',
+            'course_id': self.course.id,
+            'subject_type': 'compulsory',
+        })
+        gb_low = self.env['app.gradebook.subject'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'op_subject_id': subject_low.id,
+            'final_subject_note': 6.25,
+        })
+        self.env['app.gradebook.result'].create({
+            'gradebook_subject_id': gb_low.id,
+            'survey_type': 'exam',
+            'scoring_total': 6.0,
+        })
+        self.env['app.gradebook.result'].create({
+            'gradebook_subject_id': gb_low.id,
+            'survey_type': 'exam',
+            'scoring_total': 6.5,
+        })
+        gb_low.compute_final_subject_note()
+        gb_low.compute_point_average()
+        gb_low.write({'final_subject_note': 6.25})
+
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+        res_docx = cert._fill_template()
+        doc = DocxDocument(res_docx)
+        tbl_xml = doc.tables[0]._tbl
+        data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
+
+        def row_texts(row_xml):
+            texts = []
+            for cell in row_xml.findall(qn('w:tc')):
+                texts.append(''.join(
+                    t.text or ''
+                    for p in cell.findall(qn('w:p'))
+                    for r in p.findall(qn('w:r'))
+                    for t in r.findall(qn('w:t'))
+                ).strip())
+            return texts
+
+        grades_by_code = {
+            row_texts(row)[0]: row_texts(row)[2]
+            for row in data_rows
+        }
+        self.assertEqual(grades_by_code['PLOW01'], '0.00')
+        self.assertEqual(grades_by_code['SCB'], 'Pendiente')
+        self.assertNotEqual(grades_by_code['SCA'], '0.00')
+        self.assertNotEqual(grades_by_code['SCA'], 'Pendiente')
 

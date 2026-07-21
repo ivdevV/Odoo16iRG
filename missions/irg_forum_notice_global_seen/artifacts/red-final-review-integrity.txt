@@ -1,0 +1,13 @@
+Final-review TDD RED: unrelated integrity violations must propagate
+
+Command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -u irg_forum_notice_global_seen --test-enable --test-tags '/irg_forum_notice_global_seen:TestForumNoticeGlobalSeen.test_non_unique_integrity_errors_are_not_swallowed' --stop-after-init --log-level=test
+
+Result: FAIL (expected RED), exit code 1.
+
+Relevant failure:
+AssertionError: ForeignKeyViolation not raised
+
+The PostgreSQL log showed a real foreign-key violation for user_id=2147483647. The model's broad `except IntegrityError` swallowed that unrelated violation, proving that duplicate recovery must catch only UniqueViolation.
+
+Odoo test summary: 1 failed, 0 errors; stats 3 tests / 0.15s / 239 queries.

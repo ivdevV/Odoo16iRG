@@ -1,0 +1,44 @@
+Independent cleanup and scope validation — 2026-07-20
+
+Identified before cleanup: 3 fixture users, 2 courses, 2 batches and 3 posts.
+
+PASS:
+- ephemeral server stopped, `--rm` container removed and port 18069 closed;
+- isolated `test_irg_forum_global_seen` database removed and absence asserted;
+- persistent Odoo, PostgreSQL and Redis services remained Up;
+- persistent Odoo still mounts the main checkout's `addons-extra`, not the
+  worktree;
+- only the new addon and mission directories appear in worktree status;
+- no tracked existing addon has a diff and no `__pycache__` remains;
+- README is intentionally absent at this pre-documentation gate;
+- Git/whitespace checks passed;
+- main checkout predating dirty paths match the mission opening record.
+
+No shared service was executed into, recreated or repointed. Base commit:
+ff32a4022fab7f16d621ed471729e1a3efc85c27.
+
+Final documented-tree cleanup/restoration — 2026-07-20
+
+- Identified final fixtures: 3 users, 2 courses, 2 batches and 3 posts.
+- Dropped test_irg_forum_global_seen and asserted pg_database count zero.
+- No ephemeral run container remained and port 18069 was closed.
+- Persistent Odoo, PostgreSQL and Redis remained Up.
+- Persistent Odoo still mounts the main checkout at /mnt/extra-addons.
+- Final scope contains only new addon, mission and reusable knowledge entry;
+  no existing addon has a tracked diff.
+- Main checkout predating dirty paths remain unchanged from mission opening.
+
+Exact database cleanup command executed successfully:
+`docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local python3 - < missions/irg_forum_notice_global_seen/artifacts/final_cleanup.py`
+
+Exact scope/restoration command executed successfully:
+`bash missions/irg_forum_notice_global_seen/artifacts/final_scope_validation.sh`.
+
+Final-review implementation-wave cleanup — 2026-07-20
+
+- Dropped the exact isolated databases `test_irg_forum_global_seen_finalreview`, `test_irg_forum_global_seen_fix` and `test_irg_forum_global_seen`; a pg_database query returned no rows for all three.
+- Removed generated addon `__pycache__` and asserted none remains.
+- Exact porcelain allowlist matched only knowledge, new addon and mission.
+- Exact services matched `odoo_local`, `pgodoo_local`, `redisodoo_local`.
+- No one-off Odoo container remained; port 18069 was closed.
+- Persistent Odoo still mounted the main checkout; scope script PASS.

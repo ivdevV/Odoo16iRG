@@ -1,0 +1,46 @@
+Independent scenario validation — 2026-07-20
+
+The clean module suite passed all non-browser scenarios. Additional fresh
+authenticated HTTP assertions ran on an ephemeral server at port 18069:
+
+- courseless_once: PASS user=74 post=19
+- independent_users: PASS users=74,73 post=19
+- multicourse_single_dismissal: PASS user=72 courses=50,51 post=17
+- legacy_cross_course_suppression: PASS user=72 legacy_course=50,
+  discovery_course=51, post=17, global count zero
+- batch_exclusion_discovery_and_mark: PASS user=72 batch=15 post=18;
+  discovery omitted it, mark returned {ok: false}, global count remained zero
+
+The clean suite also passed internal/portal ORM and RPC denials with
+before/after no-mutation assertions, private method RPC rejection,
+public/invalid/missing-post rejection, idempotence, independent-user state and
+trusted sudo/system controls.
+
+Fixture limitations: attempt 1 rolled back because `op.batch.end_date` is
+required; attempt 2 rolled back because `op.admission.register_id` is required.
+The passing fixture used supported direct `res.users.op_batch_ids`, with both
+effective course and batch sets asserted first. Failed attempts committed no
+data, and successful fixtures were removed with the isolated database.
+
+Final documented-tree HTTP revalidation — 2026-07-20
+
+- final_courseless_once: PASS (user 73, post 19).
+- final_independent_users: PASS (users 73 and 72, post 19).
+- final_multicourse_single_dismissal: PASS (user 71, courses 46 and 47,
+  post 17; both effective course and batch sets asserted).
+- final_legacy_cross_course: PASS (legacy course 46 suppressed discovery from
+  course 47 with global count zero).
+- final_batch_exclusion: PASS (user 71, batch 12, post 18; any-campus and
+  course discovery omitted it, mark returned {ok: false}, no global row).
+- The clean final suite freshly repeated internal/portal ORM/RPC denial,
+  private method rejection, public/inaccessible-post denial and no-mutation
+  assertions with 0 failures/errors.
+
+Exact setup command executed successfully:
+`docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo shell -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen --no-http < missions/irg_forum_notice_global_seen/artifacts/final_scenario_setup.py`
+
+Exact ephemeral server command used:
+`docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps -p 127.0.0.1:18069:8069 odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen --http-port=8069 --log-level=warn`
+
+Exact scenario/assets command executed successfully:
+`python3 missions/irg_forum_notice_global_seen/artifacts/final_http_validation.py`

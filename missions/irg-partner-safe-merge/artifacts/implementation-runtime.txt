@@ -1,0 +1,38 @@
+Implementation runtime evidence - 2026-07-20
+
+Scope and isolation
+- Base commit: 0ea0c8fdb0ab18bfcbbfc76160920c3103fd23b7.
+- Canonical runtime: C:\Users\admin\Documents\iRG\Odoo16iRG\docker-compose.local.yml.
+- Temporary overlay mounted C:/tmp/Odoo16iRG-irg-partner-safe-merge/addons-extra at /mnt/extra-addons and the dedicated volume irg_psm_impl_0ea0c8f_20260720_02_filestore at /var/lib/odoo.
+- The canonical odoo_local and pgodoo_local services were Up before the run and were not recreated.
+
+TDD regression
+- RED command: focused install/test for TestPartnerSafeMerge.test_preview_skips_abstract_partner_model_without_id on DB irg_psm_impl_0ea0c8f_20260720_02_red.
+- RED result: exit 1; 0 failed, 1 error of 1 test. Exact cause: ValueError: Invalid field 'id' on model 'hr.employee.base'.
+- GREEN command: same focused test with -u irg_partner_safe_merge after the production fix.
+- GREEN result: exit 0; 0 failed, 0 errors of 1 test.
+
+Focused runtime corrections
+- Category/follower union plus same/inverse concurrent confirmations: exit 0; 0 failed, 0 errors of 3 tests.
+- Camila-equivalent graph: exit 0; 0 failed, 0 errors of 1 test.
+- Both concurrent cases demonstrated real contention: PostgreSQL emitted SerializationFailure on SELECT ... FOR UPDATE, Odoo service.model.retrying logged a retry, and the final idempotent/inverse assertions passed with one audit.
+
+Complete suites
+- Upgrade run on DB irg_psm_impl_0ea0c8f_20260720_02_red: exit 0; 31 post-tests in 7.96s, 15325 queries; 0 failed, 0 errors of 31 tests.
+- Clean installation on fresh DB irg_psm_impl_0ea0c8f_20260720_03_green: exit 0; 31 post-tests in 9.92s, 15324 queries; 0 failed, 0 errors of 31 tests.
+
+Static implementation checks
+- python3.11 addons-extra/extrairg/irg_partner_safe_merge/tests/test_static_contract.py: exit 0; Ran 8 tests in 0.025s; OK.
+- python3.11 -m compileall -q addons-extra/extrairg/irg_partner_safe_merge: exit 0.
+- Forbidden production primitives scan: no matches (rg exit 1 is the expected no-match result).
+- git diff --check: exit 0.
+
+Cleanup and restoration
+- Both implementation DBs were dropped with dropdb --force; the post-cleanup catalog query returned no rows.
+- Dedicated filestore volume was removed; docker volume inspect returned no such volume as expected.
+- No odoo_local run containers remain and the temporary overlay was removed with apply_patch.
+- Canonical services remain running. Canonical SHA256 values are unchanged:
+  docker-compose.local.yml 11F6D052BE34E313A42D733A69E7E73D125A107CAD9B5C2CE5798FA2ED4EA49C
+  etc/odoo.local.conf       8A00253579D8E009F8AF91091C0E0034F78B1208BCAB9F9CEC6A71F3AFA1B299
+
+This is coder-owned implementation evidence. It does not replace the required independent Validation gate.

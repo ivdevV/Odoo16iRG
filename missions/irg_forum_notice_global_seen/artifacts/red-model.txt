@@ -1,0 +1,26 @@
+Task 2 RED — global model registration
+
+Full-suite command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -i irg_forum_notice_global_seen --test-enable --test-tags /irg_forum_notice_global_seen --stop-after-init --log-level=test
+
+Result: expected RED; 1 failed, 0 errors of 10 tests. The registration
+test failed and the nine tests that require the absent model were skipped,
+preventing a misleading KeyError.
+
+Focused command used to preserve the concise assertion:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg_forum_notice_global_seen/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_forum_global_seen -u irg_forum_notice_global_seen --test-enable --test-tags '/irg_forum_notice_global_seen:TestForumNoticeGlobalSeen.test_global_seen_model_is_registered' --stop-after-init --log-level=test
+
+FAIL: TestForumNoticeGlobalSeen.test_global_seen_model_is_registered
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_forum_notice_global_seen/tests/test_forum_notice_global_seen.py", line 65, in test_global_seen_model_is_registered
+    self.assertTrue(
+AssertionError: False is not true : irg.forum.notice.global.seen is absent from the registry
+
+odoo.tests.result: 1 failed, 0 error(s) of 1 tests when loading database
+'test_irg_forum_global_seen'
+Exit code: 1 (expected RED).
+
+Pre-RED fixture correction: the first infrastructure run stopped in
+setUpClass because this checkout requires op.course.code. Codes were added to
+the test fixture before any production model/security code existed; that run
+is not counted as functional RED.

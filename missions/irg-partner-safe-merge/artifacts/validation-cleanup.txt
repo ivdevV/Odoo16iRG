@@ -1,0 +1,30 @@
+Final cleanup and shared-runtime restoration - 2026-07-20
+
+Resources created exclusively for this validation:
+- database: irg_psm_val_0ea0c8f_20260720_02
+- volume: irg_psm_val_0ea0c8f_20260720_02_filestore
+- compose run container: transient `--rm`
+- overlay: missions/irg-partner-safe-merge/artifacts/docker-compose.worktree.yml
+
+Cleanup commands/results:
+- `docker exec pgodoo_local dropdb -U odoo --if-exists --force irg_psm_val_0ea0c8f_20260720_02` -> exit 0
+- `docker volume rm irg_psm_val_0ea0c8f_20260720_02_filestore` -> exit 0
+- overlay deleted with apply_patch -> pass
+
+Post-cleanup checks:
+- database catalog query result: empty, exit 0
+- volume inspect: no such volume, exit 1 (expected absence)
+- compose run container listing: empty
+- canonical odoo_local: Up, same ports 8069/8072
+- canonical pgodoo_local: Up, same port 5433
+- no shared service was recreated, stopped or redirected to the worktree
+
+Canonical compose SHA256 before/after:
+11F6D052BE34E313A42D733A69E7E73D125A107CAD9B5C2CE5798FA2ED4EA49C
+C:\Users\admin\Documents\iRG\Odoo16iRG\docker-compose.local.yml
+
+Canonical Odoo config SHA256 before/after:
+8A00253579D8E009F8AF91091C0E0034F78B1208BCAB9F9CEC6A71F3AFA1B299
+C:\Users\admin\Documents\iRG\Odoo16iRG\etc\odoo.local.conf
+
+Cleanup/restoration result: pass.

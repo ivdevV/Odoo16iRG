@@ -1,0 +1,23 @@
+Final independent Git scope inspection - 2026-07-20
+
+HEAD/base commit: 0ea0c8fdb0ab18bfcbbfc76160920c3103fd23b7
+Branch: codex/irg-partner-safe-merge
+Worktree: C:/tmp/Odoo16iRG-irg-partner-safe-merge
+
+git diff --name-status: no tracked changes
+git diff --cached --name-status: no staged changes
+git diff --check: exit 0
+
+All product files are new and untracked under:
+- addons-extra/extrairg/irg_partner_safe_merge/
+
+All other untracked files are planning/mission evidence under:
+- doc/micro-specs/2026-07-20-irg_partner_safe_merge.md
+- docs/superpowers/plans/2026-07-20-irg-partner-safe-merge.md
+- missions/irg-partner-safe-merge/
+- .superpowers/sdd/progress.md
+
+No existing addon or tracked production file is modified. The temporary compose
+overlay was removed after runtime cleanup. `.superpowers/sdd/progress.md` remains
+stale (`in_progress / pending assignment`) and belongs to Documentation cleanup;
+it does not change product behavior or this Validation result.
