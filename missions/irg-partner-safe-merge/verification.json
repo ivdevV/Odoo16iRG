@@ -1,0 +1,89 @@
+{
+  "status": "passed",
+  "task": "irg-partner-safe-merge",
+  "checks": [
+    {
+      "name": "docker_daemon",
+      "command": "docker version",
+      "result": "pass",
+      "detail": "Docker client/server 29.4.3 available through desktop-linux; canonical Odoo and PostgreSQL services were already Up.",
+      "evidence": "artifacts/validation-runtime.txt"
+    },
+    {
+      "name": "worktree_runtime_isolation",
+      "command": "docker compose -f <canonical-compose> -f <temporary-worktree-overlay> config; database/volume prechecks",
+      "result": "pass",
+      "detail": "Merged config mounted only this worktree's addons-extra and unique filestore `_02`; unique database and volume were absent before the run.",
+      "evidence": "artifacts/validation-runtime.txt"
+    },
+    {
+      "name": "clean_addon_install",
+      "command": "clean `-i irg_partner_safe_merge` in irg_psm_val_0ea0c8f_20260720_02; query ir_module_module state",
+      "result": "pass",
+      "detail": "Clean install process exited 0 and the isolated database reported irg_partner_safe_merge:installed before cleanup.",
+      "evidence": "artifacts/validation-runtime.txt"
+    },
+    {
+      "name": "focused_odoo_tests",
+      "command": "docker compose -f C:\\Users\\admin\\Documents\\iRG\\Odoo16iRG\\docker-compose.local.yml -f <temporary-worktree-overlay> run --rm --no-deps odoo_local odoo --stop-after-init --test-enable --test-tags /irg_partner_safe_merge -i irg_partner_safe_merge -d irg_psm_val_0ea0c8f_20260720_02",
+      "result": "pass",
+      "detail": "Exit 0; 31 tests, 0 failed, 0 errors, 9.37s, 15324 queries. Odoo stats counter reported 33 tests while result counter reported 31 test methods.",
+      "evidence": "artifacts/validation-runtime.txt"
+    },
+    {
+      "name": "odoo_concurrency_tests",
+      "command": "test_concurrent_same_confirmation_is_idempotent and test_concurrent_inverse_confirmation_blocks_loser in the clean focused suite",
+      "result": "pass",
+      "detail": "Both tests produced real SELECT ... FOR UPDATE serialization conflicts, Odoo retrying handled each conflict, and the complete suite finished 31/31 green.",
+      "evidence": "artifacts/validation-runtime.txt"
+    },
+    {
+      "name": "static_contract",
+      "command": "C:\\Users\\admin\\.local\\bin\\python3.11.exe addons-extra\\extrairg\\irg_partner_safe_merge\\tests\\test_static_contract.py",
+      "result": "pass",
+      "detail": "Ran 8 tests in 0.026s; OK. Includes Python AST and XML/CSV parsing contracts.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "python_compile_in_memory",
+      "command": "C:\\Users\\admin\\.local\\bin\\python3.11.exe -c <compile every addon Python source in memory>",
+      "result": "pass",
+      "detail": "10 Python files compiled in memory without writing bytecode.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "static_safety_and_format",
+      "command": "rg forbidden primitives; PowerShell trailing-whitespace scan; git diff --check",
+      "result": "pass",
+      "detail": "No forbidden production primitives, no trailing whitespace in 14 addon files, and git diff --check exited 0.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "git_scope",
+      "command": "git diff --name-status; git diff --cached --name-status; git status --short --untracked-files=all",
+      "result": "pass",
+      "detail": "At base 0ea0c8fdb there are no tracked or staged changes. Product scope is the new addon only; other untracked paths are mission/planning artifacts.",
+      "evidence": "artifacts/validation-scope.txt"
+    },
+    {
+      "name": "cleanup_and_restoration",
+      "command": "drop unique database; remove unique volume and overlay; inspect resources/services; SHA256-check canonical compose/config",
+      "result": "pass",
+      "detail": "Unique DB, filestore volume, run container and overlay are absent. Both pre-existing shared services remain Up and canonical hashes are unchanged.",
+      "evidence": "artifacts/validation-cleanup.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "C:\\Users\\admin\\Documents\\iRG\\Odoo16iRG\\docker-compose.local.yml plus temporary worktree overlay (removed)",
+    "database": "irg_psm_val_0ea0c8f_20260720_02 (removed after passed validation)",
+    "base_commit": "0ea0c8fdb0ab18bfcbbfc76160920c3103fd23b7"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-static.txt",
+    "artifacts/validation-runtime.txt",
+    "artifacts/validation-scope.txt",
+    "artifacts/validation-cleanup.txt"
+  ]
+}
