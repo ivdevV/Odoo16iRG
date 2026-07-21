@@ -1,3 +1,5 @@
+import math
+
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
@@ -39,6 +41,10 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
             )
         return GradebookMoodleService(credentials, self.env)
 
+    def _check_moodle_sync_access(self):
+        self.ensure_one()
+        return self.gradebook_student_id._check_moodle_sync_access()
+
     @staticmethod
     def _find_student_entry(partner, student_name, usergrades, emails):
         """Match a Moodle user by md_id, email, then unique normalized name."""
@@ -71,47 +77,120 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
 
     @staticmethod
     def _grades_by_type(entry, map_lines, grading_scale):
-        """Scale and aggregate mapped grade items by gradebook result type."""
-        wanted = {
-            line.moodle_activity_id: TYPE_BY_ACTIVITY.get(
-                line.activity_type, "exam"
-            )
+        """Resolve each map line exactly once, then aggregate valid grades."""
+        items = entry.get("gradeitems", [])
+        result_types = {
+            TYPE_BY_ACTIVITY.get(line.activity_type, "exam")
             for line in map_lines
         }
-        buckets = {"exam": [], "assignment": []}
-        found = {"exam": [], "assignment": []}
+        resolved = []
+        issues = {result_type: [] for result_type in result_types}
+        item_usage = {}
 
-        for item in entry.get("gradeitems", []):
-            key = None
-            if item.get("id") in wanted:
-                key = item["id"]
-            elif item.get("cmid") in wanted:
-                key = item["cmid"]
-            if key is None:
+        for map_line in map_lines:
+            result_type = TYPE_BY_ACTIVITY.get(map_line.activity_type, "exam")
+            activity_id = map_line.moodle_activity_id
+            matches = [
+                (index, item)
+                for index, item in enumerate(items)
+                if item.get("id") == activity_id
+                or item.get("cmid") == activity_id
+            ]
+            if len(matches) != 1:
+                issues[result_type].append(
+                    _(
+                        "La actividad Moodle %s tiene una resolución ambigua "
+                        "(%s coincidencias por id/cmid)."
+                    )
+                    % (activity_id, len(matches))
+                )
                 continue
+            item_index, item = matches[0]
+            resolved.append((map_line, result_type, item_index, item))
+            item_usage.setdefault(item_index, []).append(
+                (map_line, result_type)
+            )
 
-            result_type = wanted[key]
-            found[result_type].append(item.get("itemname") or str(key))
-            grade = parse_grade(item.get("graderaw"))
-            if grade is None:
-                continue
-            grade_max = item.get("grademax") or 0.0
-            if grade_max and grading_scale:
-                grade = grade / grade_max * grading_scale
-            buckets[result_type].append(grade)
+        for usages in item_usage.values():
+            if len(usages) > 1:
+                for map_line, result_type in usages:
+                    issues[result_type].append(
+                        _(
+                            "La actividad Moodle %s tiene una resolución "
+                            "ambigua: el mismo grade item se reutiliza."
+                        )
+                        % map_line.moodle_activity_id
+                    )
 
         result = {}
-        for result_type in ("exam", "assignment"):
-            grades = buckets[result_type]
+        for result_type in result_types:
+            type_rows = [row for row in resolved if row[1] == result_type]
+            found = [
+                item.get("itemname") or str(map_line.moodle_activity_id)
+                for map_line, _result_type, _item_index, item in type_rows
+            ]
+            if issues[result_type]:
+                result[result_type] = {
+                    "avg": None,
+                    "found": found,
+                    "graded": 0,
+                    "error": " ".join(dict.fromkeys(issues[result_type])),
+                }
+                continue
+
+            grades = []
+            for _map_line, _result_type, _item_index, item in type_rows:
+                grade = parse_grade(item.get("graderaw"))
+                grade_max = parse_grade(item.get("grademax"))
+                if (
+                    grade is None
+                    or not math.isfinite(grade)
+                    or grade_max is None
+                    or not math.isfinite(grade_max)
+                    or grade_max <= 0
+                ):
+                    continue
+                grades.append(grade / grade_max * grading_scale)
             result[result_type] = {
                 "avg": sum(grades) / len(grades) if grades else None,
-                "found": found[result_type],
+                "found": found,
                 "graded": len(grades),
+                "error": False,
             }
         return result
 
+    @staticmethod
+    def _compatibility_reason(gradebook_subject, result_type):
+        gradebook = (
+            gradebook_subject.gradebook_id
+            or gradebook_subject.gradebook_student_id.gradebook_id
+        )
+        template_lines = gradebook.gradebook_template_ids.filtered(
+            lambda line: line.type == result_type
+        )
+        if len(template_lines) != 1 or template_lines.qty != 1:
+            return _(
+                "El template efectivo debe tener cantidad exactamente 1 "
+                "para este tipo."
+            )
+
+        results = gradebook_subject.gradebook_result_ids.filtered(
+            lambda result: result.survey_type == result_type
+        )
+        if results.filtered(lambda result: not result.is_moodle):
+            return _(
+                "Existe una nota manual del mismo tipo; Moodle no puede "
+                "reemplazarla ni mezclarla."
+            )
+        if len(results.filtered("is_moodle")) > 1:
+            return _(
+                "Existen notas Moodle duplicadas para la asignatura y tipo."
+            )
+        return False
+
     def action_load_moodle_data(self):
         self.ensure_one()
+        self._check_moodle_sync_access()
         self.line_ids.unlink()
         service = self._get_service()
         gradebook_student = self.gradebook_student_id
@@ -124,16 +203,36 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
 
         for gradebook_subject in gradebook_student.gradebook_subject_ids:
             subject = gradebook_subject.op_subject_id
-            subject_map = map_model.search(
-                [("op_subject_id", "=", subject.id), ("active", "=", True)],
-                limit=1,
+            subject_maps = map_model.search(
+                [("op_subject_id", "=", subject.id), ("active", "=", True)]
             )
             base_values = {
                 "wizard_id": self.id,
                 "gradebook_subject_id": gradebook_subject.id,
                 "subject_id": subject.id,
             }
-            if not subject_map or not subject_map.line_ids:
+            if not subject_maps:
+                line_model.create(
+                    dict(base_values, state="sin_mapeo", apply_line=False)
+                )
+                continue
+
+            if len(subject_maps) > 1:
+                line_model.create(
+                    dict(
+                        base_values,
+                        state="incompatible",
+                        apply_line=False,
+                        moodle_info=_(
+                            "Hay más de un mapa Moodle activo para esta "
+                            "asignatura."
+                        ),
+                    )
+                )
+                continue
+
+            subject_map = subject_maps
+            if not subject_map.line_ids:
                 line_model.create(
                     dict(base_values, state="sin_mapeo", apply_line=False)
                 )
@@ -166,7 +265,24 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
                 entry, subject_map.line_ids, scale
             )
             for result_type, data in grades_by_type.items():
-                if not data["found"]:
+                compatibility_reason = self._compatibility_reason(
+                    gradebook_subject, result_type
+                )
+                if data["error"] or compatibility_reason:
+                    details = [
+                        detail
+                        for detail in (data["error"], compatibility_reason)
+                        if detail
+                    ]
+                    line_model.create(
+                        dict(
+                            base_values,
+                            state="incompatible",
+                            apply_line=False,
+                            survey_type=result_type,
+                            moodle_info=" ".join(details),
+                        )
+                    )
                     continue
                 current = result_model.search(
                     [
@@ -207,13 +323,164 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
         self.match_method = ", ".join(sorted(methods)) or False
         return True
 
+    def _validate_apply_lines(self):
+        self.ensure_one()
+        self._check_moodle_sync_access()
+        gradebook_student = self.gradebook_student_id
+        gradebook_student.check_access_rights("write")
+        gradebook_student.check_access_rule("write")
+        if gradebook_student.state == "done":
+            raise UserError(_("No se puede modificar una libreta finalizada."))
+
+        all_moodle_results = self.env["app.gradebook.result"].search(
+            [
+                (
+                    "gradebook_subject_id",
+                    "in",
+                    gradebook_student.gradebook_subject_ids.ids,
+                ),
+                ("is_moodle", "=", True),
+            ]
+        )
+        all_moodle_results.check_access_rights("read")
+        all_moodle_results.check_access_rule("read")
+        seen_global_keys = set()
+        for result in all_moodle_results:
+            key = (result.gradebook_subject_id.id, result.survey_type)
+            if key in seen_global_keys:
+                raise UserError(
+                    _(
+                        "Existen notas Moodle duplicadas; corrija la "
+                        "integridad antes de aplicar."
+                    )
+                )
+            seen_global_keys.add(key)
+
+        lines = self.line_ids.filtered("apply_line").sorted(
+            key=lambda line: (line.gradebook_subject_id.id, line.survey_type or "")
+        )
+        if not lines:
+            return lines, []
+
+        result_model = self.env["app.gradebook.result"]
+        result_model.check_access_rights("create")
+        allowed_subjects = gradebook_student.gradebook_subject_ids
+        allowed_subjects.check_access_rights("write")
+        allowed_subjects.check_access_rule("write")
+        grading_scale = gradebook_student.gradebook_id.grading_scale
+        keys = set()
+        subject_ids = []
+
+        for line in lines:
+            gradebook_subject = line.gradebook_subject_id
+            if (
+                not gradebook_subject
+                or gradebook_subject not in allowed_subjects
+                or line.subject_id != gradebook_subject.op_subject_id
+                or line.wizard_id != self
+            ):
+                raise UserError(
+                    _("Una línea no pertenece a la libreta seleccionada.")
+                )
+            if line.survey_type not in TYPE_BY_ACTIVITY.values():
+                raise UserError(_("Una línea aplicable no tiene un tipo válido."))
+
+            key = (gradebook_subject.id, line.survey_type)
+            if key in keys:
+                raise UserError(
+                    _("Hay líneas aplicables repetidas para asignatura y tipo.")
+                )
+            keys.add(key)
+            subject_ids.append(gradebook_subject.id)
+
+            grade = line.grade_to_apply
+            if (
+                not math.isfinite(grade)
+                or grade < 0
+                or grade > grading_scale
+            ):
+                raise UserError(
+                    _(
+                        "La nota a aplicar debe ser finita y estar entre 0 "
+                        "y %s."
+                    )
+                    % grading_scale
+                )
+
+            incompatibility = self._compatibility_reason(
+                gradebook_subject, line.survey_type
+            )
+            if incompatibility:
+                raise UserError(incompatibility)
+
+            existing = result_model.search(
+                [
+                    ("gradebook_subject_id", "=", gradebook_subject.id),
+                    ("is_moodle", "=", True),
+                    ("survey_type", "=", line.survey_type),
+                ]
+            )
+            if len(existing) > 1:
+                raise UserError(
+                    _(
+                        "Existen notas Moodle duplicadas; corrija la "
+                        "integridad antes de aplicar."
+                    )
+                )
+            existing.check_access_rights("write")
+            existing.check_access_rule("write")
+
+        return lines, sorted(set(subject_ids))
+
+    def _lock_apply_subjects(self, subject_ids):
+        self.env.cr.execute(
+            """
+            SELECT id
+              FROM app_gradebook_subject
+             WHERE id = ANY(%s)
+             ORDER BY id
+             FOR UPDATE
+            """,
+            (subject_ids,),
+        )
+        locked_ids = [row[0] for row in self.env.cr.fetchall()]
+        if locked_ids != subject_ids:
+            raise UserError(
+                _("Una asignatura dejó de estar disponible durante el proceso.")
+            )
+        self.env.cr.execute(
+            """
+            UPDATE app_gradebook_subject
+               SET write_date = write_date
+             WHERE id = ANY(%s)
+            """,
+            (subject_ids,),
+        )
+
     def action_apply(self):
         self.ensure_one()
+        lines, subject_ids = self._validate_apply_lines()
+        if subject_ids:
+            self._lock_apply_subjects(subject_ids)
+            self.invalidate_recordset()
+            self.gradebook_student_id.invalidate_recordset()
+            self.env["app.gradebook.subject"].browse(
+                subject_ids
+            ).invalidate_recordset()
+            self.env["app.gradebook.result"].invalidate_model()
+            lines_after_lock, subject_ids_after_lock = (
+                self._validate_apply_lines()
+            )
+            if (
+                lines_after_lock.ids != lines.ids
+                or subject_ids_after_lock != subject_ids
+            ):
+                raise UserError(
+                    _("Las líneas aplicables cambiaron durante el proceso.")
+                )
+            lines = lines_after_lock
         result_model = self.env["app.gradebook.result"]
         applied = 0
-        lines = self.line_ids.filtered(
-            lambda line: line.apply_line and line.state == "ok"
-        )
         for line in lines:
             values = {
                 "scoring_total": line.grade_to_apply,
@@ -233,7 +500,6 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
                     ("is_moodle", "=", True),
                     ("survey_type", "=", line.survey_type),
                 ],
-                limit=1,
             )
             if existing:
                 existing.write(values)
@@ -279,6 +545,7 @@ class IrgGradebookMoodleSyncWizardLine(models.TransientModel):
             ("sin_mapeo", "Sin mapeo"),
             ("sin_nota", "Sin nota en Moodle"),
             ("alumno_no_encontrado", "Alumno no encontrado"),
+            ("incompatible", "Incompatible"),
         ],
         string="Estado",
         default="ok",
