@@ -81,6 +81,7 @@ class TestMoodleSyncWizard(TransactionCase):
             {
                 "name": "Curso Test Moodle",
                 "code": "CTM-WIZ",
+                "lang": "en_US",
                 "gradebook_id": cls.gradebook.id,
             }
         )
