@@ -854,7 +854,63 @@ class TestIrgCertificatePartial(TransactionCase):
         pdf_doc = fitz.open(stream=pdf_bytes, filetype='pdf')
         self.assertEqual(len(pdf_doc), 1, f"Expected 1 page for partial MNC gradebook certificate, got {len(pdf_doc)}")
 
+    def test_10_partial_grades_below_seven_display_as_zero(self):
+        """Completed subject grades below 7 must appear as 0.00 in partial certificates."""
+        from docx.oxml.ns import qn
 
+        subject_low = self.env['op.subject'].create({
+            'name': 'Partial Low Grade',
+            'code': 'PLOW01',
+            'course_id': self.course.id,
+            'subject_type': 'compulsory',
+        })
+        gb_low = self.env['app.gradebook.subject'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'op_subject_id': subject_low.id,
+            'final_subject_note': 6.25,
+        })
+        self.env['app.gradebook.result'].create({
+            'gradebook_subject_id': gb_low.id,
+            'survey_type': 'exam',
+            'scoring_total': 6.0,
+        })
+        self.env['app.gradebook.result'].create({
+            'gradebook_subject_id': gb_low.id,
+            'survey_type': 'exam',
+            'scoring_total': 6.5,
+        })
+        gb_low.compute_final_subject_note()
+        gb_low.compute_point_average()
+        gb_low.write({'final_subject_note': 6.25})
 
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': self.gradebook.id,
+            'document_type': 'gradebook_partial',
+            'certificate_type': 'digital',
+            'state': 'draft',
+        })
+        res_docx = cert._fill_template()
+        doc = DocxDocument(res_docx)
+        tbl_xml = doc.tables[0]._tbl
+        data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
 
+        def row_texts(row_xml):
+            texts = []
+            for cell in row_xml.findall(qn('w:tc')):
+                texts.append(''.join(
+                    t.text or ''
+                    for p in cell.findall(qn('w:p'))
+                    for r in p.findall(qn('w:r'))
+                    for t in r.findall(qn('w:t'))
+                ).strip())
+            return texts
+
+        grades_by_code = {
+            row_texts(row)[0]: row_texts(row)[2]
+            for row in data_rows
+        }
+        self.assertEqual(grades_by_code['PLOW01'], '0.00')
+        self.assertEqual(grades_by_code['SCB'], 'Pendiente')
+        self.assertNotEqual(grades_by_code['SCA'], '0.00')
+        self.assertNotEqual(grades_by_code['SCA'], 'Pendiente')
 

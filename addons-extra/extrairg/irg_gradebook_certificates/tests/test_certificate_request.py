@@ -835,6 +835,73 @@ class TestIrgCertificateRequest(TransactionCase):
         pdf_doc = fitz.open(stream=pdf_bytes, filetype='pdf')
         self.assertEqual(len(pdf_doc), 1, f"Expected 1 page for MNC gradebook certificate, got {len(pdf_doc)}")
 
+    def test_20_certificate_grades_below_seven_display_as_zero(self):
+        """Subject grades below 7 must appear as 0.00 in the final certificate table."""
+        from docx.oxml.ns import qn
 
+        Cert = self.env['irg.certificate.request']
+        self.assertEqual(Cert._format_certificate_grade(6.99), '0.00')
+        self.assertEqual(Cert._format_certificate_grade(7.0), '7.00')
+        self.assertEqual(Cert._format_certificate_grade(10.0), '10.00')
+        self.assertEqual(Cert._certificate_grade_value(None), 0.0)
 
+        subject_low = self.env['op.subject'].create({
+            'name': 'Low Grade Subject',
+            'code': 'LOW01',
+            'course_id': self.course.id,
+            'subject_type': 'compulsory',
+        })
+        subject_pass = self.env['op.subject'].create({
+            'name': 'Pass Grade Subject',
+            'code': 'PASS01',
+            'course_id': self.course.id,
+            'subject_type': 'compulsory',
+        })
+        gradebook = self.env['app.gradebook.student'].create({
+            'partner_id': self.partner.id,
+            'course_id': self.course.id,
+            'batch_id': self.batch.id,
+            'admission_id': self.admission.id,
+            'total_final': 5.0,
+        })
+        self.env['app.gradebook.subject'].create({
+            'gradebook_student_id': gradebook.id,
+            'op_subject_id': subject_low.id,
+            'final_subject_note': 6.50,
+        })
+        self.env['app.gradebook.subject'].create({
+            'gradebook_student_id': gradebook.id,
+            'op_subject_id': subject_pass.id,
+            'final_subject_note': 7.00,
+        })
 
+        cert = self.env['irg.certificate.request'].create({
+            'gradebook_student_id': gradebook.id,
+            'certificate_type': 'digital',
+            'document_type': 'gradebook',
+            'state': 'draft',
+        })
+        res_docx = cert._fill_template()
+        doc = DocxDocument(res_docx)
+        tbl_xml = doc.tables[0]._tbl
+        data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
+
+        def row_grade(row_xml):
+            cells = row_xml.findall(qn('w:tc'))
+            texts = []
+            for cell in cells:
+                texts.append(''.join(
+                    t.text or ''
+                    for p in cell.findall(qn('w:p'))
+                    for r in p.findall(qn('w:r'))
+                    for t in r.findall(qn('w:t'))
+                ).strip())
+            return texts
+
+        grades_by_code = {
+            row_grade(row)[0]: row_grade(row)[2]
+            for row in data_rows
+            if row_grade(row)[0] in ('LOW01', 'PASS01')
+        }
+        self.assertEqual(grades_by_code['LOW01'], '0.00')
+        self.assertEqual(grades_by_code['PASS01'], '7.00')

@@ -347,8 +347,9 @@ class IrgCertificateRequest(models.Model):
             if not exam_results or len(exam_results) < qty_configured:
                 note_str = 'Pendiente'
             else:
-                note_str = '%.2f' % (subj.final_subject_note or 0.0)
-                valid_notes.append(subj.final_subject_note or 0.0)
+                grade_value = self._certificate_grade_value(subj.final_subject_note)
+                note_str = self._format_certificate_grade(subj.final_subject_note)
+                valid_notes.append(grade_value)
                 
             subject_notes.append({
                 'code': subj.op_subject_id.code or '',

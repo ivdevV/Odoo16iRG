@@ -969,6 +969,20 @@ class IrgCertificateRequest(models.Model):
             lambda s: s.op_subject_id.subject_type == 'compulsory'
         )
 
+    @staticmethod
+    def _certificate_grade_value(note):
+        """Normalize a subject grade for certificate tables.
+
+        Grades strictly below 7 are shown and averaged as 0.
+        """
+        value = float(note or 0.0)
+        return 0.0 if value < 7.0 else value
+
+    @classmethod
+    def _format_certificate_grade(cls, note):
+        """Return the certificate table display value for a subject grade."""
+        return '%.2f' % cls._certificate_grade_value(note)
+
     def _fill_template(self):
         """Open the .docx template, fill placeholders and table, return bytes."""
         self.ensure_one()
@@ -1238,7 +1252,7 @@ class IrgCertificateRequest(models.Model):
                 cell_values = [
                     subj.op_subject_id.code or '',
                     subj.op_subject_id.name or '',
-                    '%.2f' % (subj.final_subject_note or 0.0),
+                    self._format_certificate_grade(subj.final_subject_note),
                 ]
                 for ci, val in enumerate(cell_values):
                     if ci < len(cells):
@@ -1288,7 +1302,7 @@ class IrgCertificateRequest(models.Model):
                 cell_values = [
                     subj.op_subject_id.code or '',
                     subj.op_subject_id.name or '',
-                    '%.2f' % (subj.final_subject_note or 0.0),
+                    self._format_certificate_grade(subj.final_subject_note),
                 ]
                 for ci, val in enumerate(cell_values):
                     if ci < len(cells):
