@@ -58,7 +58,7 @@ class AppGradebook(models.Model):
         for record in self:
             total_percent = 0
             if record.gradebook_template_ids:
-                total_percent = sum(self.gradebook_template_ids.mapped('weight'))
+                total_percent = sum(record.gradebook_template_ids.mapped('weight'))
             record.total_percent = total_percent
         
     
