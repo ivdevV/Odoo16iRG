@@ -99,9 +99,11 @@ class IrgCertificateRequest(models.Model):
     _GRADEBOOK_TEXT_RIGHT_INDENT = (
         _GRADEBOOK_PAGE_TEXT_WIDTH - _GRADEBOOK_TEXT_INDENT - _GRADEBOOK_TABLE_WIDTH
     )
-    _GRADEBOOK_COMPACT_TOP_MARGIN = Pt(42)
-    _GRADEBOOK_COMPACT_BOTTOM_MARGIN = Pt(22)
-    _GRADEBOOK_COMPACT_LOGO_SPACER_AFTER = Pt(36)
+    _GRADEBOOK_COMPACT_TOP_MARGIN = Pt(48)
+    _GRADEBOOK_COMPACT_BOTTOM_MARGIN = Pt(18)
+    # Spacer under the header logo for many-subject certificates (MNC).
+    # Keep this large enough to leave a clear visual gap before the body text.
+    _GRADEBOOK_COMPACT_LOGO_SPACER_AFTER = Pt(72)
     _DPTO_ACADEMICO_INTRO = 'El Instituto Raimon Gaja, con CIF B-56488687 en calle Córcega 213, 1º 2ª, 08036 Barcelona.'
 
     def _replace_dpto_academico_intro(self, doc):
@@ -1173,7 +1175,8 @@ class IrgCertificateRequest(models.Model):
                     self._GRADEBOOK_COMPACT_LOGO_SPACER_AFTER
                 )
 
-            for p in list(doc.paragraphs):
+            # Keep the first paragraph even if empty: it is the logo spacer.
+            for p in list(doc.paragraphs)[1:]:
                 p_xml = p._p
                 drawings = p_xml.findall('.//' + qn('w:drawing')) + p_xml.findall('.//' + qn('w:pict'))
                 if not p.text.strip() and not drawings:

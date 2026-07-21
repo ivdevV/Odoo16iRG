@@ -516,9 +516,13 @@ class IrgCertificateRequest(models.Model):
                 section.bottom_margin = self._GRADEBOOK_COMPACT_BOTTOM_MARGIN
 
             if doc.paragraphs:
-                doc.paragraphs[0].paragraph_format.space_after = Pt(20)
+                # The first body paragraph is the spacer below the header logo.
+                doc.paragraphs[0].paragraph_format.space_after = (
+                    self._GRADEBOOK_COMPACT_LOGO_SPACER_AFTER
+                )
 
-            for p in list(doc.paragraphs):
+            # Keep the first paragraph even if empty: it is the logo spacer.
+            for p in list(doc.paragraphs)[1:]:
                 p_xml = p._p
                 drawings = p_xml.findall('.//' + qn('w:drawing')) + p_xml.findall('.//' + qn('w:pict'))
                 if not p.text.strip() and not drawings:

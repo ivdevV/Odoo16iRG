@@ -820,9 +820,9 @@ class TestIrgCertificatePartial(TransactionCase):
         })
         res_docx = cert._fill_template()
         doc = DocxDocument(res_docx)
-        self.assertEqual(doc.sections[0].top_margin.pt, 42.0)
-        self.assertEqual(doc.sections[0].bottom_margin.pt, 22.0)
-        self.assertEqual(doc.paragraphs[0].paragraph_format.space_after.pt, 36.0)
+        self.assertEqual(doc.sections[0].top_margin.pt, 48.0)
+        self.assertEqual(doc.sections[0].bottom_margin.pt, 18.0)
+        self.assertEqual(doc.paragraphs[0].paragraph_format.space_after.pt, 72.0)
         tbl_xml = doc.tables[0]._tbl
         all_data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
         self.assertEqual(len(all_data_rows), 23)
