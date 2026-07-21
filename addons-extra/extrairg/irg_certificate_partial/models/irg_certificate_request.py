@@ -435,7 +435,7 @@ class IrgCertificateRequest(models.Model):
 
         has_many_subjects = len(subject_notes) > 15
         sp_after_body = Pt(4) if has_many_subjects else Pt(12)
-        sp_after_p3 = Pt(16) if has_many_subjects else Pt(12)
+        sp_after_p3 = Pt(7) if has_many_subjects else Pt(12)
 
         for para in list(doc.paragraphs):
             full_text = ''.join(r.text for r in para.runs)
@@ -533,20 +533,28 @@ class IrgCertificateRequest(models.Model):
                 txt = p.text.strip()
                 p.paragraph_format.line_spacing = 1.0
                 if 'CERTIFICA' in txt:
-                    p.paragraph_format.space_before = Pt(8)
-                    p.paragraph_format.space_after = Pt(8)
+                    p.paragraph_format.space_before = Pt(14)
+                    p.paragraph_format.space_after = Pt(14)
                 elif 'Las calificaciones obtenidas son:' in txt:
                     p.paragraph_format.space_before = Pt(8)
-                    p.paragraph_format.space_after = Pt(16)
+                    p.paragraph_format.space_after = Pt(10)
                 elif 'Para que así conste' in txt:
                     p.paragraph_format.space_before = Pt(8)
                     p.paragraph_format.space_after = Pt(4)
-                elif 'Departamento Académico' in txt or 'Raimon Gaja' in txt:
+                elif (
+                    'con CIF' in txt
+                    or 'con DNI' in txt
+                    or 'en calidad de Director' in txt
+                ):
+                    # Issuer intro line above CERTIFICA.
+                    p.paragraph_format.space_before = Pt(4)
+                    p.paragraph_format.space_after = Pt(14)
+                elif txt.startswith('Que '):
+                    p.paragraph_format.space_before = Pt(12)
+                    p.paragraph_format.space_after = Pt(6)
+                elif 'Departamento Académico' in txt or txt.startswith('Raimon Gaja'):
                     p.paragraph_format.space_before = Pt(4)
                     p.paragraph_format.space_after = Pt(2)
-                elif txt.startswith('Que '):
-                    p.paragraph_format.space_before = Pt(4)
-                    p.paragraph_format.space_after = Pt(6)
                 else:
                     p.paragraph_format.space_before = Pt(4)
                     p.paragraph_format.space_after = Pt(5)
