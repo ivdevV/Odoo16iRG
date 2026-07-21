@@ -372,6 +372,13 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
         subject_ids = []
 
         for line in lines:
+            if line.state != "ok":
+                raise UserError(
+                    _(
+                        "Solo se pueden aplicar líneas con estado "
+                        "Encontrada."
+                    )
+                )
             gradebook_subject = line.gradebook_subject_id
             if (
                 not gradebook_subject
@@ -432,6 +439,30 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
 
         return lines, sorted(set(subject_ids))
 
+    def _lock_apply_lines(self):
+        self.env.cr.execute(
+            """
+            SELECT id
+              FROM irg_gradebook_moodle_sync_wizard_line
+             WHERE wizard_id = %s
+             ORDER BY id
+             FOR UPDATE
+            """,
+            (self.id,),
+        )
+        return [row[0] for row in self.env.cr.fetchall()]
+
+    def _invalidate_apply_lines(self, line_ids):
+        self.invalidate_recordset(["line_ids"])
+        lines = self.env[
+            "irg.gradebook.moodle.sync.wizard.line"
+        ].browse(line_ids)
+        lines.invalidate_recordset()
+        if self.line_ids.ids != line_ids:
+            raise UserError(
+                _("Las líneas del asistente cambiaron durante el proceso.")
+            )
+
     def _lock_apply_subjects(self, subject_ids):
         self.env.cr.execute(
             """
@@ -459,26 +490,28 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
 
     def action_apply(self):
         self.ensure_one()
+        self._check_moodle_sync_access()
+        locked_line_ids = self._lock_apply_lines()
+        self._invalidate_apply_lines(locked_line_ids)
         lines, subject_ids = self._validate_apply_lines()
         if subject_ids:
             self._lock_apply_subjects(subject_ids)
-            self.invalidate_recordset()
-            self.gradebook_student_id.invalidate_recordset()
-            self.env["app.gradebook.subject"].browse(
-                subject_ids
-            ).invalidate_recordset()
-            self.env["app.gradebook.result"].invalidate_model()
-            lines_after_lock, subject_ids_after_lock = (
-                self._validate_apply_lines()
+        self.invalidate_recordset()
+        self.gradebook_student_id.invalidate_recordset()
+        self.env["app.gradebook.subject"].browse(
+            subject_ids
+        ).invalidate_recordset()
+        self.env["app.gradebook.result"].invalidate_model()
+        self._invalidate_apply_lines(locked_line_ids)
+        lines_after_lock, subject_ids_after_lock = self._validate_apply_lines()
+        if (
+            lines_after_lock.ids != lines.ids
+            or subject_ids_after_lock != subject_ids
+        ):
+            raise UserError(
+                _("Las líneas aplicables cambiaron durante el proceso.")
             )
-            if (
-                lines_after_lock.ids != lines.ids
-                or subject_ids_after_lock != subject_ids
-            ):
-                raise UserError(
-                    _("Las líneas aplicables cambiaron durante el proceso.")
-                )
-            lines = lines_after_lock
+        lines = lines_after_lock
         result_model = self.env["app.gradebook.result"]
         applied = 0
         for line in lines:

@@ -4,6 +4,7 @@ import uuid
 from unittest.mock import patch
 
 from psycopg2 import IntegrityError
+from psycopg2.errors import SerializationFailure
 
 from odoo import Command, api
 from odoo.exceptions import AccessError, UserError
@@ -521,6 +522,28 @@ class TestMoodleSyncWizard(TransactionCase):
                 with self.assertRaises(UserError):
                     wizard.action_apply()
 
+    def test_apply_rejects_forced_non_ok_line(self):
+        """RPC/ORM no puede convertir una línea sin nota en aplicable."""
+        wizard = self._open_wizard()
+        assignment = wizard.line_ids.filtered(
+            lambda line: line.survey_type == "assignment"
+        )
+        self.assertEqual(assignment.state, "sin_nota")
+        assignment.write({"apply_line": True, "grade_to_apply": 7.0})
+
+        with self.assertRaises(UserError):
+            wizard.action_apply()
+
+        self.assertFalse(
+            self.env["app.gradebook.result"].search(
+                [
+                    ("gradebook_subject_id", "=", self.gb_subject.id),
+                    ("survey_type", "=", "assignment"),
+                    ("is_moodle", "=", True),
+                ]
+            )
+        )
+
     def test_apply_rejects_legacy_duplicate_moodle_results(self):
         """Duplicados legados con clave nula abortan toda la aplicación."""
         wizard = self._open_wizard()
@@ -840,3 +863,41 @@ class TestMoodleSyncWizard(TransactionCase):
                 first.join(10)
             if second.is_alive():
                 second.join(10)
+
+    def test_stale_wizard_line_raises_serialization_failure(self):
+        """Una edición concurrente del transient invalida el snapshot lector."""
+        setup = self._create_committed_concurrency_case()
+        self.addCleanup(self._cleanup_committed_concurrency_case, setup)
+
+        with self.env.registry.cursor() as stale_cr:
+            stale_env = api.Environment(stale_cr, setup["uid"], {})
+            stale_wizard = stale_env[
+                "irg.gradebook.moodle.sync.wizard"
+            ].browse(setup["wizard_ids"][0])
+            stale_line = stale_wizard.line_ids
+            self.assertEqual(stale_line.grade_to_apply, 8.0)
+
+            with self.env.registry.cursor() as editor_cr:
+                editor_env = api.Environment(editor_cr, setup["uid"], {})
+                editor_env["irg.gradebook.moodle.sync.wizard.line"].browse(
+                    stale_line.id
+                ).write({"grade_to_apply": 9.0})
+                editor_cr.commit()
+
+            with self.assertRaises(SerializationFailure):
+                stale_wizard.action_apply()
+
+        with self.env.registry.cursor() as assert_cr:
+            assert_env = api.Environment(assert_cr, setup["uid"], {})
+            self.assertFalse(
+                assert_env["app.gradebook.result"].search(
+                    [
+                        (
+                            "gradebook_subject_id",
+                            "=",
+                            setup["gradebook_subject_id"],
+                        ),
+                        ("is_moodle", "=", True),
+                    ]
+                )
+            )
