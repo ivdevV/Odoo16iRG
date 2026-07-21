@@ -458,7 +458,7 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
             "irg.gradebook.moodle.sync.wizard.line"
         ].browse(line_ids)
         lines.invalidate_recordset()
-        if self.line_ids.ids != line_ids:
+        if sorted(self.line_ids.ids) != line_ids:
             raise UserError(
                 _("Las líneas del asistente cambiaron durante el proceso.")
             )

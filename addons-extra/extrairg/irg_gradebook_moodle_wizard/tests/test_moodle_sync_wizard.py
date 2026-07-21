@@ -339,6 +339,50 @@ class TestMoodleSyncWizard(TransactionCase):
         self.assertEqual(len(result2), 1)
         self.assertAlmostEqual(result2.scoring_total, 9.0, places=2)
 
+    def test_apply_accepts_locked_lines_with_different_functional_order(self):
+        """El orden funcional no simula altas o borrados concurrentes."""
+        wizard = self.env["irg.gradebook.moodle.sync.wizard"].create(
+            {"gradebook_student_id": self.gb_student.id}
+        )
+        line_model = self.env["irg.gradebook.moodle.sync.wizard.line"]
+        exam = line_model.create(
+            {
+                "wizard_id": wizard.id,
+                "gradebook_subject_id": self.gb_subject.id,
+                "subject_id": self.subject.id,
+                "survey_type": "exam",
+                "grade_to_apply": 8.0,
+                "graded_count": 1,
+                "state": "ok",
+                "apply_line": True,
+            }
+        )
+        assignment = line_model.create(
+            {
+                "wizard_id": wizard.id,
+                "gradebook_subject_id": self.gb_subject.id,
+                "subject_id": self.subject.id,
+                "survey_type": "assignment",
+                "state": "ok",
+                "apply_line": False,
+            }
+        )
+        self.assertLess(exam.id, assignment.id)
+        wizard.invalidate_recordset(["line_ids"])
+        self.assertEqual(wizard.line_ids.ids, [assignment.id, exam.id])
+
+        wizard.action_apply()
+
+        result = self.env["app.gradebook.result"].search(
+            [
+                ("gradebook_subject_id", "=", self.gb_subject.id),
+                ("survey_type", "=", "exam"),
+                ("is_moodle", "=", True),
+            ]
+        )
+        self.assertEqual(len(result), 1)
+        self.assertAlmostEqual(result.scoring_total, 8.0, places=2)
+
     def test_apply_recomputes_subject_average(self):
         """Tras aplicar, el AVG de exámenes de la asignatura refleja la nota."""
         self._skip_until_models_exist()
