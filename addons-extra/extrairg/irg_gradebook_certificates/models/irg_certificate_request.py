@@ -1149,6 +1149,27 @@ class IrgCertificateRequest(models.Model):
             self._ensure_bottom_right_arcs(tmp_docx.name)
             return tmp_docx.name
 
+        # Check if course has many subjects (e.g. MNC with 23 subjects)
+        has_many_subjects = len(subjects) > 15
+        target_row_height = '200' if has_many_subjects else '315'
+        table_font_size = Pt(6.5) if has_many_subjects else (Pt(7.5) if is_physical else (top_font_size or Pt(7.5)))
+
+        if has_many_subjects:
+            for section in doc.sections:
+                section.top_margin = Pt(45)
+                section.bottom_margin = Pt(45)
+
+            for p in list(doc.paragraphs):
+                p_xml = p._p
+                drawings = p_xml.findall('.//' + qn('w:drawing')) + p_xml.findall('.//' + qn('w:pict'))
+                if not p.text.strip() and not drawings:
+                    p_xml.getparent().remove(p_xml)
+
+            for p in doc.paragraphs:
+                p.paragraph_format.space_before = Pt(1)
+                p.paragraph_format.space_after = Pt(1)
+                p.paragraph_format.line_spacing = 1.0
+
         # --- Fill the grades table (table index 0) --------------------------
         table = doc.tables[0]
         tbl_xml = table._tbl
@@ -1162,7 +1183,7 @@ class IrgCertificateRequest(models.Model):
         for idx, row_xml in enumerate(data_rows):
             cells = row_xml.findall(qn('w:tc'))
             if idx < len(subjects):
-                # Normalize row height to 315 dxa with hRule="atLeast"
+                # Normalize row height with hRule="atLeast"
                 trPr = row_xml.find(qn('w:trPr'))
                 if trPr is None:
                     trPr = row_xml.makeelement(qn('w:trPr'), {})
@@ -1170,7 +1191,7 @@ class IrgCertificateRequest(models.Model):
                 for h in trPr.findall(qn('w:trHeight')):
                     trPr.remove(h)
                 trHeight = trPr.makeelement(qn('w:trHeight'), {
-                    qn('w:val'): '315',
+                    qn('w:val'): target_row_height,
                     qn('w:hRule'): 'atLeast',
                 })
                 trPr.append(trHeight)
@@ -1213,7 +1234,7 @@ class IrgCertificateRequest(models.Model):
             for idx in range(len(data_rows), len(subjects)):
                 subj = subjects[idx]
                 new_row = deepcopy(ref_row)
-                # Normalize row height to 315 dxa with hRule="atLeast"
+                # Normalize row height with hRule="atLeast"
                 trPr = new_row.find(qn('w:trPr'))
                 if trPr is None:
                     trPr = new_row.makeelement(qn('w:trPr'), {})
@@ -1221,7 +1242,7 @@ class IrgCertificateRequest(models.Model):
                 for h in trPr.findall(qn('w:trHeight')):
                     trPr.remove(h)
                 trHeight = trPr.makeelement(qn('w:trHeight'), {
-                    qn('w:val'): '315',
+                    qn('w:val'): target_row_height,
                     qn('w:hRule'): 'atLeast',
                 })
                 trPr.append(trHeight)
@@ -1241,6 +1262,36 @@ class IrgCertificateRequest(models.Model):
                                     break
                             break
                 footer_row.addprevious(new_row)
+
+        # Normalize cell bottom borders for all data rows
+        all_data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
+        for r_idx, r_xml in enumerate(all_data_rows):
+            for c in r_xml.findall(qn('w:tc')):
+                tcPr = c.find(qn('w:tcPr'))
+                if tcPr is None:
+                    tcPr = c.makeelement(qn('w:tcPr'), {})
+                    c.insert(0, tcPr)
+                tcBorders = tcPr.find(qn('w:tcBorders'))
+                if tcBorders is None:
+                    tcBorders = tcPr.makeelement(qn('w:tcBorders'), {})
+                    tcPr.append(tcBorders)
+                for b in tcBorders.findall(qn('w:bottom')):
+                    tcBorders.remove(b)
+                if r_idx < len(all_data_rows) - 1:
+                    b_elem = tcBorders.makeelement(qn('w:bottom'), {
+                        qn('w:val'): 'single',
+                        qn('w:color'): 'dee2e6',
+                        qn('w:sz'): '5',
+                        qn('w:space'): '0',
+                    })
+                else:
+                    b_elem = tcBorders.makeelement(qn('w:bottom'), {
+                        qn('w:val'): 'single',
+                        qn('w:color'): '000000',
+                        qn('w:sz'): '10',
+                        qn('w:space'): '0',
+                    })
+                tcBorders.append(b_elem)
 
         # Fill Nota Media in footer row.
         # The footer row may have merged cells; we write the grade in the last
@@ -1300,15 +1351,13 @@ class IrgCertificateRequest(models.Model):
                 for r in para.runs:
                     r.font.size = Pt(9.25)
 
-        if top_font_size:
-            table_font_size = Pt(7.5) if is_physical else top_font_size
-            for tbl in doc.tables:
-                for row in tbl.rows:
-                    for cell in row.cells:
-                        for para in cell.paragraphs:
-                            for r in para.runs:
-                                if r.font:
-                                    r.font.size = table_font_size
+        for tbl in doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        for r in para.runs:
+                            if r.font:
+                                r.font.size = table_font_size
 
         # Save filled document to a temp file
         tmp_docx = tempfile.NamedTemporaryFile(
