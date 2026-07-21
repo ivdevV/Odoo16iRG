@@ -85,6 +85,18 @@ class TestImportMapCsv(TransactionCase):
             writer.writeheader()
             writer.writerows(rows)
 
+    def _run_import_rows(self, import_module, rows):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            csv_path = Path(temp_dir) / "map_asignaturas.csv"
+            with csv_path.open("w", newline="", encoding="utf-8") as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=CSV_FIELDS)
+                writer.writeheader()
+                writer.writerows(rows)
+            output = StringIO()
+            with redirect_stdout(output):
+                import_module.run_import(self.env, str(csv_path))
+        return output.getvalue()
+
     def test_import_creates_then_updates_map_and_regenerates_quiz_lines(self):
         self.assertTrue(
             SCRIPT_PATH.is_file(),
@@ -155,4 +167,131 @@ class TestImportMapCsv(TransactionCase):
         self.assertIn(
             "Import mapeo: 0 creados, 1 actualizados, 1 saltados.",
             second_output.getvalue(),
+        )
+
+    def test_invalid_activity_lists_preserve_existing_map_and_lines(self):
+        import_module = _load_import_module()
+        mapping = self.env["irg.gradebook.moodle.map"].create(
+            {
+                "op_subject_id": self.subject.id,
+                "moodle_course_id": 808108,
+                "moodle_course_name": "Curso preservado",
+                "line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "moodle_activity_id": 710001,
+                            "name": "Quiz preservado 1",
+                            "activity_type": "quiz",
+                        },
+                    ),
+                    (
+                        0,
+                        0,
+                        {
+                            "moodle_activity_id": 710002,
+                            "name": "Quiz preservado 2",
+                            "activity_type": "quiz",
+                        },
+                    ),
+                ],
+            }
+        )
+        original_lines = [
+            (
+                line.id,
+                line.moodle_activity_id,
+                line.name,
+                line.activity_type,
+            )
+            for line in mapping.line_ids
+        ]
+
+        for invalid_ids in ("", "abc", "123,abc"):
+            with self.subTest(invalid_ids=invalid_ids):
+                output = self._run_import_rows(
+                    import_module,
+                    [
+                        {
+                            "Moodle Course ID": "808108",
+                            "Odoo Subject ID": str(self.subject.id),
+                            "Odoo Subject Name": self.subject.name,
+                            "Curso Nombre": "Curso que no debe actualizarse",
+                            "Moodle IDs List": invalid_ids,
+                            "Moodle Names Found": "Nombre que no debe persistir",
+                        }
+                    ],
+                )
+                self.assertEqual(mapping.moodle_course_name, "Curso preservado")
+                self.assertEqual(
+                    [
+                        (
+                            line.id,
+                            line.moodle_activity_id,
+                            line.name,
+                            line.activity_type,
+                        )
+                        for line in mapping.line_ids
+                    ],
+                    original_lines,
+                )
+                self.assertIn(
+                    "Import mapeo: 0 creados, 0 actualizados, 1 saltados.",
+                    output,
+                )
+
+    def test_invalid_subject_or_course_ids_are_skipped_before_valid_row(self):
+        import_module = _load_import_module()
+        rows = []
+        for field_name, invalid_value in (
+            ("Odoo Subject ID", "inf"),
+            ("Odoo Subject ID", "1e309"),
+            ("Odoo Subject ID", "malformed"),
+            ("Moodle Course ID", "inf"),
+            ("Moodle Course ID", "1e309"),
+            ("Moodle Course ID", "malformed"),
+        ):
+            row = {
+                "Moodle Course ID": "808208",
+                "Odoo Subject ID": str(self.subject.id),
+                "Odoo Subject Name": self.subject.name,
+                "Curso Nombre": "Curso inválido",
+                "Moodle IDs List": "720001",
+                "Moodle Names Found": "Quiz inválido",
+            }
+            row[field_name] = invalid_value
+            rows.append(row)
+        rows.append(
+            {
+                "Moodle Course ID": "808209",
+                "Odoo Subject ID": str(self.subject.id),
+                "Odoo Subject Name": self.subject.name,
+                "Curso Nombre": "Curso válido final",
+                "Moodle IDs List": "720009",
+                "Moodle Names Found": "Quiz válido final",
+            }
+        )
+
+        try:
+            output = self._run_import_rows(import_module, rows)
+        except Exception as error:  # pylint: disable=broad-except
+            self.fail(
+                "El import debe saltar IDs inválidos y continuar: %s: %s"
+                % (type(error).__name__, error)
+            )
+
+        mapping = self.env["irg.gradebook.moodle.map"].search(
+            [
+                ("op_subject_id", "=", self.subject.id),
+                ("moodle_course_id", "=", 808209),
+            ]
+        )
+        self.assertEqual(len(mapping), 1)
+        self.assertEqual(mapping.moodle_course_name, "Curso válido final")
+        self.assertEqual(mapping.line_ids.moodle_activity_id, 720009)
+        self.assertEqual(mapping.line_ids.name, "Quiz válido final")
+        self.assertIn(
+            "Import mapeo: 1 creados, 0 actualizados, 6 saltados.",
+            output,
         )

@@ -24,7 +24,7 @@ def run_import(env, csv_path):
             try:
                 subject_id = int(float(row['Odoo Subject ID']))
                 course_id = int(float(row['Moodle Course ID']))
-            except (ValueError, TypeError, KeyError):
+            except (ValueError, TypeError, KeyError, OverflowError):
                 skipped += 1
                 continue
             subject = subject_model.browse(subject_id).exists()
@@ -34,12 +34,16 @@ def run_import(env, csv_path):
                 skipped += 1
                 continue
             ids_raw = (row.get('Moodle IDs List') or '').strip()
-            names_raw = (row.get('Moodle Names Found') or '').strip()
             if not ids_raw:
                 skipped += 1
                 continue
-            act_ids = [int(x) for x in ids_raw.replace(' ', '').split(',')
-                       if x.strip().isdigit()]
+            act_tokens = [x.strip() for x in ids_raw.split(',')]
+            if not act_tokens or any(
+                    not x.isdecimal() or int(x) <= 0 for x in act_tokens):
+                skipped += 1
+                continue
+            act_ids = [int(x) for x in act_tokens]
+            names_raw = (row.get('Moodle Names Found') or '').strip()
             names = [n.strip() for n in names_raw.split('|')]
             lines = []
             for i, act_id in enumerate(act_ids):
