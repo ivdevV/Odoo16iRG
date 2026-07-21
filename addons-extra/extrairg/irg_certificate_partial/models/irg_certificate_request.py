@@ -502,13 +502,13 @@ class IrgCertificateRequest(models.Model):
 
         # Check if course has many subjects (e.g. MNC with 23 subjects)
         has_many_subjects = len(subject_notes) > 15
-        target_row_height = '260' if has_many_subjects else '315'
+        target_row_height = '240' if has_many_subjects else '315'
         table_font_size = Pt(7.5) if has_many_subjects else (Pt(7.5) if is_physical else (top_font_size or Pt(7.5)))
 
         if has_many_subjects:
             for section in doc.sections:
-                section.top_margin = Pt(45)
-                section.bottom_margin = Pt(45)
+                section.top_margin = Pt(36)
+                section.bottom_margin = Pt(36)
 
             for p in list(doc.paragraphs):
                 p_xml = p._p
@@ -519,18 +519,25 @@ class IrgCertificateRequest(models.Model):
             for p in doc.paragraphs:
                 txt = p.text.strip()
                 p.paragraph_format.line_spacing = 1.0
-                if 'Las calificaciones obtenidas son:' in txt:
-                    p.paragraph_format.space_before = Pt(4)
-                    p.paragraph_format.space_after = Pt(7)
+                if 'CERTIFICA' in txt:
+                    p.paragraph_format.space_before = Pt(6)
+                    p.paragraph_format.space_after = Pt(6)
+                elif 'Las calificaciones obtenidas son:' in txt:
+                    p.paragraph_format.space_before = Pt(6)
+                    p.paragraph_format.space_after = Pt(8)
                 elif 'Para que así conste' in txt:
                     p.paragraph_format.space_before = Pt(8)
                     p.paragraph_format.space_after = Pt(4)
                 elif 'Departamento Académico' in txt or 'Raimon Gaja' in txt:
-                    p.paragraph_format.space_before = Pt(3)
+                    p.paragraph_format.space_before = Pt(4)
                     p.paragraph_format.space_after = Pt(2)
+                elif txt.startswith('Que '):
+                    p.paragraph_format.space_before = Pt(3)
+                    p.paragraph_format.space_after = Pt(5)
                 else:
-                    p.paragraph_format.space_before = Pt(2)
-                    p.paragraph_format.space_after = Pt(3)
+                    p.paragraph_format.space_before = Pt(3)
+                    p.paragraph_format.space_after = Pt(4)
+
 
 
         # Rellenar la tabla de notas
