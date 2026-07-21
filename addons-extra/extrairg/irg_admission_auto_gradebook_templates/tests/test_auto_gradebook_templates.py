@@ -71,24 +71,11 @@ class TestAutoGradebookTemplates(TransactionCase):
             'mobile': '600000099',
         })
 
-    def _create_auto_gradebook(self, admission):
-        """Reproduce irg_admission_auto_gradebook without OpenEduCat enroll stack."""
-        course = admission.course_id
-        gradebook = self.env['app.gradebook.student'].sudo().create({
+    def _create_gradebook_with_admission(self, admission):
+        """Creación manual de libreta poniendo la admisión (flujo UI)."""
+        return self.env['app.gradebook.student'].sudo().create({
             'admission_id': admission.id,
         })
-        subjects = course.subject_ids
-        if course.auto_gradebook_subject_filter == 'compulsory':
-            subjects = subjects.filtered(lambda s: s.subject_type == 'compulsory')
-        for subject in subjects:
-            self.env['app.gradebook.subject'].sudo().create({
-                'gradebook_student_id': gradebook.id,
-                'op_subject_id': subject.id,
-            })
-        return gradebook
-
-    def _apply_templates(self, admission):
-        admission._irg_assign_auto_gradebook_templates()
 
     def test_course_template_takes_precedence(self):
         course, _subject = self._create_course(
@@ -97,11 +84,10 @@ class TestAutoGradebookTemplates(TransactionCase):
             gradebook_id=self.course_template.id,
         )
         admission = self._create_admission(course, '01')
-        gradebook = self._create_auto_gradebook(admission)
-        self._apply_templates(admission)
+        gradebook = self._create_gradebook_with_admission(admission)
         self.assertEqual(gradebook.gradebook_id, self.course_template)
 
-    def test_diplomado_gets_canonical_template(self):
+    def test_diplomado_gets_canonical_template_on_create(self):
         course_type = self.env['op.course.type'].sudo().create({
             'name': 'Diplomado',
             'code': 'DIPAGT',
@@ -112,12 +98,10 @@ class TestAutoGradebookTemplates(TransactionCase):
             course_type_id=course_type.id,
         )
         admission = self._create_admission(course, '02')
-        gradebook = self._create_auto_gradebook(admission)
-        self.assertFalse(gradebook.gradebook_id)
-        self._apply_templates(admission)
+        gradebook = self._create_gradebook_with_admission(admission)
         self.assertEqual(gradebook.gradebook_id, self.diploma_template)
 
-    def test_master_by_course_type_gets_solo_examen(self):
+    def test_master_by_course_type_gets_solo_examen_on_create(self):
         course_type = self.env['op.course.type'].sudo().create({
             'name': 'Máster',
             'code': 'MSTAGT',
@@ -128,20 +112,16 @@ class TestAutoGradebookTemplates(TransactionCase):
             course_type_id=course_type.id,
         )
         admission = self._create_admission(course, '03')
-        gradebook = self._create_auto_gradebook(admission)
-        self.assertFalse(gradebook.gradebook_id)
-        self._apply_templates(admission)
+        gradebook = self._create_gradebook_with_admission(admission)
         self.assertEqual(gradebook.gradebook_id, self.solo_examen)
 
-    def test_master_by_course_name_gets_solo_examen(self):
+    def test_master_by_course_name_gets_solo_examen_on_create(self):
         course, _subject = self._create_course(
-            'Máster en Evaluación Neuropsicológica',
+            'EN - Máster en Evaluación Neuropsicológica',
             'AGTMST02',
         )
         admission = self._create_admission(course, '04')
-        gradebook = self._create_auto_gradebook(admission)
-        self.assertFalse(gradebook.gradebook_id)
-        self._apply_templates(admission)
+        gradebook = self._create_gradebook_with_admission(admission)
         self.assertEqual(gradebook.gradebook_id, self.solo_examen)
 
     def test_other_course_without_template_stays_empty(self):
@@ -150,8 +130,7 @@ class TestAutoGradebookTemplates(TransactionCase):
             'AGTOTH01',
         )
         admission = self._create_admission(course, '05')
-        gradebook = self._create_auto_gradebook(admission)
-        self._apply_templates(admission)
+        gradebook = self._create_gradebook_with_admission(admission)
         self.assertFalse(gradebook.gradebook_id)
 
     def test_subject_lines_not_force_written(self):
@@ -160,11 +139,29 @@ class TestAutoGradebookTemplates(TransactionCase):
             'AGTMST03',
         )
         admission = self._create_admission(course, '06')
-        gradebook = self._create_auto_gradebook(admission)
-        self._apply_templates(admission)
+        gradebook = self._create_gradebook_with_admission(admission)
+        self.env['app.gradebook.subject'].sudo().create({
+            'gradebook_student_id': gradebook.id,
+            'op_subject_id': subject.id,
+        })
         self.assertEqual(gradebook.gradebook_id, self.solo_examen)
         line = gradebook.gradebook_subject_ids.filtered(
             lambda r: r.op_subject_id == subject
         )
         self.assertTrue(line)
         self.assertFalse(line.gradebook_id)
+
+    def test_write_admission_assigns_template(self):
+        course, _subject = self._create_course(
+            'Máster en Escritura Diferida',
+            'AGTMST04',
+        )
+        admission = self._create_admission(course, '07')
+        # Crear sin admisión no es viable (student related required); simular
+        # cambio de admisión escribiendo sobre libreta existente vacía.
+        other_course, _ = self._create_course('Taller Aux', 'AGTAUX07')
+        other_admission = self._create_admission(other_course, '07b')
+        gradebook = self._create_gradebook_with_admission(other_admission)
+        self.assertFalse(gradebook.gradebook_id)
+        gradebook.write({'admission_id': admission.id})
+        self.assertEqual(gradebook.gradebook_id, self.solo_examen)

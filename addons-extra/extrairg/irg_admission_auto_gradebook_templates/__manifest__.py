@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Admission — Auto Gradebook Templates',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'summary': (
-        'Asigna plantilla de calificaciones al crear la libreta automática '
-        'en la matrícula (curso, o canónicas máster/diplomado).'
+        'Asigna plantilla de calificaciones al crear/actualizar una libreta '
+        'con admisión (curso, o canónicas máster/diplomado).'
     ),
     'description': """
-        Tras irg_admission_auto_gradebook:
+        Al crear una libreta (app.gradebook.student) con admisión, o al
+        matricular con irg_admission_auto_gradebook:
 
         1. Si el curso tiene gradebook_id, se conserva.
         2. Si no, diplomado → plantilla Diplomado 50/50.

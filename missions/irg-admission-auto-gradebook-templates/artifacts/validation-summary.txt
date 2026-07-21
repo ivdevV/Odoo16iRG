@@ -1,4 +1,3 @@
-GREEN/VALIDATION summary (full Odoo install logs kept local only)
-Database: test_irg_agtpl_20260721_val / test_irg_agtpl_20260721_green
-Result: 0 failed, 0 error(s) of 6 tests
-Module: irg_admission_auto_gradebook_templates
+FIX create-hook: 0 failed, 0 error(s) of 7 tests
+Database: test_irg_agtpl_20260721_fix
+Root cause: template only on enroll_student; manual create with admission missed it.
