@@ -20,6 +20,8 @@ class IrgGradebookMoodleMap(models.Model):
     _sql_constraints = [
         ('subject_course_uniq', 'unique(op_subject_id, moodle_course_id)',
          'Ya existe un mapeo para esta asignatura y curso de Moodle.'),
+        ('moodle_course_id_positive', 'CHECK(moodle_course_id > 0)',
+         'El ID del curso Moodle debe ser positivo.'),
     ]
 
 
@@ -36,3 +38,10 @@ class IrgGradebookMoodleMapLine(models.Model):
     activity_type = fields.Selection(
         [('quiz', 'Quiz'), ('assign', 'Tarea')],
         string='Tipo', default='quiz', required=True)
+
+    _sql_constraints = [
+        ('map_activity_uniq', 'unique(map_id, moodle_activity_id)',
+         'La actividad Moodle ya está incluida en este mapeo.'),
+        ('moodle_activity_id_positive', 'CHECK(moodle_activity_id > 0)',
+         'El ID de la actividad Moodle debe ser positivo.'),
+    ]

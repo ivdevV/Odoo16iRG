@@ -110,6 +110,14 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
             item_usage.setdefault(item_index, []).append(
                 (map_line, result_type)
             )
+            if item.get("itemmodule") != map_line.activity_type:
+                issues[result_type].append(
+                    _(
+                        "La actividad Moodle %s no coincide con el tipo "
+                        "mapeado (%s)."
+                    )
+                    % (activity_id, map_line.activity_type)
+                )
 
         for usages in item_usage.values():
             if len(usages) > 1:

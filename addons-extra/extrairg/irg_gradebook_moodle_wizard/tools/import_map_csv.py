@@ -61,6 +61,9 @@ def run_import(env, csv_path):
                     for act_id in act_ids):
                 skipped += 1
                 continue
+            if len(set(act_ids)) != len(act_ids):
+                skipped += 1
+                continue
             names_raw = (row.get('Moodle Names Found') or '').strip()
             names = [n.strip() for n in names_raw.split('|')]
             lines = []

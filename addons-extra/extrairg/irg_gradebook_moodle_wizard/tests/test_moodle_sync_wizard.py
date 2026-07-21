@@ -1,8 +1,9 @@
 from datetime import date
 import threading
 import uuid
-from unittest.mock import patch
+from unittest.mock import call, patch
 
+from lxml import etree
 from psycopg2 import IntegrityError
 from psycopg2.errors import SerializationFailure
 
@@ -10,6 +11,10 @@ from odoo import Command, api
 from odoo.exceptions import AccessError, UserError
 from odoo.service import model as service_model
 from odoo.tests import TransactionCase, tagged
+
+from odoo.addons.irg_gradebook_moodle_wizard.models.gradebook_service import (
+    GradebookMoodleService,
+)
 
 
 SERVICE_PATH = (
@@ -57,6 +62,128 @@ def _fake_usergrades(md_user_id=777):
             ],
         }
     ]
+
+
+@tagged("post_install", "-at_install")
+class TestGradebookMoodleService(TransactionCase):
+    def _service(self):
+        return GradebookMoodleService(
+            {
+                "access_token": "top-secret-token",
+                "base_url": "https://private-moodle.example",
+            },
+            self.env,
+        )
+
+    def _assert_safe_user_error(self, callback, message):
+        with self.assertRaisesRegex(UserError, message) as caught:
+            callback()
+        error_message = str(caught.exception)
+        self.assertNotIn("top-secret-token", error_message)
+        self.assertNotIn("private-moodle.example", error_message)
+
+    def test_grade_endpoint_error_is_explicit_and_safe(self):
+        service = self._service()
+        with patch.object(
+            service,
+            "_call",
+            return_value=(None, "top-secret-token https://private-moodle.example"),
+        ):
+            self._assert_safe_user_error(
+                lambda: service.get_user_grade_items(44),
+                "notas de Moodle",
+            )
+
+    def test_malformed_grade_payload_is_rejected(self):
+        malformed_payloads = (
+            [],
+            {},
+            {"usergrades": {}},
+            {"usergrades": ["invalid-usergrade"]},
+            {"usergrades": [{"userid": 777, "gradeitems": {}}]},
+            {"usergrades": [{"userid": 777, "gradeitems": ["invalid-item"]}]},
+        )
+        for payload in malformed_payloads:
+            with self.subTest(payload=payload):
+                service = self._service()
+                with patch.object(
+                    service, "_call", return_value=(payload, None)
+                ):
+                    self._assert_safe_user_error(
+                        lambda: service.get_user_grade_items(44),
+                        "respuesta de notas de Moodle no es válida",
+                    )
+
+    def test_enrolment_endpoint_error_is_explicit_and_safe(self):
+        service = self._service()
+        grade_payload = {"usergrades": [{"userid": 777, "gradeitems": []}]}
+        with patch.object(
+            service,
+            "_call",
+            side_effect=[
+                (grade_payload, None),
+                (
+                    None,
+                    "top-secret-token https://private-moodle.example",
+                ),
+            ],
+        ):
+            self._assert_safe_user_error(
+                lambda: service.get_user_grade_items(44),
+                "matriculados de Moodle",
+            )
+
+    def test_malformed_enrolment_payload_is_rejected(self):
+        service = self._service()
+        grade_payload = {"usergrades": [{"userid": 777, "gradeitems": []}]}
+        with patch.object(
+            service,
+            "_call",
+            side_effect=[(grade_payload, None), ({"users": []}, None)],
+        ):
+            self._assert_safe_user_error(
+                lambda: service.get_user_grade_items(44),
+                "respuesta de matriculados de Moodle no es válida",
+            )
+
+    def test_valid_payload_returns_grades_and_emails_from_dict_users_only(self):
+        service = self._service()
+        grade_payload = {"usergrades": [{"userid": 777, "gradeitems": []}]}
+        enrolled_payload = [
+            {"id": 777, "email": " alumno.test@example.com "},
+            "invalid-user",
+            None,
+            {"email": "missing-id@example.com"},
+            {"id": 778},
+        ]
+        with patch.object(
+            service,
+            "_call",
+            side_effect=[
+                (grade_payload, None),
+                (enrolled_payload, None),
+            ],
+        ) as mock_call:
+            try:
+                usergrades, emails = service.get_user_grade_items(44)
+            except Exception as error:  # pylint: disable=broad-except
+                self.fail(
+                    "El servicio debe ignorar matriculados no-dict: %s: %s"
+                    % (type(error).__name__, error)
+                )
+
+        self.assertIs(usergrades, grade_payload["usergrades"])
+        self.assertEqual(
+            emails,
+            {777: "alumno.test@example.com", 778: ""},
+        )
+        self.assertEqual(
+            mock_call.call_args_list,
+            [
+                call("gradereport_user_get_grade_items", {"courseid": 44}),
+                call("core_enrol_get_enrolled_users", {"courseid": 44}),
+            ],
+        )
 
 
 @tagged("post_install", "-at_install")
@@ -307,6 +434,32 @@ class TestMoodleSyncWizard(TransactionCase):
         exam = wizard.line_ids.filtered(lambda line: line.survey_type == "exam")
         self.assertEqual(exam.state, "ok")
         self.assertAlmostEqual(exam.moodle_grade, 8.0, places=2)
+
+    def test_quiz_map_rejects_assign_itemmodule_for_complete_exam_type(self):
+        self._skip_until_models_exist()
+        usergrades = _fake_usergrades()
+        usergrades[0]["gradeitems"][0]["itemmodule"] = "assign"
+
+        wizard = self._open_wizard(usergrades=usergrades)
+
+        exam = wizard.line_ids.filtered(lambda line: line.survey_type == "exam")
+        self.assertEqual(exam.state, "incompatible")
+        self.assertFalse(exam.apply_line)
+        self.assertFalse(exam.moodle_grade)
+        self.assertEqual(exam.graded_count, 0)
+
+    def test_missing_itemmodule_invalidates_complete_exam_type(self):
+        self._skip_until_models_exist()
+        usergrades = _fake_usergrades()
+        usergrades[0]["gradeitems"][0].pop("itemmodule")
+
+        wizard = self._open_wizard(usergrades=usergrades)
+
+        exam = wizard.line_ids.filtered(lambda line: line.survey_type == "exam")
+        self.assertEqual(exam.state, "incompatible")
+        self.assertFalse(exam.apply_line)
+        self.assertFalse(exam.moodle_grade)
+        self.assertEqual(exam.graded_count, 0)
 
     def test_apply_creates_and_upserts(self):
         """Aplicar crea la línea de resultado; re-aplicar la actualiza."""
@@ -567,6 +720,41 @@ class TestMoodleSyncWizard(TransactionCase):
             wizard.with_user(self.internal_user).action_load_moodle_data()
         with self.assertRaises(AccessError):
             wizard.with_user(self.internal_user).action_apply()
+
+    def test_done_gradebook_cannot_open_wizard(self):
+        self._skip_until_models_exist()
+        self.gb_student.state = "done"
+        wizard_model = self.env["irg.gradebook.moodle.sync.wizard"]
+        wizard_count = wizard_model.search_count([])
+
+        with patch(SERVICE_PATH + ".GradebookMoodleService") as mock_service, patch(
+            "odoo.addons.odoo_moodle_connector.models.utils."
+            "get_moodle_credentials",
+            return_value={"access_token": "x", "base_url": "http://test"},
+        ):
+            mock_service.return_value.get_user_grade_items.return_value = (
+                _fake_usergrades(),
+                {777: "alumno.test@example.com"},
+            )
+            with self.assertRaisesRegex(UserError, "libreta finalizada"):
+                self.gb_student.action_open_moodle_sync_wizard()
+
+        self.assertEqual(wizard_model.search_count([]), wizard_count)
+        mock_service.assert_not_called()
+
+    def test_sync_button_is_hidden_for_done_gradebooks(self):
+        view = self.env.ref(
+            "irg_gradebook_moodle_wizard.app_gradebook_student_form_moodle"
+        )
+        arch = etree.fromstring(view.arch_db.encode())
+        buttons = arch.xpath(
+            "//button[@name='action_open_moodle_sync_wizard']"
+        )
+        self.assertEqual(len(buttons), 1)
+        self.assertEqual(
+            buttons[0].get("attrs"),
+            "{'invisible': [('state', '=', 'done')]}",
+        )
 
     def test_moodle_sync_key_is_unique_and_manual_results_remain_multiple(self):
         """La clave nullable bloquea Moodle duplicado sin afectar notas manuales."""

@@ -1,5 +1,5 @@
 from odoo import _, models
-from odoo.exceptions import AccessError
+from odoo.exceptions import AccessError, UserError
 
 
 class AppGradebookStudent(models.Model):
@@ -21,6 +21,8 @@ class AppGradebookStudent(models.Model):
     def action_open_moodle_sync_wizard(self):
         self.ensure_one()
         self._check_moodle_sync_access()
+        if self.state == "done":
+            raise UserError(_("No se puede sincronizar una libreta finalizada."))
         wizard = self.env["irg.gradebook.moodle.sync.wizard"].create(
             {"gradebook_student_id": self.id}
         )

@@ -5,6 +5,8 @@ from io import StringIO
 from pathlib import Path
 import tempfile
 
+from psycopg2 import IntegrityError
+
 from odoo.tests import TransactionCase, tagged
 
 
@@ -240,6 +242,116 @@ class TestImportMapCsv(TransactionCase):
                     "Import mapeo: 0 creados, 0 actualizados, 1 saltados.",
                     output,
                 )
+
+    def test_duplicate_activity_ids_preserve_existing_map_and_lines(self):
+        import_module = _load_import_module()
+        mapping = self.env["irg.gradebook.moodle.map"].create(
+            {
+                "op_subject_id": self.subject.id,
+                "moodle_course_id": 808118,
+                "moodle_course_name": "Curso duplicado preservado",
+                "line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "moodle_activity_id": 710011,
+                            "name": "Quiz duplicado preservado",
+                            "activity_type": "quiz",
+                        },
+                    )
+                ],
+            }
+        )
+        original_lines = [
+            (line.id, line.moodle_activity_id, line.name)
+            for line in mapping.line_ids
+        ]
+
+        output = self._run_import_rows(
+            import_module,
+            [
+                {
+                    "Moodle Course ID": "808118",
+                    "Odoo Subject ID": str(self.subject.id),
+                    "Odoo Subject Name": self.subject.name,
+                    "Curso Nombre": "Curso que no debe actualizarse",
+                    "Moodle IDs List": "395,395",
+                    "Moodle Names Found": "Quiz A | Quiz B",
+                }
+            ],
+        )
+
+        self.assertEqual(
+            mapping.moodle_course_name,
+            "Curso duplicado preservado",
+        )
+        self.assertEqual(
+            [
+                (line.id, line.moodle_activity_id, line.name)
+                for line in mapping.line_ids
+            ],
+            original_lines,
+        )
+        self.assertIn(
+            "Import mapeo: 0 creados, 0 actualizados, 1 saltados.",
+            output,
+        )
+
+    def test_duplicate_activity_id_is_rejected_by_database_constraint(self):
+        mapping = self.env["irg.gradebook.moodle.map"].create(
+            {
+                "op_subject_id": self.subject.id,
+                "moodle_course_id": 808119,
+                "line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "moodle_activity_id": 710019,
+                            "activity_type": "quiz",
+                        },
+                    )
+                ],
+            }
+        )
+
+        with self.assertRaises(IntegrityError), self.env.cr.savepoint():
+            self.env["irg.gradebook.moodle.map.line"].create(
+                {
+                    "map_id": mapping.id,
+                    "moodle_activity_id": 710019,
+                    "activity_type": "quiz",
+                }
+            ).flush_recordset()
+
+    def test_moodle_course_and_activity_ids_must_be_positive(self):
+        for invalid_course_id in (0, -1):
+            with self.subTest(course_id=invalid_course_id):
+                with self.assertRaises(IntegrityError), self.env.cr.savepoint():
+                    self.env["irg.gradebook.moodle.map"].create(
+                        {
+                            "op_subject_id": self.subject.id,
+                            "moodle_course_id": invalid_course_id,
+                        }
+                    ).flush_recordset()
+
+        mapping = self.env["irg.gradebook.moodle.map"].create(
+            {
+                "op_subject_id": self.subject.id,
+                "moodle_course_id": 808120,
+            }
+        )
+        for invalid_activity_id in (0, -1):
+            with self.subTest(activity_id=invalid_activity_id):
+                with self.assertRaises(IntegrityError), self.env.cr.savepoint():
+                    self.env["irg.gradebook.moodle.map.line"].create(
+                        {
+                            "map_id": mapping.id,
+                            "moodle_activity_id": invalid_activity_id,
+                            "activity_type": "quiz",
+                        }
+                    ).flush_recordset()
 
     def test_invalid_subject_or_course_ids_are_skipped_before_valid_row(self):
         import_module = _load_import_module()

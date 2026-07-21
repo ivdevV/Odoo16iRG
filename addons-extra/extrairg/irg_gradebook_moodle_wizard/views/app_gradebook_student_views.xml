@@ -10,6 +10,7 @@
                 <button name="action_open_moodle_sync_wizard"
                         string="Sincronizar con Moodle" type="object"
                         class="btn-secondary"
+                        attrs="{'invisible': [('state', '=', 'done')]}"
                         groups="openeducat_core.group_op_faculty,isep_gradebook.isep_gradebook_admin"/>
             </xpath>
         </field>
