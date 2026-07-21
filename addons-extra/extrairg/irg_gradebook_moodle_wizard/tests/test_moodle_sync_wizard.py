@@ -27,6 +27,7 @@ REQUIRED_MODELS = (
     "irg.gradebook.moodle.sync.wizard",
     "irg.gradebook.moodle.sync.wizard.line",
 )
+INVALID_RESPONSE_MESSAGE = "La respuesta recibida de Moodle no es válida."
 
 
 def _fake_usergrades(md_user_id=777):
@@ -76,11 +77,56 @@ class TestGradebookMoodleService(TransactionCase):
         )
 
     def _assert_safe_user_error(self, callback, message):
-        with self.assertRaisesRegex(UserError, message) as caught:
+        try:
             callback()
-        error_message = str(caught.exception)
+        except UserError as error:
+            error_message = str(error)
+        except Exception as error:  # pylint: disable=broad-except
+            self.fail(
+                "El esquema inválido debe producir UserError, no %s: %s"
+                % (type(error).__name__, error)
+            )
+        else:
+            self.fail("El esquema inválido debe producir UserError.")
+        self.assertRegex(error_message, message)
         self.assertNotIn("top-secret-token", error_message)
         self.assertNotIn("private-moodle.example", error_message)
+
+    @staticmethod
+    def _valid_grade_payload():
+        return {
+            "usergrades": [
+                {
+                    "userid": 777,
+                    "userfullname": None,
+                    "gradeitems": [
+                        {
+                            "id": None,
+                            "cmid": 4395,
+                            "itemname": None,
+                            "itemmodule": None,
+                            "graderaw": "8.0",
+                            "grademax": 10.0,
+                        }
+                    ],
+                }
+            ]
+        }
+
+    def _assert_payload_schema_error(self, grade_payload, enrolled_payload):
+        service = self._service()
+        with patch.object(
+            service,
+            "_call",
+            side_effect=[
+                (grade_payload, None),
+                (enrolled_payload, None),
+            ],
+        ):
+            self._assert_safe_user_error(
+                lambda: service.get_user_grade_items(44),
+                INVALID_RESPONSE_MESSAGE,
+            )
 
     def test_grade_endpoint_error_is_explicit_and_safe(self):
         service = self._service()
@@ -111,7 +157,7 @@ class TestGradebookMoodleService(TransactionCase):
                 ):
                     self._assert_safe_user_error(
                         lambda: service.get_user_grade_items(44),
-                        "respuesta de notas de Moodle no es válida",
+                        INVALID_RESPONSE_MESSAGE,
                     )
 
     def test_enrolment_endpoint_error_is_explicit_and_safe(self):
@@ -143,18 +189,82 @@ class TestGradebookMoodleService(TransactionCase):
         ):
             self._assert_safe_user_error(
                 lambda: service.get_user_grade_items(44),
-                "respuesta de matriculados de Moodle no es válida",
+                INVALID_RESPONSE_MESSAGE,
             )
 
-    def test_valid_payload_returns_grades_and_emails_from_dict_users_only(self):
-        service = self._service()
-        grade_payload = {"usergrades": [{"userid": 777, "gradeitems": []}]}
-        enrolled_payload = [
-            {"id": 777, "email": " alumno.test@example.com "},
+    def test_malformed_enrolled_user_fields_are_rejected_safely(self):
+        invalid_users = (
             "invalid-user",
             None,
-            {"email": "missing-id@example.com"},
-            {"id": 778},
+            {"id": [], "email": "top-secret-token"},
+            {"id": {"secret": "private-moodle.example"}, "email": None},
+            {"id": "777", "email": "alumno.test@example.com"},
+            {"id": 777.0, "email": "alumno.test@example.com"},
+            {"id": True, "email": "alumno.test@example.com"},
+            {"id": 0, "email": "alumno.test@example.com"},
+            {"id": -1, "email": "alumno.test@example.com"},
+            {"id": 777, "email": 123},
+            {"id": 777, "email": ["top-secret-token"]},
+        )
+        for invalid_user in invalid_users:
+            with self.subTest(invalid_user=invalid_user):
+                self._assert_payload_schema_error(
+                    self._valid_grade_payload(),
+                    [invalid_user],
+                )
+
+    def test_malformed_usergrade_fields_are_rejected_safely(self):
+        valid_usergrade = self._valid_grade_payload()["usergrades"][0]
+        invalid_usergrades = [
+            dict(valid_usergrade, userid=value)
+            for value in (None, "777", 777.0, True, 0, -1, [], {})
+        ] + [
+            dict(valid_usergrade, userfullname=value)
+            for value in (123, True, [], {})
+        ]
+        for invalid_usergrade in invalid_usergrades:
+            with self.subTest(invalid_usergrade=invalid_usergrade):
+                self._assert_payload_schema_error(
+                    {"usergrades": [invalid_usergrade]},
+                    [{"id": 777, "email": None}],
+                )
+
+    def test_malformed_gradeitem_consumed_fields_are_rejected_safely(self):
+        valid_usergrade = self._valid_grade_payload()["usergrades"][0]
+        valid_item = valid_usergrade["gradeitems"][0]
+        invalid_items = []
+        for field_name, values in (
+            (
+                "id",
+                ("395", True, [], {"secret": "top-secret-token"}),
+            ),
+            (
+                "cmid",
+                ("4395", True, [], {"secret": "private-moodle.example"}),
+            ),
+            ("itemname", (123, True, [], {})),
+            ("itemmodule", (123, True, [], {})),
+            ("graderaw", (True, [], {})),
+            ("grademax", (True, [], {})),
+        ):
+            invalid_items.extend(
+                dict(valid_item, **{field_name: value}) for value in values
+            )
+
+        for invalid_item in invalid_items:
+            with self.subTest(invalid_item=invalid_item):
+                usergrade = dict(valid_usergrade, gradeitems=[invalid_item])
+                self._assert_payload_schema_error(
+                    {"usergrades": [usergrade]},
+                    [{"id": 777, "email": None}],
+                )
+
+    def test_valid_typed_payload_returns_grades_and_emails(self):
+        service = self._service()
+        grade_payload = self._valid_grade_payload()
+        enrolled_payload = [
+            {"id": 777, "email": " alumno.test@example.com "},
+            {"id": 778, "email": None},
         ]
         with patch.object(
             service,
@@ -164,13 +274,7 @@ class TestGradebookMoodleService(TransactionCase):
                 (enrolled_payload, None),
             ],
         ) as mock_call:
-            try:
-                usergrades, emails = service.get_user_grade_items(44)
-            except Exception as error:  # pylint: disable=broad-except
-                self.fail(
-                    "El servicio debe ignorar matriculados no-dict: %s: %s"
-                    % (type(error).__name__, error)
-                )
+            usergrades, emails = service.get_user_grade_items(44)
 
         self.assertIs(usergrades, grade_payload["usergrades"])
         self.assertEqual(
