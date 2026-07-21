@@ -608,7 +608,7 @@ class IrgCertificateRequest(models.Model):
                             break
                 footer_row.addprevious(new_row)
 
-        # Normalize cell bottom borders and remove cell shading for all data rows
+        # Normalize cell top and bottom borders and remove cell shading for all data rows
         all_data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
         for r_idx, r_xml in enumerate(all_data_rows):
             for c in r_xml.findall(qn('w:tc')):
@@ -622,8 +622,16 @@ class IrgCertificateRequest(models.Model):
                 if tcBorders is None:
                     tcBorders = tcPr.makeelement(qn('w:tcBorders'), {})
                     tcPr.append(tcBorders)
-                for b in tcBorders.findall(qn('w:bottom')):
-                    tcBorders.remove(b)
+                for b_name in ('top', 'bottom'):
+                    for b in tcBorders.findall(qn(f'w:{b_name}')):
+                        tcBorders.remove(b)
+                t_elem = tcBorders.makeelement(qn('w:top'), {
+                    qn('w:val'): 'single',
+                    qn('w:color'): 'dee2e6',
+                    qn('w:sz'): '5',
+                    qn('w:space'): '0',
+                })
+                tcBorders.append(t_elem)
                 if r_idx < len(all_data_rows) - 1:
                     b_elem = tcBorders.makeelement(qn('w:bottom'), {
                         qn('w:val'): 'single',
@@ -639,6 +647,7 @@ class IrgCertificateRequest(models.Model):
                         qn('w:space'): '0',
                     })
                 tcBorders.append(b_elem)
+
 
         # Nota Media
         footer_cells = footer_row.findall(qn('w:tc'))

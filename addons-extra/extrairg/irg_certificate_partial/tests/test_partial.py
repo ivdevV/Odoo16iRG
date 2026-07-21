@@ -831,12 +831,19 @@ class TestIrgCertificatePartial(TransactionCase):
         self.assertEqual(row_12_border.attrib.get(qn('w:color')), 'dee2e6')
         self.assertEqual(len(row_12_tc.findall('.//' + qn('w:shd'))), 0)
 
+        # Check row 12 (RN01 / 13th data row) has thin top border dee2e6
+        row_13_tc = all_data_rows[12].findall(qn('w:tc'))[0]
+        row_13_top = row_13_tc.find('.//' + qn('w:top'))
+        self.assertIsNotNone(row_13_top)
+        self.assertEqual(row_13_top.attrib.get(qn('w:color')), 'dee2e6')
+
         # Check row 22 (23rd data row) has thick bottom border 000000 and no shading
         last_row_tc = all_data_rows[22].findall(qn('w:tc'))[0]
         last_row_border = last_row_tc.find('.//' + qn('w:bottom'))
         self.assertIsNotNone(last_row_border)
         self.assertEqual(last_row_border.attrib.get(qn('w:color')), '000000')
         self.assertEqual(len(last_row_tc.findall('.//' + qn('w:shd'))), 0)
+
 
         # Verify PDF conversion yields 1 page
         pdf_bytes = cert._convert_to_pdf(res_docx)
