@@ -1,1 +1,43 @@
-<odoo/>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="irg_gradebook_moodle_sync_wizard_form" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.sync.wizard.form</field>
+        <field name="model">irg.gradebook.moodle.sync.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Sincronizar con Moodle">
+                <group>
+                    <field name="gradebook_student_id" readonly="1"/>
+                    <field name="student_id" readonly="1"/>
+                    <field name="match_method" readonly="1"/>
+                </group>
+                <field name="line_ids">
+                    <tree editable="bottom" create="0" delete="0"
+                          decoration-success="state == 'ok'"
+                          decoration-muted="state in ('sin_mapeo', 'sin_nota')"
+                          decoration-warning="state == 'incompatible'"
+                          decoration-danger="state == 'alumno_no_encontrado'">
+                        <field name="apply_line" widget="boolean_toggle"
+                               attrs="{'readonly': [('state', '!=', 'ok')]}"/>
+                        <field name="subject_id" readonly="1"/>
+                        <field name="survey_type" readonly="1"/>
+                        <field name="state" readonly="1"/>
+                        <field name="graded_count" readonly="1"/>
+                        <field name="moodle_grade" readonly="1"/>
+                        <field name="current_grade" readonly="1"/>
+                        <field name="grade_to_apply"
+                               attrs="{'readonly': [('state', '!=', 'ok')]}"/>
+                        <field name="moodle_info" readonly="1" optional="show"/>
+                        <field name="gradebook_subject_id" invisible="1"/>
+                    </tree>
+                </field>
+                <footer>
+                    <button name="action_apply" string="Aplicar notas"
+                            type="object" class="btn-primary"/>
+                    <button name="action_load_moodle_data" string="Recargar"
+                            type="object"/>
+                    <button string="Cancelar" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

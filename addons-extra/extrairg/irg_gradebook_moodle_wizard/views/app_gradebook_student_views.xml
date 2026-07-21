@@ -1,1 +1,17 @@
-<odoo/>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="app_gradebook_student_form_moodle" model="ir.ui.view">
+        <field name="name">app.gradebook.student.form.moodle</field>
+        <field name="model">app.gradebook.student</field>
+        <field name="inherit_id"
+               ref="isep_gradebook.app_gradebook_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_open_moodle_sync_wizard"
+                        string="Sincronizar con Moodle" type="object"
+                        class="btn-secondary"
+                        groups="openeducat_core.group_op_faculty,isep_gradebook.isep_gradebook_admin"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
