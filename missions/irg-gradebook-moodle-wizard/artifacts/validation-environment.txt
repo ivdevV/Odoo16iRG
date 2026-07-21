@@ -1,0 +1,25 @@
+Validación independiente — credenciales, limpieza y restauración
+Fecha: 2026-07-21
+
+Credenciales Moodle:
+- Se enumeraron las 101 bases locales conectables de PostgreSQL.
+- Solo una contiene la tabla public.moodle_credentials.
+- Total de filas de credenciales en las 101 bases: 0.
+- Resultado: CREDENTIAL_SCAN databases=101 tables=1 rows=0.
+
+Por tanto, no es posible ejecutar localmente un smoke real del WS ni resolver con
+datos reales si los IDs del Excel corresponden a item.id o item.cmid. El servicio y
+la suite cubren ambos namespaces, validan itemmodule y rechazan colisiones.
+
+Limpieza/restauración:
+- Contenedores odoo16irg_local-odoo_local-run* tras los checks: 0.
+- Servicio persistente odoo16irg_local: Up.
+- PostgreSQL pgodoo16irg_local: Up.
+- Redis redisodoo16irg_local: Up.
+- Mount persistente /mnt/extra-addons:
+  /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra
+- Residuos de fixtures por marcadores en test_irg_db: partners=0, users=0,
+  courses=0, subjects=0, maps=0.
+
+El entorno compartido queda restaurado al checkout principal y sin fixtures de esta
+validación.

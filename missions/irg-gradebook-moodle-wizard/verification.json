@@ -1,0 +1,70 @@
+{
+  "status": "passed",
+  "task": "irg-gradebook-moodle-wizard",
+  "checks": [
+    {
+      "name": "static_scope_and_formats",
+      "command": "git diff --check ba7595492..HEAD; compile/AST Python; parse XML/CSV/manifest; validate diff allowlist",
+      "result": "pass",
+      "detail": "13 Python, 3 XML, 8 ACL y 17 archivos funcionales; todo el diff está bajo el addon nuevo y no hay errores de whitespace.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "odoo_upgrade_and_tests",
+      "command": "docker compose -f docker-compose.local.yml -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=test",
+      "result": "pass",
+      "detail": "Exit 0; 44/44 métodos, 50 tests/subtests en estadísticas, 0 failed y 0 errors. Módulo 16.0.1.0.0 instalado con 4 vistas, 8 ACL y constraints esperadas.",
+      "evidence": "artifacts/validation-odoo-tests.txt"
+    },
+    {
+      "name": "real_map_import",
+      "command": "odoo shell en test_irg_db: ejecutar tools/import_map_csv.py sobre /tmp/map_asignaturas.csv y rollback",
+      "result": "pass",
+      "detail": "369 filas: 0 creadas, 0 actualizadas y 369 skipped porque test_irg_db tiene 0 op.subject; exit 0, rollback y 0 mapas residuales.",
+      "evidence": "artifacts/validation-import.txt"
+    },
+    {
+      "name": "real_moodle_ws_smoke",
+      "command": "buscar moodle.credentials en todas las bases locales y, si existen, ejecutar gradereport_user_get_grade_items para curso 44",
+      "result": "skipped",
+      "detail": "No ejecutable objetivamente: 101 bases locales inspeccionadas, una tabla moodle_credentials y 0 filas. La suite mockeada valida id/cmid, esquema y errores del WS.",
+      "evidence": "artifacts/validation-environment.txt"
+    },
+    {
+      "name": "manual_ui_flow",
+      "command": "browser integrado sobre Odoo aislado localhost:18069 + mock Moodle local controlado localhost:18080; aplicar dos sincronizaciones y verificar resultado por SQL",
+      "result": "pass",
+      "detail": "Botón visible; wizard con una línea exam Encontrada por md_id y nota 8; aplicar cambió promedio 0→8; segunda sincronización mostró nota actual 8 y SQL confirmó exactamente un resultado Moodle con scoring_total=8.",
+      "evidence": "artifacts/task9-ui-smoke.txt"
+    },
+    {
+      "name": "cleanup_and_restore",
+      "command": "comprobar fixtures, docker ps e inspect del mount persistente tras tests/import",
+      "result": "pass",
+      "detail": "0 fixtures por marcadores y 0 mapas tras tests/import; tras UI, residual users/courses/partners/credentials=0, mock y servidor aislado detenidos, sin contenedores temporales y con los servicios originales restaurados.",
+      "evidence": "artifacts/task9-ui-smoke.txt"
+    },
+    {
+      "name": "git_status",
+      "command": "git status --short --branch",
+      "result": "pass",
+      "detail": "Rama feat/gradebook-moodle-wizard; el diff funcional committed se limita al addon nuevo. Plan y artefactos de misión permanecen sin stage para la fase de documentación.",
+      "evidence": "artifacts/validation-static.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml + missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml",
+    "database": "test_irg_db",
+    "base_commit": "ba75954925d5ea164d5e2234e7eaf2044d4ce7cf",
+    "validated_commit": "a0757b59a69710d8f2427d580beeb676566001b4"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-static.txt",
+    "artifacts/validation-odoo-tests.txt",
+    "artifacts/validation-import.txt",
+    "artifacts/validation-environment.txt",
+    "artifacts/task9-ui-smoke.txt"
+  ]
+}

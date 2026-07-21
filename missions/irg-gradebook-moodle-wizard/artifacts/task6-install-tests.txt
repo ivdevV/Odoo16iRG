@@ -1,0 +1,32 @@
+Task 6 — instalación/upgrade y checks de vistas
+Fecha: 2026-07-21
+
+Comando integrado (overlay del worktree):
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=test
+
+Resultado: exit 0.
+Resumen Odoo: 0 failed, 0 error(s) of 24 tests when loading database 'test_irg_db'.
+El fichero de tests contiene 24 métodos `test_`; Task 6 no añadió tests ni cambió ese total.
+
+Checks estáticos:
+- xmllint --noout sobre las dos vistas: pass.
+- AST del manifest: pass.
+- CSV ACL: 9 filas, 8 columnas en cada fila: pass.
+- git diff --check: pass.
+
+Metadatos cargados en test_irg_db:
+- XML IDs `irg_gradebook_moodle_sync_wizard_form` y
+  `app_gradebook_student_form_moodle`: presentes.
+- La vista heredada resuelve contra `app_gradebook_student_form`; su XML contiene
+  `action_open_moodle_sync_wizard` y los grupos Faculty/Gradebook Admin.
+- ACL CRUD presentes para ambos modelos transient y ambos grupos.
+
+Limpieza:
+- No quedó ningún contenedor `odoo16irg_local-odoo_local-run*`.
+- El servicio persistente conserva
+  `/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra` en
+  `/mnt/extra-addons`.
+
+Smoke WS: no reintentado. El smoke previo del orquestador fue `no_credentials` en
+test_irg_db y no hay registros `moodle.credentials` en ninguna base local; por tanto
+la semántica real id/cmid sigue bloqueada y no se inventó un resultado.

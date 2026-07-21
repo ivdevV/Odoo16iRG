@@ -1,0 +1,57 @@
+Task 5 hardening — TDD RED
+Date: 2026-07-21
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=test
+
+RED 1: exit 1; 17 scenarios; 12 failed, 3 errors.
+Expected missing behavior observed:
+- template qty > 1 and manual result were still accepted;
+- invalid grademax values still generated an applicable grade;
+- multiple active maps were selected arbitrarily;
+- id/cmid item reuse did not invalidate the type;
+- internal user reached business logic instead of AccessError;
+- moodle_sync_key did not exist;
+- invalid editable grades were written/not rejected;
+- concurrency lock helper did not exist.
+
+RED 2 (adversarial precedence): exit 1; 19 scenarios; 2 failed, 0 errors.
+- multiple empty active maps produced sin_mapeo instead of incompatible;
+- an unselected legacy Moodle duplicate did not abort the complete apply.
+
+Both RED runs failed for the intended absent safeguards, before their production
+implementation.
+
+Re-review line-state and transient-lock RED
+Date: 2026-07-21
+
+Same full-suite command.
+Result: exit 1; 21 scenarios; 2 failed, 0 errors.
+- A line forced through ORM from sin_nota to apply_line=True was not rejected.
+- A committed concurrent edit to a previously read transient line did not raise
+  SerializationFailure because wizard lines were not locked.
+
+Both failures exercised the requested missing server-side safeguards before the
+production change.
+
+Re-review locked-line ordering RED
+Date: 2026-07-21
+
+Corrected regression setup invalidated the One2many cache so the model `_order`
+was applied. With the original direct list comparison restored, the full suite
+ended with exit 1: 22 scenarios, 0 failed, 1 error.
+
+The new scenario reached `action_apply` and raised the false UserError
+"Las líneas del asistente cambiaron durante el proceso" because SQL returned
+line IDs ordered by id while the One2many returned assignment before exam.
+
+Final review — concurrent INSERT RED
+Date: 2026-07-21
+
+Full suite result before production changes: exit 1; 23 scenarios; 1 failed,
+0 errors.
+
+The coordinated INSERT committed a new line in the same wizard before
+`action_apply` completed, but the apply transaction's already-established
+snapshot never observed that line. This demonstrated the missing shared parent
+serialization point.
