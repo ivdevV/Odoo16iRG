@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="gradebook_master_solo_examen" model="app.gradebook">
+            <field name="name">Solo Examen</field>
+            <field name="grading_scale">10.0</field>
+            <field name="gradebook_template_ids" eval="[(0, 0, {
+                'type': 'exam',
+                'weight': 100.0,
+                'qty': 1,
+            })]"/>
+        </record>
+    </data>
+</odoo>
