@@ -591,7 +591,7 @@ class IrgCertificateRequest(models.Model):
                 self._format_gradebook_signature_paragraph(para)
 
     def _replace_gradebook_description_paragraph(
-        self, doc, partner, documento, course_name, periodo_str, ects_detallado
+        self, doc, partner, documento, course_name, periodo_str, ects_detallado, has_many_subjects=False
     ):
         """Use the partial certificate body wording in the final gradebook."""
         sentence_2 = (
@@ -599,6 +599,9 @@ class IrgCertificateRequest(models.Model):
             'y horas destinadas a otras actividades académicas.'
         ) % ects_detallado
         sentence_3 = 'Las calificaciones obtenidas son:'
+
+        sp_after_body = Pt(4) if has_many_subjects else Pt(12)
+        sp_after_p3 = Pt(7) if has_many_subjects else Pt(12)
 
         for para in list(doc.paragraphs):
             full_text = ''.join(r.text for r in para.runs)
@@ -613,14 +616,14 @@ class IrgCertificateRequest(models.Model):
                 (' durante el período académico %s.' % periodo_str, False),
             ])
             self._format_gradebook_body_paragraph(para, justify=True)
-            para.paragraph_format.space_after = Pt(12)
+            para.paragraph_format.space_after = sp_after_body
 
             p_2 = doc.add_paragraph(sentence_2)
             p_2.style = para.style
             self._format_gradebook_body_paragraph(p_2, justify=True)
             p_2.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
             p_2.paragraph_format.space_before = para.paragraph_format.space_before
-            p_2.paragraph_format.space_after = Pt(12)
+            p_2.paragraph_format.space_after = sp_after_body
             p_2.paragraph_format.line_spacing = para.paragraph_format.line_spacing
             para._p.addnext(p_2._p)
 
@@ -629,10 +632,11 @@ class IrgCertificateRequest(models.Model):
             self._format_gradebook_body_paragraph(p_3, justify=True)
             p_3.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
             p_3.paragraph_format.space_before = para.paragraph_format.space_before
-            p_3.paragraph_format.space_after = Pt(12)
+            p_3.paragraph_format.space_after = sp_after_p3
             p_3.paragraph_format.line_spacing = para.paragraph_format.line_spacing
             p_2._p.addnext(p_3._p)
             break
+
 
     @staticmethod
     def _compact_gradebook_vertical_legal_textbox(shape):
@@ -1124,9 +1128,11 @@ class IrgCertificateRequest(models.Model):
                         for old, new in replacements.items():
                             self._replace_in_paragraph(para, old, new)
 
+        has_many_subjects = len(subjects) > 15
+
         if self.document_type == 'gradebook':
             self._replace_gradebook_description_paragraph(
-                doc, partner, documento, course_name, periodo_str, ects_detallado
+                doc, partner, documento, course_name, periodo_str, ects_detallado, has_many_subjects=has_many_subjects
             )
 
         # For non-gradebook types (attendance, enrollment), skip table editing
@@ -1149,10 +1155,9 @@ class IrgCertificateRequest(models.Model):
             self._ensure_bottom_right_arcs(tmp_docx.name)
             return tmp_docx.name
 
-        # Check if course has many subjects (e.g. MNC with 23 subjects)
-        has_many_subjects = len(subjects) > 15
         target_row_height = '235' if has_many_subjects else '315'
         table_font_size = Pt(7.5) if has_many_subjects else (Pt(7.5) if is_physical else (top_font_size or Pt(7.5)))
+
 
         if has_many_subjects:
             for section in doc.sections:

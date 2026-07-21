@@ -432,6 +432,10 @@ class IrgCertificateRequest(models.Model):
                 self._format_partial_body_paragraph(para, justify=False)
                 para.alignment = 0  # WD_ALIGN_PARAGRAPH.LEFT
 
+        has_many_subjects = len(subject_notes) > 15
+        sp_after_body = Pt(4) if has_many_subjects else Pt(12)
+        sp_after_p3 = Pt(7) if has_many_subjects else Pt(12)
+
         for para in list(doc.paragraphs):
             full_text = ''.join(r.text for r in para.runs)
             if target_text in full_text:
@@ -444,7 +448,7 @@ class IrgCertificateRequest(models.Model):
                     (' durante el período académico %s.' % periodo_str, False),
                 ])
                 self._format_partial_body_paragraph(para, justify=True)
-                para.paragraph_format.space_after = Pt(12)
+                para.paragraph_format.space_after = sp_after_body
                 
                 # Crear el segundo párrafo copiando estilo, márgenes y alineación justificada
                 p_2 = doc.add_paragraph(sentence_2)
@@ -452,7 +456,7 @@ class IrgCertificateRequest(models.Model):
                 self._format_partial_body_paragraph(p_2, justify=True)
                 p_2.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
                 p_2.paragraph_format.space_before = para.paragraph_format.space_before
-                p_2.paragraph_format.space_after = Pt(12)
+                p_2.paragraph_format.space_after = sp_after_body
                 p_2.paragraph_format.line_spacing = para.paragraph_format.line_spacing
                 para._p.addnext(p_2._p)
                 
@@ -462,10 +466,11 @@ class IrgCertificateRequest(models.Model):
                 self._format_partial_body_paragraph(p_3, justify=True)
                 p_3.paragraph_format.first_line_indent = para.paragraph_format.first_line_indent
                 p_3.paragraph_format.space_before = para.paragraph_format.space_before
-                p_3.paragraph_format.space_after = Pt(12)
+                p_3.paragraph_format.space_after = sp_after_p3
                 p_3.paragraph_format.line_spacing = para.paragraph_format.line_spacing
                 p_2._p.addnext(p_3._p)
                 break
+
 
         replacements = {
             '<<NombreAlumno>>': partner.name or '',
