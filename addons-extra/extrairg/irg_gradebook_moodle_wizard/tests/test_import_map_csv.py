@@ -295,3 +295,150 @@ class TestImportMapCsv(TransactionCase):
             "Import mapeo: 1 creados, 0 actualizados, 6 saltados.",
             output,
         )
+
+    def test_out_of_range_or_fractional_root_ids_preserve_existing_map(self):
+        import_module = _load_import_module()
+        mapping = self.env["irg.gradebook.moodle.map"].create(
+            {
+                "op_subject_id": self.subject.id,
+                "moodle_course_id": 808308,
+                "moodle_course_name": "Curso raíz preservado",
+                "line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "moodle_activity_id": 730001,
+                            "name": "Quiz raíz preservado",
+                            "activity_type": "quiz",
+                        },
+                    )
+                ],
+            }
+        )
+        original_lines = [
+            (line.id, line.moodle_activity_id, line.name)
+            for line in mapping.line_ids
+        ]
+        rows = []
+        for subject_id, course_id in (
+            ("0", "808308"),
+            ("-1", "808308"),
+            ("2147483648", "808308"),
+            ("%s.5" % self.subject.id, "808308"),
+            (str(self.subject.id), "0"),
+            (str(self.subject.id), "-1"),
+            (str(self.subject.id), "2147483648"),
+            (str(self.subject.id), "1.5"),
+        ):
+            rows.append(
+                {
+                    "Moodle Course ID": course_id,
+                    "Odoo Subject ID": subject_id,
+                    "Odoo Subject Name": self.subject.name,
+                    "Curso Nombre": "Curso raíz inválido",
+                    "Moodle IDs List": "730009",
+                    "Moodle Names Found": "Quiz raíz inválido",
+                }
+            )
+        rows.append(
+            {
+                "Moodle Course ID": "808309",
+                "Odoo Subject ID": "2147483647",
+                "Odoo Subject Name": "Sentinel subject inexistente",
+                "Curso Nombre": "Sentinel final",
+                "Moodle IDs List": "730010",
+                "Moodle Names Found": "Sentinel final",
+            }
+        )
+
+        try:
+            with self.env.cr.savepoint():
+                output = self._run_import_rows(import_module, rows)
+        except Exception as error:  # pylint: disable=broad-except
+            self.fail(
+                "Los IDs raíz fuera de rango deben saltarse sin error DB: %s: %s"
+                % (type(error).__name__, error)
+            )
+
+        self.assertEqual(mapping.moodle_course_name, "Curso raíz preservado")
+        self.assertEqual(
+            [
+                (line.id, line.moodle_activity_id, line.name)
+                for line in mapping.line_ids
+            ],
+            original_lines,
+        )
+        self.assertIn(
+            "Import mapeo: 0 creados, 0 actualizados, 9 saltados.",
+            output,
+        )
+
+    def test_out_of_range_activity_ids_preserve_existing_map(self):
+        import_module = _load_import_module()
+        mapping = self.env["irg.gradebook.moodle.map"].create(
+            {
+                "op_subject_id": self.subject.id,
+                "moodle_course_id": 808408,
+                "moodle_course_name": "Curso actividad preservado",
+                "line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "moodle_activity_id": 740001,
+                            "name": "Quiz actividad preservado",
+                            "activity_type": "quiz",
+                        },
+                    )
+                ],
+            }
+        )
+        original_lines = [
+            (line.id, line.moodle_activity_id, line.name)
+            for line in mapping.line_ids
+        ]
+        rows = []
+        for activity_ids in ("0", "-1", "2147483648"):
+            rows.append(
+                {
+                    "Moodle Course ID": "808408",
+                    "Odoo Subject ID": str(self.subject.id),
+                    "Odoo Subject Name": self.subject.name,
+                    "Curso Nombre": "Curso actividad inválido",
+                    "Moodle IDs List": activity_ids,
+                    "Moodle Names Found": "Quiz actividad inválido",
+                }
+            )
+        rows.append(
+            {
+                "Moodle Course ID": "808409",
+                "Odoo Subject ID": "2147483647",
+                "Odoo Subject Name": "Sentinel subject inexistente",
+                "Curso Nombre": "Sentinel final",
+                "Moodle IDs List": "740010",
+                "Moodle Names Found": "Sentinel final",
+            }
+        )
+
+        try:
+            with self.env.cr.savepoint():
+                output = self._run_import_rows(import_module, rows)
+        except Exception as error:  # pylint: disable=broad-except
+            self.fail(
+                "Las actividades fuera de rango deben saltarse sin error DB: %s: %s"
+                % (type(error).__name__, error)
+            )
+
+        self.assertEqual(mapping.moodle_course_name, "Curso actividad preservado")
+        self.assertEqual(
+            [
+                (line.id, line.moodle_activity_id, line.name)
+                for line in mapping.line_ids
+            ],
+            original_lines,
+        )
+        self.assertIn(
+            "Import mapeo: 0 creados, 0 actualizados, 4 saltados.",
+            output,
+        )

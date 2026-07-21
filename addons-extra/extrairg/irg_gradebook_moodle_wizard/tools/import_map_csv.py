@@ -15,6 +15,10 @@ actividad se regeneran en cada import.
 import csv
 
 
+ODOO_INTEGER_ID_MIN = 1
+ODOO_INTEGER_ID_MAX = 2147483647
+
+
 def run_import(env, csv_path):
     map_model = env['irg.gradebook.moodle.map']
     subject_model = env['op.subject']
@@ -22,9 +26,18 @@ def run_import(env, csv_path):
     with open(csv_path, newline='', encoding='utf-8') as f:
         for row in csv.DictReader(f):
             try:
-                subject_id = int(float(row['Odoo Subject ID']))
-                course_id = int(float(row['Moodle Course ID']))
+                subject_value = float(row['Odoo Subject ID'])
+                course_value = float(row['Moodle Course ID'])
+                subject_id = int(subject_value)
+                course_id = int(course_value)
             except (ValueError, TypeError, KeyError, OverflowError):
+                skipped += 1
+                continue
+            if (
+                    subject_value != subject_id
+                    or course_value != course_id
+                    or not ODOO_INTEGER_ID_MIN <= subject_id <= ODOO_INTEGER_ID_MAX
+                    or not ODOO_INTEGER_ID_MIN <= course_id <= ODOO_INTEGER_ID_MAX):
                 skipped += 1
                 continue
             subject = subject_model.browse(subject_id).exists()
@@ -39,10 +52,15 @@ def run_import(env, csv_path):
                 continue
             act_tokens = [x.strip() for x in ids_raw.split(',')]
             if not act_tokens or any(
-                    not x.isdecimal() or int(x) <= 0 for x in act_tokens):
+                    not x.isdecimal() for x in act_tokens):
                 skipped += 1
                 continue
             act_ids = [int(x) for x in act_tokens]
+            if any(
+                    not ODOO_INTEGER_ID_MIN <= act_id <= ODOO_INTEGER_ID_MAX
+                    for act_id in act_ids):
+                skipped += 1
+                continue
             names_raw = (row.get('Moodle Names Found') or '').strip()
             names = [n.strip() for n in names_raw.split('|')]
             lines = []
