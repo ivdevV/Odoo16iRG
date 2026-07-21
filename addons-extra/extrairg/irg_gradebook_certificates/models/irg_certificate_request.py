@@ -1166,9 +1166,21 @@ class IrgCertificateRequest(models.Model):
                     p_xml.getparent().remove(p_xml)
 
             for p in doc.paragraphs:
-                p.paragraph_format.space_before = Pt(1)
-                p.paragraph_format.space_after = Pt(1)
+                txt = p.text.strip()
                 p.paragraph_format.line_spacing = 1.0
+                if 'Las calificaciones obtenidas son:' in txt:
+                    p.paragraph_format.space_before = Pt(4)
+                    p.paragraph_format.space_after = Pt(7)
+                elif 'Para que así conste' in txt:
+                    p.paragraph_format.space_before = Pt(8)
+                    p.paragraph_format.space_after = Pt(4)
+                elif 'Departamento Académico' in txt or 'Raimon Gaja' in txt:
+                    p.paragraph_format.space_before = Pt(3)
+                    p.paragraph_format.space_after = Pt(2)
+                else:
+                    p.paragraph_format.space_before = Pt(2)
+                    p.paragraph_format.space_after = Pt(3)
+
 
         # --- Fill the grades table (table index 0) --------------------------
         table = doc.tables[0]
