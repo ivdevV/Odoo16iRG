@@ -805,23 +805,26 @@ class TestIrgCertificateRequest(TransactionCase):
         all_data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
         self.assertEqual(len(all_data_rows), 23)
 
-        # Check row 11 (EN12 / 12th data row) has thin bottom border dee2e6
+        # Check row 11 (EN12 / 12th data row) has thin bottom border dee2e6 and no shading
         row_12_tc = all_data_rows[11].findall(qn('w:tc'))[0]
         row_12_border = row_12_tc.find('.//' + qn('w:bottom'))
         self.assertIsNotNone(row_12_border)
         self.assertEqual(row_12_border.attrib.get(qn('w:color')), 'dee2e6')
+        self.assertEqual(len(row_12_tc.findall('.//' + qn('w:shd'))), 0)
 
-        # Check row 22 (23rd data row) has thick bottom border 000000
+        # Check row 22 (23rd data row) has thick bottom border 000000 and no shading
         last_row_tc = all_data_rows[22].findall(qn('w:tc'))[0]
         last_row_border = last_row_tc.find('.//' + qn('w:bottom'))
         self.assertIsNotNone(last_row_border)
         self.assertEqual(last_row_border.attrib.get(qn('w:color')), '000000')
+        self.assertEqual(len(last_row_tc.findall('.//' + qn('w:shd'))), 0)
 
         # Verify PDF conversion yields 1 page
         pdf_bytes = cert._convert_to_pdf(res_docx)
         import fitz
         pdf_doc = fitz.open(stream=pdf_bytes, filetype='pdf')
         self.assertEqual(len(pdf_doc), 1, f"Expected 1 page for MNC gradebook certificate, got {len(pdf_doc)}")
+
 
 
 

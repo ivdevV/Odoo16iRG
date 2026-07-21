@@ -502,8 +502,8 @@ class IrgCertificateRequest(models.Model):
 
         # Check if course has many subjects (e.g. MNC with 23 subjects)
         has_many_subjects = len(subject_notes) > 15
-        target_row_height = '200' if has_many_subjects else '315'
-        table_font_size = Pt(6.5) if has_many_subjects else (Pt(7.5) if is_physical else (top_font_size or Pt(7.5)))
+        target_row_height = '260' if has_many_subjects else '315'
+        table_font_size = Pt(7.5) if has_many_subjects else (Pt(7.5) if is_physical else (top_font_size or Pt(7.5)))
 
         if has_many_subjects:
             for section in doc.sections:
@@ -608,7 +608,7 @@ class IrgCertificateRequest(models.Model):
                             break
                 footer_row.addprevious(new_row)
 
-        # Normalize cell bottom borders for all data rows
+        # Normalize cell bottom borders and remove cell shading for all data rows
         all_data_rows = tbl_xml.findall(qn('w:tr'))[1:-1]
         for r_idx, r_xml in enumerate(all_data_rows):
             for c in r_xml.findall(qn('w:tc')):
@@ -616,6 +616,8 @@ class IrgCertificateRequest(models.Model):
                 if tcPr is None:
                     tcPr = c.makeelement(qn('w:tcPr'), {})
                     c.insert(0, tcPr)
+                for shd in tcPr.findall(qn('w:shd')):
+                    tcPr.remove(shd)
                 tcBorders = tcPr.find(qn('w:tcBorders'))
                 if tcBorders is None:
                     tcBorders = tcPr.makeelement(qn('w:tcBorders'), {})
