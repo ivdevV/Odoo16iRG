@@ -605,7 +605,7 @@ class IrgCertificateRequest(models.Model):
         sentence_3 = 'Las calificaciones obtenidas son:'
 
         sp_after_body = Pt(4) if has_many_subjects else Pt(12)
-        sp_after_p3 = Pt(7) if has_many_subjects else Pt(12)
+        sp_after_p3 = Pt(16) if has_many_subjects else Pt(12)
 
         for para in list(doc.paragraphs):
             full_text = ''.join(r.text for r in para.runs)
@@ -1203,7 +1203,7 @@ class IrgCertificateRequest(models.Model):
                     p.paragraph_format.space_after = Pt(8)
                 elif 'Las calificaciones obtenidas son:' in txt:
                     p.paragraph_format.space_before = Pt(8)
-                    p.paragraph_format.space_after = Pt(10)
+                    p.paragraph_format.space_after = Pt(16)
                 elif 'Para que así conste' in txt:
                     p.paragraph_format.space_before = Pt(8)
                     p.paragraph_format.space_after = Pt(4)
