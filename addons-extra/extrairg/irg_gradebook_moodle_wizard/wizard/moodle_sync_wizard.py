@@ -1,6 +1,6 @@
 import math
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 from odoo.addons.irg_moodle_grades_sync.models import utils as sync_utils
@@ -452,6 +452,40 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
         )
         return [row[0] for row in self.env.cr.fetchall()]
 
+    def _lock_wizard_parents(self, wizard_ids):
+        wizard_ids = sorted(set(wizard_ids))
+        if not wizard_ids:
+            return self.browse()
+        self.env.cr.execute(
+            """
+            SELECT id
+              FROM irg_gradebook_moodle_sync_wizard
+             WHERE id = ANY(%s)
+             ORDER BY id
+             FOR UPDATE
+            """,
+            (wizard_ids,),
+        )
+        locked_ids = [row[0] for row in self.env.cr.fetchall()]
+        if locked_ids != wizard_ids:
+            raise UserError(
+                _("Un asistente dejó de estar disponible durante el proceso.")
+            )
+        self.env.cr.execute(
+            """
+            UPDATE irg_gradebook_moodle_sync_wizard
+               SET write_date = write_date
+             WHERE id = ANY(%s)
+            """,
+            (wizard_ids,),
+        )
+        wizards = self.browse(wizard_ids)
+        wizards.invalidate_recordset()
+        self.env[
+            "irg.gradebook.moodle.sync.wizard.line"
+        ].invalidate_model()
+        return wizards
+
     def _invalidate_apply_lines(self, line_ids):
         self.invalidate_recordset(["line_ids"])
         lines = self.env[
@@ -491,6 +525,7 @@ class IrgGradebookMoodleSyncWizard(models.TransientModel):
     def action_apply(self):
         self.ensure_one()
         self._check_moodle_sync_access()
+        self._lock_wizard_parents(self.ids)
         locked_line_ids = self._lock_apply_lines()
         self._invalidate_apply_lines(locked_line_ids)
         lines, subject_ids = self._validate_apply_lines()
@@ -584,3 +619,46 @@ class IrgGradebookMoodleSyncWizardLine(models.TransientModel):
         default="ok",
     )
     apply_line = fields.Boolean(string="Aplicar", default=True)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        wizard_ids = {
+            vals.get("wizard_id") for vals in vals_list if vals.get("wizard_id")
+        }
+        if any(not vals.get("wizard_id") for vals in vals_list):
+            context_wizard_id = self.env.context.get("default_wizard_id")
+            default_wizard_id = self.default_get(["wizard_id"]).get(
+                "wizard_id"
+            )
+            wizard_ids.update(
+                wizard_id
+                for wizard_id in (context_wizard_id, default_wizard_id)
+                if wizard_id
+            )
+        wizards = self.env[
+            "irg.gradebook.moodle.sync.wizard"
+        ]._lock_wizard_parents(wizard_ids)
+        lines = super().create(vals_list)
+        wizards.invalidate_recordset(["line_ids"])
+        lines.invalidate_recordset()
+        return lines
+
+    def write(self, vals):
+        wizard_ids = set(self.mapped("wizard_id").ids)
+        if vals.get("wizard_id"):
+            wizard_ids.add(vals["wizard_id"])
+        wizards = self.env[
+            "irg.gradebook.moodle.sync.wizard"
+        ]._lock_wizard_parents(wizard_ids)
+        result = super().write(vals)
+        wizards.invalidate_recordset(["line_ids"])
+        self.invalidate_recordset()
+        return result
+
+    def unlink(self):
+        wizards = self.env[
+            "irg.gradebook.moodle.sync.wizard"
+        ]._lock_wizard_parents(self.mapped("wizard_id").ids)
+        result = super().unlink()
+        wizards.invalidate_recordset(["line_ids"])
+        return result

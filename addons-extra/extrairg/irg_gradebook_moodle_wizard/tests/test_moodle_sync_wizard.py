@@ -383,6 +383,47 @@ class TestMoodleSyncWizard(TransactionCase):
         self.assertEqual(len(result), 1)
         self.assertAlmostEqual(result.scoring_total, 8.0, places=2)
 
+    def test_line_mutations_lock_all_effective_wizard_parents(self):
+        """Create/write/unlink bloquean los padres efectivos completos."""
+        wizards = self.env["irg.gradebook.moodle.sync.wizard"].create(
+            [
+                {"gradebook_student_id": self.gb_student.id},
+                {"gradebook_student_id": self.gb_student.id},
+            ]
+        )
+        line_model = self.env[
+            "irg.gradebook.moodle.sync.wizard.line"
+        ].with_context(default_wizard_id=wizards[0].id)
+        model_class = type(
+            self.env["irg.gradebook.moodle.sync.wizard"]
+        )
+        original_lock = model_class._lock_wizard_parents
+        locked_wizard_ids = []
+
+        def capture_lock(lines, wizard_ids):
+            locked_wizard_ids.append(sorted(wizard_ids))
+            return original_lock(lines, wizard_ids)
+
+        with patch.object(model_class, "_lock_wizard_parents", capture_lock):
+            line = line_model.create(
+                {
+                    "subject_id": self.subject.id,
+                    "state": "sin_nota",
+                    "apply_line": False,
+                }
+            )
+            line.write({"wizard_id": wizards[1].id})
+            line.unlink()
+
+        self.assertEqual(
+            locked_wizard_ids,
+            [
+                [wizards[0].id],
+                sorted(wizards.ids),
+                [wizards[1].id],
+            ],
+        )
+
     def test_apply_recomputes_subject_average(self):
         """Tras aplicar, el AVG de exámenes de la asignatura refleja la nota."""
         self._skip_until_models_exist()
@@ -907,6 +948,130 @@ class TestMoodleSyncWizard(TransactionCase):
                 first.join(10)
             if second.is_alive():
                 second.join(10)
+
+    def test_concurrent_insert_is_linearized_with_apply(self):
+        """Un INSERT ganador nunca queda invisible para la aplicación."""
+        setup = self._create_committed_concurrency_case()
+        self.addCleanup(self._cleanup_committed_concurrency_case, setup)
+        lines_locked = threading.Event()
+        insert_attempted = threading.Event()
+        insert_committed = threading.Event()
+        release_apply = threading.Event()
+        thread_context = threading.local()
+        errors = []
+        commit_order = []
+        visible_line_ids = []
+        inserted_line_ids = []
+        insert_attempts = [0]
+        wizard_model_class = type(
+            self.env["irg.gradebook.moodle.sync.wizard"]
+        )
+        original_line_lock = wizard_model_class._lock_apply_lines
+        original_validate = wizard_model_class._validate_apply_lines
+
+        def coordinated_line_lock(wizard):
+            result = original_line_lock(wizard)
+            if getattr(thread_context, "apply", False):
+                lines_locked.set()
+                if not release_apply.wait(5):
+                    raise AssertionError("timeout releasing apply")
+            return result
+
+        def capture_validation(wizard):
+            result = original_validate(wizard)
+            if getattr(thread_context, "apply", False):
+                visible_line_ids.append(set(wizard.line_ids.ids))
+            return result
+
+        def apply():
+            thread_context.apply = True
+            try:
+                with self.env.registry.cursor() as apply_cr:
+                    apply_env = api.Environment(apply_cr, setup["uid"], {})
+
+                    def request():
+                        apply_cr.execute("SET LOCAL statement_timeout = '10s'")
+                        return apply_env[
+                            "irg.gradebook.moodle.sync.wizard"
+                        ].browse(setup["wizard_ids"][0]).action_apply()
+
+                    service_model.retrying(request, apply_env)
+                    apply_cr.commit()
+                    commit_order.append("apply")
+            except Exception as error:  # asserted in parent thread
+                errors.append(error)
+
+        def insert():
+            try:
+                with self.env.registry.cursor() as insert_cr:
+                    insert_env = api.Environment(insert_cr, setup["uid"], {})
+
+                    def request():
+                        insert_attempts[0] += 1
+                        insert_attempted.set()
+                        insert_cr.execute("SET LOCAL statement_timeout = '10s'")
+                        line = insert_env[
+                            "irg.gradebook.moodle.sync.wizard.line"
+                        ].create(
+                            {
+                                "wizard_id": setup["wizard_ids"][0],
+                                "gradebook_subject_id": setup[
+                                    "gradebook_subject_id"
+                                ],
+                                "subject_id": setup["subject_id"],
+                                "survey_type": "assignment",
+                                "state": "sin_nota",
+                                "apply_line": False,
+                            }
+                        )
+                        inserted_line_ids[:] = line.ids
+
+                    service_model.retrying(request, insert_env)
+                    insert_cr.commit()
+                    commit_order.append("insert")
+                    insert_committed.set()
+            except Exception as error:  # asserted in parent thread
+                errors.append(error)
+
+        apply_thread = threading.Thread(target=apply)
+        insert_thread = threading.Thread(target=insert)
+        try:
+            with patch.object(
+                wizard_model_class,
+                "_lock_apply_lines",
+                coordinated_line_lock,
+            ), patch.object(
+                wizard_model_class,
+                "_validate_apply_lines",
+                capture_validation,
+            ):
+                apply_thread.start()
+                self.assertTrue(lines_locked.wait(5))
+                insert_thread.start()
+                self.assertTrue(insert_attempted.wait(5))
+                insert_committed.wait(0.5)
+                release_apply.set()
+                apply_thread.join(10)
+                insert_thread.join(10)
+
+            self.assertFalse(apply_thread.is_alive())
+            self.assertFalse(insert_thread.is_alive())
+            self.assertFalse(errors)
+            self.assertEqual(set(commit_order), {"apply", "insert"})
+            inserted_line_id = inserted_line_ids[0]
+            visible_ids = set().union(*visible_line_ids)
+            if commit_order[0] == "insert":
+                self.assertIn(inserted_line_id, visible_ids)
+            else:
+                self.assertEqual(commit_order[0], "apply")
+                self.assertNotIn(inserted_line_id, visible_ids)
+                self.assertGreaterEqual(insert_attempts[0], 2)
+        finally:
+            release_apply.set()
+            if apply_thread.is_alive():
+                apply_thread.join(10)
+            if insert_thread.is_alive():
+                insert_thread.join(10)
 
     def test_stale_wizard_line_raises_serialization_failure(self):
         """Una edición concurrente del transient invalida el snapshot lector."""
