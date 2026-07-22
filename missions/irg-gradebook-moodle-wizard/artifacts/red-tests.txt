@@ -1,0 +1,23 @@
+TDD RED — irg_gradebook_moodle_wizard
+Date: 2026-07-21
+
+Command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -d test_irg_db -i irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=test
+
+Result: expected failure (exit 1)
+Tests: 7
+Failed: 1
+Skipped: 6
+Errors: 0
+
+Expected assertion:
+TestMoodleSyncWizard.test_load_ok_exam_average_and_scale
+AssertionError: TDD RED: faltan modelos del addon: irg.gradebook.moodle.map, irg.gradebook.moodle.map.line, irg.gradebook.moodle.sync.wizard, irg.gradebook.moodle.sync.wizard.line
+
+Odoo summary:
+1 failed, 0 error(s) of 7 tests when loading database 'test_irg_db'
+
+Runtime concerns unrelated to this RED:
+- Existing database warning: unable to set NOT NULL on res.partner.username.
+- Existing inconsistent module state: irg_gradebook_partial_averages is not installable.
+- The ephemeral docker compose run container was removed by --rm.

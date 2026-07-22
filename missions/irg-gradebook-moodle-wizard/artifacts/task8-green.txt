@@ -1,0 +1,64 @@
+Task 8 — GREEN integrado y checks estáticos
+Fecha: 2026-07-21
+
+Comando integrado final:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=test
+
+Resultado final: exit 0; 25 post-tests; 0 failed, 0 error(s).
+
+La regresión Task 8 carga tools/import_map_csv.py por importlib/path y usa un CSV
+UTF-8 temporal con una op.subject real. Verifica:
+- primera importación: create de un único mapa;
+- segunda importación: update sin duplicar el mapa;
+- reemplazo íntegro de las líneas, IDs y nombres;
+- activity_type=quiz en todas las líneas;
+- subject inexistente contado y anunciado como skipped.
+
+Checks estáticos y de alcance:
+- py_compile con cfile temporal + ast.parse de script, test e __init__: pass;
+- AST del script: única dependencia importada csv; única función run_import: pass;
+- 25 métodos test_ detectados en el addon: pass;
+- git diff --check: pass;
+- CSV ausente del addon y del directorio tools: pass;
+- dependencia runtime externa nueva: ninguna.
+
+Avisos preexistentes no bloqueantes: estado inconsistente del addon local ausente
+irg_gradebook_partial_averages y warnings históricos del registry. Los errores SQL de
+serialización y constraint observados en logs son provocados y afirmados por los tests
+de concurrencia/integridad existentes; el resumen final fue verde.
+
+Review findings — GREEN de corrección
+-------------------------------------
+
+Comando integrado final idéntico al documentado arriba.
+
+Resultado fresco: exit 0; 27 post-tests; 0 failed, 0 error(s).
+
+Corrección mínima verificada:
+
+- `OverflowError` queda tratado como fila skipped junto a los errores de conversión;
+- la lista completa se tokeniza y todos sus tokens deben ser enteros decimales
+  positivos antes de construir vals o el comando `(5, 0, 0)`;
+- una lista vacía, totalmente inválida o parcialmente inválida no crea ni actualiza;
+- el mapa y sus líneas preexistentes se preservan íntegramente;
+- seis IDs subject/course inválidos se cuentan como skipped y la fila válida posterior
+  se crea, con resumen `1 creados, 0 actualizados, 6 saltados`.
+
+Checks finales: py_compile/AST de script y test, orden de validación anterior a vals,
+27 métodos `test_`, `git diff --check`, alcance de dos archivos y cleanup: pass.
+
+P2 residual — GREEN de límites Integer
+--------------------------------------
+
+Resultado final fresco: exit 0; 29 post-tests; 0 failed, 0 error(s).
+
+- Contrato explícito común: IDs 1..2147483647 para PostgreSQL/Odoo Integer.
+- `subject_id` y `course_id` conservan conversión compatible float -> int, pero se
+  rechazan si el float no representa exactamente un entero o queda fuera del rango.
+- Todos los `act_id` deben ser decimales y quedar dentro del mismo rango.
+- Los guards se ejecutan antes de browse/search, vals y `(5, 0, 0)`.
+- Root inválidos: 9 skipped exactos, mapa preservado y sin DB error.
+- Actividades inválidas: 4 skipped exactos, mapa preservado y sin DB error.
+
+Checks finales: py_compile/AST, constantes exactas, orden de guards, 29 métodos
+`test_`, diff, alcance y cleanup: pass.

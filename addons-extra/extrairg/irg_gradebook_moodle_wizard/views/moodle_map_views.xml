@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="irg_gradebook_moodle_map_tree" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.map.tree</field>
+        <field name="model">irg.gradebook.moodle.map</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="op_subject_id"/>
+                <field name="moodle_course_id"/>
+                <field name="moodle_course_name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="irg_gradebook_moodle_map_form" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.map.form</field>
+        <field name="model">irg.gradebook.moodle.map</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="op_subject_id"/>
+                        <field name="moodle_course_id"/>
+                        <field name="moodle_course_name"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                    <field name="line_ids">
+                        <tree editable="bottom">
+                            <field name="moodle_activity_id"/>
+                            <field name="name"/>
+                            <field name="activity_type"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="act_irg_gradebook_moodle_map" model="ir.actions.act_window">
+        <field name="name">Mapeo Moodle libreta</field>
+        <field name="res_model">irg.gradebook.moodle.map</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_irg_gradebook_moodle_map"
+        name="Mapeo Moodle libreta"
+        parent="isep_gradebook.menu_app_gradebook_root"
+        action="act_irg_gradebook_moodle_map" sequence="90"/>
+</odoo>

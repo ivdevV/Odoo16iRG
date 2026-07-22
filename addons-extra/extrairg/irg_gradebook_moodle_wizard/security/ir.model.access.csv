@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_gradebook_moodle_map_user,irg.gradebook.moodle.map user,model_irg_gradebook_moodle_map,base.group_user,1,0,0,0
+access_irg_gradebook_moodle_map_system,irg.gradebook.moodle.map admin,model_irg_gradebook_moodle_map,base.group_system,1,1,1,1
+access_irg_gradebook_moodle_map_line_user,irg.gradebook.moodle.map.line user,model_irg_gradebook_moodle_map_line,base.group_user,1,0,0,0
+access_irg_gradebook_moodle_map_line_system,irg.gradebook.moodle.map.line admin,model_irg_gradebook_moodle_map_line,base.group_system,1,1,1,1
+access_irg_gradebook_moodle_sync_wizard_faculty,irg.gradebook.moodle.sync.wizard faculty,model_irg_gradebook_moodle_sync_wizard,openeducat_core.group_op_faculty,1,1,1,1
+access_irg_gradebook_moodle_sync_wizard_admin,irg.gradebook.moodle.sync.wizard admin,model_irg_gradebook_moodle_sync_wizard,isep_gradebook.isep_gradebook_admin,1,1,1,1
+access_irg_gradebook_moodle_sync_wizard_line_faculty,irg.gradebook.moodle.sync.wizard.line faculty,model_irg_gradebook_moodle_sync_wizard_line,openeducat_core.group_op_faculty,1,1,1,1
+access_irg_gradebook_moodle_sync_wizard_line_admin,irg.gradebook.moodle.sync.wizard.line admin,model_irg_gradebook_moodle_sync_wizard_line,isep_gradebook.isep_gradebook_admin,1,1,1,1

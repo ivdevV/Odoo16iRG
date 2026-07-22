@@ -1,0 +1,49 @@
+Task 8 — TDD RED del importador CSV
+Fecha: 2026-07-21
+
+Comando:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=test
+
+RED válido: exit 1; 25 post-tests; 1 failed, 0 error(s).
+Fallo esperado y único:
+TestImportMapCsv.test_import_creates_then_updates_map_and_regenerates_quiz_lines
+AssertionError: False is not true : TDD RED: falta tools/import_map_csv.py
+
+Antes del RED válido hubo un intento de fixture no aceptado como RED: la libreta de
+prueba no sumaba 100 % y falló en setUpClass. Se añadió una línea de template de
+examen al 100 % y se repitió el comando hasta alcanzar el fallo funcional esperado.
+
+Los 24 escenarios preexistentes siguieron ejecutándose; no hubo errores en el RED
+aceptado.
+
+Review findings — RED de corrección
+-----------------------------------
+
+Se añadieron dos regresiones antes de modificar el script:
+
+- listas de actividades vacía, `abc` y `123,abc` sobre un mapa existente, exigiendo
+  preservar curso, IDs de línea, IDs Moodle, nombres y tipos, con un skipped por fila;
+- IDs de subject/course `inf`, `1e309` y malformed, seguidos por una fila válida,
+  exigiendo continuidad sin excepción y counters exactos.
+
+Mismo comando integrado. Resultado: exit 1; 27 post-tests; 3 failed, 0 error(s).
+Los fallos fueron los subcasos `abc` y `123,abc`, que actualizaban destructivamente el
+mapa, y el caso de IDs inválidos, que confirmó `OverflowError: cannot convert float
+infinity to integer`. El error se convirtió deliberadamente en AssertionError dentro
+del test para conservar un RED funcional sin errores de infraestructura.
+
+P2 residual — RED de límites Integer
+------------------------------------
+
+Se añadieron antes de producción dos regresiones con mapas preexistentes:
+
+- roots: subject y course 0, negativos, `2147483648` y valores finitos fraccionarios;
+  incluye específicamente Moodle Course ID 0, -1, >2147483647 y 1.5;
+- actividades Moodle: 0, -1 y 2147483648.
+
+Cada lote termina con una fila sentinel inexistente y exige counters completos,
+preservación de nombre/IDs/nombres de líneas y ausencia de error DB.
+
+Mismo comando integrado. Resultado: exit 1; 29 post-tests; 2 failed, 0 error(s).
+Los fallos controlados demostraron que IDs raíz fuera de contrato o actividades por
+encima de PostgreSQL INTEGER alcanzaban create/write y podían provocar error DB.

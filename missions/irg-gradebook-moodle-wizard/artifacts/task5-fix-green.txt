@@ -1,0 +1,89 @@
+Task 5 hardening — GREEN integrated
+Date: 2026-07-21
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=test
+
+Result: exit 0
+Scenarios: 19
+Failed: 0
+Errors: 0
+Odoo summary: 0 failed, 0 error(s) of 19 tests
+
+Concurrency evidence:
+- PostgreSQL raised "could not serialize access due to concurrent update".
+- Odoo logged SERIALIZATION_FAILURE and retried the second request.
+- Final assertion found exactly one Moodle result row.
+- addCleanup removed and independently verified the committed fixture.
+
+Static checks:
+- Python compile and manifest AST: pass
+- XML parse (3 files): pass
+- ACL CSV shape/groups: pass
+- git diff --check: pass
+- production sudo/commit/savepoint scan: pass (absent)
+
+Cleanup:
+- committed concurrency fixture residue: 0
+- ephemeral odoo_local-run containers: 0
+- shared /mnt/extra-addons remains mounted from:
+  /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra
+
+Pre-existing concern only:
+- irg_gradebook_partial_averages remains inconsistent/not installable in the
+  shared test database; it did not fail this suite.
+
+Re-review line-state and transient-lock GREEN
+Date: 2026-07-21
+
+Same full-suite command.
+Result: exit 0; 21 scenarios; 0 failed, 0 errors.
+Odoo summary: 0 failed, 0 error(s) of 21 tests.
+
+Concurrency evidence:
+- The wizard locks every transient line using one parameterized SELECT ordered
+  by id with FOR UPDATE before it trusts line values.
+- PostgreSQL raised "could not serialize access due to concurrent update" for
+  the stale cursor; SerializationFailure propagated to the test.
+- Line caches are invalidated after the line lock and immediately before the
+  second validation, after subject locks.
+
+Static and cleanup checks:
+- Python compile, manifest AST, XML parse, ACL CSV, git diff --check: pass.
+- Production sudo/commit/savepoint scan: absent.
+- Committed fixture residue: 0; ephemeral containers: 0.
+- Shared service still mounts the principal checkout.
+
+Re-review locked-line ordering GREEN
+Date: 2026-07-21
+
+Result: exit 0; 22 scenarios; 0 failed, 0 errors.
+Odoo summary: 0 failed, 0 error(s) of 22 tests.
+
+- The regression creates exam first and assignment second, invalidates the
+  One2many cache, and confirms functional order differs from ID order.
+- `_invalidate_apply_lines` compares `sorted(self.line_ids.ids)` against the
+  already ID-ordered locked list.
+- Exact ID equality remains in force, so additions and deletions are still
+  detected.
+- Final Python compile and git diff check: pass.
+- Committed concurrency fixture residue: 0; ephemeral containers: 0.
+
+Final review — concurrent INSERT GREEN
+Date: 2026-07-21
+
+Full suite result: exit 0; 24 scenarios; 0 failed, 0 errors.
+Odoo summary: 0 failed, 0 error(s) of 24 tests.
+
+- The observed linearization was apply-first: apply locked/touched the wizard
+  parent, the INSERT blocked, received SerializationFailure and retried after
+  apply committed; therefore the new line correctly was not part of that apply.
+- The regression also accepts insert-first and then requires the retried apply
+  to observe the inserted line; it can no longer accept an insert-first commit
+  whose line is invisible.
+- Direct coverage verifies create through `default_wizard_id`, write locking old
+  plus new parents, and unlink locking the current parent.
+- Global order is wizard parent, all wizard lines, then gradebook subjects.
+- Python, manifest, XML, ACL CSV and git diff checks: pass.
+- Production scan found no sudo, commit, savepoint or context bypass.
+- Committed fixture residue: 0; ephemeral containers: 0; shared mount restored.
