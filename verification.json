@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "task": "survey-gradebook-sync-fix",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local /usr/bin/odoo --test-enable --stop-after-init -i irg_exam_second_attempt -d odoo16irg_local --test-tags irg_sync_test",
+      "result": "pass",
+      "detail": "2 passed, 0 failed, 0 errors",
+      "evidence": "artifacts/unit-tests.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "odoo16irg_local",
+    "base_commit": "HEAD"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/unit-tests.txt"
+  ]
+}

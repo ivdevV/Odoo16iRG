@@ -83,7 +83,7 @@ class SurveyUser_input(models.Model):
     def create(self, vals):
         '''The records that are of type exam are created automatically.'''
         res = super(SurveyUser_input, self).create(vals)
-        if res.survey_type == 'exam' and not res.test_entry and res.admission_id and res.op_subject_id:
+        if res.survey_type in ('exam', 'assignment', 'survey', 'cert') and res.state == 'done' and not res.test_entry and res.admission_id and res.op_subject_id:
             res.send_result()
         return res
     
@@ -123,6 +123,7 @@ class SurveyUser_input(models.Model):
                     if record.admission_id:
                         application_number = record.admission_id.application_number
                     description = "%s - %s" % (application_number, course_id)
+                    data_survey_type = 'assignment' if record.survey_type == 'assignment' else 'exam'
                     data = {
                         'name': record.survey_id.title,
                         'survey_user_input_id': record.id,
@@ -130,7 +131,7 @@ class SurveyUser_input(models.Model):
                         'channel_partner_id': record.channel_partner_id.id,
                         'scoring_total': answer_score_total,
                         'gradebook_subject_id': record.gradebook_subject_id.id,
-                        'survey_type': record.survey_type,
+                        'survey_type': data_survey_type,
                         'description': description,
                         'rated_by': rated_by,
                         'comment': record.comment
