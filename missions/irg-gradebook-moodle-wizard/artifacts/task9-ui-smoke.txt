@@ -1,0 +1,40 @@
+Task 9 — smoke UI end-to-end aislado
+Fecha: 2026-07-21
+Base: test_irg_db
+Runtime: docker-compose.local.yml + overlay del worktree
+Servidor UI temporal: localhost:18069 (apagado al terminar)
+Moodle: mock HTTP local controlado en host.docker.internal:18080 (apagado al terminar)
+
+Flujo observado mediante el navegador integrado:
+1. Usuario temporal con grupos faculty + gradebook admin inicia sesión.
+2. La libreta en proceso muestra el botón «Sincronizar con Moodle».
+3. El botón abre el modal y carga una única línea asignatura×tipo:
+   - asignatura SMUI-20260721
+   - tipo Examen
+   - estado Encontrada
+   - emparejamiento md_id
+   - 1 actividad Moodle
+   - nota Moodle / nota a aplicar: 8.00
+4. «Aplicar notas» cierra el modal, informa «1 líneas escritas» y cambia
+   AVG Exámenes, calificación final y promedio total de 0.00 a 8.00.
+5. La segunda sincronización muestra nota actual 8.00 y permite aplicar de
+   nuevo sin crear duplicados.
+
+Comprobación SQL tras la segunda aplicación:
+SELECT count(*), min(scoring_total), max(scoring_total), bool_and(is_moodle)
+FROM app_gradebook_result
+WHERE gradebook_subject_id IN (
+  SELECT id FROM app_gradebook_subject WHERE gradebook_student_id = 145
+);
+Resultado: 1|8|8|t
+
+Cleanup:
+- Browser finalizado.
+- Servidor Odoo aislado y mock Moodle detenidos.
+- Fixture eliminado: residual users=0, courses=0, partners=0, credentials=0.
+- Solo permanecen los servicios originales de docker-compose.local.yml en
+  8069/8072; ningún contenedor temporal queda activo.
+
+Nota: este smoke valida el flujo UI completo contra un Moodle simulado y
+determinista. El smoke contra Moodle real sigue omitido porque ninguna base
+local contiene credenciales reales.

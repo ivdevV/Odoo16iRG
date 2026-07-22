@@ -35,23 +35,33 @@ class AppGradebookStudent(models.Model):
             self._irg_assign_canonical_gradebook_template()
         return res
 
-    def _irg_assign_canonical_gradebook_template(self):
-        """Fill empty gradebook_id from course or canonical master/diplomado.
+    def _irg_has_existing_grades(self):
+        """True si hay al menos un resultado de calificación en la libreta."""
+        self.ensure_one()
+        return bool(self.gradebook_subject_ids.gradebook_result_ids)
 
-        Solo escribe gradebook_id. No crea, borra ni modifica
-        app.gradebook.result ni líneas de asignatura. Los promedios se
-        recalculan por compute; irg_gradebook_partial_averages evita
-        ponerlos a 0 cuando ya hay resultados.
+    def _irg_assign_canonical_gradebook_template(self):
+        """Rellena gradebook_id vacío solo si no hay notas registradas.
+
+        La plantilla puesta a mano siempre se respeta (write normal).
+        Solo se omite la asignación automática cuando ya hay resultados,
+        para no disparar recomputes sobre notas existentes.
         """
         if self.env.context.get('irg_skip_canonical_template'):
             return
         for record in self:
             if record.gradebook_id:
                 continue
+            if record._irg_has_existing_grades():
+                _logger.info(
+                    'IRG Auto Gradebook Templates: omitida asignación de '
+                    'plantilla en libreta %s (ya hay notas).',
+                    record.id,
+                )
+                continue
             template = record._irg_resolve_canonical_gradebook_template()
             if not template:
                 continue
-            # Evitar reentrada del write() por admission_id.
             record.with_context(
                 irg_skip_canonical_template=True,
             ).write({'gradebook_id': template.id})

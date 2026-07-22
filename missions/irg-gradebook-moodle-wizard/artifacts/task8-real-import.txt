@@ -1,0 +1,46 @@
+Task 8 — import real del CSV exportado en test_irg_db
+Fecha: 2026-07-21
+
+Runtime: odoo shell mediante docker-compose.local.yml + overlay del worktree.
+CSV durante la ejecución: artefacto temporal exportado desde `Migracion_Notas.xlsx`.
+Mount durante la ejecución: /tmp/map_asignaturas.csv, bind read-only temporal.
+El CSV/JSON intermedio y su mount se retiraron tras conservar este resumen,
+para no versionar una copia grande de la fuente externa.
+Script: /mnt/extra-addons/extrairg/irg_gradebook_moodle_wizard/tools/import_map_csv.py
+
+Resultado de la ejecución (exit 0, sin traceback):
+REAL_IMPORT subjects_before=0 maps_before=0
+REAL_IMPORT output_lines=370
+REAL_IMPORT first=SKIP: op.subject 1 no existe (Intervención Clínica y Neuropsicológica: Habilidades y Aplicaciones Terapéuticas)
+REAL_IMPORT summary=Import mapeo: 0 creados, 0 actualizados, 369 saltados.
+REAL_IMPORT maps_before_rollback=0
+REAL_IMPORT maps_after_rollback=0
+
+Se ejecutó env.cr.rollback() explícito y se invalidó la caché antes del conteo final.
+No hubo mapas residuales atribuibles al run. Tras terminar no quedó ningún contenedor
+odoo16irg_local-odoo_local-run*. El servicio persistente siguió montando el checkout
+principal en /mnt/extra-addons.
+
+Reejecución tras corregir findings
+----------------------------------
+
+Resultado: exit 0, sin traceback.
+REAL_IMPORT_FIX subjects_before=0 maps_before=0
+REAL_IMPORT_FIX output_lines=370
+REAL_IMPORT_FIX summary=Import mapeo: 0 creados, 0 actualizados, 369 saltados.
+REAL_IMPORT_FIX maps_before_rollback=0
+REAL_IMPORT_FIX maps_after_rollback=0
+
+Se repitió `env.cr.rollback()` y no quedaron contenedores temporales.
+
+Reejecución tras cerrar P2 de límites
+-------------------------------------
+
+Resultado: exit 0, sin traceback.
+REAL_IMPORT_P2 subjects_before=0 maps_before=0
+REAL_IMPORT_P2 output_lines=370
+REAL_IMPORT_P2 summary=Import mapeo: 0 creados, 0 actualizados, 369 saltados.
+REAL_IMPORT_P2 maps_before_rollback=0
+REAL_IMPORT_P2 maps_after_rollback=0
+
+Rollback explícito; 0 mapas residuales y 0 contenedores temporales.

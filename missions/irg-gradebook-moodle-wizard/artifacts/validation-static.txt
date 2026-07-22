@@ -1,0 +1,24 @@
+Validación independiente — alcance y checks estáticos
+Fecha: 2026-07-21
+HEAD: a0757b59a69710d8f2427d580beeb676566001b4
+Base: ba75954925d5ea164d5e2234e7eaf2044d4ce7cf
+
+Comandos:
+- git diff --name-status ba7595492..HEAD
+- git diff --check ba7595492..HEAD
+- compile()/ast.parse sobre todos los .py del addon
+- ElementTree.parse sobre todos los .xml del addon
+- csv.reader y validación de cabecera/dimensiones/IDs del ACL
+- ast.literal_eval y contrato del manifest
+
+Resultado (exit 0):
+- PYTHON_SYNTAX pass files=13
+- MANIFEST pass version=16.0.1.0.0
+- XML_PARSE pass files=3
+- CSV_ACL pass rows=8 columns=8 unique_ids=8
+- GIT_SCOPE pass changed=17 all_under_new_addon=true
+- git diff --check: sin salida
+
+Los 17 archivos funcionales son altas bajo
+addons-extra/extrairg/irg_gradebook_moodle_wizard/. No se modifica ningún addon
+preexistente.

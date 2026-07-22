@@ -1,0 +1,32 @@
+Validación independiente — upgrade y suite Odoo
+Fecha: 2026-07-21
+Runtime: docker-compose.local.yml + docker-compose.worktree.yml
+Base de datos: test_irg_db
+
+Comando:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml \
+  -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml \
+  run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf \
+  -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable \
+  --stop-after-init --log-level=test
+
+Resultado fresco (exit 0):
+- 44 post-tests in 3.07s, 3778 queries
+- irg_gradebook_moodle_wizard: 50 tests 3.06s 3778 queries
+- 0 failed, 0 error(s) of 44 tests
+
+Inventario AST independiente: 44 métodos test_ (8 importador + 36
+servicio/wizard). Las SerializationFailure y violaciones de unicidad impresas por
+Odoo son los errores provocados deliberadamente por pruebas negativas; no generan
+fallos de test. El retry concurrente termina y la suite confirma una única fila.
+
+Estado runtime tras el upgrade:
+- module=installed,version=16.0.1.0.0
+- views=4
+- acl=8
+- constraints presentes: moodle_sync_key_uniq, subject_course_uniq,
+  map_activity_uniq y checks positivos de curso/actividad.
+
+Aviso de entorno preexistente: irg_gradebook_partial_averages figura como no
+instalable/ausente en test_irg_db. No impidió cargar el registry ni afectó el exit o
+el resultado de la suite del addon validado.

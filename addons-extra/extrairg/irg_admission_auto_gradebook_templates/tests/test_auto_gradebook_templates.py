@@ -166,8 +166,8 @@ class TestAutoGradebookTemplates(TransactionCase):
         gradebook.write({'admission_id': admission.id})
         self.assertEqual(gradebook.gradebook_id, self.solo_examen)
 
-    def test_assigning_template_preserves_existing_results(self):
-        """Aplicar plantilla con qty distinta no altera notas ni promedios."""
+    def test_manual_template_persists_even_with_grades(self):
+        """Plantilla puesta a mano debe guardarse aunque ya haya notas."""
         multi_exam = self.env['app.gradebook'].sudo().create({
             'name': 'Template Multi Exam AG',
             'gradebook_template_ids': [(0, 0, {
@@ -182,8 +182,6 @@ class TestAutoGradebookTemplates(TransactionCase):
         )
         empty_admission = self._create_admission(empty_course, '08a')
         gradebook = self._create_gradebook_with_admission(empty_admission)
-        self.assertFalse(gradebook.gradebook_id)
-
         line = self.env['app.gradebook.subject'].sudo().create({
             'gradebook_student_id': gradebook.id,
             'op_subject_id': subject.id,
@@ -194,18 +192,24 @@ class TestAutoGradebookTemplates(TransactionCase):
             'scoring_total': 8.5,
         })
 
-        gradebook.with_context(irg_skip_canonical_template=True).write({
-            'gradebook_id': multi_exam.id,
-        })
+        gradebook.write({'gradebook_id': multi_exam.id})
+        # Simular recompute de depends(course_id) tras guardar el form.
+        gradebook.invalidate_recordset(['gradebook_id'])
+        gradebook.compute_gradebook_id()
         line.invalidate_recordset()
         result.invalidate_recordset()
 
+        self.assertEqual(
+            gradebook.gradebook_id,
+            multi_exam,
+            'La plantilla manual debe persistir tras guardar/recompute.',
+        )
         self.assertEqual(result.scoring_total, 8.5)
         self.assertEqual(result.exists().id, result.id)
         self.assertAlmostEqual(line.point_average_exam, 8.5, places=2)
 
-    def test_admission_change_preserves_existing_results(self):
-        """Cambiar admisión a máster pone Solo Examen sin tocar resultados."""
+    def test_admission_change_skips_template_when_grades_exist(self):
+        """Con notas ya puestas, cambiar admisión no asigna plantilla ni toca resultados."""
         empty_course, subject = self._create_course(
             'Taller Sin Template Adm',
             'AGTPREV09',
@@ -226,12 +230,17 @@ class TestAutoGradebookTemplates(TransactionCase):
             'survey_type': 'exam',
             'scoring_total': 7.25,
         })
+        avg_before = line.point_average_exam
 
         gradebook.write({'admission_id': master_admission.id})
         line.invalidate_recordset()
         result.invalidate_recordset()
+        gradebook.invalidate_recordset()
 
-        self.assertEqual(gradebook.gradebook_id, self.solo_examen)
+        self.assertFalse(
+            gradebook.gradebook_id,
+            'Con notas existentes no se asigna plantilla canónica.',
+        )
         self.assertEqual(result.scoring_total, 7.25)
         self.assertEqual(result.exists().id, result.id)
-        self.assertAlmostEqual(line.point_average_exam, 7.25, places=2)
+        self.assertAlmostEqual(line.point_average_exam, avg_before, places=2)

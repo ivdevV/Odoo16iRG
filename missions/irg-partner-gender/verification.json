@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "task": "irg-partner-gender",
+  "checks": [
+    {
+      "name": "unit_tests_red",
+      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_partner_gender_red_20260721 -i irg_partner_gender --test-enable --test-tags=/irg_partner_gender --stop-after-init --http-port=8098 --log-level=test",
+      "result": "pass",
+      "detail": "RED expected: 0 failed, 5 error(s) of 5 tests (methods missing before implementation)",
+      "evidence": "artifacts/red-install.txt"
+    },
+    {
+      "name": "unit_tests_green",
+      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_partner_gender_green5_20260721 -i irg_partner_gender --test-enable --test-tags=/irg_partner_gender --stop-after-init --http-port=8093 --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 5 tests",
+      "evidence": "artifacts/green-install.txt"
+    },
+    {
+      "name": "syntax_py_compile",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_partner_gender/models/res_partner.py addons-extra/extrairg/irg_partner_gender/models/sale_order.py addons-extra/extrairg/irg_partner_gender/tests/test_partner_gender.py",
+      "result": "pass",
+      "detail": "All files compile",
+      "evidence": "artifacts/syntax-check.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_partner_gender_green5_20260721",
+    "base_commit": "44712af61"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/red-install.txt",
+    "artifacts/green-install.txt",
+    "artifacts/syntax-check.txt"
+  ]
+}

@@ -1,0 +1,36 @@
+GREEN integrado — irg_gradebook_moodle_wizard
+Date: 2026-07-21
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=test
+
+Scenarios executed:
+- test_apply_creates_and_upserts
+- test_apply_recomputes_subject_average
+- test_load_assign_without_grade
+- test_load_no_map
+- test_load_ok_exam_average_and_scale
+- test_load_student_not_found
+- test_match_by_cmid
+
+Result: exit 0
+Tests: 7
+Failed: 0
+Errors: 0
+Odoo summary: 0 failed, 0 error(s) of 7 tests when loading database 'test_irg_db'
+
+Static checks:
+- Python compile: pass
+- Manifest AST: pass
+- XML parse: pass (3 files)
+- CSV shape: pass (7 rows, 8 columns)
+- git diff --check: pass
+
+Cleanup:
+- Ephemeral odoo_local-run containers: 0
+- Shared odoo16irg_local /mnt/extra-addons source remains:
+  /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra
+
+Pre-existing runtime concern:
+- irg_gradebook_partial_averages remains in an inconsistent/not-installable state;
+  it did not fail this addon suite.

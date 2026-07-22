@@ -1,0 +1,57 @@
+Review final — GREEN integrado y cierre técnico
+Fecha: 2026-07-21
+
+Upgrade + suite completa:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=test
+
+Resultado: exit 0; 41 post-tests, 0 failed, 0 errors. El contador
+odoo.tests.stats informa 47 al incluir los seis subtests de payload inválido.
+Los escenarios de concurrencia, SerializationFailure y constraints pasaron.
+
+Import real del CSV:
+- exit 0;
+- subjects_before=0, maps_before=0;
+- output_lines=370;
+- Import mapeo: 0 creados, 0 actualizados, 369 saltados.;
+- maps_before_rollback=0;
+- rollback explícito;
+- maps_after_rollback=0.
+
+Checks estáticos frescos:
+- AST + py_compile: 13 ficheros Python, pass;
+- xmllint: 3 ficheros XML, pass;
+- CSV ACL: 9 filas y 8 columnas, pass;
+- 41 métodos test_ detectados;
+- logging/_logger ausentes de gradebook_service.py;
+- git diff --check: pass;
+- diff funcional limitado a 8 ficheros del addon.
+
+Cleanup/runtime:
+- no quedan contenedores efímeros odoo16irg_local-odoo_local-run-*;
+- permanecen solo odoo16irg_local, pgodoo16irg_local y redisodoo16irg_local;
+- el servicio persistente sigue montando el checkout principal:
+  /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra -> /mnt/extra-addons.
+
+Aviso preexistente no bloqueante: irg_gradebook_partial_averages continúa en estado
+inconsistente/no instalable en el entorno local.
+
+Último Important — GREEN de esquema Moodle completo
+----------------------------------------------------
+
+Mismo comando de upgrade + suite completa con `--log-level=test`.
+
+Resultado: exit 0; 44 post-tests, 0 failed, 0 errors; odoo.tests.stats informa 50.
+
+- enrolled: lista estricta de dicts, id int positivo sin bool, email str/None;
+- usergrades: dict, userid int positivo sin bool, userfullname str/None y gradeitems
+  lista;
+- gradeitems: dict, id/cmid int/None sin bool, itemname/itemmodule str/None;
+- graderaw/grademax: int/float/string/None, sin bool ni contenedores;
+- cualquier schema inválido usa el mismo UserError traducible y no filtra payload,
+  URL ni token;
+- wizard sin cambios; concurrencia completa verde.
+
+Checks frescos: AST + py_compile 13 Python, xmllint 3 XML, CSV ACL 9x8,
+44 métodos test_, git diff --check y scope de dos ficheros: pass.
+Cleanup: 0 contenedores efímeros y mount persistente del checkout principal.
+No se repitió el import real porque el importador no cambió.

@@ -1,0 +1,40 @@
+Review final — RED focal previo a producción
+Fecha: 2026-07-21
+
+Comando:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f missions/irg-gradebook-moodle-wizard/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -d test_irg_db -u irg_gradebook_moodle_wizard --test-enable --stop-after-init --log-level=error
+
+Resultado: exit 1; 41 tests ejecutados; 20 fallos y 0 errores.
+
+Fallos esperados reproducidos antes de modificar producción:
+- servicio: error del endpoint de notas silenciado;
+- servicio: payload de notas no-dict, usergrades ausente/no-lista, entradas no-dict,
+  gradeitems no-lista y grade item no-dict no rechazados;
+- servicio: error/payload inválido de matriculados silenciado y entrada no-dict que
+  provoca AttributeError en vez de ignorarse;
+- resolución: itemmodule assign o ausente en mapa quiz deja el tipo exam en estado ok;
+- importador: 395,395 reemplaza nombre/líneas en vez de saltar la fila;
+- modelo: falta unique(map_id,moodle_activity_id);
+- modelo: faltan CHECK positivos para moodle_course_id y moodle_activity_id;
+- libreta done: action_open crea/carga el wizard y el botón no tiene attrs invisible.
+
+Los errores SQL de duplicado Moodle y SerializationFailure presentes en el log son
+provocados y afirmados por tests preexistentes; no son fallos adicionales.
+Aviso preexistente: irg_gradebook_partial_averages permanece en estado inconsistente.
+
+Último Important — RED de esquema Moodle completo
+--------------------------------------------------
+
+Mismo comando integrado con `--log-level=error`.
+
+Resultado: exit 1; 44 tests; 52 fallos de subcasos y 0 errores.
+
+Antes de producción se reprodujo que el servicio aceptaba o procesaba sin validar:
+- matriculados no-dict, id lista/dict/string/float/bool/no positivo y email no-string;
+- userid no-int positivo y userfullname no-string/None;
+- id/cmid, itemname, itemmodule, graderaw y grademax con tipos contenedor/bool;
+- `id` dict llegaba a provocar TypeError por clave no hashable.
+
+El helper de test convirtió toda excepción distinta de UserError en fallo de contrato,
+por lo que el RED terminó con 0 errores de infraestructura. Los payloads incluían
+valores sentinel de URL/token y exigían que no apareciesen en el mensaje.

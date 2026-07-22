@@ -1,0 +1,20 @@
+Validación independiente — import real MAP_ASIGNATURAS
+Fecha: 2026-07-21
+Libro fuente: /Users/ivrogo/Downloads/Migracion_Notas.xlsx
+SHA-256 libro: ad23606c12346cc7b0653a2cba7a4609cebd1dff1e6f38a886e55684b00ec92d
+CSV montado read-only durante el check: /tmp/map_asignaturas.csv. El input
+temporal y su mount se retiraron después de conservar esta evidencia concisa.
+SHA-256 CSV: bc37b83b2a8b18f0a56201c7c73b1baf961d735bf26ff5c84bb376d6e91696ba
+
+Validación del CSV:
+- 370 líneas totales: cabecera + 369 filas de datos.
+- Cabecera esperada, incluida Moodle Course ID, Odoo Subject ID y Moodle IDs List.
+
+Ejecución fresca con odoo shell, script real y rollback explícito (exit 0):
+- VALIDATION_IMPORT subjects_before=0 maps_before=0
+- VALIDATION_IMPORT output_lines=370
+- VALIDATION_IMPORT summary=Import mapeo: 0 creados, 0 actualizados, 369 saltados.
+- VALIDATION_IMPORT maps_before_rollback=0 maps_after_rollback=0
+
+El resultado esperado en esta base es todo skipped porque no existen op.subject.
+No hubo traceback ni persistencia residual.
