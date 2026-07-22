@@ -72,24 +72,31 @@ class SaleOrder(models.Model):
                 data_dict[key.strip()] = value.strip()
                 
         def parse_date(date_str):
-            try:
-                return datetime.strptime(date_str, "%d/%m/%Y").strftime("%Y-%m-%d")
-            except ValueError:
-                return False  # Aseguramos el valor
+            if not date_str:
+                return False
+            date_str = date_str.strip()
+            for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y", "%Y/%m/%d"):
+                try:
+                    return datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
+                except ValueError:
+                    pass
+            return False
 
         birth_date = parse_date(data_dict.get('birth_date', ''))
         finalizacion_estudios = parse_date(data_dict.get('finalizacionestudios', ''))
 
         partner_vals = {
             'name': data_dict.get('partner_name', 'Sin Nombre'),
-            'birth_date': birth_date if birth_date else None,
             'university': data_dict.get('university', ''),
             'gender': data_dict.get('gender', ''),
             'profession': data_dict.get('profession', ''),
             'titulacion': data_dict.get('titulacion', ''),
-            'finalizacionestudios': finalizacion_estudios if finalizacion_estudios else None,
             'phone': data_dict.get('phone', ''),
         }
+        if birth_date:
+            partner_vals['birth_date'] = birth_date
+        if finalizacion_estudios:
+            partner_vals['finalizacionestudios'] = finalizacion_estudios
         self.admission_date = data_dict.get('admission_date', False)
         self.gender =  data_dict.get('gender', '')
         self.partner_id.gender = data_dict.get('gender', '')

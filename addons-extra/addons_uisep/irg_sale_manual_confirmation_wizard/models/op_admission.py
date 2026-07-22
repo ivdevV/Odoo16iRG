@@ -106,11 +106,10 @@ class OpAdmission(models.Model):
         self.email_send_ok = True
 
     def submit_form(self):
-        # Aseguramos que se guarde la fecha de nacimiento o un default
-        birth = self.birth_date or '2000-01-01'
         res = super().submit_form()
         for record in self:
             if record.partner_id and not record.partner_id.birth_date:
+                birth = record.birth_date or (record.student_id and record.student_id.birth_date) or '2000-01-01'
                 record.partner_id.write({'birth_date': birth})
         return res
 
@@ -203,7 +202,8 @@ class OpAdmission(models.Model):
 
         for record in self:
             if record.partner_id and not record.partner_id.birth_date:
-                record.partner_id.write({'birth_date': record.birth_date or '2000-01-01'})
+                birth = record.birth_date or (record.student_id and record.student_id.birth_date) or '2000-01-01'
+                record.partner_id.write({'birth_date': birth})
         
         # Guardar fechas de admisión originales para evitar que el super() las pise con la fecha de hoy
         saved_dates = {r.id: r.admission_date for r in self}
@@ -224,6 +224,6 @@ class OpAdmission(models.Model):
     def get_student_vals(self):
         res = super().get_student_vals()
         if res and not res.get('birth_date'):
-            res['birth_date'] = self.birth_date or self.partner_id.birth_date or '2000-01-01'
+            res['birth_date'] = self.birth_date or self.partner_id.birth_date or (self.student_id and self.student_id.birth_date) or '2000-01-01'
         return res
 

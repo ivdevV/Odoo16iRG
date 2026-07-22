@@ -116,11 +116,12 @@ class SaleOrder(models.Model):
                 # Esto es CRÍTICO para que search_user_portal en isep_openeducat_sale 
                 # NO sobrescriba el partner_id con el del titular al ver que falta el student_id.
                 op_student = self.env['op.student'].search([('partner_id', '=', target_partner.id)], limit=1)
+                student_birth_date = target_partner.birth_date or getattr(self, 'birth_date', False) or fields.Date.to_date('2000-01-01')
                 if not op_student:
                     _logger.warning(f"ISEP_DEBUG: Creando op.student para {target_partner.name} anticipadamente.")
                     target_user = self.env['res.users'].search([('partner_id', '=', target_partner.id)], limit=1)
                     
-                    op_student = self.env['op.student'].create({
+                    student_vals = {
                          'name': target_partner.name,
                          'first_name': (first_name or '-').strip(),
                          'last_name': (last_name or '-').strip(),
@@ -130,12 +131,14 @@ class SaleOrder(models.Model):
                          'email': target_partner.email,
                          'mobile': target_partner.mobile,
                          'phone': target_partner.phone,
-                         'birth_date': fields.Date.today(), # Valor por defecto requerido
-                    })
+                    }
+                    if student_birth_date:
+                        student_vals['birth_date'] = student_birth_date
+                    op_student = self.env['op.student'].create(student_vals)
                 
                 _logger.warning(f"ISEP_DEBUG: Creando Admisión con op.student {op_student.id} y partner {target_partner.id}.")
 
-                admission = self.env['op.admission'].create({
+                admission_vals = {
                     'name': target_partner.name,
                     'first_name': (first_name or '-').strip(),
                     'last_name': (last_name or '-').strip(),
@@ -157,7 +160,10 @@ class SaleOrder(models.Model):
                     'gender': self.gender or target_partner.gender or 'o',
                     'batch_id': self.get_lot_id(course).id,
                     'order_id': self.id,
-                })
+                }
+                if student_birth_date:
+                    admission_vals['birth_date'] = student_birth_date
+                admission = self.env['op.admission'].create(admission_vals)
                 
                 # --- VERIFICACIÓN Y CORRECCIÓN POST-CREATION ---
                 # Si search_user_portal en isep_openeducat_sale sobrescribió la admisión

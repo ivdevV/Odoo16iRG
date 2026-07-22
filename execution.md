@@ -1,16 +1,22 @@
-# Registro de Ejecución: Sincronización de Cuestionarios/Certificaciones a Libretas
+# Registro de Ejecución: Corrección birth_date
 
-## Estado de la Misión
-- **Nivel de Misión**: `complex`
-- **Fase Actual**: Validación y Documentación Completadas (`passed`)
+## Misión: `student_birth_date_fix`
+- **Fecha**: 2026-07-22
+- **Nivel de Misión**: `standard`
+- **Estado**: COMPLETADO (passed)
 
-## Diario de Ejecución
-
-### [Fecha: 2026-07-22] - Desarrollo y Validación
-1. **Paso 1 (RED)**: Redacción del archivo de pruebas `test_survey_gradebook_sync.py` en `extrairg/irg_exam_second_attempt/tests/`.
-2. **Paso 2 (Implementación)**:
-   - Modificado `extrairg/irg_exam_second_attempt/models/survey_user_input.py` para sincronizar `survey_type in ('exam', 'assignment', 'survey', 'cert')` e incorporar `action_sync_pending_survey_gradebooks`.
-   - Modificado `addons_uisep/isep_gradebook/models/survey_user_input.py` y `views/survey_user_input.xml` para adaptar `send_result` y la interfaz del formulario.
-   - Modificado `addons_uisep/get_gradebook/models/fix_send_result.py` y `models/get_books.py` para corregir la vinculación de asignaturas y la llamada a métodos.
-3. **Paso 3 (GREEN)**: Ejecución de la suite de pruebas unitarias mediante `docker compose -f docker-compose.local.yml exec -T odoo_local /usr/bin/odoo --test-enable --stop-after-init -i irg_exam_second_attempt -d odoo16irg_local --test-tags irg_sync_test`. Resultado: 2 pruebas pasadas, 0 fallos, 0 errores.
-4. **Paso 4 (Verificación & Artefactos)**: Emitidos `verification.json`, `artifacts/unit-tests.txt` y `CHANGELOG.md`.
+## Log de Acciones
+1. **Planificación**: `implementation_plan.md` aprobado por el usuario. `plan.md` actualizado.
+2. **Implementación**:
+   - `isep_admission_from_student_field/models/sale_order.py`: Reemplazado `fields.Date.today()` por la fecha real del alumno `student_birth_date` y propagada a `op.admission`.
+   - `isep_admission_from_student_field/models/op_admission.py`: Evitada la inclusión de `'birth_date': False` en `details` al crear `op.student`.
+   - `isep_elearning_custom/models/op_admission.py`: Evitado borrado delegativo con `False` al crear `op.student`.
+   - `irg_sale_manual_confirmation_wizard/models/sale_order.py`: Ajustado `default_birth` para buscar primero en `admission.partner_id` / `self.student_id`.
+   - `irg_sale_manual_confirmation_wizard/models/op_admission.py`: Mejorada la jerarquía de consulta de fecha en `submit_form`, `enroll_student` y `get_student_vals`.
+   - `isep_website_sale_custom/models/sale_order.py`: Ampliado `parse_date()` a múltiples formatos y protegido `partner_vals`.
+   - `irg_sale_manual_confirmation_wizard/tests/test_birth_date_safeguard.py`: Creado test unitario `TestBirthDateSafeguard`.
+3. **Validación**:
+   - Sintaxis Python: `py_compile` limpio en los 7 archivos.
+   - `verification.json` generado con estado `passed`.
+4. **Documentación**:
+   - Creado `CHANGELOG_2026-07-22_student_birth_date_fix.md`.

@@ -174,7 +174,8 @@ class SaleOrder(models.Model):
                 vals['batch_id'] = correct_batch.id
             
             if not admission.birth_date:
-                default_birth = self.partner_id.birth_date or fields.Date.to_date('2000-01-01')
+                student_partner = admission.partner_id or (getattr(self, 'student_id', False) and self.student_id.partner_id) or self.partner_id
+                default_birth = student_partner.birth_date or self.partner_id.birth_date or fields.Date.to_date('2000-01-01')
                 _logger.info(
                     "IRG Manual Wizard: Estableciendo birth_date %s en la admisión %s",
                     default_birth, admission.name
