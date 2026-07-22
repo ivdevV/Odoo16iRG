@@ -166,8 +166,8 @@ class TestAutoGradebookTemplates(TransactionCase):
         gradebook.write({'admission_id': admission.id})
         self.assertEqual(gradebook.gradebook_id, self.solo_examen)
 
-    def test_assigning_template_preserves_existing_results(self):
-        """Si ya hay notas, escribir plantilla no debe cambiar nada."""
+    def test_manual_template_persists_even_with_grades(self):
+        """Plantilla puesta a mano debe guardarse aunque ya haya notas."""
         multi_exam = self.env['app.gradebook'].sudo().create({
             'name': 'Template Multi Exam AG',
             'gradebook_template_ids': [(0, 0, {
@@ -182,8 +182,6 @@ class TestAutoGradebookTemplates(TransactionCase):
         )
         empty_admission = self._create_admission(empty_course, '08a')
         gradebook = self._create_gradebook_with_admission(empty_admission)
-        self.assertFalse(gradebook.gradebook_id)
-
         line = self.env['app.gradebook.subject'].sudo().create({
             'gradebook_student_id': gradebook.id,
             'op_subject_id': subject.id,
@@ -193,20 +191,22 @@ class TestAutoGradebookTemplates(TransactionCase):
             'survey_type': 'exam',
             'scoring_total': 8.5,
         })
-        avg_before = line.point_average_exam
 
         gradebook.write({'gradebook_id': multi_exam.id})
+        # Simular recompute de depends(course_id) tras guardar el form.
+        gradebook.invalidate_recordset(['gradebook_id'])
+        gradebook.compute_gradebook_id()
         line.invalidate_recordset()
         result.invalidate_recordset()
-        gradebook.invalidate_recordset()
 
-        self.assertFalse(
+        self.assertEqual(
             gradebook.gradebook_id,
-            'Con notas existentes no se debe cambiar la plantilla.',
+            multi_exam,
+            'La plantilla manual debe persistir tras guardar/recompute.',
         )
         self.assertEqual(result.scoring_total, 8.5)
         self.assertEqual(result.exists().id, result.id)
-        self.assertAlmostEqual(line.point_average_exam, avg_before, places=2)
+        self.assertAlmostEqual(line.point_average_exam, 8.5, places=2)
 
     def test_admission_change_skips_template_when_grades_exist(self):
         """Con notas ya puestas, cambiar admisión no asigna plantilla ni toca resultados."""

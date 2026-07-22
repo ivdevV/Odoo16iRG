@@ -1,2 +1,2 @@
-SKIP if grades: 0 failed, 0 error(s) of 9 tests
-DB: test_irg_agtpl_20260722_skip2
+MANUAL template persist: 0 failed, 0 error(s) of 9 tests
+DB: test_irg_agtpl_20260722_persist
