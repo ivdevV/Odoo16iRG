@@ -2,7 +2,7 @@
 import logging
 import unicodedata
 
-from odoo import models
+from odoo import fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -46,6 +46,10 @@ _MALE_NAMES = frozenset({
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
+
+    # Moodle connector marks username required=True on all partners; that blocks
+    # editing gender (and general contact data) when no Moodle user exists yet.
+    username = fields.Char(string='Username', required=False)
 
     def _irg_clean_string(self, value):
         if not value:

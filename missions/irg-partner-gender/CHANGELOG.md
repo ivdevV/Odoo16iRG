@@ -1,5 +1,11 @@
 # Changelog — irg-partner-gender
 
+## 16.0.1.1.0 — 2026-07-22
+
+### Fixed
+
+- `username` deja de ser `required` a nivel de modelo y en la pestaña Moodle, para poder editar `gender` (y el contacto) sin usuario Moodle.
+
 ## 16.0.1.0.0 — 2026-07-21
 
 ### Added

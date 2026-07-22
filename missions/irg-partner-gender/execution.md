@@ -44,4 +44,5 @@ OK. Evidencia: `artifacts/syntax-check.txt`.
 
 - 2026-07-21: plan de misión creado; TDD RED → implementación → GREEN.
 - 2026-07-21: `verification.json` status `passed`.
-- Pendiente instalación en BD operativa (`-i irg_partner_gender`) y autorización de commit/push.
+- 2026-07-22: `username` required=False (modelo + vista Moodle). GREEN `0 failed, 0 error(s) of 6 tests` en `test_irg_partner_gender_username_20260722`. Evidencia: `artifacts/green-username-optional.txt`.
+- Pendiente `-u irg_partner_gender` en BD operativa tras pull.
