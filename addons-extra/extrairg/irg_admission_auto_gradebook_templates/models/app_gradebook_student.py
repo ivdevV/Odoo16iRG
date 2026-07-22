@@ -3,7 +3,7 @@ import logging
 import re
 import unicodedata
 
-from odoo import api, models
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -20,6 +20,15 @@ _MASTER_TEMPLATE_NAME = 'Solo Examen'
 class AppGradebookStudent(models.Model):
     _inherit = 'app.gradebook.student'
 
+    gradebook_id = fields.Many2one(
+        'app.gradebook',
+        string='Calificaciones template',
+        store=True,
+        compute='compute_gradebook_id',
+        readonly=False,
+        tracking=True,
+    )
+
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
@@ -27,6 +36,44 @@ class AppGradebookStudent(models.Model):
         return records
 
     def write(self, vals):
+        vals = dict(vals)
+        force_template = self.env.context.get('irg_force_gradebook_template')
+        if 'gradebook_id' in vals and not force_template:
+            protected = self.filtered(lambda r: r._irg_has_existing_grades())
+            if protected:
+                _logger.info(
+                    'IRG Auto Gradebook Templates: no se cambia gradebook_id '
+                    'en libreta(s) %s porque ya hay notas registradas.',
+                    protected.ids,
+                )
+                if protected == self:
+                    vals.pop('gradebook_id', None)
+                else:
+                    # Multi-write mixto: aplicar plantilla solo a las sin notas.
+                    other_vals = dict(vals)
+                    vals_without_template = {
+                        key: value for key, value in vals.items()
+                        if key != 'gradebook_id'
+                    }
+                    res = True
+                    writable = self - protected
+                    if writable:
+                        res = super(AppGradebookStudent, writable).write(
+                            other_vals
+                        )
+                    if vals_without_template:
+                        res = super(AppGradebookStudent, protected).write(
+                            vals_without_template
+                        ) and res
+                    if (
+                        'admission_id' in vals
+                        and not self.env.context.get(
+                            'irg_skip_canonical_template'
+                        )
+                    ):
+                        writable._irg_assign_canonical_gradebook_template()
+                    return res
+
         res = super().write(vals)
         if (
             'admission_id' in vals
@@ -35,25 +82,44 @@ class AppGradebookStudent(models.Model):
             self._irg_assign_canonical_gradebook_template()
         return res
 
-    def _irg_assign_canonical_gradebook_template(self):
-        """Fill empty gradebook_id from course or canonical master/diplomado.
+    @api.depends('course_id')
+    def compute_gradebook_id(self):
+        """No adoptar plantilla del curso si la libreta ya tiene notas."""
+        for rec in self:
+            if rec._irg_has_existing_grades():
+                rec.gradebook_id = rec.gradebook_id
+            else:
+                rec.gradebook_id = rec.gradebook_id or rec.course_id.gradebook_id
 
-        Solo escribe gradebook_id. No crea, borra ni modifica
-        app.gradebook.result ni líneas de asignatura. Los promedios se
-        recalculan por compute; irg_gradebook_partial_averages evita
-        ponerlos a 0 cuando ya hay resultados.
+    def _irg_has_existing_grades(self):
+        """True si hay al menos un resultado de calificación en la libreta."""
+        self.ensure_one()
+        return bool(self.gradebook_subject_ids.gradebook_result_ids)
+
+    def _irg_assign_canonical_gradebook_template(self):
+        """Rellena gradebook_id vacío salvo que ya existan notas.
+
+        Si hay resultados, no escribe nada (ni plantilla ni otros campos)
+        para evitar recomputes que alteren promedios/notas visibles.
         """
         if self.env.context.get('irg_skip_canonical_template'):
             return
         for record in self:
             if record.gradebook_id:
                 continue
+            if record._irg_has_existing_grades():
+                _logger.info(
+                    'IRG Auto Gradebook Templates: omitida asignación de '
+                    'plantilla en libreta %s (ya hay notas).',
+                    record.id,
+                )
+                continue
             template = record._irg_resolve_canonical_gradebook_template()
             if not template:
                 continue
-            # Evitar reentrada del write() por admission_id.
             record.with_context(
                 irg_skip_canonical_template=True,
+                irg_force_gradebook_template=True,
             ).write({'gradebook_id': template.id})
             _logger.info(
                 'IRG Auto Gradebook Templates: plantilla %s asignada a '

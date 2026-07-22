@@ -167,7 +167,7 @@ class TestAutoGradebookTemplates(TransactionCase):
         self.assertEqual(gradebook.gradebook_id, self.solo_examen)
 
     def test_assigning_template_preserves_existing_results(self):
-        """Aplicar plantilla con qty distinta no altera notas ni promedios."""
+        """Si ya hay notas, escribir plantilla no debe cambiar nada."""
         multi_exam = self.env['app.gradebook'].sudo().create({
             'name': 'Template Multi Exam AG',
             'gradebook_template_ids': [(0, 0, {
@@ -193,19 +193,23 @@ class TestAutoGradebookTemplates(TransactionCase):
             'survey_type': 'exam',
             'scoring_total': 8.5,
         })
+        avg_before = line.point_average_exam
 
-        gradebook.with_context(irg_skip_canonical_template=True).write({
-            'gradebook_id': multi_exam.id,
-        })
+        gradebook.write({'gradebook_id': multi_exam.id})
         line.invalidate_recordset()
         result.invalidate_recordset()
+        gradebook.invalidate_recordset()
 
+        self.assertFalse(
+            gradebook.gradebook_id,
+            'Con notas existentes no se debe cambiar la plantilla.',
+        )
         self.assertEqual(result.scoring_total, 8.5)
         self.assertEqual(result.exists().id, result.id)
-        self.assertAlmostEqual(line.point_average_exam, 8.5, places=2)
+        self.assertAlmostEqual(line.point_average_exam, avg_before, places=2)
 
-    def test_admission_change_preserves_existing_results(self):
-        """Cambiar admisión a máster pone Solo Examen sin tocar resultados."""
+    def test_admission_change_skips_template_when_grades_exist(self):
+        """Con notas ya puestas, cambiar admisión no asigna plantilla ni toca resultados."""
         empty_course, subject = self._create_course(
             'Taller Sin Template Adm',
             'AGTPREV09',
@@ -226,12 +230,17 @@ class TestAutoGradebookTemplates(TransactionCase):
             'survey_type': 'exam',
             'scoring_total': 7.25,
         })
+        avg_before = line.point_average_exam
 
         gradebook.write({'admission_id': master_admission.id})
         line.invalidate_recordset()
         result.invalidate_recordset()
+        gradebook.invalidate_recordset()
 
-        self.assertEqual(gradebook.gradebook_id, self.solo_examen)
+        self.assertFalse(
+            gradebook.gradebook_id,
+            'Con notas existentes no se asigna plantilla canónica.',
+        )
         self.assertEqual(result.scoring_total, 7.25)
         self.assertEqual(result.exists().id, result.id)
-        self.assertAlmostEqual(line.point_average_exam, 7.25, places=2)
+        self.assertAlmostEqual(line.point_average_exam, avg_before, places=2)

@@ -1,3 +1,2 @@
-PRESERVE notes: 0 failed, 0 error(s) of 17 tests
-DB: test_irg_agtpl_20260721_preserve
-Modules: irg_admission_auto_gradebook_templates + irg_gradebook_partial_averages
+SKIP if grades: 0 failed, 0 error(s) of 9 tests
+DB: test_irg_agtpl_20260722_skip2

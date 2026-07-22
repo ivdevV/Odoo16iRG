@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Admission — Auto Gradebook Templates',
-    'version': '16.0.1.2.0',
+    'version': '16.0.1.3.0',
     'summary': (
         'Asigna plantilla de calificaciones al crear/actualizar una libreta '
         'con admisión (curso, o canónicas máster/diplomado).'
