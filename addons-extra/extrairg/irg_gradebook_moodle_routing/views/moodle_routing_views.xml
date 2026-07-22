@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="irg_gradebook_moodle_course_map_tree" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.course.map.tree</field>
+        <field name="model">irg.gradebook.moodle.course.map</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="op_course_id"/>
+                <field name="moodle_course_id"/>
+                <field name="moodle_course_name"/>
+                <field name="modality"/>
+                <field name="edition_year"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="irg_gradebook_moodle_course_map_form" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.course.map.form</field>
+        <field name="model">irg.gradebook.moodle.course.map</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="op_course_id"/>
+                        <field name="moodle_course_id"/>
+                        <field name="moodle_course_name"/>
+                        <field name="modality"/>
+                        <field name="edition_year"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_gradebook_moodle_course_map" model="ir.actions.act_window">
+        <field name="name">Cursos Moodle</field>
+        <field name="res_model">irg.gradebook.moodle.course.map</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_irg_gradebook_moodle_course_map"
+        name="Cursos Moodle"
+        parent="isep_gradebook.menu_app_gradebook_root"
+        action="action_irg_gradebook_moodle_course_map"
+        sequence="89"/>
+
+    <record id="irg_gradebook_moodle_map_tree_course" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.map.tree.course</field>
+        <field name="model">irg.gradebook.moodle.map</field>
+        <field name="inherit_id" ref="irg_gradebook_moodle_wizard.irg_gradebook_moodle_map_tree"/>
+        <field name="arch" type="xml">
+            <field name="op_subject_id" position="after">
+                <field name="course_map_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="irg_gradebook_moodle_map_form_course" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.map.form.course</field>
+        <field name="model">irg.gradebook.moodle.map</field>
+        <field name="inherit_id" ref="irg_gradebook_moodle_wizard.irg_gradebook_moodle_map_form"/>
+        <field name="arch" type="xml">
+            <field name="op_subject_id" position="after">
+                <field name="course_map_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

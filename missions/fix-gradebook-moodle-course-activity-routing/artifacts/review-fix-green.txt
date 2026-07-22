@@ -1,0 +1,25 @@
+# GREEN — correcciones de Code Review
+
+Fecha: 2026-07-22
+
+Comando final completo:
+
+```text
+docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f missions/fix-gradebook-moodle-course-activity-routing/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing --test-enable --test-tags /irg_gradebook_moodle_routing --stop-after-init --log-level=test
+```
+
+Resultado: exit 0; 17 métodos / 19 tests-subtests; 0 fallos y 0 errores.
+
+Checks finales:
+
+```text
+compileall/manifest/XML/ACL: pass
+git diff --check: pass
+untracked whitespace scan: pass
+destructive line reset scan: pass
+overlay worktree: pass
+servicio compartido restaurado al checkout principal: pass
+stage/commit/push/PR: ninguno
+```
+
+No se ejecutaron los CSV reales ni se hicieron llamadas Moodle.

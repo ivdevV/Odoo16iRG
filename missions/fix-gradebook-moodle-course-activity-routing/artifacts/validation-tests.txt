@@ -1,0 +1,15 @@
+Revalidación independiente tras corrección documental — 2026-07-22
+
+Comando:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/fix-gradebook-moodle-course-activity-routing/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing --test-enable --test-tags /irg_gradebook_moodle_routing --stop-after-init --log-level=test
+
+Resultado de tests: PASS (exit 0).
+Odoo actualizó el addon del worktree y ejecutó 20 métodos / 22 tests y subtests: 0 fallos, 0 errores.
+
+Resultado del upgrade como gate conjunto: PASS.
+La ejecución completa se capturó y se buscó explícitamente `docutils`,
+`ERROR/3` y `WARNING/2`: cero coincidencias. Odoo cargó
+`irg_gradebook_moodle_routing` sin mensajes atribuibles al README corregido.
+
+Resultado funcional: 20 métodos / 22 tests y subtests, 0 fallos y 0 errores;
+exit 0.

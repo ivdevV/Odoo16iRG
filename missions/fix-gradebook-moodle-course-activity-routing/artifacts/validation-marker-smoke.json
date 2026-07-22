@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "transaction": "SAVEPOINT routing_marker_validation; ROLLBACK TO SAVEPOINT; RELEASE SAVEPOINT",
+  "markers_tested": 3,
+  "markers_logged": false,
+  "summary": {
+    "course_maps": {
+      "created": 0,
+      "updated": 0
+    },
+    "subject_maps": {
+      "created": 0,
+      "updated": 0
+    },
+    "skipped": 3,
+    "skipped_by_reason": {
+      "invalid_online_marker": 3
+    },
+    "sources": {
+      "homeclass": {
+        "rows_read": 0,
+        "rows_accepted": 0,
+        "rows_discarded": 0,
+        "discarded_by_reason": {}
+      },
+      "online": {
+        "rows_read": 3,
+        "rows_accepted": 3,
+        "rows_discarded": 0,
+        "discarded_by_reason": {}
+      },
+      "assignments": {
+        "rows_read": 3,
+        "rows_accepted": 0,
+        "rows_discarded": 3,
+        "discarded_by_reason": {
+          "invalid_online_marker": 3
+        }
+      }
+    }
+  },
+  "before": {
+    "course_maps": 0,
+    "subject_maps": 0,
+    "linked_subject_maps": 0,
+    "course_1_moodle_36_course_maps": 0
+  },
+  "after_import": {
+    "course_maps": 0,
+    "subject_maps": 0,
+    "linked_subject_maps": 0,
+    "course_1_moodle_36_course_maps": 0
+  },
+  "after_rollback": {
+    "course_maps": 0,
+    "subject_maps": 0,
+    "linked_subject_maps": 0,
+    "course_1_moodle_36_course_maps": 0
+  },
+  "rejected_without_maps": true,
+  "rollback_confirmed": true,
+  "note": "Smoke sintético y no sensible dentro de un directorio temporal del contenedor; los tres casos malformados se contabilizaron con el motivo específico y no tocaron el ORM."
+}

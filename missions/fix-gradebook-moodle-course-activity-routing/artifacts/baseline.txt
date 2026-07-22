@@ -1,0 +1,528 @@
+ Container odoo16irg_local Running
+ Container pgodoo16irg_local Running
+ Container redisodoo16irg_local Running
+ Container odoo16irg_local-odoo_local-run-a3745afe5e1d Creating
+ Container odoo16irg_local-odoo_local-run-a3745afe5e1d Created
+2026-07-22 08:35:11,852 1 INFO ? odoo: Odoo version 16.0-20250909
+2026-07-22 08:35:11,852 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf
+2026-07-22 08:35:11,852 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech']
+2026-07-22 08:35:11,852 1 INFO ? odoo: database: odoo@pgodoo_local:5432
+2026-07-22 08:35:11,936 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf
+2026-07-22 08:35:12,022 1 INFO ? odoo.service.server: HTTP service (werkzeug) running on bda82d4bd866:8069
+2026-07-22 08:35:12,049 1 INFO test_irg_db odoo.modules.loading: loading 1 modules...
+2026-07-22 08:35:12,051 1 INFO test_irg_db odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra)
+2026-07-22 08:35:12,060 1 INFO test_irg_db odoo.modules.loading: updating modules list
+2026-07-22 08:35:12,073 1 INFO test_irg_db odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a
+2026-07-22 08:35:12,590 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3
+2026-07-22 08:35:12,651 1 WARNING test_irg_db py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+
+2026-07-22 08:35:12,653 1 WARNING test_irg_db py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+
+2026-07-22 08:35:12,656 1 WARNING test_irg_db py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+
+2026-07-22 08:35:12,917 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3
+2026-07-22 08:35:12,952 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3
+2026-07-22 08:35:13,019 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3
+2026-07-22 08:35:13,021 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3
+2026-07-22 08:35:13,023 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3
+2026-07-22 08:35:13,089 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3
+2026-07-22 08:35:13,256 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3
+2026-07-22 08:35:13,338 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3
+2026-07-22 08:35:13,341 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3
+2026-07-22 08:35:13,381 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3
+2026-07-22 08:35:13,448 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3
+2026-07-22 08:35:13,493 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3
+2026-07-22 08:35:13,494 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3
+2026-07-22 08:35:13,496 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3
+2026-07-22 08:35:13,498 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3
+2026-07-22 08:35:13,567 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3
+2026-07-22 08:35:13,585 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3
+2026-07-22 08:35:13,587 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3
+2026-07-22 08:35:13,599 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3
+2026-07-22 08:35:13,608 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3
+2026-07-22 08:35:13,634 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3
+2026-07-22 08:35:13,639 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3
+2026-07-22 08:35:13,646 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3
+2026-07-22 08:35:13,648 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3
+2026-07-22 08:35:13,654 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3
+2026-07-22 08:35:13,657 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3
+2026-07-22 08:35:13,659 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3
+2026-07-22 08:35:13,669 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3
+2026-07-22 08:35:13,674 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3
+2026-07-22 08:35:13,684 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3
+2026-07-22 08:35:13,692 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3
+2026-07-22 08:35:13,697 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3
+2026-07-22 08:35:13,704 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3
+2026-07-22 08:35:13,707 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3
+2026-07-22 08:35:13,717 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3
+2026-07-22 08:35:14,317 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3
+2026-07-22 08:35:14,465 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3
+2026-07-22 08:35:14,483 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3
+2026-07-22 08:35:14,790 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3
+2026-07-22 08:35:14,845 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3
+2026-07-22 08:35:15,107 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3
+2026-07-22 08:35:15,108 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3
+2026-07-22 08:35:15,258 1 INFO test_irg_db odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['iRG Gradebook Moodle Wizard'] to user __system__ #1 via n/a
+2026-07-22 08:35:15,258 1 INFO test_irg_db odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['iRG Gradebook Moodle Wizard'] to user __system__ #1 via n/a
+2026-07-22 08:35:15,843 1 INFO test_irg_db odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a
+2026-07-22 08:35:15,869 1 INFO test_irg_db odoo.modules.loading: loading 164 modules...
+2026-07-22 08:35:16,329 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch
+2026-07-22 08:35:16,355 1 WARNING test_irg_db odoo.models: The model res.card has no _description
+2026-07-22 08:35:16,356 1 WARNING test_irg_db odoo.models: The model isep.form.data.wizard has no _description
+2026-07-22 08:35:16,424 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.odoo_moodle_connector.models.calendar_event_custom is not overriding the create method in batch
+2026-07-22 08:35:16,536 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch
+2026-07-22 08:35:16,536 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch
+2026-07-22 08:35:16,536 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_survey.models.survey_user_input is not overriding the create method in batch
+2026-07-22 08:35:16,671 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch
+2026-07-22 08:35:16,671 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch
+2026-07-22 08:35:16,673 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch
+2026-07-22 08:35:16,674 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch
+2026-07-22 08:35:16,687 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_gradebook.models.app_gradebook_result is not overriding the create method in batch
+2026-07-22 08:35:16,689 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_gradebook.models.survey_user_input is not overriding the create method in batch
+2026-07-22 08:35:16,701 1 WARNING test_irg_db odoo.models: The model app.gradebook.template.line has no _description
+2026-07-22 08:35:16,701 1 WARNING test_irg_db odoo.models: The model app.gradebook has no _description
+2026-07-22 08:35:16,701 1 WARNING test_irg_db odoo.models: The model app.gradebook.result has no _description
+2026-07-22 08:35:16,701 1 WARNING test_irg_db odoo.models: The model survey.user_input.write has no _description
+2026-07-22 08:35:16,701 1 WARNING test_irg_db odoo.models: The model app.gradebook.subject has no _description
+2026-07-22 08:35:16,701 1 WARNING test_irg_db odoo.models: The model app.gradebook.student has no _description
+2026-07-22 08:35:16,733 1 WARNING test_irg_db odoo.models: The model record.request has no _description
+2026-07-22 08:35:16,733 1 WARNING test_irg_db odoo.models: The model record.request.line has no _description
+2026-07-22 08:35:16,734 1 WARNING test_irg_db odoo.models: The model record.request.list.line has no _description
+2026-07-22 08:35:16,734 1 WARNING test_irg_db odoo.models: The model res.partner.document has no _description
+2026-07-22 08:35:16,741 1 WARNING test_irg_db odoo.models: The model op.course.type has no _description
+2026-07-22 08:35:16,741 1 WARNING test_irg_db odoo.models: The model op.area.course has no _description
+2026-07-22 08:35:16,741 1 INFO test_irg_db odoo.modules.loading: Loading module irg_gradebook_moodle_wizard (158/164)
+2026-07-22 08:35:16,817 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related
+2026-07-22 08:35:16,840 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:16,840 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:16,869 1 WARNING test_irg_db odoo.models: The model app.gradebook.result has no _description
+2026-07-22 08:35:16,869 1 WARNING test_irg_db odoo.models: The model app.gradebook.student has no _description
+2026-07-22 08:35:16,884 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related
+2026-07-22 08:35:16,907 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:16,907 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:16,928 1 INFO test_irg_db odoo.modules.registry: module irg_gradebook_moodle_wizard: creating or updating database tables
+2026-07-22 08:35:16,941 1 WARNING test_irg_db odoo.addons.base.models.ir_model: Two fields (op_subject_id, channel_id) of app.gradebook.result() have the same label: Asignatura. [Modules: isep_gradebook and isep_gradebook]
+2026-07-22 08:35:16,982 1 WARNING test_irg_db py.warnings: /usr/lib/python3/dist-packages/odoo/fields.py:809: UserWarning: Field 'op.student.op_course_ids' in dependency of op.student.total_completion_porc should be searchable. This is necessary to determine which records to recompute when op.student.course.completion_porc is modified. You should either make the field searchable, or simplify the field dependency.
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 232, in load_module_graph
+    module.write(module.get_values_from_terp(package.data))
+  File "/usr/lib/python3/dist-packages/odoo/addons/website/models/ir_module_module.py", line 96, in write
+    return super(IrModuleModule, self).write(vals)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 3766, in write
+    if self.pool.is_modifying_relations(field):
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 458, in is_modifying_relations
+    result = field in self._field_triggers and (
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 28, in __get__
+    value = self.fget(obj)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 439, in _field_triggers
+    dependencies = list(field.resolve_depends(self))
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 809, in resolve_depends
+    warnings.warn(
+
+2026-07-22 08:35:16,986 1 INFO test_irg_db odoo.modules.loading: loading irg_gradebook_moodle_wizard/security/ir.model.access.csv
+2026-07-22 08:35:16,998 1 INFO test_irg_db odoo.modules.loading: loading irg_gradebook_moodle_wizard/views/moodle_map_views.xml
+2026-07-22 08:35:17,011 1 INFO test_irg_db odoo.modules.loading: loading irg_gradebook_moodle_wizard/views/moodle_sync_wizard_views.xml
+2026-07-22 08:35:17,015 1 INFO test_irg_db odoo.modules.loading: loading irg_gradebook_moodle_wizard/views/app_gradebook_student_views.xml
+2026-07-22 08:35:17,020 1 WARNING test_irg_db odoo.addons.base.models.ir_ui_view: A button with icon attribute (fa-trash) must have title in its tag, parents, descendants or have text
+View error context:
+{'file': '/mnt/extra-addons/extrairg/irg_gradebook_moodle_wizard/views/app_gradebook_student_views.xml',
+ 'line': 37,
+ 'name': 'app.gradebook.student.form.moodle',
+ 'view': ir.ui.view(2593,),
+ 'view.model': 'app.gradebook.student',
+ 'view.parent': ir.ui.view(1739,),
+ 'xmlid': 'app_gradebook_student_form_moodle'}
+2026-07-22 08:35:17,039 1 INFO test_irg_db odoo.modules.loading: Module irg_gradebook_moodle_wizard loaded in 0.30s, 165 queries (+165 other)
+2026-07-22 08:35:17,042 1 WARNING test_irg_db odoo.models: The model app.gradebook.subject has no _description
+2026-07-22 08:35:17,050 1 WARNING test_irg_db odoo.models: The model app.gradebook.student has no _description
+2026-07-22 08:35:17,075 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.irg_gradebook_certificates.models.irg_certificate_request is not overriding the create method in batch
+2026-07-22 08:35:17,081 1 WARNING test_irg_db odoo.models: The model app.gradebook.student has no _description
+2026-07-22 08:35:17,086 1 INFO test_irg_db odoo.modules.loading: 164 modules loaded in 1.22s, 165 queries (+165 extra)
+2026-07-22 08:35:17,102 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related
+2026-07-22 08:35:17,165 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:17,165 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:17,200 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related
+2026-07-22 08:35:17,224 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:17,224 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:17,355 1 INFO test_irg_db odoo.modules.registry: verifying fields for every extended model
+2026-07-22 08:35:17,549 1 INFO test_irg_db odoo.modules.loading: Modules loaded.
+2026-07-22 08:35:17,554 1 INFO test_irg_db odoo.modules.registry: Registry loaded in 5.532s
+2026-07-22 08:35:17,554 1 INFO test_irg_db odoo.service.server: Starting post tests
+2026-07-22 08:35:17,572 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_import_map_csv: Starting TestImportMapCsv.test_duplicate_activity_id_is_rejected_by_database_constraint ...
+2026-07-22 08:35:17,576 1 ERROR test_irg_db odoo.sql_db: bad query: INSERT INTO "irg_gradebook_moodle_map_line" ("activity_type", "create_date", "create_uid", "map_id", "moodle_activity_id", "write_date", "write_uid") VALUES ('quiz', '2026-07-22 08:35:17.555679', 1, 237, 710019, '2026-07-22 08:35:17.555679', 1) RETURNING "id"
+ERROR: duplicate key value violates unique constraint "irg_gradebook_moodle_map_line_map_activity_uniq"
+DETAIL:  Key (map_id, moodle_activity_id)=(237, 710019) already exists.
+
+2026-07-22 08:35:17,577 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_import_map_csv: Starting TestImportMapCsv.test_duplicate_activity_ids_preserve_existing_map_and_lines ...
+2026-07-22 08:35:17,580 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_import_map_csv: Starting TestImportMapCsv.test_import_creates_then_updates_map_and_regenerates_quiz_lines ...
+2026-07-22 08:35:17,586 1 INFO test_irg_db odoo.models.unlink: User #1 deleted irg.gradebook.moodle.map.line records with IDs: [488, 489]
+2026-07-22 08:35:17,588 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_import_map_csv: Starting TestImportMapCsv.test_invalid_activity_lists_preserve_existing_map_and_lines ...
+2026-07-22 08:35:17,591 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_import_map_csv: Starting TestImportMapCsv.test_invalid_subject_or_course_ids_are_skipped_before_valid_row ...
+2026-07-22 08:35:17,594 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_import_map_csv: Starting TestImportMapCsv.test_moodle_course_and_activity_ids_must_be_positive ...
+2026-07-22 08:35:17,595 1 ERROR test_irg_db odoo.sql_db: bad query: INSERT INTO "irg_gradebook_moodle_map" ("active", "create_date", "create_uid", "moodle_course_id", "op_subject_id", "write_date", "write_uid") VALUES (true, '2026-07-22 08:35:17.555679', 1, 0, 607, '2026-07-22 08:35:17.555679', 1) RETURNING "id"
+ERROR: new row for relation "irg_gradebook_moodle_map" violates check constraint "irg_gradebook_moodle_map_moodle_course_id_positive"
+DETAIL:  Failing row contains (242, 607, 0, 1, 1, null, t, 2026-07-22 08:35:17.555679, 2026-07-22 08:35:17.555679).
+
+2026-07-22 08:35:17,596 1 ERROR test_irg_db odoo.sql_db: bad query: INSERT INTO "irg_gradebook_moodle_map" ("active", "create_date", "create_uid", "moodle_course_id", "op_subject_id", "write_date", "write_uid") VALUES (true, '2026-07-22 08:35:17.555679', 1,  -1, 607, '2026-07-22 08:35:17.555679', 1) RETURNING "id"
+ERROR: new row for relation "irg_gradebook_moodle_map" violates check constraint "irg_gradebook_moodle_map_moodle_course_id_positive"
+DETAIL:  Failing row contains (243, 607, -1, 1, 1, null, t, 2026-07-22 08:35:17.555679, 2026-07-22 08:35:17.555679).
+
+2026-07-22 08:35:17,597 1 ERROR test_irg_db odoo.sql_db: bad query: INSERT INTO "irg_gradebook_moodle_map_line" ("activity_type", "create_date", "create_uid", "map_id", "moodle_activity_id", "write_date", "write_uid") VALUES ('quiz', '2026-07-22 08:35:17.555679', 1, 244, 0, '2026-07-22 08:35:17.555679', 1) RETURNING "id"
+ERROR: new row for relation "irg_gradebook_moodle_map_line" violates check constraint "irg_gradebook_moodle_map_line_moodle_activity_id_positive"
+DETAIL:  Failing row contains (496, 244, 0, 1, 1, null, quiz, 2026-07-22 08:35:17.555679, 2026-07-22 08:35:17.555679).
+
+2026-07-22 08:35:17,597 1 ERROR test_irg_db odoo.sql_db: bad query: INSERT INTO "irg_gradebook_moodle_map_line" ("activity_type", "create_date", "create_uid", "map_id", "moodle_activity_id", "write_date", "write_uid") VALUES ('quiz', '2026-07-22 08:35:17.555679', 1, 244,  -1, '2026-07-22 08:35:17.555679', 1) RETURNING "id"
+ERROR: new row for relation "irg_gradebook_moodle_map_line" violates check constraint "irg_gradebook_moodle_map_line_moodle_activity_id_positive"
+DETAIL:  Failing row contains (497, 244, -1, 1, 1, null, quiz, 2026-07-22 08:35:17.555679, 2026-07-22 08:35:17.555679).
+
+2026-07-22 08:35:17,598 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_import_map_csv: Starting TestImportMapCsv.test_out_of_range_activity_ids_preserve_existing_map ...
+2026-07-22 08:35:17,601 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_import_map_csv: Starting TestImportMapCsv.test_out_of_range_or_fractional_root_ids_preserve_existing_map ...
+2026-07-22 08:35:17,619 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related
+2026-07-22 08:35:17,643 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:17,643 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it
+2026-07-22 08:35:17,683 1 INFO test_irg_db odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed
+2026-07-22 08:35:17,684 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestGradebookMoodleService.test_enrolment_endpoint_error_is_explicit_and_safe ...
+2026-07-22 08:35:17,685 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestGradebookMoodleService.test_grade_endpoint_error_is_explicit_and_safe ...
+2026-07-22 08:35:17,686 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestGradebookMoodleService.test_malformed_enrolled_user_fields_are_rejected_safely ...
+2026-07-22 08:35:17,687 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestGradebookMoodleService.test_malformed_enrolment_payload_is_rejected ...
+2026-07-22 08:35:17,688 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestGradebookMoodleService.test_malformed_grade_payload_is_rejected ...
+2026-07-22 08:35:17,689 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestGradebookMoodleService.test_malformed_gradeitem_consumed_fields_are_rejected_safely ...
+2026-07-22 08:35:17,736 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestGradebookMoodleService.test_malformed_usergrade_fields_are_rejected_safely ...
+2026-07-22 08:35:17,738 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestGradebookMoodleService.test_valid_typed_payload_returns_grades_and_emails ...
+2026-07-22 08:35:17,740 1 INFO test_irg_db odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed
+2026-07-22 08:35:17,828 1 WARNING test_irg_db odoo.models: method op.admission._check_birthdate: @constrains parameter 'birth_date' is not writeable
+2026-07-22 08:35:17,855 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_apply_accepts_locked_lines_with_different_functional_order ...
+2026-07-22 08:35:17,873 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_apply_creates_and_upserts ...
+2026-07-22 08:35:17,891 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_apply_recomputes_subject_average ...
+2026-07-22 08:35:17,902 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_apply_rejects_forced_non_ok_line ...
+2026-07-22 08:35:17,910 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_apply_rejects_legacy_duplicate_moodle_results ...
+2026-07-22 08:35:17,921 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_apply_rejects_non_finite_and_out_of_scale_grades ...
+2026-07-22 08:35:17,941 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_concurrent_apply_retries_and_keeps_one_result ...
+2026-07-22 08:35:18,050 1 ERROR ? odoo.sql_db: bad query:
+            SELECT id
+              FROM app_gradebook_subject
+             WHERE id = ANY(ARRAY[589])
+             ORDER BY id
+             FOR UPDATE
+
+ERROR: could not serialize access due to concurrent update
+
+2026-07-22 08:35:18,050 1 INFO ? odoo.service.model: SERIALIZATION_FAILURE, 4 tries left, try again in 1.5789 sec...
+2026-07-22 08:35:19,657 1 INFO test_irg_db odoo.models.unlink: User #2 deleted app.gradebook.result records with IDs: [524]
+2026-07-22 08:35:19,659 1 INFO test_irg_db odoo.models.unlink: User #2 deleted irg.gradebook.moodle.sync.wizard records with IDs: [1050, 1051]
+2026-07-22 08:35:19,665 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11287]
+2026-07-22 08:35:19,671 1 INFO test_irg_db odoo.models.unlink: User #2 deleted app.gradebook.student records with IDs: [173]
+2026-07-22 08:35:19,673 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3898]
+2026-07-22 08:35:19,675 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11286]
+2026-07-22 08:35:19,682 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.admission records with IDs: [152]
+2026-07-22 08:35:19,684 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3897]
+2026-07-22 08:35:19,690 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11284]
+2026-07-22 08:35:19,701 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.student records with IDs: [157]
+2026-07-22 08:35:19,702 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3895]
+2026-07-22 08:35:19,704 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11283]
+2026-07-22 08:35:19,728 1 INFO test_irg_db odoo.models.unlink: User #2 deleted res.partner records with IDs: [1549]
+2026-07-22 08:35:19,729 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3894]
+2026-07-22 08:35:19,731 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11285]
+2026-07-22 08:35:19,737 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.batch records with IDs: [131]
+2026-07-22 08:35:19,738 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3896]
+2026-07-22 08:35:19,739 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11282]
+2026-07-22 08:35:19,743 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.admission.register records with IDs: [152]
+2026-07-22 08:35:19,745 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3893]
+2026-07-22 08:35:19,751 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11281]
+2026-07-22 08:35:19,757 1 INFO test_irg_db odoo.models.unlink: User #2 deleted product.product records with IDs: [491]
+2026-07-22 08:35:19,759 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3892]
+2026-07-22 08:35:19,761 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11280]
+2026-07-22 08:35:19,766 1 INFO test_irg_db odoo.models.unlink: User #2 deleted product.template records with IDs: [319]
+2026-07-22 08:35:19,768 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3891]
+2026-07-22 08:35:19,770 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11279]
+2026-07-22 08:35:19,778 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.subject records with IDs: [609]
+2026-07-22 08:35:19,779 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3890]
+2026-07-22 08:35:19,780 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11278]
+2026-07-22 08:35:19,786 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.course records with IDs: [183]
+2026-07-22 08:35:19,788 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3889]
+2026-07-22 08:35:19,789 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11277]
+2026-07-22 08:35:19,791 1 INFO test_irg_db odoo.models.unlink: User #2 deleted app.gradebook records with IDs: [184]
+2026-07-22 08:35:19,792 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3888]
+2026-07-22 08:35:19,796 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_concurrent_insert_is_linearized_with_apply ...
+2026-07-22 08:35:20,390 1 ERROR ? odoo.sql_db: bad query:
+            SELECT id
+              FROM irg_gradebook_moodle_sync_wizard
+             WHERE id = ANY(ARRAY[1052])
+             ORDER BY id
+             FOR UPDATE
+
+ERROR: could not serialize access due to concurrent update
+
+2026-07-22 08:35:20,390 1 INFO ? odoo.service.model: SERIALIZATION_FAILURE, 4 tries left, try again in 1.7604 sec...
+2026-07-22 08:35:22,171 1 INFO test_irg_db odoo.models.unlink: User #2 deleted app.gradebook.result records with IDs: [525]
+2026-07-22 08:35:22,173 1 INFO test_irg_db odoo.models.unlink: User #2 deleted irg.gradebook.moodle.sync.wizard records with IDs: [1052, 1053]
+2026-07-22 08:35:22,177 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11298]
+2026-07-22 08:35:22,182 1 INFO test_irg_db odoo.models.unlink: User #2 deleted app.gradebook.student records with IDs: [174]
+2026-07-22 08:35:22,185 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3909]
+2026-07-22 08:35:22,187 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11297]
+2026-07-22 08:35:22,193 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.admission records with IDs: [153]
+2026-07-22 08:35:22,195 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3908]
+2026-07-22 08:35:22,201 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11295]
+2026-07-22 08:35:22,215 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.student records with IDs: [158]
+2026-07-22 08:35:22,218 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3906]
+2026-07-22 08:35:22,220 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11294]
+2026-07-22 08:35:22,234 1 INFO test_irg_db odoo.models.unlink: User #2 deleted res.partner records with IDs: [1550]
+2026-07-22 08:35:22,236 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3905]
+2026-07-22 08:35:22,239 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11296]
+2026-07-22 08:35:22,245 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.batch records with IDs: [132]
+2026-07-22 08:35:22,246 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3907]
+2026-07-22 08:35:22,249 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11293]
+2026-07-22 08:35:22,253 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.admission.register records with IDs: [153]
+2026-07-22 08:35:22,254 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3904]
+2026-07-22 08:35:22,261 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11292]
+2026-07-22 08:35:22,265 1 INFO test_irg_db odoo.models.unlink: User #2 deleted product.product records with IDs: [492]
+2026-07-22 08:35:22,267 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3903]
+2026-07-22 08:35:22,269 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11291]
+2026-07-22 08:35:22,272 1 INFO test_irg_db odoo.models.unlink: User #2 deleted product.template records with IDs: [320]
+2026-07-22 08:35:22,274 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3902]
+2026-07-22 08:35:22,276 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11290]
+2026-07-22 08:35:22,282 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.subject records with IDs: [610]
+2026-07-22 08:35:22,283 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3901]
+2026-07-22 08:35:22,285 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11289]
+2026-07-22 08:35:22,290 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.course records with IDs: [184]
+2026-07-22 08:35:22,291 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3900]
+2026-07-22 08:35:22,292 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11288]
+2026-07-22 08:35:22,294 1 INFO test_irg_db odoo.models.unlink: User #2 deleted app.gradebook records with IDs: [185]
+2026-07-22 08:35:22,296 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3899]
+2026-07-22 08:35:22,300 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_done_gradebook_cannot_open_wizard ...
+2026-07-22 08:35:22,305 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_id_cmid_collision_invalidates_complete_type ...
+2026-07-22 08:35:22,309 1 INFO test_irg_db odoo.models.unlink: User #1 deleted irg.gradebook.moodle.map.line records with IDs: [500, 501, 502]
+2026-07-22 08:35:22,316 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_internal_user_cannot_open_load_or_apply ...
+2026-07-22 08:35:22,321 1 INFO test_irg_db odoo.addons.base.models.ir_model: Access Denied by ACLs for operation: read, uid: 339, model: irg.gradebook.moodle.sync.wizard
+2026-07-22 08:35:22,321 1 INFO test_irg_db odoo.addons.base.models.ir_model: Access Denied by ACLs for operation: read, uid: 339, model: irg.gradebook.moodle.sync.wizard
+2026-07-22 08:35:22,322 1 INFO test_irg_db odoo.addons.base.models.ir_model: Access Denied by ACLs for operation: read, uid: 339, model: irg.gradebook.moodle.sync.wizard
+2026-07-22 08:35:22,322 1 INFO test_irg_db odoo.addons.base.models.ir_model: Access Denied by ACLs for operation: read, uid: 339, model: irg.gradebook.moodle.sync.wizard
+2026-07-22 08:35:22,323 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_invalid_grade_max_values_produce_no_grade ...
+2026-07-22 08:35:22,325 1 INFO test_irg_db odoo.models.unlink: User #1 deleted irg.gradebook.moodle.map.line records with IDs: [501]
+2026-07-22 08:35:22,335 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_line_mutations_lock_all_effective_wizard_parents ...
+2026-07-22 08:35:22,339 1 INFO test_irg_db odoo.models.unlink: User #1 deleted irg.gradebook.moodle.sync.wizard.line records with IDs: [1590]
+2026-07-22 08:35:22,339 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_load_assign_without_grade ...
+2026-07-22 08:35:22,347 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_load_no_map ...
+2026-07-22 08:35:22,350 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_load_ok_exam_average_and_scale ...
+2026-07-22 08:35:22,357 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_load_student_not_found ...
+2026-07-22 08:35:22,363 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_manual_result_of_same_type_is_incompatible ...
+2026-07-22 08:35:22,371 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_match_by_cmid ...
+2026-07-22 08:35:22,373 1 INFO test_irg_db odoo.models.unlink: User #1 deleted irg.gradebook.moodle.map.line records with IDs: [500, 501, 502]
+2026-07-22 08:35:22,379 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_missing_itemmodule_invalidates_complete_exam_type ...
+2026-07-22 08:35:22,386 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_moodle_sync_key_is_unique_and_manual_results_remain_multiple ...
+2026-07-22 08:35:22,390 1 ERROR test_irg_db odoo.sql_db: bad query: UPDATE "app_gradebook_result" SET "admission_id" = 151, "batch_id" = 130, "course_id" = 182, "moodle_sync_key" = '588:exam', "name" = '[ AD000151 ] Asignatura Test Moodle', "op_subject_id" = 608, "partner_id" = 1547, "write_date" = '2026-07-22T08:35:17.741120'::timestamp, "write_uid" = 1 WHERE id IN (530)
+ERROR: duplicate key value violates unique constraint "app_gradebook_result_moodle_sync_key_uniq"
+DETAIL:  Key (moodle_sync_key)=(588:exam) already exists.
+
+2026-07-22 08:35:22,391 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_multiple_active_maps_are_incompatible ...
+2026-07-22 08:35:22,396 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_multiple_empty_active_maps_remain_incompatible ...
+2026-07-22 08:35:22,398 1 INFO test_irg_db odoo.models.unlink: User #1 deleted irg.gradebook.moodle.map.line records with IDs: [500, 501, 502]
+2026-07-22 08:35:22,403 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_quiz_map_rejects_assign_itemmodule_for_complete_exam_type ...
+2026-07-22 08:35:22,409 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_stale_wizard_line_raises_serialization_failure ...
+2026-07-22 08:35:22,483 1 ERROR test_irg_db odoo.sql_db: bad query:
+            SELECT id
+              FROM irg_gradebook_moodle_sync_wizard
+             WHERE id = ANY(ARRAY[1071])
+             ORDER BY id
+             FOR UPDATE
+
+ERROR: could not serialize access due to concurrent update
+
+2026-07-22 08:35:22,485 1 INFO test_irg_db odoo.models.unlink: User #2 deleted irg.gradebook.moodle.sync.wizard records with IDs: [1071, 1072]
+2026-07-22 08:35:22,488 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11309]
+2026-07-22 08:35:22,492 1 INFO test_irg_db odoo.models.unlink: User #2 deleted app.gradebook.student records with IDs: [175]
+2026-07-22 08:35:22,494 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3920]
+2026-07-22 08:35:22,495 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11308]
+2026-07-22 08:35:22,500 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.admission records with IDs: [154]
+2026-07-22 08:35:22,501 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3919]
+2026-07-22 08:35:22,506 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11306]
+2026-07-22 08:35:22,511 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.student records with IDs: [159]
+2026-07-22 08:35:22,512 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3917]
+2026-07-22 08:35:22,513 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11305]
+2026-07-22 08:35:22,521 1 INFO test_irg_db odoo.models.unlink: User #2 deleted res.partner records with IDs: [1551]
+2026-07-22 08:35:22,522 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3916]
+2026-07-22 08:35:22,523 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11307]
+2026-07-22 08:35:22,527 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.batch records with IDs: [133]
+2026-07-22 08:35:22,528 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3918]
+2026-07-22 08:35:22,530 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11304]
+2026-07-22 08:35:22,533 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.admission.register records with IDs: [154]
+2026-07-22 08:35:22,535 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3915]
+2026-07-22 08:35:22,540 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11303]
+2026-07-22 08:35:22,542 1 INFO test_irg_db odoo.models.unlink: User #2 deleted product.product records with IDs: [493]
+2026-07-22 08:35:22,544 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3914]
+2026-07-22 08:35:22,545 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11302]
+2026-07-22 08:35:22,548 1 INFO test_irg_db odoo.models.unlink: User #2 deleted product.template records with IDs: [321]
+2026-07-22 08:35:22,549 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3913]
+2026-07-22 08:35:22,551 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11301]
+2026-07-22 08:35:22,555 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.subject records with IDs: [611]
+2026-07-22 08:35:22,556 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3912]
+2026-07-22 08:35:22,558 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11300]
+2026-07-22 08:35:22,562 1 INFO test_irg_db odoo.models.unlink: User #2 deleted op.course records with IDs: [185]
+2026-07-22 08:35:22,563 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3911]
+2026-07-22 08:35:22,564 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.message records with IDs: [11299]
+2026-07-22 08:35:22,566 1 INFO test_irg_db odoo.models.unlink: User #2 deleted app.gradebook records with IDs: [186]
+2026-07-22 08:35:22,567 1 INFO test_irg_db odoo.models.unlink: User #2 deleted mail.followers records with IDs: [3910]
+2026-07-22 08:35:22,571 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_sync_button_is_hidden_for_done_gradebooks ...
+2026-07-22 08:35:22,572 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_template_qty_greater_than_one_is_incompatible ...
+2026-07-22 08:35:22,580 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_wizard.tests.test_moodle_sync_wizard: Starting TestMoodleSyncWizard.test_unselected_legacy_duplicate_aborts_complete_apply ...
+2026-07-22 08:35:22,593 1 INFO test_irg_db odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed
+2026-07-22 08:35:22,593 1 INFO test_irg_db odoo.service.server: 44 post-tests in 5.04s, 3778 queries
+2026-07-22 08:35:22,593 1 INFO test_irg_db odoo.tests.stats: irg_gradebook_moodle_wizard: 50 tests 5.03s 3778 queries
+2026-07-22 08:35:22,593 1 INFO test_irg_db odoo.tests.result: 0 failed, 0 error(s) of 44 tests when loading database 'test_irg_db'
+2026-07-22 08:35:22,593 1 INFO test_irg_db odoo.service.server: Initiating shutdown
+2026-07-22 08:35:22,593 1 INFO test_irg_db odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown.
+2026-07-22 08:35:23,088 1 INFO test_irg_db odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 3 connections

@@ -1,0 +1,17 @@
+Command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/fix-gradebook-moodle-course-activity-routing/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing --test-enable --test-tags /irg_gradebook_moodle_routing --stop-after-init --log-level=test
+
+Result: exit 1
+Suite: 20 methods / 22 tests and subtests
+Failures: 5
+Errors: 0
+
+Expected RED failures:
+- 3 subtests: malformed markers `(ONLINE2026)`, `(online 26)` and
+  `(OnLiNe 2026 EXTRA)` were still computed as modality `online`.
+- The importer accepted all 3 malformed Online assignments instead of
+  discarding them with `invalid_online_marker`.
+- The authorized wizard did not raise before `_get_service` when its only
+  candidate had a malformed Online marker.
+
+The independently isolated parent-mutation regression passed in this run.

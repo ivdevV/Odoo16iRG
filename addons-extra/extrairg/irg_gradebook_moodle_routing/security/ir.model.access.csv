@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_gradebook_moodle_course_map_user,irg.gradebook.moodle.course.map user,model_irg_gradebook_moodle_course_map,base.group_user,1,0,0,0
+access_irg_gradebook_moodle_course_map_system,irg.gradebook.moodle.course.map admin,model_irg_gradebook_moodle_course_map,base.group_system,1,1,1,1
