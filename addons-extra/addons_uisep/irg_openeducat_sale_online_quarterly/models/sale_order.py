@@ -90,7 +90,19 @@ class SaleOrder(models.Model):
                 template_name = (course_id.product_template_id.name or '').lower()
 
             combined_names = f"{course_name} {product_name} {template_name}"
-            if 'oficial' in combined_names:
+
+            has_oficial_line = False
+            if self.order_line:
+                for l in self.order_line:
+                    l_pname = (l.product_id.name or '').lower() if l.product_id else ''
+                    l_tname = (l.product_id.product_tmpl_id.name or '').lower() if (l.product_id and l.product_id.product_tmpl_id) else ''
+                    l_desc = (l.name or '').lower()
+                    l_cname = (l.product_id.categ_id.name or '').lower() if (l.product_id and l.product_id.categ_id) else ''
+                    if 'oficial' in f"{l_pname} {l_tname} {l_desc} {l_cname}":
+                        has_oficial_line = True
+                        break
+
+            if 'oficial' in combined_names or has_oficial_line:
                 profix_01 = 'MO'
             else:
                 profix_01 = 'MP'

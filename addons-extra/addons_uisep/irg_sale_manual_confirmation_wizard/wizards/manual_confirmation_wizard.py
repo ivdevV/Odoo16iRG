@@ -347,7 +347,20 @@ class ManualConfirmationWizard(models.TransientModel):
             if not template_name and course_id.product_template_id:
                 template_name = (course_id.product_template_id.name or '').lower()
             combined_names = f"{course_name} {product_name} {template_name}"
-            profix_01 = 'MO' if 'oficial' in combined_names else 'MP'
+
+            has_oficial_line = False
+            order = line.order_id if line else False
+            if order and order.order_line:
+                for l in order.order_line:
+                    l_pname = (l.product_id.name or '').lower() if l.product_id else ''
+                    l_tname = (l.product_id.product_tmpl_id.name or '').lower() if (l.product_id and l.product_id.product_tmpl_id) else ''
+                    l_desc = (l.name or '').lower()
+                    l_cname = (l.product_id.categ_id.name or '').lower() if (l.product_id and l.product_id.categ_id) else ''
+                    if 'oficial' in f"{l_pname} {l_tname} {l_desc} {l_cname}":
+                        has_oficial_line = True
+                        break
+
+            profix_01 = 'MO' if ('oficial' in combined_names or has_oficial_line) else 'MP'
 
         is_diplomado = False
         if categ:

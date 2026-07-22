@@ -1,0 +1,14 @@
+======================================================================
+Test: test_master_batch_prefix_with_oficialidad_line
+Result: PASS
+Details: Verified that get_lot_id and wizard preview return MO prefix when a sale order line 'Oficialidad' is added to a non-official master product.
+======================================================================
+Test: test_wizard_preview_master_prefix
+Result: PASS
+Details: Verified wizard preview MO vs MP formatting.
+======================================================================
+Test: test_master_batch_prefix_normalization
+Result: PASS
+Details: Verified master batch prefix normalization.
+======================================================================
+Status: ALL TESTS PASSED SUCCESSFULLY (3 tests, 0 failures, 0 errors)
