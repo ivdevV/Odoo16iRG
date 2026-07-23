@@ -1,0 +1,14 @@
+Command: docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_gradebook_moodle_homeclass_editions --test-enable --test-tags /irg_gradebook_moodle_homeclass_editions --stop-after-init --no-http --log-level=test
+
+Result: expected RED confirmed after correcting the isolated admission fixture:
+5 failed, 0 errors (5 tests run).
+
+All failures were assertions that the absent bridge had not added
+`irg_homeclass_edition_override`; this is the intended missing behavior and
+not a fixture or environment error.
+
+Review-fix RED command: docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_gradebook_moodle_homeclass_editions --test-enable --test-tags /irg_gradebook_moodle_homeclass_editions --stop-after-init --no-http --log-level=test
+
+Result: 1 failed, 0 errors (6 test methods). The added focused regression
+proved the defect: an exact HC map with two id/cmid matches still queried the
+fallback (`[call(35), call(36)]`) instead of stopping at course 35.

@@ -1,0 +1,48 @@
+# Validación independiente — 2026-07-23
+
+Worktree validado: `/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-gradebook-moodle-mapping-admin`
+
+Base: `ea24626cd9632b6702999dbd8f0b58db163f0062`
+
+## Checks estáticos
+
+- Manifest AST: `installable=True`, versión `16.0.1.0.0` y dependencia
+  `irg_gradebook_moodle_mapping_admin` presente y localizable. Resultado: PASS.
+- Compile: `docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps -e PYTHONPYCACHEPREFIX=/tmp odoo_local python3 -m compileall -q /mnt/extra-addons/extrairg/irg_gradebook_moodle_homeclass_editions`. Resultado: PASS.
+- XML: parseo con `lxml.etree.parse` de `views/moodle_course_map_views.xml` dentro del contenedor overlay. Resultado: PASS (1 archivo).
+
+## Upgrade y regresión Odoo
+
+Comando ejecutado desde cero con el overlay del worktree:
+
+`docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin,irg_gradebook_moodle_homeclass_editions --test-enable --test-tags /irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin,/irg_gradebook_moodle_homeclass_editions --stop-after-init --no-http --log-level=test`
+
+Resultado: PASS — upgrade de los tres módulos, `67` post-tests, `0 failed`, `0 error(s)`.
+
+- `irg_gradebook_moodle_routing`: 22 tests.
+- `irg_gradebook_moodle_mapping_admin`: 49 tests.
+- `irg_gradebook_moodle_homeclass_editions`: 8 tests.
+
+Los métodos ejecutados del addon nuevo confirman: prioridad de edición
+(`test_homeclass_candidates_order_exact_generic_and_remaining`), fallback solo
+ante Activity ID ausente (`test_multiple_homeclass_falls_back_when_first_course_has_no_activity`),
+colisión incompatible sin fallback (`test_multiple_homeclass_stops_on_real_activity_collision`),
+primer curso válido sin mezclar notas (`test_multiple_homeclass_uses_first_valid_course_without_mixing`)
+y delegación Online (`test_online_delegates_to_existing_routing`). También se
+ejecutó la detección de periodos y override manual.
+
+Los warnings de manifests/API mostrados durante el arranque proceden de addons
+preexistentes ajenos al alcance; no hubo fallo, error ni warning atribuido al
+addon validado.
+
+## Alcance y limpieza
+
+- `git diff --check` y comprobación equivalente de los untracked: PASS, sin
+  errores de whitespace.
+- No hay modificaciones tracked. Los untracked funcionales se limitan al addon
+  puente nuevo; el resto son spec/plan/artefactos de misión.
+- Tras los `run --rm`, no quedan contenedores one-off del proyecto
+  `odoo16irg_local`.
+- El servicio compartido `odoo16irg_local` sigue `running` y montado en
+  `/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra`, no en el
+  worktree.

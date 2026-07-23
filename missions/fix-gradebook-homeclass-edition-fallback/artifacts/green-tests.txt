@@ -1,0 +1,17 @@
+Directed command: docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_gradebook_moodle_homeclass_editions --test-enable --test-tags /irg_gradebook_moodle_homeclass_editions --stop-after-init --no-http --log-level=test
+Result: 5 tests, 0 failed, 0 errors.
+
+Regression command: docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin,irg_gradebook_moodle_homeclass_editions --test-enable --test-tags /irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin,/irg_gradebook_moodle_homeclass_editions --stop-after-init --no-http --log-level=test
+Result: 66 tests, 0 failed, 0 errors:
+- irg_gradebook_moodle_routing: 22 tests
+- irg_gradebook_moodle_mapping_admin: 49 tests
+- irg_gradebook_moodle_homeclass_editions: 7 test entries / 5 methods
+
+Review-fix GREEN command: docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_gradebook_moodle_homeclass_editions --test-enable --test-tags /irg_gradebook_moodle_homeclass_editions --stop-after-init --no-http --log-level=test
+Result: 6 test methods, 0 failed, 0 errors.
+
+Review-fix regression command: docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin,irg_gradebook_moodle_homeclass_editions --test-enable --test-tags /irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin,/irg_gradebook_moodle_homeclass_editions --stop-after-init --no-http --log-level=test
+Result: 67 tests, 0 failed, 0 errors:
+- irg_gradebook_moodle_routing: 22 tests
+- irg_gradebook_moodle_mapping_admin: 49 tests
+- irg_gradebook_moodle_homeclass_editions: 8 test entries / 6 methods

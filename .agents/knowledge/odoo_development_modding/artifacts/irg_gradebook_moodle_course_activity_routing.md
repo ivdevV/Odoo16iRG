@@ -21,10 +21,21 @@ de su asignatura al curso del padre. La comprobación debe ser recíproca al
 editar el padre, para no corromper hijos existentes. Antes de consultar Moodle,
 el wizard resuelve exactamente un padre y filtra los hijos por contexto.
 
-Para códigos de lote, exigir una sola señal autoritativa: `HC` selecciona un
-único HomeClass activo; `ONL` prioriza la edición igual al año del lote y solo
-acepta un fallback Online genérico inequívoco. Ausencia, doble modalidad o
-múltiples candidatos son errores funcionales previos a la llamada externa.
+Para códigos de lote, exigir una sola señal autoritativa. `ONL` prioriza la
+edición igual al año del lote y solo acepta un fallback Online genérico
+inequívoco. Para `HC`, pueden coexistir varios HomeClass activos: por cada
+asignatura se prueba primero la edición igual al año inicial del lote, después
+un mapa HC genérico y finalmente las demás ediciones en orden determinista.
+El primer curso con una nota válida gana y nunca se mezclan resultados entre
+ediciones. La ausencia de Activity ID, alumno o nota utilizable permite probar
+el siguiente mapa; una colisión estructural (varias coincidencias de actividad,
+mapas duplicados, reutilización de grade item o tipo incompatible) bloquea esa
+asignatura como incompatible. Ausencia de modalidad o doble modalidad siguen
+siendo errores previos a la llamada externa.
+
+La edición HC se obtiene del periodo consecutivo del nombre (`AAAA-AAAA`,
+`AAAA/AAAA` o `AAAA_AAAA`) y puede corregirse con un override manual. Los
+Activity IDs se resuelven siempre dentro del curso Moodle padre del candidato.
 
 La clasificación de nombres también debe ser estricta: solo `(ONLINE)` y
 `(ONLINE AAAA)`, con cuatro dígitos, representan mapas Online seleccionables.

@@ -1,0 +1,52 @@
+{
+  "status": "passed",
+  "task": "fix-gradebook-homeclass-edition-fallback",
+  "checks": [
+    {
+      "name": "manifest_ast_installable_dependency",
+      "command": "python3 -c '<AST literal_eval of addon manifest; assert installable and irg_gradebook_moodle_mapping_admin dependency>'",
+      "result": "pass",
+      "detail": "Manifest parseado; installable=True, versión 16.0.1.0.0 y dependencia presente y localizable.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "compileall_container",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps -e PYTHONPYCACHEPREFIX=/tmp odoo_local python3 -m compileall -q /mnt/extra-addons/extrairg/irg_gradebook_moodle_homeclass_editions",
+      "result": "pass",
+      "detail": "compileall terminó con exit 0 dentro del contenedor y sin escribir bytecode en el checkout.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "xml_parse_container",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local python3 -c '<lxml etree.parse de todos los XML del addon>'",
+      "result": "pass",
+      "detail": "1 XML del addon parseado correctamente con lxml en el contenedor overlay.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "odoo_upgrade_and_targeted_regression",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin,irg_gradebook_moodle_homeclass_editions --test-enable --test-tags /irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin,/irg_gradebook_moodle_homeclass_editions --stop-after-init --no-http --log-level=test",
+      "result": "pass",
+      "detail": "Upgrade correcto; 67 tests, 0 failed, 0 errors. Cubre prioridad de edición, fallback por ausencia, colisión incompatible, primer válido y delegación Online.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "scope_whitespace_and_runtime_cleanup",
+      "command": "git diff --check; git diff --check --no-index /dev/null <cada untracked>; docker ps -a --filter label=com.docker.compose.project=odoo16irg_local --filter label=com.docker.compose.oneoff=True; docker inspect odoo16irg_local",
+      "result": "pass",
+      "detail": "Sin whitespace errors, sin cambios tracked ni one-off containers; servicio compartido running y montado al checkout principal.",
+      "evidence": "artifacts/validation-tests.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml + .superpowers/sdd/docker-compose.worktree.yml",
+    "database": "test_irg_db",
+    "base_commit": "ea24626cd9632b6702999dbd8f0b58db163f0062",
+    "shared_service": "odoo16irg_local"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt"
+  ]
+}
