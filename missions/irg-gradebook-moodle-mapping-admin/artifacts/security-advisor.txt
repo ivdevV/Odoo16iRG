@@ -1,0 +1,513 @@
+# Security Advisor — irg-gradebook-moodle-mapping-admin
+
+## Primera revisión — dictamen original bloqueante
+
+Fecha: 2026-07-22
+Rol: Security Advisor independiente
+Alcance: revisión previa a implementación; sin revisión de código funcional todavía
+
+### Fuentes revisadas
+
+- `AGENTS.md`.
+- `docs/superpowers/specs/2026-07-22-irg-gradebook-moodle-mapping-admin-design.md`.
+- `docs/superpowers/plans/2026-07-22-irg-gradebook-moodle-mapping-admin.md`.
+- `missions/irg-gradebook-moodle-mapping-admin/plan.md`.
+
+### Dictamen ejecutivo original
+
+La arquitectura era conservadora y adecuada en permisos, integridad relacional,
+reanálisis al confirmar, atomicidad y conservación histórica. No obstante, el
+plan contenía un incumplimiento bloqueante de su propio gate: el pseudocódigo
+del wizard ejecutaba `base64.b64decode()` antes de comprobar el límite de 10 MiB.
+Así, un payload base64 sobredimensionado podía provocar una asignación de memoria
+grande antes de ser rechazado. Task 2 debía permanecer bloqueada hasta enmendar
+el plan y obtener una revisión nueva.
+
+### Hallazgo bloqueante original
+
+#### B1 — El límite del upload se aplicaba después de decodificar
+
+El gate de misión exigía revisar y limitar el payload antes de la decodificación,
+pero Task 5 proponía:
+
+1. `base64.b64decode(value, validate=True)`;
+2. `if len(payload) > MAX_FILE_SIZE: ...`.
+
+La validación posterior protegía el parser CSV, pero no la memoria usada por la
+propia decodificación. La enmienda mínima obligatoria establecida fue:
+
+- aceptar únicamente `str` o bytes base64 esperados y rechazar tipos anómalos;
+- comprobar antes de decodificar la longitud codificada máxima derivada de
+  `MAX_FILE_SIZE` (`4 * ceil(MAX_FILE_SIZE / 3)` con padding base64);
+- usar después `base64.b64decode(..., validate=True)`;
+- volver a comprobar `len(payload) <= MAX_FILE_SIZE` tras decodificar;
+- aplicar la comprobación previa también en `create`/`write`, antes de delegar
+  en `super`, para que el límite no dependiera de pulsar Validar o Confirmar;
+- no incluir el payload, filas completas ni valores personales en excepciones,
+  logs o resúmenes.
+
+Las pruebas debían cubrir exactamente el límite, un byte decodificado por
+encima, base64 inválido, base64 codificado sobredimensionado y llamada RPC
+directa que intentase escribir un binario excesivo. La comprobación de tamaño
+debía ocurrir antes de invocar al decodificador; se requirió demostrarlo
+parcheando el decodificador en la prueba del payload sobredimensionado.
+
+### Controles evaluados favorablemente en la primera revisión
+
+#### CSV y privacidad
+
+- `csv.DictReader` con delimitador fijo `;`, sin `eval`, ejecución de fórmulas ni
+  interpretación de celdas, era un tratamiento apropiado.
+- UTF-8-SIG y MacRoman eran compatibilidades explícitas; errores de cabecera,
+  codificación o parseo bloqueaban el fichero y los errores de fila solo omitían
+  esa fila.
+- IDs positivos acotados a `1..2147483647`, normalización de nombres/códigos y
+  verificación de existencia y pertenencia reducían referencias manipuladas.
+- Resúmenes y evidencias debían limitarse a número de línea, clave técnica,
+  conteos y motivo fijo. No debían copiar filas, nombres personales, contenido
+  arbitrario de celdas ni trazas que lo reprodujeran.
+- El límite de 10 MiB debía comprobarse de nuevo sobre los bytes crudos en el
+  servicio compartido, aunque el adaptador ya lo hubiera comprobado.
+
+#### Rutas y superficie web
+
+- El wizard solo recibía binarios y nombres informativos; no recibía, resolvía
+  ni abría rutas del servidor. No se diseñaban controladores HTTP ni endpoints
+  que aceptasen rutas.
+- Las rutas quedaban confinadas al adaptador de `odoo shell`, ejecutado por un
+  administrador. Para cumplir literalmente su contrato, `analyze_paths` debía
+  rechazar rutas no absolutas.
+- El lector de shell debía abrir cada fichero y leer como máximo
+  `MAX_FILE_SIZE + 1` bytes en lugar de confiar únicamente en `stat()` seguido
+  de `read_bytes()`, evitando una carrera entre comprobación y lectura.
+
+#### Autorización y RPC
+
+- La ACL del transient, la acción y el menú se restringían a
+  `base.group_system`; se consideró correcto como defensa en profundidad.
+- El control decisivo debía estar al inicio de todos los métodos públicos del
+  wizard: validar, confirmar y las dos acciones de apertura. Cada uno debía
+  ejecutar `_check_admin()` y rechazar con `AccessError` a un usuario interno
+  no administrador aunque invocase el método directamente por RPC.
+- `action_apply` debía exigir en servidor un singleton y estado `validated`; la
+  invisibilidad de botones o el estado mostrado por la vista no constituían
+  controles de autorización.
+- No se permitía `sudo()` en wizard, servicio, adaptador ni acciones. Las
+  operaciones ORM debían ejecutarse con el usuario real y sus permisos efectivos.
+
+#### Reanálisis, integridad y concurrencia
+
+- Confirmar debía decodificar de nuevo los binarios persistidos, ejecutar de
+  nuevo el análisis completo y aplicar únicamente ese nuevo `ImportPlan`; nunca
+  debía aceptar un plan, resumen, IDs afectados o estado calculado por el cliente.
+- Cualquier cambio de los dos binarios debía restablecer estado, resumen e IDs
+  afectados. Las comprobaciones de autorización y tamaño debían preceder a ese
+  `write`.
+- Antes de cada escritura debían repetirse existencia, nombre, código,
+  pertenencia, pareja autorizada y coherencia del padre. Las búsquedas debían
+  incluir inactivos y las restricciones SQL/ORM existentes seguirían siendo la
+  última barrera ante concurrencia o duplicados.
+- Un conflicto de unicidad, desaparición concurrente o cualquier otro error ORM
+  debía propagarse; no se podía capturar para continuar con otras filas.
+
+#### Atomicidad y conservación histórica
+
+- El servicio no debía ejecutar `commit()`, `unlink()` ni reemplazar colecciones
+  One2many completas. `Command.set` solo se admitía para los Many2many de
+  resultados del transient después de aplicar con éxito.
+- En petición web, una excepción durante la aplicación debía revertir toda la
+  transacción, incluidos upserts previos y cambios del wizard. En shell, la
+  transacción seguía perteneciendo expresamente al administrador y el servicio
+  tampoco confirmaría por su cuenta.
+- La prueba de fallo en el segundo sujeto debía verificar que no sobreviviera
+  ningún registro ni actualización de esa aplicación. Producción no debía
+  capturar el error y devolver un resultado parcial.
+- Los upserts debían incluir registros inactivos, añadir sin vaciar, conservar
+  líneas existentes y `activity_type`, y solo actualizar metadatos con valores
+  no vacíos. No se borraría, desactivaría ni vaciaría histórico; cualquier
+  reactivación o reasignación de padre debía conservar las restricciones de
+  coherencia.
+
+### Condiciones originales para un nuevo dictamen
+
+1. Enmendar diseño/plan de implementación y plan de misión para definir el
+   límite codificado previo a `b64decode` y el control en `create`/`write`.
+2. Añadir las pruebas del límite previo y de RPC directo indicadas en B1.
+3. Mantener los controles favorables anteriores como criterios verificables de
+   implementación, Review y Validación.
+
+Veredicto original: `[NO] Reason: el plan decodifica base64 antes de aplicar el límite de 10 MiB, permitiendo consumo de memoria no acotado y contradiciendo el gate de seguridad previo a producción.`
+
+## Segunda revisión — verificación de enmiendas
+
+Fecha: 2026-07-22
+Rol: Security Advisor independiente
+Alcance: segunda revisión previa a implementación tras la enmienda del gate; no se ha revisado código funcional
+
+## Fuentes revisadas íntegramente
+
+- `docs/superpowers/specs/2026-07-22-irg-gradebook-moodle-mapping-admin-design.md`.
+- `docs/superpowers/plans/2026-07-22-irg-gradebook-moodle-mapping-admin.md`.
+- `missions/irg-gradebook-moodle-mapping-admin/plan.md`.
+- `missions/irg-gradebook-moodle-mapping-admin/execution.md`.
+
+## Dictamen ejecutivo
+
+La enmienda resuelve el hallazgo bloqueante anterior y alinea la especificación,
+el plan de implementación y el plan de misión. El tratamiento del upload queda
+acotado antes y después de decodificar; los controles se aplican también al
+ingreso por ORM/RPC; el shell no acepta rutas relativas ni realiza lecturas sin
+límite; y todos los métodos públicos del wizard quedan sujetos a autorización,
+singleton y estado server-side. El diseño mantiene análisis sin escrituras,
+reanálisis en confirmación, revalidación inmediatamente antes de escribir,
+rollback íntegro y conservación histórica.
+
+Task 2 puede desbloquearse para implementación TDD. Este `[YES]` aprueba el plan
+enmendado, no sustituye la Review independiente ni la Validación sobre el código
+resultante.
+
+## Verificación de la enmienda bloqueante
+
+### Límite base64 previo y límite decodificado
+
+- Se define `MAX_FILE_SIZE = 10 * 1024 * 1024` para cada CSV decodificado.
+- Se define `MAX_BASE64_SIZE = 4 * ((MAX_FILE_SIZE + 2) // 3)`, equivalente a
+  `4 * ceil(MAX_FILE_SIZE / 3)`.
+- `_check_encoded_upload` valida el tipo y rechaza `len(value) >
+  MAX_BASE64_SIZE` antes de invocar `base64.b64decode`.
+- `_decode_upload` repite el control previo, usa
+  `base64.b64decode(..., validate=True)` y vuelve a rechazar cualquier payload
+  cuyo tamaño decodificado supere `MAX_FILE_SIZE`.
+- La comprobación posterior es necesaria porque 10 MiB y 10 MiB + 1 byte pueden
+  compartir la misma longitud base64 codificada; el plan la conserva.
+- `create` con `@api.model_create_multi` y `write` aplican autorización y límite
+  codificado a cada binario suministrado antes de delegar en `super`, por lo que
+  el control no depende de pulsar Validar o Confirmar y cubre RPC directo.
+
+### Pruebas exigidas
+
+El plan incorpora pruebas para:
+
+- payload decodificado de exactamente 10 MiB;
+- payload decodificado de 10 MiB + 1 byte;
+- base64 inválido;
+- longitud base64 codificada superior a `MAX_BASE64_SIZE`;
+- parche de `base64.b64decode` que demuestra que el exceso codificado se rechaza
+  antes de invocar al decodificador;
+- `create` y `write` directos por RPC con un binario excesivo;
+- llamada directa a cada acción pública por un usuario interno no administrador.
+
+Estas pruebas son suficientes como contrato previo; deberán aparecer en RED y
+GREEN y ser repetidas por el validador independiente.
+
+## Rutas y lectura desde shell
+
+- El wizard continúa recibiendo únicamente campos Binary y nombres de archivo
+  informativos. No recibe, resuelve ni abre rutas indicadas por un cliente web y
+  no se diseñan controladores HTTP para ello.
+- `_read_bounded` exige `Path(path).is_absolute()` y rechaza rutas relativas.
+- El fichero se abre en binario y se leen como máximo `MAX_FILE_SIZE + 1` bytes;
+  si aparece el byte adicional, se rechaza. Se elimina la secuencia
+  `stat()`/`read_bytes()` susceptible de carrera y lectura no acotada.
+- Las rutas quedan confinadas a `odoo shell`, bajo control explícito del
+  administrador. El servicio común vuelve a comprobar el tamaño de los bytes
+  recibidos antes del parseo.
+
+## ACL, interfaz y llamadas RPC directas
+
+- El transient tiene una única ACL CRUD para `base.group_system`; acción y menú
+  usan el mismo grupo.
+- `create` y `write` ejecutan `_check_admin` antes de persistir cambios.
+- Cada una de las cuatro acciones públicas ejecutará `_check_admin`,
+  `ensure_one()` y la validación de estado permitida en servidor.
+- `action_apply` exige expresamente estado `validated`; las acciones de apertura
+  solo son válidas tras aplicación y la validación solo desde su estado
+  permitido.
+- La seguridad no depende de botones invisibles ni de grupos declarados solo en
+  XML: un usuario interno no privilegiado que invoque los métodos directamente
+  obtiene `AccessError`.
+- No se permite `sudo()` en wizard, servicio ni adaptador; el ORM opera con los
+  permisos efectivos del usuario ejecutor.
+
+## Tratamiento CSV y privacidad
+
+- El lector usa `csv.DictReader` con delimitador fijo `;`, sin evaluar ni
+  ejecutar celdas.
+- Admite únicamente las codificaciones y cabeceras contratadas, valida IDs en
+  `1..2147483647` y contrasta existencia, pertenencia, nombres, código y pareja
+  curso Odoo/Moodle.
+- Los errores globales bloquean el fichero; los errores de fila se omiten con
+  motivos fijos. No se autoriza continuar tras un error ORM de aplicación.
+- Resúmenes, excepciones y evidencias se limitan a número de fila, clave técnica,
+  conteos y motivos. No deben registrar payloads, filas completas ni datos
+  personales o contenido arbitrario de celdas.
+- El análisis prueba igualdad de conteos de los tres modelos persistentes antes
+  y después, demostrando su carácter read-only.
+
+## Reanálisis, integridad y atomicidad
+
+- Confirmar vuelve a decodificar los binarios almacenados, ejecuta de nuevo el
+  análisis completo y aplica únicamente ese `ImportPlan`; no persiste ni confía
+  en planes, resúmenes o IDs aportados por el cliente.
+- Cambiar cualquiera de los binarios restablece estado, resumen e IDs afectados
+  y obliga a validar otra vez.
+- La aplicación repite inmediatamente antes de escribir las comprobaciones de
+  existencia, nombre, código, pertenencia y coherencia de padre. Las búsquedas
+  incluyen inactivos y las restricciones ORM/SQL existentes constituyen la
+  última barrera ante cambios concurrentes.
+- El servicio no ejecuta `commit()`, `unlink()` ni reemplaza One2many completos.
+  `Command.set` queda limitado a los Many2many de resultados del transient tras
+  una aplicación satisfactoria.
+- Cualquier error ORM se propaga y revierte toda la petición. La prueba que falla
+  en el segundo sujeto dentro de un savepoint exige cero registros o
+  actualizaciones supervivientes de ese intento.
+- En shell, el servicio tampoco confirma; el administrador conserva la decisión
+  explícita de commit o rollback sobre la transacción actual.
+
+## Conservación histórica
+
+- Los upserts buscan con `active_test=False`, reactivan coincidencias cuando
+  corresponde y usan las claves SQL existentes.
+- Las actividades nuevas se añaden sin vaciar colecciones; las existentes
+  conservan `activity_type` y solo reciben actualizaciones de nombre no vacías.
+- No se borra, desactiva ni vacía ningún mapa o actividad histórica. Los mapas
+  antiguos sin padre continúan conservados y las operaciones con padre deben
+  respetar las restricciones de coherencia padre/hijo.
+- La idempotencia, preservación de líneas y tipos, metadatos no vacíos e
+  integridad de padre están incluidas en pruebas y regresión del routing.
+
+## Condiciones que permanecen para Review y Validación
+
+La implementación debe corresponder literalmente al contrato aprobado y la
+Review independiente deberá buscar desviaciones, en particular llamadas a
+`sudo`, `commit` o `unlink`, guardas ausentes, decodificación previa al límite,
+lecturas de rutas sin cota, captura de errores que permita aplicación parcial o
+registro de contenido CSV. Cualquier desviación funcional reabre
+Implementación y requiere nueva Review y Validación conforme a `AGENTS.md`.
+
+## Tercera revisión — testigos de identidad para revalidación
+
+Fecha: 2026-07-22
+Rol: Security Advisor independiente
+Alcance: revisión de la enmienda que conserva nombres y código fuente en el plan de importación; sin revisión de código funcional
+
+### Fuentes revisadas íntegramente
+
+- `docs/superpowers/specs/2026-07-22-irg-gradebook-moodle-mapping-admin-design.md`.
+- `docs/superpowers/plans/2026-07-22-irg-gradebook-moodle-mapping-admin.md`.
+- `missions/irg-gradebook-moodle-mapping-admin/plan.md`.
+
+### Cambio revisado
+
+`CourseOperation` añade `op_course_name`. `SubjectOperation` añade
+`op_course_name`, `op_subject_name` y `op_subject_code`. Estos campos conservan
+los valores fuente que ya fueron validados durante el análisis y permiten
+compararlos, con la normalización contratada, contra el estado actual de Odoo
+justo antes de ejecutar los upserts.
+
+La enmienda es coherente en los tres documentos: el diseño declara que un
+cambio concurrente bloquea la aplicación; el plan define los campos de los
+transportes inmutables y obliga a `_revalidate_course` y
+`_revalidate_subject` a usarlos; el plan de misión incorpora la conservación de
+estos testigos dentro del alcance y exige abortar toda la aplicación ante una
+divergencia.
+
+### Impacto favorable en seguridad e integridad
+
+- Cierra el hueco entre el análisis y una aplicación posterior: ya no basta con
+  que los IDs sigan existiendo, sino que curso y asignatura deben conservar la
+  identidad textual validada en el CSV.
+- Es especialmente relevante para `odoo shell`, donde un administrador puede
+  conservar un `ImportPlan` durante más tiempo antes de llamar a `apply_plan`.
+  El wizard, además, mantiene su reanálisis obligatorio al confirmar.
+- El nombre del curso se comprueba desde `CourseOperation` antes del upsert del
+  mapa de curso y se conserva también en `SubjectOperation` para revalidar el
+  contexto del sujeto y su padre antes de escribir el mapa o sus actividades.
+- Nombre y código de asignatura se comparan con los valores fuente de
+  `SubjectOperation`; cambiar cualquiera de ellos entre análisis y aplicación
+  provoca `ValidationError`.
+- Los valores se comparan normalizados mediante recorte, compactación de
+  espacios y `casefold`, por lo que cambios meramente equivalentes no generan
+  falsos conflictos, mientras que una identidad materialmente distinta sí los
+  genera.
+- Los campos fuente son testigos de validación, no valores autoritativos para
+  sobrescribir `op.course` u `op.subject`. La aplicación no debe modificar el
+  nombre ni el código de esas entidades.
+- Al propagarse `ValidationError` sin captura parcial y no existir `commit()` en
+  el servicio, una divergencia revierte también los upserts anteriores de la
+  misma aplicación.
+- Las restricciones existentes de pertenencia, coherencia padre/hijo y claves
+  únicas continúan siendo la última barrera server-side; la enmienda las
+  complementa y no las sustituye.
+
+### Privacidad y superficie de ataque
+
+- Los nombres y el código permanecen dentro de dataclasses inmutables en memoria
+  durante análisis/aplicación. El wizard no persiste el `ImportPlan` ni lo
+  acepta desde el cliente.
+- Añadir estos campos no autoriza incluirlos en resúmenes, excepciones, logs o
+  evidencias. Se mantiene el contrato previo de registrar solo número de fila,
+  clave técnica, conteo y motivo, sin filas completas ni datos personales.
+- No se añade ninguna ruta web, permiso, uso de `sudo()`, operación destructiva
+  ni control de transacción nuevo. Los límites base64, guardas RPC y lectura
+  shell acotada aprobados en la segunda revisión permanecen sin cambios.
+
+### Obligaciones para implementación, Review y Validación
+
+- El análisis debe copiar a cada operación los valores procedentes de la fila o
+  pareja fuente ya validada, no volver a leerlos desde Odoo al construir el
+  plan; hacerlo eliminaría el valor testigo y volvería tautológica la
+  revalidación.
+- Cuando se fusionen filas duplicadas de una asignatura, la operación resultante
+  debe conservar una identidad fuente normalizadamente coherente; un conflicto
+  de nombre o código no puede ocultarse por la fusión.
+- `_revalidate_course` debe comparar existencia y nombre actual con
+  `CourseOperation.op_course_name` inmediatamente antes del upsert del curso.
+- `_revalidate_subject` debe comparar existencia, pertenencia, padre, nombre de
+  curso, nombre de asignatura y código con los campos de `SubjectOperation`
+  inmediatamente antes del upsert del sujeto y sus actividades.
+- Las pruebas deben analizar un plan válido, modificar después el nombre del
+  curso, el nombre de la asignatura y el código de la asignatura en casos
+  independientes, y comprobar en cada caso `ValidationError` y cero escrituras
+  supervivientes de esa aplicación. También deben conservar los casos ya
+  previstos de cambio de pertenencia/padre y fallo durante el segundo sujeto.
+- Review y Validación deben comprobar que ninguna revalidación usa como valor
+  esperado un nombre o código releído del propio ORM y que el error no se
+  captura para continuar.
+
+### Dictamen de la tercera revisión
+
+No se identifica un nuevo bloqueo. La enmienda corrige una carencia de
+integridad del transporte y fortalece la detección de deriva entre análisis y
+aplicación sin ampliar privilegios ni alterar las garantías transaccionales.
+La aprobación sigue condicionada a que las obligaciones anteriores se plasmen
+en código y pruebas y sean verificadas por los gates independientes posteriores.
+
+## Cuarta revisión — conflicto de padre y preflight íntegro del plan
+
+Fecha: 2026-07-22
+Rol: Security Advisor independiente
+Alcance: revisión de `conflicting_subject_parent` y de la prevalidación completa de `ImportPlan`; sin revisión de código funcional
+
+### Fuentes contrastadas
+
+- `docs/superpowers/specs/2026-07-22-irg-gradebook-moodle-mapping-admin-design.md`.
+- `docs/superpowers/plans/2026-07-22-irg-gradebook-moodle-mapping-admin.md`.
+- `missions/irg-gradebook-moodle-mapping-admin/plan.md`.
+
+### Riesgos corregidos por la enmienda
+
+La clave funcional de una operación de asignatura es
+`(op_subject_id, moodle_course_id)`. Antes de esta enmienda, dos filas con esa
+misma clave pero distintos `op_course_id` podían alcanzar la lógica de fusión y
+ocultar una contradicción de padre. La nueva razón
+`conflicting_subject_parent` obliga a omitir la fila conflictiva en análisis y
+evita contaminar un curso Odoo con el mapeo de otro.
+
+Además, `apply_plan` es una interfaz pública para código Python ejecutado desde
+`odoo shell`. Un administrador puede construir manualmente un objeto que no
+proceda de `analyze_bytes`. Sin un preflight completo, un elemento mal tipado
+podía producir `AttributeError` al desreferenciarlo, una clave duplicada podía
+sobrescribir silenciosamente una entrada del diccionario local y un error
+detectado después de varios upserts podía dejar cambios pendientes si el
+operador capturaba la excepción y confirmaba después la transacción. Validar el
+plan entero antes del primer write elimina estas rutas.
+
+### Contrato de `conflicting_subject_parent`
+
+- El análisis mantiene la clave de fusión
+  `(op_subject_id, moodle_course_id)` y recuerda el padre Odoo de la primera
+  operación válida.
+- Una fila posterior con la misma clave y diferente `op_course_id` no se mezcla,
+  no aporta actividades y se contabiliza como
+  `conflicting_subject_parent`.
+- La fila conflictiva no debe sustituir ni modificar la operación válida ya
+  acumulada.
+- Los casos con el mismo padre continúan fusionando Activity IDs de forma
+  estable y aplican las reglas previas de deduplicación y nombres.
+- La evidencia solo registra número de fila, clave técnica y motivo; no copia la
+  fila conflictiva ni sus nombres.
+
+### Frontera de confianza de `apply_plan`
+
+Antes de llamar a `_revalidate_course`, `_upsert_course` o cualquier otro método
+que consulte o escriba modelos persistentes, el servicio debe completar un
+preflight sin efectos laterales sobre la totalidad del objeto recibido.
+
+El orden seguro de validación es:
+
+1. comprobar que el contenedor es un `ImportPlan` aceptado y que `courses` y
+   `subjects` tienen la estructura tuple contratada;
+2. comprobar el tipo de cada miembro antes de leer cualquiera de sus atributos,
+   evitando `AttributeError` u otras excepciones de programación frente a datos
+   hostiles o accidentales;
+3. validar tipos escalares e IDs enteros positivos dentro del rango global; un
+   booleano no debe aceptarse como ID por ser subclase de `int` en Python;
+4. exigir unicidad de cada clave de curso
+   `(op_course_id, moodle_course_id)` y de cada clave de asignatura
+   `(op_subject_id, moodle_course_id)`;
+5. exigir que cada asignatura tenga exactamente un padre declarado en las
+   operaciones de curso y que coincidan su clave y los valores de identidad
+   compartidos, sin resolver padres mediante acceso directo a un diccionario
+   antes de validar su presencia;
+6. exigir una tupla no vacía de `ActivityOperation` por asignatura, validar el
+   tipo de cada miembro antes de desreferenciarlo y rechazar Activity IDs
+   duplicados dentro de la misma asignatura;
+7. terminar todas estas comprobaciones para todos los cursos, asignaturas y
+   actividades antes de iniciar el primer upsert.
+
+Un plan inválido debe producir una `ValidationError` controlada y saneada, no
+`KeyError`, `AttributeError`, `TypeError` ni una escritura parcial. El mensaje
+puede identificar la clave técnica y el motivo, pero no debe volcar el objeto,
+su `repr`, filas completas ni datos personales.
+
+### Interacción con revalidación y atomicidad
+
+- El preflight valida la coherencia interna y estructural del transporte; no
+  sustituye las consultas ORM de existencia, pertenencia, nombre, código y padre
+  inmediatamente anteriores a cada write.
+- Los testigos de identidad aprobados en la tercera revisión siguen comparándose
+  con el estado actual de Odoo. Un plan estructuralmente válido pero obsoleto se
+  rechaza durante `_revalidate_course` o `_revalidate_subject`.
+- El preflight íntegro evita escrituras previas para todos los errores
+  detectables solo con el plan, incluso si un operador shell captura la
+  `ValidationError`.
+- Los errores ORM o cambios concurrentes posteriores continúan propagándose y
+  dependen del rollback de la petición o de la disciplina transaccional
+  explícita del administrador shell. El servicio mantiene prohibidos
+  `commit()`, `unlink()`, `sudo()` y el reemplazo completo de One2many.
+- Las restricciones SQL/ORM de unicidad y coherencia padre/hijo permanecen como
+  última barrera y no se relajan por aceptar planes manuales.
+
+### Pruebas y evidencias requeridas
+
+Implementación, Review y Validación deben cubrir como mínimo:
+
+- dos filas CSV con la misma clave de asignatura/curso Moodle y distinto padre:
+  la segunda resulta `conflicting_subject_parent`, no aporta actividades y no
+  altera la primera;
+- objeto raíz incorrecto y contenedores `courses`/`subjects` incorrectos;
+- miembro de curso, asignatura o actividad con tipo incorrecto, demostrando que
+  se obtiene `ValidationError` y no una desreferencia accidental;
+- IDs con tipo incorrecto, booleanos, fuera de rango o no positivos;
+- claves de curso y asignatura duplicadas;
+- asignatura sin padre, con padre ambiguo o con identidad de padre incoherente;
+- actividades vacías, miembro de actividad mal tipado y Activity ID repetido en
+  una asignatura;
+- un plan cuyo error aparece en el último elemento, verificando que los conteos
+  persistentes permanecen idénticos y que ningún método de upsert fue invocado;
+- un plan válido construido manualmente, que debe conservar el mismo resultado
+  que el generado por análisis;
+- regresión de la revalidación de nombres/código, atomicidad ante fallo ORM,
+  idempotencia y conservación histórica ya aprobadas.
+
+### Dictamen de la cuarta revisión
+
+No existe un bloqueo nuevo. La enmienda separa correctamente validación
+estructural completa y revalidación ORM, rechaza la ambigüedad de padre durante
+el análisis y reduce la superficie de fallo del adaptador shell. La aprobación
+se refiere al contrato documental; la Review de código debe confirmar de forma
+especial que el preflight ocurre íntegramente antes del primer write y que los
+tipos se comprueban antes de acceder a atributos.
+
+[YES] Reason: conflicting_subject_parent impide mezclar padres Odoo y el preflight completo valida tipos, claves, padres y actividades antes de cualquier write, protegiendo planes shell malformados sin debilitar revalidación, atomicidad ni permisos.

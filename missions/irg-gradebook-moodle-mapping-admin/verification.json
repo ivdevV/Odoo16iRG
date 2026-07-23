@@ -1,0 +1,66 @@
+{
+  "status": "passed",
+  "task": "irg-gradebook-moodle-mapping-admin",
+  "checks": [
+    {
+      "name": "python_compileall",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps -e PYTHONPYCACHEPREFIX=/tmp/irg-mapping-pycache --entrypoint python3 odoo_local -m compileall -q /mnt/extra-addons/extrairg/irg_gradebook_moodle_mapping_admin",
+      "result": "pass",
+      "detail": "Exit 0 using /tmp for bytecode because the addon mount is intentionally read-only; the initial default-cache attempt failed only with EROFS.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "manifest_ast",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps --entrypoint python3 odoo_local -c <manifest literal-eval and metadata assertions>",
+      "result": "pass",
+      "detail": "Manifest parsed, is installable and declares irg_gradebook_moodle_routing as its dependency.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "xml_parse",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps --entrypoint python3 odoo_local -c <lxml parse of addon XML files>",
+      "result": "pass",
+      "detail": "2 of 2 XML files parsed successfully.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "odoo_upgrade_and_full_tests",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin --stop-after-init --no-http --log-level=test",
+      "result": "pass",
+      "detail": "Exit 0; 61 tests, 0 failed, 0 errors (49 mapping-admin and 22 routing); addon upgrade, views and ACL data loaded.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "ui_acl_and_real_csv_preview_smoke",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps -T -v <courses.csv:/validation-input/mapeo-cursos.csv:ro> -v <assignments.csv:/validation-input/mapeo-asignaturas.csv:ro> odoo_local odoo shell -c /etc/odoo/odoo.conf -d test_irg_db --no-http --log-level=error < <inline reversible smoke>",
+      "result": "pass",
+      "detail": "Four combined views and system-only ACL/action/menu passed; internal user menu and RPC-style create/action denied; admin validation used base64 real CSV copies; action_apply had 0 calls; all three persistent model snapshots were unchanged. Preview had 0 valid operations because source master data is absent.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "transactional_cleanup",
+      "command": "env.cr.rollback() plus fresh fixture/model searches; docker ps/inspect and base compose ps",
+      "result": "pass",
+      "detail": "Transient and synthetic user did not persist; no one-off container remained; principal service still mounts the principal checkout read-only; all three base services are running.",
+      "evidence": "artifacts/scope-review.txt"
+    },
+    {
+      "name": "git_scope_and_whitespace",
+      "command": "git diff --check; git diff --name-only -- addons-extra; git status --short --branch; git diff --no-index --check /dev/null <each intended untracked file>",
+      "result": "pass",
+      "detail": "No tracked existing addon diff or whitespace error; only the intended new addon, design/plan and mission scopes are untracked. No stage, commit or push was performed.",
+      "evidence": "artifacts/scope-review.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml + .superpowers/sdd/docker-compose.worktree.yml; one-off run --rm; Odoo --no-http",
+    "database": "test_irg_db",
+    "base_commit": "c2495c7a67ee4e87b701d72edcee383f90a76ffe"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/scope-review.txt"
+  ]
+}

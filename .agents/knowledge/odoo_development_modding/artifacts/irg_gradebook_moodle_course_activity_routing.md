@@ -34,12 +34,32 @@ convertirse en HomeClass ni en fallback Online genérico.
 
 ## Importación segura de datos históricos
 
-Separar las fuentes autorizadoras de las relaciones completas: un CSV autoriza
-parejas HomeClass, otro inventaría IDs Online y un tercero aporta
-curso/asignatura/Activity IDs. Validar encabezados, codificación, IDs positivos
-y pertenencia Odoo; resumir descartes por causa. Ejecutar *upsert* por claves
-estables y por Activity ID: nunca limpiar el One2many, desactivar o borrar los
-históricos. Los mapas antiguos sin padre se preservan, pero no se enrutan.
+El flujo histórico de migración usaba tres fuentes separadas: una autorizaba
+parejas HomeClass, otra inventariaba IDs Online y una tercera aportaba
+curso/asignatura/Activity IDs. Ese contexto explica la separación original,
+pero no es el contrato vigente del administrador: ahora se importan exactamente
+dos CSV consolidados, uno de parejas de curso y otro de
+curso/asignatura/Activity IDs.
+
+Centralizar ambos adaptadores —wizard y `odoo shell`— en el mismo servicio:
+deben compartir lectura, validación, plan y aplicación, no reinterpretar los
+CSV por separado. Aceptar los alias legado y canónico de cabeceras de curso,
+pero rechazar una fila si ambos aportan valores contradictorios. El parser debe
+ser estricto: un CSV estructuralmente malformado bloquea el análisis completo;
+los problemas semánticos de filas se contabilizan como omisiones o advertencias.
+
+Separar explícitamente análisis y aplicación. El análisis construye un plan y
+un `preview` de solo lectura con las mismas claves de búsqueda que el *upsert*,
+incluidos registros inactivos; por tanto puede informar de creaciones y
+actualizaciones sin modificar datos. En la confirmación se vuelven a analizar
+los bytes persistidos y se revalidan las referencias Odoo antes de escribir,
+para no aplicar un plan o resumen obsoleto o manipulado.
+
+Antes de la primera escritura, hacer un *preflight* estructural de todo el
+plan: tipos, IDs, claves únicas, padres coherentes y actividades no vacías. Solo
+después ejecutar *upsert* por claves estables y por Activity ID: nunca limpiar
+el One2many, desactivar o borrar los históricos. Los mapas antiguos sin padre
+se preservan, pero no se enrutan.
 
 ## Regresiones mínimas
 
@@ -54,9 +74,11 @@ históricos. Los mapas antiguos sin padre se preservan, pero no se enrutan.
 ## Resultado validado
 
 La última suite funcional del addon `irg_gradebook_moodle_routing` ejecutó 20
-métodos / 22 pruebas y subpruebas Odoo sin fallos, más importación reversible
-de las tres fuentes CSV, rechazo sintético de marcadores malformados y checks
-estáticos. El upgrade final no emitió errores ni warnings de docutils
-atribuibles al README y `verification.json` quedó en estado `passed`. El smoke
-real confirmó parseo, autorizaciones y rollback, pero `test_irg_db` no contenía
-los registros Odoo fuente y por ello no creó mapas reales.
+métodos / 22 pruebas y subpruebas Odoo sin fallos. En la etapa histórica
+anterior se validó además la importación reversible de tres fuentes CSV, el
+rechazo sintético de marcadores malformados y checks estáticos. El flujo actual
+del administrador se rige por los dos CSV consolidados descritos arriba. El
+upgrade final no emitió errores ni warnings de docutils atribuibles al README y
+`verification.json` quedó en estado `passed`. El smoke real confirmó parseo,
+autorizaciones y rollback, pero `test_irg_db` no contenía los registros Odoo
+fuente y por ello no creó mapas reales.

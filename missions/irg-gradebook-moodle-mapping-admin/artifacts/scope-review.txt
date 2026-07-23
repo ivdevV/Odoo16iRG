@@ -1,0 +1,26 @@
+# Independent validation scope and cleanup review
+
+Date: 2026-07-22
+Result: PASS
+
+- Reviewed the complete repository policy, approved design, implementation
+  plan, mission plan, final review approval, and every final addon source and
+  test file before validation.
+- The functional implementation is isolated in the new addon
+  `addons-extra/extrairg/irg_gradebook_moodle_mapping_admin/`; no tracked
+  existing addon was modified.
+- The only untracked top-level scopes are the intended new addon, approved
+  design/implementation plan and mission directory. No stage, commit, push,
+  PR, deployment, real import or apply operation was performed.
+- Static parsing, addon upgrade/installability, the full routing+admin suite,
+  combined-view/ACL/menu checks and reversible real-CSV preview all passed.
+- Real-CSV preview produced zero valid operations due solely to absent master
+  data in `test_irg_db`; the result was accepted as specified and no source row
+  content or PII was emitted.
+- Cleanup is complete: explicit rollback removed the transient and synthetic
+  user fixture; persistent mapping snapshots did not change; no one-off
+  container is alive; the principal service still mounts the principal
+  checkout read-only and all three base services remain running.
+
+Gate conclusion: independent validation passes and the mission may proceed to
+Documentation. Publication remains separately unauthorized.

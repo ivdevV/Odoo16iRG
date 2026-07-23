@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="irg_gradebook_moodle_course_map_tree_admin" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.course.map.tree.admin</field>
+        <field name="model">irg.gradebook.moodle.course.map</field>
+        <field name="inherit_id" ref="irg_gradebook_moodle_routing.irg_gradebook_moodle_course_map_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree/field[@name='op_course_id']" position="after">
+                <field name="irg_op_course_database_id" readonly="1"/>
+            </xpath>
+            <xpath expr="//tree/field[@name='edition_year']" position="after">
+                <field name="irg_subject_map_count" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="irg_gradebook_moodle_course_map_form_admin" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.course.map.form.admin</field>
+        <field name="model">irg.gradebook.moodle.course.map</field>
+        <field name="inherit_id" ref="irg_gradebook_moodle_routing.irg_gradebook_moodle_course_map_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group/field[@name='op_course_id']" position="after">
+                <field name="irg_op_course_database_id" readonly="1"/>
+                <field name="irg_subject_map_count" readonly="1"/>
+            </xpath>
+            <xpath expr="//sheet/group" position="after">
+                <notebook>
+                    <page string="Asignaturas Moodle">
+                        <field name="irg_subject_map_ids" readonly="1">
+                            <tree>
+                                <field name="irg_op_subject_database_id"/>
+                                <field name="irg_op_subject_name"/>
+                                <field name="irg_op_subject_code"/>
+                                <field name="moodle_course_id"/>
+                                <field name="irg_activity_count"/>
+                                <field name="irg_activity_ids_display"/>
+                                <field name="active"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="irg_gradebook_moodle_map_tree_admin" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.map.tree.admin</field>
+        <field name="model">irg.gradebook.moodle.map</field>
+        <field name="inherit_id" ref="irg_gradebook_moodle_routing.irg_gradebook_moodle_map_tree_course"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree/field[@name='course_map_id']" position="after">
+                <field name="irg_op_course_id" readonly="1"/>
+                <field name="irg_op_course_database_id" readonly="1"/>
+                <field name="irg_op_subject_database_id" readonly="1"/>
+                <field name="irg_op_subject_name" readonly="1"/>
+                <field name="irg_op_subject_code" readonly="1"/>
+                <field name="irg_activity_count" readonly="1"/>
+                <field name="irg_activity_ids_display" readonly="1"/>
+                <field name="active"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="irg_gradebook_moodle_map_form_admin" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.map.form.admin</field>
+        <field name="model">irg.gradebook.moodle.map</field>
+        <field name="inherit_id" ref="irg_gradebook_moodle_routing.irg_gradebook_moodle_map_form_course"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group/field[@name='course_map_id']" position="after">
+                <field name="irg_op_course_id" readonly="1"/>
+                <field name="irg_op_course_database_id" readonly="1"/>
+                <field name="irg_op_subject_database_id" readonly="1"/>
+                <field name="irg_op_subject_name" readonly="1"/>
+                <field name="irg_op_subject_code" readonly="1"/>
+                <field name="irg_activity_count" readonly="1"/>
+                <field name="irg_activity_ids_display" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

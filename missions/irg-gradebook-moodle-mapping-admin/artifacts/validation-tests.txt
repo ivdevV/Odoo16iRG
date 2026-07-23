@@ -1,0 +1,75 @@
+# Independent validation — irg-gradebook-moodle-mapping-admin
+
+Date: 2026-07-22
+Role: independent validator (not implementer or code reviewer)
+Runtime: `/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml` plus `.superpowers/sdd/docker-compose.worktree.yml`
+Database: `test_irg_db`
+Base commit: `c2495c7a67ee4e87b701d72edcee383f90a76ffe`
+
+## Static checks
+
+- `compileall`: PASS in a one-off container. The first attempt tried to create
+  `__pycache__` under the intentionally read-only addon mount and failed with
+  `EROFS`; the independent retry used `PYTHONPYCACHEPREFIX=/tmp/irg-mapping-pycache`
+  and exited 0 without changing the checkout.
+- Manifest AST/installability metadata: PASS. The manifest is literal-evaluable,
+  installable and depends on `irg_gradebook_moodle_routing`.
+- XML: PASS, 2/2 files parsed with `lxml` inside a one-off container.
+
+## Odoo upgrade and tests
+
+Command:
+
+`docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f .superpowers/sdd/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin --stop-after-init --no-http --log-level=test`
+
+Result: PASS, exit 0. Both addons upgraded and their ACL/view data loaded.
+Odoo reported 61 tests total, 0 failed and 0 errors: 49 mapping-admin tests and
+22 routing tests. This includes routing HC/ONL/year/parent isolation, parser and
+apply behavior, wizard state/size limits, ACL/menu constraints, and internal
+non-system create/write/public-action denials.
+
+## Reversible UI/server smoke with the real CSV copies
+
+Executed through one-off `odoo shell --no-http` with both user-provided CSV
+files bind-mounted read-only. No row contents, names or personal data were
+printed.
+
+- PASS: the four final combined course/subject tree/form views contain all
+  required course, Moodle, subject, activity and active-state columns.
+- PASS: wizard ACL, window action and menu are limited to `base.group_system`.
+- PASS: a synthetic internal non-system user did not see the menu and received
+  `AccessError` for direct server-side wizard creation and public action calls.
+- PASS: the administrator created the wizard from base64 copies of both real
+  CSV files and `action_validate` reached `validated`.
+- PASS: `action_apply` was guarded by a mock and had exactly zero calls.
+- PASS: full before/after snapshots (including values and write metadata) of
+  `irg.gradebook.moodle.course.map`, `irg.gradebook.moodle.map` and
+  `irg.gradebook.moodle.map.line` were identical.
+- Objective preview result: 0 course, subject and activity operations because
+  `test_irg_db` lacks the source master data. Aggregates were: 28 course rows
+  omitted as `missing_odoo_record`; 410 assignment rows read, with 41
+  `blank_row`, 83 `invalid_id` and 286 `missing_course_pair` omissions.
+- PASS: explicit `env.cr.rollback()` removed the wizard transient and synthetic
+  user fixture; a fresh search found neither, and all three persistent model
+  snapshots remained identical.
+
+The first smoke attempt stopped before record creation because this Odoo build
+returns combined arches as strings; the validation script was corrected to
+parse the returned XML. The second stopped before record creation because the
+test DB had no suitable internal non-system user. The final run created the
+synthetic user transactionally and passed with exit 0. These were validation
+harness retries, not product failures.
+
+## Final checks
+
+- `git diff --check`: PASS.
+- Untracked intended files were also checked individually with
+  `git diff --no-index --check`: PASS.
+- No tracked existing addon has a diff; functional code is confined to the new
+  `irg_gradebook_moodle_mapping_admin` addon.
+- No one-off container remained running.
+- The long-running `odoo_local` service still mounts the principal checkout at
+  `/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra` read-only.
+- `odoo_local`, `pgodoo_local` and `redisodoo_local` remained running.
+
+Final validation result: PASS.

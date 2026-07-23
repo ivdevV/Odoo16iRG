@@ -1,0 +1,67 @@
+# Real CSV read-only smoke — 2026-07-22
+
+Runtime: base `docker-compose.local.yml` plus the worktree overlay, one-off
+`run --rm`, `--no-http`, database `test_irg_db`.
+
+The host Downloads directory was mounted at `/mnt/irg-import` read-only for the
+one-off container. Only `import_mapping.analyze_paths` was called. The command
+did not call `apply_plan`, `commit`, `unlink` or any import action, and emitted
+only aggregate counts and fixed reason keys; it did not emit CSV rows or names.
+
+Input sizes:
+
+```text
+mapeo cursos.csv: 2,914 bytes
+Mapeo asignaturas.csv: 131,642 bytes
+```
+
+Exit code: 0
+
+Aggregate result:
+
+```json
+{
+  "apply_called": false,
+  "course_operations": 0,
+  "modalities": {},
+  "subject_operations": 0,
+  "courses": {
+    "rows_read": 28,
+    "rows_accepted": 0,
+    "rows_skipped": 28,
+    "rows_warned": 0,
+    "skipped_by_reason": {"missing_odoo_record": 28},
+    "warned_by_reason": {}
+  },
+  "assignments": {
+    "rows_read": 410,
+    "rows_accepted": 0,
+    "rows_skipped": 410,
+    "rows_warned": 0,
+    "skipped_by_reason": {
+      "blank_row": 41,
+      "invalid_id": 83,
+      "missing_course_pair": 286
+    },
+    "warned_by_reason": {}
+  },
+  "persistent_map_counts_before": {
+    "irg.gradebook.moodle.course.map": 0,
+    "irg.gradebook.moodle.map": 0,
+    "irg.gradebook.moodle.map.line": 0
+  },
+  "persistent_map_counts_after": {
+    "irg.gradebook.moodle.course.map": 0,
+    "irg.gradebook.moodle.map": 0,
+    "irg.gradebook.moodle.map.line": 0
+  }
+}
+```
+
+Objective limitation: this test database does not contain any of the 28 Odoo
+course IDs referenced by the real course CSV. The service therefore rejected
+those rows before it could produce HomeClass/Online operations, and every
+assignment with otherwise parseable identifiers subsequently lacked an
+authorized course pair. This is expected conservative behavior, not a parser
+or adapter failure. The equality of all three persistent model counts proves
+the real-file smoke remained read-only.

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_gradebook_moodle_mapping_import_wizard_form" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.mapping.import.wizard.form</field>
+        <field name="model">irg.gradebook.moodle.mapping.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar mapeo Moodle">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated,applied"/>
+                </header>
+                <sheet>
+                    <group string="Archivos CSV">
+                        <field name="courses_filename" invisible="1"/>
+                        <field name="courses_file" filename="courses_filename"
+                            attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                        <field name="assignments_filename" invisible="1"/>
+                        <field name="assignments_file" filename="assignments_filename"
+                            attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                    </group>
+                    <group string="Resumen" attrs="{'invisible': [('summary_text', '=', False)]}">
+                        <field name="summary_text" nolabel="1" readonly="1"/>
+                    </group>
+                    <field name="affected_course_map_ids" invisible="1"/>
+                    <field name="affected_subject_map_ids" invisible="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_validate" string="Validar" type="object"
+                        class="btn-primary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <button name="action_apply" string="Confirmar importación" type="object"
+                        class="btn-primary" attrs="{'invisible': [('state', '!=', 'validated')]}"/>
+                    <button name="action_open_course_maps" string="Abrir cursos afectados" type="object"
+                        attrs="{'invisible': [('state', '!=', 'applied')]}"/>
+                    <button name="action_open_subject_maps" string="Abrir asignaturas afectadas" type="object"
+                        attrs="{'invisible': [('state', '!=', 'applied')]}"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_gradebook_moodle_mapping_import" model="ir.actions.act_window">
+        <field name="name">Importar mapeo Moodle</field>
+        <field name="res_model">irg.gradebook.moodle.mapping.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_irg_gradebook_moodle_mapping_import_wizard_form"/>
+        <field name="target">new</field>
+        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <menuitem id="menu_irg_gradebook_moodle_mapping_import"
+        name="Importar mapeo Moodle"
+        parent="isep_gradebook.menu_app_gradebook_root"
+        action="action_irg_gradebook_moodle_mapping_import"
+        groups="base.group_system"
+        sequence="88"/>
+</odoo>
