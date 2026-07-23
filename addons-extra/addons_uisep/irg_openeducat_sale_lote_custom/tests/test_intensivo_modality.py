@@ -128,3 +128,93 @@ class TestIntensivoModality(TransactionCase):
         self.assertTrue(batch, "Batch should be created or found")
         self.assertEqual(batch.code, 'MOPCIN2701', f"Expected batch code MOPCIN2701 from tick, got {batch.code}")
         self.assertTrue(getattr(batch, 'irg_is_intensive', False), "Batch should be flagged as intensive")
+
+    def test_get_lot_id_ignored_for_non_pc_course(self):
+        """Test that irg_is_intensive tick is IGNORED for non-PC courses (e.g. course MN)."""
+        course_mn = self.OpCourse.create({
+            'name': 'Máster Oficial Neuropsicología',
+            'code': 'MN',
+            'lang': 'en_US',
+        })
+        product_mn = self.ProductProduct.create({
+            'name': 'Programa Máster Oficial MN',
+            'type': 'service',
+            'is_academic_program': True,
+            'categ_id': self.master_category.id,
+        })
+        course_mn.write({'product_template_id': product_mn.product_tmpl_id.id})
+
+        order = self.SaleOrder.create({
+            'partner_id': self.customer.id,
+            'admission_date': fields.Date.to_date('2027-01-01'),
+            'irg_is_intensive': True,
+        })
+        line = self.SaleOrderLine.create({
+            'order_id': order.id,
+            'product_id': product_mn.id,
+            'product_uom_qty': 1,
+            'price_unit': 1000.0,
+            'start_date_enroller': fields.Date.to_date('2027-01-01'),
+        })
+
+        batch = order.with_context(irg_get_lot_line_id=line.id).get_lot_id(course_mn)
+        self.assertTrue(batch, "Batch should be created or found")
+        self.assertNotEqual(batch.code, 'MOMNIN2701', f"Batch should NOT use IN modality for non-PC course")
+        self.assertFalse(getattr(batch, 'irg_is_intensive', False), "Non-PC batch should not be flagged as intensive")
+
+    def test_multiline_order_intensivo_and_bonificado(self):
+        """Test multi-line order with Psicología Clínica (Intensivo) and an Online Bonificado course."""
+        course_mn = self.OpCourse.create({
+            'name': 'Máster Oficial Neuropsicología',
+            'code': 'MN',
+            'lang': 'en_US',
+        })
+        val_online = self.ProductAttributeValue.create({
+            'name': 'Online',
+            'attribute_id': self.attr_modalidad.id,
+        })
+        product_tmpl_mn = self.ProductTemplate.create({
+            'name': 'Programa Máster Oficial MN',
+            'type': 'service',
+            'is_academic_program': True,
+            'categ_id': self.master_category.id,
+        })
+        ptal_mn = self.ProductTemplateAttributeLine.create({
+            'product_tmpl_id': product_tmpl_mn.id,
+            'attribute_id': self.attr_modalidad.id,
+            'value_ids': [(6, 0, [val_online.id])],
+        })
+        ptav_online = ptal_mn.product_template_value_ids.filtered(lambda v: v.product_attribute_value_id == val_online)
+        product_mn_online = self.ProductProduct.create({
+            'product_tmpl_id': product_tmpl_mn.id,
+            'product_template_attribute_value_ids': [(6, 0, ptav_online.ids)],
+        })
+        course_mn.write({'product_template_id': product_tmpl_mn.id})
+
+        order = self.SaleOrder.create({
+            'partner_id': self.customer.id,
+            'admission_date': fields.Date.to_date('2027-01-01'),
+            'irg_is_intensive': True,
+        })
+        line_pc = self.SaleOrderLine.create({
+            'order_id': order.id,
+            'product_id': self.product_variant.id,
+            'product_uom_qty': 1,
+            'price_unit': 1200.0,
+            'start_date_enroller': fields.Date.to_date('2027-01-01'),
+        })
+        line_bonificado = self.SaleOrderLine.create({
+            'order_id': order.id,
+            'product_id': product_mn_online.id,
+            'product_uom_qty': 1,
+            'price_unit': 0.0,
+            'start_date_enroller': fields.Date.to_date('2027-01-01'),
+        })
+
+        batch_pc = order.with_context(irg_get_lot_line_id=line_pc.id).get_lot_id(self.course_pc)
+        self.assertEqual(batch_pc.code, 'MOPCIN2701', f"Expected MOPCIN2701 for PC line, got {batch_pc.code}")
+        self.assertTrue(getattr(batch_pc, 'irg_is_intensive', False))
+
+        batch_bonif = order.with_context(irg_get_lot_line_id=line_bonificado.id).get_lot_id(course_mn)
+        self.assertEqual(batch_bonif.code, 'MBMNONL2701', f"Expected MBMNONL2701 for Bonificado line, got {batch_bonif.code}")
+        self.assertFalse(getattr(batch_bonif, 'irg_is_intensive', False))
