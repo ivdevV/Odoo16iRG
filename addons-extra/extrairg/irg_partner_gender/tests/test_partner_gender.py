@@ -110,3 +110,15 @@ class TestPartnerGender(TransactionCase):
             'gender': order.gender or partner.gender or 'o',
         })
         self.assertEqual(admission.gender, 'f')
+
+    def test_06_write_gender_without_username(self):
+        """Gender must be editable even when Moodle username is empty."""
+        partner = self.Partner.create({
+            'name': 'Ana Sin Username',
+            'email': 'ana.nouser@example.com',
+        })
+        if 'username' in partner._fields:
+            self.assertFalse(partner.username)
+            self.assertFalse(partner._fields['username'].required)
+        partner.write({'gender': 'f'})
+        self.assertEqual(partner.gender, 'f')

@@ -1,0 +1,34 @@
+# RED — correcciones de Code Review
+
+Fecha: 2026-07-22
+
+Comando completo:
+
+```text
+docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f missions/fix-gradebook-moodle-course-activity-routing/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing --test-enable --test-tags /irg_gradebook_moodle_routing --stop-after-init --log-level=test
+```
+
+Resultado RED válido: exit 1; 16 métodos / 18 tests-subtests; 7 fallos y
+1 error. Los fallos reprodujeron exactamente:
+
+- ausencia del constraint ORM padre/hijo;
+- falta de bloqueo de un histórico incoherente antes de Moodle;
+- recreación y cambio de IDs de líneas en la reimportación;
+- eliminación de una línea histórica ausente del CSV;
+- ausencia de validación de headers;
+- ausencia de estadísticas y descartes por fuente.
+
+Se corrigió antes del RED válido un defecto del fixture: `DictWriter` debía
+ignorar expresamente valores cuyas columnas se habían omitido para poder
+crear un CSV con header incompleto. Ese fallo de infraestructura no se contó
+como evidencia funcional.
+
+Microciclo adicional de integridad parental:
+
+```text
+--test-tags /irg_gradebook_moodle_routing:TestMoodleRouting.test_course_map_rejects_parent_edits_that_corrupt_children
+```
+
+Resultado: exit 1; 1 fallo, 0 errores. Editar el ID Moodle del padre no
+levantaba `ValidationError`, demostrando que la constraint inicial debía
+proteger también mutaciones del mapa de curso.

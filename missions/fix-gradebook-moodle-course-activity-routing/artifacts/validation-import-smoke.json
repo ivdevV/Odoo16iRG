@@ -1,0 +1,67 @@
+{
+  "validation_repeated_after_documentation_fix": true,
+  "transaction": "SAVEPOINT routing_csv_validation; ROLLBACK TO SAVEPOINT; RELEASE SAVEPOINT",
+  "rollback_confirmed": true,
+  "course_1_moodle_36_unlinked": true,
+  "before": {
+    "course_maps": 0,
+    "subject_maps": 0,
+    "linked_subject_maps": 0,
+    "course_1_moodle_36_course_maps": 0
+  },
+  "after_import": {
+    "course_maps": 0,
+    "subject_maps": 0,
+    "linked_subject_maps": 0,
+    "course_1_moodle_36_course_maps": 0
+  },
+  "after_rollback": {
+    "course_maps": 0,
+    "subject_maps": 0,
+    "linked_subject_maps": 0,
+    "course_1_moodle_36_course_maps": 0
+  },
+  "summary": {
+    "course_maps": {
+      "created": 0,
+      "updated": 0
+    },
+    "subject_maps": {
+      "created": 0,
+      "updated": 0
+    },
+    "skipped": 410,
+    "skipped_by_reason": {
+      "invalid_values": 138,
+      "missing_odoo_record": 264,
+      "unauthorized_course": 8
+    },
+    "sources": {
+      "homeclass": {
+        "rows_read": 21,
+        "rows_accepted": 15,
+        "rows_discarded": 6,
+        "discarded_by_reason": {
+          "invalid_values": 6
+        }
+      },
+      "online": {
+        "rows_read": 253,
+        "rows_accepted": 253,
+        "rows_discarded": 0,
+        "discarded_by_reason": {}
+      },
+      "assignments": {
+        "rows_read": 410,
+        "rows_accepted": 0,
+        "rows_discarded": 410,
+        "discarded_by_reason": {
+          "invalid_values": 138,
+          "missing_odoo_record": 264,
+          "unauthorized_course": 8
+        }
+      }
+    }
+  },
+  "note": "La base test_irg_db no contiene los cursos/asignaturas referenciados por los CSV reales; el smoke validó parsing, autorización, exclusión de 1/36 y rollback, mientras la creación/upsert se cubre por la suite automatizada. No se registraron contenidos de CSV ni datos personales."
+}

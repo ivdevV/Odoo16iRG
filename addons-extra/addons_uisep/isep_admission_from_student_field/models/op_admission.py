@@ -62,12 +62,12 @@ class OpAdmission(models.Model):
                     if original_partner_id.user_ids:
                         user_for_student = original_partner_id.user_ids[0]
                     
+                    student_birth = self.birth_date or original_partner_id.birth_date
                     details = {
                         'title': self.title and self.title.id or False,
                         'first_name': self.first_name,
                         'middle_name': self.middle_name,
                         'last_name': self.last_name,
-                        'birth_date': self.birth_date,
                         'gender': self.gender,
                         # Usamos self.image como en isep_elearning_custom, asumiendo que existe en el modelo
                         'image_1920': self.image or False,
@@ -75,6 +75,8 @@ class OpAdmission(models.Model):
                         'company_id': self.company_id.id,
                         'partner_id': original_partner_id.id,
                     }
+                    if student_birth:
+                        details['birth_date'] = student_birth
                     correct_student = self.env['op.student'].create(details)
                 
                 _logger.warning(f"RESTAURANDO student_id a: {correct_student.name} (ID: {correct_student.id})")

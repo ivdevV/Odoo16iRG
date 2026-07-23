@@ -21,7 +21,7 @@ class SurveyUserInputExamSecondAttempt(models.Model):
             attempts = self.slide_partner_id.user_input_ids.filtered(
                 lambda attempt: (
                     attempt.survey_id == self.survey_id
-                    and attempt.survey_type == 'exam'
+                    and attempt.survey_type in ('exam', 'assignment', 'survey', 'cert')
                     and not attempt.test_entry
                     and attempt.state == 'done'
                 )
@@ -43,18 +43,23 @@ class SurveyUserInputExamSecondAttempt(models.Model):
         ):
             return
 
+        target_types = ('exam', 'assignment', 'survey', 'cert')
+
         for record in self.filtered(
             lambda attempt: (
-                attempt.survey_type == 'exam'
+                attempt.survey_type in target_types
                 and not attempt.test_entry
                 and attempt.state == 'done'
             )
         ):
+            if not record.channel_id and record.slide_id:
+                record.channel_id = record.slide_id.channel_id
+
             if (
-                (not record.admission_id or not record.op_subject_id)
+                (not record.admission_id or not record.op_subject_id or not record.channel_partner_id)
                 and hasattr(record, 'compute_slide_channel_partner')
             ):
-                record.compute_slide_channel_partner()
+                record.with_context(irg_skip_gradebook_sync=True).compute_slide_channel_partner()
 
             if not (
                 record.partner_id
@@ -87,6 +92,10 @@ class SurveyUserInputExamSecondAttempt(models.Model):
                 or [record._irg_get_exam_score_for_gradebook()]
             )
 
+            result_survey_type = (
+                'assignment' if record.survey_type == 'assignment' else 'exam'
+            )
+
             result = record.result_id.filtered(
                 lambda res: res.gradebook_subject_id == gradebook_subject
             )[:1]
@@ -96,7 +105,7 @@ class SurveyUserInputExamSecondAttempt(models.Model):
                 # directos sobre app.gradebook.result.
                 result = self.env['app.gradebook.result'].sudo().search([
                     ('gradebook_subject_id', '=', gradebook_subject.id),
-                    ('survey_type', '=', 'exam'),
+                    ('survey_type', '=', result_survey_type),
                     ('survey_user_input_id', 'in', attempts.ids),
                 ], limit=1)
 
@@ -107,7 +116,7 @@ class SurveyUserInputExamSecondAttempt(models.Model):
                 'channel_partner_id': record.channel_partner_id.id,
                 'scoring_total': score_for_gradebook,
                 'gradebook_subject_id': gradebook_subject.id,
-                'survey_type': 'exam',
+                'survey_type': result_survey_type,
                 'description': '%s - %s' % (
                     record.admission_id.application_number or 'N/A',
                     record.course_id.name or 'N/A',
@@ -124,7 +133,7 @@ class SurveyUserInputExamSecondAttempt(models.Model):
             # libreta aunque el cierre venga desde el usuario portal. _write()
             # evita el write() singleton de isep_gradebook en recordsets de
             # varios intentos; la nota ya se actualizo arriba en result.write().
-            attempts.sudo()._write({
+            attempts.sudo().with_context(irg_skip_gradebook_sync=True)._write({
                 'result_id': result.id,
                 'gradebook_student_id': (
                     gradebook_student.id if gradebook_student else False
@@ -132,6 +141,22 @@ class SurveyUserInputExamSecondAttempt(models.Model):
                 'gradebook_subject_id': gradebook_subject.id,
                 'rated_by': self.env.user.partner_id.id or False,
             })
+            attempts.invalidate_recordset(['result_id', 'gradebook_student_id', 'gradebook_subject_id', 'rated_by'])
+
+    def action_sync_pending_survey_gradebooks(self):
+        """
+        Acción para sincronizar masivamente intentos de encuestas/cuestionarios/certificaciones
+        completados que aún no tienen result_id en libreta.
+        """
+        pending_attempts = self.search([
+            ('survey_type', 'in', ('exam', 'assignment', 'survey', 'cert')),
+            ('state', '=', 'done'),
+            ('test_entry', '=', False),
+            ('result_id', '=', False),
+        ])
+        _logger.info("Sincronizando %s intentos pendientes a libretas", len(pending_attempts))
+        pending_attempts._irg_sync_exam_gradebook_result()
+        return len(pending_attempts)
 
     def _irg_should_sync_exam_gradebook(self, values):
         if self.env.context.get('irg_skip_gradebook_sync'):

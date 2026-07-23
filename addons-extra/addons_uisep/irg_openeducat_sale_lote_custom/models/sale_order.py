@@ -8,6 +8,11 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    irg_is_intensive = fields.Boolean(
+        string='Es Intensivo',
+        help='Marcar si este presupuesto corresponde a la modalidad Curso Intensivo.',
+    )
+
     def get_lot_id(self, course_id):
         # We are overriding the method to apply the specific logic requested
         # If the original method was smaller or split, we could call super(), 
@@ -35,26 +40,32 @@ class SaleOrder(models.Model):
         prefix_02 = 'GE'
         matching_line = line
 
+        if self.irg_is_intensive or (matching_line and getattr(matching_line, 'irg_is_intensive', False)):
+            prefix_02 = 'IN'
+
         if matching_line:
             # Prefer the category code from the line's product
             if matching_line.product_id.categ_id.code:
                 profix_01 = matching_line.product_id.categ_id.code
             
-            if matching_line.product_id.product_template_attribute_value_ids:
+            if prefix_02 != 'IN' and matching_line.product_id.product_template_attribute_value_ids:
                 for ptav in matching_line.product_id.product_template_attribute_value_ids:
                     if ptav.attribute_id.name == 'Modalidad':
                         modalidad_name = ptav.product_attribute_value_id.name
                         _logger.info("IRG Custom Logic: Found Modalidad: %s", modalidad_name)
                         
+                        val_code = getattr(ptav.product_attribute_value_id, 'code', False) or getattr(ptav, 'code', False)
                         if modalidad_name == 'Online':
                             prefix_02 = 'ONL'
                         elif modalidad_name == 'HomeClass':
                             prefix_02 = 'HC'
                         elif modalidad_name == 'Presencial':
                             prefix_02 = 'PRS'
+                        elif modalidad_name in ('Intensivo', 'Curso Intensivo', 'Cursos Intensivos', 'IN') or val_code == 'IN' or 'INTENSIV' in (modalidad_name or '').upper():
+                            prefix_02 = 'IN'
                         else:
-                            if ptav.code:
-                                prefix_02 = ptav.code
+                            if val_code:
+                                prefix_02 = val_code
                             else:
                                 prefix_02 = modalidad_name[:3].upper() if modalidad_name else 'GE'
                         break
@@ -71,15 +82,18 @@ class SaleOrder(models.Model):
                 
                 if is_match:
                     matching_line = l
+                    if getattr(l, 'irg_is_intensive', False):
+                        prefix_02 = 'IN'
                     # If we found the line, we prefer the category code from the line's product
                     if l.product_id.categ_id.code:
                         profix_01 = l.product_id.categ_id.code
                     
-                    if l.product_id.product_template_attribute_value_ids:
+                    if prefix_02 != 'IN' and l.product_id.product_template_attribute_value_ids:
                         for ptav in l.product_id.product_template_attribute_value_ids:
                             if ptav.attribute_id.name == 'Modalidad':
                                 # Custom logic for Modalidad code
                                 modalidad_name = ptav.product_attribute_value_id.name
+                                val_code = getattr(ptav.product_attribute_value_id, 'code', False) or getattr(ptav, 'code', False)
                                 _logger.info("IRG Custom Logic: Found Modalidad: %s", modalidad_name)
                                 
                                 if modalidad_name == 'Online':
@@ -88,9 +102,11 @@ class SaleOrder(models.Model):
                                     prefix_02 = 'HC'
                                 elif modalidad_name == 'Presencial':
                                     prefix_02 = 'PRS'
+                                elif modalidad_name in ('Intensivo', 'Curso Intensivo', 'Cursos Intensivos', 'IN') or val_code == 'IN' or 'INTENSIV' in (modalidad_name or '').upper():
+                                    prefix_02 = 'IN'
                                 else:
-                                    if ptav.code:
-                                        prefix_02 = ptav.code
+                                    if val_code:
+                                        prefix_02 = val_code
                                     else:
                                         prefix_02 = modalidad_name[:3].upper() if modalidad_name else 'GE'
                                 break
@@ -155,7 +171,19 @@ class SaleOrder(models.Model):
                 template_name = (course_id.product_template_id.name or '').lower()
 
             combined_names = f"{course_name} {product_name} {template_name}"
-            if 'oficial' in combined_names:
+            
+            has_oficial_line = False
+            if self.order_line:
+                for l in self.order_line:
+                    l_pname = (l.product_id.name or '').lower() if l.product_id else ''
+                    l_tname = (l.product_id.product_tmpl_id.name or '').lower() if (l.product_id and l.product_id.product_tmpl_id) else ''
+                    l_desc = (l.name or '').lower()
+                    l_cname = (l.product_id.categ_id.name or '').lower() if (l.product_id and l.product_id.categ_id) else ''
+                    if 'oficial' in f"{l_pname} {l_tname} {l_desc} {l_cname}":
+                        has_oficial_line = True
+                        break
+
+            if 'oficial' in combined_names or has_oficial_line:
                 profix_01 = 'MO'
             else:
                 profix_01 = 'MP'
@@ -214,13 +242,21 @@ class SaleOrder(models.Model):
                 hc_mod = self.env['op.modality'].search([('name', '=ilike', 'HomeClass')], limit=1)
                 if hc_mod:
                     lot_values['modality_id'] = hc_mod.id
+            elif prefix_02 == 'ONL':
+                onl_mod = self.env['op.modality'].search([('name', '=ilike', 'Online')], limit=1)
+                if onl_mod:
+                    lot_values['modality_id'] = onl_mod.id
+            elif prefix_02 == 'IN':
+                in_mod = self.env['op.modality'].search(['|', ('code', '=ilike', 'IN'), '|', ('name', '=ilike', 'Intensivo'), '|', ('name', '=ilike', 'Curso Intensivo'), ('name', '=ilike', 'Cursos Intensivos')], limit=1)
+                if in_mod:
+                    lot_values['modality_id'] = in_mod.id
 
-            if prefix_02 in ['HC', 'PRS', 'ONL']:
+            if prefix_02 in ['HC', 'PRS', 'ONL', 'IN']:
                 batch_start_date = date.replace(day=1)
             else:
                 batch_start_date = date
 
-            if prefix_02 in ('HC', 'ONL'):
+            if prefix_02 in ('HC', 'ONL', 'IN'):
                 course_code = (course_id.code or '').strip().upper()
                 duration_months = 24 if course_code == 'NC' else 16
                 batch_end_date = batch_start_date + relativedelta(months=duration_months, days=-1)
@@ -228,7 +264,7 @@ class SaleOrder(models.Model):
                 # Class start date
                 if prefix_02 == 'HC':
                     date_start_class = batch_start_date + relativedelta(days=(4 - batch_start_date.weekday()) % 7)
-                else:  # ONL
+                else:  # ONL, IN
                     date_start_class = batch_start_date
 
                 lot_values.update({
@@ -275,3 +311,13 @@ class SaleOrder(models.Model):
                         lot_id.write(vals_to_write)
             
         return lot_id
+
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    irg_is_intensive = fields.Boolean(
+        string='Es Intensivo',
+        help='Marcar si esta línea corresponde a la modalidad Curso Intensivo.',
+    )
+

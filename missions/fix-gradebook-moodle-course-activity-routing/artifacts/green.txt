@@ -1,0 +1,29 @@
+# GREEN — irg_gradebook_moodle_routing
+
+Fecha: 2026-07-22
+
+Comando final:
+
+```text
+docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f missions/fix-gradebook-moodle-course-activity-routing/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing --test-enable --test-tags /irg_gradebook_moodle_routing --stop-after-init --log-level=test
+```
+
+Resultado: exit 0; 11 métodos, 13 tests/subtests; 0 fallos y 0 errores.
+La carga del upgrade incluyó `security/ir.model.access.csv` y
+`views/moodle_routing_views.xml`. No se ejecutaron los CSV reales ni se
+realizaron llamadas Moodle.
+
+Checks estáticos finales:
+
+```text
+python3 -m compileall -q addons-extra/extrairg/irg_gradebook_moodle_routing
+AST manifest: pass
+XML parse: pass
+ACL CSV parse: pass
+git diff --check: pass
+whitespace scan de archivos untracked: pass
+```
+
+El contenedor efímero usó el overlay del worktree. El servicio compartido
+permaneció montando
+`/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra`.

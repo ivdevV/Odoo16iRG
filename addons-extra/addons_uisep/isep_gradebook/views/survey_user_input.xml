@@ -15,7 +15,7 @@
                 </xpath>
 
                 <xpath expr="//notebook" position="inside">
-                    <page string="Libreta" groups="base.group_no_one" attrs="{'invisible': [('survey_type','not in', ('exam','assignment') )]}"   >
+                    <page string="Libreta" groups="base.group_no_one" attrs="{'invisible': [('survey_type','not in', ('exam','assignment','survey','cert') )]}"   >
                         <group>
                             <field name="channel_partner_id"/>
                             <field name="admission_id"/>
@@ -33,12 +33,12 @@
 
                 <xpath expr="//button[@name='action_print_answers']" position="after">
                      <field name="result_id" invisible="1" />
-                    <button name='send_result' confirm="Una calificación enviada no puede ser modificada. Verifique que la calificación este actualizada." string='Enviar a Libreta'  attrs="{'invisible': ['|',('survey_type','not in', ('exam','assignment')) , ('result_id','!=', False)  ]}"   class="btn btn-info" type='object'/>
+                    <button name='send_result' confirm="Una calificación enviada no puede ser modificada. Verifique que la calificación este actualizada." string='Enviar a Libreta'  attrs="{'invisible': ['|',('survey_type','not in', ('exam','assignment','survey','cert')) , ('result_id','!=', False)  ]}"   class="btn btn-info" type='object'/>
                 </xpath>
 
                 <xpath expr="//notebook/page/field[@name='user_input_line_ids']/tree/field[@name='question_sequence']" position="before">
                         <button name='open_result' string='Calificar' 
-                        attrs="{'column_invisible': ['|',('parent.survey_type','not in', ('exam','assignment') ) , ('parent.result_id','!=', False)  ]}"  
+                        attrs="{'column_invisible': ['|',('parent.survey_type','not in', ('exam','assignment','survey','cert') ) , ('parent.result_id','!=', False)  ]}"  
                         class="btn btn-info" type='object'/>
                 </xpath>
             </field>

@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "task": "fix_oficialidad_line_mo_prefix",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "command": "docker exec -i odoo16irg_local odoo shell -c /etc/odoo/odoo.conf -d test_irg_db",
+      "result": "pass",
+      "detail": "3 passed, 0 failed",
+      "evidence": "missions/fix_oficialidad_line_mo_prefix/artifacts/unit-tests.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_db",
+    "base_commit": "HEAD"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "missions/fix_oficialidad_line_mo_prefix/artifacts/unit-tests.txt"
+  ]
+}

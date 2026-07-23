@@ -1,0 +1,46 @@
+# Independent final code review — initial gate
+
+Date: 2026-07-22
+Reviewer: independent final reviewer, complex-tier capacity
+Result: CHANGES_REQUIRED
+
+Critical: 0
+Important: 3
+Minor: 0
+
+1. The CSV reader did not enable strict parsing, so an unmatched quote could
+   absorb subsequent rows instead of blocking a malformed file.
+2. The read-only preview contained row statistics but omitted the required
+   course-map, subject-map and activity create/update counts.
+3. The flat subject-map tree did not display the active state required by the
+   approved design.
+
+Static checks performed by the reviewer passed: Python AST and manifest, XML
+well-formedness and `git diff --check`. Scope remained limited to the new addon
+and no `sudo`, `commit`, `unlink` or cell evaluation was found.
+
+Gate status: failed; implementation reopened before validation.
+
+## Independent re-review after fixes
+
+Date: 2026-07-22
+Result: APPROVED
+
+Critical: 0
+Important: 0
+Minor: 0
+
+The reviewer confirmed all three blocking findings are resolved: strict CSV
+parsing with malformed-quote regression, a read-only create/update preview
+whose branches match apply behavior (including inactive records and blank
+activity names), and the active field in the flat subject tree with explicit
+view coverage.
+
+The complete addon was re-reviewed: isolation in the new addon, structural
+preflight, just-in-time Odoo revalidation, conservative/idempotent upserts,
+administrator ACL and server guards, upload limits, bounded shell adapter and
+runtime XML were approved. Fresh AST, manifest, XML and whitespace checks
+passed; existing addons had no diff; no `sudo`, `commit`, `unlink` or cell
+evaluation was found.
+
+Final review gate status: passed. Independent validation may begin.

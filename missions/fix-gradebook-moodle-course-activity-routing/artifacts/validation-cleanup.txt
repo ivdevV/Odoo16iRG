@@ -1,0 +1,7 @@
+Limpieza y restauración tras corrección documental — 2026-07-22
+
+- Los comandos de upgrade/test e import se ejecutaron con docker compose run --rm --no-deps y overlay del worktree.
+- Tras cada ejecución no quedó ningún contenedor odoo_local-run activo.
+- Inspección del servicio compartido odoo16irg_local: /mnt/extra-addons sigue montando /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra en modo solo lectura.
+- Por tanto el servicio compartido no quedó apuntando al worktree.
+- Se comprobó Git tras repetir todos los gates: no hay archivos staged ni cambios tracked; permanecen como untracked `.superpowers/`, el addon puente, la misión y la entrada de knowledge de esta misión. No se hizo commit, push ni PR.

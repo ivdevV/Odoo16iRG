@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "task": "fix-gradebook-moodle-course-activity-routing",
+  "checks": [
+    {
+      "name": "odoo_upgrade_and_addon_tests",
+      "command": "docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f missions/fix-gradebook-moodle-course-activity-routing/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing --test-enable --test-tags /irg_gradebook_moodle_routing --stop-after-init --log-level=test",
+      "result": "pass",
+      "detail": "Exit 0; 20 métodos / 22 tests y subtests, 0 fallos y 0 errores. Captura completa del upgrade sin coincidencias docutils, ERROR/3 ni WARNING/2 atribuibles al README.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "static_python_manifest_xml_acl_scope_and_diff",
+      "command": "python3 -m compileall -q addons-extra/extrairg/irg_gradebook_moodle_routing; manifest AST; XML parser; CSV ACL check; git diff --check; git diff --check --no-index /dev/null sobre archivos funcionales no versionados",
+      "result": "pass",
+      "detail": "Python, manifest, XML, ACL, alcance de 12 archivos funcionales más README, contrato documental, diff tracked y diff whitespace de los 13 archivos no versionados pasan.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "real_csv_import_reversible_smoke",
+      "command": "docker compose ... run -T --rm --no-deps -v /Users/ivrogo/Downloads:/mnt/moodle-routing-csv:ro odoo_local odoo shell -c /etc/odoo/odoo.conf -d test_irg_db --no-http; run_import con los tres CSV y SAVEPOINT/ROLLBACK explícito",
+      "result": "pass",
+      "detail": "Parsing y autorizaciones ejecutados; 1/36 quedó sin mapa; rollback confirmado. test_irg_db carece de los registros Odoo fuente, por lo que no creó mapas reales durante el smoke.",
+      "evidence": "artifacts/validation-import-smoke.json"
+    },
+    {
+      "name": "malformed_online_marker_rejection_smoke",
+      "command": "odoo shell en test_irg_db; run_import con tres filas sintéticas malformadas dentro de TemporaryDirectory y SAVEPOINT/ROLLBACK explícito",
+      "result": "pass",
+      "detail": "Las 3 filas fueron descartadas como invalid_online_marker; 0 mapas creados/actualizados, conteos invariables y rollback confirmado.",
+      "evidence": "artifacts/validation-marker-smoke.json"
+    },
+    {
+      "name": "worktree_cleanup_service_restore_and_git_state",
+      "command": "docker ps; docker inspect odoo16irg_local; git status --short; git diff --check",
+      "result": "pass",
+      "detail": "No quedaron contenedores efímeros; el servicio compartido conserva el montaje del checkout principal; no hay stage, commit, push ni PR.",
+      "evidence": "artifacts/validation-cleanup.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml + missions/fix-gradebook-moodle-course-activity-routing/docker-compose.worktree.yml",
+    "database": "test_irg_db",
+    "base_commit": "8656ad1f4182f5ca23a51ced75282c012e960f02"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/validation-static.txt",
+    "artifacts/validation-import-smoke.json",
+    "artifacts/validation-marker-smoke.json",
+    "artifacts/validation-cleanup.txt"
+  ]
+}

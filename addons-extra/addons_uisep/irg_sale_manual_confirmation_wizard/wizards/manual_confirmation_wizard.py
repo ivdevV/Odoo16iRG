@@ -239,6 +239,9 @@ class ManualConfirmationWizard(models.TransientModel):
         return course
 
     def _detect_line_modalidad(self, line, course_id):
+        if getattr(line, 'irg_is_intensive', False) or (line.order_id and getattr(line.order_id, 'irg_is_intensive', False)):
+            return 'IN'
+
         if not course_id:
             pt = line.product_template_id
             is_di = False
@@ -282,12 +285,15 @@ class ManualConfirmationWizard(models.TransientModel):
         for ptav in line.product_id.product_template_attribute_value_ids:
             if ptav.attribute_id.name == 'Modalidad':
                 name = (ptav.product_attribute_value_id.name or '').strip()
+                code = getattr(ptav.product_attribute_value_id, 'code', False) or getattr(ptav, 'code', False)
                 if name == 'Online':
                     return 'ONL'
                 if name == 'HomeClass':
                     return 'HC'
                 if name == 'Presencial':
                     return 'PRS'
+                if name in ('Intensivo', 'Curso Intensivo', 'Cursos Intensivos', 'IN') or code == 'IN' or 'INTENSIV' in name.upper():
+                    return 'IN'
                 return name[:3].upper() if name else 'GE'
         return 'GE'
 
@@ -347,7 +353,20 @@ class ManualConfirmationWizard(models.TransientModel):
             if not template_name and course_id.product_template_id:
                 template_name = (course_id.product_template_id.name or '').lower()
             combined_names = f"{course_name} {product_name} {template_name}"
-            profix_01 = 'MO' if 'oficial' in combined_names else 'MP'
+
+            has_oficial_line = False
+            order = line.order_id if line else False
+            if order and order.order_line:
+                for l in order.order_line:
+                    l_pname = (l.product_id.name or '').lower() if l.product_id else ''
+                    l_tname = (l.product_id.product_tmpl_id.name or '').lower() if (l.product_id and l.product_id.product_tmpl_id) else ''
+                    l_desc = (l.name or '').lower()
+                    l_cname = (l.product_id.categ_id.name or '').lower() if (l.product_id and l.product_id.categ_id) else ''
+                    if 'oficial' in f"{l_pname} {l_tname} {l_desc} {l_cname}":
+                        has_oficial_line = True
+                        break
+
+            profix_01 = 'MO' if ('oficial' in combined_names or has_oficial_line) else 'MP'
 
         is_diplomado = False
         if categ:

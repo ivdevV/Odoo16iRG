@@ -11,6 +11,17 @@ class TestRegisterDateValidation(TransactionCase):
     def setUp(self):
         super(TestRegisterDateValidation, self).setUp()
 
+        lang = self.env['res.lang'].with_context(active_test=False).search([('code', '=', 'es_ES')])
+        if lang and not lang.active:
+            lang.write({'active': True})
+        elif not lang:
+            self.env['res.lang'].create({
+                'name': 'Spanish (ES)',
+                'code': 'es_ES',
+                'iso_code': 'es',
+                'direction': 'ltr',
+            })
+
         # Create a product template
         self.product_template = self.env['product.template'].create({
             'name': 'Test Academic Program Product',
@@ -24,6 +35,7 @@ class TestRegisterDateValidation(TransactionCase):
         self.course = self.env['op.course'].create({
             'name': 'Test Course for Date Validation',
             'code': 'T-CDV-01',
+            'lang': 'es_ES',
             'product_template_id': self.product_template.id,
         })
 
@@ -347,6 +359,7 @@ class TestRegisterDateValidation(TransactionCase):
         course_oficial = self.env['op.course'].create({
             'name': 'Máster Oficial en Sexología Clínica',
             'code': 'MSC_MO',
+            'lang': 'es_ES',
         })
         pt_oficial = self.env['product.template'].create({
             'name': 'Test Academic Program Product Oficial',
@@ -372,6 +385,7 @@ class TestRegisterDateValidation(TransactionCase):
         course_master = self.env['op.course'].create({
             'name': 'Máster en Sexología Clínica',
             'code': 'MSC_MP',
+            'lang': 'es_ES',
         })
         pt_master = self.env['product.template'].create({
             'name': 'Test Academic Program Product Master',
@@ -409,6 +423,7 @@ class TestRegisterDateValidation(TransactionCase):
         course = self.env['op.course'].create({
             'name': 'Máster en Psicología Clínica y de la Salud',
             'code': 'PC',
+            'lang': 'es_ES',
             'product_template_id': pt.id,
         })
         so = self.env['sale.order'].create({
@@ -434,7 +449,8 @@ class TestRegisterDateValidation(TransactionCase):
 
         course_oficial = self.env['op.course'].create({
             'name': 'Máster Oficial en Psicología Clínica y de la Salud',
-            'code': 'PC',
+            'code': 'PCO',
+            'lang': 'es_ES',
             'product_template_id': pt.id,
         })
         preview_oficial = wizard._build_line_batch_code_preview(
@@ -442,6 +458,71 @@ class TestRegisterDateValidation(TransactionCase):
         self.assertTrue(
             preview_oficial.startswith('MOPC'),
             f"Official master HC preview should start with MOPC, got {preview_oficial}")
+
+    def test_master_batch_prefix_with_oficialidad_line(self):
+        """When a master product itself does not contain 'Oficial' in its name,
+        but the Sale Order includes an extra line for 'Oficialidad', both
+        get_lot_id and the wizard preview must yield 'MO' instead of 'MP'.
+        """
+        master_category = self.env['product.category'].create({
+            'name': 'Máster',
+            'code': 'M',
+        })
+        pt_master = self.env['product.template'].create({
+            'name': 'Máster en Psicología Clínica y de la Salud',
+            'type': 'service',
+            'is_academic_program': True,
+            'recurring_invoice': True,
+            'categ_id': master_category.id,
+            'course_type': 'classroom',
+        })
+        course = self.env['op.course'].create({
+            'name': 'Máster en Psicología Clínica y de la Salud',
+            'code': 'PC',
+            'lang': 'es_ES',
+            'product_template_id': pt_master.id,
+        })
+        pt_oficialidad = self.env['product.template'].create({
+            'name': 'Oficialidad',
+            'type': 'service',
+        })
+
+        so = self.env['sale.order'].create({
+            'partner_id': self.env.ref('base.partner_admin').id,
+            'order_line': [(0, 0, {
+                'product_id': pt_master.product_variant_id.id,
+                'product_uom_qty': 1,
+                'price_unit': 7200,
+            })],
+        })
+        line = so.order_line[0]
+
+        # Before adding Oficialidad line: should be MP
+        batch_before = so.get_lot_id(course)
+        self.assertTrue(batch_before.code.startswith('MPPC'), f"Expected MPPC before adding Oficialidad line, got {batch_before.code}")
+
+        wizard = self.env['irg.manual.confirmation.wizard'].create({
+            'order_id': so.id,
+            'admission_date': fields.Date.to_date('2027-05-15'),
+        })
+        preview_before = wizard._build_line_batch_code_preview(line, course, 'HC', fields.Date.to_date('2027-05-15'))
+        self.assertTrue(preview_before.startswith('MPPC'), f"Expected wizard preview MPPC before adding Oficialidad line, got {preview_before}")
+
+        # Now add the 'Oficialidad' line
+        self.env['sale.order.line'].create({
+            'order_id': so.id,
+            'product_id': pt_oficialidad.product_variant_id.id,
+            'product_uom_qty': 1,
+            'price_unit': 950,
+        })
+
+        # After adding Oficialidad line: should be MO
+        batch_after = so.get_lot_id(course)
+        self.assertTrue(batch_after.code.startswith('MOPC'), f"Expected MOPC after adding Oficialidad line, got {batch_after.code}")
+
+        preview_after = wizard._build_line_batch_code_preview(line, course, 'HC', fields.Date.to_date('2027-05-15'))
+        self.assertTrue(preview_after.startswith('MOPC'), f"Expected wizard preview MOPC after adding Oficialidad line, got {preview_after}")
+
 
     def test_native_confirmation_es_ES_no_batch_creation(self):
         """Test that native confirmation of a sale order with an es_ES course:

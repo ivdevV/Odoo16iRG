@@ -1,0 +1,25 @@
+# RED — irg_gradebook_moodle_routing
+
+Fecha: 2026-07-22
+
+Comando:
+
+```text
+docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml -f missions/fix-gradebook-moodle-course-activity-routing/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing --test-enable --test-tags /irg_gradebook_moodle_routing --stop-after-init --log-level=test
+```
+
+Resultado esperado: exit 1; 10 métodos, 12 tests/subtests; 11 fallos y 1
+error. El addon y los tests se descubrieron correctamente. Los fallos
+demostraron la ausencia de clasificación, constraints, routing, filtrado por
+padre, importación, vistas y ACL. El error de selección correspondió al
+placeholder explícito de `_irg_resolve_course_map`.
+
+Microciclo de seguridad posterior:
+
+```text
+--test-tags /irg_gradebook_moodle_routing:TestMoodleRouting.test_routing_preserves_server_side_access_guard
+```
+
+Resultado esperado: exit 1; el override produjo `UserError` de modalidad
+antes del `AccessError` canónico. Esta evidencia motivó mover el guard
+server-side antes de resolver el routing.

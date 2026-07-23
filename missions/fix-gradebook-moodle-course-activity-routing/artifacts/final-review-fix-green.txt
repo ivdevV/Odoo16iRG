@@ -1,0 +1,14 @@
+Command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos\ iRG/Odoo16iRG/docker-compose.local.yml -f missions/fix-gradebook-moodle-course-activity-routing/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing --test-enable --test-tags /irg_gradebook_moodle_routing --stop-after-init --log-level=test
+
+Result: exit 0
+Suite: 20 methods / 22 tests and subtests
+Failures: 0
+Errors: 0
+
+Static verification:
+- compileall, manifest AST, XML and ACL parsing: pass
+- whitespace scan and git diff checks, including untracked files: pass
+- destructive `(5, 0, 0)` / `Command.clear()` reset scan: pass
+- worktree overlay and shared-container mount restoration: pass
+- Git index empty; no stage, commit, push or PR performed

@@ -184,12 +184,12 @@ class OpAdmission(models.Model):
 
             student_user = self.env['res.users'].sudo().create(vals)
 
+            student_birth = student.birth_date or (self.partner_id and self.partner_id.birth_date)
             details = {
                 'title': student.title and student.title.id or False,
                 'first_name': student.first_name,
                 'middle_name': student.middle_name,
                 'last_name': student.last_name,
-                'birth_date': student.birth_date,
                 'gender': student.gender,
                 'image_1920': student.image or False,
                 'course_detail_ids': [[0, False, {
@@ -209,6 +209,8 @@ class OpAdmission(models.Model):
                 'company_id': self.company_id.id,
                 'partner_id': student_user.partner_id.id,
             }
+            if student_birth:
+                details['birth_date'] = student_birth
             # student_user.with_context(create_user=1).sudo().action_reset_password()
             # student_user.action_reset_password()
             return details
@@ -230,18 +232,20 @@ class OpAdmission(models.Model):
             student_id = self.env['op.student'].sudo().search([('user_id','=', user_id)], limit=1)
             if not student_id:
                 # student_user.partner_id.write(details)
+                adm_birth = self.birth_date or (partner_id and partner_id.birth_date)
                 details = {
                     'title': self.title and self.title.id or False,
                     'first_name': self.first_name,
                     'middle_name': self.middle_name,
                     'last_name': self.last_name,
-                    'birth_date': self.birth_date,
                     'gender': self.gender,
                     'image_1920': self.image or False,
                     'user_id': result_search.id,
                     'company_id': self.company_id.id,
                     'partner_id': partner_id.id,
                 }
+                if adm_birth:
+                    details['birth_date'] = adm_birth
                 student_id = self.env['op.student'].create(details)
 
             self.is_student = True

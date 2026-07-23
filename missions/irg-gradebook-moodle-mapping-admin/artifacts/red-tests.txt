@@ -1,0 +1,228 @@
+Task 2 RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingAdminModels --stop-after-init --log-level=test --no-http
+
+Exit code: 1
+
+Relevant output:
+2026-07-22 12:27:47,754 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_mapping_admin.tests.test_mapping_admin_models: Starting TestMappingAdminModels.test_course_and_subject_context_fields ...
+2026-07-22 12:27:47,756 1 ERROR test_irg_db odoo.addons.irg_gradebook_moodle_mapping_admin.tests.test_mapping_admin_models: ERROR: TestMappingAdminModels.test_course_and_subject_context_fields
+AttributeError: 'irg.gradebook.moodle.course.map' object has no attribute 'irg_op_course_database_id'
+2026-07-22 12:27:47,900 1 ERROR test_irg_db odoo.tests.result: 0 failed, 1 error(s) of 1 tests when loading database 'test_irg_db'
+
+The test failed for the expected reason: the requested `irg_*` presentation
+fields do not yet exist.
+
+Task 3 RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis --stop-after-init --log-level=test --no-http
+
+Exit code: 255
+
+Relevant output:
+```text
+File "/mnt/extra-addons/extrairg/irg_gradebook_moodle_mapping_admin/tests/test_mapping_import_analysis.py", line 7, in <module>
+  from ..services.mapping_import import (
+ModuleNotFoundError: No module named 'odoo.addons.irg_gradebook_moodle_mapping_admin.services'
+CRITICAL test_irg_db odoo.service.server: Failed to initialize database `test_irg_db`.
+```
+
+The test failed for the expected reason: the Task 3 production service did
+not yet exist.
+
+Task 3 review fix RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis.test_skips_very_long_ascii_id_without_raising --stop-after-init --log-level=test --no-http
+
+Exit code: 1
+
+Relevant output:
+```text
+Starting TestMappingImportAnalysis.test_skips_very_long_ascii_id_without_raising ...
+ERROR: TestMappingImportAnalysis.test_skips_very_long_ascii_id_without_raising
+File ".../services/mapping_import.py", line 74, in _parse_id
+  identifier = int(token)
+ValueError: Exceeds the limit (4300) for integer string conversion: value has 5000 digits
+0 failed, 1 error(s) of 1 tests
+```
+
+The regression failed for the expected reason: `_parse_id` converted the
+unbounded ASCII digit token before checking the global ID range.
+
+Task 4 RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportApply --stop-after-init --log-level=test --no-http
+
+Exit code: 1
+
+Relevant output:
+```text
+Starting TestMappingImportApply.test_creates_multiple_course_subject_and_activity_maps ...
+AttributeError: 'MappingImportService' object has no attribute 'apply_plan'
+Starting TestMappingImportApply.test_orm_failure_rolls_back_the_complete_application ...
+AttributeError: 'MappingImportService' object has no attribute '_upsert_activities'
+0 failed, 5 error(s) of 5 tests
+```
+
+The apply suite failed for the expected reason: the transactional apply API
+and its activity upsert did not yet exist.
+
+Task 4 source-metadata amendment RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportApply --stop-after-init --log-level=test --no-http
+
+Exit code: 1
+
+Relevant output:
+```text
+TypeError: CourseOperation.__init__() takes 4 positional arguments but 5 were given
+AttributeError: 'CourseOperation' object has no attribute 'op_course_name'
+AttributeError: 'SubjectOperation' object has no attribute 'op_subject_name'
+AttributeError: 'SubjectOperation' object has no attribute 'op_subject_code'
+0 failed, 8 error(s) of 8 tests
+```
+
+The amended tests failed for the expected reason: the immutable operations did
+not yet retain source Odoo names/code, so concurrent identity changes could not
+be revalidated by `apply_plan`.
+
+Task 4 review fix: conflicting subject parent RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis.test_skips_subject_row_with_conflicting_course_parent' --stop-after-init --log-level=test --no-http
+
+Exit code: 1
+
+Relevant output:
+```text
+Starting TestMappingImportAnalysis.test_skips_subject_row_with_conflicting_course_parent ...
+FAIL: TestMappingImportAnalysis.test_skips_subject_row_with_conflicting_course_parent
+AssertionError: 341 != 340
+1 failed, 0 error(s) of 1 tests
+```
+
+The later row replaced the first subject operation with the conflicting Odoo
+course parent instead of omitting the row.
+
+Task 4 review fix: apply-plan structural preflight RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_mapping_admin:TestMappingImportApply' --stop-after-init --log-level=test --no-http
+
+Exit code: 1
+
+Relevant output:
+```text
+FAIL: test_preflight_rejects_invalid_root_and_containers
+FAIL: test_preflight_rejects_duplicate_course_and_subject_keys
+FAIL: test_preflight_rejects_error_in_final_element_without_partial_writes
+FAIL: test_preflight_rejects_invalid_identifiers
+ERROR: test_preflight_rejects_malformed_members_before_revalidation
+AttributeError: 'object' object has no attribute 'op_course_id'
+FAIL: test_preflight_rejects_parent_and_activity_contract_violations
+15 failed, 1 error(s) of 14 tests
+```
+
+The suite demonstrated that structural failures could reach ORM revalidation
+or upserts, duplicate/empty structures were accepted, and a malformed subject
+escaped as `AttributeError` instead of a sanitized `ValidationError`.
+
+Task 4 scalar metadata preflight RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_mapping_admin:TestMappingImportApply.test_preflight_rejects_malformed_members_before_revalidation' --stop-after-init --log-level=test --no-http
+
+Exit code: 1
+
+Relevant output:
+```text
+ERROR: Subtest ... (case='course_metadata_type')
+AttributeError: 'object' object has no attribute 'strip'
+ERROR: Subtest ... (case='subject_metadata_type')
+AttributeError: 'object' object has no attribute 'strip'
+0 failed, 2 error(s) of 1 tests
+```
+
+Static review exposed eager evaluation inside `all(...)`: `.strip()` ran before
+the preceding type predicate could reject malformed scalar metadata.
+
+Task 5 wizard RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportWizard --stop-after-init --log-level=test --no-http
+
+Exit code: 1
+
+Relevant output:
+```text
+ERROR: setUpClass (TestMappingImportWizard)
+KeyError: 'irg.gradebook.moodle.mapping.import.wizard'
+0 failed, 1 error(s) of 0 tests
+```
+
+The security/workflow tests were loaded before production implementation and
+failed for the expected reason: the transient wizard model did not exist.
+
+Task 5 review minors RED — 2026-07-22
+
+Focused translation command used the base compose, worktree overlay,
+`run --rm`, `--no-http` and these two tags:
+`test_summary_translates_fixed_reason_keys_to_spanish_labels` and
+`test_service_errors_are_fixed_spanish_messages_without_source_echo`.
+
+Exit code: 1
+
+```text
+FAIL: test_service_errors_are_fixed_spanish_messages_without_source_echo
+Expected: El CSV de cursos no contiene todas las cabeceras obligatorias
+Actual: No se pudieron analizar los CSV: CSV courses: missing required header(s)
+FAIL: test_summary_translates_fixed_reason_keys_to_spanish_labels
+Actual summary exposed blank_row, no_activity_ids,
+activity_name_count_mismatch and duplicate_activity_id
+2 failed, 0 error(s) of 2 tests
+```
+
+After the fixed message mapping passed, a privacy-focused RED checked exception
+chaining with a simulated parser error containing private row text:
+
+```text
+FAIL: test_service_errors_are_fixed_spanish_messages_without_source_echo
+AssertionError: ValueError('English parser failure: fila con Persona Privada')
+is not None
+1 failed, 0 error(s) of 1 tests
+```
+
+This proved that a sanitized visible message alone was insufficient while the
+original exception remained attached as an explicit cause.
+
+Task 6 shell adapter RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis --stop-after-init --no-http --log-level=test
+
+Exit code: 255
+
+Relevant output:
+```text
+ModuleNotFoundError: No module named
+'odoo.addons.irg_gradebook_moodle_mapping_admin.tools'
+Failed to initialize database `test_irg_db`.
+```
+
+The equivalence, absolute-path and bounded-read tests were loaded before the
+adapter existed and failed for the expected missing-package reason.
+
+Final review fixes RED — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis.test_unclosed_quote_after_valid_row_blocks_the_complete_analysis,/irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis.test_preview_counts_mixed_changes_without_writing_inactive_records,/irg_gradebook_moodle_mapping_admin:TestMappingImportWizard.test_validate_is_read_only_and_summary_is_deterministic,/irg_gradebook_moodle_mapping_admin:TestMappingImportWizard.test_acl_actions_menu_and_inherited_views_are_system_only' --stop-after-init --log-level=test --no-http
+
+Exit code: 1. Result: 4 post-tests, 3 failed and 1 error. The failures
+matched the three review findings: no parse error for an unclosed quote after
+a valid row; no `course_maps` preview in `ImportPlan.summary`; no preview text
+in the wizard; and no `active` field in the flat subject-map tree.

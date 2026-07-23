@@ -1,0 +1,13 @@
+Revalidación estática independiente tras corrección documental — 2026-07-22
+
+Resultado: PASS.
+
+- `python3 -m compileall -q addons-extra/extrairg/irg_gradebook_moodle_routing`: pass, con bytecode dirigido fuera del worktree.
+- Manifest AST: nombre, versión 16.0, dependencia `irg_gradebook_moodle_wizard` y entradas de datos requeridas: pass.
+- XML: parser estándar sobre `views/moodle_routing_views.xml`: pass.
+- ACL CSV: lectura interna; escritura/creación/borrado exclusivos de `base.group_system`: pass.
+- Alcance del addon: exactamente los 12 archivos funcionales declarados más `README.md`, sin archivos de producción fuera del addon puente: pass.
+- `git diff --check`: pass.
+- `git diff --check --no-index /dev/null` sobre cada uno de los 13 archivos no versionados del addon, evaluando su salida de whitespace: pass.
+- Scan del importador: sin `unlink` ni reset `(5, 0, 0)`: pass.
+- Contrato documental: el README describe exactamente `(ONLINE)` / `(ONLINE AAAA)` y el descarte `invalid_online_marker`: pass.

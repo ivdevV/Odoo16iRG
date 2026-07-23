@@ -8,6 +8,10 @@
             <xpath expr="//field[@name='category_id']" position="before">
                 <field name="gender" widget="radio" options="{'horizontal': true}"/>
             </xpath>
+            <!-- Moodle tab: username must not block contact edits -->
+            <xpath expr="//page[@name='moodle']//field[@name='username']" position="attributes">
+                <attribute name="required">0</attribute>
+            </xpath>
         </field>
     </record>
 </odoo>

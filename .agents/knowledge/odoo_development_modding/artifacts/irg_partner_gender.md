@@ -13,4 +13,4 @@ Módulo puente `irg_partner_gender`:
 3. `res.partner._irg_resolve_gender(order_gender, write_back)` — cascada y persistencia canónica `m`/`f`/`o`.
 4. `sale.order` resuelve género antes de `super()` en create admission.
 
-No editar módulos legacy; reutilizar heurística alineada con `irg_admission_gender_fix`.
+Clears Moodle `username` required=True on `res.partner` so contact gender can be edited without a Moodle username.

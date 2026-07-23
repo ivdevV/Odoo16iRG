@@ -1,0 +1,312 @@
+Task 2 GREEN — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -i irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingAdminModels --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+Relevant output:
+2026-07-22 12:28:30,396 1 INFO test_irg_db odoo.modules.registry: module irg_gradebook_moodle_mapping_admin: creating or updating database tables
+2026-07-22 12:28:30,517 1 INFO test_irg_db odoo.modules.loading: Module irg_gradebook_moodle_mapping_admin loaded in 0.30s, 60 queries (+60 other)
+2026-07-22 12:28:31,014 1 INFO test_irg_db odoo.addons.irg_gradebook_moodle_mapping_admin.tests.test_mapping_admin_models: Starting TestMappingAdminModels.test_course_and_subject_context_fields ...
+2026-07-22 12:28:31,150 1 INFO test_irg_db odoo.tests.result: 0 failed, 0 error(s) of 1 tests when loading database 'test_irg_db'
+
+The module installed successfully and the hierarchical context test passed.
+
+Task 3 GREEN — 2026-07-22
+
+Targeted command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+Relevant output:
+```text
+Starting TestMappingImportAnalysis.test_accepts_macroman_and_canonical_course_headers ...
+Starting TestMappingImportAnalysis.test_analyzes_utf8_bom_legacy_headers_without_writes ...
+Starting TestMappingImportAnalysis.test_deduplicates_and_merges_subject_rows_with_aligned_names ...
+Starting TestMappingImportAnalysis.test_rejects_ambiguous_course_aliases_per_row ...
+Starting TestMappingImportAnalysis.test_rejects_oversized_payload_and_missing_headers_safely ...
+Starting TestMappingImportAnalysis.test_skips_blank_no_activity_and_invalid_id_rows ...
+Starting TestMappingImportAnalysis.test_skips_invalid_course_ids_and_online_markers ...
+Starting TestMappingImportAnalysis.test_skips_missing_records_membership_names_code_and_pair ...
+irg_gradebook_moodle_mapping_admin: 10 tests
+0 failed, 0 error(s) of 8 tests
+```
+
+Task 2 + Task 3 regression command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+Relevant output:
+```text
+Starting TestMappingAdminModels.test_course_and_subject_context_fields ...
+Starting TestMappingImportAnalysis.test_accepts_macroman_and_canonical_course_headers ...
+Starting TestMappingImportAnalysis.test_analyzes_utf8_bom_legacy_headers_without_writes ...
+Starting TestMappingImportAnalysis.test_deduplicates_and_merges_subject_rows_with_aligned_names ...
+Starting TestMappingImportAnalysis.test_rejects_ambiguous_course_aliases_per_row ...
+Starting TestMappingImportAnalysis.test_rejects_oversized_payload_and_missing_headers_safely ...
+Starting TestMappingImportAnalysis.test_skips_blank_no_activity_and_invalid_id_rows ...
+Starting TestMappingImportAnalysis.test_skips_invalid_course_ids_and_online_markers ...
+Starting TestMappingImportAnalysis.test_skips_missing_records_membership_names_code_and_pair ...
+irg_gradebook_moodle_mapping_admin: 13 tests
+0 failed, 0 error(s) of 9 tests
+```
+
+The read-only test compared `search_count([])` before and after analysis for
+the course, subject and activity mapping models; all counts remained equal.
+
+Task 3 review fix GREEN — 2026-07-22
+
+Targeted command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis.test_skips_very_long_ascii_id_without_raising --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+Relevant output:
+```text
+Starting TestMappingImportAnalysis.test_skips_very_long_ascii_id_without_raising ...
+irg_gradebook_moodle_mapping_admin: 3 tests
+0 failed, 0 error(s) of 1 tests
+```
+
+Task 2 + Task 3 regression command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+Relevant output:
+```text
+Starting TestMappingAdminModels.test_course_and_subject_context_fields ...
+Starting TestMappingImportAnalysis.test_skips_very_long_ascii_id_without_raising ...
+irg_gradebook_moodle_mapping_admin: 14 tests
+0 failed, 0 error(s) of 10 tests
+```
+
+Task 4 GREEN — 2026-07-22
+
+Targeted command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportApply --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+Relevant output:
+```text
+Starting TestMappingImportApply.test_creates_multiple_course_subject_and_activity_maps ...
+Starting TestMappingImportApply.test_orm_failure_rolls_back_the_complete_application ...
+Starting TestMappingImportApply.test_reactivates_and_preserves_type_history_and_blank_names ...
+Starting TestMappingImportApply.test_rejects_concurrent_course_name_change_without_partial_writes ...
+Starting TestMappingImportApply.test_rejects_concurrent_subject_code_change_and_rolls_back_course ...
+Starting TestMappingImportApply.test_rejects_concurrent_subject_name_change_and_rolls_back_course ...
+Starting TestMappingImportApply.test_rerun_is_idempotent ...
+Starting TestMappingImportApply.test_revalidates_membership_and_parent_before_writes ...
+irg_gradebook_moodle_mapping_admin: 10 tests
+0 failed, 0 error(s) of 8 tests
+```
+
+Task 2–4 + routing final regression command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+Relevant output:
+```text
+38 post-tests
+irg_gradebook_moodle_mapping_admin: 24 tests
+irg_gradebook_moodle_routing: 22 tests
+0 failed, 0 error(s) of 38 tests
+```
+
+The final run includes source-metadata transport, normalized concurrent
+course/subject name and subject-code rejection, rollback, conservative upsert,
+Tasks 2–3 and all routing regressions.
+
+Task 4 review fixes GREEN — 2026-07-22
+
+Conflicting-parent targeted command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis.test_skips_subject_row_with_conflicting_course_parent' --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+```text
+Starting TestMappingImportAnalysis.test_skips_subject_row_with_conflicting_course_parent ...
+irg_gradebook_moodle_mapping_admin: 3 tests
+0 failed, 0 error(s) of 1 tests
+```
+
+Apply preflight targeted command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_mapping_admin:TestMappingImportApply' --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+```text
+Starting TestMappingImportApply.test_preflight_rejects_duplicate_course_and_subject_keys ...
+Starting TestMappingImportApply.test_preflight_rejects_error_in_final_element_without_partial_writes ...
+Starting TestMappingImportApply.test_preflight_rejects_invalid_identifiers ...
+Starting TestMappingImportApply.test_preflight_rejects_invalid_root_and_containers ...
+Starting TestMappingImportApply.test_preflight_rejects_malformed_members_before_revalidation ...
+Starting TestMappingImportApply.test_preflight_rejects_parent_and_activity_contract_violations ...
+irg_gradebook_moodle_mapping_admin: 16 tests
+0 failed, 0 error(s) of 14 tests
+```
+
+The invalid-plan assertions patch both ORM revalidation methods and all three
+upsert methods; every malformed plan raises `ValidationError` before any of
+them is called, and persistent mapping counts remain unchanged.
+
+Task 2–4 + routing regression after review fixes:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin' --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+```text
+45 post-tests
+irg_gradebook_moodle_mapping_admin: 31 tests
+irg_gradebook_moodle_routing: 22 tests
+0 failed, 0 error(s) of 45 tests
+```
+
+Scalar metadata preflight GREEN — 2026-07-22
+
+Command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_mapping_admin:TestMappingImportApply.test_preflight_rejects_malformed_members_before_revalidation' --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+```text
+Starting TestMappingImportApply.test_preflight_rejects_malformed_members_before_revalidation ...
+irg_gradebook_moodle_mapping_admin: 3 tests
+0 failed, 0 error(s) of 1 tests
+```
+
+The final Tasks 2–4 + routing command above was repeated after this correction
+and once more after splitting preflight into bounded helpers: both runs exited
+0 with 45 methods, 31 admin tests, 22 routing tests, 0 failures and 0 errors.
+
+Task 5 wizard GREEN — 2026-07-22
+
+Targeted command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportWizard --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+```text
+10 post-tests
+irg_gradebook_moodle_mapping_admin: 12 tests
+0 failed, 0 error(s) of 10 tests
+```
+
+The first upgrade attempt after implementation failed before tests because the
+automatically derived Many2many relation name exceeded PostgreSQL's identifier
+limit. Explicit short relation/table and column names fixed the installability
+root cause; the unchanged wizard suite then passed in full.
+
+Task 2–5 + routing regression command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin --stop-after-init --log-level=test --no-http
+
+Exit code: 0
+
+```text
+55 post-tests
+irg_gradebook_moodle_mapping_admin: 43 tests
+irg_gradebook_moodle_routing: 22 tests
+0 failed, 0 error(s) of 55 tests
+```
+
+XML parse command (same base compose and worktree overlay, `run --rm`):
+```text
+XML OK: 2 files
+```
+
+Static checks: Python compileall and AST parsing passed; no lines over 88
+characters in the Task 5 Python files; no trailing whitespace; no `sudo`,
+`commit`, `unlink`, path or file-opening operation exists in the wizard/ACL/view
+scope. The only `Command.set` calls write the transient result Many2many fields.
+
+Task 5 review minors GREEN — 2026-07-22
+
+Focused command for read-only validation, Spanish reason labels and sanitized
+service errors (base compose + overlay, `run --rm`, `--no-http`):
+
+```text
+3 post-tests
+irg_gradebook_moodle_mapping_admin: 5 tests
+0 failed, 0 error(s) of 3 tests
+```
+
+The service-error privacy test was repeated after suppressing the original
+exception context explicitly:
+
+```text
+1 post-tests
+irg_gradebook_moodle_mapping_admin: 3 tests
+0 failed, 0 error(s) of 1 tests
+```
+
+Final Tasks 2–5 + routing regression after both review fixes:
+
+```text
+57 post-tests
+irg_gradebook_moodle_mapping_admin: 45 tests
+irg_gradebook_moodle_routing: 22 tests
+0 failed, 0 error(s) of 57 tests
+```
+
+Validation now compares a complete persisted-field snapshot (including
+inactive records and write metadata) for all three map models before/after,
+and patches `apply_plan` plus every upsert helper to prove none is invoked.
+Summary reasons use only fixed Spanish labels. Known service errors use fixed
+Spanish messages; unknown errors use one generic fixed message, suppress the
+source exception context and never echo source text or row values.
+
+Task 6 shell adapter GREEN — 2026-07-22
+
+Focused command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_mapping_admin --test-enable --test-tags /irg_gradebook_moodle_mapping_admin:TestMappingImportAnalysis --stop-after-init --no-http --log-level=test
+
+Exit code: 0
+
+```text
+12 post-tests
+irg_gradebook_moodle_mapping_admin: 14 tests
+0 failed, 0 error(s) of 12 tests
+```
+
+Final Tasks 2–6 + routing regression command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin' --stop-after-init --no-http --log-level=test
+
+Exit code: 0
+
+```text
+59 post-tests
+irg_gradebook_moodle_mapping_admin: 47 tests
+irg_gradebook_moodle_routing: 22 tests
+0 failed, 0 error(s) of 59 tests
+```
+
+The addon-only upgrade was repeated after converting the README to
+docutils-compatible reStructuredText syntax. Exit code was 0 and a focused
+scan produced no `docutils`, system-message, indentation or inline-literal
+diagnostics attributable to the README.
+
+Static checks: compileall, AST parsing of 16 Python files, maximum line length,
+trailing whitespace and bounded-read/control scans passed. The adapter contains
+one `read(MAX_FILE_SIZE + 1)`, requires `Path.is_absolute()`, delegates both
+public operations to `MappingImportService` and contains no `commit`, `unlink`
+or `sudo` call.
+
+Final review fixes GREEN — 2026-07-22
+
+The same focused RED command was repeated after implementation. Exit code: 0.
+Result: 4 post-tests, 8 Odoo assertions, 0 failed and 0 errors.
+
+Full regression command:
+docker compose -f '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml' -f .superpowers/sdd/docker-compose.worktree.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin --test-enable --test-tags '/irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin' --stop-after-init --log-level=test --no-http
+
+Exit code: 0. Result: 61 post-tests; 49 admin tests and 22 routing tests;
+0 failed and 0 errors.
+
+Static checks passed: compileall; AST parsing of 16 Python files; XML parsing
+of 2 view files; strict CSV marker; flat `active` column; maximum 88 columns;
+trailing whitespace; and `git diff --check`.
