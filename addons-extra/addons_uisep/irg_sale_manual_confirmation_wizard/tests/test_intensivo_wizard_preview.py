@@ -144,3 +144,34 @@ class TestIntensivoWizardPreview(TransactionCase):
         self.assertTrue(admission, "Admission should be created")
         self.assertEqual(admission.batch_id.code, 'MOPCIN2701', f"Expected batch code MOPCIN2701, got {admission.batch_id.code}")
         self.assertTrue(getattr(admission, 'irg_is_intensive', False), "Admission should have irg_is_intensive = True")
+
+    def test_wizard_detects_existing_intensivo_register(self):
+        """Test that wizard finds an existing admission register with period 2027-01 for PC course."""
+        reg = self.env['op.admission.register'].create({
+            'name': '2027-01 Máster en Psicología Clínica y de la Salud',
+            'course_id': self.course_pc.id,
+            'period': '2027-01',
+            'state': 'application',
+            'start_date': fields.Date.to_date('2026-07-15'),
+            'end_date': fields.Date.to_date('2027-03-31'),
+        })
+        order = self.SaleOrder.create({
+            'partner_id': self.customer.id,
+            'admission_date': fields.Date.to_date('2026-07-23'),
+            'irg_is_intensive': True,
+        })
+        line = self.SaleOrderLine.create({
+            'order_id': order.id,
+            'product_id': self.product_variant.id,
+            'product_uom_qty': 1,
+            'price_unit': 1200.0,
+            'start_date_enroller': fields.Date.to_date('2026-07-23'),
+        })
+
+        wizard = self.Wizard.create({
+            'order_id': order.id,
+            'admission_date': fields.Date.to_date('2026-07-23'),
+        })
+
+        self.assertIn('2027-01', wizard.detected_registers_preview)
+        self.assertNotIn('(Se creará un nuevo registro)', wizard.detected_registers_preview)

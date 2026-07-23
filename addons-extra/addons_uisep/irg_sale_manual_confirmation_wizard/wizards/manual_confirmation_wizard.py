@@ -188,6 +188,13 @@ class ManualConfirmationWizard(models.TransientModel):
             if line_date.month in (7, 8) or (line_date.month == 9 and line_date.day == 1):
                 line_date = line_date.replace(month=9, day=1)
 
+        # Intensivo rule
+        if modality == 'IN':
+            year = line_date.year
+            if line_date.year == 2026 or line_date.month >= 7:
+                year = 2027
+            return f"{year}-01"
+
         if 'code' in self.env['op.academic.term']._fields:
             term = self.env['op.academic.term'].search([
                 ('term_start_date', '<=', line_date),
@@ -211,11 +218,11 @@ class ManualConfirmationWizard(models.TransientModel):
         """Find an existing admission register matching the period and course.
         Supports variations of period format (e.g. '2026-02' vs '2026-2').
         """
-        if not period or not course_id:
+        if not course_id:
             return self.env['op.admission.register']
         Register = self.env['op.admission.register']
-        periods = [period]
-        if '-' in period:
+        periods = [period] if period else []
+        if period and '-' in period:
             parts = period.split('-')
             if len(parts) == 2:
                 year, term_code = parts
@@ -224,11 +231,20 @@ class ManualConfirmationWizard(models.TransientModel):
                 elif not term_code.startswith('0'):
                     periods.append(f"{year}-0{term_code}")
 
-        reg = Register.search([
+        domain = [
             ('course_id', '=', course_id.id),
-            ('period', 'in', periods),
             ('state', 'in', ['confirm', 'application', 'admission']),
-        ], limit=1)
+        ]
+        if periods:
+            domain.append(('period', 'in', periods))
+
+        reg = Register.search(domain, limit=1)
+        if not reg and course_id:
+            # Fallback search if a matching active register exists for the course
+            reg = Register.search([
+                ('course_id', '=', course_id.id),
+                ('state', 'in', ['confirm', 'application', 'admission']),
+            ], limit=1)
         return reg
 
     def _find_course_for_line(self, line):
