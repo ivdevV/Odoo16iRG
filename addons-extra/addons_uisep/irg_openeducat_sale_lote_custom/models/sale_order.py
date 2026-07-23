@@ -37,10 +37,18 @@ class SaleOrder(models.Model):
         elif hasattr(course_id, 'product_template_ids') and course_id.product_template_ids:
             profix_01 = course_id.product_template_ids[0].categ_id.code or ''
 
+        # Check if course is Psicología Clínica (PC)
+        is_pc = False
+        if course_id:
+            c_code = (course_id.code or '').strip().upper()
+            c_name = (course_id.name or '').strip().upper()
+            if c_code == 'PC' or 'PSICOLOGÍA CLÍNICA' in c_name or 'PSICOLOGIA CLINICA' in c_name:
+                is_pc = True
+
         prefix_02 = 'GE'
         matching_line = line
 
-        if self.irg_is_intensive or (matching_line and getattr(matching_line, 'irg_is_intensive', False)):
+        if is_pc and (self.irg_is_intensive or (matching_line and getattr(matching_line, 'irg_is_intensive', False))):
             prefix_02 = 'IN'
 
         if matching_line:
@@ -61,7 +69,7 @@ class SaleOrder(models.Model):
                             prefix_02 = 'HC'
                         elif modalidad_name == 'Presencial':
                             prefix_02 = 'PRS'
-                        elif modalidad_name in ('Intensivo', 'Curso Intensivo', 'Cursos Intensivos', 'IN') or val_code == 'IN' or 'INTENSIV' in (modalidad_name or '').upper():
+                        elif is_pc and (modalidad_name in ('Intensivo', 'Curso Intensivo', 'Cursos Intensivos', 'IN') or val_code == 'IN' or 'INTENSIV' in (modalidad_name or '').upper()):
                             prefix_02 = 'IN'
                         else:
                             if val_code:
@@ -82,7 +90,7 @@ class SaleOrder(models.Model):
                 
                 if is_match:
                     matching_line = l
-                    if getattr(l, 'irg_is_intensive', False):
+                    if is_pc and getattr(l, 'irg_is_intensive', False):
                         prefix_02 = 'IN'
                     # If we found the line, we prefer the category code from the line's product
                     if l.product_id.categ_id.code:
@@ -102,7 +110,7 @@ class SaleOrder(models.Model):
                                     prefix_02 = 'HC'
                                 elif modalidad_name == 'Presencial':
                                     prefix_02 = 'PRS'
-                                elif modalidad_name in ('Intensivo', 'Curso Intensivo', 'Cursos Intensivos', 'IN') or val_code == 'IN' or 'INTENSIV' in (modalidad_name or '').upper():
+                                elif is_pc and (modalidad_name in ('Intensivo', 'Curso Intensivo', 'Cursos Intensivos', 'IN') or val_code == 'IN' or 'INTENSIV' in (modalidad_name or '').upper()):
                                     prefix_02 = 'IN'
                                 else:
                                     if val_code:

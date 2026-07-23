@@ -6,14 +6,14 @@
       "name": "unit_test_intensivo_modality",
       "command": "docker-compose -f docker-compose.local.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_openeducat_sale_lote_custom --test-enable --stop-after-init",
       "result": "pass",
-      "detail": "TestIntensivoModality.test_get_lot_id_mopcin2701 & test_get_lot_id_with_sale_order_tick_is_intensive passed: Lot MOPCIN2701 generated correctly via variant attribute or irg_is_intensive tick on sale.order.",
+      "detail": "TestIntensivoModality (6 tests) passed: Lot MOPCIN2701 generated correctly for Psicología Clínica (PC), ignored for non-PC courses, and correctly handles multi-line orders with Online Bonificado lines.",
       "evidence": "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/tests/test_intensivo_modality.py"
     },
     {
       "name": "unit_test_intensivo_wizard_preview",
       "command": "docker-compose -f docker-compose.local.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_sale_manual_confirmation_wizard --test-enable --stop-after-init",
       "result": "pass",
-      "detail": "TestIntensivoWizardPreview.test_wizard_preview_and_confirm_mopcin2701 & test_wizard_preview_and_confirm_with_order_tick_is_intensive passed: Wizard detects IN modality, previews batch MOPCIN2701, and creates admission with irg_is_intensive=True.",
+      "detail": "TestIntensivoWizardPreview passed: Wizard detects IN modality for PC, previews MOPCIN2701, and creates admission with irg_is_intensive=True.",
       "evidence": "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_intensivo_wizard_preview.py"
     },
     {
@@ -33,6 +33,7 @@
   "escalations": 0,
   "evidence": [
     "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/models/sale_order.py",
+    "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/models/op_batch.py",
     "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/views/sale_order_views.xml",
     "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/tests/test_intensivo_modality.py",
     "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/wizards/manual_confirmation_wizard.py",

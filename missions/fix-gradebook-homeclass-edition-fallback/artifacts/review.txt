@@ -1,0 +1,160 @@
+# Review de código — Task 1: ediciones HomeClass y fallback
+
+## Spec Compliance
+
+La implementación cumple la mayor parte del brief:
+
+- El cambio funcional está aislado en el addon nuevo
+  `irg_gradebook_moodle_homeclass_editions`; no hay modificaciones tracked en
+  los tres addons existentes.
+- El parser usa la expresión regular estricta solicitada, acepta `-`, `/` y
+  `_`, y solo devuelve años consecutivos.
+- La compute llama a `super()` y solo sustituye `edition_year` para mapas
+  HomeClass, por override manual o por el periodo extraído. Online conserva la
+  compute existente.
+- Los candidatos HomeClass activos se ordenan por edición exacta, después
+  genéricos y finalmente restantes por Moodle Course ID (con ID ORM como
+  desempate determinista).
+- La ruta especial solo se activa para un lote inequívocamente HomeClass con
+  más de un candidato; el resto delega al comportamiento existente.
+- La carga itera por asignatura y corta al encontrar el primer candidato con
+  al menos una nota válida, por lo que no combina notas de cursos distintos.
+- Se conservan el control server-side de acceso y las verificaciones de
+  integridad padre/hijo.
+- No se borran ni desactivan mapas; únicamente se regeneran las líneas del
+  wizard, igual que en el flujo base.
+
+No obstante, no cumple la restricción global «Activity ID ausente permite
+fallback, pero una colisión real permanece incompatible». El estado actual
+permite saltar una colisión del candidato prioritario y aplicar una nota de un
+curso posterior.
+
+## Strengths
+
+- Arquitectura correcta mediante herencia en addon puente y dependencia
+  explícita de `irg_gradebook_moodle_mapping_admin`.
+- Orden estable y legible de candidatos; el desempate evita depender del orden
+  accidental del recordset.
+- Reutilización coherente de `_find_student_entry`, `_grades_by_type` y
+  `_compatibility_reason`, sin duplicar la lógica de cálculo de notas.
+- Caché por curso Moodle y evaluación por asignatura, evitando llamadas
+  repetidas y mezclas entre ediciones.
+- Diagnóstico agregado y determinista cuando ningún candidato produce una
+  nota válida.
+- La vista expone el override solo como dato operativo de HomeClass en el
+  formulario y no altera el routing Online.
+
+## Issues
+
+### Critical
+
+1. **Una colisión real se degrada a fallback y puede terminar aplicando una
+   nota de otro curso.**
+
+   `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:91-93`
+   trata la existencia de varios mapas activos para la misma asignatura y
+   candidato como un intento fallido recuperable. Del mismo modo,
+   `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:125-131`
+   acumula cualquier `data["error"]` de `_grades_by_type` y
+   `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:166-173`
+   continúa con el siguiente candidato cuando no quedó ninguna línea válida.
+
+   `_grades_by_type` usa `error` tanto para un Activity ID ausente (cero
+   coincidencias, caso en el que sí se permite fallback) como para colisiones
+   reales: varias coincidencias por `id/cmid`, reutilización del mismo grade
+   item o tipo de actividad incoherente. Por tanto, si el mapa exacto tiene una
+   colisión y un mapa genérico o antiguo devuelve una nota, el wizard crea una
+   línea `ok` aplicable y oculta la incompatibilidad del mapa prioritario. Esto
+   infringe directamente el contrato y puede aplicar una nota de la edición
+   equivocada.
+
+   Debe distinguirse el caso recuperable «Activity ID no encontrado» de las
+   incompatibilidades estructurales. Una colisión real debe producir una línea
+   `incompatible` determinista para esa asignatura y detener su búsqueda, sin
+   consultar ni aceptar candidatos posteriores.
+
+### Important
+
+1. **Falta una regresión para el requisito de colisión incompatible.**
+
+   Los escenarios de
+   `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/tests/test_homeclass_editions.py:200-252`
+   cubren Activity ID ausente y primer curso válido, pero no diferencian la
+   ausencia recuperable de una resolución ambigua. Debe añadirse al menos un
+   caso donde el candidato exacto tenga una colisión real y un candidato
+   posterior ofrezca una nota válida; el resultado esperado debe ser
+   `incompatible`, sin línea aplicable y sin adoptar la nota posterior. Es
+   conveniente cubrir también la colisión por múltiples mapas activos para la
+   misma asignatura y candidato.
+
+### Minor
+
+Ninguno.
+
+## Assessment
+
+**Needs fixes**
+
+La estructura, el alcance y el comportamiento principal son sólidos, pero la
+distinción entre ausencia de Activity ID y colisión es un gate funcional y de
+integridad de datos. No se recomienda aprobar hasta corregirla y añadir la
+regresión específica. Esta review fue estática y focalizada; no se repitió la
+suite Odoo ya reportada.
+
+## Re-review
+
+### Verificación de la corrección
+
+- La colisión real `id/cmid` se detecta antes de `_grades_by_type` en
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:43-74`;
+  crea una línea `incompatible` y el `break` de
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:159-171`
+  impide consultar candidatos posteriores.
+- La reutilización de un mismo grade item y la discordancia de tipo de
+  actividad recorren el mismo camino bloqueante en
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:62-73`.
+- La existencia de varios mapas activos para la misma asignatura y candidato
+  crea una única línea `incompatible` y detiene el fallback en
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:124-137`.
+- Una incompatibilidad de template o de nota manual devuelta por
+  `_compatibility_reason` bloquea la asignatura, descarta cualquier línea válida
+  acumulada y no prueba otra edición, según
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:178-186`
+  y
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:224-233`.
+- Cero coincidencias de Activity ID no se clasifica como conflicto estructural:
+  continúa en
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:60-61`,
+  `_grades_by_type` lo deja sin línea válida y el flujo alcanza el siguiente
+  candidato mediante
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:187-195`
+  y
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/wizard/moodle_sync_wizard.py:238-241`.
+- La regresión
+  `addons-extra/extrairg/irg_gradebook_moodle_homeclass_editions/tests/test_homeclass_editions.py:229-281`
+  construye dos grade items que colisionan por `id/cmid`, ofrece una nota válida
+  en el fallback y demuestra que solo se consulta el curso exacto, que la línea
+  queda `incompatible` y que no es aplicable.
+
+### Critical
+
+Ninguno. El hallazgo Critical de la review inicial queda resuelto.
+
+### Important
+
+Ninguno. La regresión solicitada está presente y cubre el comportamiento
+bloqueante observable.
+
+### Minor
+
+Ninguno.
+
+### Verdict final
+
+**Approved**
+
+La corrección satisface la distinción requerida entre ausencia recuperable y
+conflicto estructural, conserva el orden y la regla de no mezclar candidatos, y
+no introduce cambios fuera del addon puente. Re-review estática y focalizada;
+no se repitió la suite Odoo, cuyo informe actualizado registra 6 métodos
+dirigidos y 67 pruebas de regresión sin fallos ni errores.

@@ -239,7 +239,14 @@ class ManualConfirmationWizard(models.TransientModel):
         return course
 
     def _detect_line_modalidad(self, line, course_id):
-        if getattr(line, 'irg_is_intensive', False) or (line.order_id and getattr(line.order_id, 'irg_is_intensive', False)):
+        is_pc = False
+        if course_id:
+            c_code = (course_id.code or '').strip().upper()
+            c_name = (course_id.name or '').strip().upper()
+            if c_code == 'PC' or 'PSICOLOGÍA CLÍNICA' in c_name or 'PSICOLOGIA CLINICA' in c_name:
+                is_pc = True
+
+        if is_pc and (getattr(line, 'irg_is_intensive', False) or (line.order_id and getattr(line.order_id, 'irg_is_intensive', False))):
             return 'IN'
 
         if not course_id:
@@ -292,7 +299,7 @@ class ManualConfirmationWizard(models.TransientModel):
                     return 'HC'
                 if name == 'Presencial':
                     return 'PRS'
-                if name in ('Intensivo', 'Curso Intensivo', 'Cursos Intensivos', 'IN') or code == 'IN' or 'INTENSIV' in name.upper():
+                if is_pc and (name in ('Intensivo', 'Curso Intensivo', 'Cursos Intensivos', 'IN') or code == 'IN' or 'INTENSIV' in name.upper()):
                     return 'IN'
                 return name[:3].upper() if name else 'GE'
         return 'GE'

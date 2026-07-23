@@ -15,21 +15,29 @@ class OpBatch(models.Model):
         help='Indica si el grupo/lote pertenece a la modalidad Cursos Intensivos.',
     )
 
-    @api.depends('code', 'name', 'modality_id', 'modality_id.code', 'modality_id.name')
+    @api.depends('code', 'name', 'modality_id', 'modality_id.code', 'modality_id.name', 'course_id', 'course_id.code', 'course_id.name')
     def _compute_irg_is_intensive(self):
         for record in self:
+            is_pc = False
+            if record.course_id:
+                c_code = (record.course_id.code or '').strip().upper()
+                c_name = (record.course_id.name or '').strip().upper()
+                if c_code == 'PC' or 'PSICOLOGÍA CLÍNICA' in c_name or 'PSICOLOGIA CLINICA' in c_name:
+                    is_pc = True
+
             is_int = False
-            if record.modality_id:
-                mod_code = (record.modality_id.code or '').upper()
-                mod_name = (record.modality_id.name or '').lower()
-                if mod_code == 'IN' or 'intensiv' in mod_name:
-                    is_int = True
-            if not is_int:
-                code_up = (record.code or '').upper()
-                name_up = (record.name or '').upper()
-                if 'IN' in code_up or 'INTENSIV' in name_up:
-                    if not ('ONLINE' in name_up and 'INTENSIV' not in name_up):
+            if is_pc:
+                if record.modality_id:
+                    mod_code = (record.modality_id.code or '').upper()
+                    mod_name = (record.modality_id.name or '').lower()
+                    if mod_code == 'IN' or 'intensiv' in mod_name:
                         is_int = True
+                if not is_int:
+                    code_up = (record.code or '').upper()
+                    name_up = (record.name or '').upper()
+                    if 'IN' in code_up or 'INTENSIV' in name_up:
+                        if not ('ONLINE' in name_up and 'INTENSIV' not in name_up):
+                            is_int = True
             record.irg_is_intensive = is_int
 
     def _check_is_online(self, modality_id, code, name):

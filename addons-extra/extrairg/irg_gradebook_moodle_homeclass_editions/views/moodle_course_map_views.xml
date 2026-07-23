@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="irg_gradebook_moodle_course_map_tree_homeclass_edition" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.course.map.tree.homeclass.edition</field>
+        <field name="model">irg.gradebook.moodle.course.map</field>
+        <field name="inherit_id" ref="irg_gradebook_moodle_mapping_admin.irg_gradebook_moodle_course_map_tree_admin"/>
+        <field name="arch" type="xml">
+            <field name="edition_year" position="after">
+                <field name="irg_homeclass_edition_override" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="irg_gradebook_moodle_course_map_form_homeclass_edition" model="ir.ui.view">
+        <field name="name">irg.gradebook.moodle.course.map.form.homeclass.edition</field>
+        <field name="model">irg.gradebook.moodle.course.map</field>
+        <field name="inherit_id" ref="irg_gradebook_moodle_mapping_admin.irg_gradebook_moodle_course_map_form_admin"/>
+        <field name="arch" type="xml">
+            <field name="edition_year" position="after">
+                <field name="irg_homeclass_edition_override" attrs="{'invisible': [('modality', '!=', 'homeclass')]}"/>
+            </field>
+        </field>
+    </record>
+</odoo>
