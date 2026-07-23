@@ -44,6 +44,7 @@
         'wizards/manual_confirmation_wizard_views.xml',
         'views/sale_order_views.xml',
         'views/auto_admission_required_views.xml',
+        'views/op_admission_views.xml',
     ],
     'installable': True,
     'auto_install': False,

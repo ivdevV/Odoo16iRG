@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_op_batch_form_intensivo_inherit" model="ir.ui.view">
+        <field name="name">op.batch.form.intensivo.inherit</field>
+        <field name="model">op.batch</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_batch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="irg_is_intensive" widget="boolean_toggle"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_op_batch_tree_intensivo_inherit" model="ir.ui.view">
+        <field name="name">op.batch.tree.intensivo.inherit</field>
+        <field name="model">op.batch</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_batch_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <field name="irg_is_intensive" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_op_batch_search_intensivo_inherit" model="ir.ui.view">
+        <field name="name">op.batch.search.intensivo.inherit</field>
+        <field name="model">op.batch</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_batch_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Es Intensivo" name="filter_is_intensive" domain="[('irg_is_intensive', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

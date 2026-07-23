@@ -9,6 +9,14 @@ _logger = logging.getLogger(__name__)
 class OpAdmission(models.Model):
     _inherit = 'op.admission'
 
+    irg_is_intensive = fields.Boolean(
+        string='Es Intensivo',
+        related='batch_id.irg_is_intensive',
+        store=True,
+        readonly=True,
+        help='Indica si la admisión corresponde a un grupo de modalidad Intensivo.',
+    )
+
     def send_mail(self, force):
         """Override del routing del modulo selector existente.
 

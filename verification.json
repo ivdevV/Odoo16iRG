@@ -1,31 +1,41 @@
 {
   "status": "passed",
-  "task": "student_birth_date_fix",
+  "task": "irg_intensivo_modality_mopcin",
   "checks": [
     {
-      "name": "python_syntax_check",
-      "command": "./.venv/bin/python -m py_compile addons-extra/addons_uisep/isep_admission_from_student_field/models/sale_order.py addons-extra/addons_uisep/isep_admission_from_student_field/models/op_admission.py addons-extra/addons_uisep/isep_elearning_custom/models/op_admission.py addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/models/sale_order.py addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/models/op_admission.py addons-extra/addons_uisep/isep_website_sale_custom/models/sale_order.py addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_birth_date_safeguard.py",
+      "name": "unit_test_intensivo_modality",
+      "command": "docker-compose -f docker-compose.local.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_openeducat_sale_lote_custom --test-enable --stop-after-init",
       "result": "pass",
-      "detail": "7 modified python files compiled cleanly with 0 errors.",
-      "evidence": "execution.md"
+      "detail": "TestIntensivoModality.test_get_lot_id_mopcin2701 & test_get_lot_id_with_sale_order_tick_is_intensive passed: Lot MOPCIN2701 generated correctly via variant attribute or irg_is_intensive tick on sale.order.",
+      "evidence": "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/tests/test_intensivo_modality.py"
     },
     {
-      "name": "unit_test_safeguard",
-      "command": "test_birth_date_safeguard.py suite added to irg_sale_manual_confirmation_wizard/tests",
+      "name": "unit_test_intensivo_wizard_preview",
+      "command": "docker-compose -f docker-compose.local.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_sale_manual_confirmation_wizard --test-enable --stop-after-init",
       "result": "pass",
-      "detail": "Added TestBirthDateSafeguard unit tests covering student vs titular birth date preservation, submit_form non-erasure, and multi-format parsing.",
-      "evidence": "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_birth_date_safeguard.py"
+      "detail": "TestIntensivoWizardPreview.test_wizard_preview_and_confirm_mopcin2701 & test_wizard_preview_and_confirm_with_order_tick_is_intensive passed: Wizard detects IN modality, previews batch MOPCIN2701, and creates admission with irg_is_intensive=True.",
+      "evidence": "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_intensivo_wizard_preview.py"
+    },
+    {
+      "name": "syntax_check_python",
+      "command": "./.venv/bin/python3 -c 'import py_compile; ...'",
+      "result": "pass",
+      "detail": "Python files compiled without errors.",
+      "evidence": "execution.md"
     }
   ],
   "environment": {
-    "runtime": "odoo16",
-    "workspace": "/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG"
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_db",
+    "base_commit": "HEAD"
   },
   "model_tier_used": "standard",
   "escalations": 0,
   "evidence": [
-    "execution.md",
-    "plan.md",
-    "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_birth_date_safeguard.py"
+    "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/models/sale_order.py",
+    "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/views/sale_order_views.xml",
+    "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/tests/test_intensivo_modality.py",
+    "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/wizards/manual_confirmation_wizard.py",
+    "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_intensivo_wizard_preview.py"
   ]
 }

@@ -10,10 +10,15 @@
             - Online -> ONL
             - HomeClass -> HC
             - Presencial -> PRS
+            - Intensivo -> IN
+        - Adds irg_is_intensive boolean field to sale.order and sale.order.line
     """,
     'author': 'Instituto Raimon Gaja',
     'depends': ['isep_openeducat_sale_lote', 'isep_data_master_make'],
-    'data': [],
+    'data': [
+        'views/op_batch_views.xml',
+        'views/sale_order_views.xml',
+    ],
     'installable': True,
     'auto_install': False,
 }
