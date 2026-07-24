@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="portal_my_home_servicios_menu_hide" name="Ocultar Servicios Adicionales en Portal" inherit_id="isep_openeducat_reports.portal_my_home_servicios_menu" priority="99">
-        <xpath expr="//t[@t-call='portal.portal_docs_entry']" position="replace"/>
+        <xpath expr="//t[@t-call='portal.portal_docs_entry']" position="replace">
+            <!-- Mantiene un placeholder oculto para que portal.js encuentre data-placeholder_count='servicios_count' 
+                 evitando el error Cannot set properties of null (setting 'textContent') cuando el backend devuelve contadores. -->
+            <span data-placeholder_count="servicios_count" style="display:none !important; visibility:hidden;"/>
+        </xpath>
     </template>
 </odoo>
