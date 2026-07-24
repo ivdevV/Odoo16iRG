@@ -265,3 +265,19 @@ class TestGradebookPartialAverages(TransactionCase):
 
         self.assertEqual(gradebook1.total_percent, 100.0)
         self.assertEqual(gradebook2.total_percent, 100.0)
+
+    def test_result_without_template_line_item_preserved(self):
+        """Si hay una nota directamente asignada sin linea interna en el template, no se borra ni oculta al poner la plantilla."""
+        template_solo_asignaciones = self._create_gradebook_template(
+            [{"type": "assignment", "weight": 100.0, "qty": 1}]
+        )
+        gradebook, line, _course, _subject = self._create_student_gradebook(template_solo_asignaciones)
+
+        # Añadir un examen directamente por automatizacion sin que exista item 'exam' en la plantilla
+        self._add_result(line, "exam", 7.75)
+        self._flush_gradebook(gradebook)
+
+        # Verificar que el promedio y la visibilidad del examen se mantengan intactos
+        self.assertTrue(line.show_exam, "show_exam debe ser True al existir una nota de examen")
+        self.assertEqual(line.point_average_exam, 7.75, "point_average_exam debe conservar la nota 7.75")
+        self.assertEqual(line.final_subject_note, 7.75, "final_subject_note debe conservar la nota 7.75")

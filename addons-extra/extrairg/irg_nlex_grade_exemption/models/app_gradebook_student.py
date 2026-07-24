@@ -17,19 +17,19 @@ class AppGradebookStudent(models.Model):
                 gradebook = subject._get_gradebook_info(subject)
                 if gradebook:
                     qty_examn = len(subject.gradebook_result_ids.filtered(lambda x: x.survey_type == 'exam'))
-                    if gradebook['exam']['qty'] != qty_examn and subject.show_exam:
+                    if gradebook['exam']['qty'] and gradebook['exam']['qty'] != qty_examn and subject.show_exam:
                         raise UserError(_('%s: Tiene %s evaluaciones de tipo "Examen" pero necesita %s.') % (subject.name, qty_examn, gradebook['exam']['qty']))
                     
                     qty_assignment = len(subject.gradebook_result_ids.filtered(lambda x: x.survey_type == 'assignment'))
-                    if gradebook['assignment']['qty'] != qty_assignment and subject.show_assignment:
-                        raise UserError(_('%s: Tiene %s evaluaciones de tipo "Asignación" pero necesita %s.') % (subject.name, qty_assignment, gradebook['exam']['qty']))
+                    if gradebook['assignment']['qty'] and gradebook['assignment']['qty'] != qty_assignment and subject.show_assignment:
+                        raise UserError(_('%s: Tiene %s evaluaciones de tipo "Asignación" pero necesita %s.') % (subject.name, qty_assignment, gradebook['assignment']['qty']))
 
                     qty_foro = len(subject.gradebook_result_ids.filtered(lambda x: x.survey_type == 'interaction'))
-                    if qty_foro != 1 and subject.show_interaction:
+                    if gradebook['interaction']['qty'] and qty_foro != gradebook['interaction']['qty'] and subject.show_interaction:
                         raise UserError(_('%s: Debe tener 1 evaluacion de tipo "Interaccion".') % subject.name)
 
                     qty_foro = len(subject.gradebook_result_ids.filtered(lambda x: x.survey_type == 'foro'))
-                    if qty_foro != 1 and subject.show_foro:
+                    if gradebook['foro']['qty'] and qty_foro != gradebook['foro']['qty'] and subject.show_foro:
                         raise UserError(_('%s: Debe tener 1 evaluacion de tipo "Foro".') % subject.name)
             
             rec.state = 'done'
