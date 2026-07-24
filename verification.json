@@ -11,9 +11,9 @@
     },
     {
       "name": "xml_syntax_check",
-      "command": "./.venv/bin/python -c \"import xml.etree.ElementTree as ET; ET.parse('addons-extra/extrairg/irg_hide_portal_servicios/views/portal_templates.xml')\"",
+      "command": "./.venv/bin/python -c \"import xml.etree.ElementTree as ET; ET.parse('addons-extra/extrairg/irg_hide_portal_servicios/views/portal_templates.xml'); ET.parse('addons-extra/extrairg/irg_portal_placeholder_safe/views/portal_templates.xml')\"",
       "result": "pass",
-      "detail": "Parseo XML correcto de views/portal_templates.xml",
+      "detail": "Parseo XML correcto de views/portal_templates.xml en irg_hide_portal_servicios e irg_portal_placeholder_safe",
       "evidence": "ElementTree parse OK"
     }
   ],
@@ -26,6 +26,7 @@
   "evidence": [
     "addons-extra/extrairg/irg_hide_portal_servicios/__init__.py",
     "addons-extra/extrairg/irg_hide_portal_servicios/__manifest__.py",
-    "addons-extra/extrairg/irg_hide_portal_servicios/views/portal_templates.xml"
+    "addons-extra/extrairg/irg_hide_portal_servicios/views/portal_templates.xml",
+    "addons-extra/extrairg/irg_portal_placeholder_safe/views/portal_templates.xml"
   ]
 }

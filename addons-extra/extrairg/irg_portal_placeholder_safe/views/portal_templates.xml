@@ -10,6 +10,7 @@
                     <span data-placeholder_count="documents_count">0</span>
                     <span data-placeholder_count="quotation_count">0</span>
                     <span data-placeholder_count="order_count">0</span>
+                    <span data-placeholder_count="servicios_count">0</span>
                 </div>
             </xpath>
         </template>

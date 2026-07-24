@@ -5,6 +5,9 @@
 ### Añadido
 - **Módulo `irg_hide_portal_servicios`**: Creado nuevo módulo en `addons-extra/extrairg/irg_hide_portal_servicios` que, al ser activado, oculta la sección de "Servicios adicionales" del portal de clientes (`/my/home`) mediante la sobreescritura limpia del template `isep_openeducat_reports.portal_my_home_servicios_menu`.
 
+### Corregido
+- **Prevención de Error JS (`TypeError: Cannot set properties of null`) en `portal.js`**: Añadido placeholder oculto `<span data-placeholder_count="servicios_count" style="display:none !important;"/>` en `irg_hide_portal_servicios` y en `irg_portal_placeholder_safe`. Esto evita que `portal.js` en el cliente lance una excepción `TypeError` al intentar asignar `textContent` cuando el backend devuelve contadores de `servicios_count` pero el elemento visual no está visible en el DOM.
+
 ---
 
 ## [2026-07-24] - Preservación de Notas sin Línea Interna de Plantilla
