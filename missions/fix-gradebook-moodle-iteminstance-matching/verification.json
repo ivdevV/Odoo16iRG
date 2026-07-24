@@ -1,0 +1,51 @@
+{
+  "status": "passed",
+  "task": "fix-gradebook-moodle-iteminstance-matching",
+  "checks": [
+    {
+      "name": "manifest_contract",
+      "command": "python3 ast.literal_eval over the four addon manifests",
+      "result": "pass",
+      "detail": "4/4 manifests parseable, installable and with the expected dependency chain",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "python_compile",
+      "command": "docker compose -f docker-compose.local.yml -f missions/fix-gradebook-moodle-iteminstance-matching/docker-compose.worktree.yml run --rm --no-deps -e PYTHONPYCACHEPREFIX=/tmp/irg_iteminstance_validation_pycache odoo_local python3 -m compileall -q <four addons>",
+      "result": "pass",
+      "detail": "Exit 0 for routing, mapping admin, HomeClass editions and iteminstance",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "odoo_install_and_tests",
+      "command": "docker compose -f docker-compose.local.yml -f missions/fix-gradebook-moodle-iteminstance-matching/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d irg_iteminstance_validation -i irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin,irg_gradebook_moodle_homeclass_editions,irg_gradebook_moodle_iteminstance --test-enable --test-tags /irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin,/irg_gradebook_moodle_homeclass_editions,/irg_gradebook_moodle_iteminstance --without-demo=all --max-cron-threads=0 --stop-after-init --no-http --log-level=test",
+      "result": "pass",
+      "detail": "94 post-tests; 0 failed and 0 errors; all four addons installed at 16.0.1.0.0",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check; git diff --cached --check; equivalent whitespace review of git ls-files --others --exclude-standard",
+      "result": "pass",
+      "detail": "Tracked checks exited 0; 17 untracked text files reviewed with no whitespace defects",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "runtime_cleanup_and_restore",
+      "command": "dropdb irg_iteminstance_validation; verify pg_database, one-off containers and odoo16irg_local mounts",
+      "result": "pass",
+      "detail": "Temporary DB absent, no one-off containers remain, main Odoo container is running and mounts the principal checkout",
+      "evidence": "artifacts/validation-tests.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml + missions/fix-gradebook-moodle-iteminstance-matching/docker-compose.worktree.yml",
+    "database": "irg_iteminstance_validation (removed after validation)",
+    "base_commit": "9128e4a5109661a247403aa85bddb738bf7c76a9"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt"
+  ]
+}

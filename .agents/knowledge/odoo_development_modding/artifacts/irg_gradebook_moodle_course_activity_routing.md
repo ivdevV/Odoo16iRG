@@ -36,6 +36,12 @@ siendo errores previos a la llamada externa.
 La edición HC se obtiene del periodo consecutivo del nombre (`AAAA-AAAA`,
 `AAAA/AAAA` o `AAAA_AAAA`) y puede corregirse con un override manual. Los
 Activity IDs se resuelven siempre dentro del curso Moodle padre del candidato.
+No se debe asumir que un «Activity ID» pertenece a un único espacio:
+`gradereport_user_get_grade_items` expone el identificador del grade item
+(`id`), el módulo del curso (`cmid`) y la instancia de la actividad
+(`iteminstance`). Los CSV históricos de iRG usan `iteminstance`. El resolvedor
+debe admitir los tres, deduplicar el mismo item por su posición y rechazar la
+operación si el número coincide con items distintos entre namespaces.
 
 La clasificación de nombres también debe ser estricta: solo `(ONLINE)` y
 `(ONLINE AAAA)`, con cuatro dígitos, representan mapas Online seleccionables.
@@ -81,6 +87,8 @@ se preservan, pero no se enrutan.
 - Rechazo de incoherencia padre/hijo por ORM y defensa ante históricos
   corrompidos antes de contactar el servicio Moodle.
 - Reejecución del importador sin borrar Activity IDs o metadatos existentes.
+- Resolución por `id`, `cmid` e `iteminstance`, incluyendo colisiones entre
+  namespaces y fallback HomeClass por ausencia.
 
 ## Resultado validado
 

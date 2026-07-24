@@ -1,0 +1,14 @@
+Directed suite:
+- Addon: `irg_gradebook_moodle_iteminstance`.
+- Result: 21 post-test methods, 0 failed, 0 errors.
+- Coverage: matcher, payload validation, aggregation, diagnostics, collisions,
+  type validation and HomeClass fallback.
+
+Combined regression:
+- Modules: routing, mapping admin, HomeClass editions and iteminstance bridge.
+- Result: 94 post-test methods, 0 failed, 0 errors.
+- Expected SQL constraint errors emitted by negative tests are not test
+  failures.
+
+Compile:
+- `python3 -m compileall` inside the Odoo container: exit 0.

@@ -1,0 +1,95 @@
+# Validación independiente
+
+Fecha: 2026-07-24
+
+Worktree:
+`/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/fix-moodle-iteminstance-matching`
+
+Base Git:
+`9128e4a5109661a247403aa85bddb738bf7c76a9`
+
+Runtime:
+
+- Compose canónico:
+  `/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml`
+- Overlay:
+  `missions/fix-gradebook-moodle-iteminstance-matching/docker-compose.worktree.yml`
+- Base temporal:
+  `irg_iteminstance_validation`
+- Odoo:
+  `16.0-20250909`
+
+## Manifiestos
+
+Se analizaron con `ast.literal_eval` los manifiestos de:
+
+- `irg_gradebook_moodle_routing`
+- `irg_gradebook_moodle_mapping_admin`
+- `irg_gradebook_moodle_homeclass_editions`
+- `irg_gradebook_moodle_iteminstance`
+
+Resultado: 4/4 parseables, `installable=True` y con la dependencia inmediata
+esperada.
+
+## Compilación
+
+Comando:
+
+```text
+docker compose -f <compose-canónico> -f <overlay> run --rm --no-deps \
+  -e PYTHONPYCACHEPREFIX=/tmp/irg_iteminstance_validation_pycache \
+  odoo_local python3 -m compileall -q \
+  /mnt/extra-addons/extrairg/irg_gradebook_moodle_routing \
+  /mnt/extra-addons/extrairg/irg_gradebook_moodle_mapping_admin \
+  /mnt/extra-addons/extrairg/irg_gradebook_moodle_homeclass_editions \
+  /mnt/extra-addons/extrairg/irg_gradebook_moodle_iteminstance
+```
+
+Resultado: exit 0.
+
+## Instalación y pruebas Odoo
+
+PostgreSQL respondió `accepting connections`. Se comprobó que la base no
+existía, se creó con propietario `odoo` y se ejecutó:
+
+```text
+docker compose -f <compose-canónico> -f <overlay> run --rm --no-deps \
+  odoo_local odoo -c /etc/odoo/odoo.conf \
+  -d irg_iteminstance_validation \
+  -i irg_gradebook_moodle_routing,irg_gradebook_moodle_mapping_admin,irg_gradebook_moodle_homeclass_editions,irg_gradebook_moodle_iteminstance \
+  --test-enable \
+  --test-tags '/irg_gradebook_moodle_routing,/irg_gradebook_moodle_mapping_admin,/irg_gradebook_moodle_homeclass_editions,/irg_gradebook_moodle_iteminstance' \
+  --without-demo=all --max-cron-threads=0 --stop-after-init --no-http \
+  --log-level=test
+```
+
+Resultado:
+
+- Exit 0.
+- `94 post-tests`.
+- `0 failed, 0 error(s) of 94 tests`.
+- Contadores publicados por `odoo.tests.stats`:
+  - routing: 22
+  - mapping admin: 49
+  - HomeClass editions: 8
+  - iteminstance: 29
+- Los cuatro módulos quedaron `installed`, versión `16.0.1.0.0`.
+
+Los avisos de manifiestos sin licencia pertenecen a otros addons del checkout
+y no produjeron fallos de instalación o prueba.
+
+## Diff y alcance
+
+- `git diff --check`: exit 0.
+- `git diff --cached --check`: exit 0.
+- Revisión equivalente final de los 17 archivos no rastreados: 17 archivos de texto,
+  0 binarios, sin espacios finales, CRLF ni ausencia de salto final.
+
+## Limpieza y restauración
+
+- Se eliminó únicamente la base `irg_iteminstance_validation`.
+- Consulta posterior en `pg_database`: 0 coincidencias.
+- No quedaron contenedores `odoo_local-run` one-off.
+- `odoo16irg_local` sigue `running`.
+- Su montaje `/mnt/extra-addons` sigue apuntando al checkout principal:
+  `/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra`.

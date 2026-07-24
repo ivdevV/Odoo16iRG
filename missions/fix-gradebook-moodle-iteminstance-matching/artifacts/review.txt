@@ -1,0 +1,15 @@
+# Review independiente
+
+Resultado: **Approved**.
+
+No hay hallazgos Critical, Important ni Minor.
+
+Comprobaciones:
+
+- Addon puente nuevo, sin modificar módulos existentes.
+- Resolución por `id`, `cmid` o `iteminstance`, deduplicando por posición.
+- Diagnósticos distintos para ausencia y ambigüedad.
+- Conservación de validación de tipo, reutilización, nota y escala.
+- Integración correcta con el fallback entre ediciones HomeClass.
+- Validación de `iteminstance` como entero o nulo.
+- Cobertura de criterios funcionales y regresiones relevantes.

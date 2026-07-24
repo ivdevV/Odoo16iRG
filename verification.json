@@ -1,42 +1,23 @@
 {
   "status": "passed",
-  "task": "irg_intensivo_modality_mopcin",
+  "task": "preserve-grades-without-template-line-item",
   "checks": [
     {
-      "name": "unit_test_intensivo_modality",
-      "command": "docker-compose -f docker-compose.local.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_openeducat_sale_lote_custom --test-enable --stop-after-init",
+      "name": "unit_tests",
+      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local /usr/bin/odoo --test-enable --stop-after-init -i irg_gradebook_partial_averages -d odoo16irg_local --test-tags irg_gradebook_partial_averages",
       "result": "pass",
-      "detail": "TestIntensivoModality (6 tests) passed: Lot MOPCIN2701 generated correctly for Psicología Clínica (PC), ignored for non-PC courses, and correctly handles multi-line orders with Online Bonificado lines.",
-      "evidence": "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/tests/test_intensivo_modality.py"
-    },
-    {
-      "name": "unit_test_intensivo_wizard_preview",
-      "command": "docker-compose -f docker-compose.local.yml run --rm odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_sale_manual_confirmation_wizard --test-enable --stop-after-init",
-      "result": "pass",
-      "detail": "TestIntensivoWizardPreview passed: Wizard detects IN modality for PC, previews MOPCIN2701, and creates admission with irg_is_intensive=True.",
-      "evidence": "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_intensivo_wizard_preview.py"
-    },
-    {
-      "name": "syntax_check_python",
-      "command": "./.venv/bin/python3 -c 'import py_compile; ...'",
-      "result": "pass",
-      "detail": "Python files compiled without errors.",
-      "evidence": "execution.md"
+      "detail": "9 passed, 0 failed, 0 errors",
+      "evidence": "artifacts/unit-tests.txt"
     }
   ],
   "environment": {
     "runtime": "docker-compose.local.yml",
-    "database": "test_irg_db",
+    "database": "odoo16irg_local",
     "base_commit": "HEAD"
   },
-  "model_tier_used": "standard",
+  "model_tier_used": "complex",
   "escalations": 0,
   "evidence": [
-    "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/models/sale_order.py",
-    "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/models/op_batch.py",
-    "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/views/sale_order_views.xml",
-    "addons-extra/addons_uisep/irg_openeducat_sale_lote_custom/tests/test_intensivo_modality.py",
-    "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/wizards/manual_confirmation_wizard.py",
-    "addons-extra/addons_uisep/irg_sale_manual_confirmation_wizard/tests/test_intensivo_wizard_preview.py"
+    "artifacts/unit-tests.txt"
   ]
 }
