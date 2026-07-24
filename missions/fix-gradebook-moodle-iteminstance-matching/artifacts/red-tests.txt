@@ -1,0 +1,8 @@
+Command:
+docker compose -f docker-compose.local.yml -f missions/fix-gradebook-moodle-iteminstance-matching/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d irg_iteminstance_tdd -i irg_gradebook_moodle_iteminstance --test-enable --test-tags=/irg_gradebook_moodle_iteminstance --stop-after-init --no-http --log-level=test
+
+RED confirmado:
+- 3 métodos ejecutados.
+- 0 fallos y 3 errores esperados.
+- Los tres casos terminaron con `AttributeError` porque
+  `_irg_match_grade_items` todavía no existía.
