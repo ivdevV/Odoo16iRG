@@ -1,28 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        <!-- Inject invisible placeholders into portal home to ensure
-             portal.js finds elements for common `data-placeholder_count` keys. -->
-        <template id="irg_portal_my_home_inherit" inherit_id="portal.portal_my_home" name="Portal Home - IRG Placeholder Safe">
-            <xpath expr="." position="inside">
-                <div id="irg_portal_placeholder_safeguards" style="display:none !important; visibility:hidden;">
-                    <span data-placeholder_count="documents_quantity">0</span>
-                    <span data-placeholder_count="documents_count">0</span>
-                    <span data-placeholder_count="quotation_count">0</span>
-                    <span data-placeholder_count="order_count">0</span>
-                    <span data-placeholder_count="servicios_count">0</span>
-                </div>
-            </xpath>
-        </template>
+    <!-- Inject invisible placeholders into portal home to ensure
+         portal.js finds elements for common `data-placeholder_count` keys. -->
+    <template id="irg_portal_my_home_inherit" inherit_id="portal.portal_my_home" name="Portal Home - IRG Placeholder Safe">
+        <xpath expr="." position="inside">
+            <div id="irg_portal_placeholder_safeguards" style="display:none !important; visibility:hidden;">
+                <span data-placeholder_count="documents_quantity">0</span>
+                <span data-placeholder_count="documents_count">0</span>
+                <span data-placeholder_count="quotation_count">0</span>
+                <span data-placeholder_count="order_count">0</span>
+                <span data-placeholder_count="servicios_count">0</span>
+            </div>
+        </xpath>
+    </template>
 
-        <!-- If OpenEduCat student menu exists, inject minimal safeguards there too -->
-        <template id="irg_portal_student_menu_inherit" inherit_id="openeducat_web.new_portal_menu" name="IRG Student Portal Placeholders" optional="True">
-            <xpath expr="." position="inside">
-                <div id="irg_portal_placeholder_safeguards_student" style="display:none !important; visibility:hidden;">
-                    <span data-placeholder_count="quotation_count">0</span>
-                    <span data-placeholder_count="order_count">0</span>
-                </div>
-            </xpath>
-        </template>
-    </data>
+    <!-- If OpenEduCat student menu exists, inject minimal safeguards there too -->
+    <template id="irg_portal_student_menu_inherit" inherit_id="openeducat_web.new_portal_menu" name="IRG Student Portal Placeholders" optional="True">
+        <xpath expr="." position="inside">
+            <div id="irg_portal_placeholder_safeguards_student" style="display:none !important; visibility:hidden;">
+                <span data-placeholder_count="quotation_count">0</span>
+                <span data-placeholder_count="order_count">0</span>
+            </div>
+        </xpath>
+    </template>
 </odoo>

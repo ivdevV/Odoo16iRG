@@ -7,6 +7,7 @@
 
 ### Corregido
 - **Prevención de Error JS (`TypeError: Cannot set properties of null`) en `portal.js`**: Añadido placeholder oculto `<span data-placeholder_count="servicios_count" style="display:none !important;"/>` en `irg_hide_portal_servicios` y en `irg_portal_placeholder_safe`. Esto evita que `portal.js` en el cliente lance una excepción `TypeError` al intentar asignar `textContent` cuando el backend devuelve contadores de `servicios_count` pero el elemento visual no está visible en el DOM.
+- **Corrección de Validación XML RelaxNG (`AssertionError: Element odoo has extra content: data`)**: Eliminada la etiqueta `<data>` innecesaria dentro de `<odoo>` en `irg_portal_placeholder_safe/views/portal_templates.xml` que provocaba que la validación estricta RelaxNG de Odoo 16 abortase el proceso de instalación de módulos.
 
 ---
 
