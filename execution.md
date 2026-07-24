@@ -1,24 +1,19 @@
-# Execution Log: irg_hide_portal_servicios
+# Registro de Ejecución: Sincronización y Preservación de Calificaciones en Libretas
 
-## Fases y Registro
+## Estado de la Misión
+- **Nivel de Misión**: `complex`
+- **Fase Actual**: Validación y Documentación Completadas (`passed`)
 
-### 1. Plan
-- **Fecha**: 2026-07-24
-- **Descripción**: Misión ligera para crear el módulo `irg_hide_portal_servicios` dentro de `addons-extra/extrairg/`.
-- **Objetivo**: Ocultar la sección "Servicios adicionales" en `/my/home` cuando este módulo esté instalado, garantizando que no se produzcan errores JS en `portal.js` ni errores de validación RelaxNG.
+## Diario de Ejecución
 
-### 2. Implementación
-- Creada la estructura en `addons-extra/extrairg/irg_hide_portal_servicios`:
-  - `__init__.py`
-  - `__manifest__.py`
-  - `views/portal_templates.xml`
-- Añadido salvaguarda en `views/portal_templates.xml` con `<span data-placeholder_count="servicios_count" style="display:none !important;"/>` para que `portal.js` encuentre el elemento y no produzca `TypeError: Cannot set properties of null`.
-- Eliminada la etiqueta `<data>` innecesaria dentro de `<odoo>` en `irg_portal_placeholder_safe` solucionando el fallo `AssertionError: Element odoo has extra content: data`.
-
-### 3. Review y Validación
-- Ejecutada verificación de sintaxis Python (`py_compile`) y XML (`xml.etree.ElementTree`).
-- Resultado: PASS (0 errores).
-- Emisión de `verification.json` realizada con estado `passed`.
-
-### 4. Documentación
-- `CHANGELOG.md` y `execution.md` actualizados.
+### [Fecha: 2026-07-24] - Preservación Total de Notas Directas al Asignar Plantillas
+1. **Identificación de la Causa Raíz**:
+   - Al colocar o cambiar la plantilla (`app.gradebook`), se activaba el recompute de `compute_point_average` y `compute_final_subject_note`.
+   - Cuando las notas (ej. 8.75) habían sido colocadas directamente sobre la asignatura (`app.gradebook.subject`) por automatizaciones sin crear ítems internos en `gradebook_result_ids`, al ser `gradebook_result_ids` una lista vacía (`len = 0`), los campos `point_average_assignment`, `point_average_exam` y `final_subject_note` se reseteaban automáticamente a `0.00`.
+2. **Solución Aplicada**:
+   - `compute_point_average` (`irg_gradebook_partial_averages`): Preserva `rec.point_average_*` si no hay resultados en `gradebook_result_ids` en lugar de asignarle 0.0.
+   - `compute_final_subject_note` (`irg_gradebook_exam_as_final`): Mantiene `rec.final_subject_note` o los promedios parciales existentes cuando no hay líneas de exámenes registrados en `gradebook_result_ids`.
+   - `compute_data_show` (`irg_gradebook_auto_close`): Marca como visible la columna/sección de evaluación si `point_average_* > 0`.
+3. **Validación**:
+   - Creado test unitario `test_direct_subject_grades_preserved_on_template_set`.
+   - Pruebas ejecutadas en Docker local pasando con **100% de éxito (10 pasadas, 0 fallos, 0 errores)**.

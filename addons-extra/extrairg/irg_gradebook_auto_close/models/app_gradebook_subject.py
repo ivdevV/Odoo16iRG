@@ -24,6 +24,15 @@ class AppGradebookSubject(models.Model):
                 if record.gradebook_result_ids
                 else set()
             )
+            if record.point_average_assignment > 0:
+                types_with_results.add("assignment")
+            if record.point_average_exam > 0:
+                types_with_results.add("exam")
+            if record.point_average_interaction > 0:
+                types_with_results.add("interaction")
+            if record.point_average_foro > 0:
+                types_with_results.add("foro")
+
             student_template = record.gradebook_student_id.gradebook_id
             if not student_template:
                 if types_with_results:
