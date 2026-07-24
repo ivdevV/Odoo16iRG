@@ -281,3 +281,34 @@ class TestGradebookPartialAverages(TransactionCase):
         self.assertTrue(line.show_exam, "show_exam debe ser True al existir una nota de examen")
         self.assertEqual(line.point_average_exam, 7.75, "point_average_exam debe conservar la nota 7.75")
         self.assertEqual(line.final_subject_note, 7.75, "final_subject_note debe conservar la nota 7.75")
+
+    def test_direct_subject_grades_preserved_on_template_set(self):
+        """Notas asignadas directamente en la asignatura sin lineas internas en gradebook_result_ids no se deben borrar ni poner a 0 al asignar una plantilla."""
+        template_foro = self._create_gradebook_template([{"type": "foro", "weight": 100.0, "qty": 1}])
+        gradebook, line, _course, _subject = self._create_student_gradebook(template_foro)
+
+        # Simular nota colocada directamente por automatizacion en el registro de la asignatura sin gradebook_result_ids
+        line.write({
+            "point_average_assignment": 8.75,
+            "point_average_exam": 8.75,
+            "final_subject_note": 8.75,
+        })
+        self._flush_gradebook(gradebook)
+
+        self.assertEqual(line.point_average_assignment, 8.75)
+        self.assertEqual(line.point_average_exam, 8.75)
+        self.assertEqual(line.final_subject_note, 8.75)
+
+        # Ahora se le asigna la plantilla real '1 Asignación 1 Examen'
+        template_real = self._create_gradebook_template([
+            {"type": "assignment", "weight": 60.0, "qty": 1},
+            {"type": "exam", "weight": 40.0, "qty": 1},
+        ])
+        gradebook.gradebook_id = template_real.id
+        line.compute_gradebook_id()
+        self._flush_gradebook(gradebook)
+
+        # Las notas NO se deben haber reiniciado a 0.00
+        self.assertEqual(line.point_average_assignment, 8.75, "point_average_assignment no debe borrarse")
+        self.assertEqual(line.point_average_exam, 8.75, "point_average_exam no debe borrarse")
+        self.assertEqual(line.final_subject_note, 8.75, "final_subject_note no debe borrarse")

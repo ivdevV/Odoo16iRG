@@ -28,6 +28,13 @@ class AppGradebookSubject(models.Model):
             )
             if exam_results:
                 final_note = sum(exam_results.mapped('scoring_total')) / len(exam_results)
+            elif rec.gradebook_result_ids:
+                final_note = sum(rec.gradebook_result_ids.mapped('scoring_total')) / len(rec.gradebook_result_ids)
+            elif rec.final_subject_note:
+                final_note = rec.final_subject_note
+            elif any([rec.point_average_assignment, rec.point_average_exam, rec.point_average_interaction, rec.point_average_foro]):
+                valid_averages = [v for v in [rec.point_average_assignment, rec.point_average_exam, rec.point_average_interaction, rec.point_average_foro] if v > 0]
+                final_note = sum(valid_averages) / len(valid_averages) if valid_averages else 0.0
             else:
                 final_note = 0.0
 

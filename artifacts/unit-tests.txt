@@ -1,2 +1,2 @@
-2026-07-24 11:11:38,596 181 INFO odoo16irg_local odoo.tests.stats: irg_gradebook_partial_averages: 11 tests 0.34s 905 queries
-2026-07-24 11:11:38,596 181 INFO odoo16irg_local odoo.tests.result: 0 failed, 0 error(s) of 9 tests when loading database 'odoo16irg_local'
+2026-07-24 12:37:38,136 239 INFO odoo16irg_local odoo.tests.stats: irg_gradebook_partial_averages: 12 tests 0.36s 1027 queries 
+2026-07-24 12:37:38,136 239 INFO odoo16irg_local odoo.tests.result: 0 failed, 0 error(s) of 10 tests when loading database 'odoo16irg_local' 

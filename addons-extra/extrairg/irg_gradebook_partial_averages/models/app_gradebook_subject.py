@@ -59,10 +59,10 @@ class AppGradebookSubject(models.Model):
                 if gradebook['foro']['qty'] and gradebook['foro']['weight']:
                     info_foro = '[ Req. pub. %s ] Peso: %s %%' % (str(gradebook['foro']['qty']), str(gradebook['foro']['weight']))
 
-            point_average_assignment = (assignment_total / assignment_count) if assignment_count > 0 else 0
-            point_average_exam = (exam_total / exam_count) if exam_count > 0 else 0
-            point_average_interaction = (interaction_total / interaction_count) if interaction_count > 0 else 0
-            point_average_foro = (foro_total / foro_count) if foro_count > 0 else 0
+            point_average_assignment = (assignment_total / assignment_count) if assignment_count > 0 else (rec.point_average_assignment or 0.0)
+            point_average_exam = (exam_total / exam_count) if exam_count > 0 else (rec.point_average_exam or 0.0)
+            point_average_interaction = (interaction_total / interaction_count) if interaction_count > 0 else (rec.point_average_interaction or 0.0)
+            point_average_foro = (foro_total / foro_count) if foro_count > 0 else (rec.point_average_foro or 0.0)
 
             rec.info_assignment = info_assignment
             rec.info_exam = info_exam
