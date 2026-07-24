@@ -1,5 +1,12 @@
 # CHANGELOG - Sincronización y Preservación de Calificaciones en Libretas
 
+## [2026-07-24] - Módulo irg_hide_portal_servicios (Ocultar Servicios Adicionales en Portal)
+
+### Añadido
+- **Módulo `irg_hide_portal_servicios`**: Creado nuevo módulo en `addons-extra/extrairg/irg_hide_portal_servicios` que, al ser activado, oculta la sección de "Servicios adicionales" del portal de clientes (`/my/home`) mediante la sobreescritura limpia del template `isep_openeducat_reports.portal_my_home_servicios_menu`.
+
+---
+
 ## [2026-07-24] - Preservación de Notas sin Línea Interna de Plantilla
 
 ### Añadido
