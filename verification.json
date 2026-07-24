@@ -1,23 +1,31 @@
 {
   "status": "passed",
-  "task": "preserve-grades-without-template-line-item",
+  "task": "irg_hide_portal_servicios",
   "checks": [
     {
-      "name": "unit_tests",
-      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local /usr/bin/odoo --test-enable --stop-after-init -i irg_gradebook_partial_averages -d odoo16irg_local --test-tags irg_gradebook_partial_averages",
+      "name": "python_syntax_check",
+      "command": "./.venv/bin/python -m py_compile addons-extra/extrairg/irg_hide_portal_servicios/__init__.py addons-extra/extrairg/irg_hide_portal_servicios/__manifest__.py",
       "result": "pass",
-      "detail": "9 passed, 0 failed, 0 errors",
-      "evidence": "artifacts/unit-tests.txt"
+      "detail": "Compilación limpia sin errores de sintaxis Python",
+      "evidence": "stdout limpio"
+    },
+    {
+      "name": "xml_syntax_check",
+      "command": "./.venv/bin/python -c \"import xml.etree.ElementTree as ET; ET.parse('addons-extra/extrairg/irg_hide_portal_servicios/views/portal_templates.xml')\"",
+      "result": "pass",
+      "detail": "Parseo XML correcto de views/portal_templates.xml",
+      "evidence": "ElementTree parse OK"
     }
   ],
   "environment": {
-    "runtime": "docker-compose.local.yml",
-    "database": "odoo16irg_local",
+    "runtime": "local",
     "base_commit": "HEAD"
   },
-  "model_tier_used": "complex",
+  "model_tier_used": "standard",
   "escalations": 0,
   "evidence": [
-    "artifacts/unit-tests.txt"
+    "addons-extra/extrairg/irg_hide_portal_servicios/__init__.py",
+    "addons-extra/extrairg/irg_hide_portal_servicios/__manifest__.py",
+    "addons-extra/extrairg/irg_hide_portal_servicios/views/portal_templates.xml"
   ]
 }
