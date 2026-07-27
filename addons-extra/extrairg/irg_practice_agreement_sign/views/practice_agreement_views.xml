@@ -125,10 +125,10 @@
         </field>
     </record>
 
-    <!-- Menuitem dentro de Prácticas si existe el menú principal de Prácticas -->
+    <!-- Menuitem dentro de Prácticas -->
     <menuitem id="menu_practice_agreement_root"
               name="Convenios Marco"
               action="action_practice_agreement"
-              parent="isep_practices.practice_main_menu"
+              parent="isep_practices_2.menu_practice_management"
               sequence="20"/>
 </odoo>

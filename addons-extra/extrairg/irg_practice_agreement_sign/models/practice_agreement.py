@@ -157,7 +157,7 @@ class PracticeAgreement(models.Model):
         })
 
         # Generar el PDF oficial del Convenio
-        pdf_content, _ = self.env['ir.actions.report'].sudo()._render_qweb_pdf(
+        pdf_content, report_format = self.env['ir.actions.report'].sudo()._render_qweb_pdf(
             'irg_practice_agreement_sign.action_report_practice_agreement',
             [self.id]
         )
@@ -183,8 +183,9 @@ class PracticeAgreement(models.Model):
             })
 
         # Enviar email de notificación de convenio firmado a ambas partes
+        body_msg = _("El convenio de colaboración ha sido firmado digitalmente por %s el %s.") % (signer_name, str(now))
         self.message_post(
-            body=_("El convenio de colaboración ha sido firmado digitalmente por %s el %s.") % (signer_name, now),
+            body=body_msg,
             attachment_ids=[attachment.id]
         )
         return True

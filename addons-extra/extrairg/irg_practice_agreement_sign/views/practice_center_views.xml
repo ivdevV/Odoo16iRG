@@ -5,15 +5,9 @@
         <field name="model">practice.center</field>
         <field name="inherit_id" ref="isep_practices_2.view_practice_center_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//sheet" position="before">
-                <header>
-                    <button name="action_create_agreement" string="Crear Convenio Marco" type="object" class="oe_highlight"/>
-                </header>
-            </xpath>
-            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
-                <button name="action_view_agreements" type="object" class="oe_stat_button" icon="fa-file-text-o">
-                    <field name="agreement_count" widget="statinfo" string="Convenios"/>
-                </button>
+            <xpath expr="//header" position="inside">
+                <button name="action_create_agreement" string="Crear Convenio Marco" type="object" class="oe_highlight"/>
+                <button name="action_view_agreements" string="Convenios Marco" type="object" class="btn-secondary"/>
             </xpath>
         </field>
     </record>
