@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Secuencia para la referencia del convenio -->
+        <record id="seq_practice_agreement" model="ir.sequence">
+            <field name="name">Convenio Marco de Prácticas</field>
+            <field name="code">practice.agreement</field>
+            <field name="prefix">CONV/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Plantilla de Correo Electrónico para Enviar Enlace de Firma -->
+        <record id="email_template_practice_agreement_sign" model="mail.template">
+            <field name="name">Convenios de Prácticas: Enviar Solicitud de Firma</field>
+            <field name="model_id" ref="model_practice_agreement"/>
+            <field name="subject">Convenio Marco de Colaboración Educativa - Instituto Raimon Gaja / {{ object.center_official_name or object.practice_center_id.name }}</field>
+            <field name="email_from">{{ (object.create_uid.email_formatted or user.email_formatted) }}</field>
+            <field name="email_to">{{ object.email or object.practice_center_id.email }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    <p style="margin: 0px; padding: 0px; font-size: 14px;">
+                        Estimado/a <strong><t t-out="object.signatory_name or 'Representante Legal'"/></strong>,
+                        <br/><br/>
+                        Desde el <strong>Instituto Raimon Gaja (iRG)</strong> nos complace ponernos en contacto con usted para formalizar el 
+                        <strong>Convenio Marco de Cooperación Educativa para la Realización de Prácticas Académicas Externas</strong> 
+                        con <strong><t t-out="object.center_official_name or object.practice_center_id.name"/></strong>.
+                        <br/><br/>
+                        Para revisar el documento, confirmar los datos de su entidad y proceder a la firma digital del convenio, por favor haga clic en el siguiente enlace:
+                        <br/><br/>
+                        <div style="text-align: center; margin: 24px 0;">
+                            <a t-att-href="object.get_portal_url()"
+                               style="background-color: #0056b3; color: #ffffff; padding: 12px 28px; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px; display: inline-block;">
+                                Firmar Convenio de Prácticas
+                            </a>
+                        </div>
+                        <br/>
+                        Si el botón no funciona, puede copiar y pegar la siguiente URL en su navegador:
+                        <br/>
+                        <a t-att-href="object.get_portal_url()"><t t-out="object.get_portal_url()"/></a>
+                        <br/><br/>
+                        Una vez completada la firma, ambas partes recibirán automáticamente una copia completa del convenio firmado en formato PDF.
+                        <br/><br/>
+                        Atentamente,
+                        <br/>
+                        <strong>Instituto Raimon Gaja</strong><br/>
+                        Carrer Córsega 213, 1º 2, 08036 Barcelona<br/>
+                        <a href="https://institutoraimongaja.com" style="color: #0056b3;">institutoraimongaja.com</a>
+                    </p>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

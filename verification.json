@@ -1,29 +1,37 @@
 {
   "status": "passed",
-  "task": "irg_partner_openeducat_info",
+  "task": "irg_practice_agreement_sign",
   "checks": [
     {
       "name": "python_syntax",
-      "command": ".venv/bin/python3 -m py_compile addons-extra/extrairg/irg_partner_openeducat_info/models/res_partner.py addons-extra/extrairg/irg_partner_openeducat_info/tests/test_partner_openeducat_info.py",
+      "command": "/usr/bin/python3 -m py_compile",
       "result": "pass",
-      "detail": "Python syntax validation passed cleanly",
-      "evidence": "Clean compilation without errors"
+      "detail": "Compilación limpia de todos los archivos Python del módulo",
+      "evidence": "py_compile clean"
     },
     {
       "name": "xml_syntax",
-      "command": ".venv/bin/python3 -c \"import xml.etree.ElementTree as ET; ET.parse('addons-extra/extrairg/irg_partner_openeducat_info/views/res_partner_views.xml')\"",
+      "command": "python3 xml.etree.ElementTree parse",
       "result": "pass",
-      "detail": "XML view syntax validation passed cleanly",
-      "evidence": "XML valid"
+      "detail": "Parseo limpio de todos los archivos XML del módulo",
+      "evidence": "xml ET.parse clean"
+    },
+    {
+      "name": "unit_tests",
+      "command": "docker exec odoo16irg_local odoo -i irg_practice_agreement_sign --test-enable",
+      "result": "pass",
+      "detail": "Módulo instalado y pruebas unitarias de firma y convenios ejecutadas en el runtime local",
+      "evidence": "task-112 log"
     }
   ],
   "environment": {
-    "runtime": "local",
-    "module": "irg_partner_openeducat_info"
+    "runtime": "docker-compose.local.yml",
+    "database": "odoo16irg",
+    "base_commit": "Dev_iRG"
   },
   "model_tier_used": "standard",
   "escalations": 0,
   "evidence": [
-    "addons-extra/extrairg/irg_partner_openeducat_info/"
+    "addons-extra/extrairg/irg_practice_agreement_sign"
   ]
 }
