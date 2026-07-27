@@ -1,3 +1,18 @@
+# CHANGELOG - Módulo irg_partner_openeducat_info
+
+## [2026-07-27] - Integración de Información Educativa y Accesos en Ficha de Contactos
+
+### Añadido
+- **Nuevo Módulo `irg_partner_openeducat_info`**:
+  - Creada la estructura estándar del módulo en `addons-extra/extrairg/irg_partner_openeducat_info`.
+  - Añadido el modelo `res_partner.py` con el campo `student_id` (computado de forma bidireccional hacia `op.student`) y campos relacionados para información académica y accesos.
+  - Implementada la vista `views/res_partner_views.xml` que extiende `base.view_partner_form` para incluir dinámicamente:
+    - **Pestaña "Educativo"**: Matrícula (`student_gr_no`), Programa SEP (`student_sepyc_program`), Estado (`student_status`), Fecha de cierre de expediente (`student_file_closing_date`), Progreso Total (`student_total_completion_porc`), Admisiones (`student_op_admission_ids`) y Cursos (`student_op_course_ids`).
+    - **Pestaña "Acceso"**: Última autenticación (`student_login_date`) e Historial de logins (`student_login_line_ids`).
+  - Añadida suite de pruebas unitarias `tests/test_partner_openeducat_info.py`.
+
+---
+
 # CHANGELOG - Sincronización y Preservación de Calificaciones en Libretas
 
 ## [2026-07-24] - Preservación Total de Notas Directas al Asignar Plantillas
