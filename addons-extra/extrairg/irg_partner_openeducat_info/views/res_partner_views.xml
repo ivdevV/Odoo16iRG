@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_openeducat_info" model="ir.ui.view">
+        <field name="name">res.partner.form.openeducat.info</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <field name="student_id" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//sheet/notebook" position="inside">
+                <page name="educativo" string="Educativo" attrs="{'invisible': [('student_id', '=', False)]}">
+                    <group>
+                        <group string="Datos Académicos" name="date_academic">
+                            <field name="student_gr_no"/>
+                            <field name="student_sepyc_program"/>
+                            <field name="student_status"/>
+                            <field name="student_file_closing_date"/>
+                            <field name="student_total_completion_porc" widget="progressbar"/>
+                        </group>
+                    </group>
+
+                    <group string="Detalles de admisión" name="details_admission">
+                        <field name="student_op_admission_ids" widget="one2many_list" string="Admisión">
+                            <tree string="Admisión">
+                                <field name="admission_date"/>
+                                <field name="application_number" string="Matrícula"/>
+                                <field name="course_id"/>
+                                <field name="batch_id"/>
+                                <field name="due_date"/>
+                                <field name="state"/>
+                            </tree>
+                            <form string="Detalle de admisión">
+                                <group>
+                                    <field name="admission_date"/>
+                                    <field name="application_number" string="Matrícula"/>
+                                    <field name="course_id"/>
+                                    <field name="batch_id"/>
+                                    <field name="due_date"/>
+                                    <field name="state"/>
+                                </group>
+                            </form>
+                        </field>
+
+                        <field name="student_op_course_ids" widget="one2many_list" string="Curso">
+                            <tree string="Curso">
+                                <field name="course_id"/>
+                                <field name="batch_id"/>
+                                <field name="completion_porc" widget="percentpie" optional="show"/>
+                                <field name="subject_ids" optional="hide"/>
+                            </tree>
+                            <form string="Detalles de curso">
+                                <group>
+                                    <field name="course_id"/>
+                                    <field name="batch_id"/>
+                                    <field name="completion_porc" widget="percentpie"/>
+                                    <field name="subject_ids"/>
+                                </group>
+                            </form>
+                        </field>
+                    </group>
+                </page>
+
+                <page name="access" string="Acceso" attrs="{'invisible': [('student_id', '=', False)]}">
+                    <group>
+                        <field name="student_login_date"/>
+                    </group>
+                    <field name="student_login_line_ids" readonly="1">
+                        <tree>
+                            <field name="login_date" string="Fecha login"/>
+                            <field name="last_access" string="Hace"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
