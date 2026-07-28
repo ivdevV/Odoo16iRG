@@ -44,9 +44,11 @@
                                     <t t-esc="practice_request.course_id.course_id.name or 'N/A'"/>
                                 </td>
                                 <t t-set="practice_types_dict" t-value="{
-                                        'on_site': 'Presencial',
+                                        'on_site': 'Presencial en España',
+                                        'on_site_origin': 'Presencial País de Origen',
                                         'distance': 'Distancia',
-                                        'validation': 'Convalidación'
+                                        'validation': 'Convalidación por experiencia',
+                                        'tfm_validation': 'Convalidación por TFM'
                                     }"/>
                                 <td>
                                     <t t-esc="practice_types_dict.get(practice_request.practice_center_type_id.type_of_practice, 'N/A')"/>
