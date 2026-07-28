@@ -14,17 +14,15 @@ class AccountMove(models.Model):
         if not moves_with_pay_date:
             return super()._compute_needed_terms()
 
-        res = {}
-        for move in self:
-            if move in moves_with_pay_date:
-                ref_date = fields.Date.to_date(move.payment_date)
-                orig_invoice_date = move.invoice_date
-                try:
-                    move.invoice_date = ref_date
-                    move_terms = super(AccountMove, move)._compute_needed_terms()
-                    res.update(move_terms)
-                finally:
-                    move.invoice_date = orig_invoice_date
-            else:
-                res.update(super(AccountMove, move)._compute_needed_terms())
-        return res
+        for move in moves_with_pay_date:
+            ref_date = fields.Date.to_date(move.payment_date)
+            orig_invoice_date = move.invoice_date
+            try:
+                move.invoice_date = ref_date
+                super(AccountMove, move)._compute_needed_terms()
+            finally:
+                move.invoice_date = orig_invoice_date
+
+        other_moves = self - moves_with_pay_date
+        if other_moves:
+            super(AccountMove, other_moves)._compute_needed_terms()

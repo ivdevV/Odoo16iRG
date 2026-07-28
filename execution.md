@@ -11,9 +11,10 @@
 - [x] Modificado `irg_sale_subscription_payment_terms/models/sale_order.py` para considerar `payment_date` como fecha de referencia.
 - [x] Modificado `irg_subscription_esp_single_invoice/models/sale_order.py` para sincronizar `payment_date` al crear la factura única.
 - [x] Modificado `isep_sale_subscription_extension/models/sale_order.py` para utilizar `payment_date` como referencia en `create_subscription_schedule`.
+- [x] Corregido `_compute_needed_terms` en `account.move` para llamar a `super()._compute_needed_terms()` como método compute (sin iterar sobre su valor de retorno `None`).
 
 ## Fase 3: Review de código
-- Revisión realizada: Se comprobó que `_compute_needed_terms()` en `account.move` calcula los vencimientos utilizando `payment_date` (en formato `Date`) como fecha de referencia cuando está presente, manteniendo fallback a `invoice_date` o fecha actual si no existe.
+- Revisión realizada: `_compute_needed_terms()` ahora asigna el valor del campo compute llamando a `super()` correctamente.
 
 ## Fase 4: Validación
 - Pruebas de sintaxis compilaron sin errores.
