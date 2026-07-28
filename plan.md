@@ -1,20 +1,25 @@
-# Plan de Misión: Adaptación de Fechas de Vencimiento de Facturas (payment_date y payment_mode_id)
+# Plan de Misión: Módulo de Convenios de Prácticas y Firma Digital (`irg_practice_agreement_sign`)
 
-## Alcance y Clasificación
-- **Tier de capacidad**: `standard`
-- **Misión**: Ligera (`plan.md`, `execution.md`, `verification.json`)
-- **Objetivo**: Garantizar que los vencimientos (`date_maturity`) en los apuntes contables (`account.move.line` 430000 Clientes) de las facturas generadas para suscripciones y pedidos con condiciones de pago (`payment_term_id`) utilicen la fecha de pago (`payment_date`) y el modo de pago (`payment_mode_id`).
+## Scope & Tier Classification
+- **Tier:** `standard`
+- **Justificación:** Módulo nuevo que interactúa con `isep_practices_2`, expone rutas web públicas mediante tokens de seguridad para la cumplimentación y captura de firma digital, e incluye la firma pre-autorizada del Sr. Raimon Gaja (`Firma Raimon.png`).
+- **Roles:**
+  - Orquestador: Definición de plan y criterios.
+  - Codificador: Desarrollo del modelo `practice.agreement`, controlador web, reporte QWeb y vistas.
+  - Revisor / Validador: Verificación de sintaxis, pruebas unitarias y generación de PDF.
+  - Documentador: Registro en CHANGELOG.md y actualización de documentación.
 
 ## Criterios de Aceptación
-1. `account.move` incluye el campo `payment_date`.
-2. `sale.order._prepare_invoice()` propaga `payment_date` y `payment_mode_id` a `account.move`.
-3. Al calcular los términos/vencimientos en `account.move` (`_compute_needed_terms`), si existe `payment_date`, se utiliza como fecha de referencia (`date_ref`), de modo que las cuotas comiencen a partir de `payment_date`.
-4. El cálculo de cronograma de suscripción (`create_subscription_schedule`) respeta `payment_date` en `irg_sale_subscription_payment_terms`, `isep_sale_subscription_extension` e `irg_subscription_esp_single_invoice`.
-5. La vista de formulario de factura expone `payment_date`.
+1. Creación del módulo `irg_practice_agreement_sign` en `addons-extra/extrairg/`.
+2. Extensión/Integración con el modelo `practice.center` de `isep_practices_2`.
+3. Carga automática de la firma oficial de Raimon Gaja (`Firma Raimon.png`) en el lado izquierdo del PDF.
+4. Generación de enlace público tokenizado `/convenio/firma/<token>`.
+5. Formulario web responsive donde el centro completa datos y firma en el lado derecho.
+6. Generación automática del convenio PDF firmado y guardado en los documentos del centro.
 
-## Fases y Propietarios
-- **Plan**: Orquestador (Completado)
-- **Implementación/TDD**: Codificador
-- **Review de código**: Revisor
-- **Validación**: Validador
-- **Documentación**: Documentador
+## Riesgos y Mitigaciones
+- **Seguridad en enlaces públicos:** Usar tokens aleatorios criptográficos (UUID4/urlsafe).
+- **Fidelidad del documento:** Maquetar la plantilla QWeb PDF respetando el diseño exacto de `Convenio Marco iRG - Modelo firma.docx` y `Convenio Marco iRG - Modelo firma.pdf`.
+
+## Estado del Gate
+- Plan refinado con la incorporación de la firma oficial `Firma Raimon.png`.

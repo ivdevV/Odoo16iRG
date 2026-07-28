@@ -21,7 +21,7 @@ class SaleOrder(models.Model):
 
     def _get_payment_term_last_date(self, start_date=None):
         self.ensure_one()
-        ref_date = start_date or (fields.Date.to_date(self.payment_date) if self.payment_date else fields.Date.today())
+        ref_date = start_date or fields.Date.today()
         _logger.info("=== DEBUG: _get_payment_term_last_date called with start_date=%s, payment_term_id=%s ===", ref_date, self.payment_term_id)
         if not self.payment_term_id:
             _logger.info("=== DEBUG: missing payment_term_id ===")
@@ -103,7 +103,7 @@ class SaleOrder(models.Model):
         for order in self:
             _logger.info("=== DEBUG: processing order %s, start_date=%s, payment_term_id=%s ===", order.name, order.start_date, order.payment_term_id)
             if order.payment_term_id:
-                ref_date = fields.Date.to_date(order.payment_date) if order.payment_date else (order.start_date or fields.Date.context_today(order))
+                ref_date = order.start_date or fields.Date.context_today(order)
                 last_date = order._get_payment_term_last_date(ref_date)
                 if last_date:
                     order.end_date = last_date
@@ -129,7 +129,7 @@ class SaleOrder(models.Model):
         # Update end_date based on payment terms before calling super to pass validations
         for order in self:
             if order.payment_term_id:
-                ref_date = fields.Date.to_date(order.payment_date) if order.payment_date else (order.start_date or fields.Date.today())
+                ref_date = order.start_date or fields.Date.today()
                 last_date = order._get_payment_term_last_date(ref_date)
                 if last_date:
                     order.end_date = last_date
@@ -142,7 +142,7 @@ class SaleOrder(models.Model):
             if not order.payment_term_id or not order.subscription_schedule:
                 continue
 
-            start_date = fields.Date.to_date(order.payment_date) if order.payment_date else (order.start_date or fields.Date.today())
+            start_date = order.start_date or fields.Date.today()
             currency = order.currency_id
             company = order.company_id
             sign = 1

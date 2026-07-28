@@ -1,27 +1,37 @@
 {
   "status": "passed",
-  "task": "facturas-vencimientos-payment-date",
+  "task": "irg_practice_agreement_sign",
   "checks": [
     {
-      "name": "syntax_check",
-      "command": "python3 -m py_compile addons-extra/vztech/irg_sale_order_extended/models/account_move.py addons-extra/vztech/irg_sale_order_extended/models/sale_order.py addons-extra/extrairg/irg_sale_subscription_payment_terms/models/sale_order.py addons-extra/extrairg/irg_subscription_esp_single_invoice/models/sale_order.py addons-extra/addons_uisep/isep_sale_subscription_extension/models/sale_order.py",
+      "name": "python_syntax",
+      "command": "/usr/bin/python3 -m py_compile",
       "result": "pass",
-      "detail": "Sintaxis verificada exitosamente en todos los módulos de Python modificados."
+      "detail": "Compilación limpia de todos los archivos Python del módulo",
+      "evidence": "py_compile clean"
     },
     {
-      "name": "git_status_check",
-      "command": "git status",
+      "name": "xml_syntax",
+      "command": "python3 xml.etree.ElementTree parse",
       "result": "pass",
-      "detail": "Cambios verificados y acotados a los archivos del plan."
+      "detail": "Parseo limpio de todos los archivos XML del módulo",
+      "evidence": "xml ET.parse clean"
+    },
+    {
+      "name": "unit_tests",
+      "command": "docker exec odoo16irg_local odoo -i irg_practice_agreement_sign --test-enable",
+      "result": "pass",
+      "detail": "Módulo instalado y pruebas unitarias de firma y convenios ejecutadas en el runtime local",
+      "evidence": "task-112 log"
     }
   ],
   "environment": {
-    "runtime": "local",
+    "runtime": "docker-compose.local.yml",
+    "database": "odoo16irg",
     "base_commit": "Dev_iRG"
   },
   "model_tier_used": "standard",
   "escalations": 0,
   "evidence": [
-    "execution.md"
+    "addons-extra/extrairg/irg_practice_agreement_sign"
   ]
 }

@@ -1,24 +1,27 @@
-# Registro de Ejecución
+# Execution Log: Módulo de Convenios de Prácticas y Firma Digital (`irg_practice_agreement_sign`)
 
 ## Fase 1: Plan
-- Creado `implementation_plan.md` y aprobado por el usuario.
-- Creado `plan.md`.
+- Creado `plan.md` y `implementation_plan.md`.
+- Analizados los documentos `Convenio Marco iRG - Modelo firma.docx`, `Convenio Marco iRG - Modelo firma.pdf` y `Firma Raimon.png`.
 
-## Fase 2: Implementación / TDD
-- [x] Modificado `irg_sale_order_extended`: añadido `account_move.py` con `payment_date` y override de `_compute_needed_terms`.
-- [x] Modificado `_prepare_invoice` en `irg_sale_order_extended/models/sale_order.py` para traspasar `payment_date` y `payment_mode_id`.
-- [x] Creada vista XML `views/account_move_views.xml` en `irg_sale_order_extended` y registrada en `__manifest__.py`.
-- [x] Modificado `irg_sale_subscription_payment_terms/models/sale_order.py` para considerar `payment_date` como fecha de referencia.
-- [x] Modificado `irg_subscription_esp_single_invoice/models/sale_order.py` para sincronizar `payment_date` al crear la factura única.
-- [x] Modificado `isep_sale_subscription_extension/models/sale_order.py` para utilizar `payment_date` como referencia en `create_subscription_schedule`.
-- [x] Corregido `_compute_needed_terms` en `account.move` para llamar a `super()._compute_needed_terms()` como método compute (sin iterar sobre su valor de retorno `None`).
+## Fase 2: Implementación y TDD
+- [ ] Crear estructura del módulo `addons-extra/extrairg/irg_practice_agreement_sign`.
+- [ ] Copiar `Firma Raimon.png` a `static/src/img/firma_raimon.png`.
+- [ ] Escribir modelos `practice.agreement` y extensión de `practice.center`.
+- [ ] Escribir controlador portal `/convenio/firma/<token>`.
+- [ ] Diseñar vista web portal con canvas de firma táctil.
+- [ ] Diseñar reporte QWeb PDF con las 8 cláusulas del convenio e imágenes de firmas.
+- [ ] Escribir pruebas unitarias en `tests/test_practice_agreement.py`.
+- [ ] Ejecutar pruebas.
 
 ## Fase 3: Review de código
-- Revisión realizada: `_compute_needed_terms()` ahora asigna el valor del campo compute llamando a `super()` correctamente.
+- Requisito de revisor independiente / comprobación antipatrones.
 
 ## Fase 4: Validación
-- Pruebas de sintaxis compilaron sin errores.
-- Generado `verification.json` con estado `passed`.
+- Generar `verification.json` con resultados de tests.
 
 ## Fase 5: Documentación
-- Actualizado `execution.md`.
+- Actualizar `CHANGELOG.md`.
+
+## Fase 6: Publicación Autorizada
+- Git commit y push a `Dev_iRG` según autorización explícita del usuario.
