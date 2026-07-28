@@ -13,11 +13,12 @@
    - `Junio a Agosto`
    - `Septiembre a Noviembre`
    - `Diciembre a Febrero`
-4. Plantilla portal inyectada mediante XPath en `isep_practices_2.practice_request_form_template` posicionado justo antes del selector de "Tipo de práctica".
-5. Vista de formulario backend (`isep_practices_2.view_practice_request_form`) heredada para visibilizar el campo `irg_preferred_quarter`.
-6. Controlador portal extendido para validar que la opción no esté vacía y almacenar la selección en `practice.request`.
-7. Tests unitarios redactados y ejecutados.
-8. Verificación de sintaxis de Python y XML superadas al 100%.
+4. Método `create` en `practice.request` sobreescrito para capturar `irg_preferred_quarter` directamente desde la petición HTTP POST (`request.params` / `request.httprequest.form`) asegurando que se persista en el registro.
+5. Plantilla portal inyectada mediante XPath en `isep_practices_2.practice_request_form_template` posicionado justo antes del selector de "Tipo de práctica".
+6. Vista de formulario backend (`isep_practices_2.view_practice_request_form`) heredada para visibilizar el campo `irg_preferred_quarter`.
+7. Controlador portal extendido para validar que la opción no esté vacía y soportar los códigos de estado HTTP 3xx (redirección 303 en Odoo 16).
+8. Tests unitarios redactados y ejecutados.
+9. Verificación de sintaxis de Python y XML superadas al 100%.
 
 ## Checks & Verification Results
 - `py_compile`: PASS

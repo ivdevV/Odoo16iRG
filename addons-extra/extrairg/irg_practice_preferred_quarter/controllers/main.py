@@ -47,7 +47,9 @@ class IrgPracticePreferredQuarter(IrgPracticeRequestStudentProfile):
 
         res = super()._irg_create_portal_request(**kwargs)
 
-        if getattr(res, 'status_code', None) in (301, 302) and quarter and course_id:
+        status_code = getattr(res, 'status_code', None)
+        is_redirect = status_code and (300 <= status_code < 400)
+        if is_redirect and quarter and course_id:
             try:
                 course_id_int = int(course_id)
                 req = request.env['practice.request'].sudo().search([
