@@ -3,22 +3,27 @@
     <template id="report_practice_agreement_document">
         <t t-call="web.basic_layout">
             <t t-foreach="docs" t-as="doc">
-                <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #222222; padding: 20px 30px;">
+                <!-- Encabezado corporativo con Logo iRG -->
+                <div class="header" style="border-bottom: 1px solid #e5e5e5; padding-bottom: 15px; margin-bottom: 25px; text-align: center;">
+                    <img src="/irg_practice_agreement_sign/static/src/img/logo_irg.jpg" style="max-height: 80px; max-width: 280px; object-fit: contain;"/>
+                </div>
+
+                <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; color: #222222; padding: 10px 25px;">
                     
                     <!-- Encabezado / Título -->
                     <div style="text-align: center; margin-bottom: 25px;">
-                        <h3 style="font-size: 14pt; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; color: #111111;">
+                        <h3 style="font-size: 13pt; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; color: #111111;">
                             CONVENIO DE COOPERACION EDUCATIVA PARA LA REALIZACIÓN DE PRÁCTICAS ACADÉMICAS EXTERNAS EN ENTIDADES COLABORADORAS
                         </h3>
-                        <p style="font-size: 11pt; font-weight: bold;">
+                        <p style="font-size: 10.5pt; font-weight: bold;">
                             En <span t-out="doc.city_signature or 'Barcelona'"/>, a 
-                            <span t-out="doc.date_signature and doc.date_signature.strftime('%d de %B de %Y') or ''"/>
+                            <span t-out="doc.date_signature and doc.date_signature.strftime('%d de %B de %Y') or '___ de ____________ de ________'"/>
                         </p>
                     </div>
 
                     <!-- REUNIDOS -->
                     <div style="margin-bottom: 20px;">
-                        <h4 style="font-size: 12pt; font-weight: bold; margin-bottom: 10px;">REUNIDOS</h4>
+                        <h4 style="font-size: 11.5pt; font-weight: bold; margin-bottom: 10px;">REUNIDOS</h4>
                         <p style="text-align: justify; margin-bottom: 10px;">
                             De una parte, el Señor <strong>RAIMON GAJA JAUMEANDREU</strong> en nombre y representación, del Instituto Raimon Gaja, S.L., en su condición de Director General, con NIF B 564 88687 y sede en Carrer Córsega 213, 1º 2, Barcelona con CP: 08036; en adelante <strong>iRG</strong>.
                         </p>
@@ -32,7 +37,7 @@
 
                     <!-- MANIFIESTAN -->
                     <div style="margin-bottom: 20px;">
-                        <h4 style="font-size: 12pt; font-weight: bold; margin-bottom: 10px;">MANIFIESTAN</h4>
+                        <h4 style="font-size: 11.5pt; font-weight: bold; margin-bottom: 10px;">MANIFIESTAN</h4>
                         <p style="text-align: justify; margin-bottom: 10px;">
                             iRG en sus planes de estudios contempla que los estudiantes realicen un periodo de prácticas académicas externas en instituciones, centros o empresas profesionales del ámbito específico de la formación, poniéndoles así en contacto con la práctica profesional con la finalidad de facilitar a los estudiantes la adquisición de habilidades y recursos para el ejercicio de la profesión.
                         </p>
@@ -43,7 +48,7 @@
 
                     <!-- CLÁUSULAS -->
                     <div style="margin-bottom: 20px;">
-                        <h4 style="font-size: 12pt; font-weight: bold; text-align: center; margin-bottom: 15px;">CLÁUSULAS</h4>
+                        <h4 style="font-size: 11.5pt; font-weight: bold; text-align: center; margin-bottom: 15px;">CLÁUSULAS</h4>
                         
                         <p><strong>1. Objeto del convenio de colaboración</strong></p>
                         <p style="text-align: justify; margin-bottom: 12px;">
@@ -101,6 +106,9 @@
                                         <t t-if="doc.signature_irg">
                                             <img t-att-src="image_data_uri(doc.signature_irg)" style="max-height: 85px; max-width: 220px;"/>
                                         </t>
+                                        <t t-else="">
+                                            <img src="/irg_practice_agreement_sign/static/src/img/firma_raimon.png" style="max-height: 85px; max-width: 220px;"/>
+                                        </t>
                                     </div>
                                     <p style="margin: 0; font-weight: bold;">Raimon Gaja</p>
                                     <p style="margin: 0; color: #555555;">Instituto Raimon Gaja</p>
@@ -123,6 +131,13 @@
                         Firmado digitalmente mediante plataforma iRG. | Ref: <span t-out="doc.name"/> | Fecha/Hora UTC: <span t-out="doc.signed_on"/> | IP: <span t-out="doc.signed_ip"/>
                     </div>
 
+                </div>
+
+                <!-- Pie de página corporativo -->
+                <div class="footer" style="border-top: 1px solid #e5e5e5; padding-top: 8px; font-size: 8pt; color: #666666; text-align: center;">
+                    <p style="margin: 0;">
+                        C/ Còrsega 213, 1-2 08036 Barcelona, España - 930 460 554 - info@institutoraimongaja.com - https://institutoraimongaja.com/
+                    </p>
                 </div>
             </t>
         </t>
