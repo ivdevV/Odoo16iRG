@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_practice_agreement" model="ir.actions.report">
+        <field name="name">Convenio Marco de Prácticas</field>
+        <field name="model">practice.agreement</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">irg_practice_agreement_sign.report_practice_agreement_document</field>
+        <field name="report_file">irg_practice_agreement_sign.report_practice_agreement_document</field>
+        <field name="print_report_name">'Convenio_Marco_%s_%s' % (object.center_official_name or 'Centro', object.name)</field>
+        <field name="binding_model_id" ref="model_practice_agreement"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+</odoo>

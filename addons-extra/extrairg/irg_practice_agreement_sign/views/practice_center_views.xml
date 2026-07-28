@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_center_form_agreement_sign" model="ir.ui.view">
+        <field name="name">practice.center.form.agreement.sign</field>
+        <field name="model">practice.center</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_center_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_create_agreement" string="Crear Convenio Marco" type="object" class="oe_highlight"/>
+                <button name="action_view_agreements" string="Convenios Marco" type="object" class="btn-secondary"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

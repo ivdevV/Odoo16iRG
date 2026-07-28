@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View practice.agreement -->
+    <record id="view_practice_agreement_form" model="ir.ui.view">
+        <field name="name">practice.agreement.form</field>
+        <field name="model">practice.agreement</field>
+        <field name="arch" type="xml">
+            <form string="Convenio Marco de Prácticas">
+                <header>
+                    <button name="action_send_by_email" string="Enviar por Email" type="object" class="oe_highlight" states="draft,sent"/>
+                    <button name="action_view_pdf" string="Ver PDF Firmado" type="object" class="btn-secondary" states="completed"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Datos del Centro Colaborador">
+                            <field name="practice_center_id"/>
+                            <field name="partner_id" invisible="1"/>
+                            <field name="center_official_name" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                            <field name="center_vat" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                            <field name="signatory_name" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                            <field name="signatory_title" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                            <field name="email" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                            <field name="phone" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                        </group>
+                        <group string="Dirección Sede del Centro">
+                            <field name="street" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                            <field name="city" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                            <field name="zip" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                            <field name="state_id" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                            <field name="country_id" attrs="{'readonly': [('state', '=', 'completed')]}"/>
+                        </group>
+                    </group>
+                    <group string="Datos del Convenio iRG">
+                        <group>
+                            <field name="city_signature"/>
+                            <field name="date_signature"/>
+                        </group>
+                        <group>
+                            <field name="access_token" readonly="1"/>
+                            <field name="pdf_attachment_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Auditoría de Firma Digital" attrs="{'invisible': [('state', '!=', 'completed')]}">
+                            <group>
+                                <group string="Metadatos de la Firma">
+                                    <field name="signed_by" readonly="1"/>
+                                    <field name="signed_on" readonly="1"/>
+                                    <field name="signed_ip" readonly="1"/>
+                                </group>
+                                <group string="Evidencia de Firma del Centro">
+                                    <field name="signature_center" widget="image" class="oe_avatar" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View practice.agreement -->
+    <record id="view_practice_agreement_tree" model="ir.ui.view">
+        <field name="name">practice.agreement.tree</field>
+        <field name="model">practice.agreement</field>
+        <field name="arch" type="xml">
+            <tree string="Convenios Marco de Prácticas" decoration-info="state=='draft'" decoration-warning="state=='sent'" decoration-success="state=='completed'">
+                <field name="name"/>
+                <field name="practice_center_id"/>
+                <field name="center_official_name"/>
+                <field name="signatory_name"/>
+                <field name="date_signature"/>
+                <field name="signed_on"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Search View practice.agreement -->
+    <record id="view_practice_agreement_search" model="ir.ui.view">
+        <field name="name">practice.agreement.search</field>
+        <field name="model">practice.agreement</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Convenios Marco">
+                <field name="name"/>
+                <field name="practice_center_id"/>
+                <field name="center_official_name"/>
+                <field name="signatory_name"/>
+                <field name="center_vat"/>
+                <filter string="Borradores" name="filter_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Enviados" name="filter_sent" domain="[('state', '=', 'sent')]"/>
+                <filter string="Firmados" name="filter_completed" domain="[('state', '=', 'completed')]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Centro de Prácticas" name="group_by_center" context="{'group_by': 'practice_center_id'}"/>
+                    <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action practice.agreement -->
+    <record id="action_practice_agreement" model="ir.actions.act_window">
+        <field name="name">Convenios Marco</field>
+        <field name="res_model">practice.agreement</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_practice_agreement_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                ¡Cree su primer Convenio Marco de Prácticas!
+            </p>
+            <p>
+                Gestione las plantillas de convenio con los centros colaboradores y envíe enlaces de firma digital.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menuitem dentro de Prácticas -->
+    <menuitem id="menu_practice_agreement_root"
+              name="Convenios Marco"
+              action="action_practice_agreement"
+              parent="isep_practices_2.menu_practice_management"
+              sequence="20"/>
+</odoo>

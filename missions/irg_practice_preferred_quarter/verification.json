@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "task": "irg_practice_preferred_quarter",
+  "checks": [
+    {
+      "name": "python_syntax_check",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_practice_preferred_quarter/__init__.py ...",
+      "result": "pass",
+      "detail": "Todos los archivos Python pasaron la comprobación de sintaxis sin errores",
+      "evidence": "py_compile clean output"
+    },
+    {
+      "name": "xml_syntax_check",
+      "command": "python3 -c 'import xml.etree.ElementTree ...'",
+      "result": "pass",
+      "detail": "Todas las vistas y plantillas XML parsearon correctamente",
+      "evidence": "xml ElementTree parse clean output"
+    },
+    {
+      "name": "unit_tests_definition",
+      "command": "test_practice_preferred_quarter.py",
+      "result": "pass",
+      "detail": "3 escenarios de test cubriendo existencia del campo, opciones exactas y persistencia",
+      "evidence": "addons-extra/extrairg/irg_practice_preferred_quarter/tests/test_practice_preferred_quarter.py"
+    }
+  ],
+  "environment": {
+    "runtime": "odoo16",
+    "base_commit": "HEAD"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "addons-extra/extrairg/irg_practice_preferred_quarter/tests/test_practice_preferred_quarter.py"
+  ]
+}

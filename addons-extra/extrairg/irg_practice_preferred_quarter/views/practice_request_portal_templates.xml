@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="practice_request_form_preferred_quarter" inherit_id="isep_practices_2.practice_request_form_template" name="IRG - Trimestre preferente en solicitud de práctica">
+        <xpath expr="//select[@id='practice_center_type_id']/ancestor::div[hasclass('form-group')][1]" position="before">
+            <div class="form-group mt-3">
+                <label for="irg_preferred_quarter">Trimestre preferente para iniciar las prácticas<span class="text-danger">*</span></label>
+                <select name="irg_preferred_quarter" id="irg_preferred_quarter" class="form-control" required="required">
+                    <option value="">Escribe o selecciona una opción</option>
+                    <option value="marzo_mayo" t-att-selected="form_values.get('irg_preferred_quarter') == 'marzo_mayo' if form_values else False">Marzo a Mayo</option>
+                    <option value="junio_agosto" t-att-selected="form_values.get('irg_preferred_quarter') == 'junio_agosto' if form_values else False">Junio a Agosto</option>
+                    <option value="septiembre_noviembre" t-att-selected="form_values.get('irg_preferred_quarter') == 'septiembre_noviembre' if form_values else False">Septiembre a Noviembre</option>
+                    <option value="diciembre_febrero" t-att-selected="form_values.get('irg_preferred_quarter') == 'diciembre_febrero' if form_values else False">Diciembre a Febrero</option>
+                </select>
+            </div>
+        </xpath>
+    </template>
+</odoo>

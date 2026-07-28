@@ -1,23 +1,27 @@
-# Registro de Ejecución: Módulo irg_partner_openeducat_info
+# Execution Log: Módulo de Convenios de Prácticas y Firma Digital (`irg_practice_agreement_sign`)
 
-## Estado de la Misión
-- **Nivel de Misión**: `light` / `full`
-- **Fase Actual**: Completado (`passed`)
+## Fase 1: Plan
+- Creado `plan.md` y `implementation_plan.md`.
+- Analizados los documentos `Convenio Marco iRG - Modelo firma.docx`, `Convenio Marco iRG - Modelo firma.pdf` y `Firma Raimon.png`.
 
-## Diario de Ejecución
+## Fase 2: Implementación y TDD
+- [ ] Crear estructura del módulo `addons-extra/extrairg/irg_practice_agreement_sign`.
+- [ ] Copiar `Firma Raimon.png` a `static/src/img/firma_raimon.png`.
+- [ ] Escribir modelos `practice.agreement` y extensión de `practice.center`.
+- [ ] Escribir controlador portal `/convenio/firma/<token>`.
+- [ ] Diseñar vista web portal con canvas de firma táctil.
+- [ ] Diseñar reporte QWeb PDF con las 8 cláusulas del convenio e imágenes de firmas.
+- [ ] Escribir pruebas unitarias en `tests/test_practice_agreement.py`.
+- [ ] Ejecutar pruebas.
 
-### [Fecha: 2026-07-27] - Planificación e Implementación del Módulo de Información Educativa y Accesos en Contactos
-1. **Análisis de Requisitos**:
-   - Inspeccionada la estructura existente de OpenEduCat (`openeducat_core`, `isep_student_filter`, `isep_student_access`).
-   - Identificados los campos educativos (`gr_no`, `sepyc_program`, `status_student`, `file_closing_date`, `total_completion_porc`, `op_admission_ids`, `op_course_ids`) y de accesos (`login_date`, `login_line_ids`).
-2. **Creación del Módulo `irg_partner_openeducat_info`**:
-   - Ubicación: `addons-extra/extrairg/irg_partner_openeducat_info/`
-   - Archivos creados:
-     - `__manifest__.py`: Declaración de dependencias (`base`, `openeducat_core`, `isep_student_filter`, `isep_student_access`) y vistas.
-     - `models/res_partner.py`: Campo computado `student_id` (vínculo a `op.student`) y campos relacionados para información educativa y accesos.
-     - `views/res_partner_views.xml`: Herencia de `base.view_partner_form` agregando la pestaña "Educativo" y la pestaña "Acceso" (visibles dinámicamente si el contacto es estudiante).
-     - `tests/test_partner_openeducat_info.py`: Pruebas unitarias de vinculación partner-student y acceso a campos.
-3. **Validación**:
-   - Sintaxis Python comprobada con `.venv/bin/python3 -m py_compile`.
-   - Sintaxis XML comprobada con `xml.etree.ElementTree`.
-   - Generado `verification.json` con resultado `passed`.
+## Fase 3: Review de código
+- Requisito de revisor independiente / comprobación antipatrones.
+
+## Fase 4: Validación
+- Generar `verification.json` con resultados de tests.
+
+## Fase 5: Documentación
+- Actualizar `CHANGELOG.md`.
+
+## Fase 6: Publicación Autorizada
+- Git commit y push a `Dev_iRG` según autorización explícita del usuario.

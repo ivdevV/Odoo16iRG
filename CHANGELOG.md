@@ -1,3 +1,20 @@
+# CHANGELOG - Módulo irg_practice_agreement_sign
+
+## [2026-07-27] - Módulo de Convenios Marco de Prácticas y Firma Digital
+
+### Añadido
+- **Nuevo Módulo `irg_practice_agreement_sign`**:
+  - Creada la estructura en `addons-extra/extrairg/irg_practice_agreement_sign`.
+  - Definido el modelo `practice.agreement` con soporte para tokens de seguridad UUID4, gestión de estados (`draft`, `sent`, `completed`, `cancelled`), metadatos de auditoría (IP, fecha/hora UTC, firmante) y almacenamiento de firmas en Base64.
+  - Carga por defecto de la firma pre-autorizada del Sr. Raimon Gaja (`Firma Raimon.png`) en el lado izquierdo del bloque de firmas.
+  - Implementado el controlador web público `/convenio/firma/<token>` con interfaz responsive en bootstrap y canvas de firma digital interactivo (táctil y ratón).
+  - Diseñada la plantilla QWeb PDF oficial del Convenio Marco de Prácticas reproduciendo fielmente el formato y las 8 cláusulas legales.
+  - Extendido el modelo `practice.center` para incluir convenios asociados y acción rápida para generar convenio marco.
+  - Añadida plantilla de correo electrónico `email_template_practice_agreement_sign` para envío de enlace de firma al centro.
+  - Añadida suite de pruebas unitarias en `tests/test_practice_agreement.py`.
+
+---
+
 # CHANGELOG - Módulo irg_partner_openeducat_info
 
 ## [2026-07-27] - Integración de Información Educativa y Accesos en Ficha de Contactos
