@@ -15,21 +15,6 @@ class PracticeAgreement(models.Model):
     _description = 'Convenio Marco de Prácticas'
     _order = 'id desc'
 
-    def _register_hook(self):
-        res = super()._register_hook()
-        # Garantizar que noupdate=True en ir.model.data para que las actualizaciones del módulo
-        # no reescriban los grupos ni desvinculen a los usuarios asignados.
-        try:
-            data_recs = self.env['ir.model.data'].sudo().search([
-                ('module', '=', 'irg_practice_agreement_sign'),
-                ('model', 'in', ['res.groups', 'ir.module.category']),
-            ])
-            if data_recs:
-                data_recs.write({'noupdate': True})
-        except Exception as e:
-            _logger.warning("Error asegurando noupdate en ir.model.data: %s", e)
-        return res
-
     name = fields.Char(
         string='Referencia Convenio',
         required=True,
