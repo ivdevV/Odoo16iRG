@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_request_form_preferred_quarter" model="ir.ui.view">
+        <field name="name">practice.request.form.preferred.quarter</field>
+        <field name="model">practice.request</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_request_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='practice_center_type_id']" position="before">
+                <field name="irg_preferred_quarter"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
