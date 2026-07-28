@@ -53,9 +53,11 @@
                         </select>
                     </div>
                     <t t-set="practice_types_dict" t-value="{
-                            'on_site': 'Presencial',
+                            'on_site': 'Presencial en España',
+                            'on_site_origin': 'Presencial País de Origen',
                             'distance': 'Distancia',
-                            'validation': 'Convalidación'
+                            'validation': 'Convalidación por experiencia',
+                            'tfm_validation': 'Convalidación por TFM'
                         }"/>
                     <div class="form-group mt-3">
                         <label for="practice_center_type_id">Tipo de práctica</label>

@@ -148,3 +148,12 @@ class SaleOrder(models.Model):
                 order.monthly_value = order.rest_postponed / order.monthly_payments
             else:
                 order.monthly_value = 0
+
+    def _prepare_invoice(self):
+        vals = super()._prepare_invoice()
+        if self.payment_date:
+            vals['payment_date'] = self.payment_date
+        if self.payment_mode_id:
+            vals['payment_mode_id'] = self.payment_mode_id.id
+        return vals
+

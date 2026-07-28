@@ -241,7 +241,7 @@
 
                                 <t t-if="practice_request.state in ['progress']">
                                      
-                                    <t t-if="practice_request.practice_center_type_id.display_name == 'Presencial'">
+                                    <t t-if="practice_request.practice_center_type_id.type_of_practice in ['on_site', 'on_site_origin'] or practice_request.practice_center_type_id.display_name in ['Presencial', 'Presencial en España', 'Presencial País de Origen']">
                                         <h4><span id= "practice_document_id">Descarga tu constancia de
 prácticas profesionales</span></h4>
                                     </t>

@@ -12,6 +12,7 @@ class PracticeCenterTypes(models.Model):
 
     type_of_practice = fields.Selection([
         ('on_site', 'Presencial'),
+        ('on_site_origin', 'Presencial País de Origen'),
         ('distance', 'Distancia'),
         ('validation', 'Convalidación'),
         ('homeclass_asincronas', 'HomeClass Asincronas'),

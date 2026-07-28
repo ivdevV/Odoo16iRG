@@ -204,7 +204,8 @@
             let practiceTypeCounter = 0;
 
             const practiceTypes = [
-            { value: 'on_site', label: 'Presencial' },
+            { value: 'on_site', label: 'Presencial en España' },
+            { value: 'on_site_origin', label: 'Presencial País de Origen' },
             { value: 'distance', label: 'Distancia' },
             { value: 'validation', label: 'Convalidación' }
             ];

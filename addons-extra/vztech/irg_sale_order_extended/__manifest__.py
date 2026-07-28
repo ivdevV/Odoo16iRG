@@ -29,7 +29,8 @@
         "views/sale_order_views.xml",
         "views/product_template_views.xml",
         "views/product_product_views.xml",
-        "views/res_company_views.xml"
+        "views/res_company_views.xml",
+        "views/account_move_views.xml"
     ],
     'installable': True,
     'auto_install': False,
