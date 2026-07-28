@@ -180,11 +180,13 @@ class SaleOrder(models.Model):
         invoice_vals = super()._prepare_invoice()
         self.ensure_one()
         if self._irg_should_use_single_invoice_strategy():
+            ref_date = fields.Date.to_date(self.payment_date) if self.payment_date else (self.start_date or fields.Date.context_today(self))
             invoice_vals.update(
                 {
                     "order_subscription_id": self.id,
                     "irg_single_subscription_invoice": True,
-                    "invoice_date": self.start_date or fields.Date.context_today(self),
+                    "invoice_date": ref_date,
+                    "payment_date": self.payment_date,
                 }
             )
             if self.payment_term_id:

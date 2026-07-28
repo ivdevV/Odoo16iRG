@@ -358,7 +358,7 @@ class SaleOrder(models.Model):
             terms = []
             if order.payment_term_id:
                 # Calculo de terminos usando _compute_terms (Odoo 16)
-                date_ref = start_date
+                date_ref = fields.Date.to_date(order.payment_date) if order.payment_date else start_date
                 currency = order.currency_id
                 company = order.company_id
                 sign = 1
