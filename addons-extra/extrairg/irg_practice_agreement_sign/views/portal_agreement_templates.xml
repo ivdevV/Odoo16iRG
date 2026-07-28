@@ -75,15 +75,99 @@
                                             </div>
                                         </div>
 
-                                        <!-- Vista Previa del Convenio -->
-                                        <h5 class="text-primary border-bottom pb-2 my-4">2. Resumen de Cláusulas del Convenio</h5>
-                                        <div class="bg-light p-3 rounded border mb-4" style="max-height: 250px; overflow-y: auto; font-size: 13px;">
-                                            <p><strong>REUNIDOS:</strong> De una parte iRG (Instituto Raimon Gaja, S.L., NIF B 564 88687) y de otra parte la Entidad Colaboradora especificada arriba.</p>
-                                            <p><strong>1. OBJETO:</strong> Establecer los términos para que los estudiantes de iRG puedan realizar prácticas profesionales externas.</p>
-                                            <p><strong>2. FORMALIZACIÓN:</strong> Se formaliza mediante anexos/convenios específicos para cada estudiante.</p>
-                                            <p><strong>3. NATURALEZA:</strong> Formativa, sin relación laboral entre el estudiante y la entidad.</p>
-                                            <p><strong>4. MARCAS Y VIGENCIA:</strong> Vigencia de 1 año renovable tácitamente. Autorización genérica de uso de logotipo durante el convenio.</p>
-                                            <p><strong>5. CONFIDENCIALIDAD Y RGPD:</strong> Cumplimiento estricto del secreto profesional y de la normativa de protección de datos (UE 2016/679).</p>
+                                        <!-- Documento Completo del Convenio Marco -->
+                                        <h5 class="text-primary border-bottom pb-2 my-4">2. Texto Completo del Convenio Marco de Colaboración</h5>
+                                        <div class="bg-white p-4 rounded border mb-4 shadow-sm" style="max-height: 480px; overflow-y: auto; font-size: 13.5px; line-height: 1.6; color: #212529; border: 1px solid #ced4da;">
+                                            
+                                            <!-- Encabezado del documento en portal -->
+                                            <div class="text-center mb-4 pb-3 border-bottom">
+                                                <h5 class="font-weight-bold text-uppercase mb-2" style="font-size: 14px; color: #111111;">
+                                                    CONVENIO DE COOPERACIÓN EDUCATIVA PARA LA REALIZACIÓN DE PRÁCTICAS ACADÉMICAS EXTERNAS EN ENTIDADES COLABORADORAS
+                                                </h5>
+                                                <p class="mb-0 text-muted font-weight-bold">
+                                                    En <t t-out="agreement.city_signature or 'Barcelona'"/>, a 
+                                                    <t t-out="agreement.date_signature and agreement.date_signature.strftime('%d de %B de %Y') or '___ de ____________ de ________'"/>
+                                                </p>
+                                            </div>
+
+                                            <!-- REUNIDOS -->
+                                            <div class="mb-4">
+                                                <h6 class="font-weight-bold text-dark mb-2">REUNIDOS</h6>
+                                                <p class="text-justify mb-2">
+                                                    De una parte, el Señor <strong>RAIMON GAJA JAUMEANDREU</strong> en nombre y representación del Instituto Raimon Gaja, S.L., en su condición de Director General, con NIF B 564 88687 y sede en Carrer Córsega 213, 1º 2, Barcelona con CP: 08036; en adelante <strong>iRG</strong>.
+                                                </p>
+                                                <p class="text-justify mb-2">
+                                                    Y, de otra parte, la Señora/Señor <strong t-out="agreement.signatory_name or '_______________________'"/>, en su condición de <t t-out="agreement.signatory_title or 'Representante Legal'"/>, en nombre y representación de <strong t-out="agreement.center_official_name or agreement.practice_center_id.name or '_______________________'"/>, con NIF/CIF <strong t-out="agreement.center_vat or '_______________________'"/> y sede en <strong t-out="agreement.street or ''"/> <t t-out="agreement.city or ''"/> <t t-out="agreement.zip or ''"/>; en adelante <strong>CENTRO COLABORADOR</strong>.
+                                                </p>
+                                                <p class="text-justify mb-0">
+                                                    Las partes se reconocen la capacidad legal necesaria para suscribir y firmar el presente convenio en nombre de las entidades que representan y
+                                                </p>
+                                            </div>
+
+                                            <!-- MANIFIESTAN -->
+                                            <div class="mb-4">
+                                                <h6 class="font-weight-bold text-dark mb-2">MANIFIESTAN</h6>
+                                                <p class="text-justify mb-2">
+                                                    iRG en sus planes de estudios contempla que los estudiantes realicen un periodo de prácticas académicas externas en instituciones, centros o empresas profesionales del ámbito específico de la formación, poniéndoles así en contacto con la práctica profesional con la finalidad de facilitar a los estudiantes la adquisición de habilidades y recursos para el ejercicio de la profesión.
+                                                </p>
+                                                <p class="text-justify mb-0">
+                                                    A tal fin, acuerdan formalizar el presente convenio de colaboración académica que se regirá por las siguientes
+                                                </p>
+                                            </div>
+
+                                            <!-- CLÁUSULAS -->
+                                            <div class="mb-3">
+                                                <h6 class="font-weight-bold text-center text-dark mb-3">CLÁUSULAS</h6>
+                                                
+                                                <p class="font-weight-bold mb-1">1. Objeto del convenio de colaboración</p>
+                                                <p class="text-justify mb-3">
+                                                    El objeto de este convenio es establecer los términos de colaboración que deben regir entre las partes firmantes a fin de garantizar que los estudiantes de iRG que se determinen, puedan realizar prácticas profesionales externas en el CENTRO COLABORADOR.
+                                                </p>
+
+                                                <p class="font-weight-bold mb-1">2. Formalización</p>
+                                                <p class="text-justify mb-2">
+                                                    Esta colaboración se materializa mediante la firma de un convenio específico entre el estudiante, el CENTRO COLABORADOR y iRG.
+                                                </p>
+                                                <p class="text-justify mb-3">
+                                                    El CENTRO COLABORADOR comunicará a iRG la persona que, en su nombre, firmará los convenios a que hace referencia esta cláusula. Por parte de iRG, corresponderá firmar estos convenios al Sr. RAIMON GAJA JAUMEANDREU, como Director General de iRG.
+                                                </p>
+
+                                                <p class="font-weight-bold mb-1">3. Condiciones generales de realización de las prácticas</p>
+                                                <p class="text-justify mb-2">
+                                                    Las prácticas profesionales externas constituyen una actividad de naturaleza formativa para los estudiantes que les debe permitir aplicar y complementar los conocimientos adquiridos en su formación académica, favoreciendo la adquisición de competencias que los preparen para el ejercicio de actividades profesionales, faciliten la ocupación y fomenten su capacidad emprendedora. En consecuencia, y dado su carácter puramente formativo, de su realización no se derivarán, en ningún caso, obligaciones propias de una relación laboral, ni su contenido podrá dar lugar a la sustitución de la prestación laboral propia de puestos de trabajo.
+                                                </p>
+                                                <p class="text-justify mb-1"><strong>3.1.</strong> Durante el periodo en prácticas en EL CENTRO COLABORADOR, los estudiantes han de realizar bajo la debida supervisión, las tareas propias del ámbito profesional en que ejercitarán la actividad como estudiantes, con el objetivo de completar el aprendizaje teórico y práctico adquiriendo la formación académica, al tiempo que adquieren también experiencia en los niveles a los que puedan acceder por razón de su titulación.</p>
+                                                <p class="text-justify mb-1"><strong>3.2.</strong> Los estudiantes deben de estar sujetos al horario y las normas fijadas por la entidad colaboradora. En todo caso se procurará que el horario establecido sea compatible con la actividad académica formativa y la representación y participación desarrollada por el estudiante del iRG.</p>
+                                                <p class="text-justify mb-1"><strong>3.3.</strong> Los estudiantes deben desarrollar su estancia de prácticas bajo la supervisión de un tutor y un coordinador: el tutor es un profesional del CENTRO COLABORADOR, escogido por esta entidad que se encargará de orientar y supervisar el trabajo en prácticas del estudiante. El coordinador escogido por iRG, en coordinación con el tutor del centro colaborador, hará un seguimiento efectivo de las prácticas proporcionando soporte al estudiante para la elaboración de la memoria y poder llevar a término el proceso evaluador de las prácticas.</p>
+                                                <p class="text-justify mb-1"><strong>3.4.</strong> La persona tutora elegida por el CENTRO COLABORADOR fijará el plan de trabajo a seguir, de acuerdo con el proyecto formativo y en coordinación con el coordinador de prácticas y, asimismo debe realizar un informe final o/y rellenar un cuestionario de calificación del estudiante durante la estancia en las prácticas.</p>
+                                                <p class="text-justify mb-3"><strong>3.5.</strong> La realización de las prácticas no implica en ningún caso la existencia de una relación laboral entre los estudiantes y la entidad colaboradora.</p>
+
+                                                <p class="font-weight-bold mb-1">4. Condiciones particulares de realización de las prácticas</p>
+                                                <p class="text-justify mb-1"><strong>4.1.</strong> La determinación de los estudiantes que hayan de realizar las prácticas en el Centro colaborador previsto en el presente convenio corresponderá al Centro, por medio del oportuno procedimiento de selección.</p>
+                                                <p class="text-justify mb-2"><strong>4.2.</strong> De acuerdo con lo establecido, las partes firmantes deberán suscribir con el estudiante el oportuno anexo específico en el cual figuran los datos siguientes: Identidad del estudiante, Modalidad, Duración y horario, Lugar del centro de trabajo, Identidad de los tutores, Compromisos del estudiante, Especificación de no vinculación laboral y compromiso de confidencialidad.</p>
+                                                <p class="text-justify mb-3">El estudiante debe comprometerse de forma expresa a mantener la confidencialidad y el secreto profesional en relación con la información interna y las actividades de la entidad colaboradora.</p>
+
+                                                <p class="font-weight-bold mb-1">5. Uso de la imagen social y marcas</p>
+                                                <p class="text-justify mb-1">En este sentido, el logotipo podrá ser utilizado en cualquier soporte publicitario de iRG y/o EL CENTRO COLABORADOR, a título enunciativo, pero no limitativo, página web, folleto díptico, etc. durante la vigencia de este convenio.</p>
+                                                <p class="text-justify mb-1">Por lo expuesto anteriormente el presente convenio no constituye, de ninguna manera, transferencia o autorización del uso del patrimonio marcado o de exclusiva de ninguna de las partes, por lo que cualquier uso requerirá la previa autorización expresa y escrita.</p>
+                                                <p class="text-justify mb-3">A la finalización de este Convenio las dos partes vendrán obligadas a cesar inmediatamente en el uso de la imagen, nombre o logotipo de la otra parte.</p>
+
+                                                <p class="font-weight-bold mb-1">6. Vigencia</p>
+                                                <p class="text-justify mb-3">
+                                                    La duración de este convenio se establece por un periodo de un año, a partir de la fecha de su firma. Se entiende tácitamente prorrogado por otro año, y así sucesivamente, salvo comunicación por escrito en sentido contrario con un mínimo de 3 meses de antelación.
+                                                </p>
+
+                                                <p class="font-weight-bold mb-1">7. Causas de resolución</p>
+                                                <p class="text-justify mb-3">
+                                                    Las causas de resolución del presente convenio serán: expiración del término de vigencia, mutuo acuerdo por escrito, imposibilidad sobrevenida legal o material, o incumplimiento de las obligaciones asumidas comunicándolo con 15 días de antelación.
+                                                </p>
+
+                                                <p class="font-weight-bold mb-1">8. Confidencialidad y Protección de Datos</p>
+                                                <p class="text-justify mb-0">
+                                                    Ambas partes reconocen el carácter estrictamente confidencial de la información intercambiada. EL centro colaborador cumplirá de forma estricta con el Reglamento (UE) 2016/679 (RGPD) y la normativa aplicable de protección de datos personales.
+                                                </p>
+                                            </div>
+
                                         </div>
 
                                         <!-- Canvas de Firma Digital -->

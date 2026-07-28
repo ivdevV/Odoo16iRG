@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
-        <record id="module_category_practice_agreement" model="ir.module.category">
+        <record id="module_category_practice_agreement" model="ir.module.category" noupdate="1">
             <field name="name">Convenios de Prácticas</field>
             <field name="description">Gestión de Convenios Marco con Centros de Prácticas</field>
             <field name="sequence">25</field>
         </record>
 
-        <record id="group_practice_agreement_user" model="res.groups">
+        <record id="group_practice_agreement_user" model="res.groups" noupdate="1">
             <field name="name">Usuario de Convenios</field>
             <field name="category_id" ref="module_category_practice_agreement"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
         </record>
 
-        <record id="group_practice_agreement_manager" model="res.groups">
+        <record id="group_practice_agreement_manager" model="res.groups" noupdate="1">
             <field name="name">Administrador de Convenios</field>
             <field name="category_id" ref="module_category_practice_agreement"/>
             <field name="implied_ids" eval="[(4, ref('group_practice_agreement_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
     </data>
 </odoo>
