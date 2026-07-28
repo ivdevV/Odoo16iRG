@@ -132,16 +132,6 @@
                     </div>
 
                 </div>
-
-                <!-- Pie de página corporativo -->
-                <div class="footer" style="padding-top: 5px; font-size: 8pt; color: #666666; text-align: center;">
-                    <div style="margin-bottom: 5px;">
-                        <img src="/irg_practice_agreement_sign/static/src/img/footer_bar_clean.png" style="max-height: 25px; max-width: 100%; object-fit: contain;"/>
-                    </div>
-                    <p style="margin: 0;">
-                        C/ Còrsega 213, 1-2 08036 Barcelona, España - 930 460 554 - info@institutoraimongaja.com - https://institutoraimongaja.com/
-                    </p>
-                </div>
             </t>
         </t>
     </template>
