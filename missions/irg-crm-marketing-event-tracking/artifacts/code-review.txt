@@ -1,0 +1,9 @@
+Revisión independiente de código
+
+Resultado: APROBADO
+
+Alcance revisado:
+- Manifest Odoo 16 y dependencias `crm`, `irg_crm_reactivacion`.
+- Tres campos Char: `event_id`, `event_id_reactivacion`, `irg_ad_reactivacion`.
+- Vista heredada de `crm.crm_lead_view_form` y XPath para Marketing/Reactivación.
+- XML válido, `git diff --check` limpio y sin alcance adicional.
