@@ -116,10 +116,27 @@ class OpAdmission(models.Model):
     def submit_form(self):
         res = super().submit_form()
         for record in self:
-            if record.partner_id and not record.partner_id.birth_date:
-                birth = record.birth_date or (record.student_id and record.student_id.birth_date) or '2000-01-01'
-                record.partner_id.write({'birth_date': birth})
+            record._irg_backfill_partner_birth_date()
         return res
+
+    def _irg_backfill_partner_birth_date(self):
+        """Sube al contacto la fecha que solo tenga el alumno. Nunca inventa una.
+
+        Nota: `record.birth_date` es related de `partner_id.birth_date`, así que
+        dentro de este `if` siempre está vacío; la única fuente posible es el alumno.
+        Antes aquí había un fallback a '2000-01-01' que escribía una fecha falsa en
+        la ficha del contacto y, al dejar de cumplirse el `if`, ya no se corregía nunca.
+        """
+        self.ensure_one()
+        if not self.partner_id or self.partner_id.birth_date:
+            return
+        birth = self.student_id and self.student_id.birth_date
+        if birth:
+            self.partner_id.write({'birth_date': birth})
+        else:
+            _logger.warning(
+                "IRG Manual Wizard: el contacto de la admisión %s se queda sin fecha "
+                "de nacimiento; no hay ninguna en la ficha del alumno.", self.name)
 
     def _ensure_portal_user(self):
         """Asegura que el alumno tenga un usuario de portal (res.users) creado y vinculado.
@@ -209,10 +226,8 @@ class OpAdmission(models.Model):
         self._ensure_portal_user()
 
         for record in self:
-            if record.partner_id and not record.partner_id.birth_date:
-                birth = record.birth_date or (record.student_id and record.student_id.birth_date) or '2000-01-01'
-                record.partner_id.write({'birth_date': birth})
-        
+            record._irg_backfill_partner_birth_date()
+
         # Guardar fechas de admisión originales para evitar que el super() las pise con la fecha de hoy
         saved_dates = {r.id: r.admission_date for r in self}
         
@@ -232,6 +247,16 @@ class OpAdmission(models.Model):
     def get_student_vals(self):
         res = super().get_student_vals()
         if res and not res.get('birth_date'):
-            res['birth_date'] = self.birth_date or self.partner_id.birth_date or (self.student_id and self.student_id.birth_date) or '2000-01-01'
+            # Sin fallback fabricado: si ninguna de las tres fuentes tiene fecha, el
+            # alumno se crea sin ella y queda listado en el filtro "Sin fecha de
+            # nacimiento", en vez de nacer con un 01/01/2000 que parece correcto.
+            birth = self.birth_date or self.partner_id.birth_date or (
+                self.student_id and self.student_id.birth_date)
+            if birth:
+                res['birth_date'] = birth
+            else:
+                _logger.warning(
+                    "IRG Manual Wizard: se crea el alumno de la admisión %s sin fecha "
+                    "de nacimiento; no hay ninguna disponible.", self.name)
         return res
 
