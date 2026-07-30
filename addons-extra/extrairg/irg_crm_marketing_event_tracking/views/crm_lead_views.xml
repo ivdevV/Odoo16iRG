@@ -7,9 +7,14 @@
         <field name="arch" type="xml">
             <xpath expr="//page[@name='extra']//group[@name='categorization']//field[@name='company_id']" position="before">
                 <field name="irg_event_id"/>
+                <field name="fbc"/>
+                <field name="fbp"/>
             </xpath>
             <xpath expr="//page[@name='extra']//group[.//field[@name='irg_fecha_reactivacion']]" position="inside">
                 <field name="event_id_reactivacion"/>
+                <field name="fbclid_reactivacion"/>
+                <field name="fbc_reactivacion"/>
+                <field name="fbp_reactivacion"/>
                 <field name="irg_ad_reactivacion"/>
             </xpath>
         </field>

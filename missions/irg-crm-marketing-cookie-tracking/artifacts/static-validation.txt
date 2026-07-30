@@ -1,0 +1,8 @@
+Validación independiente estática, sin Docker ni Odoo
+
+PASS Python 3.12 py_compile models/crm_lead.py.
+PASS ElementTree.parse views/crm_lead_views.xml.
+PASS fbc, fbp, fbclid_reactivacion, fbc_reactivacion y fbp_reactivacion son fields.Char y están presentes en la vista correspondiente.
+PASS git diff --check y git diff --cached --check.
+
+Solo avisos no bloqueantes LF a CRLF.
