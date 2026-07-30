@@ -1,0 +1,8 @@
+Revisión independiente de código
+
+Resultado: APROBADO
+
+- `fbc` y `fbp` son `Char` y se insertan en Marketing.
+- `fbclid_reactivacion`, `fbc_reactivacion` y `fbp_reactivacion` son `Char` y se insertan en Reactivación.
+- Modelo y vista están sincronizados; XML válido y sin cambios funcionales adicionales.
+- No se ejecutaron Docker ni Odoo.
