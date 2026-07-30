@@ -4,7 +4,7 @@ from odoo import fields, models
 class CrmLead(models.Model):
     _inherit = "crm.lead"
 
-    event_id = fields.Char(
+    irg_event_id = fields.Char(
         string="ID de evento",
         help="Identificador del evento de marketing asociado al lead.",
     )

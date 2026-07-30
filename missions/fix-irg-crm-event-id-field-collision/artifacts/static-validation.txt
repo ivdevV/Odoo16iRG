@@ -1,0 +1,9 @@
+Validación independiente estática, sin Docker ni Odoo
+
+PASS Python 3.12 py_compile sobre models/crm_lead.py.
+PASS Parse XML de views/crm_lead_views.xml.
+PASS Ausencia de `event_id = fields.` y presencia de `irg_event_id = fields.Char`.
+PASS Presencia de `event_id_reactivacion = fields.Char` e `irg_ad_reactivacion = fields.Char`.
+PASS git diff --check.
+
+Nota: solo se observaron avisos no bloqueantes LF a CRLF.
