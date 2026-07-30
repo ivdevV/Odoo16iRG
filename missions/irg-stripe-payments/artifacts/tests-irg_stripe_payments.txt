@@ -1,0 +1,2 @@
+2026-07-30 10:28:47,429 211 INFO scratch_stripe_payments odoo.tests.stats: irg_stripe_payments: 52 tests 1.02s 2875 queries 
+2026-07-30 10:28:47,429 211 INFO scratch_stripe_payments odoo.tests.result: 0 failed, 0 error(s) of 44 tests when loading database 'scratch_stripe_payments' 
