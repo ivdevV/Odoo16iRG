@@ -1,0 +1,13 @@
+Validación independiente estática (sin Docker ni pruebas Odoo)
+
+PASS python -m py_compile addons-extra/extrairg/irg_crm_marketing_event_tracking/models/crm_lead.py
+Sintaxis Python válida; exit 0.
+
+PASS python -c "import xml.etree.ElementTree as ET; ET.parse('addons-extra/extrairg/irg_crm_marketing_event_tracking/views/crm_lead_views.xml')"
+XML parsed successfully; exit 0.
+
+PASS comprobación de texto de modelo, vista y manifest
+`event_id`, `event_id_reactivacion` e `irg_ad_reactivacion` declarados como Char y presentes en la vista; dependencias `crm` e `irg_crm_reactivacion` presentes.
+
+PASS git diff --check -- addons-extra/extrairg/irg_crm_marketing_event_tracking
+Sin salida; sin errores de whitespace.

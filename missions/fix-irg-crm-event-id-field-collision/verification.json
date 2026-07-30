@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "task": "fix-irg-crm-event-id-field-collision",
+  "checks": [
+    {
+      "name": "python_syntax",
+      "command": "Python 3.12 -m py_compile addons-extra/extrairg/irg_crm_marketing_event_tracking/models/crm_lead.py",
+      "result": "pass",
+      "detail": "Sintaxis Python válida.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "xml_parse",
+      "command": "Python 3.12 xml.etree.ElementTree.parse sobre crm_lead_views.xml",
+      "result": "pass",
+      "detail": "Vista XML válida.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "schema_collision_contract",
+      "command": "static field-name check",
+      "result": "pass",
+      "detail": "No existe event_id = fields.; irg_event_id y los dos campos de reactivación son Char.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "odoo_runtime_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "No aplica en esta ejecución: el usuario indicó no levantar Docker ni ejecutar pruebas Odoo.",
+      "evidence": "artifacts/static-validation.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml (no iniciado por instrucción del usuario)",
+    "database": "no utilizada",
+    "base_commit": "9aef7aa21"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/code-review.txt",
+    "artifacts/static-validation.txt"
+  ]
+}

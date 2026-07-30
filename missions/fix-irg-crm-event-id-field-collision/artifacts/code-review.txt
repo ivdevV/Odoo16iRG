@@ -1,0 +1,9 @@
+Revisión independiente de código
+
+Resultado: APROBADO
+
+- No se declara `event_id` como `fields.Char` en `crm.lead`.
+- `irg_event_id` es `fields.Char` con etiqueta `ID de evento`.
+- La vista usa `irg_event_id`.
+- `event_id_reactivacion` e `irg_ad_reactivacion` no cambian.
+- XML bien formado, diff sin errores y alcance limitado.
