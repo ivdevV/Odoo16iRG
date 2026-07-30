@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_op_student_form_inherit_stripe_payments" model="ir.ui.view">
+        <field name="name">op.student.form.inherit.stripe.payments</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_irg_view_stripe_payments" type="object"
+                        class="oe_stat_button" icon="fa-credit-card"
+                        attrs="{'invisible': [('irg_stripe_payment_count', '=', 0)]}">
+                    <field name="irg_stripe_payment_count" widget="statinfo" string="Pagos Stripe"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

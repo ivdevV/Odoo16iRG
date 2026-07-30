@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="irg_stripe_identity_link_wizard_view_form" model="ir.ui.view">
+        <field name="name">irg.stripe.identity.link.wizard.view.form</field>
+        <field name="model">irg.stripe.identity.link.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Vincular pago a un contacto">
+                <group>
+                    <field name="review_id" invisible="1"/>
+                    <field name="stripe_customer_id" readonly="1"/>
+                    <field name="stripe_email" readonly="1"/>
+                </group>
+                <group string="Candidatos detectados">
+                    <field name="candidate_partner_ids" nolabel="1" readonly="1">
+                        <tree create="false" delete="false">
+                            <field name="display_name"/>
+                            <field name="email"/>
+                            <field name="phone" optional="show"/>
+                        </tree>
+                    </field>
+                </group>
+                <group>
+                    <field name="partner_id" options="{'no_create': True}"/>
+                    <field name="link_customer_id"/>
+                    <field name="note" placeholder="Por qué es este contacto y no otro."/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Vincular"
+                            class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

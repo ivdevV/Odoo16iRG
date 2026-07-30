@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="irg_stripe_payment_view_tree" model="ir.ui.view">
+        <field name="name">irg.stripe.payment.view.tree</field>
+        <field name="model">irg.stripe.payment</field>
+        <field name="arch" type="xml">
+            <tree string="Pagos Stripe" create="false" delete="false"
+                  decoration-muted="state in ('failed', 'canceled')"
+                  decoration-warning="partner_state == 'review'"
+                  decoration-danger="partner_state == 'unlinked'">
+                <field name="payment_date"/>
+                <field name="partner_id"/>
+                <field name="stripe_customer_email" optional="show"/>
+                <field name="amount" sum="Total"/>
+                <field name="amount_refunded" sum="Reembolsado" optional="show"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'succeeded'"
+                       decoration-warning="state == 'partially_refunded'"
+                       decoration-danger="state in ('failed', 'canceled', 'refunded')"/>
+                <field name="partner_state" widget="badge"
+                       decoration-success="partner_state == 'linked'"
+                       decoration-warning="partner_state == 'review'"
+                       decoration-danger="partner_state == 'unlinked'"/>
+                <field name="partner_match_method" optional="show"/>
+                <field name="is_subscription_payment" optional="hide"/>
+                <field name="sale_order_id" optional="hide"/>
+                <field name="origin" optional="hide"/>
+                <field name="stripe_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="irg_stripe_payment_view_form" model="ir.ui.view">
+        <field name="name">irg.stripe.payment.view.form</field>
+        <field name="model">irg.stripe.payment</field>
+        <field name="arch" type="xml">
+            <form string="Pago Stripe" create="false" delete="false">
+                <header>
+                    <button name="action_open_receipt" type="object" string="Ver recibo"
+                            class="btn-secondary" attrs="{'invisible': [('receipt_url', '=', False)]}"/>
+                    <button name="action_open_review" type="object" string="Ir a la revisión"
+                            class="btn-warning" attrs="{'invisible': [('review_id', '=', False)]}"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="succeeded,partially_refunded,refunded"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="stripe_id" readonly="1"/></h1>
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         attrs="{'invisible': [('partner_state', '!=', 'review')]}">
+                        Este pago no se ha podido vincular a un contacto de forma inequívoca.
+                        Está pendiente de revisión manual: el sistema no elige por su cuenta
+                        para no asociarlo a la persona equivocada.
+                    </div>
+                    <group>
+                        <group string="Contacto">
+                            <field name="partner_id"/>
+                            <field name="student_id"/>
+                            <field name="partner_state"/>
+                            <field name="partner_match_method"/>
+                            <field name="review_id" readonly="1"/>
+                            <field name="stripe_customer_email"/>
+                        </group>
+                        <group string="Importe">
+                            <field name="amount"/>
+                            <field name="amount_refunded"/>
+                            <field name="currency_id"/>
+                            <field name="stripe_currency"/>
+                            <field name="payment_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Documentos Odoo">
+                            <field name="sale_order_id"/>
+                            <field name="move_id"/>
+                            <field name="payment_transaction_id"/>
+                            <field name="stripe_subscription_id"/>
+                        </group>
+                        <group string="Referencias Stripe">
+                            <field name="stripe_payment_intent_id"/>
+                            <field name="stripe_charge_id"/>
+                            <field name="stripe_checkout_session_id"/>
+                            <field name="stripe_invoice_id"/>
+                            <field name="stripe_customer_id"/>
+                            <field name="is_subscription_payment"/>
+                            <field name="origin"/>
+                        </group>
+                    </group>
+                    <group string="Contexto">
+                        <field name="description"/>
+                        <field name="receipt_url" widget="url"/>
+                        <field name="hosted_invoice_url" widget="url"/>
+                    </group>
+                    <notebook>
+                        <page string="Payload Stripe" name="raw_payload">
+                            <field name="raw_payload" widget="ace" options="{'mode': 'json'}"
+                                   readonly="1" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="irg_stripe_payment_view_search" model="ir.ui.view">
+        <field name="name">irg.stripe.payment.view.search</field>
+        <field name="model">irg.stripe.payment</field>
+        <field name="arch" type="xml">
+            <search string="Pagos Stripe">
+                <field name="partner_id"/>
+                <field name="stripe_customer_email"/>
+                <field name="stripe_id"/>
+                <field name="stripe_customer_id"/>
+                <field name="sale_order_id"/>
+
+                <filter name="filter_review" string="Pendientes de revisión"
+                        domain="[('partner_state', '=', 'review')]"/>
+                <filter name="filter_unlinked" string="Sin vincular"
+                        domain="[('partner_state', '=', 'unlinked')]"/>
+                <filter name="filter_linked" string="Vinculados"
+                        domain="[('partner_state', '=', 'linked')]"/>
+                <separator/>
+                <filter name="filter_succeeded" string="Pagados"
+                        domain="[('state', '=', 'succeeded')]"/>
+                <filter name="filter_refunded" string="Reembolsados"
+                        domain="[('state', 'in', ('refunded', 'partially_refunded'))]"/>
+                <filter name="filter_failed" string="Fallidos"
+                        domain="[('state', 'in', ('failed', 'canceled'))]"/>
+                <separator/>
+                <filter name="filter_subscription" string="De suscripción"
+                        domain="[('is_subscription_payment', '=', True)]"/>
+                <filter name="filter_one_off" string="Pagos sueltos"
+                        domain="[('is_subscription_payment', '=', False)]"/>
+                <separator/>
+                <filter name="filter_email_matched" string="Vinculados por email"
+                        domain="[('partner_match_method', 'in', ('email_unique', 'student_email_unique'))]"
+                        help="Los vínculos por email son los menos fiables. Útil para auditar."/>
+                <separator/>
+                <filter name="filter_this_year" string="Este año"
+                        date="payment_date" default_period="this_year"/>
+
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_by_partner" string="Contacto"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_by_state" string="Estado"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_by_partner_state" string="Estado de vinculación"
+                            context="{'group_by': 'partner_state'}"/>
+                    <filter name="group_by_method" string="Método de vinculación"
+                            context="{'group_by': 'partner_match_method'}"/>
+                    <filter name="group_by_origin" string="Origen"
+                            context="{'group_by': 'origin'}"/>
+                    <filter name="group_by_month" string="Mes"
+                            context="{'group_by': 'payment_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="irg_stripe_payment_view_pivot" model="ir.ui.view">
+        <field name="name">irg.stripe.payment.view.pivot</field>
+        <field name="model">irg.stripe.payment</field>
+        <field name="arch" type="xml">
+            <pivot string="Pagos Stripe" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="payment_date" interval="month" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="irg_stripe_payment_view_graph" model="ir.ui.view">
+        <field name="name">irg.stripe.payment.view.graph</field>
+        <field name="model">irg.stripe.payment</field>
+        <field name="arch" type="xml">
+            <graph string="Pagos Stripe" type="bar" sample="1">
+                <field name="payment_date" interval="month"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_irg_stripe_payment" model="ir.actions.act_window">
+        <field name="name">Pagos Stripe</field>
+        <field name="res_model">irg.stripe.payment</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="irg_stripe_payment_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Todavía no hay pagos de Stripe registrados
+            </p>
+            <p>
+                Los pagos entran solos por el webhook de Stripe. Para traer el histórico,
+                usa el asistente de backfill.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_irg_stripe_payment_review" model="ir.actions.act_window">
+        <field name="name">Pagos sin vincular</field>
+        <field name="res_model">irg.stripe.payment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="irg_stripe_payment_view_search"/>
+        <field name="domain">[('partner_state', '!=', 'linked')]</field>
+    </record>
+
+</odoo>
