@@ -116,7 +116,13 @@ class SaleOrder(models.Model):
                 # Esto es CRÍTICO para que search_user_portal en isep_openeducat_sale 
                 # NO sobrescriba el partner_id con el del titular al ver que falta el student_id.
                 op_student = self.env['op.student'].search([('partner_id', '=', target_partner.id)], limit=1)
-                student_birth_date = target_partner.birth_date or getattr(self, 'birth_date', False) or fields.Date.to_date('2000-01-01')
+                # Sin fallback fabricado: si no hay fecha real se deja vacía. Un
+                # 01/01/2000 inventado se confunde con un dato bueno y no se corrige.
+                student_birth_date = target_partner.birth_date or getattr(self, 'birth_date', False)
+                if not student_birth_date:
+                    _logger.warning(
+                        "ISEP: sin fecha de nacimiento para %s; se crea la admisión sin ella.",
+                        target_partner.name)
                 if not op_student:
                     _logger.warning(f"ISEP_DEBUG: Creando op.student para {target_partner.name} anticipadamente.")
                     target_user = self.env['res.users'].search([('partner_id', '=', target_partner.id)], limit=1)
