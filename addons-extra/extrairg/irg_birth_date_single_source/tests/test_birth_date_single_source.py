@@ -135,3 +135,19 @@ class TestBirthDateSingleSource(TransactionCase):
     def test_14_search_filter_negated(self):
         found = self.env['op.student'].search([('irg_birth_date_missing', '=', False)])
         self.assertIn(self.student, found)
+
+    # ------------------------------------------------------------------
+    # Edición desde la admisión
+    # ------------------------------------------------------------------
+    def test_15_admission_field_is_editable_and_optional(self):
+        """La admisión debe poder editar la fecha, y no exigirla.
+
+        `required` era la causa raíz de las fechas inventadas. `readonly` impedía
+        corregir el dato desde la propia admisión salvo en estado 'done'; ahora que
+        hay fuente única, escribir ahí actualiza el contacto y es seguro.
+        """
+        field = self.env['op.admission']._fields['birth_date']
+        self.assertFalse(field.required, "No debe ser obligatoria: si no hay dato, se deja vacía")
+        self.assertFalse(field.readonly, "Debe poder editarse desde la ficha de admisión")
+        self.assertEqual(field.related, 'partner_id.birth_date')
+        self.assertFalse(field.store, "Sigue sin columna propia: lee siempre del contacto")

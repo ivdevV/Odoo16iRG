@@ -17,9 +17,16 @@ class OpAdmission(models.Model):
     #
     # El campo sigue siendo related no almacenado de partner_id.birth_date; aquí solo
     # se relaja la obligatoriedad.
+    #
+    # `readonly=False` es deliberado y es nuevo respecto a la definición original: ahora
+    # que hay fuente única, editar la fecha desde la admisión escribe en el contacto, que
+    # es el comportamiento correcto. Antes el campo era readonly salvo en estado 'done'
+    # (el `states` que traía isep_record_request), una excepción que existía justamente
+    # porque no había forma limpia de corregir el dato.
     birth_date = fields.Date(
         related='partner_id.birth_date',
         required=False,
+        readonly=False,
         string='Fecha de nacimiento',
     )
 
