@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "task": "irg-crm-marketing-event-tracking",
+  "checks": [
+    {
+      "name": "python_syntax",
+      "command": "python -m py_compile addons-extra/extrairg/irg_crm_marketing_event_tracking/models/crm_lead.py",
+      "result": "pass",
+      "detail": "Sintaxis Python válida; exit 0.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "xml_parse",
+      "command": "python -c \"import xml.etree.ElementTree as ET; ET.parse('addons-extra/extrairg/irg_crm_marketing_event_tracking/views/crm_lead_views.xml')\"",
+      "result": "pass",
+      "detail": "La vista XML se analiza correctamente.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "field_and_dependency_contract",
+      "command": "static text check",
+      "result": "pass",
+      "detail": "Los tres campos Char y las dependencias crm e irg_crm_reactivacion están presentes.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "odoo_runtime_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "No aplica en esta ejecución: el usuario indicó expresamente no levantar Docker ni ejecutar pruebas Odoo.",
+      "evidence": "artifacts/static-validation.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml (no iniciado por instrucción del usuario)",
+    "database": "no utilizada",
+    "base_commit": "99f71945c4365e02a3fc83804e36c4c5ff053555"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/code-review.txt",
+    "artifacts/static-validation.txt"
+  ]
+}
