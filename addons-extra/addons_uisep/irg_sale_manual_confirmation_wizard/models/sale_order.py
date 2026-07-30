@@ -178,12 +178,22 @@ class SaleOrder(models.Model):
             
             if not admission.birth_date:
                 student_partner = admission.partner_id or (getattr(self, 'student_id', False) and self.student_id.partner_id) or self.partner_id
-                default_birth = student_partner.birth_date or self.partner_id.birth_date or fields.Date.to_date('2000-01-01')
-                _logger.info(
-                    "IRG Manual Wizard: Estableciendo birth_date %s en la admisión %s",
-                    default_birth, admission.name
-                )
-                vals['birth_date'] = default_birth
+                # Nunca fabricar una fecha. Antes se caía a un 01/01/2000 que quedaba
+                # en la ficha indistinguible de un dato real y que nadie volvía a
+                # revisar, porque el `if not birth_date` ya no saltaba.
+                default_birth = student_partner.birth_date or self.partner_id.birth_date
+                if default_birth:
+                    _logger.info(
+                        "IRG Manual Wizard: Estableciendo birth_date %s en la admisión %s",
+                        default_birth, admission.name
+                    )
+                    vals['birth_date'] = default_birth
+                else:
+                    _logger.warning(
+                        "IRG Manual Wizard: la admisión %s se queda sin fecha de nacimiento: "
+                        "no hay ninguna en el contacto del alumno ni en el del titular.",
+                        admission.name
+                    )
 
             if line.start_date_enroller:
                 vals['irg_class_start_date'] = line.start_date_enroller

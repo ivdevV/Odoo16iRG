@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_op_student_search_inherit_birth_date" model="ir.ui.view">
+        <field name="name">op.student.search.inherit.birth.date</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_search"/>
+        <field name="arch" type="xml">
+            <search position="inside">
+                <filter name="irg_filter_birth_date_missing"
+                        string="Sin fecha de nacimiento"
+                        domain="[('irg_birth_date_missing', '=', True)]"
+                        help="Alumnos sin fecha real: vacía, el 01/01/2000 que fabricaba el código antiguo, o la fecha de creación del registro."/>
+            </search>
+        </field>
+    </record>
+
+</odoo>
