@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG - Stripe Payments Ledger',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Accounting/Payment',
     'summary': 'Listado de pagos de Stripe por contacto/alumno, con vinculación de identidad auditable.',
     'description': """

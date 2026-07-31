@@ -98,18 +98,27 @@ class IrgStripeIdentityReview(models.Model):
     @api.model
     def _log_issue(self, reason, stripe_object_type=False, stripe_object_id=False,
                    stripe_customer_id=False, stripe_email=False, candidates=None):
-        """Encola una incidencia de identidad, agrupando por objeto + motivo.
+        """Encola una incidencia de identidad, agrupando por identidad + motivo.
 
-        Un mismo Customer que reintenta muchas veces no debe generar una fila por
-        evento: se sube ``occurrence_count`` sobre la revisión abierta existente.
+        El orden de agrupación importa y es lo contrario de lo que parece natural.
+        Se agrupa por **Customer primero**, luego email, y solo como último recurso
+        por el objeto de Stripe.
+
+        Antes se hacía al revés, empezando por ``stripe_object_id``. Como cada pago
+        trae su propio ``pi_...``, tres pagos del mismo Customer ambiguo generaban
+        tres revisiones idénticas, con los mismos candidatos, que había que resolver
+        una a una. Medido en beta: 8 filas para 3 problemas distintos.
+
+        Agrupar por Customer también hace que todos los pagos afectados cuelguen de
+        la misma revisión, que es lo que permite resolverlos de una vez.
         """
         domain = [('reason', '=', reason), ('state', '=', 'open')]
-        if stripe_object_id:
-            domain.append(('stripe_object_id', '=', stripe_object_id))
-        elif stripe_customer_id:
+        if stripe_customer_id:
             domain.append(('stripe_customer_id', '=', stripe_customer_id))
         elif stripe_email:
             domain.append(('stripe_email', '=', stripe_email))
+        elif stripe_object_id:
+            domain.append(('stripe_object_id', '=', stripe_object_id))
         else:
             _logger.warning(
                 "IRG Stripe Payments: incidencia de identidad '%s' sin ningún "
@@ -138,6 +147,103 @@ class IrgStripeIdentityReview(models.Model):
         })
 
     # ------------------------------------------------------------------
+    def _irg_apply_partner(self, partner, note=False, link_customer=True):
+        """Resuelve la revisión asignando ``partner``, y arrastra todo lo asociado.
+
+        Es el corazón del arreglo. La versión anterior escribía únicamente sobre
+        ``self.payment_ids``, con dos consecuencias que se vieron en beta:
+
+        - Resolver una revisión de ``conflicting_customer_id`` no hacía **nada**,
+          porque esas revisiones no llevan ningún pago asociado: nacen al intentar
+          guardar el Customer, no al atribuir un pago.
+        - Los demás pagos del mismo Customer seguían sin vincular, así que había que
+          repetir la operación pago a pago y los futuros volvían a fallar.
+
+        Ahora: se registra el Customer bajo el contacto, se reatribuyen **todos** los
+        pagos de ese Customer que estén sin vincular, y se cierran las demás
+        revisiones abiertas del mismo Customer.
+
+        Los pagos ya vinculados a **otro** contacto no se tocan: mover dinero de una
+        persona a otra en silencio es justo lo que este módulo existe para evitar.
+        """
+        self.ensure_one()
+        self._check_can_resolve()
+
+        if not partner:
+            raise UserError(_("Hay que seleccionar un contacto."))
+
+        summary = {'payments': 0, 'reviews': 0, 'customer_linked': False, 'skipped': 0}
+
+        if link_customer and self.stripe_customer_id:
+            record, conflict_partner = self.env['irg.stripe.customer']._irg_register(
+                partner, self.stripe_customer_id, source='manual', note=note)
+            if conflict_partner:
+                raise UserError(_(
+                    "El Customer %(customer)s ya pertenece a %(other)s. Un Customer de "
+                    "Stripe es de una sola persona: si de verdad es de %(partner)s, "
+                    "quita primero el vínculo del otro contacto.",
+                    customer=self.stripe_customer_id,
+                    other=conflict_partner.display_name,
+                    partner=partner.display_name,
+                ))
+            summary['customer_linked'] = bool(record)
+
+        payments = self.payment_ids
+        if self.stripe_customer_id:
+            payments |= self.env['irg.stripe.payment'].sudo().search([
+                ('stripe_customer_id', '=', self.stripe_customer_id),
+            ])
+
+        movable = payments.filtered(
+            lambda p: not p.partner_id or p.partner_id == partner)
+        summary['skipped'] = len(payments) - len(movable)
+        if movable:
+            movable.sudo().write({
+                'partner_id': partner.id,
+                'partner_match_method': 'manual',
+                'partner_state': 'linked',
+            })
+            summary['payments'] = len(movable)
+
+        siblings = self._irg_sibling_reviews()
+        if siblings:
+            siblings.write({
+                'partner_id': partner.id,
+                'state': 'resolved',
+                'resolution_note': _(
+                    "Resuelta en bloque junto a la revisión #%s del mismo Customer.") % self.id,
+                'resolved_by_id': self.env.user.id,
+                'resolved_at': fields.Datetime.now(),
+            })
+            summary['reviews'] = len(siblings)
+
+        self.write({
+            'partner_id': partner.id,
+            'state': 'resolved',
+            'resolution_note': note or self.resolution_note,
+            'resolved_by_id': self.env.user.id,
+            'resolved_at': fields.Datetime.now(),
+        })
+
+        _logger.info(
+            "IRG Stripe Payments: revisión %s resuelta a favor del contacto %s. "
+            "%s pagos vinculados, %s revisiones hermanas cerradas, %s pagos omitidos "
+            "por pertenecer ya a otro contacto.",
+            self.id, partner.id, summary['payments'], summary['reviews'],
+            summary['skipped'])
+        return summary
+
+    def _irg_sibling_reviews(self):
+        """Otras revisiones abiertas del mismo Customer de Stripe."""
+        self.ensure_one()
+        if not self.stripe_customer_id:
+            return self.browse()
+        return self.sudo().search([
+            ('id', '!=', self.id),
+            ('state', '=', 'open'),
+            ('stripe_customer_id', '=', self.stripe_customer_id),
+        ])
+
     def action_open_link_wizard(self):
         self.ensure_one()
         self._check_can_resolve()

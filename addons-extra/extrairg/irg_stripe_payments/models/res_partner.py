@@ -25,6 +25,26 @@ class ResPartner(models.Model):
         compute='_compute_irg_stripe_payment_totals',
     )
 
+    # Una persona puede tener varios Customers en Stripe: dos tarjetas, dos
+    # checkouts, un Payment Link que crea uno nuevo. El `Char`
+    # `irg_stripe_customer_id` de irg_payment_stripe_recurring solo admite uno, y por
+    # eso el segundo Customer de alguien acababa en la cola de revisión como si fuera
+    # un conflicto. Aquí caben todos.
+    irg_stripe_customer_ids = fields.One2many(
+        'irg.stripe.customer',
+        'partner_id',
+        string='Customers de Stripe',
+    )
+    irg_stripe_customer_count = fields.Integer(
+        string='Nº de Customers Stripe',
+        compute='_compute_irg_stripe_customer_count',
+    )
+
+    @api.depends('irg_stripe_customer_ids')
+    def _compute_irg_stripe_customer_count(self):
+        for partner in self:
+            partner.irg_stripe_customer_count = len(partner.irg_stripe_customer_ids)
+
     @api.depends('irg_stripe_payment_ids.amount',
                  'irg_stripe_payment_ids.amount_refunded',
                  'irg_stripe_payment_ids.state')
