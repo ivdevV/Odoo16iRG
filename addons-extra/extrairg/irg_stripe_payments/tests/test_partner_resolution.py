@@ -76,17 +76,27 @@ class TestPartnerResolution(StripePaymentsCommon):
         result = self.sync._resolve_partner(False, email='  FRAN@Test.COM ')
         self.assertEqual(result['partner'], partner)
 
-    def test_07_conflicting_customer_id_is_not_overwritten(self):
-        """Segundo bug: el write era incondicional y pisaba un customer id distinto."""
+    def test_07_second_customer_is_added_without_overwriting(self):
+        """Segundo bug: el write era incondicional y pisaba un customer id distinto.
+
+        El invariante que importa sigue vigente: `cus_OLD` no se pisa. Lo que ha
+        cambiado es el desenlace. Antes esto se encolaba como conflicto y se
+        descartaba el Customer nuevo; medido en beta, eso dejaba sin vincular los
+        pagos de las personas con más de un Customer, que son de lo más normal.
+        Ahora `cus_NEW` se registra junto al anterior.
+        """
         partner = self._make_partner('Gema', 'gema@test.com', irg_stripe_customer_id='cus_OLD')
 
         linked = self.sync._irg_link_customer_id(partner, 'cus_NEW')
 
-        self.assertFalse(linked)
-        self.assertEqual(partner.irg_stripe_customer_id, 'cus_OLD')
-        self.assertTrue(self.review_obj.search([
+        self.assertTrue(linked)
+        self.assertEqual(partner.irg_stripe_customer_id, 'cus_OLD',
+                         "El Customer principal no se pisa")
+        self.assertIn('cus_NEW', partner.irg_stripe_customer_ids.mapped('stripe_id'))
+        self.assertFalse(self.review_obj.search([
             ('reason', '=', 'conflicting_customer_id'),
-            ('stripe_customer_id', '=', 'cus_NEW')]))
+            ('stripe_customer_id', '=', 'cus_NEW')]),
+            "Varios Customers por persona no es un conflicto")
 
     def test_08_two_partners_share_customer_id(self):
         self._make_partner('Hugo A', 'hugoa@test.com', irg_stripe_customer_id='cus_DUP')

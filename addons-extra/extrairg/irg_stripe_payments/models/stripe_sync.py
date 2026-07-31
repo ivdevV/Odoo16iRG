@@ -81,6 +81,20 @@ class StripeSync(models.AbstractModel):
 
         # --- 1. Customer ID ya guardado en Odoo -------------------------------
         if customer_id:
+            # `irg.stripe.customer` manda: es el único sitio donde una persona puede
+            # tener varios Customers. Los dos `Char` se consultan después, para los
+            # vínculos que existían antes de que hubiera modelo.
+            owner = self.env['irg.stripe.customer']._irg_partner_for(customer_id)
+            if owner:
+                if extra_domain and not partner_obj.search(
+                        [('id', '=', owner.id)] + extra_domain):
+                    # El contacto está archivado o fusionado: no es destino válido.
+                    owner = partner_obj.browse()
+                else:
+                    result.update(
+                        partner=owner, status='matched', method='stripe_customer_id')
+                    return result
+
             matches = partner_obj.search(
                 ['|', ('stripe_customer_id', '=', customer_id),
                       ('irg_stripe_customer_id', '=', customer_id)] + extra_domain
@@ -213,31 +227,43 @@ class StripeSync(models.AbstractModel):
         return out
 
     @api.model
-    def _irg_link_customer_id(self, partner, customer_id):
-        """Guarda el Customer ID en el contacto, **sin pisar uno distinto**.
+    def _irg_link_customer_id(self, partner, customer_id, source='auto'):
+        """Registra el Customer bajo el contacto. Admite varios por persona.
 
-        La implementación previa escribía siempre, así que un contacto que ya tenía
-        `cus_A` acababa apuntando a `cus_B` sin dejar rastro.
+        Historia de este método, porque explica su forma actual:
+
+        1. La versión original escribía siempre sobre el ``Char``, así que un contacto
+           con `cus_A` acababa apuntando a `cus_B` sin dejar rastro.
+        2. La corrección siguiente dejó de pisar, pero trataba "este contacto ya tiene
+           otro Customer" como un conflicto que encolaba para revisión. Y eso **no es
+           un conflicto**: es lo normal. Medido en beta, un contacto tenía cinco
+           Customers legítimos, y resolver esas revisiones no hacía nada porque no
+           llevaban ningún pago asociado.
+
+        Ahora el único conflicto real es que el Customer ya pertenezca a **otro**
+        contacto. Eso sí lo decide una persona.
         """
         if not partner or not customer_id:
             return False
-        existing = partner.sudo().irg_stripe_customer_id
-        if existing and existing != customer_id:
+
+        record, conflict_partner = self.env['irg.stripe.customer']._irg_register(
+            partner, customer_id, source=source)
+
+        if conflict_partner:
             self.env['irg.stripe.identity.review'].sudo()._log_issue(
                 reason='conflicting_customer_id',
                 stripe_object_type='customer',
                 stripe_object_id=customer_id,
                 stripe_customer_id=customer_id,
-                candidates=partner,
+                candidates=partner | conflict_partner,
             )
             _logger.warning(
-                "IRG Stripe Payments: el contacto %s ya tiene el Customer %s; no se "
-                "sobrescribe con %s. Encolado para revisión.",
-                partner.id, existing, customer_id)
+                "IRG Stripe Payments: el Customer %s ya pertenece al contacto %s; no "
+                "se reasigna a %s. Encolado para revisión.",
+                customer_id, conflict_partner.id, partner.id)
             return False
-        if not existing:
-            partner.sudo().write({'irg_stripe_customer_id': customer_id})
-        return True
+
+        return bool(record)
 
     @api.model
     def _log_partner_resolution_issue(self, result, source=False, source_ref=False,

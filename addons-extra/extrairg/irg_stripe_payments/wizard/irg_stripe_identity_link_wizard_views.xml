@@ -24,6 +24,8 @@
                     <field name="partner_id" options="{'no_create': True}"/>
                     <field name="link_customer_id"/>
                     <field name="note" placeholder="Por qué es este contacto y no otro."/>
+                    <field name="impact_preview" readonly="1" nolabel="1"
+                           attrs="{'invisible': [('impact_preview', '=', False)]}"/>
                 </group>
                 <footer>
                     <button name="action_confirm" type="object" string="Vincular"
