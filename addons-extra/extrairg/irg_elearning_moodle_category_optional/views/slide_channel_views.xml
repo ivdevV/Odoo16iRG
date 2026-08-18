@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="slide_channel_form_optional_moodle_category" model="ir.ui.view">
+        <field name="name">slide.channel.form.optional.moodle.category</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="odoo_moodle_connector.slide_channel_extend_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="attributes">
+                <attribute name="required">0</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
