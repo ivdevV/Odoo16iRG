@@ -1,0 +1,43 @@
+VALIDACIÓN INDEPENDIENTE — disponibilidad de runtime
+Fecha: 2026-08-18
+
+Preflight ejecutado
+------------------
+Directorio de trabajo: C:/tmp/irg-elearning-moodle-category-optional
+Compose canónico: C:/Users/admin/Documents/iRG/Odoo16iRG/docker-compose.local.yml
+Base validada: 4e57a337a3ceaabaa9472b9636d53c61a4bc1d77
+
+Comandos:
+  docker compose -f C:\Users\admin\Documents\iRG\Odoo16iRG\docker-compose.local.yml config --quiet
+  docker compose -f C:\Users\admin\Documents\iRG\Odoo16iRG\docker-compose.local.yml ps
+
+Resultado:
+  PASS: el compose canónico se parsea correctamente (config --quiet exit 0).
+  SKIPPED: pruebas Odoo; el preflight de daemon termina con exit 1.
+
+Evidencia objetiva:
+  WORKTREE_COMPOSE_EXISTS=False
+  MAIN_COMPOSE_EXISTS=True
+  CONFIG_EXIT=0
+  PS_EXIT=1
+  failed to connect to the docker API at npipe:////./pipe/docker_engine
+  open //./pipe/docker_engine: El sistema no puede encontrar el archivo especificado.
+
+Justificación:
+El daemon Docker está apagado. Por tanto no se puede iniciar el runtime Odoo
+exigido por AGENTS.md ni ejecutar la instalación/prueba post_install en una base
+aislada. No se creó overlay, no se iniciaron contenedores, no se crearon fixtures
+ni bases temporales y no existe estado compartido que limpiar o restaurar.
+
+Prueba prevista, no ejecutada:
+  docker compose -f docker-compose.local.yml -f <overlay-worktree> run --rm odoo_local <comando-test-del-módulo>
+
+Revalidación final sobre índice staged tras saneamiento de EOF
+-------------------------------------------------------------
+- `docker compose ... config --quiet`: PASS, exit 0.
+- `docker compose ... ps`: preflight exit 1; el daemon continúa apagado.
+- `Invoke-WebRequest http://127.0.0.1:8069/web/login -TimeoutSec 5`:
+  conexión rechazada; Odoo local continúa sin responder.
+- Las herramientas TestSprite expuestas a la sesión continúan siendo 0.
+- Los bloqueos ambientales no cambiaron; no se iniciaron servicios, bases,
+  túneles ni fixtures y la justificación de ambos skips continúa vigente.

@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "task": "irg-elearning-moodle-category-optional",
+  "checks": [
+    {
+      "name": "compose_config",
+      "command": "docker compose -f C:\\Users\\admin\\Documents\\iRG\\Odoo16iRG\\docker-compose.local.yml config --quiet",
+      "result": "pass",
+      "detail": "El compose canónico del runtime local se parseó correctamente con exit 0.",
+      "evidence": "artifacts/validation-runtime.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "docker compose -f C:\\Users\\admin\\Documents\\iRG\\Odoo16iRG\\docker-compose.local.yml ps (preflight for worktree overlay and focused module test)",
+      "result": "skipped",
+      "detail": "No ejecutado: el compose canónico existe, pero el daemon Docker está apagado y el preflight terminó con exit 1 al no existir //./pipe/docker_engine. No es posible instalar el módulo ni ejecutar TransactionCase sin el runtime Odoo exigido; no se iniciaron servicios ni quedaron datos o montajes que limpiar/restaurar.",
+      "evidence": "artifacts/validation-runtime.txt"
+    },
+    {
+      "name": "python_syntax",
+      "command": "comparación índice/worktree; bundled python.exe -B -c compile(...) sobre los 6 archivos Python staged del módulo; escaneo posterior de pycache",
+      "result": "pass",
+      "detail": "Los blobs staged coinciden con el worktree validado; los 6 archivos Python compilan y no se generaron .pyc ni directorios __pycache__.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "manifest_contract",
+      "command": "bundled python.exe -B -c ast.literal_eval(__manifest__.py) y assertions",
+      "result": "pass",
+      "detail": "Versión Odoo 16, dependencia del conector, carga de vista, flags y licencia correctos.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "xml_parse",
+      "command": "bundled python.exe -B -c xml.etree.ElementTree.parse(...) sobre XML del módulo",
+      "result": "pass",
+      "detail": "El archivo XML de vista se parseó correctamente.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "focused_static_contract",
+      "command": "bundled python.exe -B -c assertions AST/ElementTree sobre modelo, vista y casos de prueba",
+      "result": "pass",
+      "detail": "Sobre el contenido staged: el modelo hereda slide.channel; category_id conserva comodelo/etiqueta y declara required=False; la vista hereda la vista del conector y aplica required=0; las pruebas conservan los casos ORM, persistencia y vista efectiva.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "scope_and_existing_modules",
+      "command": "git rev-parse/status/diff --cached; hash índice frente a worktree; comparación 41628848..HEAD; comprobación específica de odoo_moodle_connector e irg_partner_gender",
+      "result": "pass",
+      "detail": "HEAD 4e57a337a y rama esperados; 22 archivos staged dentro del módulo, micro-spec, knowledge y misión; todos coinciden con el worktree y no hay delta unstaged; los 20 archivos del fast-forward no solapan el alcance; no se modificaron módulos existentes.",
+      "evidence": "artifacts/validation-scope.txt"
+    },
+    {
+      "name": "format_scope",
+      "command": "inspección binaria de EOF sobre los 22 blobs staged y git diff --cached --check",
+      "result": "pass",
+      "detail": "Los 22 archivos staged terminan en un único LF sin línea vacía terminal adicional y git diff --cached --check termina con exit 0.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "preflight TestSprite MCP; docker compose -f C:\\Users\\admin\\Documents\\iRG\\Odoo16iRG\\docker-compose.local.yml ps; Invoke-WebRequest http://127.0.0.1:8069/web/login -TimeoutSec 5",
+      "result": "skipped",
+      "detail": "Scope disparado por views/slide_channel_views.xml, pero no ejecutable objetivamente: daemon Docker apagado, Odoo local rechaza conexión en 127.0.0.1:8069 y la sesión expone 0 herramientas TestSprite. No hubo túnel, upload, credenciales, base, fixtures ni estado que limpiar; no se asigna PASS/FAIL artificial.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml del checkout principal; daemon Docker no disponible",
+    "database": "no creada",
+    "worktree": "C:/tmp/irg-elearning-moodle-category-optional",
+    "branch": "codex/irg-elearning-moodle-category-optional",
+    "base_commit": "4e57a337a3ceaabaa9472b9636d53c61a4bc1d77",
+    "validation_target": "índice staged: 22 blobs coincidentes con el worktree"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-runtime.txt",
+    "artifacts/validation-static.txt",
+    "artifacts/validation-scope.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

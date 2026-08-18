@@ -1,0 +1,45 @@
+VALIDACIÓN INDEPENDIENTE — alcance Git
+Fecha: 2026-08-18
+
+Comandos resumidos:
+  git rev-parse HEAD
+  git branch --show-current
+  git diff --name-only HEAD --
+  git diff --cached --name-only
+  git diff --name-only 41628848dbda4e0537eada3a5e67beed68e98a9c..HEAD
+  git ls-files --others --exclude-standard
+  git status --short
+  git status --short -- addons-extra/extrairg/odoo_moodle_connector addons-extra/extrairg/irg_partner_gender
+
+Resultado: PASS
+  HEAD=4e57a337a3ceaabaa9472b9636d53c61a4bc1d77
+  branch=codex/irg-elearning-moodle-category-optional
+  no hay archivos versionados modificados ni cambios preparados en el índice
+  los 22 archivos no versionados detectados están dentro de uno de estos ámbitos:
+    - .agents/knowledge/odoo_development_modding/artifacts/irg_elearning_moodle_category_optional.md
+    - addons-extra/extrairg/irg_elearning_moodle_category_optional/
+    - doc/micro-specs/2026-08-18-irg_elearning_moodle_category_optional.md
+    - missions/irg-elearning-moodle-category-optional/
+  odoo_moodle_connector permanece sin cambios
+  irg_partner_gender permanece sin cambios
+  el fast-forward cambió 20 archivos entre la base inicial y la actual; ninguno
+  solapa las rutas funcionales, documentales ni de misión de este cambio
+  el archivo adicional respecto al preflight no-E2E es la evidencia obligatoria
+  artifacts/e2e-testsprite.txt y permanece dentro de la misión
+
+Estado observado antes de generar esta evidencia:
+  ?? .agents/knowledge/odoo_development_modding/artifacts/irg_elearning_moodle_category_optional.md
+  ?? addons-extra/extrairg/irg_elearning_moodle_category_optional/
+  ?? doc/micro-specs/2026-08-18-irg_elearning_moodle_category_optional.md
+  ?? missions/irg-elearning-moodle-category-optional/
+
+Revalidación final del índice staged tras saneamiento de EOF
+------------------------------------------------------------
+Resultado: PASS
+  HEAD=4e57a337a3ceaabaa9472b9636d53c61a4bc1d77
+  branch=codex/irg-elearning-moodle-category-optional
+  22 archivos staged, todos dentro del módulo/spec/knowledge/misión aprobados
+  22 blobs del índice coinciden con el worktree y no hay cambios unstaged
+  git diff --cached --check termina con exit 0
+  odoo_moodle_connector e irg_partner_gender no están modificados ni staged
+  20 archivos llegaron con el fast-forward de base y ninguno solapa el alcance
