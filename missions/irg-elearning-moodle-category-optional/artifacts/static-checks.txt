@@ -1,0 +1,20 @@
+Static checks — 2026-08-18
+
+Python executable:
+  C:/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe
+
+Checks y resultados:
+  PASS: sintaxis Python válida mediante ast.parse en 6 archivos.
+  PASS: manifest evaluable, versión 16.0, dependencia única esperada, vista
+        cargada e installable=True.
+  PASS: XML bien formado mediante xml.etree.ElementTree.
+  PASS: sin espacios finales en los archivos del módulo y la misión.
+  PASS: git diff --check no reportó errores en archivos rastreados.
+  PASS: git status/diff acotado sobre odoo_moodle_connector e
+        irg_partner_gender no reportó modificaciones.
+
+Limitaciones:
+  `python` no está en PATH en PowerShell; se reintentaron correctamente los
+  checks con el Python empaquetado del workspace.
+  Los archivos nuevos aún no están rastreados, por lo que `git diff --check`
+  no los incluye; la comprobación explícita de espacios finales sí los cubrió.

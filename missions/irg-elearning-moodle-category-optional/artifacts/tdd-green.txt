@@ -1,0 +1,19 @@
+TDD GREEN — 2026-08-18
+
+Runtime Odoo:
+  No ejecutado: el daemon Docker permanece apagado. La prueba Odoo se conserva
+  en tests/test_slide_channel_category_optional.py para su ejecución posterior.
+
+Alternativa estática ejecutada tras el cambio mínimo (exit code 0):
+  PASS: category_id se redefine como Many2one opcional
+  PASS: se conservan comodelo y etiqueta
+  PASS: la vista heredada declara required=0
+  PASS: manifest garantiza dependencia y carga de vista
+  GREEN confirmado: 4 comprobaciones del contrato superadas.
+
+Alcance del cambio funcional:
+  - models/slide_channel.py: herencia de slide.channel y required=False.
+  - views/slide_channel_views.xml: herencia de la vista del conector y required=0.
+  - __manifest__.py/__init__.py: dependencia, carga e imports mínimos.
+
+No se alteró la lógica de creación, escritura ni sincronización Moodle.

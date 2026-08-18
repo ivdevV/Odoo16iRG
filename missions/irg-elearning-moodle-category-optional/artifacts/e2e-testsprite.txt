@@ -1,0 +1,59 @@
+# Evidencia E2E — TestSprite
+
+## Disparo por alcance
+
+- Resultado: disparado.
+- Evidencia: el módulo incorpora `addons-extra/extrairg/irg_elearning_moodle_category_optional/views/slide_channel_views.xml`, por lo que el diff alcanza una vista web según la sección "Capa E2E" de `AGENTS.md`.
+- Alcance permitido para una eventual ejecución: `C:/tmp/irg-elearning-moodle-category-optional/addons-extra/extrairg/irg_elearning_moodle_category_optional` exclusivamente.
+
+## Gate previo no-E2E
+
+- Archivo inspeccionado: `missions/irg-elearning-moodle-category-optional/verification.json`.
+- Estado observado: `passed`.
+- Checks observados: 6 `pass`, 1 `skipped` justificado (`odoo_module_tests`) y 0 `fail`.
+- Conclusión: no hay un fallo previo que bloquee por sí mismo la capa E2E.
+
+## Preflight del runtime local canónico
+
+Comando:
+
+```text
+docker compose -f C:\Users\admin\Documents\iRG\Odoo16iRG\docker-compose.local.yml ps
+```
+
+Resultado: exit code 1. El archivo compose canónico existe en el checkout principal, pero Docker no pudo conectarse a `npipe:////./pipe/docker_engine`; el sistema informó que no existe el archivo indicado, consistente con el daemon Docker apagado.
+
+Comprobación HTTP:
+
+```text
+Invoke-WebRequest http://127.0.0.1:8069/web/login -TimeoutSec 5
+```
+
+Resultado: exit code 1. La conexión a `127.0.0.1:8069` fue rechazada; Odoo local no responde.
+
+No existe `docker-compose.worktree.yml` en el worktree ni en el checkout principal. No se creó un overlay porque el daemon no estaba disponible y no era posible iniciar o validar el runtime.
+
+## Disponibilidad de TestSprite
+
+- Se inspeccionó el catálogo de herramientas expuesto a esta sesión buscando `testsprite` en nombre y descripción.
+- Herramientas TestSprite encontradas: 0.
+- Por tanto no están disponibles `testsprite_bootstrap`, `testsprite_generate_code_summary`, `testsprite_generate_standardized_prd`, `testsprite_generate_frontend_test_plan` ni `testsprite_generate_code_and_execute`.
+- No se realizó ninguna llamada MCP, no se abrió ningún túnel y no se subió código a TestSprite.
+
+## Resultado
+
+- Check: `e2e_testsprite`.
+- Resultado: `skipped`.
+- Justificación: aunque el scope obliga a evaluar el gate, no puede ejecutarse objetivamente porque el daemon Docker está apagado, Odoo local no responde en el puerto 8069 y esta sesión no expone ninguna herramienta MCP TestSprite. No se asigna un PASS o FAIL artificial.
+- Escenarios ejecutados: 0.
+- Fallos funcionales detectados: no evaluados.
+
+## Seguridad y limpieza
+
+- No se apuntó a beta ni a producción.
+- No se utilizaron credenciales reales ni locales.
+- No se llamó a TestSprite y no se transfirió código.
+- No se iniciaron servicios, no se creó base de datos, no se generaron fixtures ni usuarios y no se alteraron montajes.
+- Limpieza/restauración: no requerida; el entorno permaneció sin cambios.
+
+E2E SKIPPED
