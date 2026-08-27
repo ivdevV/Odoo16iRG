@@ -1,0 +1,152 @@
+CODE REVIEW INDEPENDIENTE — irg-elearning-moodle-category-optional
+Fecha: 2026-08-18
+Rol: revisor distinto del codificador
+
+DECISIÓN: PASS
+
+Hallazgos bloqueantes
+---------------------
+Ninguno.
+
+Hallazgos mayores
+-----------------
+Ninguno.
+
+Hallazgos menores
+-----------------
+Ninguno.
+
+Alcance revisado
+----------------
+- addons-extra/extrairg/irg_elearning_moodle_category_optional/__manifest__.py
+- addons-extra/extrairg/irg_elearning_moodle_category_optional/__init__.py
+- addons-extra/extrairg/irg_elearning_moodle_category_optional/models/__init__.py
+- addons-extra/extrairg/irg_elearning_moodle_category_optional/models/slide_channel.py
+- addons-extra/extrairg/irg_elearning_moodle_category_optional/views/slide_channel_views.xml
+- addons-extra/extrairg/irg_elearning_moodle_category_optional/tests/__init__.py
+- addons-extra/extrairg/irg_elearning_moodle_category_optional/tests/test_slide_channel_category_optional.py
+- Contraste de solo lectura con odoo_moodle_connector/models/slide_channel_custom.py
+  y odoo_moodle_connector/views/slide_channel_views.xml.
+
+Comprobación contra requisitos
+------------------------------
+1. El manifest depende directamente de odoo_moodle_connector y carga la vista,
+   lo que garantiza que el campo y la vista originales existan antes del
+   override (manifest, líneas 9-14).
+2. El modelo usa _inherit = 'slide.channel' y redefine el mismo Many2one con
+   required=False, conservando moodle.categories y Course Category
+   (models/slide_channel.py, líneas 6-13).
+3. La vista hereda por external ID la extensión concreta del conector y cambia
+   únicamente el atributo required del category_id que aquella aporta
+   (views/slide_channel_views.xml, líneas 3-10). El xpath es preciso para esta
+   dependencia directa y no duplica el campo.
+4. No se sobrescriben create, write, unlink ni servicios Moodle. Por tanto, la
+   sincronización conserva exactamente el flujo del conector; el cambio se
+   limita al contrato de obligatoriedad ORM/vista.
+5. Las pruebas cubren el contrato ORM (required, comodelo y etiqueta), la
+   creación y actualización sin categoría y la arquitectura efectiva de la
+   vista (tests/test_slide_channel_category_optional.py, líneas 13-53).
+   El parche de get_moodle_credentials está aplicado sobre el símbolo que usa
+   slide_channel_custom, por lo que la prueba de persistencia no realiza I/O
+   Moodle y sigue ejercitando los overrides create/write reales.
+6. No hacen falta ACL ni reglas: el módulo no crea modelos, operaciones ni
+   restricciones de acceso nuevas.
+7. git status muestra únicamente el módulo nuevo, la micro-spec y los
+   artefactos de misión; no hay cambios en odoo_moodle_connector ni en
+   irg_partner_gender.
+
+Calidad y antipatrones
+----------------------
+- No hay edición de módulos existentes, monkey patch, sudo, SQL, migración ni
+  duplicación de la lógica del conector.
+- Los imports y el manifest forman una cadena de carga completa y mínima.
+- El cambio es compatible con la API declarativa de campos y vistas de Odoo 16.
+- Las pruebas verifican comportamiento observable y no reimplementan la lógica
+  de producción.
+
+Riesgo residual para Validación
+-------------------------------
+La Review de código no detecta un defecto funcional. El daemon Docker estaba
+apagado durante Implementación, por lo que la prueba Odoo aún debe ejecutarse
+independientemente en docker-compose.local.yml cuando el runtime esté
+disponible, o quedar registrada por el validador como skipped con justificación.
+Esta limitación de entorno no constituye un hallazgo bloqueante de código.
+
+Comandos de inspección ejecutados
+--------------------------------
+- Get-Content -Raw AGENTS.md
+- Get-Content -Raw .agents/skills/odoo16_developer/SKILL.md
+- Get-Content -Raw plan.md y micro-spec aprobada
+- Get-Content con numeración de todos los archivos funcionales y del modelo/
+  vista originales del conector
+- rg --files .agents/workflows
+- Get-Content -Raw .agents/workflows/odoo16_codebase_knowledge.md
+- Get-Content -Raw de las tres entradas knowledge citadas por el plan
+- Python empaquetado del workspace + ast.parse sobre 6 archivos Python: PASS
+- Python empaquetado del workspace + ast.literal_eval del manifest: PASS
+- Python empaquetado del workspace + parseo XML: PASS
+- rg -n sobre category_id, inherit_id, _inherit y required
+- git status --short
+- git diff --check: PASS
+
+Conclusión
+----------
+La versión funcional revisada satisface la micro-spec y queda APROBADA para
+pasar a Validación independiente.
+
+
+SEGUNDA REVIEW INDEPENDIENTE — saneamiento de EOF
+=================================================
+Fecha: 2026-08-18
+Motivo: reabrir el gate después de eliminar líneas vacías adicionales al EOF.
+
+DECISIÓN: PASS
+
+Hallazgos bloqueantes
+---------------------
+Ninguno.
+
+Hallazgos mayores
+-----------------
+Ninguno.
+
+Hallazgos menores
+-----------------
+Ninguno.
+
+Comparación independiente
+-------------------------
+- Se inspeccionó el diff staged completo del módulo y se contrastó con la
+  instantánea numerada usada en la primera Review.
+- Las declaraciones funcionales permanecen idénticas: dependencia y carga de
+  vista, `_inherit`, comodelo, etiqueta, `required=False`, xpath y
+  `required=0` no cambiaron.
+- Las tres pruebas conservan las mismas aserciones, datos, parche de
+  credenciales y 53 líneas de contenido; no se alteró su comportamiento.
+- Los cinco archivos funcionales saneados conservan las mismas líneas con
+  contenido que en la primera Review. La única diferencia es la ausencia de
+  registros vacíos terminales.
+- Los dos archivos de evidencia saneados no son ejecutables ni cambian el
+  comportamiento del producto; su contenido permanece intacto salvo el EOF.
+- Todos los archivos staged del módulo coinciden byte a byte con su versión en
+  el worktree y terminan en un único carácter LF, sin un segundo LF vacío.
+- No existe diff unstaged en código, pruebas, manifest o vista.
+
+Comandos ejecutados
+-------------------
+- `git status --short`
+- `git diff --cached --stat`
+- `git diff --cached --check`: PASS
+- `git diff --cached -- addons-extra/extrairg/irg_elearning_moodle_category_optional`
+- `git diff --cached --numstat`
+- Comparación de hash del índice frente al worktree para cada archivo del
+  módulo: todos con `index_match=True`.
+- Inspección binaria del sufijo y conteo de líneas de los archivos
+  funcionales: un único LF final en todos.
+- `git diff --check`: PASS antes de actualizar este informe.
+
+Conclusión de la segunda Review
+-------------------------------
+El saneamiento de EOF no cambia lógica, XML, metadatos, pruebas ni contenido
+funcional. La versión staged actual queda APROBADA y puede conservar el gate de
+Review en estado PASS.

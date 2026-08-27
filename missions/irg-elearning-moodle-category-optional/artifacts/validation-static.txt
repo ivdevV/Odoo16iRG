@@ -1,0 +1,94 @@
+VALIDACIÓN INDEPENDIENTE — checks estáticos
+Fecha: 2026-08-18
+Python: C:/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe
+Base validada: 4e57a337a3ceaabaa9472b9636d53c61a4bc1d77
+
+1. Sintaxis Python sin pycache
+-----------------------------
+Comando resumido:
+  python.exe -B -c "compile(...)" <6 archivos Python del módulo>
+
+Resultado: PASS
+  PASS: compile() accepted 6 Python files
+  PASS: no .pyc or __pycache__ artifacts
+
+Archivos comprobados:
+  - __init__.py
+  - __manifest__.py
+  - models/__init__.py
+  - models/slide_channel.py
+  - tests/__init__.py
+  - tests/test_slide_channel_category_optional.py
+
+2. Manifest
+-----------
+Comando resumido:
+  python.exe -B -c "ast.literal_eval(...); assert manifest contract"
+
+Resultado: PASS
+  version=16.0.1.0.0
+  depends=['odoo_moodle_connector']
+  data=['views/slide_channel_views.xml']
+  installable=True
+  application=False
+  license=LGPL-3
+
+3. XML
+------
+Comando resumido:
+  python.exe -B -c "ElementTree.parse(...)"
+
+Resultado: PASS
+  PASS: parsed 1 XML files
+  addons-extra/extrairg/irg_elearning_moodle_category_optional/views/slide_channel_views.xml
+
+4. Contrato estático enfocado
+-----------------------------
+Comando resumido:
+  python.exe -B -c "AST del modelo/pruebas + ElementTree de la vista; assertions"
+
+Resultado: PASS
+  model: _inherit='slide.channel'
+  category_id: Many2one('moodle.categories'), string='Course Category', required=False
+  view: inherit_id=odoo_moodle_connector.slide_channel_extend_view
+  xpath: //field[@name='category_id'], position=attributes, required=0
+  tests presentes: contrato ORM, persistencia y vista efectiva
+
+5. Formato acotado
+------------------
+Comandos resumidos:
+  inspección PowerShell de espacios finales
+  git diff --check HEAD --
+
+Resultado: PASS
+  PASS: no trailing whitespace across 22 scoped files
+  PASS: git diff --check for tracked delta
+
+Limitación:
+Estos checks validan estructura, sintaxis y contrato declarado, pero no sustituyen
+la instalación real del módulo ni la ejecución de TransactionCase dentro de Odoo.
+Esa prueba queda registrada como SKIPPED en validation-runtime.txt.
+
+Nota E2E:
+Tras recibir `artifacts/e2e-testsprite.txt`, se repitió el control de formato
+sobre los 22 archivos finales de alcance. El resultado del gate se integra en
+`verification.json` como `skipped` justificado.
+
+6. Revalidación final del contenido staged tras saneamiento de EOF
+-----------------------------------------------------------------
+Comandos resumidos:
+  comparación `git rev-parse :ruta` frente a `git hash-object ruta`
+  compile() con Python empaquetado sobre los 6 archivos Python
+  ast.literal_eval del manifest y ElementTree del XML
+  assertions AST/ElementTree del modelo, vista y tres casos de prueba
+  inspección binaria de EOF sobre los 22 archivos staged
+  git diff --cached --check
+
+Resultado: PASS
+  los 22 blobs staged coinciden con los archivos validados del worktree
+  no existe delta unstaged
+  los 6 archivos Python compilan sin pycache
+  manifest, XML y contrato funcional permanecen válidos
+  las tres pruebas conservan sus casos de contrato, persistencia y vista
+  los 22 archivos terminan en un único LF sin línea vacía terminal adicional
+  git diff --cached --check termina con exit 0

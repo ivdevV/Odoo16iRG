@@ -1,0 +1,73 @@
+{
+  "status": "passed",
+  "task": "agent-loop-e2e-testsprite",
+  "checks": [
+    {
+      "name": "project_md_commands_grounded",
+      "command": "python3 - <<'PY' (extrae todos los command[] de missions/*/verification.json y comprueba que cada fragmento citado en PROJECT.md aparece en el histórico)",
+      "result": "pass",
+      "detail": "5/5 fragmentos presentes en el histórico real: 'python3 -m py_compile addons-extra/extrairg/', 'run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf', '--test-enable --test-tags=/', '--stop-after-init', 'import xml.etree.ElementTree as ET'. Puerto 8069 confirmado en docker-compose.local.yml.",
+      "evidence": null
+    },
+    {
+      "name": "project_md_subordinate_to_agents_md",
+      "command": "grep -c 'manda `AGENTS.md`' PROJECT.md",
+      "result": "pass",
+      "detail": "1 — PROJECT.md declara explícitamente que AGENTS.md prevalece en proceso, gates y autorizaciones.",
+      "evidence": null
+    },
+    {
+      "name": "agents_md_e2e_section",
+      "command": "grep -c 'e2e_testsprite' AGENTS.md",
+      "result": "pass",
+      "detail": "1 — sección 'Capa E2E' presente, con disparo por scope, gate E2E PASS/E2E FAIL y límites de exposición a cloud.",
+      "evidence": null
+    },
+    {
+      "name": "e2e_agent_frontmatter",
+      "command": "head -6 .claude/agents/e2e-tester.md",
+      "result": "pass",
+      "detail": "Frontmatter válido: name=e2e-tester, model=sonnet, tools acotadas (Read, Bash, Grep, Glob + 7 tools mcp__TestSprite__*).",
+      "evidence": null
+    },
+    {
+      "name": "e2e_agent_forbids_beta_prod",
+      "command": "grep -c 'odoobetairg\\|app.institutoraimongaja' .claude/agents/e2e-tester.md",
+      "result": "pass",
+      "detail": "2 — el agente prohíbe explícitamente apuntar TestSprite a beta y a producción.",
+      "evidence": null
+    },
+    {
+      "name": "verification_json_parseable",
+      "command": "python3 -m json.tool missions/agent-loop-e2e-testsprite/verification.json",
+      "result": "pass",
+      "detail": "JSON parseable.",
+      "evidence": null
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "El servidor MCP TestSprite se registró después del arranque de esta sesión, por lo que los tools mcp__TestSprite__* no están cargados y no se pudo ejecutar ni testsprite_check_account_info. Además el diff de esta misión no toca superficie web (solo documentación y definición de agente), por lo que el propio criterio de disparo por scope lo dejaría skipped igualmente. El gate queda sin ejercer de extremo a extremo hasta la primera misión con scope web tras reiniciar sesión.",
+      "evidence": "missions/agent-loop-e2e-testsprite/execution.md"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "No aplica: la misión no modifica código de ningún módulo Odoo. El diff se limita a AGENTS.md, PROJECT.md, .claude/agents/e2e-tester.md y artefactos de misión.",
+      "evidence": null
+    }
+  ],
+  "environment": {
+    "runtime": "no requerido (cambio documental y de configuración de agentes)",
+    "database": null,
+    "base_commit": "41628848d"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "missions/agent-loop-e2e-testsprite/plan.md",
+    "missions/agent-loop-e2e-testsprite/execution.md"
+  ]
+}

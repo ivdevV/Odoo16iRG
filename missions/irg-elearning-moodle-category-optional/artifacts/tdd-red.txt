@@ -1,0 +1,22 @@
+TDD RED — 2026-08-18
+
+Runtime Odoo previsto:
+  docker compose -f C:/Users/admin/Documents/iRG/Odoo16iRG/docker-compose.local.yml ps
+
+Resultado del runtime:
+  No ejecutable: daemon Docker apagado (`//./pipe/docker_engine` no disponible).
+  Esta limitación se registró en execution.md antes de implementar código funcional.
+
+Alternativa estática ejecutada después de crear el arnés y antes del override:
+  Comprobación de presencia de models/slide_channel.py y
+  views/slide_channel_views.xml en el nuevo módulo.
+
+Resultado (exit code 1 esperado):
+  FAIL: no existe models/slide_channel.py con el override required=False
+  FAIL: no existe views/slide_channel_views.xml con required=0
+  RED confirmado: 2 condiciones de aceptación aún no implementadas.
+
+Prueba Odoo conservada para ejecución futura:
+  tests/test_slide_channel_category_optional.py
+  Cubre metadatos ORM, comodelo/etiqueta, vista efectiva y persistencia sin
+  categoría con las credenciales Moodle neutralizadas.
