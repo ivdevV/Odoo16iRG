@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_irg_api_operation_own" model="ir.rule">
+        <field name="name">IRG API operations: own records</field>
+        <field name="model_id" ref="model_irg_api_operation"/>
+        <field name="groups" eval="[(4, ref('group_irg_business_api_user'))]"/>
+        <field name="domain_force">[('requested_by', '=', user.id), '|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_irg_api_operation_system" model="ir.rule">
+        <field name="name">IRG API operations: system all</field>
+        <field name="model_id" ref="model_irg_api_operation"/>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+</odoo>

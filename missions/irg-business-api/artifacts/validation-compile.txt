@@ -1,0 +1,7 @@
+command: python3 -m compileall -q -f addons-extra/extrairg/irg_business_api
+cwd: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-business-api
+timestamp: 2026-08-27
+
+COMPILE_OK exit=0
+
+No syntax errors reported by compileall (quiet mode; empty stderr/stdout means success).

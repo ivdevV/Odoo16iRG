@@ -1,0 +1,36 @@
+timestamp: 2026-08-27T17:31:44+02:00
+=== leftover odoo run containers ===
+NAMES                  STATUS                   CONTAINER ID
+odoo16irg_local        Exited (0) 3 weeks ago   0186ef0c4444
+pgodoo16irg_local      Up 2 hours               dfe0d935ca54
+redisodoo16irg_local   Up 2 hours               fe10e059c187
+
+=== odoo16irg_local persistent service mounts (must NOT be worktree) ===
+Name=/odoo16irg_local Status=exited Mounts=/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/log->/var/log/odoo; /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/etc/odoo/odoo.local.conf->/etc/odoo/odoo.conf; /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra->/mnt/extra-addons; /var/lib/docker/volumes/odoo16irg_local_odoo16irg-local-filestore/_data->/var/lib/odoo; 
+
+=== terminate backends on test_irg_business_api ===
+ pg_terminate_backend 
+----------------------
+(0 rows)
+
+
+=== DROP DATABASE test_irg_business_api ===
+DROP DATABASE
+drop_exit=0
+
+=== remaining databases named test_irg_business_api ===
+ datname 
+---------
+(0 rows)
+
+
+=== leftover one-off compose containers ===
+NAMES     STATUS
+
+=== confirm extra-addons mount of persistent odoo_local ===
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra
+
+=== running odoo containers ===
+NAMES                  STATUS
+pgodoo16irg_local      Up 2 hours
+redisodoo16irg_local   Up 2 hours
