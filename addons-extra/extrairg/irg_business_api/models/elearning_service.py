@@ -280,3 +280,105 @@ class ElearningService:
         if not section.exists():
             raise UserError(_('Unknown section id %s.') % section_id)
         return section
+
+    def _homeclass_channel(self, channel_id):
+        channel = self._channel(channel_id)
+        if 'irg_homeclass_channel_id' in channel._fields and channel.irg_homeclass_channel_id:
+            raise UserError(_('Pass the HomeClass channel id, not the Online clone.'))
+        return channel
+
+    def _homeclass_slides(self, channel):
+        return channel.slide_ids.filtered(
+            lambda slide: slide.irg_content_modality in (False, 'homeclass')
+            if 'irg_content_modality' in slide._fields else True
+        )
+
+    def describe_online_clone(self, payload):
+        channel = self._homeclass_channel(ser.require_positive_id(payload, 'channel_id'))
+        sources = self._homeclass_slides(channel)
+        dest = channel.irg_online_channel_id if 'irg_online_channel_id' in channel._fields else False
+        dest_slides = dest.slide_ids if dest else self.env['slide.slide']
+        dest_partners = 0
+        if dest:
+            dest_partners = self.env['slide.channel.partner'].with_context(
+                active_test=False,
+            ).search_count([('channel_id', '=', dest.id)])
+        blocked = bool(dest and dest_slides)
+        return {
+            'channel_id': channel.id,
+            'channel_name': channel.name,
+            'source_slide_count': len(sources),
+            'source_section_count': len(channel.irg_section_ids) if 'irg_section_ids' in channel._fields else 0,
+            'source_slide_ids': sources.ids,
+            'dest_channel_id': dest.id if dest else False,
+            'dest_slide_count': len(dest_slides),
+            'dest_membership_count': dest_partners,
+            'would_copy_content': bool(sources) and not blocked,
+            'would_copy_memberships': False,
+            'blocked': blocked,
+            'blocked_reason': (
+                'Online channel already has content'
+                if blocked else False
+            ),
+        }
+
+    def describe_content_reconciliation(self, payload):
+        plan = self.describe_online_clone(payload)
+        channel = self._homeclass_channel(plan['channel_id'])
+        dest = channel.irg_online_channel_id if 'irg_online_channel_id' in channel._fields else False
+        source_names = self._homeclass_slides(channel).mapped('name')
+        dest_names = dest.slide_ids.mapped('name') if dest else []
+        plan['missing_in_online'] = [name for name in source_names if name not in dest_names]
+        plan['extra_in_online'] = [name for name in dest_names if name not in source_names]
+        return plan
+
+    def preview_apply_online_clone(self, payload):
+        plan = self.describe_online_clone(payload)
+        before = {
+            'channel_id': plan['channel_id'],
+            'dest_channel_id': plan['dest_channel_id'],
+            'dest_slide_count': plan['dest_slide_count'],
+            'source_slide_count': plan['source_slide_count'],
+        }
+        proposed = dict(plan)
+        return before, proposed, {'model': 'slide.channel', 'id': plan['channel_id']}
+
+    def apply_online_clone(self, proposed, before):
+        channel = self._homeclass_channel(proposed['channel_id'])
+        if before.get('source_slide_count') != len(self._homeclass_slides(channel)):
+            raise UserError(_('HomeClass content changed after preview.'))
+        dest = channel.irg_online_channel_id if 'irg_online_channel_id' in channel._fields else False
+        if dest and dest.slide_ids:
+            raise UserError(_(
+                'The Online channel already has content. Refusing to duplicate.'
+            ))
+        if not hasattr(channel, 'action_copy_homeclass_to_online'):
+            raise UserError(_('Online clone bootstrap is not available.'))
+        channel.action_copy_homeclass_to_online()
+        channel.invalidate_recordset()
+        dest = channel.irg_online_channel_id
+        ChannelPartner = self.env['slide.channel.partner'].with_context(active_test=False)
+        source_partners = set(ChannelPartner.search([
+            ('channel_id', '=', channel.id),
+        ]).mapped('partner_id').ids)
+        dest_partners = ChannelPartner.search([('channel_id', '=', dest.id)]) if dest else ChannelPartner
+        owner_id = channel.user_id.partner_id.id if channel.user_id and channel.user_id.partner_id else False
+        copied = dest_partners.filtered(
+            lambda rec: rec.partner_id.id in source_partners and rec.partner_id.id != owner_id
+        )
+        if copied:
+            raise UserError(_('Clone copied user access; that is not allowed.'))
+        return {
+            'channel_id': channel.id,
+            'dest_channel_id': dest.id if dest else False,
+            'dest_slide_count': len(dest.slide_ids) if dest else 0,
+            'copied_memberships': 0,
+        }
+
+    def apply_content_reconciliation(self, proposed, before):
+        if before.get('dest_slide_count'):
+            raise UserError(_(
+                'Online already has content. Reconciliation apply only copies into an empty Online channel.'
+            ))
+        return self.apply_online_clone(proposed, before)
+

@@ -2,7 +2,7 @@
 
 Fachada de comandos académicos cerrados para Odoo 16. Lisa (u otro cliente RPC) no usa el ORM genérico: solo crea registros de `irg.api.operation` con un código allowlist, un payload JSON y una clave de idempotencia.
 
-Entrega actual: fases 0–2 (lecturas académicas y escrituras eLearning en borrador). No hay clonación, matrícula, sync Moodle de escritura, encuestas de escritura ni adjuntos públicos.
+Entrega actual: fases 0–6. Lecturas académicas, borradores eLearning, clonación HomeClass→Online (bootstrap oficial), aperturas/acceso, matrícula oficial, mapas Moodle explícitos, encuestas en borrador y adjuntos privados.
 
 ## Instalación
 
@@ -40,6 +40,10 @@ Campos de servidor (`state`, snapshots, `requested_by`, hashes, timestamps) se i
 `write()` y `unlink()` siempre fallan, incluso con `sudo` o con contexto RPC extra. El ACL tiene `perm_write` para que exista el modelo; el método bloquea cualquier mutación directa.
 
 Los borradores de slide se crean como artículo (`slide_category=article`) no publicado. Publicar y despublicar son operaciones distintas.
+
+**Clonación Online:** no crear el canal a mano. `irg_preview_online_clone` / `irg_apply_online_clone` con el `channel_id` del curso **HomeClass**. Al aprobar se llama a `action_copy_homeclass_to_online` (copia slides, secciones, quizzes y adjuntos). Si el Online ya tiene contenido, se rechaza. No copia matrículas de alumnos.
+
+**Baja:** `irg_apply_withdrawal` está rechazada a propósito (`action_down` cancela facturas). Hay que usar la UI oficial.
 
 Contrato detallado: [doc/api-contract.md](doc/api-contract.md).
 

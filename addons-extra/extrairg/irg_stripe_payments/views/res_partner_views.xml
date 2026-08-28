@@ -21,6 +21,19 @@
             </xpath>
 
             <xpath expr="//page[@name='stripe_integration']" position="inside">
+                <group string="Customers de Stripe"
+                       attrs="{'invisible': [('irg_stripe_customer_count', '=', 0)]}">
+                    <field name="irg_stripe_customer_count" invisible="1"/>
+                    <field name="irg_stripe_customer_ids" nolabel="1" readonly="1">
+                        <tree create="false" delete="false"
+                              decoration-bf="is_primary == True">
+                            <field name="stripe_id"/>
+                            <field name="source"/>
+                            <field name="is_primary"/>
+                            <field name="note" optional="hide"/>
+                        </tree>
+                    </field>
+                </group>
                 <group string="Pagos Stripe">
                     <field name="irg_stripe_payment_currency_id" invisible="1"/>
                     <field name="irg_stripe_paid_total" readonly="1"/>

@@ -53,3 +53,17 @@ class GradebookService:
                 'subjects': subjects,
             })
         return {'available': True, 'results': results}
+
+    def get_student_grade_evidence(self, payload):
+        summary = self.get_gradebook_summary(payload)
+        if not summary.get('available'):
+            return summary
+        subject_id = payload.get('subject_id')
+        if subject_id:
+            wanted = ser.require_positive_id(payload, 'subject_id')
+            for book in summary.get('results') or []:
+                book['subjects'] = [
+                    subject for subject in book.get('subjects') or []
+                    if subject.get('subject_id') == wanted
+                ]
+        return summary
