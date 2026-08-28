@@ -1,0 +1,13 @@
+Command:
+xmllint --noout on existing module XML (unchanged in diff)
+
+Files checked:
+- addons-extra/extrairg/irg_business_api/security/ir_rule.xml — OK
+- addons-extra/extrairg/irg_business_api/security/groups.xml — OK
+- addons-extra/extrairg/irg_business_api/views/api_operation_views.xml — OK
+
+git diff views/security/static: no XML or static files in diff
+
+Exit code: 0
+
+Result: PASS

@@ -1,0 +1,79 @@
+# Code Review — irg_business_api phases 3–6
+
+Reviewer: independent (post-implementation, pre-validation)
+Date: 2026-08-28
+Branch: feat/irg-business-api-phases-3-6
+Plan: missions/irg-business-api-phases-3-6/plan.md
+Security advisor: [YES] (artifacts/security-advisor.txt)
+Tests cited: 53 passed (artifacts/tdd.txt)
+Scope reviewed: addons-extra/extrairg/irg_business_api/ only
+
+## Mandatory checklist
+
+| Requirement | Status | Evidence |
+| --- | --- | --- |
+| Clone apply calls `action_copy_homeclass_to_online`, not empty channel create | PASS | `elearning_service.apply_online_clone` (L355–357) delegates to `channel.action_copy_homeclass_to_online()`; no `slide.channel.create` in service code (only test fixtures in `common.py`). |
+| Does not copy student memberships from HomeClass | PASS | Preview sets `would_copy_memberships: False` (L317); apply post-check raises if student partners copied (L361–370); test `test_apply_online_clone_copies_content_not_memberships` asserts zero dest membership for test partner. |
+| `write()` always `AccessError`; no context gates | PASS | `api_operation.write` (L93–94) unconditional raise; internal mutations via `_irg_internal_write` → `super().write()` only. Test `test_write_cannot_forge_applied_state` rejects write even with `irg_api_internal=True` context. |
+| `apply_withdrawal` does NOT call `action_down` | PASS | `access_service.apply_withdrawal` (L244–248) raises `UserError`; preview sets `would_call_action_down: False`. Tests cover preview and apply refusal. |
+| Moodle mapping does not fetch catalogue / leak tokens | PASS | `describe_moodle_course_mapping` returns `import_catalogue: False` (L70); apply only upserts local `irg.moodle.subject.map` rows. Grade sync calls `_sync_moodle_grades` and returns counters only (`returns_tokens: False`). Serializer denylist includes `wstoken`, `token`, etc.; `test_get_moodle_sync_status_hides_secrets` asserts no secrets in snapshot. |
+| Attachments created `public=False` | PASS | `survey_service.apply_upload_private_attachment` sets `vals['public'] = False` (L192–193) and raises if attachment ends up public (L195–196). Test `test_upload_private_attachment` asserts `not attachment.public`. |
+| No edits to other addons | PASS | Git/worktree diff limited to `irg_business_api` module and its tests. |
+| Phase 0–2 slide tests still valid | PASS | `test_slide_draft_operations.py` and `test_idempotency_and_concurrency.py` unchanged in contract; core elearning draft/section/publish paths preserved in `elearning_service.py` (L61–221). All 53 module tests green per TDD artifact. |
+
+## Architecture
+
+- Service decomposition matches plan: `ElearningService`, `AccessService`, `AcademicService`, `MoodleService`, `GradebookService`, `SurveyService` wired through `api_operation` dispatch tables. No reimplementation of bootstrap, enroll, or Moodle sync — official methods delegated.
+- Preview → approve flow preserved; read ops verify immediately; write ops use SAVEPOINT on apply.
+- `ALLOWED_ENVIRONMENTS = ('test', 'beta')` keeps production rejected at create time.
+- Concurrency: `SELECT FOR UPDATE` on approve plus write_date / content freshness guards on slide and clone paths.
+
+## Findings
+
+### BLOQUEANTE
+
+(none)
+
+### MENOR
+
+1. **File:** `models/api_operation.py` — `_irg_apply_preview` (L381–386)
+   **Issue:** `proposed['datas'] = payload.get('file_b64') or payload.get('datas')` runs for every apply operation, not only `irg_upload_private_attachment`. Likely indentation slip; handlers ignore the extra key today but it pollutes proposed snapshots and could confuse future handlers.
+   **Fix:** Indent the `proposed['datas']` assignment inside the `irg_upload_private_attachment` branch (or a dedicated elif).
+
+2. **File:** `tests/` — Moodle mapping apply
+   **Issue:** No test exercises `irg_apply_moodle_course_mapping` end-to-end (preview/read covered indirectly; apply path untested).
+   **Fix:** Add a post_install test that previews explicit maps, approves, and asserts `irg.moodle.subject.map` rows created/updated without side HTTP (mock or assert local ORM only).
+
+3. **File:** `tests/` — Access sync 30% guard
+   **Issue:** `apply_access_reconciliation` implements the official 30% archive ratio guard (L175–183) but no test forces the refusal path.
+   **Fix:** Optional follow-up test with controlled snapshot mocks if the official helpers are available in test DB.
+
+### NIT
+
+1. **File:** `models/survey_service.py` — `describe_feedback_import`
+   Returns full `txt_content` in preview/proposed snapshot. Acceptable for apply replay within `MAX_PAYLOAD_BYTES`, but large imports inflate stored operation rows.
+
+2. **File:** `models/access_service.py` — `describe_withdrawal`
+   Uses `Move.sudo()` only to count unpaid invoices for preview metadata (read-only). Consistent with plan (“preview informs effects”).
+
+## Verdict
+
+Implementation aligns with plan decisions, security advisor constraints, and mandatory checklist. No blocking defects in architecture, security, or plan compliance. Minor apply-path indentation and test-gap items should be addressed when convenient but do not block validation.
+
+APPROVE: phases 3–6 satisfy plan and security checklist; no blocking defects found.
+
+---
+
+## Re-review — indentation fix (2026-08-28)
+
+**Scope:** single change in `models/api_operation.py` — `_irg_apply_preview`.
+
+**Verified:** `proposed['datas']` is now assigned only inside the `irg_upload_private_attachment` branch (L381–383). The `irg_apply_feedback_import` branch remains separate (L384–386) and unaffected. No other apply paths receive a spurious `datas` key.
+
+**MENOR #1 (apply-path indentation): CLOSED.**
+
+**Remaining MENOR (unchanged, non-blocking):** Moodle mapping apply test gap (#2); access sync 30% guard test gap (#3). Optional follow-ups; not required for validation gate.
+
+**Tests:** 53 tests, 0 failed, 0 errors (re-run after fix; DB dropped).
+
+APPROVE: indentation fix correct; prior MENOR on apply-path datas assignment resolved; no new defects.

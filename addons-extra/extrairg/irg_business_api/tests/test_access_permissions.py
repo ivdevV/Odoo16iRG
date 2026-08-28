@@ -60,6 +60,6 @@ class TestAccessPermissions(IrgBusinessApiCase):
         with self.assertRaises(UserError):
             self.run_op('execute_kw', {'model': 'slide.slide'})
 
-    def test_phase3_clone_not_exposed(self):
+    def test_clone_wrong_payload_keys_rejected(self):
         with self.assertRaises(UserError):
             self.run_op('irg_apply_online_clone', {'source_id': 1, 'dest_id': 2})

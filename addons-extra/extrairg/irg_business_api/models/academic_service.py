@@ -166,6 +166,105 @@ class AcademicService:
         data['questions'] = questions
         return data
 
+    def get_batch_schedule(self, payload):
+        batch = self._browse_or_raise('op.batch', ser.require_positive_id(payload, 'batch_id'))
+        lines = []
+        if 'op.subject.to.batch' not in self.env:
+            return {'batch_id': batch.id, 'records': []}
+        rows = self.env['op.subject.to.batch'].search([('batch_id', '=', batch.id)])
+        for row in rows:
+            item = ser.record_dict(row, ['id', 'code'])
+            item['subject_id'] = row.subject_id.id if row.subject_id else False
+            item['date_from'] = row.date_from if 'date_from' in row._fields else False
+            item['date_to'] = row.date_to if 'date_to' in row._fields else False
+            lines.append(item)
+        return {'batch_id': batch.id, 'course_id': batch.course_id.id, 'records': lines}
+
+    def describe_batch_schedule_sync(self, payload):
+        batch = self._browse_or_raise('op.batch', ser.require_positive_id(payload, 'batch_id'))
+        current = self.get_batch_schedule(payload)
+        lines = payload.get('lines') or []
+        if not isinstance(lines, list):
+            raise UserError(_('lines must be a list.'))
+        proposed_lines = []
+        for line in lines:
+            if not isinstance(line, dict):
+                raise UserError(_('Each schedule line must be an object.'))
+            subject_id = ser.require_positive_id(line, 'subject_id')
+            subject = self._browse_or_raise('op.subject', subject_id)
+            if subject not in batch.course_id.subject_ids:
+                raise UserError(_('Subject %s does not belong to the batch course.') % subject_id)
+            proposed_lines.append({
+                'subject_id': subject.id,
+                'date_from': line.get('date_from') or False,
+                'date_to': line.get('date_to') or False,
+            })
+        return {
+            'batch_id': batch.id,
+            'current': current['records'],
+            'lines': proposed_lines,
+        }
+
+    def preview_apply_batch_schedule_sync(self, payload):
+        plan = self.describe_batch_schedule_sync(payload)
+        return {'batch_id': plan['batch_id']}, plan, {'model': 'op.batch', 'id': plan['batch_id']}
+
+    def apply_batch_schedule_sync(self, proposed, before):
+        batch = self._browse_or_raise('op.batch', proposed['batch_id'])
+        Line = self.env['op.subject.to.batch']
+        written = []
+        for line in proposed.get('lines') or []:
+            row = Line.search([
+                ('batch_id', '=', batch.id),
+                ('subject_id', '=', line['subject_id']),
+            ], limit=1)
+            vals = {}
+            if 'date_from' in Line._fields:
+                vals['date_from'] = line.get('date_from') or False
+            if 'date_to' in Line._fields:
+                vals['date_to'] = line.get('date_to') or False
+            if row:
+                row.write(vals)
+            else:
+                vals.update({'batch_id': batch.id, 'subject_id': line['subject_id']})
+                row = Line.create(vals)
+            written.append(row.id)
+        return {'batch_id': batch.id, 'line_ids': written}
+
+    def describe_subject_precedence(self, payload):
+        subject = self._browse_or_raise('op.subject', ser.require_positive_id(payload, 'subject_id'))
+        admission = self._browse_or_raise(
+            'op.admission', ser.require_positive_id(payload, 'admission_id')
+        )
+        parent = subject.parent_subject_id if 'parent_subject_id' in subject._fields else False
+        return {
+            'subject_id': subject.id,
+            'admission_id': admission.id,
+            'parent_subject_id': parent.id if parent else False,
+        }
+
+    def get_student_subject_eligibility(self, payload):
+        subject = self._browse_or_raise('op.subject', ser.require_positive_id(payload, 'subject_id'))
+        admission = self._browse_or_raise(
+            'op.admission', ser.require_positive_id(payload, 'admission_id')
+        )
+        eligible = False
+        evidence = 'can_be_taken unavailable'
+        user = False
+        if admission.student_id and admission.student_id.user_id:
+            user = admission.student_id.user_id
+        elif admission.partner_id:
+            user = self.env['res.users'].search([('partner_id', '=', admission.partner_id.id)], limit=1)
+        if user and hasattr(subject, 'can_be_taken'):
+            eligible = bool(subject.can_be_taken(user.id, admission=admission))
+            evidence = 'op.subject.can_be_taken'
+        return {
+            'subject_id': subject.id,
+            'admission_id': admission.id,
+            'can_be_taken': eligible,
+            'evidence': evidence,
+        }
+
     def _browse_or_raise(self, model_name, record_id):
         record = self.env[model_name].browse(record_id)
         if not record.exists():

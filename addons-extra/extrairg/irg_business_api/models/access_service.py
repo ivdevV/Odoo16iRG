@@ -105,3 +105,157 @@ class AccessService:
                     'subject_id': opening.subject_id.id,
                 })
         return {'records': records, 'total': len(records)}
+
+    def _admission(self, payload):
+        admission = self.env['op.admission'].browse(
+            ser.require_positive_id(payload, 'admission_id')
+        )
+        if not admission.exists():
+            raise UserError(_('Unknown admission id.'))
+        return admission
+
+    def describe_subject_openings(self, payload):
+        admission = self._admission(payload)
+        existing = (
+            admission.irg_online_subject_opening_ids
+            if 'irg_online_subject_opening_ids' in admission._fields
+            else self.env['irg.online.subject.opening']
+        )
+        eligible = False
+        if hasattr(admission, '_irg_has_online_subject_opening_context'):
+            eligible = bool(admission._irg_has_online_subject_opening_context())
+        return {
+            'admission_id': admission.id,
+            'state': admission.state,
+            'eligible': eligible,
+            'opening_count': len(existing),
+            'opening_ids': existing.ids,
+        }
+
+    def preview_apply_subject_opening(self, payload):
+        plan = self.describe_subject_openings(payload)
+        return plan, dict(plan), {'model': 'op.admission', 'id': plan['admission_id']}
+
+    def apply_subject_opening(self, proposed, before):
+        admission = self._admission({'admission_id': proposed['admission_id']})
+        if admission.state != before.get('state'):
+            raise UserError(_('Admission changed after preview.'))
+        if not hasattr(admission, '_irg_generate_online_subject_openings'):
+            raise UserError(_('Subject openings are not available.'))
+        admission._irg_generate_online_subject_openings()
+        openings = admission.irg_online_subject_opening_ids
+        return {
+            'admission_id': admission.id,
+            'opening_count': len(openings),
+            'opening_ids': openings.ids,
+        }
+
+    def describe_access_reconciliation(self, payload):
+        admission = self._admission(payload)
+        current = self.get_student_access({'admission_id': admission.id})
+        return {
+            'admission_id': admission.id,
+            'state': admission.state,
+            'membership_count': current['total'],
+            'active_count': len([row for row in current['records'] if row.get('active')]),
+        }
+
+    def preview_apply_access_reconciliation(self, payload):
+        plan = self.describe_access_reconciliation(payload)
+        return plan, dict(plan), {'model': 'op.admission', 'id': plan['admission_id']}
+
+    def apply_access_reconciliation(self, proposed, before):
+        admission = self._admission({'admission_id': proposed['admission_id']})
+        if not hasattr(admission, '_irg_sync_online_channel_partners'):
+            raise UserError(_('Access reconciliation is not available.'))
+        snapshot_before = {}
+        if hasattr(admission, '_irg_auto_enroll_membership_snapshot'):
+            snapshot_before = admission._irg_auto_enroll_membership_snapshot(admission)
+        admission._irg_sync_online_channel_partners()
+        if hasattr(admission, '_irg_auto_enroll_membership_snapshot'):
+            snapshot_after = admission._irg_auto_enroll_membership_snapshot(admission)
+            _activated, archived = admission._irg_auto_enroll_transition_counts(
+                snapshot_before, snapshot_after,
+            )
+            initial_active = sum(1 for active in snapshot_before.values() if active)
+            ratio = admission._irg_mass_archive_ratio(initial_active, archived)
+            if ratio > 0.30:
+                raise UserError(_('Access sync would archive more than 30% of memberships.'))
+        access = self.get_student_access({'admission_id': admission.id})
+        return {
+            'admission_id': admission.id,
+            'membership_count': access['total'],
+        }
+
+    def describe_enrollment(self, payload):
+        admission = self._admission(payload)
+        already = admission.state == 'done'
+        return {
+            'admission_id': admission.id,
+            'state': admission.state,
+            'student_id': admission.student_id.id if admission.student_id else False,
+            'already_enrolled': already,
+            'will_call': 'enroll_student' if admission.state == 'confirm' else False,
+        }
+
+    def preview_apply_enrollment(self, payload):
+        plan = self.describe_enrollment(payload)
+        return plan, dict(plan), {'model': 'op.admission', 'id': plan['admission_id']}
+
+    def apply_enrollment(self, proposed, before):
+        admission = self._admission({'admission_id': proposed['admission_id']})
+        if admission.state != before.get('state'):
+            raise UserError(_('Admission changed after preview.'))
+        if admission.state == 'done':
+            raise UserError(_('Admission is already enrolled.'))
+        if admission.state != 'confirm':
+            raise UserError(_('Enrollment is only allowed from confirm state via enroll_student.'))
+        admission.enroll_student()
+        return {
+            'admission_id': admission.id,
+            'state': admission.state,
+            'student_id': admission.student_id.id if admission.student_id else False,
+        }
+
+    def describe_withdrawal(self, payload):
+        admission = self._admission(payload)
+        unpaid = 0
+        Move = self.env['account.move']
+        order = admission.order_id if 'order_id' in admission._fields else False
+        if order and 'order_subscription_id' in Move._fields:
+            unpaid = Move.sudo().search_count([
+                ('order_subscription_id', '=', order.id),
+                ('state', '=', 'posted'),
+                ('payment_state', '=', 'not_paid'),
+            ])
+        return {
+            'admission_id': admission.id,
+            'state': admission.state,
+            'would_call_action_down': False,
+            'unpaid_invoices': unpaid,
+            'refused': True,
+            'reason': 'action_down is not exposed; it can cancel unpaid invoices.',
+        }
+
+    def preview_apply_withdrawal(self, payload):
+        plan = self.describe_withdrawal(payload)
+        return plan, dict(plan), {'model': 'op.admission', 'id': plan['admission_id']}
+
+    def apply_withdrawal(self, proposed, before):
+        raise UserError(_(
+            'Withdrawal via action_down() is not available on the business API. '
+            'Use the official admission UI.'
+        ))
+
+    def get_access_exceptions(self, payload):
+        admission = self._admission(payload)
+        incidents = self.get_academic_incidents({'admission_id': admission.id})
+        access = self.get_student_access({'admission_id': admission.id})
+        archived = [row for row in access['records'] if not row.get('active')]
+        return {
+            'admission_id': admission.id,
+            'incidents': incidents['records'],
+            'archived_memberships': len(archived),
+            'total': incidents['total'] + len(archived),
+        }
+

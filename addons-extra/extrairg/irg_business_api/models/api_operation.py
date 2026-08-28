@@ -17,6 +17,7 @@ from .elearning_service import ElearningService
 from .access_service import AccessService
 from .gradebook_service import GradebookService
 from .moodle_service import MoodleService
+from .survey_service import SurveyService
 
 _logger = logging.getLogger(__name__)
 
@@ -233,6 +234,24 @@ class IrgApiOperation(models.Model):
             'irg_get_moodle_sync_status': moodle.get_moodle_sync_status,
             'irg_get_survey_structure': academic.get_survey_structure,
             'irg_get_academic_incidents': access.get_academic_incidents,
+            'irg_preview_online_clone': elearning.describe_online_clone,
+            'irg_preview_content_reconciliation': elearning.describe_content_reconciliation,
+            'irg_preview_subject_opening': access.describe_subject_openings,
+            'irg_preview_access_reconciliation': access.describe_access_reconciliation,
+            'irg_preview_enrollment': access.describe_enrollment,
+            'irg_preview_withdrawal': access.describe_withdrawal,
+            'irg_get_access_exceptions': access.get_access_exceptions,
+            'irg_get_batch_schedule': academic.get_batch_schedule,
+            'irg_preview_batch_schedule_sync': academic.describe_batch_schedule_sync,
+            'irg_preview_subject_precedence': academic.describe_subject_precedence,
+            'irg_get_student_subject_eligibility': academic.get_student_subject_eligibility,
+            'irg_preview_moodle_course_mapping': moodle.describe_moodle_course_mapping,
+            'irg_preview_moodle_grade_sync': moodle.describe_moodle_grade_sync,
+            'irg_get_student_grade_evidence': gradebook.get_student_grade_evidence,
+            'irg_preview_auto_score': SurveyService(env).describe_auto_score,
+            'irg_preview_regrade_attempt': SurveyService(env).describe_regrade,
+            'irg_preview_feedback_import': SurveyService(env).describe_feedback_import,
+            'irg_get_attachment_metadata': SurveyService(env).get_attachment_metadata,
         }
         handler = dispatch.get(code)
         if not handler:
@@ -240,21 +259,72 @@ class IrgApiOperation(models.Model):
         return handler(payload)
 
     def _irg_run_preview(self, env, payload):
+        handler = self._irg_write_preview_handlers(env).get(self.operation_code)
+        if not handler:
+            raise UserError(_('Write operation is not implemented.'))
+        return handler(payload)
+
+    def _irg_write_preview_handlers(self, env):
         elearning = ElearningService(env)
-        code = self.operation_code
-        if code == 'irg_create_slide_draft':
-            return elearning.preview_create_slide(payload)
-        if code == 'irg_update_slide_draft':
-            return elearning.preview_update_slide(payload)
-        if code == 'irg_create_course_section':
-            return elearning.preview_create_section(payload)
-        if code == 'irg_reorder_course_section':
-            return elearning.preview_reorder_sections(payload)
-        if code == 'irg_publish_slide':
-            return elearning.preview_publish(payload, publish=True)
-        if code == 'irg_unpublish_slide':
-            return elearning.preview_publish(payload, publish=False)
-        raise UserError(_('Write operation is not implemented.'))
+        access = AccessService(env)
+        academic = AcademicService(env)
+        moodle = MoodleService(env)
+        survey = SurveyService(env)
+        return {
+            'irg_create_slide_draft': elearning.preview_create_slide,
+            'irg_update_slide_draft': elearning.preview_update_slide,
+            'irg_create_course_section': elearning.preview_create_section,
+            'irg_reorder_course_section': elearning.preview_reorder_sections,
+            'irg_publish_slide': lambda payload: elearning.preview_publish(payload, publish=True),
+            'irg_unpublish_slide': lambda payload: elearning.preview_publish(payload, publish=False),
+            'irg_apply_online_clone': elearning.preview_apply_online_clone,
+            'irg_apply_content_reconciliation': elearning.preview_apply_online_clone,
+            'irg_apply_subject_opening': access.preview_apply_subject_opening,
+            'irg_apply_access_reconciliation': access.preview_apply_access_reconciliation,
+            'irg_apply_enrollment': access.preview_apply_enrollment,
+            'irg_apply_withdrawal': access.preview_apply_withdrawal,
+            'irg_apply_batch_schedule_sync': academic.preview_apply_batch_schedule_sync,
+            'irg_apply_moodle_course_mapping': moodle.preview_apply_moodle_course_mapping,
+            'irg_apply_moodle_grade_sync': moodle.preview_apply_moodle_grade_sync,
+            'irg_confirm_moodle_student_match': moodle.preview_confirm_moodle_student_match,
+            'irg_create_survey_draft': survey.preview_create_survey_draft,
+            'irg_update_survey_draft': survey.preview_update_survey_draft,
+            'irg_apply_auto_score': survey.preview_apply_auto_score,
+            'irg_apply_regrade_attempt': survey.preview_apply_regrade,
+            'irg_apply_feedback_import': survey.preview_apply_feedback_import,
+            'irg_upload_private_attachment': survey.preview_upload_private_attachment,
+        }
+
+    def _irg_write_apply_handlers(self, env):
+        elearning = ElearningService(env)
+        access = AccessService(env)
+        academic = AcademicService(env)
+        moodle = MoodleService(env)
+        survey = SurveyService(env)
+        return {
+            'irg_create_slide_draft': elearning.apply_create_slide,
+            'irg_update_slide_draft': elearning.apply_update_slide,
+            'irg_create_course_section': lambda proposed, before: elearning.apply_create_section(proposed),
+            'irg_reorder_course_section': elearning.apply_reorder_sections,
+            'irg_publish_slide': elearning.apply_publish,
+            'irg_unpublish_slide': elearning.apply_publish,
+            'irg_apply_online_clone': elearning.apply_online_clone,
+            'irg_apply_content_reconciliation': elearning.apply_content_reconciliation,
+            'irg_apply_subject_opening': access.apply_subject_opening,
+            'irg_apply_access_reconciliation': access.apply_access_reconciliation,
+            'irg_apply_enrollment': access.apply_enrollment,
+            'irg_apply_withdrawal': access.apply_withdrawal,
+            'irg_apply_batch_schedule_sync': academic.apply_batch_schedule_sync,
+            'irg_apply_moodle_course_mapping': moodle.apply_moodle_course_mapping,
+            'irg_apply_moodle_grade_sync': moodle.apply_moodle_grade_sync,
+            'irg_confirm_moodle_student_match': moodle.apply_confirm_moodle_student_match,
+            'irg_create_survey_draft': survey.apply_create_survey_draft,
+            'irg_update_survey_draft': survey.apply_update_survey_draft,
+            'irg_apply_auto_score': survey.apply_auto_score,
+            'irg_apply_regrade_attempt': survey.apply_regrade,
+            'irg_apply_feedback_import': survey.apply_feedback_import,
+            'irg_upload_private_attachment': survey.apply_upload_private_attachment,
+        }
 
     def _irg_run_meta(self, payload):
         target_id = ser.require_positive_id(payload, 'operation_id')
@@ -308,25 +378,26 @@ class IrgApiOperation(models.Model):
         payload = ser.parse_payload(self.request_payload)
         before = ser.parse_payload(self.before_snapshot)
         proposed = ser.parse_payload(self.proposed_after)
+        if self.operation_code == 'irg_upload_private_attachment':
+            proposed = dict(proposed)
+            proposed['datas'] = payload.get('file_b64') or payload.get('datas')
+        if self.operation_code == 'irg_apply_feedback_import':
+            proposed = dict(proposed)
+            proposed['txt_content'] = payload.get('txt_content')
         # sudo: apply uses the same authorized academic path as preview.
         env = self.sudo().env
-        elearning = ElearningService(env)
         cr = self.env.cr
         cr.execute('SAVEPOINT irg_api_apply')
         try:
             if self.operation_code == 'irg_create_slide_draft':
+                elearning = ElearningService(env)
                 result = elearning.apply_create_slide(proposed)
                 elearning.verify_create_slide(result)
-            elif self.operation_code == 'irg_update_slide_draft':
-                result = elearning.apply_update_slide(proposed, before)
-            elif self.operation_code == 'irg_create_course_section':
-                result = elearning.apply_create_section(proposed)
-            elif self.operation_code == 'irg_reorder_course_section':
-                result = elearning.apply_reorder_sections(proposed, before)
-            elif self.operation_code in ('irg_publish_slide', 'irg_unpublish_slide'):
-                result = elearning.apply_publish(proposed, before)
             else:
-                raise UserError(_('This operation cannot be applied.'))
+                handler = self._irg_write_apply_handlers(env).get(self.operation_code)
+                if not handler:
+                    raise UserError(_('This operation cannot be applied.'))
+                result = handler(proposed, before)
             cr.execute('RELEASE SAVEPOINT irg_api_apply')
         except Exception:
             cr.execute('ROLLBACK TO SAVEPOINT irg_api_apply')

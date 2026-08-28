@@ -1,0 +1,18 @@
+Command:
+docker compose -f /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml \
+  exec -T pgodoo_local psql -U odoo -d postgres \
+  -c "DROP DATABASE IF EXISTS test_irg_business_api;"
+
+Output:
+DROP DATABASE
+
+Post-check:
+SELECT datname FROM pg_database WHERE datname='test_irg_business_api';
+→ (0 rows)
+
+Shared odoo_local mount (with overlay, not main checkout):
+compose config source: .../.worktrees/irg-business-api/addons-extra → /mnt/extra-addons
+
+postgres/redis: left running (no teardown requested)
+
+Result: PASS

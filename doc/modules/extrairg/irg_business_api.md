@@ -1,7 +1,7 @@
 # irg_business_api
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.0
+**Versión:** 16.0.1.1.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
@@ -11,13 +11,14 @@
 
 ## ¿Qué hace este módulo?
 
-Expone un modelo de comandos `irg.api.operation` para que un agente (Lisa/MCP) lea datos académicos y cree o edite slides y secciones eLearning en borrador, sin `execute_kw` genérico ni métodos arbitrarios.
+Expone un modelo de comandos `irg.api.operation` para que un agente (Lisa/MCP) lea datos académicos, edite borradores eLearning y ejecute la clonación HomeClass→Online y el resto de contratos oficiales, sin `execute_kw` genérico.
 
 ## Funcionalidades principales
 
 - Lecturas paginadas de periodos, cursos, lotes, asignaturas, estructura eLearning, admisión, aperturas, acceso Campus y 360 mínimo.
 - Lecturas opcionales de gradebook y estado Moodle si esos modelos existen (no son `depends`).
 - Escrituras en dos pasos: preview → Approve. Borradores de artículo no publicados; publicar/despublicar son operaciones separadas.
+- Clonación Online vía `action_copy_homeclass_to_online` (no un `create` vacío de canal).
 - Idempotencia por `(usuario, código, idempotency_key)` y auditoría en snapshots.
 
 ## Vistas y UI
@@ -44,4 +45,4 @@ Pruebas: `--test-tags /irg_business_api`.
 
 ## Limitaciones
 
-Fases 3–6 (clonación Online, matrícula, sync Moodle de escritura, encuestas de escritura, adjuntos) no están implementadas. Desinstalar no revierte escrituras ya aplicadas.
+`irg_apply_withdrawal` no ejecuta `action_down`. El sync de notas Moodle requiere credenciales del conector. Adjuntos de la fachada son privados y de tamaño acotado. Desinstalar no revierte escrituras ya aplicadas.
