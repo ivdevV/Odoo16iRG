@@ -1,0 +1,9 @@
+=== VALIDATOR xml_wellformed ===
+Date: 2026-08-28T12:51:17Z
+
+Checking: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-student-degree-type/addons-extra/extrairg/irg_student_degree_type/views/irg_student_degree_type_views.xml
+  PASS
+Checking: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-student-degree-type/addons-extra/extrairg/irg_student_degree_type/views/op_student_views.xml
+  PASS
+
+=== RESULT: PASS ===
