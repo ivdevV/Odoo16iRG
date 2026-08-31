@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_stripe_payment_salesman,irg.stripe.payment.salesman,model_irg_stripe_payment,sales_team.group_sale_salesman,1,0,0,0
+access_irg_stripe_payment_accountant,irg.stripe.payment.accountant,model_irg_stripe_payment,account.group_account_invoice,1,1,0,0
+access_irg_stripe_payment_system,irg.stripe.payment.system,model_irg_stripe_payment,base.group_system,1,1,1,1
+access_irg_stripe_identity_review_salesman,irg.stripe.identity.review.salesman,model_irg_stripe_identity_review,sales_team.group_sale_salesman,1,0,0,0
+access_irg_stripe_identity_review_accountant,irg.stripe.identity.review.accountant,model_irg_stripe_identity_review,account.group_account_invoice,1,1,0,0
+access_irg_stripe_identity_review_system,irg.stripe.identity.review.system,model_irg_stripe_identity_review,base.group_system,1,1,1,1
+access_irg_stripe_customer_salesman,irg.stripe.customer.salesman,model_irg_stripe_customer,sales_team.group_sale_salesman,1,0,0,0
+access_irg_stripe_customer_accountant,irg.stripe.customer.accountant,model_irg_stripe_customer,account.group_account_invoice,1,1,1,0
+access_irg_stripe_customer_system,irg.stripe.customer.system,model_irg_stripe_customer,base.group_system,1,1,1,1
+access_irg_stripe_identity_link_wizard_accountant,irg.stripe.identity.link.wizard.accountant,model_irg_stripe_identity_link_wizard,account.group_account_invoice,1,1,1,1
+access_irg_stripe_identity_link_wizard_system,irg.stripe.identity.link.wizard.system,model_irg_stripe_identity_link_wizard,base.group_system,1,1,1,1
+access_irg_stripe_backfill_wizard_system,irg.stripe.backfill.wizard.system,model_irg_stripe_backfill_wizard,base.group_system,1,1,1,1

@@ -1,0 +1,13 @@
+command: xmllint --noout on views and security XML
+cwd: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-business-api
+timestamp: 2026-08-27
+
+=== XML well-formedness ===
+using xmllint
+--- addons-extra/extrairg/irg_business_api/views/api_operation_views.xml ---
+OK addons-extra/extrairg/irg_business_api/views/api_operation_views.xml
+--- addons-extra/extrairg/irg_business_api/security/groups.xml ---
+OK addons-extra/extrairg/irg_business_api/security/groups.xml
+--- addons-extra/extrairg/irg_business_api/security/ir_rule.xml ---
+OK addons-extra/extrairg/irg_business_api/security/ir_rule.xml
+XML_OK

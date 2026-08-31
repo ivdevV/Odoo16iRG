@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_irg_stripe_payment"
+              name="Pagos Stripe"
+              parent="irg_stripe_subscriptions.menu_stripe_integration_root"
+              action="action_irg_stripe_payment"
+              sequence="15"/>
+
+    <menuitem id="menu_irg_stripe_identity_review"
+              name="Revisión de identidad"
+              parent="irg_stripe_subscriptions.menu_stripe_integration_root"
+              action="action_irg_stripe_identity_review"
+              sequence="16"/>
+
+    <!-- Consume cuota de API y escribe en masa: solo administración. -->
+    <menuitem id="menu_irg_stripe_backfill"
+              name="Backfill de pagos"
+              parent="irg_stripe_subscriptions.menu_stripe_integration_root"
+              action="action_irg_stripe_backfill_wizard"
+              groups="base.group_system"
+              sequence="90"/>
+
+</odoo>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="irg_stripe_identity_review_view_tree" model="ir.ui.view">
+        <field name="name">irg.stripe.identity.review.view.tree</field>
+        <field name="model">irg.stripe.identity.review</field>
+        <field name="arch" type="xml">
+            <tree string="Revisiones de identidad" create="false"
+                  decoration-danger="reason == 'conflicting_customer_id'"
+                  decoration-warning="reason == 'ambiguous_email'"
+                  decoration-muted="state != 'open'">
+                <field name="last_seen_at"/>
+                <field name="name"/>
+                <field name="reason"/>
+                <field name="stripe_object_type" optional="show"/>
+                <field name="stripe_customer_id" optional="hide"/>
+                <field name="stripe_email" optional="show"/>
+                <field name="occurrence_count"/>
+                <field name="payment_count"/>
+                <field name="partner_id" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'open'"
+                       decoration-success="state == 'resolved'"
+                       decoration-muted="state == 'ignored'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="irg_stripe_identity_review_view_form" model="ir.ui.view">
+        <field name="name">irg.stripe.identity.review.view.form</field>
+        <field name="model">irg.stripe.identity.review</field>
+        <field name="arch" type="xml">
+            <form string="Revisión de identidad" create="false">
+                <header>
+                    <button name="action_open_link_wizard" type="object" string="Vincular"
+                            class="btn-primary" attrs="{'invisible': [('state', '!=', 'open')]}"/>
+                    <button name="action_ignore" type="object" string="Ignorar"
+                            attrs="{'invisible': [('state', '!=', 'open')]}"
+                            confirm="¿Seguro que quieres ignorar esta revisión? Los pagos afectados seguirán sin contacto asignado."/>
+                    <button name="action_reopen" type="object" string="Reabrir"
+                            attrs="{'invisible': [('state', '=', 'open')]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="open,resolved"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_payments" type="object"
+                                class="oe_stat_button" icon="fa-credit-card">
+                            <field name="payment_count" widget="statinfo" string="Pagos"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <div class="alert alert-info" role="alert"
+                         attrs="{'invisible': [('reason', '!=', 'ambiguous_email')]}">
+                        Hay más de un contacto con este email. El sistema no elige por su
+                        cuenta: vincular al equivocado significaría enseñar los pagos de una
+                        persona a otra. Revisa los candidatos y decide.
+                    </div>
+                    <div class="alert alert-danger" role="alert"
+                         attrs="{'invisible': [('reason', '!=', 'conflicting_customer_id')]}">
+                        Este Customer de Stripe apunta a un contacto que ya tenía otro Customer
+                        asociado. No se ha sobrescrito nada. Comprueba si son la misma persona
+                        (posible duplicado a fusionar) o dos personas distintas.
+                    </div>
+                    <group>
+                        <group string="Datos de Stripe">
+                            <field name="reason" readonly="1"/>
+                            <field name="stripe_object_type" readonly="1"/>
+                            <field name="stripe_object_id" readonly="1"/>
+                            <field name="stripe_customer_id" readonly="1"/>
+                            <field name="stripe_email" readonly="1"/>
+                        </group>
+                        <group string="Seguimiento">
+                            <field name="occurrence_count" readonly="1"/>
+                            <field name="last_seen_at" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="resolved_by_id" readonly="1"/>
+                            <field name="resolved_at" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Candidatos">
+                        <field name="candidate_partner_ids" nolabel="1" readonly="1">
+                            <tree create="false" delete="false">
+                                <field name="display_name"/>
+                                <field name="email"/>
+                                <field name="phone" optional="show"/>
+                                <field name="stripe_customer_id" optional="show"/>
+                                <field name="create_date" optional="hide"/>
+                            </tree>
+                        </field>
+                    </group>
+                    <group string="Resolución">
+                        <field name="resolution_note" nolabel="1"
+                               placeholder="Obligatorio si se ignora la revisión: por qué se descarta."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="irg_stripe_identity_review_view_search" model="ir.ui.view">
+        <field name="name">irg.stripe.identity.review.view.search</field>
+        <field name="model">irg.stripe.identity.review</field>
+        <field name="arch" type="xml">
+            <search string="Revisiones de identidad">
+                <field name="name"/>
+                <field name="stripe_email"/>
+                <field name="stripe_customer_id"/>
+                <field name="candidate_partner_ids"/>
+                <filter name="filter_open" string="Abiertas" domain="[('state', '=', 'open')]"/>
+                <filter name="filter_resolved" string="Resueltas" domain="[('state', '=', 'resolved')]"/>
+                <filter name="filter_ignored" string="Ignoradas" domain="[('state', '=', 'ignored')]"/>
+                <separator/>
+                <filter name="filter_ambiguous" string="Email ambiguo"
+                        domain="[('reason', '=', 'ambiguous_email')]"/>
+                <filter name="filter_conflict" string="Customer ID en conflicto"
+                        domain="[('reason', '=', 'conflicting_customer_id')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_by_reason" string="Motivo" context="{'group_by': 'reason'}"/>
+                    <filter name="group_by_state" string="Estado" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_irg_stripe_identity_review" model="ir.actions.act_window">
+        <field name="name">Revisión de identidad</field>
+        <field name="res_model">irg.stripe.identity.review</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="irg_stripe_identity_review_view_search"/>
+        <field name="context">{'search_default_filter_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay nada pendiente de revisar
+            </p>
+            <p>
+                Aquí aparecen los pagos cuyo contacto no se ha podido determinar sin ambigüedad.
+            </p>
+        </field>
+    </record>
+
+</odoo>

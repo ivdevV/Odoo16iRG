@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Se hereda de la vista de irg_stripe_subscriptions y no de base.view_partner_form:
+        así el xpath apunta a una página que este módulo ya garantiza que existe (es una
+        dependencia), en lugar de depender del orden de carga.
+    -->
+    <record id="view_partner_form_inherit_stripe_payments" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.stripe.payments</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="irg_stripe_subscriptions.view_partner_form_inherit_stripe"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_irg_view_stripe_payments" type="object"
+                        class="oe_stat_button" icon="fa-credit-card"
+                        attrs="{'invisible': [('irg_stripe_payment_count', '=', 0)]}">
+                    <field name="irg_stripe_payment_count" widget="statinfo" string="Pagos Stripe"/>
+                </button>
+            </xpath>
+
+            <xpath expr="//page[@name='stripe_integration']" position="inside">
+                <group string="Customers de Stripe"
+                       attrs="{'invisible': [('irg_stripe_customer_count', '=', 0)]}">
+                    <field name="irg_stripe_customer_count" invisible="1"/>
+                    <field name="irg_stripe_customer_ids" nolabel="1" readonly="1">
+                        <tree create="false" delete="false"
+                              decoration-bf="is_primary == True">
+                            <field name="stripe_id"/>
+                            <field name="source"/>
+                            <field name="is_primary"/>
+                            <field name="note" optional="hide"/>
+                        </tree>
+                    </field>
+                </group>
+                <group string="Pagos Stripe">
+                    <field name="irg_stripe_payment_currency_id" invisible="1"/>
+                    <field name="irg_stripe_paid_total" readonly="1"/>
+                    <field name="irg_stripe_payment_ids" nolabel="1" readonly="1">
+                        <tree create="false" delete="false"
+                              decoration-muted="state in ('failed', 'canceled')"
+                              decoration-warning="partner_state == 'review'">
+                            <field name="payment_date"/>
+                            <field name="amount" sum="Total"/>
+                            <field name="amount_refunded" optional="show"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="partner_state" invisible="1"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state == 'succeeded'"
+                                   decoration-warning="state == 'partially_refunded'"
+                                   decoration-danger="state in ('failed', 'canceled', 'refunded')"/>
+                            <field name="is_subscription_payment" optional="show"/>
+                            <field name="partner_match_method" optional="hide"/>
+                            <field name="sale_order_id" optional="hide"/>
+                            <field name="receipt_url" widget="url" optional="hide"/>
+                            <field name="stripe_id" optional="hide"/>
+                        </tree>
+                    </field>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

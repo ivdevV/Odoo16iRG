@@ -1,0 +1,45 @@
+IRG Business API — Security Advisor review (pre-implementation)
+Date: 2026-08-27
+Mission: irg-business-api
+Status: APPROVED for implementation/TDD of phases 0–2
+
+Scope reviewed
+
+- missions/irg-business-api/plan.md
+- docs/superpowers/specs/2026-08-27-irg-business-api-design.md
+- doc/micro-specs/2026-08-27-irg_business_api.md
+- Plan técnico fuente (lecturas, escrituras eLearning, modelo de comandos, ACL)
+- Preparación Lisa: create_record/update_record/post_message activos; delete_record y call_model_method excluidos
+- Knowledge: auto-enroll savepoints/duplicados; routing Moodle sin tokens; reglas de modding
+
+Threat model
+
+Lisa can already create and update arbitrary records the MCP user can reach. If the facade model accepts client-owned `state`, snapshots or `requested_by`, `update_record` would forge an applied write without executing the official path. Academic models must remain unreachable except through the command model after a group check. `sudo()` without that check would become a confused-deputy.
+
+Controls required (implementation conditions)
+
+1. No HTTP controllers, no CSRF-exempt routes, no public website endpoints in this delivery.
+2. ACL only on `irg.api.operation` (and no unlink). Academic models are not granted to the API group.
+3. Record rules: API users see only their own company-scoped operations; system sees all.
+4. `create()` overwrites server-owned fields. `write()` without `irg_api_internal` rejects state, hashes, snapshots, actors and timestamps. This is mandatory because Lisa has `update_record`.
+5. Public methods limited to `action_approve` and `action_reject`, each checking group + allowed states. Service helpers are `_irg_*` so generic RPC rejects them.
+6. `sudo()` only after group or system check, scoped to the target records of the allowlisted operation, with a comment and a test per use site.
+7. Payload length checked before JSON parse (64 KiB). HTML limited to 32 KiB and sanitized. Page size capped at 100.
+8. Secret/binary denylist in serialization. No credentials, tokens, Moodle URLs privadas or file datas.
+9. `environment=production` rejected. First delivery is test/beta only.
+10. Unique SQL constraint on (requested_by, operation_code, idempotency_key). Same hash replays; different hash errors. Preview/apply compares target `write_date`.
+11. Writes use savepoints. No `unlink` of academic rows. Slide draft forces `is_published=False` and ignores client publish flags. Publish/unpublish are separate confirmed operations.
+12. Do not copy authors, followers, memberships, progress, votes, public attachments or personal dumps.
+13. Gradebook/Moodle reads must not depend on installing those modules for the facade to load; when present, never return connector credentials.
+
+Risks accepted
+
+- The MCP user that holds `group_irg_business_api_user` can run every published operation. That is the intended least-privilege robot account, not a shared employee login.
+- `sudo()` after authorization is required because the group must not receive broad academic ACLs.
+- Human approval in Hermes is outside this addon; the server still requires `action_approve` before any write lands.
+
+Blocking findings
+
+None on the plan as written, provided the implementation conditions above are followed. Divergence reopens this gate.
+
+[YES] Reason: Command-model ACL, client-proof create/write, private services, documented sudo after group check, idempotency, payload limits, no HTTP and no production environment close the identified ORM/MCP bypasses for phases 0–2.

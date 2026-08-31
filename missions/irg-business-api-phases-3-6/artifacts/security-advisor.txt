@@ -1,0 +1,21 @@
+Security Advisor — irg-business-api phases 3–6
+Date: 2026-08-28
+Scope: new allowlisted operations on irg.api.operation only.
+No edits to existing academic addons. No HTTP controllers.
+
+Threats examined
+- AuthZ: same group_irg_business_api_user + write() always AccessError + sudo after group check.
+- Clone: must call action_copy_homeclass_to_online, not ORM create of empty channel. Must not copy slide.channel.partner.
+- Enrollment: enroll_student only; refuse if already done. Do not invent student/fee writes.
+- Withdrawal: action_down() cancels unpaid invoices and sets state=down. MUST NOT be callable from the facade.
+- Access sync: wrap _irg_sync_online_channel_partners; refuse if archive ratio > 0.30 (same official guard).
+- Moodle: never serialize wstoken/password; mapping writes are explicit subject/moodle ids; live catalogue import is not exposed.
+- Attachments: create ir.attachment with public=False; size cap; no public URL.
+- Concurrency: existing SELECT FOR UPDATE + business-field freshness on apply.
+- Unlink: facade does not unlink; official opening generator may unlink obsolete openings as part of its own contract.
+
+Integrity
+- Payloads remain allowlisted keys; production environment rejected.
+- Snapshots sanitized via existing serializer denylist.
+
+[YES] Reason: operations wrap official server methods under the existing closed command model; withdrawal and Moodle catalogue fetch are refused; clone cannot skip content bootstrap; no new public endpoints or context write gates.

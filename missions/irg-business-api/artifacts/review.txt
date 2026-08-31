@@ -1,0 +1,188 @@
+IRG Business API — independent code review
+Date: 2026-08-27
+Scope: addons-extra/extrairg/irg_business_api/** only
+Checked against: missions/irg-business-api/plan.md, design spec, micro-spec, security-advisor.txt
+Reviewer is not the implementer. Tests were not executed.
+
+================================================================================
+Coverage (phases 0–2)
+================================================================================
+Addon is new, isolated, Odoo 16 style. Manifest depends match the plan.
+Transitive deps from irg_course_convocatorias_v2 pull website_slides and
+irg_elearning_editable_sections as planned. No edits to existing modules.
+No HTTP controllers, no csrf-exempt routes, no public website endpoints.
+
+Reads implemented: periods, courses, overview, batches, subjects, structure,
+slide, admission, openings, access, 360, gradebook (optional), Moodle (optional),
+survey, incidents.
+
+Writes implemented: unpublished article draft create/update, section
+create/reorder, publish/unpublish as separate confirmed operations.
+Draft create forces is_published=False and slide_category=article; client
+is_published is ignored. Tests cover that path.
+
+Security controls present: dedicated group, ACL only on irg.api.operation with
+unlink=0, model.unlink() denied, record rules (own+company vs system-all),
+create() strips SERVER_OWNED_FIELDS, production environment rejected, payload
+64 KiB before parse, HTML 32k + html_sanitize, page size cap 100, secret/binary
+denylist, unique (requested_by, operation_code, idempotency_key), same-hash
+replay / different-hash error, savepoint on apply, sudo after _irg_check_actor
+with comments, service classes not RPC models, public transitors
+action_approve / action_reject plus meta create ops for Lisa (call_model_method
+excluded).
+
+Tests exist for the four planned modules and hit the main acceptance cases
+(pagination, secrets absent, draft unpublished, idempotency, forge-state
+without context, unknown ops, phase-3 clone not exposed).
+
+================================================================================
+BLOQUEANTE
+================================================================================
+
+1. write() authorization is a client-controlled context key
+   File: addons-extra/extrairg/irg_business_api/models/api_operation.py
+   (write at ~92-95, _irg_internal_write at ~346-347)
+   Related: models/elearning_service.py apply_create_slide / apply_create_section
+
+   write() allows any vals, including state/snapshots, when
+   context['irg_api_internal'] is set. In Odoo 16 that key is not a server
+   secret: JSON-RPC/XML-RPC execute_kw and /web/dataset/call_kw take context
+   from the client. The API group has perm_write=1, so the robot user can:
+
+     write([id], {'state': 'applied'}, context={'irg_api_internal': True})
+
+   That forges applied/verified without action_approve / irg_approve_operation.
+   The same call can rewrite proposed_after; apply_create_slide() then does
+   slide.slide.create(dict(proposed)) with whatever extra keys were planted
+   (partner_ids, datas, user_id, …), which breaks “no memberships / attachments
+   / authors” and the advisor rule that write() must not forge state.
+
+   test_write_cannot_forge_applied_state only calls write() without that
+   context, so it misses the bypass.
+
+   Fix:
+   - write() must always raise AccessError (no context gate).
+   - _irg_internal_write() must call super(IrgApiOperation, self).write(vals)
+     so it never re-enters the override.
+   - Apply paths must create/write from an explicit allowlist of fields, not
+     the raw proposed mapping.
+   - Add a test: with_user(api_user).with_context(irg_api_internal=True)
+     .write({'state': 'applied'}) still raises, and proposed_after cannot be
+     swapped before approve.
+
+================================================================================
+MENOR
+================================================================================
+
+2. No row lock on apply — race can duplicate drafts
+   File: models/api_operation.py (_irg_apply_preview)
+   Two concurrent action_approve / irg_approve_operation on the same preview
+   can both pass the state check and create two slides. Lock the operation
+   row (FOR UPDATE / self.lock()) before applying. Also map IntegrityError on
+   the unique idempotency constraint to the existing-record replay path.
+
+3. Apply create trusts the full proposed dict
+   File: models/elearning_service.py (apply_create_slide, apply_create_section)
+   Even after fixing write(), keep an allowlist at apply time so a snapshot
+   cannot grow extra ORM fields.
+
+4. _irg_apply_preview does not call _irg_check_actor
+   File: models/api_operation.py
+   Callers do. Re-check group+owner inside apply so sudo cannot run if a new
+   entry point appears.
+
+5. paginate() materializes the full recordset then slices
+   File: models/api_serializer.py
+   Fine for this delivery size; search(limit/offset) would scale better.
+
+6. Non-UserError on bad ints
+   File: models/api_serializer.py paginate; models/elearning_service.py sequence
+   int('x') raises ValueError (500) instead of UserError.
+
+7. Update-draft preview of a published slide is allowed
+   File: models/elearning_service.py preview_update_slide
+   Apply later rejects. Reject at preview so the command never looks approvable.
+
+8. Test gaps
+   No test that unlink is denied, that academic models have no ACL for the
+   API group, or that sudo is refused without the group on the apply site.
+   Survey read has no happy-path assertion (only missing id).
+
+================================================================================
+NIT
+================================================================================
+
+9. changed_fields uses `set(proposed) - set(before) or [diffs]` so it reports
+   either new keys or value diffs, not both (api_operation.py _irg_dispatch).
+
+10. Form view leaves operation_code / payload / environment editable while
+    write() rejects every save. Mark those readonly after create.
+
+11. State awaiting_approval is never assigned.
+
+12. SECRET_TOKENS uses substring match ('datas' in 'metadata').
+
+13. HTML limit is 32768 characters, not 32 KiB bytes.
+
+================================================================================
+Scope / Odoo 16 / advisor checklist
+================================================================================
+- No HTTP: pass
+- ACL only on irg.api.operation, unlink denied: pass
+- Record rules own+company / system all: pass
+- create() overwrites server-owned fields: pass
+- write() cannot forge state against a context-less update_record: pass
+- write() cannot forge state against RPC with context: FAIL (finding 1)
+- Public transitors + private _irg_* / non-model services: pass
+- sudo after group check, commented: pass on current call graph
+- Payload / HTML / page limits: pass
+- Secret denylist, no connector credentials in Moodle/gradebook reads: pass
+- production rejected: pass
+- Unique idempotency + hash replay/mismatch: pass (IntegrityError race: finding 2)
+- Savepoints, no academic unlink, draft not published by default: pass
+- Gradebook/Moodle optional, not in depends: pass
+- Existing modules untouched: pass
+- Odoo 16: model_create_multi, attrs, invalidate_recordset, html_sanitize: pass
+
+================================================================================
+Verdict
+================================================================================
+Phases 0–2 are otherwise implemented to the plan. One security hole remains
+on the command model’s write() gate, which is in the threat model (Lisa
+update_record / ORM write) and is trivial to exploit via RPC context.
+
+BLOCK: write() trusts client context irg_api_internal, so the API user can forge state and proposed_after without the official apply path.
+
+================================================================================
+Re-review 2026-08-27 (after write-gate fix)
+================================================================================
+Reviewer is not the implementer. Production tests were not re-executed here.
+Claimed GREEN (38/0/0) in artifacts/tdd-green.txt is noted, not re-run.
+
+Finding 1 (BLOQUEANTE) — CLOSED
+- write() always raises AccessError; no irg_api_internal gate
+  (models/api_operation.py).
+- _irg_internal_write() calls super(IrgApiOperation, self).write(vals) and
+  does not re-enter the override.
+- apply_create_slide allowlist: name, channel_id, html_content, sequence,
+  irg_section_id; then forces is_published=False and slide_category=article.
+- apply_create_section allowlist: name, channel_id, sequence.
+- apply_update_slide already wrote only name/html_content/sequence/irg_section_id.
+- Tests: with_context(irg_api_internal=True).write({state, proposed_after})
+  still AccessError; unlink denied for api_user and sudo.
+
+MENOR from first review — status
+- 2 row lock: CLOSED (SELECT id … FOR UPDATE before state check).
+  IntegrityError replay on concurrent idempotent create still unmapped (keep MENOR).
+- 3 proposed create allowlist: CLOSED.
+- 4 apply re-checks actor+owner: CLOSED.
+- 5 paginate full recordset: still open, not blocking.
+- 6 bad ints: CLOSED for paginate and sequence; irg_section_id still uses raw int().
+- 7 preview of published slide still allowed (apply rejects): still open, not blocking.
+- 8 unlink test added; academic ACL / survey happy-path still thin, not blocking.
+
+NIT items 9–13 unchanged. No new BLOQUEANTE found.
+write() cannot forge state over RPC context. Apply cannot ingest extra ORM fields
+from a tampered snapshot. Concurrent double-approve is serialized by FOR UPDATE.
+
+APPROVE: blocking write-context bypass is closed; remaining notes are MENOR/NIT.

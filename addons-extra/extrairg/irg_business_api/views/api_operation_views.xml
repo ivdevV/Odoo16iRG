@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_api_operation_tree" model="ir.ui.view">
+        <field name="name">irg.api.operation.tree</field>
+        <field name="model">irg.api.operation</field>
+        <field name="arch" type="xml">
+            <tree string="API Operations" create="1" delete="0">
+                <field name="create_date"/>
+                <field name="operation_code"/>
+                <field name="environment"/>
+                <field name="state"/>
+                <field name="requested_by"/>
+                <field name="target_model"/>
+                <field name="target_id"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_irg_api_operation_form" model="ir.ui.view">
+        <field name="name">irg.api.operation.form</field>
+        <field name="model">irg.api.operation</field>
+        <field name="arch" type="xml">
+            <form string="API Operation" delete="0">
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="oe_highlight"
+                            attrs="{'invisible': [('state', 'not in', ['preview', 'awaiting_approval'])]}"
+                            groups="irg_business_api.group_irg_business_api_user,base.group_system"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            attrs="{'invisible': [('state', 'not in', ['preview', 'awaiting_approval'])]}"
+                            groups="irg_business_api.group_irg_business_api_user,base.group_system"/>
+                    <field name="state" widget="statusbar" statusbar_visible="preview,awaiting_approval,applied,verified,failed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="operation_code"/>
+                            <field name="environment"/>
+                            <field name="idempotency_key" password="True"/>
+                            <field name="request_hash"/>
+                        </group>
+                        <group>
+                            <field name="requested_by" readonly="1"/>
+                            <field name="approved_by" readonly="1"/>
+                            <field name="target_model" readonly="1"/>
+                            <field name="target_id" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="request_payload" widget="text"/>
+                        <field name="before_snapshot" widget="text" readonly="1"/>
+                        <field name="proposed_after" widget="text" readonly="1"/>
+                        <field name="result_snapshot" widget="text" readonly="1"/>
+                        <field name="changed_fields" widget="text" readonly="1"/>
+                        <field name="warnings" widget="text" readonly="1"/>
+                        <field name="errors" widget="text" readonly="1"/>
+                        <field name="audit_reference" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_irg_api_operation_search" model="ir.ui.view">
+        <field name="name">irg.api.operation.search</field>
+        <field name="model">irg.api.operation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="operation_code"/>
+                <field name="idempotency_key"/>
+                <field name="requested_by"/>
+                <filter string="Preview" name="filter_preview" domain="[('state', '=', 'preview')]"/>
+                <filter string="Failed" name="filter_failed" domain="[('state', '=', 'failed')]"/>
+                <group>
+                    <filter string="Operation" name="group_operation" context="{'group_by': 'operation_code'}"/>
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_irg_api_operation" model="ir.actions.act_window">
+        <field name="name">API Operations</field>
+        <field name="res_model">irg.api.operation</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_irg_api_operation_search"/>
+    </record>
+    <menuitem id="menu_irg_business_api_root"
+              name="IRG Business API"
+              groups="irg_business_api.group_irg_business_api_user,base.group_system"
+              sequence="90"/>
+    <menuitem id="menu_irg_api_operation"
+              name="Operations"
+              parent="menu_irg_business_api_root"
+              action="action_irg_api_operation"
+              groups="irg_business_api.group_irg_business_api_user,base.group_system"/>
+</odoo>

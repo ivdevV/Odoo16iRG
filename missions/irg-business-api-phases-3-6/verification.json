@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "task": "irg-business-api-phases-3-6",
+  "checks": [
+    {
+      "name": "python_compile",
+      "command": "python3 -m compileall -q addons-extra/extrairg/irg_business_api",
+      "result": "pass",
+      "detail": "Exit 0; no syntax errors in module Python files",
+      "evidence": "artifacts/python-compile.txt"
+    },
+    {
+      "name": "xml_wellformed",
+      "command": "xmllint --noout on security/*.xml and views/api_operation_views.xml",
+      "result": "pass",
+      "detail": "3 XML files well-formed; none modified in diff",
+      "evidence": "artifacts/xml-wellformed.txt"
+    },
+    {
+      "name": "odoo_tests",
+      "command": "docker compose -f docker-compose.local.yml -f missions/irg-business-api/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_business_api -u irg_business_api --test-enable --test-tags /irg_business_api --without-demo=all --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 53 tests; irg_business_api: 65 tests 0.81s 3432 queries",
+      "evidence": "artifacts/odoo-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Diff is Python-only (models/tests); no views/static/HTTP changes; plan declared skip",
+      "evidence": "artifacts/e2e-scope.txt"
+    },
+    {
+      "name": "cleanup",
+      "command": "docker compose -f docker-compose.local.yml exec -T pgodoo_local psql -U odoo -d postgres -c \"DROP DATABASE IF EXISTS test_irg_business_api;\"",
+      "result": "pass",
+      "detail": "test_irg_business_api dropped; worktree extra-addons mount confirmed via overlay",
+      "evidence": "artifacts/cleanup.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml + missions/irg-business-api/docker-compose.worktree.yml",
+    "database": "test_irg_business_api (dropped after run)",
+    "base_commit": "6b3e932e1e6ad2da31d5ec66fc1361f0c0ce08ba"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/python-compile.txt",
+    "artifacts/xml-wellformed.txt",
+    "artifacts/odoo-tests.txt",
+    "artifacts/e2e-scope.txt",
+    "artifacts/cleanup.txt"
+  ]
+}

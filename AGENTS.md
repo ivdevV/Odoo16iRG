@@ -87,6 +87,41 @@ La validación incluye pruebas unitarias o automatizadas apropiadas, integració
 
 Las validaciones Odoo, pruebas de módulos, renderizados y checks dependientes del runtime usan siempre `docker-compose.local.yml`. Si se trabaja en un worktree y el compose monta el checkout principal, en el worktree se aplica un overlay que monta el código aislado. Al finalizar se ejecuta cleanup o limpieza de fixtures, usuarios y datos temporales, se restaura el servicio original y se registra evidencia tanto de la limpieza como de la restauración. Ninguna prueba debe dejar el entorno compartido apuntando al worktree.
 
+## Capa E2E
+
+La cobertura extremo a extremo exigida en el contrato de verificación se
+implementa con TestSprite MCP y se registra como el check `e2e_testsprite`. El rol
+que la ejecuta es `e2e-tester` y su definición está en `.claude/agents/e2e-tester.md`.
+`odoo --test-enable` no ejerce la capa web renderizada, de modo que ningún check
+de módulo satisface por sí solo esta exigencia cuando el cambio alcanza la
+superficie web.
+
+La capa se dispara **por scope del diff**. Es obligatoria cuando el diff toca
+vistas o QWeb (`.xml` bajo `views/`, `templates/` o `report/`), assets estáticos
+(`static/`), portal, `website`, controladores HTTP o plantillas de diploma y
+certificado. En cualquier otro caso el check se registra `skipped` con la
+justificación del scope, conforme al contrato de verificación. El orquestador
+declara el disparo en `plan.md` y el validador no puede rebajarlo por su cuenta.
+
+La capa corre **después** del resto de checks de validación y solo cuando ninguno
+ha fallado, para no gastar ejecución en cloud sobre código que aún no compila ni
+pasa sus pruebas de módulo. Su veredicto es un gate: `E2E FAIL` obliga a
+`status: failed` y reabre Implementación con la misma mecánica que cualquier otro
+fallo de validación; sin `E2E PASS` o un `skipped` justificado no hay Publicación
+autorizada. El límite de reintentos del ciclo es el general de la misión, y un
+segundo `E2E FAIL` consecutivo sobre la misma causa se escala al usuario en vez de
+reintentar una tercera vez.
+
+Los límites de ejecución son estrictos porque TestSprite sube el código indicado a
+su nube y tunela el puerto local. `projectPath` apunta **siempre** al directorio
+del módulo de la misión, nunca a la raíz del repositorio ni a `etc/`, `docker/` o
+`docker-compose*.yml`, que contienen credenciales. La ejecución va contra el
+runtime local de `docker-compose.local.yml` en el puerto `8069` y contra una base
+de datos desechable; queda **prohibido** apuntar TestSprite a beta o a producción,
+y las credenciales de `needLogin` son de un usuario de la base local desechable y
+nunca de una cuenta real. Al terminar se aplica la misma limpieza de fixtures,
+usuarios y datos temporales que el resto de validaciones dependientes de runtime.
+
 ## Seguridad
 
 El Security Advisor revisa obligatoriamente cambios de autenticación, concurrencia, migraciones, secretos o despliegue y borrado histórico antes de implementar. Examina alcance, integridad, pérdida de datos, comandos, contratos funcionales, APIs y sintaxis; su última línea debe ser `[YES] Reason: ...` o `[NO] Reason: ...`. Un `[NO]` bloquea Implementación: el orquestador enmienda el plan y solicita una revisión nueva hasta obtener `[YES]`.

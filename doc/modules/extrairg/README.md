@@ -55,6 +55,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_survey_second_attempt_fix](./irg_survey_second_attempt_fix.md) | Fix nota mostrada en el segundo intento | `survey.user_input` | Instalable |
 | [irg_survey_txt_import_feedback](./irg_survey_txt_import_feedback.md) | Importación de preguntas desde TXT | `irg.survey.txt.import.wizard` (nuevo) | Instalable |
 | [irg_elearning_styles_rework](./irg_elearning_styles_rework.md) | Rework visual del eLearning | — | Instalable |
+| [irg_business_api](./irg_business_api.md) | Fachada de comandos académicos (lecturas y borradores eLearning) | `irg.api.operation` (nuevo) | Instalable |
 | [irg_exam_score_100](./irg_exam_score_100.md) | Campo de compatibilidad escala 100 en surveys | `survey.survey` | Instalable |
 | [irg_op_student_admission_editable](./irg_op_student_admission_editable.md) | Popup de admisión editable en ficha del alumno | `op.student`, `op.admission` | Instalable |
 | [irg_admissions_by_student](./irg_admissions_by_student.md) | Crea admisiones usando student_id | `sale.order` | Instalable |

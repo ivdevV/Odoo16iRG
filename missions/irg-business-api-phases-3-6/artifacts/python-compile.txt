@@ -1,0 +1,12 @@
+Command:
+python3 -m compileall -q addons-extra/extrairg/irg_business_api
+
+Working directory:
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-business-api
+
+Exit code: 0
+
+Output:
+(no errors; compileall silent on success)
+
+Result: PASS

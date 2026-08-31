@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Cómo tratar el matching por email al resolver la identidad de un pago.
+
+            strict_unique (por defecto): solo vincula si el email identifica a una
+                única persona. Ante ambigüedad encola una revisión manual.
+            disabled:  no usa el email en absoluto. Recomendado durante un backfill
+                       masivo si la base tiene muchos emails duplicados.
+            legacy:    restaura el comportamiento antiguo (limit=1). Vía de escape
+                       para revertir sin redesplegar; puede vincular al contacto
+                       equivocado.
+        -->
+        <record id="param_irg_stripe_email_match_mode" model="ir.config_parameter">
+            <field name="key">irg_stripe.email_match_mode</field>
+            <field name="value">strict_unique</field>
+        </record>
+
+        <!-- Ventana máxima, en días, por ejecución de backfill. -->
+        <record id="param_irg_stripe_backfill_max_days" model="ir.config_parameter">
+            <field name="key">irg_stripe.backfill_max_days</field>
+            <field name="value">92</field>
+        </record>
+
+    </data>
+</odoo>

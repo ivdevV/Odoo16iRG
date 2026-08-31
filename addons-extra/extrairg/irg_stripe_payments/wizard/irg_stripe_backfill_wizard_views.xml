@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="irg_stripe_backfill_wizard_view_form" model="ir.ui.view">
+        <field name="name">irg.stripe.backfill.wizard.view.form</field>
+        <field name="model">irg.stripe.backfill.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Backfill de pagos Stripe">
+                <div class="alert alert-info" role="alert">
+                    Trae a Odoo los pagos ya existentes en Stripe. Es idempotente: volver a
+                    lanzar el mismo rango no duplica nada. Empieza siempre en modo simulación.
+                </div>
+                <group>
+                    <group>
+                        <field name="provider_id" options="{'no_create': True}"/>
+                        <field name="mode"/>
+                    </group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="resume"/>
+                        <field name="dry_run"/>
+                    </group>
+                </group>
+                <group string="Resultado" attrs="{'invisible': [('result_summary', '=', False)]}">
+                    <field name="result_summary" nolabel="1" readonly="1"/>
+                </group>
+                <footer>
+                    <button name="action_run" type="object" string="Ejecutar" class="btn-primary"/>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_stripe_backfill_wizard" model="ir.actions.act_window">
+        <field name="name">Backfill de pagos Stripe</field>
+        <field name="res_model">irg.stripe.backfill.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

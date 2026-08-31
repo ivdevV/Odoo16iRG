@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "task": "irg_diplomado_fixed_issue_date",
+  "checks": [
+    {
+      "name": "syntax_compileall",
+      "command": "python3 -m compileall -q addons-extra/extrairg/irg_generacion_diplomados_fixed_issue_date",
+      "result": "pass",
+      "detail": "0 errores de sintaxis. Exit code 0.",
+      "evidence": "artifacts/odoo-tests-raw.txt"
+    },
+    {
+      "name": "unit_tests_odoo",
+      "command": "docker compose -f docker-compose.local.yml -f missions/irg_diplomado_fixed_issue_date/docker-compose.worktree.yml run --rm --no-deps -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_dip_issue_date_val -i irg_generacion_diplomados_fixed_issue_date --test-enable --test-tags /irg_generacion_diplomados_fixed_issue_date --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "6 tests passed, 0 failed, 0 errors. Todos los casos del plan cubiertos: helper, wizard.create, wizard.write, registry default, registry explicit date, action_print_diplomado.",
+      "evidence": "artifacts/green-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "El diff no toca vistas XML, QWeb (.xml bajo views/, templates/ o report/), static/, portal, website ni controladores HTTP. Scope exclusivamente Python (models/, wizard/, tests/). Justificación declarada en plan.md.",
+      "evidence": null
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml + missions/irg_diplomado_fixed_issue_date/docker-compose.worktree.yml",
+    "database": "test_irg_dip_issue_date_val (clonada de test_irg_db, eliminada al terminar)",
+    "base_commit": "128fb02e19ca6a6c1b32ab3e1f88dae48750e5d8"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/odoo-tests-raw.txt",
+    "artifacts/green-tests.txt"
+  ]
+}

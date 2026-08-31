@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Desactivado por defecto, como el resto de crons de Stripe de iRG.
+            No hace nada hasta que se configuren irg_stripe.backfill_window_from y
+            irg_stripe.backfill_window_to; lo normal es lanzar el backfill desde el
+            asistente y dejar este cron solo para ventanas largas troceadas.
+        -->
+        <record id="ir_cron_irg_stripe_backfill" model="ir.cron">
+            <field name="name">IRG Stripe: backfill de pagos históricos</field>
+            <field name="model_id" ref="model_irg_stripe_payment"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_irg_stripe_backfill()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

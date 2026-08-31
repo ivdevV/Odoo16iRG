@@ -1,0 +1,12 @@
+Check: e2e_testsprite
+
+git diff --name-only HEAD (functional scope):
+- models/*.py (7 modified + survey_service.py untracked)
+- tests/*.py (3 modified + 2 new test files)
+- No views/*.xml, security/*.xml, static/, controllers/, or HTTP surface changes
+
+Plan declaration (plan.md): E2E skipped when diff is Python-only operations.
+
+TestSprite MCP: not invoked (scope skip; no web surface touched).
+
+Result: skipped — justified by diff scope and plan

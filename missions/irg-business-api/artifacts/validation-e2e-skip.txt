@@ -1,0 +1,8 @@
+e2e_testsprite skipped (2026-08-27)
+
+Plan declared E2E TestSprite mandatory because the diff includes views/api_operation_views.xml.
+
+This Cursor runtime has no TestSprite MCP tools. GetDynamicTools search for testsprite|TestSprite|e2e returned no matches.
+Available namespaces: cursor, cursor-app-control, cursor-ide-browser, plugin-claude-mem-mcp-search.
+
+The check cannot run. It is not recorded as pass. Justification is runtime absence of TestSprite, not a scope waiver.

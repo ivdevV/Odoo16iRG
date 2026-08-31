@@ -1,0 +1,225 @@
+timestamp: 2026-08-27T16:11:25+02:00
+command: docker compose -f COMPOSE_BASE -f OVERLAY run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_business_api -i irg_business_api -u irg_business_api --without-demo=all --max-cron-threads=0 --stop-after-init --log-level=info
+COMPOSE_BASE=/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/docker-compose.local.yml
+OVERLAY=/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-business-api/missions/irg-business-api/docker-compose.worktree.yml
+====
+ Container pgodoo16irg_local Running 
+ Container redisodoo16irg_local Running 
+ Container odoo16irg_local-odoo_local-run-4f1e3b73f662 Creating 
+ Container odoo16irg_local-odoo_local-run-4f1e3b73f662 Created 
+2026-08-27 14:11:25,840 1 INFO ? odoo: Odoo version 16.0-20250909 
+2026-08-27 14:11:25,840 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-08-27 14:11:25,840 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-08-27 14:11:25,840 1 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-08-27 14:11:25,906 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-08-27 14:11:25,971 1 INFO test_irg_business_api odoo.modules.loading: loading 1 modules... 
+2026-08-27 14:11:25,974 1 INFO test_irg_business_api odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-08-27 14:11:25,981 1 INFO test_irg_business_api odoo.modules.loading: updating modules list 
+2026-08-27 14:11:25,982 1 INFO test_irg_business_api odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-08-27 14:11:26,118 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-08-27 14:11:26,158 1 WARNING test_irg_business_api py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-08-27 14:11:26,160 1 WARNING test_irg_business_api py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-08-27 14:11:26,162 1 WARNING test_irg_business_api py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-08-27 14:11:26,317 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-08-27 14:11:26,340 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-08-27 14:11:26,497 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-08-27 14:11:26,498 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-08-27 14:11:26,499 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-08-27 14:11:26,549 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-08-27 14:11:26,683 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-08-27 14:11:26,751 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-08-27 14:11:26,754 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-08-27 14:11:26,785 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-08-27 14:11:26,843 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-08-27 14:11:26,881 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-08-27 14:11:26,882 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-08-27 14:11:26,883 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-08-27 14:11:26,885 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-08-27 14:11:26,941 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-08-27 14:11:26,954 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-08-27 14:11:26,956 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-08-27 14:11:26,965 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-08-27 14:11:26,971 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-08-27 14:11:26,990 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-08-27 14:11:26,993 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-08-27 14:11:26,998 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-08-27 14:11:26,999 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-08-27 14:11:27,002 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-08-27 14:11:27,004 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-08-27 14:11:27,005 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-08-27 14:11:27,013 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-08-27 14:11:27,017 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-08-27 14:11:27,024 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-08-27 14:11:27,030 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-08-27 14:11:27,033 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-08-27 14:11:27,038 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-08-27 14:11:27,041 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-08-27 14:11:27,048 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-08-27 14:11:27,503 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-08-27 14:11:27,602 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-08-27 14:11:27,615 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-08-27 14:11:27,813 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-08-27 14:11:27,850 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-08-27 14:11:28,054 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-08-27 14:11:28,055 1 WARNING test_irg_business_api odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-08-27 14:11:28,164 1 INFO test_irg_business_api odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['IRG Business API'] to user __system__ #1 via n/a 
+2026-08-27 14:11:28,164 1 INFO test_irg_business_api odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['IRG Business API'] to user __system__ #1 via n/a 
+2026-08-27 14:11:28,702 1 INFO test_irg_business_api odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a 
+2026-08-27 14:11:28,713 1 INFO test_irg_business_api odoo.modules.loading: loading 118 modules... 
+2026-08-27 14:11:28,953 1 WARNING test_irg_business_api odoo.api.create: The model odoo.addons.isep_documents_portal.models.folders is not overriding the create method in batch 
+2026-08-27 14:11:28,987 1 WARNING test_irg_business_api odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch 
+2026-08-27 14:11:29,057 1 WARNING test_irg_business_api odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-08-27 14:11:29,058 1 WARNING test_irg_business_api odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-08-27 14:11:29,059 1 WARNING test_irg_business_api odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch 
+2026-08-27 14:11:29,060 1 WARNING test_irg_business_api odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch 
+2026-08-27 14:11:29,071 1 WARNING test_irg_business_api odoo.api.create: The model odoo.addons.isep_subject_precedence.wizard.subject_wizard is not overriding the create method in batch 
+2026-08-27 14:11:29,100 1 INFO test_irg_business_api odoo.modules.loading: Loading module irg_business_api (118/118) 
+2026-08-27 14:11:29,200 1 INFO test_irg_business_api odoo.modules.registry: module irg_business_api: creating or updating database tables 
+2026-08-27 14:11:29,232 1 INFO test_irg_business_api odoo.modules.loading: loading irg_business_api/security/groups.xml 
+2026-08-27 14:11:29,242 1 INFO test_irg_business_api odoo.modules.loading: loading irg_business_api/security/ir.model.access.csv 
+2026-08-27 14:11:29,248 1 INFO test_irg_business_api odoo.modules.loading: loading irg_business_api/security/ir_rule.xml 
+2026-08-27 14:11:29,253 1 INFO test_irg_business_api odoo.modules.loading: loading irg_business_api/views/api_operation_views.xml 
+2026-08-27 14:11:29,270 1 INFO test_irg_business_api odoo.modules.loading: Module irg_business_api loaded in 0.17s, 158 queries (+158 other) 
+2026-08-27 14:11:29,270 1 INFO test_irg_business_api odoo.modules.loading: 118 modules loaded in 0.56s, 158 queries (+158 extra) 
+2026-08-27 14:11:29,561 1 INFO test_irg_business_api odoo.modules.loading: Modules loaded. 
+2026-08-27 14:11:29,567 1 INFO test_irg_business_api odoo.modules.registry: Registry loaded in 3.604s 
+2026-08-27 14:11:29,567 1 INFO test_irg_business_api odoo.service.server: Initiating shutdown 
+2026-08-27 14:11:29,567 1 INFO test_irg_business_api odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-08-27 14:11:29,567 1 INFO test_irg_business_api odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  
+====
+exit_code=0

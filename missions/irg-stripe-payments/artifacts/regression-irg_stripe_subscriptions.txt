@@ -1,0 +1,9 @@
+=== CON irg_stripe_payments instalado (scratch_stripe_payments) ===
+2026-07-30 10:29:07,315 236 ERROR scratch_stripe_payments odoo.addons.irg_stripe_subscriptions.tests.test_stripe_subscriptions: ERROR: TestStripeSubscriptions.test_10_payment_intent_succeeded_is_deduplicated_by_invoice
+2026-07-30 10:29:07,399 236 INFO scratch_stripe_payments odoo.tests.stats: irg_stripe_subscriptions: 12 tests 0.41s 1055 queries 
+2026-07-30 10:29:07,399 236 ERROR scratch_stripe_payments odoo.tests.result: 0 failed, 1 error(s) of 10 tests when loading database 'scratch_stripe_payments' 
+
+=== BASELINE sin mi modulo (scratch_base_only) ===
+2026-07-30 10:29:15,442 261 ERROR scratch_base_only odoo.addons.irg_stripe_subscriptions.tests.test_stripe_subscriptions: ERROR: TestStripeSubscriptions.test_10_payment_intent_succeeded_is_deduplicated_by_invoice
+2026-07-30 10:29:15,524 261 INFO scratch_base_only odoo.tests.stats: irg_stripe_subscriptions: 12 tests 0.40s 1055 queries 
+2026-07-30 10:29:15,524 261 ERROR scratch_base_only odoo.tests.result: 0 failed, 1 error(s) of 10 tests when loading database 'scratch_base_only' 
