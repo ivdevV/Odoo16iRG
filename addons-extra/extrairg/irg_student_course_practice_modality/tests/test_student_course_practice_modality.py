@@ -165,3 +165,17 @@ class TestStudentCoursePracticeModality(TransactionCase):
             'lang': self.env.user.lang or 'en_US',
         })
         self.assertFalse(student.irg_get_practice_center_type(other_course))
+
+    def test_init_nulls_orphan_student_ids(self):
+        _course, _student, enrollment = self._make_enrollment('ORPH')
+        self.env.cr.execute("""
+            ALTER TABLE op_student_course
+            DROP CONSTRAINT IF EXISTS op_student_course_student_id_fkey
+        """)
+        self.env.cr.execute(
+            "UPDATE op_student_course SET student_id = %s WHERE id = %s",
+            (2147483647, enrollment.id),
+        )
+        self.env['op.student.course'].init()
+        enrollment.invalidate_recordset(['student_id'])
+        self.assertFalse(enrollment.student_id)
