@@ -36,7 +36,7 @@ Responsabilidad: persistir y mostrar la modalidad por matrícula.
 - Borrador, asignado o rechazado no copian ni borran el valor.
 - Staff puede editar el campo en backend. Ese valor rige hasta que una solicitud posterior en estado de sync vuelva a copiar.
 - `sudo()` solo para escribir el Many2one en la matrícula vinculada a `practice.request.course_id`. No se reescribe la solicitud.
-- Superficies: formulario y árbol de `op.student.course`; línea informativa en el campus (`isep_website_custom.user_profile_content_details`) junto al nombre del curso; columna en la tabla educativa del portal OpenEduCat.
+- Superficies: formulario y árbol de `op.student.course`; pestaña Educativo de la ficha de alumno (lista y popup de `op_course_ids`); línea informativa en el campus (`isep_website_custom.user_profile_content_details`) junto al nombre del curso; columna en la tabla educativa del portal OpenEduCat.
 - Dependencias extra: `irg_practice_center_type_modalities` (claves `tfm_validation` / `on_site_origin`) y `openeducat_core_enterprise` (plantilla del portal educativo).
 
 ### B — `irg_practice_slide_restrictions`

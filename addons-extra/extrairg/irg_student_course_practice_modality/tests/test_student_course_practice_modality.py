@@ -145,7 +145,10 @@ class TestStudentCoursePracticeModality(TransactionCase):
         form = self.env.ref(
             'irg_student_course_practice_modality.view_op_student_course_form_practice_modality'
         )
-        for view in (tree, form):
+        student_form = self.env.ref(
+            'irg_student_course_practice_modality.view_op_student_form_practice_modality'
+        )
+        for view in (tree, form, student_form):
             arch = etree.fromstring(view.arch_db)
             self.assertTrue(
                 arch.xpath('//field[@name="irg_practice_center_type_id"]')

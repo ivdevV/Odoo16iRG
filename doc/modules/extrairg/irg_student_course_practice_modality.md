@@ -1,9 +1,9 @@
 # irg_student_course_practice_modality
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.0
+**Versión:** 16.0.1.1.0
 **Licencia:** LGPL-3
-**Depende de:** `openeducat_core`, `isep_practices_2`, `irg_practice_center_type_modalities`, `isep_website_custom`, `openeducat_core_enterprise`
+**Depende de:** `openeducat_core`, `isep_practices_2`, `irg_practice_center_type_modalities`, `isep_website_custom`, `openeducat_core_enterprise`, `isep_student_filter`
 
 ---
 
@@ -17,7 +17,7 @@ No es `irg_content_modality`. El Many2one apunta a `practice.center.type`.
 
 - Al crear o escribir `practice.request`, si hay alguna solicitud de esa matrícula en `approved`, `progress` o `end`, se copia el `practice_center_type_id` de la más reciente (`request_date desc, id desc`).
 - Borrador, asignado o rechazado no copian ni borran el valor.
-- Secretaría puede editar el campo en el formulario/árbol de `op.student.course`. Ese valor rige hasta que una solicitud posterior en estado de sync vuelva a copiar.
+- Secretaría puede editar el campo en Student Course Detail y en la pestaña Educativo de la ficha de alumno (lista y popup de curso). Ese valor rige hasta que una solicitud posterior en estado de sync vuelva a copiar.
 - Campus: línea «Prácticas: … / Pendiente de seleccionar» bajo el nombre del curso.
 - Portal educativo OpenEduCat: columna en la tabla de matrículas.
 
