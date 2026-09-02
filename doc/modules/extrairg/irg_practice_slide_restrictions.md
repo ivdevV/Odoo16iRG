@@ -1,7 +1,7 @@
 # irg_practice_slide_restrictions
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.0
+**Versión:** 16.0.1.1.0
 **Licencia:** LGPL-3
 **Depende de:** `irg_student_course_practice_modality`, `irg_elearning_editable_sections`, `isep_elearning_custom`, `irg_batch_slide_restrictions`
 
@@ -15,7 +15,7 @@ Vacío = visible para todos. Con valor = solo si `enrollment.irg_practice_center
 
 ## Cómo etiquetar
 
-En el formulario del contenido, campo **Modalidad de prácticas requerida**, junto a los lotes permitidos. Staff lo pone en las secciones del canal de prácticas de cada curso. No hace falta un flag «es asignatura de prácticas».
+Staff lo pone en las secciones del canal de prácticas de cada curso, campo **Modalidad de prácticas requerida**, junto a los lotes. Aparece en la pestaña **Secciones iRG** (lista y formulario) y en el formulario de contenido. No hace falta un flag «es asignatura de prácticas».
 
 ## Autorización
 

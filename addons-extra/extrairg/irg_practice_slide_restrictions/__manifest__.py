@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Practice Slide Restrictions',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Website/eLearning',
     'summary': 'Restringe secciones de elearning por modalidad de prácticas',
     'description': """
@@ -18,6 +18,7 @@ Vacío = visible para todos. Con valor = solo si la matrícula coincide.
     ],
     'data': [
         'views/slide_slide_view.xml',
+        'views/slide_channel_view.xml',
         'views/templates.xml',
     ],
     'installable': True,

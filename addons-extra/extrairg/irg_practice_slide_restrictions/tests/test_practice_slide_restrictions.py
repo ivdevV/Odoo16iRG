@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from contextlib import ExitStack
 from dateutil.relativedelta import relativedelta
+from lxml import etree
 from unittest.mock import patch
 
 from odoo import fields
@@ -229,3 +230,19 @@ class TestPracticeSlideRestrictions(TransactionCase):
         self.assertEqual(subject.course_id, course)
         section = self._make_section(channel, 'TFM SUBJ', required='tfm_validation')
         self.assertTrue(section.is_user_allowed_by_practice_type(user))
+
+    def test_irg_sections_tab_includes_practice_field(self):
+        channel_form = self.env.ref('website_slides.view_slide_channel_form')
+        arch = etree.fromstring(channel_form.get_combined_arch())
+        self.assertTrue(
+            arch.xpath(
+                "//field[@name='irg_native_section_ids']/tree/"
+                "field[@name='irg_required_practice_type']"
+            )
+        )
+        self.assertTrue(
+            arch.xpath(
+                "//field[@name='irg_native_section_ids']/form//"
+                "field[@name='irg_required_practice_type']"
+            )
+        )
