@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template
+        id="user_profile_practice_modality"
+        inherit_id="isep_website_custom.user_profile_content_details"
+        name="Campus: modalidad de prácticas por curso"
+    >
+        <xpath expr="//div[hasclass('mb32')]/h5" position="after">
+            <t t-set="op_student" t-value="env['op.student'].sudo().search([('user_id', '=', user.id)], limit=1)"/>
+            <t t-set="practice_type" t-value="op_student.irg_get_practice_center_type(course_id) if op_student else False"/>
+            <p class="small text-muted mb-2">
+                Prácticas:
+                <t t-if="practice_type">
+                    <t t-esc="practice_type.display_name"/>
+                </t>
+                <t t-else="">Pendiente de seleccionar</t>
+            </p>
+        </xpath>
+    </template>
+</odoo>

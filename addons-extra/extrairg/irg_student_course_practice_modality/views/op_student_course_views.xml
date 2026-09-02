@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_course_tree_practice_modality" model="ir.ui.view">
+        <field name="name">op.student.course.tree.practice.modality</field>
+        <field name="model">op.student.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_course_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <field name="irg_practice_center_type_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_op_student_course_form_practice_modality" model="ir.ui.view">
+        <field name="name">op.student.course.form.practice.modality</field>
+        <field name="model">op.student.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_course_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <field name="irg_practice_center_type_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

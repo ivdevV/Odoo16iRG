@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template
+        id="student_portal_practice_modality"
+        inherit_id="openeducat_core_enterprise.student_portal_educational_information"
+        name="Portal: modalidad de prácticas por matrícula"
+    >
+        <xpath expr="//table[hasclass('table-condensed')]//th[1]" position="after">
+            <th>Modalidad de prácticas</th>
+        </xpath>
+        <xpath expr="//t[@t-foreach='student.course_detail_ids']//td[1]" position="after">
+            <td>
+                <span t-if="course_detail.irg_practice_center_type_id" t-field="course_detail.irg_practice_center_type_id"/>
+                <span t-else="">Pendiente de seleccionar</span>
+            </td>
+        </xpath>
+    </template>
+</odoo>
