@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_practice_modality" model="ir.ui.view">
+        <field name="name">op.student.form.practice.modality</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="isep_student_filter.view_op_student_form_filter_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='op_course_ids']/tree/field[@name='course_id']" position="after">
+                <field name="irg_practice_center_type_id"/>
+            </xpath>
+            <xpath expr="//field[@name='op_course_ids']/form//field[@name='course_id']" position="after">
+                <field name="irg_practice_center_type_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

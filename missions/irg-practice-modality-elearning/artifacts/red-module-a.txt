@@ -1,0 +1,981 @@
+ Container odoo16irg_local-odoo_local-run-650e216d0c3b Creating 
+ Container odoo16irg_local-odoo_local-run-650e216d0c3b Created 
+2026-09-02 10:20:20,807 1 INFO ? odoo: Odoo version 16.0-20250909 
+2026-09-02 10:20:20,807 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-09-02 10:20:20,807 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-09-02 10:20:20,808 1 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-09-02 10:20:20,871 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-09-02 10:20:20,950 1 INFO ? odoo.service.server: HTTP service (werkzeug) running on 159755c56394:18069 
+2026-09-02 10:20:20,959 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading 1 modules... 
+2026-09-02 10:20:20,962 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-09-02 10:20:20,968 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: updating modules list 
+2026-09-02 10:20:20,970 1 INFO test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-09-02 10:20:21,178 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-09-02 10:20:21,279 1 WARNING test_irg_pm_a_red_20260902 py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-02 10:20:21,281 1 WARNING test_irg_pm_a_red_20260902 py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-02 10:20:21,283 1 WARNING test_irg_pm_a_red_20260902 py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-02 10:20:21,557 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-09-02 10:20:21,604 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-09-02 10:20:21,713 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-09-02 10:20:21,717 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-09-02 10:20:21,720 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-09-02 10:20:21,819 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-09-02 10:20:22,036 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-09-02 10:20:22,136 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-09-02 10:20:22,145 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-09-02 10:20:22,197 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-09-02 10:20:22,292 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-09-02 10:20:22,351 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-09-02 10:20:22,353 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-09-02 10:20:22,355 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-09-02 10:20:22,358 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-09-02 10:20:22,458 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-09-02 10:20:22,482 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-09-02 10:20:22,484 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-09-02 10:20:22,499 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-09-02 10:20:22,510 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-09-02 10:20:22,540 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-09-02 10:20:22,547 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-09-02 10:20:22,556 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-09-02 10:20:22,558 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-09-02 10:20:22,561 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-09-02 10:20:22,565 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-09-02 10:20:22,567 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-09-02 10:20:22,581 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-09-02 10:20:22,588 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-09-02 10:20:22,601 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-09-02 10:20:22,611 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-09-02 10:20:22,618 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-09-02 10:20:22,627 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-09-02 10:20:22,631 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-09-02 10:20:22,643 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-09-02 10:20:23,382 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-09-02 10:20:23,549 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-09-02 10:20:23,571 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-09-02 10:20:23,891 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-09-02 10:20:23,953 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-09-02 10:20:24,343 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-09-02 10:20:24,345 1 WARNING test_irg_pm_a_red_20260902 odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-09-02 10:20:24,571 1 INFO test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_module: ALLOW access to module.button_install on ['IRG Student Course Practice Modality'] to user __system__ #1 via n/a 
+2026-09-02 10:20:24,609 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading 225 modules... 
+2026-09-02 10:20:25,179 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_documents_portal.models.folders is not overriding the create method in batch 
+2026-09-02 10:20:25,202 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch 
+2026-09-02 10:20:25,280 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model res.card has no _description 
+2026-09-02 10:20:25,281 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model isep.form.data.wizard has no _description 
+2026-09-02 10:20:25,306 1 WARNING test_irg_pm_a_red_20260902 py.warnings: /mnt/extra-addons/ent_addons/sale_account_accountant/models/account_reconcile_model.py:64: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/models/__init__.py", line 4, in <module>
+    from . import account_reconcile_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-02 10:20:25,348 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.irg_admission_class_start_date.models.op_admission is not overriding the create method in batch 
+2026-09-02 10:20:25,367 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.odoo_moodle_connector.models.calendar_event_custom is not overriding the create method in batch 
+2026-09-02 10:20:25,484 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-02 10:20:25,484 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-02 10:20:25,485 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_survey.models.survey_user_input is not overriding the create method in batch 
+2026-09-02 10:20:25,605 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-02 10:20:25,606 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-02 10:20:25,607 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch 
+2026-09-02 10:20:25,608 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch 
+2026-09-02 10:20:25,619 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_gradebook.models.app_gradebook_result is not overriding the create method in batch 
+2026-09-02 10:20:25,620 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_gradebook.models.survey_user_input is not overriding the create method in batch 
+2026-09-02 10:20:25,625 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook.template.line has no _description 
+2026-09-02 10:20:25,625 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook has no _description 
+2026-09-02 10:20:25,625 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook.result has no _description 
+2026-09-02 10:20:25,625 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model survey.user_input.write has no _description 
+2026-09-02 10:20:25,626 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook.subject has no _description 
+2026-09-02 10:20:25,626 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook.student has no _description 
+2026-09-02 10:20:25,634 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model record.request has no _description 
+2026-09-02 10:20:25,634 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model record.request.line has no _description 
+2026-09-02 10:20:25,634 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model record.request.list.line has no _description 
+2026-09-02 10:20:25,635 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model res.partner.document has no _description 
+2026-09-02 10:20:25,640 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model op.course.type has no _description 
+2026-09-02 10:20:25,640 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model op.area.course has no _description 
+2026-09-02 10:20:25,644 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_subject_precedence.wizard.subject_wizard is not overriding the create method in batch 
+2026-09-02 10:20:25,651 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook.result has no _description 
+2026-09-02 10:20:25,651 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook.student has no _description 
+2026-09-02 10:20:25,653 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook.subject has no _description 
+2026-09-02 10:20:25,695 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook.student has no _description 
+2026-09-02 10:20:25,699 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.op_admission is not overriding the create method in batch 
+2026-09-02 10:20:25,702 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.auto_admission_required is not overriding the create method in batch 
+2026-09-02 10:20:25,727 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model schedule.date.due.line has no _description 
+2026-09-02 10:20:25,744 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.irg_gradebook_certificates.models.irg_certificate_request is not overriding the create method in batch 
+2026-09-02 10:20:25,748 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model app.gradebook.student has no _description 
+2026-09-02 10:20:25,792 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model schedule.date.due.line has no _description 
+2026-09-02 10:20:25,833 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: 225 modules loaded in 1.22s, 0 queries (+0 extra) 
+2026-09-02 10:20:25,835 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading 231 modules... 
+2026-09-02 10:20:25,835 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Loading module base_address_extended (2/231) 
+2026-09-02 10:20:25,865 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:25,865 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:25,875 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:25,886 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:25,901 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:25,901 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:25,903 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:25,903 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:25,903 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:25,903 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:25,903 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:25,904 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:25,904 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:25,926 1 INFO test_irg_pm_a_red_20260902 odoo.modules.registry: module base_address_extended: creating or updating database tables 
+2026-09-02 10:20:25,943 1 INFO test_irg_pm_a_red_20260902 odoo.models: Prepare computation of res.partner.street_name 
+2026-09-02 10:20:25,943 1 INFO test_irg_pm_a_red_20260902 odoo.models: Prepare computation of res.partner.street_number 
+2026-09-02 10:20:25,943 1 INFO test_irg_pm_a_red_20260902 odoo.models: Prepare computation of res.partner.street_number2 
+2026-09-02 10:20:25,950 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.partner() have the same label: Language. [Modules: odoo_moodle_connector and base] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.partner() have the same label: Active. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.partner() have the same label: Moodle-ID. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of res.partner() have the same label: Department. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.partner() have the same label: Language. [Modules: irg_sale_order_extended and base] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.partner() have the same label: Stripe Customer ID. [Modules: irg_stripe_subscriptions and irg_payment_stripe_recurring] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (titulacion, titulacion_from) of op.student() have the same label: Titulación. [Modules: None and isep_student_filter] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (finalizacionestudios, finalizacionestudios_from) of op.student() have the same label: Finalización de Estudios. [Modules: None and isep_student_filter] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.student() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.student() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.student() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.student() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.faculty() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.faculty() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.faculty() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.faculty() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department, department_id) of res.users() have the same label: Department. [Modules: None and hr] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.users() have the same label: Active. [Modules: None and base] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.users() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:25,951 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.users() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:20:25,975 1 ERROR test_irg_pm_a_red_20260902 odoo.schema: Table 'res_partner': unable to set NOT NULL on column 'username' 
+2026-09-02 10:20:25,991 1 WARNING test_irg_pm_a_red_20260902 py.warnings: /usr/lib/python3/dist-packages/odoo/fields.py:809: UserWarning: Field 'op.student.op_course_ids' in dependency of op.student.total_completion_porc should be searchable. This is necessary to determine which records to recompute when op.student.course.completion_porc is modified. You should either make the field searchable, or simplify the field dependency.
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 493, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 210, in load_module_graph
+    registry.init_models(cr, model_names, {'module': package.name}, new_install)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 538, in init_models
+    func()
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_model.py", line 47, in mark_modified
+    records.modified(fnames)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 6165, in modified
+    todo = [self._modified([self._fields[fname] for fname in fnames], create)]
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 6216, in _modified
+    tree = self.pool.get_trigger_tree(fields, select=select)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 342, in get_trigger_tree
+    trees = [
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 345, in <listcomp>
+    if field in self._field_triggers
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 28, in __get__
+    value = self.fget(obj)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 439, in _field_triggers
+    dependencies = list(field.resolve_depends(self))
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 809, in resolve_depends
+    warnings.warn(
+ 
+2026-09-02 10:20:26,072 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_address_extended/security/ir.model.access.csv 
+2026-09-02 10:20:26,078 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_address_extended/views/base_address_extended.xml 
+2026-09-02 10:20:26,093 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_address_extended/views/res_city_view.xml 
+2026-09-02 10:20:26,099 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_address_extended/views/res_country_view.xml 
+2026-09-02 10:20:26,111 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Module base_address_extended loaded in 0.28s, 210 queries (+210 other) 
+2026-09-02 10:20:26,111 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Loading module base_location (53/231) 
+2026-09-02 10:20:26,122 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:26,122 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:26,132 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:26,144 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:26,159 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,160 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,162 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,162 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,162 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,162 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,162 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,162 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,162 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,184 1 INFO test_irg_pm_a_red_20260902 odoo.modules.registry: module base_location: creating or updating database tables 
+2026-09-02 10:20:26,193 1 INFO test_irg_pm_a_red_20260902 odoo.models: Prepare computation of res.partner.zip_id 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.partner() have the same label: Language. [Modules: odoo_moodle_connector and base] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.partner() have the same label: Active. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.partner() have the same label: Moodle-ID. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of res.partner() have the same label: Department. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.partner() have the same label: Language. [Modules: irg_sale_order_extended and base] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.partner() have the same label: Stripe Customer ID. [Modules: irg_stripe_subscriptions and irg_payment_stripe_recurring] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (titulacion, titulacion_from) of op.student() have the same label: Titulación. [Modules: None and isep_student_filter] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (finalizacionestudios, finalizacionestudios_from) of op.student() have the same label: Finalización de Estudios. [Modules: None and isep_student_filter] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.student() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.student() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.student() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.student() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.faculty() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.faculty() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.faculty() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.faculty() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department, department_id) of res.users() have the same label: Department. [Modules: None and hr] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.users() have the same label: Active. [Modules: None and base] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.users() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,206 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.users() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:20:26,230 1 ERROR test_irg_pm_a_red_20260902 odoo.schema: Table 'res_partner': unable to set NOT NULL on column 'username' 
+2026-09-02 10:20:26,264 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location/security/ir.model.access.csv 
+2026-09-02 10:20:26,268 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location/views/res_city_zip_view.xml 
+2026-09-02 10:20:26,277 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location/views/res_city_view.xml 
+2026-09-02 10:20:26,284 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location/views/res_country_view.xml 
+2026-09-02 10:20:26,289 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location/views/res_company_view.xml 
+2026-09-02 10:20:26,293 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location/views/res_partner_view.xml 
+2026-09-02 10:20:26,311 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Module base_location loaded in 0.20s, 302 queries (+302 other) 
+2026-09-02 10:20:26,311 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Loading module base_location_geonames_import (69/231) 
+2026-09-02 10:20:26,321 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:26,321 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:26,331 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:26,344 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:26,361 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,361 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,365 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,365 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,365 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,365 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,365 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,365 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,365 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,390 1 INFO test_irg_pm_a_red_20260902 odoo.modules.registry: module base_location_geonames_import: creating or updating database tables 
+2026-09-02 10:20:26,499 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location_geonames_import/security/ir.model.access.csv 
+2026-09-02 10:20:26,504 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location_geonames_import/data/res_country_data.xml 
+2026-09-02 10:20:26,507 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location_geonames_import/views/res_country_view.xml 
+2026-09-02 10:20:26,514 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading base_location_geonames_import/wizard/geonames_import_view.xml 
+2026-09-02 10:20:26,530 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Module base_location_geonames_import loaded in 0.22s, 146 queries (+146 other) 
+2026-09-02 10:20:26,530 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Loading module isep_practices_2 (166/231) 
+2026-09-02 10:20:26,538 1 WARNING test_irg_pm_a_red_20260902 odoo.api.create: The model odoo.addons.isep_practices_2.models.a_practice_request is not overriding the create method in batch 
+2026-09-02 10:20:26,549 1 WARNING test_irg_pm_a_red_20260902 odoo.models: The model report.isep_practices_2.t_practices has no _description 
+2026-09-02 10:20:26,556 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:26,556 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:26,568 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:26,580 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:26,597 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,597 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,600 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,600 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,600 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,600 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,600 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,600 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,600 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,603 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.practice_schedule_id with unknown comodel_name 'practice.schedule' 
+2026-09-02 10:20:26,603 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,603 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,603 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,603 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,603 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:26,625 1 INFO test_irg_pm_a_red_20260902 odoo.modules.registry: module isep_practices_2: creating or updating database tables 
+2026-09-02 10:20:26,692 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (op_student_course_course_id, course_id) of practice.request() have the same label: Course. [Modules: isep_practices_2 and isep_practices_2] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (attachment2_ids, attachment_ids) of practice.request() have the same label: Adjuntos. [Modules: isep_practices_2 and isep_practices_2] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.partner() have the same label: Language. [Modules: odoo_moodle_connector and base] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.partner() have the same label: Active. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.partner() have the same label: Moodle-ID. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of res.partner() have the same label: Department. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.partner() have the same label: Language. [Modules: irg_sale_order_extended and base] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.partner() have the same label: Stripe Customer ID. [Modules: irg_stripe_subscriptions and irg_payment_stripe_recurring] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (file_name, name) of campus.files() have the same label: Nombre del archivo. [Modules: isep_practices_2 and isep_practices_2] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (titulacion, titulacion_from) of op.student() have the same label: Titulación. [Modules: None and isep_student_filter] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (finalizacionestudios, finalizacionestudios_from) of op.student() have the same label: Finalización de Estudios. [Modules: None and isep_student_filter] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.student() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.student() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.student() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.student() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.faculty() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.faculty() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.faculty() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,693 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.faculty() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:20:26,694 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,694 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (department, department_id) of res.users() have the same label: Department. [Modules: None and hr] 
+2026-09-02 10:20:26,694 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.users() have the same label: Active. [Modules: None and base] 
+2026-09-02 10:20:26,694 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.users() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:20:26,694 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:20:26,694 1 WARNING test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.users() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:20:26,727 1 ERROR test_irg_pm_a_red_20260902 odoo.schema: Table 'res_partner': unable to set NOT NULL on column 'username' 
+2026-09-02 10:20:26,825 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/data/cron.xml 
+2026-09-02 10:20:26,832 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/data/data.xml 
+2026-09-02 10:20:26,839 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/security/ir.model.access.csv 
+2026-09-02 10:20:26,848 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/menu_views.xml 
+2026-09-02 10:20:26,860 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/campus_files_views.xml 
+2026-09-02 10:20:26,868 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_center_day_views.xml 
+2026-09-02 10:20:26,875 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_center_shift_views.xml 
+2026-09-02 10:20:26,880 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_center_type_views.xml 
+2026-09-02 10:20:26,887 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_center_views.xml 
+2026-09-02 10:20:26,895 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_questionnaire_views.xml 
+2026-09-02 10:20:26,906 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_request_document_views.xml 
+2026-09-02 10:20:26,911 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_request_views.xml 
+2026-09-02 10:20:26,921 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/reports/agreement_conditions_report.xml 
+2026-09-02 10:20:26,927 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/reports/practice_progress_report.xml 
+2026-09-02 10:20:26,931 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/reports/specific_agreement_report.xml 
+2026-09-02 10:20:26,934 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/templates/portal_my_centers.xml 
+2026-09-02 10:20:26,938 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/templates/portal_my_practices_request.xml 
+2026-09-02 10:20:26,942 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/templates/portal_practice_center.xml 
+2026-09-02 10:20:26,944 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/templates/practice_centers_template.xml 
+2026-09-02 10:20:26,947 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/templates/practice_request_form_template.xml 
+2026-09-02 10:20:26,951 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/templates/practice_request_portal_details_template.xml 
+2026-09-02 10:20:26,955 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/templates/practice_request_portal_template.xml 
+2026-09-02 10:20:26,960 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/templates/register_practice_center.xml 
+2026-09-02 10:20:26,966 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/templates/success_page.xml 
+2026-09-02 10:20:26,968 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading isep_practices_2/views/a_practice_doc_url_views.xml 
+2026-09-02 10:20:26,986 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Module isep_practices_2 loaded in 0.46s, 1085 queries (+1085 other) 
+2026-09-02 10:20:26,987 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Loading module irg_practice_center_type_modalities (183/231) 
+2026-09-02 10:20:26,995 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:26,995 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:27,005 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,069 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,087 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,087 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,090 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,090 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,090 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,090 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,091 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,091 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,091 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,093 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,093 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,093 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,093 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,093 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,115 1 INFO test_irg_pm_a_red_20260902 odoo.modules.registry: module irg_practice_center_type_modalities: creating or updating database tables 
+2026-09-02 10:20:27,144 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: loading irg_practice_center_type_modalities/data/practice_center_type_data.xml 
+2026-09-02 10:20:27,155 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Module irg_practice_center_type_modalities loaded in 0.17s, 42 queries (+42 other) 
+2026-09-02 10:20:27,155 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Loading module irg_student_course_practice_modality (200/231) 
+2026-09-02 10:20:27,162 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:27,162 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:27,172 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,184 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,201 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,201 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,203 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,203 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,203 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,203 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,203 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,203 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,203 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,206 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,206 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,206 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,206 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,206 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,306 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Module irg_student_course_practice_modality loaded in 0.15s, 14 queries (+14 other) 
+2026-09-02 10:20:27,306 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: 231 modules loaded in 1.47s, 1799 queries (+1799 extra) 
+2026-09-02 10:20:27,312 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:27,312 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:27,322 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,334 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,351 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,351 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,353 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,353 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,353 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,353 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,353 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,353 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,353 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,355 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,355 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,356 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,356 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,356 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,381 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:27,381 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:27,391 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,403 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,419 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,420 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,422 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,422 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,422 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,422 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,422 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,422 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,422 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,425 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,425 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,425 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,425 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,425 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,727 1 INFO test_irg_pm_a_red_20260902 odoo.modules.loading: Modules loaded. 
+2026-09-02 10:20:27,734 1 INFO test_irg_pm_a_red_20260902 odoo.modules.registry: Registry loaded in 6.784s 
+2026-09-02 10:20:27,734 1 INFO test_irg_pm_a_red_20260902 odoo.service.server: Starting post tests 
+2026-09-02 10:20:27,735 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_approve_syncs_modality_to_enrollment ... 
+2026-09-02 10:20:27,736 1 ERROR test_irg_pm_a_red_20260902 odoo.sql_db: bad query: INSERT INTO "op_course" ("active", "code", "color", "company_id", "create_date", "create_uid", "department_id", "evaluation_type", "is_imported_record", "modality", "name", "sepyc_program", "write_date", "write_uid") VALUES (true, 'IRG-PM-APPR', 0, 1, '2026-09-02 10:20:27.735565', 1, NULL, 'normal', false, 'manual', 'Curso practicas APPR', false, '2026-09-02 10:20:27.735565', 1) RETURNING "id"
+ERROR: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (768, null, null, null, 1, 1, Curso practicas APPR, IRG-PM-APPR, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+ 
+2026-09-02 10:20:27,738 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,738 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ERROR: TestStudentCoursePracticeModality.test_approve_syncs_modality_to_enrollment
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 69, in test_approve_syncs_modality_to_enrollment
+    _course, _student, enrollment = self._make_enrollment('APPR')
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 14, in _make_enrollment
+    course = self.env['op.course'].create({
+  File "<decorator-gen-836>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 430, in _model_create_multi
+    return create(self, [arg])
+  File "/mnt/extra-addons/addons_uisep/irg_openeducat_course_multi_product/models/op_course.py", line 29, in create
+    records = super(OpCourse, self).create(vals_list)
+  File "<decorator-gen-136>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/mail/models/mail_thread.py", line 258, in create
+    threads = super(MailThread, self).create(vals_list)
+  File "<decorator-gen-68>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_fields.py", line 670, in create
+    recs = super().create(vals_list)
+  File "<decorator-gen-15>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4019, in create
+    records = self._create(data_list)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4200, in _create
+    cr.execute(
+  File "/usr/lib/python3/dist-packages/odoo/sql_db.py", line 324, in execute
+    res = self._obj.execute(query, params)
+psycopg2.errors.NotNullViolation: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (768, null, null, null, 1, 1, Curso practicas APPR, IRG-PM-APPR, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+
+ 
+2026-09-02 10:20:27,739 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_backend_views_include_practice_field ... 
+2026-09-02 10:20:27,740 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,740 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ERROR: TestStudentCoursePracticeModality.test_backend_views_include_practice_field
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.model.data', <function IrModelData._xmlid_lookup at 0xffff812bd430>, 'irg_student_course_practice_modality.view_op_student_course_tree_practice_modality')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 140, in test_backend_views_include_practice_field
+    tree = self.env.ref(
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 611, in ref
+    res_model, res_id = self['ir.model.data']._xmlid_to_res_model_res_id(
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_model.py", line 2059, in _xmlid_to_res_model_res_id
+    return self._xmlid_lookup(xmlid)[1:3]
+  File "<decorator-gen-43>", line 2, in _xmlid_lookup
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 90, in lookup
+    value = d[key] = self.method(*args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_model.py", line 2052, in _xmlid_lookup
+    raise ValueError('External ID not found in the system: %s' % xmlid)
+ValueError: External ID not found in the system: irg_student_course_practice_modality.view_op_student_course_tree_practice_modality
+ 
+2026-09-02 10:20:27,740 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_draft_request_does_not_sync ... 
+2026-09-02 10:20:27,741 1 ERROR test_irg_pm_a_red_20260902 odoo.sql_db: bad query: INSERT INTO "op_course" ("active", "code", "color", "company_id", "create_date", "create_uid", "department_id", "evaluation_type", "is_imported_record", "modality", "name", "sepyc_program", "write_date", "write_uid") VALUES (true, 'IRG-PM-DRAFT', 0, 1, '2026-09-02 10:20:27.735565', 1, NULL, 'normal', false, 'manual', 'Curso practicas DRAFT', false, '2026-09-02 10:20:27.735565', 1) RETURNING "id"
+ERROR: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (769, null, null, null, 1, 1, Curso practicas DRAFT, IRG-PM-DRAFT, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+ 
+2026-09-02 10:20:27,741 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,741 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ERROR: TestStudentCoursePracticeModality.test_draft_request_does_not_sync
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 63, in test_draft_request_does_not_sync
+    _course, _student, enrollment = self._make_enrollment('DRAFT')
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 14, in _make_enrollment
+    course = self.env['op.course'].create({
+  File "<decorator-gen-836>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 430, in _model_create_multi
+    return create(self, [arg])
+  File "/mnt/extra-addons/addons_uisep/irg_openeducat_course_multi_product/models/op_course.py", line 29, in create
+    records = super(OpCourse, self).create(vals_list)
+  File "<decorator-gen-136>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/mail/models/mail_thread.py", line 258, in create
+    threads = super(MailThread, self).create(vals_list)
+  File "<decorator-gen-68>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_fields.py", line 670, in create
+    recs = super().create(vals_list)
+  File "<decorator-gen-15>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4019, in create
+    records = self._create(data_list)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4200, in _create
+    cr.execute(
+  File "/usr/lib/python3/dist-packages/odoo/sql_db.py", line 324, in execute
+    res = self._obj.execute(query, params)
+psycopg2.errors.NotNullViolation: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (769, null, null, null, 1, 1, Curso practicas DRAFT, IRG-PM-DRAFT, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+
+ 
+2026-09-02 10:20:27,742 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_enrollment_field_exists ... 
+2026-09-02 10:20:27,742 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,742 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: FAIL: TestStudentCoursePracticeModality.test_enrollment_field_exists
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 57, in test_enrollment_field_exists
+    self.assertIn(
+AssertionError: 'irg_practice_center_type_id' not found in {'message_is_follower': 'op.student.course.message_is_follower', 'message_follower_ids': 'op.student.course.message_follower_ids', 'message_partner_ids': 'op.student.course.message_partner_ids', 'message_ids': 'op.student.course.message_ids', 'has_message': 'op.student.course.has_message', 'message_needaction': 'op.student.course.message_needaction', 'message_needaction_counter': 'op.student.course.message_needaction_counter', 'message_has_error': 'op.student.course.message_has_error', 'message_has_error_counter': 'op.student.course.message_has_error_counter', 'message_attachment_count': 'op.student.course.message_attachment_count', 'message_main_attachment_id': 'op.student.course.message_main_attachment_id', 'website_message_ids': 'op.student.course.website_message_ids', 'message_has_sms_error': 'op.student.course.message_has_sms_error', 'student_id': 'op.student.course.student_id', 'course_id': 'op.student.course.course_id', 'batch_id': 'op.student.course.batch_id', 'roll_number': 'op.student.course.roll_number', 'subject_ids': 'op.student.course.subject_ids', 'academic_years_id': 'op.student.course.academic_years_id', 'academic_term_id': 'op.student.course.academic_term_id', 'state': 'op.student.course.state', 'id': 'op.student.course.id', '__last_update': 'op.student.course.__last_update', 'display_name': 'op.student.course.display_name', 'create_uid': 'op.student.course.create_uid', 'create_date': 'op.student.course.create_date', 'write_uid': 'op.student.course.write_uid', 'write_date': 'op.student.course.write_date', 'fees_term_id': 'op.student.course.fees_term_id', 'fees_start_date': 'op.student.course.fees_start_date', 'product_id': 'op.student.course.product_id', 'completion_porc': 'op.student.course.completion_porc'}
+ 
+2026-09-02 10:20:27,743 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_latest_synced_request_wins ... 
+2026-09-02 10:20:27,743 1 ERROR test_irg_pm_a_red_20260902 odoo.sql_db: bad query: INSERT INTO "op_course" ("active", "code", "color", "company_id", "create_date", "create_uid", "department_id", "evaluation_type", "is_imported_record", "modality", "name", "sepyc_program", "write_date", "write_uid") VALUES (true, 'IRG-PM-WIN', 0, 1, '2026-09-02 10:20:27.735565', 1, NULL, 'normal', false, 'manual', 'Curso practicas WIN', false, '2026-09-02 10:20:27.735565', 1) RETURNING "id"
+ERROR: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (770, null, null, null, 1, 1, Curso practicas WIN, IRG-PM-WIN, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+ 
+2026-09-02 10:20:27,743 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,743 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ERROR: TestStudentCoursePracticeModality.test_latest_synced_request_wins
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 86, in test_latest_synced_request_wins
+    _course, _student, enrollment = self._make_enrollment('WIN')
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 14, in _make_enrollment
+    course = self.env['op.course'].create({
+  File "<decorator-gen-836>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 430, in _model_create_multi
+    return create(self, [arg])
+  File "/mnt/extra-addons/addons_uisep/irg_openeducat_course_multi_product/models/op_course.py", line 29, in create
+    records = super(OpCourse, self).create(vals_list)
+  File "<decorator-gen-136>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/mail/models/mail_thread.py", line 258, in create
+    threads = super(MailThread, self).create(vals_list)
+  File "<decorator-gen-68>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_fields.py", line 670, in create
+    recs = super().create(vals_list)
+  File "<decorator-gen-15>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4019, in create
+    records = self._create(data_list)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4200, in _create
+    cr.execute(
+  File "/usr/lib/python3/dist-packages/odoo/sql_db.py", line 324, in execute
+    res = self._obj.execute(query, params)
+psycopg2.errors.NotNullViolation: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (770, null, null, null, 1, 1, Curso practicas WIN, IRG-PM-WIN, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+
+ 
+2026-09-02 10:20:27,744 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_progress_and_end_keep_syncing ... 
+2026-09-02 10:20:27,745 1 ERROR test_irg_pm_a_red_20260902 odoo.sql_db: bad query: INSERT INTO "op_course" ("active", "code", "color", "company_id", "create_date", "create_uid", "department_id", "evaluation_type", "is_imported_record", "modality", "name", "sepyc_program", "write_date", "write_uid") VALUES (true, 'IRG-PM-PROG', 0, 1, '2026-09-02 10:20:27.735565', 1, NULL, 'normal', false, 'manual', 'Curso practicas PROG', false, '2026-09-02 10:20:27.735565', 1) RETURNING "id"
+ERROR: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (771, null, null, null, 1, 1, Curso practicas PROG, IRG-PM-PROG, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+ 
+2026-09-02 10:20:27,745 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,745 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ERROR: TestStudentCoursePracticeModality.test_progress_and_end_keep_syncing
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 76, in test_progress_and_end_keep_syncing
+    _course, _student, enrollment = self._make_enrollment('PROG')
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 14, in _make_enrollment
+    course = self.env['op.course'].create({
+  File "<decorator-gen-836>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 430, in _model_create_multi
+    return create(self, [arg])
+  File "/mnt/extra-addons/addons_uisep/irg_openeducat_course_multi_product/models/op_course.py", line 29, in create
+    records = super(OpCourse, self).create(vals_list)
+  File "<decorator-gen-136>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/mail/models/mail_thread.py", line 258, in create
+    threads = super(MailThread, self).create(vals_list)
+  File "<decorator-gen-68>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_fields.py", line 670, in create
+    recs = super().create(vals_list)
+  File "<decorator-gen-15>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4019, in create
+    records = self._create(data_list)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4200, in _create
+    cr.execute(
+  File "/usr/lib/python3/dist-packages/odoo/sql_db.py", line 324, in execute
+    res = self._obj.execute(query, params)
+psycopg2.errors.NotNullViolation: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (771, null, null, null, 1, 1, Curso practicas PROG, IRG-PM-PROG, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+
+ 
+2026-09-02 10:20:27,745 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_reject_does_not_clear_enrollment ... 
+2026-09-02 10:20:27,746 1 ERROR test_irg_pm_a_red_20260902 odoo.sql_db: bad query: INSERT INTO "op_course" ("active", "code", "color", "company_id", "create_date", "create_uid", "department_id", "evaluation_type", "is_imported_record", "modality", "name", "sepyc_program", "write_date", "write_uid") VALUES (true, 'IRG-PM-REJ', 0, 1, '2026-09-02 10:20:27.735565', 1, NULL, 'normal', false, 'manual', 'Curso practicas REJ', false, '2026-09-02 10:20:27.735565', 1) RETURNING "id"
+ERROR: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (772, null, null, null, 1, 1, Curso practicas REJ, IRG-PM-REJ, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+ 
+2026-09-02 10:20:27,746 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,746 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ERROR: TestStudentCoursePracticeModality.test_reject_does_not_clear_enrollment
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 124, in test_reject_does_not_clear_enrollment
+    _course, _student, enrollment = self._make_enrollment('REJ')
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 14, in _make_enrollment
+    course = self.env['op.course'].create({
+  File "<decorator-gen-836>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 430, in _model_create_multi
+    return create(self, [arg])
+  File "/mnt/extra-addons/addons_uisep/irg_openeducat_course_multi_product/models/op_course.py", line 29, in create
+    records = super(OpCourse, self).create(vals_list)
+  File "<decorator-gen-136>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/mail/models/mail_thread.py", line 258, in create
+    threads = super(MailThread, self).create(vals_list)
+  File "<decorator-gen-68>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_fields.py", line 670, in create
+    recs = super().create(vals_list)
+  File "<decorator-gen-15>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4019, in create
+    records = self._create(data_list)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4200, in _create
+    cr.execute(
+  File "/usr/lib/python3/dist-packages/odoo/sql_db.py", line 324, in execute
+    res = self._obj.execute(query, params)
+psycopg2.errors.NotNullViolation: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (772, null, null, null, 1, 1, Curso practicas REJ, IRG-PM-REJ, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+
+ 
+2026-09-02 10:20:27,746 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_staff_can_write_enrollment_field ... 
+2026-09-02 10:20:27,747 1 ERROR test_irg_pm_a_red_20260902 odoo.sql_db: bad query: INSERT INTO "op_course" ("active", "code", "color", "company_id", "create_date", "create_uid", "department_id", "evaluation_type", "is_imported_record", "modality", "name", "sepyc_program", "write_date", "write_uid") VALUES (true, 'IRG-PM-STAFF', 0, 1, '2026-09-02 10:20:27.735565', 1, NULL, 'normal', false, 'manual', 'Curso practicas STAFF', false, '2026-09-02 10:20:27.735565', 1) RETURNING "id"
+ERROR: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (773, null, null, null, 1, 1, Curso practicas STAFF, IRG-PM-STAFF, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+ 
+2026-09-02 10:20:27,747 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,747 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ERROR: TestStudentCoursePracticeModality.test_staff_can_write_enrollment_field
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 134, in test_staff_can_write_enrollment_field
+    _course, _student, enrollment = self._make_enrollment('STAFF')
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 14, in _make_enrollment
+    course = self.env['op.course'].create({
+  File "<decorator-gen-836>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 430, in _model_create_multi
+    return create(self, [arg])
+  File "/mnt/extra-addons/addons_uisep/irg_openeducat_course_multi_product/models/op_course.py", line 29, in create
+    records = super(OpCourse, self).create(vals_list)
+  File "<decorator-gen-136>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/mail/models/mail_thread.py", line 258, in create
+    threads = super(MailThread, self).create(vals_list)
+  File "<decorator-gen-68>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_fields.py", line 670, in create
+    recs = super().create(vals_list)
+  File "<decorator-gen-15>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4019, in create
+    records = self._create(data_list)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4200, in _create
+    cr.execute(
+  File "/usr/lib/python3/dist-packages/odoo/sql_db.py", line 324, in execute
+    res = self._obj.execute(query, params)
+psycopg2.errors.NotNullViolation: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (773, null, null, null, 1, 1, Curso practicas STAFF, IRG-PM-STAFF, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+
+ 
+2026-09-02 10:20:27,748 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_student_helper_returns_course_modality ... 
+2026-09-02 10:20:27,748 1 ERROR test_irg_pm_a_red_20260902 odoo.sql_db: bad query: INSERT INTO "op_course" ("active", "code", "color", "company_id", "create_date", "create_uid", "department_id", "evaluation_type", "is_imported_record", "modality", "name", "sepyc_program", "write_date", "write_uid") VALUES (true, 'IRG-PM-HELP', 0, 1, '2026-09-02 10:20:27.735565', 1, NULL, 'normal', false, 'manual', 'Curso practicas HELP', false, '2026-09-02 10:20:27.735565', 1) RETURNING "id"
+ERROR: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (774, null, null, null, 1, 1, Curso practicas HELP, IRG-PM-HELP, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+ 
+2026-09-02 10:20:27,748 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,748 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ERROR: TestStudentCoursePracticeModality.test_student_helper_returns_course_modality
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 153, in test_student_helper_returns_course_modality
+    course, student, enrollment = self._make_enrollment('HELP')
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 14, in _make_enrollment
+    course = self.env['op.course'].create({
+  File "<decorator-gen-836>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 430, in _model_create_multi
+    return create(self, [arg])
+  File "/mnt/extra-addons/addons_uisep/irg_openeducat_course_multi_product/models/op_course.py", line 29, in create
+    records = super(OpCourse, self).create(vals_list)
+  File "<decorator-gen-136>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/mail/models/mail_thread.py", line 258, in create
+    threads = super(MailThread, self).create(vals_list)
+  File "<decorator-gen-68>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_fields.py", line 670, in create
+    recs = super().create(vals_list)
+  File "<decorator-gen-15>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4019, in create
+    records = self._create(data_list)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4200, in _create
+    cr.execute(
+  File "/usr/lib/python3/dist-packages/odoo/sql_db.py", line 324, in execute
+    res = self._obj.execute(query, params)
+psycopg2.errors.NotNullViolation: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (774, null, null, null, 1, 1, Curso practicas HELP, IRG-PM-HELP, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+
+ 
+2026-09-02 10:20:27,749 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_two_courses_are_independent ... 
+2026-09-02 10:20:27,749 1 ERROR test_irg_pm_a_red_20260902 odoo.sql_db: bad query: INSERT INTO "op_course" ("active", "code", "color", "company_id", "create_date", "create_uid", "department_id", "evaluation_type", "is_imported_record", "modality", "name", "sepyc_program", "write_date", "write_uid") VALUES (true, 'IRG-PM-A', 0, 1, '2026-09-02 10:20:27.735565', 1, NULL, 'normal', false, 'manual', 'Curso practicas A', false, '2026-09-02 10:20:27.735565', 1) RETURNING "id"
+ERROR: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (775, null, null, null, 1, 1, Curso practicas A, IRG-PM-A, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+ 
+2026-09-02 10:20:27,750 1 INFO test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ====================================================================== 
+2026-09-02 10:20:27,750 1 ERROR test_irg_pm_a_red_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: ERROR: TestStudentCoursePracticeModality.test_two_courses_are_independent
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 96, in test_two_courses_are_independent
+    _course_a, student, enrollment_a = self._make_enrollment('A')
+  File "/mnt/extra-addons/extrairg/irg_student_course_practice_modality/tests/test_student_course_practice_modality.py", line 14, in _make_enrollment
+    course = self.env['op.course'].create({
+  File "<decorator-gen-836>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 430, in _model_create_multi
+    return create(self, [arg])
+  File "/mnt/extra-addons/addons_uisep/irg_openeducat_course_multi_product/models/op_course.py", line 29, in create
+    records = super(OpCourse, self).create(vals_list)
+  File "<decorator-gen-136>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/mail/models/mail_thread.py", line 258, in create
+    threads = super(MailThread, self).create(vals_list)
+  File "<decorator-gen-68>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_fields.py", line 670, in create
+    recs = super().create(vals_list)
+  File "<decorator-gen-15>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4019, in create
+    records = self._create(data_list)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4200, in _create
+    cr.execute(
+  File "/usr/lib/python3/dist-packages/odoo/sql_db.py", line 324, in execute
+    res = self._obj.execute(query, params)
+psycopg2.errors.NotNullViolation: null value in column "lang" of relation "op_course" violates not-null constraint
+DETAIL:  Failing row contains (775, null, null, null, 1, 1, Curso practicas A, IRG-PM-A, normal, t, 2026-09-02 10:20:27.735565, 2026-09-02 10:20:27.735565, null, null, null, 1, 0, null, null, null, null, null, f, f, null, null, null, null, null, manual, null, null).
+
+ 
+2026-09-02 10:20:27,757 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:27,757 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:20:27,768 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,779 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:20:27,846 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,846 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,848 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,848 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,848 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,848 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,848 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,848 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,849 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,851 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,851 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,852 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,852 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,852 1 WARNING test_irg_pm_a_red_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:20:27,881 1 INFO test_irg_pm_a_red_20260902 odoo.addons.base.models.ir_attachment: filestore gc 1 checked, 0 removed 
+2026-09-02 10:20:27,881 1 INFO test_irg_pm_a_red_20260902 odoo.service.server: 10 post-tests in 0.15s, 47 queries 
+2026-09-02 10:20:27,881 1 INFO test_irg_pm_a_red_20260902 odoo.tests.stats: irg_student_course_practice_modality: 12 tests 0.15s 47 queries 
+2026-09-02 10:20:27,881 1 ERROR test_irg_pm_a_red_20260902 odoo.tests.result: 1 failed, 9 error(s) of 10 tests when loading database 'test_irg_pm_a_red_20260902' 
+2026-09-02 10:20:27,881 1 INFO test_irg_pm_a_red_20260902 odoo.service.server: Initiating shutdown 
+2026-09-02 10:20:27,881 1 INFO test_irg_pm_a_red_20260902 odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-09-02 10:20:27,981 1 INFO test_irg_pm_a_red_20260902 odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  
+

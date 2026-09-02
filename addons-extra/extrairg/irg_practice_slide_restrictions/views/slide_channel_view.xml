@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_channel_form_practice_restriction" model="ir.ui.view">
+        <field name="name">slide.channel.form.practice.restriction</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id" ref="irg_elearning_editable_sections.view_slide_channel_form_editable_sections"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='irg_native_section_ids']/tree/field[@name='allowed_batch_ids']" position="after">
+                <field name="irg_required_practice_type"/>
+            </xpath>
+            <xpath expr="//field[@name='irg_native_section_ids']/form//field[@name='allowed_batch_ids']" position="after">
+                <field name="irg_required_practice_type"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
