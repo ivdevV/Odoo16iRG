@@ -1,0 +1,21 @@
+=== py_compile + XML syntax check (validador independiente, 2026-09-02) ===
+
+Archivos .py comprobados (python3 -m py_compile):
+  addons-extra/extrairg/irg_practice_request_online_types/__init__.py
+  addons-extra/extrairg/irg_practice_request_online_types/__manifest__.py
+  addons-extra/extrairg/irg_practice_request_online_types/controllers/__init__.py
+  addons-extra/extrairg/irg_practice_request_online_types/controllers/main.py
+  addons-extra/extrairg/irg_practice_request_online_types/models/__init__.py
+  addons-extra/extrairg/irg_practice_request_online_types/models/online_batch.py
+  addons-extra/extrairg/irg_practice_request_online_types/models/op_student_course.py
+  addons-extra/extrairg/irg_practice_request_online_types/models/practice_request.py
+  addons-extra/extrairg/irg_practice_request_online_types/tests/__init__.py
+  addons-extra/extrairg/irg_practice_request_online_types/tests/test_practice_request_online_types.py
+
+Resultado py_compile: OK (0 errores de sintaxis)
+
+XML parseado (python3 -c "import xml.etree.ElementTree as ET; ET.parse(...)"):
+  views/practice_request_portal_templates.xml
+Resultado XML: OK (root tag: odoo)
+
+VEREDICTO: PASS

@@ -1,0 +1,12 @@
+=== E2E TestSprite check (validador independiente, 2026-09-02) ===
+
+Scope del diff: toca QWeb portal (views/practice_request_portal_templates.xml).
+Según plan.md, el check e2e_testsprite es OBLIGATORIO para este diff.
+
+Comprobación de disponibilidad:
+  GetDynamicTools pattern "testsprite|sprite|e2e" → 0 matches
+
+TestSprite MCP no está disponible en este entorno de ejecución del validador.
+Skip técnico por indisponibilidad de infraestructura, no por exclusión de scope.
+
+VEREDICTO: skipped (justificado — TestSprite MCP no disponible en este runtime)

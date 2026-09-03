@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template
+        id="practice_request_form_online_types"
+        inherit_id="isep_practices_2.practice_request_form_template"
+        name="IRG - Filtrar tipos de práctica en másteres online"
+    >
+        <xpath expr="//select[@id='course_id']//option" position="attributes">
+            <attribute name="t-att-data-irg-online">'1' if course.irg_is_online_master_batch else '0'</attribute>
+        </xpath>
+        <xpath expr="//select[@id='practice_center_type_id']//option" position="attributes">
+            <attribute name="t-att-data-irg-online-ok">'1' if ptype.type_of_practice in ('validation', 'tfm_validation', 'homeclass_asincronas') else '0'</attribute>
+        </xpath>
+        <xpath expr="//form" position="after">
+            <script type="text/javascript">
+                (function () {
+                    function irgApplyOnlinePracticeFilter() {
+                        var courseSelect = document.getElementById('course_id');
+                        var typeSelect = document.getElementById('practice_center_type_id');
+                        if (!courseSelect || !typeSelect) { return; }
+                        var selected = courseSelect.options[courseSelect.selectedIndex];
+                        var isOnline = selected &amp;&amp; selected.getAttribute('data-irg-online') === '1';
+                        Array.prototype.forEach.call(typeSelect.options, function (option) {
+                            if (!option.value) { return; }
+                            var allowed = option.getAttribute('data-irg-online-ok') === '1';
+                            if (isOnline &amp;&amp; !allowed) {
+                                option.hidden = true;
+                            }
+                        });
+                        var current = typeSelect.options[typeSelect.selectedIndex];
+                        if (current &amp;&amp; current.hidden) {
+                            var firstVisible;
+                            Array.prototype.forEach.call(typeSelect.options, function (option) {
+                                if (!firstVisible &amp;&amp; option.value &amp;&amp; !option.hidden) {
+                                    firstVisible = option;
+                                }
+                            });
+                            if (firstVisible) {
+                                typeSelect.value = firstVisible.value;
+                                typeSelect.dispatchEvent(new Event('change'));
+                            }
+                        }
+                    }
+                    function irgScheduleOnlinePracticeFilter() {
+                        window.setTimeout(irgApplyOnlinePracticeFilter, 0);
+                    }
+                    var courseSelect = document.getElementById('course_id');
+                    if (courseSelect) {
+                        courseSelect.addEventListener('change', irgScheduleOnlinePracticeFilter);
+                    }
+                    window.addEventListener('load', irgScheduleOnlinePracticeFilter);
+                })();
+            </script>
+        </xpath>
+    </template>
+</odoo>
