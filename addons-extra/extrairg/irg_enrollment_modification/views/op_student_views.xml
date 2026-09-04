@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_enrollment_change" model="ir.ui.view">
+        <field name="name">op.student.form.inherit.enrollment.change</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_open_enrollment_change_wizard"
+                        type="object"
+                        string="Modificación de matrícula"
+                        class="oe_highlight"
+                        groups="irg_enrollment_modification.group_academic"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
