@@ -1,0 +1,72 @@
+E2E TESTSPRITE — REPORTE DE EJECUCIÓN
+Misión : irg-diplomado-class-start-date
+Fecha  : 2026-09-04
+Agente : e2e-tester
+
+== SCOPE CHECK ==
+
+El diff toca superficie web:
+  - controllers/portal.py hereda IrgDiplomadoPortalController (irg_diplomado_portal_request)
+    y IrgCampusDiplomadosPortalController (irg_campus_diplomados_portal).
+  - Ambos son controladores HTTP de portal con rutas públicas/autenticadas.
+
+E2E es OBLIGATORIO por scope. No procede skip.
+
+== COMPROBACIÓN DE FALLOS PREVIOS ==
+
+Revisado verification.json (estado antes de este gate):
+  - py_compile        : pass
+  - lint              : skipped (justificado — no hay linter canónico en PROJECT.md)
+  - unit_module_tests : pass (13 tests, 0 failed, 0 errors)
+  - e2e_testsprite    : pendiente (este gate)
+
+No hay ningún check en fail antes del gate E2E. Se puede continuar.
+
+== DESCUBRIMIENTO DEL MCP TESTSPRITE ==
+
+Se ejecutaron tres búsquedas con GetDynamicTools:
+  1. pattern: "testsprite"  → 0 matches
+  2. pattern: "TestSprite"  → 0 matches
+  3. catálogo completo      → namespaces presentes:
+       cursor, cursor-app-control, cursor-ide-browser,
+       plugin-claude-mem-mcp-search, plugin-gmail-gmail,
+       plugin-google-calendar-google-calendar, plugin-google-drive-google-drive
+     TestSprite no figura en ningún namespace.
+
+CONCLUSIÓN: El MCP TestSprite NO está disponible en esta sesión.
+
+== INTENTO DE EJECUCIÓN ==
+
+No se llamó a testsprite_bootstrap porque el MCP no existe.
+No se llamaron testsprite_generate_code_summary,
+testsprite_generate_standardized_prd,
+testsprite_generate_frontend_test_plan,
+testsprite_generate_code_and_execute.
+
+Inventar un pass sin herramienta real está explícitamente prohibido por AGENTS.md
+(sección "Contrato de verificación": result solo admite pass, fail o skipped;
+todo skipped requiere justificación aceptable para el alcance; y la sección
+"Capa E2E" dice que el scope web impide skip).
+
+== RESULTADO ==
+
+result : fail
+detail : MCP TestSprite no registrado en la sesión; E2E no ejecutado.
+         0 escenarios ejecutados, 0 pasados, 0 fallidos — fallo por ausencia de herramienta.
+
+== ACCIÓN REQUERIDA ==
+
+Para resolver este fallo el orquestador o el usuario debe:
+  1. Conectar / instalar el servidor MCP TestSprite en Cursor antes de re-ejecutar.
+  2. Una vez disponible, re-ejecutar el rol e2e-tester contra docker-compose.local.yml
+     puerto 8069, con projectPath=addons-extra/extrairg/irg_generacion_diplomados_class_start_date.
+  3. El gate E2E debe terminar en E2E PASS para que verification.json pueda
+     volver a status: passed y habilitar la Publicación autorizada.
+
+== LIMPIEZA ==
+
+No se crearon fixtures, usuarios ni datos temporales en el runtime local.
+No hay nada que limpiar.
+
+---
+E2E FAIL
