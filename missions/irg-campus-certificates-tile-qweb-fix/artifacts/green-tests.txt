@@ -1,0 +1,398 @@
+ Container odoo16irg_local-odoo_local-run-73e23f579bdc Creating 
+ Container odoo16irg_local-odoo_local-run-73e23f579bdc Created 
+2026-09-04 10:14:33,220 1 INFO ? odoo: Odoo version 16.0-20250909 
+2026-09-04 10:14:33,220 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-09-04 10:14:33,220 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-09-04 10:14:33,220 1 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-09-04 10:14:33,276 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-09-04 10:14:33,325 1 INFO ? odoo.service.server: HTTP service (werkzeug) running on ba1c343a5466:8099 
+2026-09-04 10:14:33,335 1 INFO test_irg_db odoo.modules.loading: loading 1 modules... 
+2026-09-04 10:14:33,337 1 INFO test_irg_db odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-09-04 10:14:33,344 1 INFO test_irg_db odoo.modules.loading: updating modules list 
+2026-09-04 10:14:33,347 1 INFO test_irg_db odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-09-04 10:14:33,441 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-09-04 10:14:33,498 1 WARNING test_irg_db py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-04 10:14:33,501 1 WARNING test_irg_db py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-04 10:14:33,503 1 WARNING test_irg_db py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-04 10:14:33,851 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-09-04 10:14:33,895 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-09-04 10:14:33,975 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-09-04 10:14:33,977 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-09-04 10:14:33,979 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-09-04 10:14:34,049 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-09-04 10:14:34,228 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-09-04 10:14:34,321 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-09-04 10:14:34,327 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-09-04 10:14:34,377 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-09-04 10:14:34,458 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-09-04 10:14:34,514 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-09-04 10:14:34,516 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-09-04 10:14:34,518 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-09-04 10:14:34,520 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-09-04 10:14:34,602 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-09-04 10:14:34,621 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-09-04 10:14:34,623 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-09-04 10:14:34,637 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-09-04 10:14:34,647 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-09-04 10:14:34,680 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-09-04 10:14:34,686 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-09-04 10:14:34,695 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-09-04 10:14:34,697 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-09-04 10:14:34,701 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-09-04 10:14:34,705 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-09-04 10:14:34,707 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-09-04 10:14:34,723 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-09-04 10:14:34,731 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-09-04 10:14:34,756 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-09-04 10:14:34,785 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-09-04 10:14:34,798 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-09-04 10:14:34,814 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-09-04 10:14:34,818 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-09-04 10:14:34,833 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-09-04 10:14:35,683 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-09-04 10:14:35,892 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-09-04 10:14:35,916 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-09-04 10:14:36,355 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-09-04 10:14:36,426 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-09-04 10:14:36,822 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-09-04 10:14:36,824 1 WARNING test_irg_db odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-09-04 10:14:37,040 1 INFO test_irg_db odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['Fix QWeb del tile de certificados'] to user __system__ #1 via n/a 
+2026-09-04 10:14:37,040 1 INFO test_irg_db odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['Fix QWeb del tile de certificados'] to user __system__ #1 via n/a 
+2026-09-04 10:14:38,398 1 INFO test_irg_db odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a 
+2026-09-04 10:14:38,414 1 INFO test_irg_db odoo.modules.loading: loading 245 modules... 
+2026-09-04 10:14:38,903 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.irg_generacion_diplomados.models.diplomado_registry is not overriding the create method in batch 
+2026-09-04 10:14:38,918 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_documents_portal.models.folders is not overriding the create method in batch 
+2026-09-04 10:14:38,941 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch 
+2026-09-04 10:14:39,030 1 WARNING test_irg_db odoo.models: The model res.card has no _description 
+2026-09-04 10:14:39,030 1 WARNING test_irg_db odoo.models: The model isep.form.data.wizard has no _description 
+2026-09-04 10:14:39,055 1 WARNING test_irg_db py.warnings: /mnt/extra-addons/ent_addons/sale_account_accountant/models/account_reconcile_model.py:64: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/models/__init__.py", line 4, in <module>
+    from . import account_reconcile_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-04 10:14:39,095 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.irg_admission_class_start_date.models.op_admission is not overriding the create method in batch 
+2026-09-04 10:14:39,109 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.odoo_moodle_connector.models.calendar_event_custom is not overriding the create method in batch 
+2026-09-04 10:14:39,206 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-04 10:14:39,207 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-04 10:14:39,207 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_survey.models.survey_user_input is not overriding the create method in batch 
+2026-09-04 10:14:39,345 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-04 10:14:39,346 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-04 10:14:39,347 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch 
+2026-09-04 10:14:39,348 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch 
+2026-09-04 10:14:39,359 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_gradebook.models.app_gradebook_result is not overriding the create method in batch 
+2026-09-04 10:14:39,360 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_gradebook.models.survey_user_input is not overriding the create method in batch 
+2026-09-04 10:14:39,365 1 WARNING test_irg_db odoo.models: The model app.gradebook.template.line has no _description 
+2026-09-04 10:14:39,365 1 WARNING test_irg_db odoo.models: The model app.gradebook has no _description 
+2026-09-04 10:14:39,365 1 WARNING test_irg_db odoo.models: The model app.gradebook.result has no _description 
+2026-09-04 10:14:39,365 1 WARNING test_irg_db odoo.models: The model survey.user_input.write has no _description 
+2026-09-04 10:14:39,365 1 WARNING test_irg_db odoo.models: The model app.gradebook.subject has no _description 
+2026-09-04 10:14:39,365 1 WARNING test_irg_db odoo.models: The model app.gradebook.student has no _description 
+2026-09-04 10:14:39,373 1 WARNING test_irg_db odoo.models: The model record.request has no _description 
+2026-09-04 10:14:39,373 1 WARNING test_irg_db odoo.models: The model record.request.line has no _description 
+2026-09-04 10:14:39,373 1 WARNING test_irg_db odoo.models: The model record.request.list.line has no _description 
+2026-09-04 10:14:39,373 1 WARNING test_irg_db odoo.models: The model res.partner.document has no _description 
+2026-09-04 10:14:39,378 1 WARNING test_irg_db odoo.models: The model op.course.type has no _description 
+2026-09-04 10:14:39,378 1 WARNING test_irg_db odoo.models: The model op.area.course has no _description 
+2026-09-04 10:14:39,382 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_subject_precedence.wizard.subject_wizard is not overriding the create method in batch 
+2026-09-04 10:14:39,387 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.irg_diplomado_portal_request.models.diplomado_portal_request is not overriding the create method in batch 
+2026-09-04 10:14:39,387 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.irg_diplomado_portal_request.models.diplomado_registry is not overriding the create method in batch 
+2026-09-04 10:14:39,394 1 WARNING test_irg_db odoo.models: The model app.gradebook.result has no _description 
+2026-09-04 10:14:39,394 1 WARNING test_irg_db odoo.models: The model app.gradebook.student has no _description 
+2026-09-04 10:14:39,396 1 WARNING test_irg_db odoo.models: The model app.gradebook.subject has no _description 
+2026-09-04 10:14:39,402 1 WARNING test_irg_db odoo.models: The model app.gradebook.student has no _description 
+2026-09-04 10:14:39,405 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.op_admission is not overriding the create method in batch 
+2026-09-04 10:14:39,408 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.auto_admission_required is not overriding the create method in batch 
+2026-09-04 10:14:39,430 1 WARNING test_irg_db odoo.models: The model schedule.date.due.line has no _description 
+2026-09-04 10:14:39,445 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.irg_gradebook_certificates.models.irg_certificate_request is not overriding the create method in batch 
+2026-09-04 10:14:39,449 1 WARNING test_irg_db odoo.models: The model app.gradebook.student has no _description 
+2026-09-04 10:14:39,491 1 WARNING test_irg_db odoo.models: The model schedule.date.due.line has no _description 
+2026-09-04 10:14:39,535 1 INFO test_irg_db odoo.modules.loading: Loading module irg_campus_certificates_tile_qweb_fix (242/245) 
+2026-09-04 10:14:39,564 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:39,564 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:39,576 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:39,588 1 WARNING test_irg_db odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:39,604 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,604 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,607 1 WARNING test_irg_db odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,607 1 WARNING test_irg_db odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,607 1 WARNING test_irg_db odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,607 1 WARNING test_irg_db odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,607 1 WARNING test_irg_db odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,607 1 WARNING test_irg_db odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,607 1 WARNING test_irg_db odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,638 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:39,638 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:39,649 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:39,662 1 WARNING test_irg_db odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:39,722 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,722 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,725 1 WARNING test_irg_db odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,725 1 WARNING test_irg_db odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,725 1 WARNING test_irg_db odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,725 1 WARNING test_irg_db odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,725 1 WARNING test_irg_db odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,725 1 WARNING test_irg_db odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,725 1 WARNING test_irg_db odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,778 1 WARNING test_irg_db py.warnings: /usr/lib/python3/dist-packages/odoo/fields.py:809: UserWarning: Field 'op.student.op_course_ids' in dependency of op.student.total_completion_porc should be searchable. This is necessary to determine which records to recompute when op.student.course.completion_porc is modified. You should either make the field searchable, or simplify the field dependency.
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 232, in load_module_graph
+    module.write(module.get_values_from_terp(package.data))
+  File "/usr/lib/python3/dist-packages/odoo/addons/website/models/ir_module_module.py", line 96, in write
+    return super(IrModuleModule, self).write(vals)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 3766, in write
+    if self.pool.is_modifying_relations(field):
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 458, in is_modifying_relations
+    result = field in self._field_triggers and (
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 28, in __get__
+    value = self.fget(obj)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 439, in _field_triggers
+    dependencies = list(field.resolve_depends(self))
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 809, in resolve_depends
+    warnings.warn(
+ 
+2026-09-04 10:14:39,784 1 INFO test_irg_db odoo.modules.loading: loading irg_campus_certificates_tile_qweb_fix/views/campus_dashboard_override.xml 
+2026-09-04 10:14:39,803 1 INFO test_irg_db odoo.modules.loading: Module irg_campus_certificates_tile_qweb_fix loaded in 0.27s, 44 queries (+44 other) 
+2026-09-04 10:14:39,805 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.irg_campus_diplomados_portal.models.diplomado_request is not overriding the create method in batch 
+2026-09-04 10:14:39,806 1 WARNING test_irg_db odoo.api.create: The model odoo.addons.irg_campus_diplomados_portal.models.diplomado_registry is not overriding the create method in batch 
+2026-09-04 10:14:39,820 1 INFO test_irg_db odoo.modules.loading: 245 modules loaded in 1.41s, 44 queries (+44 extra) 
+2026-09-04 10:14:39,827 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:39,827 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:39,839 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:39,851 1 WARNING test_irg_db odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:39,869 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,869 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,871 1 WARNING test_irg_db odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,871 1 WARNING test_irg_db odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,871 1 WARNING test_irg_db odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,871 1 WARNING test_irg_db odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,871 1 WARNING test_irg_db odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,871 1 WARNING test_irg_db odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,871 1 WARNING test_irg_db odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,901 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:39,902 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:39,912 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:39,926 1 WARNING test_irg_db odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:39,942 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,942 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,945 1 WARNING test_irg_db odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,945 1 WARNING test_irg_db odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,945 1 WARNING test_irg_db odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,945 1 WARNING test_irg_db odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,945 1 WARNING test_irg_db odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,945 1 WARNING test_irg_db odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:39,945 1 WARNING test_irg_db odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,338 1 INFO test_irg_db odoo.modules.loading: Modules loaded. 
+2026-09-04 10:14:40,343 1 INFO test_irg_db odoo.modules.registry: Registry loaded in 7.018s 
+2026-09-04 10:14:40,343 1 INFO test_irg_db odoo.service.server: Starting post tests 
+2026-09-04 10:14:40,344 1 INFO test_irg_db odoo.addons.irg_campus_certificates_tile_qweb_fix.tests.test_qweb_guard: Starting TestCertificatesTileQwebGuard.test_combined_t_if_does_not_use_hasattr ... 
+2026-09-04 10:14:40,347 1 INFO test_irg_db odoo.addons.irg_campus_certificates_tile_qweb_fix.tests.test_qweb_guard: Starting TestCertificatesTileQwebGuard.test_diplomado_tile_guard_hides_tile ... 
+2026-09-04 10:14:40,359 1 INFO test_irg_db odoo.addons.irg_campus_certificates_tile_qweb_fix.tests.test_qweb_guard: Starting TestCertificatesTileQwebGuard.test_master_tile_guard_renders_without_typeerror ... 
+2026-09-04 10:14:40,376 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:40,376 1 WARNING test_irg_db odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-04 10:14:40,387 1 WARNING test_irg_db odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:40,400 1 WARNING test_irg_db odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-04 10:14:40,416 1 WARNING test_irg_db odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,416 1 WARNING test_irg_db odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,419 1 WARNING test_irg_db odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,419 1 WARNING test_irg_db odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,419 1 WARNING test_irg_db odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,419 1 WARNING test_irg_db odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,419 1 WARNING test_irg_db odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,419 1 WARNING test_irg_db odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,420 1 WARNING test_irg_db odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-04 10:14:40,454 1 INFO test_irg_db odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-09-04 10:14:40,454 1 INFO test_irg_db odoo.service.server: 3 post-tests in 0.11s, 74 queries 
+2026-09-04 10:14:40,454 1 INFO test_irg_db odoo.tests.stats: irg_campus_certificates_tile_qweb_fix: 5 tests 0.11s 74 queries 
+2026-09-04 10:14:40,454 1 INFO test_irg_db odoo.tests.result: 0 failed, 0 error(s) of 3 tests when loading database 'test_irg_db' 
+2026-09-04 10:14:40,454 1 INFO test_irg_db odoo.service.server: Initiating shutdown 
+2026-09-04 10:14:40,454 1 INFO test_irg_db odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-09-04 10:14:40,864 1 INFO test_irg_db odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  

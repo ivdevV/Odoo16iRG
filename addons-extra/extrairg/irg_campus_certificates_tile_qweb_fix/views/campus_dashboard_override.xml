@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="certificates_tile_qweb_guard"
+                  inherit_id="irg_campus_certificates_portal.user_profile_content_details_certificates_tile"
+                  priority="99">
+            <xpath expr="//div[@name='certificates_and_diplomas']" position="attributes">
+                <attribute name="t-if">not course_id.is_diplomado()</attribute>
+            </xpath>
+        </template>
+    </data>
+</odoo>

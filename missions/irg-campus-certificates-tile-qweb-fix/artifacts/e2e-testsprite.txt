@@ -1,0 +1,39 @@
+E2E TESTSPRITE — REPORTE DE EJECUCIÓN
+Misión : irg-campus-certificates-tile-qweb-fix
+Fecha  : 2026-09-04
+Agente : orquestador (rol e2e-tester)
+
+== SCOPE CHECK ==
+
+El diff toca superficie web:
+  - views/campus_dashboard_override.xml (QWeb inherit del portal /campus/course)
+
+E2E es OBLIGATORIO por scope. No procede skip de alcance.
+
+== COMPROBACIÓN DE FALLOS PREVIOS ==
+
+  - py_compile     : pass
+  - xml_parse      : pass
+  - lint           : skipped (justificado)
+  - module_tests   : pass (3 tests, 0 failed)
+  - portal_no_edit : pass
+  - manifest_checks: pass
+
+No hay fail de módulo. Se puede continuar.
+
+== DESCUBRIMIENTO DEL MCP TESTSPRITE ==
+
+GetDynamicTools pattern testsprite|TestSprite → 0 matches.
+Namespaces: cursor, cursor-app-control, cursor-ide-browser, plugin-claude-mem-mcp-search, plugin-gmail-gmail, plugin-google-calendar-google-calendar, plugin-google-drive-google-drive.
+
+El MCP TestSprite NO está disponible en esta sesión.
+
+== INTENTO DE EJECUCIÓN ==
+
+No se llamó a testsprite_bootstrap porque el MCP no existe.
+
+== LIMPIEZA ==
+
+No se crearon fixtures ni se alteró el runtime local.
+
+E2E FAIL
