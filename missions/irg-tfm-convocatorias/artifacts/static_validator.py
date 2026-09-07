@@ -335,6 +335,7 @@ membership = source("models/slide_channel_partner.py")
 portal = source("controllers/portal.py")
 portal_xml = source("views/tfm_portal_templates.xml")
 slide_xml = source("views/tfm_slide_templates.xml")
+slide_xml_tree = ElementTree.fromstring(slide_xml)
 cron_xml = source("data/ir_cron.xml")
 hooks = source("hooks.py")
 acl = source("security/ir.model.access.csv")
@@ -434,6 +435,28 @@ contracts = {
     ),
     "portal_no_direct_acl": "base.group_portal" not in acl,
 }
+tfm_content_template = slide_xml_tree.find(
+    ".//template[@id='course_slides_list_hide_tfm_content']"
+)
+assert tfm_content_template is not None
+tfm_content_xpath_node = tfm_content_template.find("./xpath")
+assert tfm_content_xpath_node is not None
+tfm_content_xpath = tfm_content_xpath_node.get("expr")
+odoo16_slide_parent_fixture = ElementTree.fromstring(
+    '<template id="course_slides_list_slide">'
+    '<li t-attf-class="o_wslides_slides_list_slide o_wslides_js_list_item">'
+    '<div class="text-truncate me-auto">'
+    '<a class="o_wslides_js_slides_list_slide_link"/>'
+    '</div></li></template>'
+)
+odoo16_slide_parent_root = odoo16_slide_parent_fixture.find("./li")
+contracts["elearning_content_xpath_matches_odoo16_parent"] = (
+    tfm_content_xpath
+    == "//li[contains(@t-attf-class, 'o_wslides_slides_list_slide')]"
+    and odoo16_slide_parent_root is not None
+    and "o_wslides_slides_list_slide"
+    in odoo16_slide_parent_root.attrib.get("t-attf-class", "").split()
+)
 assignment = thesis[thesis.index("    def write(self, vals):"):]
 contracts["assignment_lock_order"] = (
     assignment.index("SELECT id FROM irg_tfm_convocatoria")

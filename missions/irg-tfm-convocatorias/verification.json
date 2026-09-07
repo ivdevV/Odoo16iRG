@@ -1,19 +1,26 @@
 {
   "status": "passed",
-  "task": "irg-tfm-convocatorias",
+  "task": "irg-tfm-convocatorias-qweb-xpath-fix",
   "checks": [
     {
       "name": "git_scope",
-      "command": "git status --porcelain=v1; git rev-parse HEAD; git merge-base HEAD origin/Dev_iRG; git branch --show-current; git diff --check; git diff --name-only; git ls-files --others --exclude-standard",
+      "command": "git status --porcelain=v1; git rev-parse HEAD; git rev-parse origin/Dev_iRG; git merge-base HEAD origin/Dev_iRG; git branch --show-current; git diff --check; git diff --name-only; git ls-files --others --exclude-standard; git diff --numstat",
       "result": "pass",
-      "detail": "Branch codex/irg-tfm-convocatorias-dev-integration is based exactly on origin/Dev_iRG at 9dfb9dff2816368d39b1e11858623bfb9f9fe382. The dirty state contains only the in-scope correction in irg_tfm_convocatorias, its tests and mission artifacts; git diff --check exited 0.",
+      "detail": "Branch codex/irg-tfm-convocatorias-dev-integration is based exactly on origin/Dev_iRG at 0e5b952e6f51b2bba8ba292bdf0d5ad0dc39aa52. Functional scope is limited to the QWeb XPath correction and version 16.0.1.0.2 in irg_tfm_convocatorias; all other changes are its regression contract and mission artifacts. git diff --check exited 0.",
       "evidence": "artifacts/git-scope.txt"
     },
     {
       "name": "static_validator",
       "command": "C:\\Users\\admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe missions\\irg-tfm-convocatorias\\artifacts\\static_validator.py",
       "result": "pass",
-      "detail": "13 validation groups passed: 18 Python AST files, 7 XML files, ACL CSV, manifest 16.0.1.0.1 with 13 dependencies and 8 model imports, all repository dependencies, 55 test methods, style, pure helpers, 19 grouped contracts, inheritance targets and artifact scope. The contracts verify completion_porc, grade-result refresh and a cron without a domain on the non-searchable field.",
+      "detail": "13 validation groups passed with 0 failures: 18 Python AST files, 7 well-formed XML files, ACL CSV, exact manifest version 16.0.1.0.2, repository dependencies, 55 test methods, style, pure helpers, 20 grouped contracts, inheritance targets and artifact scope.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "qweb_xpath_parent_match",
+      "command": "Bundled Python/lxml: parse tfm_slide_templates.xml, extract the inherited XPath and evaluate it against the official Odoo 16 website_slides.course_slides_list_slide node fixture",
+      "result": "pass",
+      "detail": "The corrected expression //li[contains(@t-attf-class, 'o_wslides_slides_list_slide')] parsed successfully and matched exactly one node in the official Odoo 16 parent fixture (OFFICIAL_PARENT_FIXTURE_MATCHES=1).",
       "evidence": "artifacts/static-validation.txt"
     },
     {
@@ -34,18 +41,19 @@
       "name": "e2e_testsprite",
       "command": "not run",
       "result": "skipped",
-      "detail": "TestSprite MCP is unavailable in this session and its mandatory disposable local Odoo target on port 8069 cannot be started because Docker access is explicitly prohibited. No code upload or tunnel was attempted.",
+      "detail": "The QWeb diff triggers E2E scope, but TestSprite MCP is unavailable and its mandatory disposable local Odoo target on port 8069 cannot be started because Docker access is explicitly prohibited. No code upload or tunnel was attempted.",
       "evidence": "artifacts/runtime-skips.txt"
     }
   ],
   "environment": {
     "runtime": "docker-compose.local.yml (not executed by user instruction)",
     "database": "unavailable (not accessed)",
-    "base_commit": "9dfb9dff2816368d39b1e11858623bfb9f9fe382",
+    "base_commit": "0e5b952e6f51b2bba8ba292bdf0d5ad0dc39aa52",
     "branch": "codex/irg-tfm-convocatorias-dev-integration",
-    "static_python": "3.12.14 (Codex bundled runtime)"
+    "static_python": "3.12.14 (Codex bundled runtime)",
+    "official_parent_source": "https://raw.githubusercontent.com/odoo/odoo/16.0/addons/website_slides/views/website_slides_templates_course.xml"
   },
-  "model_tier_used": "complex",
+  "model_tier_used": "standard",
   "escalations": 0,
   "evidence": [
     "artifacts/git-scope.txt",

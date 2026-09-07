@@ -2,7 +2,7 @@
 
 **Categoría:** extrairg
 
-**Versión:** 16.0.1.0.1
+**Versión:** 16.0.1.0.2
 
 **Licencia:** LGPL-3
 
@@ -216,7 +216,7 @@ El addon contiene 55 métodos `TransactionCase`/`HttpCase` distribuidos en:
 - `tests/test_tfm_deliveries.py`: ventanas, formatos, límites, versionado, propiedad, inmutabilidad, portal y rutas legacy.
 - `tests/test_tfm_elearning.py`: categorías, filtrado, URL directa, QWeb y membresías.
 
-La validación independiente del 7 de septiembre de 2026 aprobó los checks estáticos de AST Python, XML, ACL, manifest, imports, dependencias, estructura de tests, estilo, helpers puros, contratos funcionales/de seguridad, targets de herencia y alcance Git.
+La validación independiente del 7 de septiembre de 2026 aprobó los checks estáticos de AST Python, XML, ACL, manifest, imports, dependencias, estructura de tests, estilo, helpers puros, contratos funcionales/de seguridad, targets de herencia y alcance Git. La versión 16.0.1.0.2 añade una regresión específica que comprueba que el XPath del listado de contenidos coincide una sola vez con el nodo raíz oficial de Odoo 16.
 
 Limitaciones de la evidencia disponible en esta máquina:
 
