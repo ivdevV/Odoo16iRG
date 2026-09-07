@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "task": "irg-business-api-gradebook-certificate",
+  "checks": [
+    {
+      "name": "syntax_py_compile",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_business_api/models/api_constants.py addons-extra/extrairg/irg_business_api/models/api_operation.py addons-extra/extrairg/irg_business_api/models/gradebook_service.py addons-extra/extrairg/irg_business_api/tests/test_gradebook_certificate.py addons-extra/extrairg/irg_business_api/tests/common.py addons-extra/extrairg/irg_business_api/tests/__init__.py",
+      "result": "pass",
+      "detail": "Exit code 0, no output. All 6 files compile without syntax error.",
+      "evidence": null
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_api_gradebook_cert -u irg_business_api --test-enable --test-tags /irg_business_api --without-demo=all --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test --workers=0",
+      "result": "pass",
+      "detail": "odoo.tests.result: 0 failed, 0 error(s) of 62 tests when loading database 'test_irg_api_gradebook_cert'. Stats: irg_business_api: 76 tests 1.65s 4163 queries.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Mission diff is Python production code + tests + docs of irg_business_api only. Does not touch views/, templates/, report/, static/, portal, website, or HTTP controllers. E2E trigger condition not met per AGENTS.md scope policy.",
+      "evidence": null
+    },
+    {
+      "name": "git_scope",
+      "command": "git diff --name-only HEAD -- addons-extra/extrairg/irg_business_api/ doc/modules/extrairg/irg_business_api.md && git ls-files --others --exclude-standard addons-extra/extrairg/irg_business_api/ doc/modules/extrairg/irg_business_api.md",
+      "result": "pass",
+      "detail": "All 9 changed/new files are within addons-extra/extrairg/irg_business_api/ and doc/modules/extrairg/irg_business_api.md. No production edits outside permitted scope. Pre-existing dirty files (.obsidian/, other missions, graphify-out/) not counted.",
+      "evidence": null
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_api_gradebook_cert",
+    "base_commit": "8548223716c621944590dd250324c599b28fbbaa"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt"
+  ]
+}

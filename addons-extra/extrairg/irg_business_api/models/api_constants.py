@@ -70,6 +70,7 @@ OPERATION_CODES = [
     ('irg_apply_feedback_import', 'Apply TXT feedback import'),
     ('irg_get_attachment_metadata', 'Read private attachment metadata'),
     ('irg_upload_private_attachment', 'Upload a private attachment'),
+    ('irg_generate_gradebook_certificate', 'Generate gradebook certificate PDF'),
 ]
 
 OPERATION_SPECS = {
@@ -147,5 +148,17 @@ OPERATION_SPECS = {
     'irg_upload_private_attachment': {
         'kind': 'write',
         'keys': {'res_model', 'res_id', 'name', 'mimetype', 'file_b64'},
+    },
+    'irg_generate_gradebook_certificate': {
+        'kind': 'write',
+        'keys': {
+            'gradebook_student_id',
+            'document_type',
+            'certificate_type',
+            'signer',
+            'shipping_type',
+            'custom_description',
+            'custom_options',
+        },
     },
 }

@@ -45,6 +45,8 @@ Los borradores de slide se crean como artículo (`slide_category=article`) no pu
 
 **Baja:** `irg_apply_withdrawal` está rechazada a propósito (`action_down` cancela facturas). Hay que usar la UI oficial.
 
+**Certificado de notas:** `irg_generate_gradebook_certificate` (preview → approve) llama al wizard backend. Tras aprobar, `result_snapshot` incluye `file_b64` y `checksum` para que un agente reenvíe el PDF. Odoo no publica el adjunto ni manda el correo al alumno.
+
 Contrato detallado: [doc/api-contract.md](doc/api-contract.md).
 
 ## Pruebas
@@ -59,5 +61,6 @@ odoo -c /etc/odoo/odoo.conf -d <db_test> \
 
 - Sin controladores HTTP en esta entrega.
 - Página máxima 100; HTML de slide máximo 32k caracteres (`html_sanitize`).
+- `irg_generate_gradebook_certificate` devuelve `file_b64` tras approve; el snapshot puede ser grande y no hay purga (`unlink` denegado). El adjunto sigue privado y Odoo no envía el PDF.
 - No se pueden borrar operaciones históricas; desinstalar el módulo no deshace escrituras aplicadas.
 - E2E TestSprite de las vistas quedó fuera de esta corrida (herramienta ausente en el runtime de Cursor).

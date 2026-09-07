@@ -293,6 +293,7 @@ class IrgApiOperation(models.Model):
             'irg_apply_regrade_attempt': survey.preview_apply_regrade,
             'irg_apply_feedback_import': survey.preview_apply_feedback_import,
             'irg_upload_private_attachment': survey.preview_upload_private_attachment,
+            'irg_generate_gradebook_certificate': GradebookService(env).preview_generate_gradebook_certificate,
         }
 
     def _irg_write_apply_handlers(self, env):
@@ -324,6 +325,7 @@ class IrgApiOperation(models.Model):
             'irg_apply_regrade_attempt': survey.apply_regrade,
             'irg_apply_feedback_import': survey.apply_feedback_import,
             'irg_upload_private_attachment': survey.apply_upload_private_attachment,
+            'irg_generate_gradebook_certificate': GradebookService(env).apply_generate_gradebook_certificate,
         }
 
     def _irg_run_meta(self, payload):
