@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='pdf_attachment_id']/ancestor::group[2]" position="after">
                 <group string="Datos del convenio específico"
-                       attrs="{'invisible': [('agreement_type', '!=', 'especifico_internacional')]}">
+                       attrs="{'invisible': [('agreement_type', 'not in', ['especifico_internacional', 'especifico_nacional'])]}">
                     <group>
                         <field name="practice_request_id" readonly="1"/>
                         <field name="student_name"/>
@@ -31,7 +31,7 @@
             </xpath>
             <xpath expr="//field[@name='signature_center']/parent::group" position="after">
                 <group string="Firma del estudiante"
-                       attrs="{'invisible': [('agreement_type', '!=', 'especifico_internacional')]}">
+                       attrs="{'invisible': [('agreement_type', 'not in', ['especifico_internacional', 'especifico_nacional'])]}">
                     <field name="signed_by_student" readonly="1"/>
                     <field name="signed_on_student" readonly="1"/>
                     <field name="signed_ip_student" readonly="1"/>

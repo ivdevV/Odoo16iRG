@@ -102,11 +102,11 @@ class TestPracticeAgreementSpecific(TransactionCase):
             html = html.decode("utf-8")
         return str(html)
 
-    def _create_especifico(self, activities=""):
+    def _create_especifico(self, activities="", agreement_type="especifico_internacional"):
         Wizard = self.env["irg.practice.agreement.specific.create.wizard"]
         action = Wizard.create({
             "practice_request_id": self.request.id,
-            "agreement_type": "especifico_internacional",
+            "agreement_type": agreement_type,
             "student_proposed_activities": activities,
         }).action_create_agreement()
         return self.env["practice.agreement"].browse(action["res_id"])
@@ -116,7 +116,7 @@ class TestPracticeAgreementSpecific(TransactionCase):
         self.assertIsNotNone(field)
         keys = dict(field.selection)
         self.assertIn("especifico_internacional", keys)
-        self.assertNotIn("especifico_nacional", keys)
+        self.assertIn("especifico_nacional", keys)
         self.assertIn("marco_nacional", keys)
         self.assertIn("marco_internacional", keys)
 
@@ -236,6 +236,50 @@ class TestPracticeAgreementSpecific(TransactionCase):
             ("mimetype", "=", "application/pdf"),
         ], limit=1)
         self.assertTrue(request_pdf)
+
+    def test_wizard_creates_nacional(self):
+        agreement = self._create_especifico(agreement_type="especifico_nacional")
+        self.assertEqual(agreement.agreement_type, "especifico_nacional")
+        self.assertEqual(agreement.practice_request_id, self.request)
+        self.assertEqual(agreement.student_name, "Alumno Prueba Específico")
+        self.assertTrue(agreement.student_access_token)
+
+    def test_html_nacional_has_irg_insurance_not_abroad(self):
+        agreement = self._create_especifico(agreement_type="especifico_nacional")
+        html = self._render_agreement_html(agreement)
+        self.assertIn("a cargo de iRG", html)
+        self.assertIn("26/2015", html)
+        self.assertIn("accidentes", html.lower())
+        self.assertIn("asistencia sanitaria", html.lower())
+        self.assertIn("Alumno Prueba Específico", html)
+        self.assertIn("Centro Colaborador Test", html)
+        self.assertNotIn("fuera de España", html)
+        self.assertNotIn("Encuentro", html)
+        self.assertNotIn("Miroslava", html)
+        self.assertNotIn("INMIRA", html)
+
+    def test_html_internacional_keeps_abroad_insurance(self):
+        agreement = self._create_especifico()
+        html = self._render_agreement_html(agreement)
+        self.assertIn("fuera de España", html)
+        self.assertNotIn("26/2015", html)
+
+    def test_nacional_both_signatures_complete(self):
+        agreement = self._create_especifico(agreement_type="especifico_nacional")
+        agreement.action_complete_signature(
+            signature_base64=DUMMY_SIGNATURE,
+            signer_name="Ana Representante",
+            ip_address="192.168.1.10",
+        )
+        self.assertNotEqual(agreement.state, "completed")
+        agreement.action_complete_student_signature(
+            signature_base64=DUMMY_SIGNATURE,
+            signer_name="Alumno Prueba Específico",
+            ip_address="192.168.1.20",
+        )
+        self.assertEqual(agreement.state, "completed")
+        self.assertIn("Especifico_Nacional", agreement.pdf_attachment_id.name)
+        self.assertNotIn("Marco", agreement.pdf_attachment_id.name)
 
     def test_marco_still_completes_with_center_only(self):
         agreement = self.env["practice.agreement"].create({

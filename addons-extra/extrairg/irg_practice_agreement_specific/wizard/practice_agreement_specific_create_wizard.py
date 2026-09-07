@@ -38,6 +38,7 @@ class PracticeAgreementSpecificCreateWizard(models.TransientModel):
     agreement_type = fields.Selection(
         [
             ('especifico_internacional', 'Convenio Específico Internacional'),
+            ('especifico_nacional', 'Convenio Específico Nacional'),
         ],
         string='Tipo de convenio',
         required=True,

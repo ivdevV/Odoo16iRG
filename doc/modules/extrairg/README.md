@@ -87,7 +87,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_practice_center_restrict](./irg_practice_center_restrict.md) | Oculta centros de prácticas al alumno | — | Instalable |
 | [irg_practice_request_online_types](./irg_practice_request_online_types.md) | Filtra tipos de práctica en másteres online | `practice.request`, `op.student.course` | Instalable |
 | [irg_practice_agreement_types](./irg_practice_agreement_types.md) | Wizard de convenio marco nacional/internacional | `practice.agreement`, `practice.center` | Instalable |
-| [irg_practice_agreement_specific](./irg_practice_agreement_specific.md) | Convenio específico internacional desde la solicitud | `practice.agreement`, `practice.request` | Instalable |
+| [irg_practice_agreement_specific](./irg_practice_agreement_specific.md) | Convenios específicos nacional e internacional desde la solicitud | `practice.agreement`, `practice.request` | Instalable |
 | [irg_profile_batch_fix](./irg_profile_batch_fix.md) | Fix nombre de programa y filtro de calendario por lote | — | Instalable |
 | [irg_sign_position_fix](./irg_sign_position_fix.md) | Ajusta posición del bloque de firma en matrícula | `sign.template` | Instalable |
 | [irg_sign_reposition](./irg_sign_reposition.md) | Lógica alternativa de reposición de firma | `sign.template`, `sign.item` | Instalable |

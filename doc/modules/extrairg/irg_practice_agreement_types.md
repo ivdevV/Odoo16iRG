@@ -26,8 +26,8 @@ vigencia/resolución ampliadas, confidencialidad y protección de datos separada
 
 ## Fuera de alcance
 
-Convenio específico nacional (pendiente de ejemplo). El específico
-internacional está en `irg_practice_agreement_specific`.
+Los convenios específicos (nacional e internacional) están en
+`irg_practice_agreement_specific`, no en este módulo.
 
 ## Pruebas
 

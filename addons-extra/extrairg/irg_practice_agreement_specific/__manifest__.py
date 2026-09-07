@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Practice Agreement Specific',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Education',
-    'summary': 'Convenio específico internacional desde la solicitud de prácticas',
+    'summary': 'Convenios específicos nacional e internacional desde la solicitud de prácticas',
     'author': 'IRG',
     'website': 'https://institutoraimongaja.com',
     'license': 'LGPL-3',
@@ -17,6 +17,7 @@
         'views/practice_request_views.xml',
         'views/practice_agreement_views.xml',
         'views/agreement_document_especifico_internacional.xml',
+        'views/agreement_document_especifico_nacional.xml',
         'views/portal_agreement_templates.xml',
         'report/practice_agreement_report_templates.xml',
     ],
