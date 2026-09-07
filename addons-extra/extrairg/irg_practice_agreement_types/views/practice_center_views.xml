@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_center_form_agreement_types" model="ir.ui.view">
+        <field name="name">practice.center.form.agreement.types</field>
+        <field name="model">practice.center</field>
+        <field name="inherit_id" ref="irg_practice_agreement_sign.view_practice_center_form_agreement_sign"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_create_agreement']" position="attributes">
+                <attribute name="name">action_open_create_agreement_wizard</attribute>
+                <attribute name="string">Crear Convenio</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

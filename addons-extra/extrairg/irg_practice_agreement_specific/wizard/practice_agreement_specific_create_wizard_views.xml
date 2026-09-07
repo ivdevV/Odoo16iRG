@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_agreement_specific_create_wizard_form" model="ir.ui.view">
+        <field name="name">irg.practice.agreement.specific.create.wizard.form</field>
+        <field name="model">irg.practice.agreement.specific.create.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Crear Convenio">
+                <group>
+                    <field name="practice_request_id" invisible="1"/>
+                    <field name="agreement_type" widget="radio"/>
+                    <field name="student_proposed_activities" placeholder="Opcional. Si se deja vacío, no aparece en el convenio."/>
+                </group>
+                <footer>
+                    <button name="action_create_agreement"
+                            string="Crear"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_practice_agreement_specific_create_wizard" model="ir.actions.act_window">
+        <field name="name">Crear Convenio</field>
+        <field name="res_model">irg.practice.agreement.specific.create.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_practice_agreement_specific_create_wizard_form"/>
+    </record>
+</odoo>

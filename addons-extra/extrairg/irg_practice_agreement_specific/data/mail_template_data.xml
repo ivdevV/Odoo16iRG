@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="email_template_especifico_center" model="mail.template">
+            <field name="name">Convenios de Prácticas: Firma específico (centro)</field>
+            <field name="model_id" ref="irg_practice_agreement_sign.model_practice_agreement"/>
+            <field name="subject">Convenio Específico de Prácticas - Instituto Raimon Gaja / {{ object.center_official_name or object.practice_center_id.name }}</field>
+            <field name="email_from">{{ (object.create_uid.email_formatted or user.email_formatted) }}</field>
+            <field name="email_to">{{ object.email or object.practice_center_id.email }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    <p style="margin: 0px; padding: 0px; font-size: 14px;">
+                        Estimado/a <strong><t t-out="object.signatory_name or 'Representante Legal'"/></strong>,
+                        <br/><br/>
+                        Desde el <strong>Instituto Raimon Gaja (iRG)</strong> le enviamos el
+                        <strong>convenio específico de prácticas</strong> de
+                        <strong><t t-out="object.student_name or 'el/la estudiante'"/></strong>
+                        para su revisión y firma digital.
+                        <br/><br/>
+                        <div style="text-align: center; margin: 24px 0;">
+                            <a t-att-href="object.get_portal_url()"
+                               style="background-color: #0056b3; color: #ffffff; padding: 12px 28px; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px; display: inline-block;">
+                                Firmar Convenio Específico
+                            </a>
+                        </div>
+                        <br/>
+                        Si el botón no funciona, puede copiar y pegar la siguiente URL:
+                        <br/>
+                        <a t-att-href="object.get_portal_url()"><t t-out="object.get_portal_url()"/></a>
+                        <br/><br/>
+                        El documento quedará completado cuando firmen el centro y el estudiante.
+                        <br/><br/>
+                        Atentamente,<br/>
+                        <strong>Instituto Raimon Gaja</strong>
+                    </p>
+                </div>
+            </field>
+        </record>
+
+        <record id="email_template_especifico_student" model="mail.template">
+            <field name="name">Convenios de Prácticas: Firma específico (estudiante)</field>
+            <field name="model_id" ref="irg_practice_agreement_sign.model_practice_agreement"/>
+            <field name="subject">Convenio Específico de Prácticas - Instituto Raimon Gaja</field>
+            <field name="email_from">{{ (object.create_uid.email_formatted or user.email_formatted) }}</field>
+            <field name="email_to">{{ object.student_email }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    <p style="margin: 0px; padding: 0px; font-size: 14px;">
+                        Estimado/a <strong><t t-out="object.student_name or 'estudiante'"/></strong>,
+                        <br/><br/>
+                        Adjunto a este correo encontrarás el enlace para revisar y firmar tu
+                        <strong>convenio específico de prácticas</strong> en
+                        <strong><t t-out="object.center_official_name or object.practice_center_id.name"/></strong>.
+                        <br/><br/>
+                        <div style="text-align: center; margin: 24px 0;">
+                            <a t-att-href="object.get_student_portal_url()"
+                               style="background-color: #0056b3; color: #ffffff; padding: 12px 28px; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 6px; display: inline-block;">
+                                Firmar Convenio Específico
+                            </a>
+                        </div>
+                        <br/>
+                        Si el botón no funciona, copia y pega esta URL:
+                        <br/>
+                        <a t-att-href="object.get_student_portal_url()"><t t-out="object.get_student_portal_url()"/></a>
+                        <br/><br/>
+                        El convenio se completa cuando firmen el centro colaborador y tú.
+                        <br/><br/>
+                        Atentamente,<br/>
+                        <strong>Instituto Raimon Gaja</strong>
+                    </p>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

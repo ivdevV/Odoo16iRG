@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="agreement_clauses_marco_internacional">
+        <div style="margin-bottom: 20px;">
+            <h4 style="font-size: 11.5pt; font-weight: bold; text-align: center; margin-bottom: 15px;">CLÁUSULAS</h4>
+
+            <p><strong>1. Objeto del convenio de colaboración</strong></p>
+            <p style="text-align: justify; margin-bottom: 12px;">
+                El objeto de este convenio es establecer los términos de colaboración que deben regir entre las partes firmantes a fin de garantizar que los estudiantes de iRG que se determinen, puedan realizar prácticas profesionales externas en el CENTRO COLABORADOR.
+            </p>
+
+            <p><strong>2. Formalización</strong></p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                Esta colaboración se materializa mediante la firma de un convenio específico entre el estudiante, el CENTRO COLABORADOR y iRG.
+            </p>
+            <p style="text-align: justify; margin-bottom: 12px;">
+                El CENTRO COLABORADOR comunicará a iRG la persona que, en su nombre, firmará los convenios a que hace referencia esta cláusula. Por parte de iRG, corresponderá firmar estos convenios al Sr. RAIMON GAJA JAUMEANDREU, como Director General de iRG.
+            </p>
+
+            <p><strong>3. Condiciones generales de realización de las prácticas</strong></p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                Las prácticas profesionales externas constituyen una actividad de naturaleza formativa para los estudiantes que les debe permitir aplicar y complementar los conocimientos adquiridos en su formación académica, favoreciendo la adquisición de competencias que los preparen para el ejercicio de actividades profesionales, faciliten la ocupación y fomenten su capacidad emprendedora. En consecuencia, y dado su carácter puramente formativo, de su realización no se derivarán, en ningún caso, obligaciones propias de una relación laboral, ni su contenido podrá dar lugar a la sustitución de la prestación laboral propia de puestos de trabajo.
+            </p>
+            <p style="text-align: justify; margin-bottom: 6px;">3.1. Durante el periodo en prácticas en EL CENTRO COLABORADOR, los estudiantes han de realizar bajo la debida supervisión, las tareas propias del ámbito profesional en que ejercitarán la actividad como estudiantes, con el objetivo de completar el aprendizaje teórico y práctico adquiriendo la formación académica, al tiempo que adquieren también experiencia en los niveles a los que puedan acceder por razón de su titulación.</p>
+            <p style="text-align: justify; margin-bottom: 6px;">3.2. Los estudiantes deben de estar sujetos al horario y las normas fijadas por la entidad colaboradora. En todo caso se procurará que el horario establecido sea compatible con la actividad académica formativa y la representación y participación desarrollada por el estudiante del iRG.</p>
+            <p style="text-align: justify; margin-bottom: 6px;">3.3. Los estudiantes deben desarrollar su estancia de prácticas bajo la supervisión de un tutor y un coordinador: el tutor es un profesional del CENTRO COLABORADOR, escogido por esta entidad que se encargará de orientar y supervisar el trabajo en prácticas del estudiante. El coordinador escogido por iRG, en coordinación con el tutor del centro colaborador, hará un seguimiento efectivo de las prácticas proporcionando soporte al estudiante para la elaboración de la memoria y poder llevar a término el proceso evaluador de las prácticas.</p>
+            <p style="text-align: justify; margin-bottom: 6px;">3.4. La persona tutora elegida por el CENTRO COLABORADOR fijará el plan de trabajo a seguir, de acuerdo con el proyecto formativo y en coordinación con el coordinador de prácticas y, asimismo debe realizar un informe final o/y rellenar un cuestionario de calificación del estudiante durante la estancia en las prácticas.</p>
+            <p style="text-align: justify; margin-bottom: 12px;">3.5. La realización de las prácticas no implica en ningún caso la existencia de una relación laboral entre los estudiantes y la entidad colaboradora.</p>
+
+            <p><strong>4. Condiciones particulares de realización de las prácticas</strong></p>
+            <p style="text-align: justify; margin-bottom: 6px;">4.1. La determinación de los estudiantes que hayan de realizar las prácticas en el Centro colaborador previsto en el presente convenio corresponderá al Centro, por medio del oportuno procedimiento de selección.</p>
+            <p style="text-align: justify; margin-bottom: 6px;">4.2. De acuerdo con lo establecido, las partes firmantes deberán suscribir con el estudiante el oportuno anexo específico en el cual figuran los datos siguientes:</p>
+            <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Identidad del estudiante en prácticas académicas externas.</p>
+            <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Modalidad de las prácticas.</p>
+            <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Duración, horario y periodo de realización de las prácticas.</p>
+            <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Lugar (centro de trabajo) de realización de las prácticas.</p>
+            <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Identidad de los tutores designados por la entidad colaboradora y por el centro formador.</p>
+            <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Compromisos del estudiante.</p>
+            <p style="text-align: justify; margin-bottom: 8px; margin-left: 16px;">Especificación de que la realización de las prácticas no implica la constitución de ningún vínculo laboral entre la entidad y el estudiante.</p>
+            <p style="text-align: justify; margin-bottom: 12px;">El estudiante debe comprometerse de forma expresa a mantener la confidencialidad y el secreto profesional en relación con la información interna y las actividades de la entidad colaboradora.</p>
+
+            <p><strong>4.3. Seguros, coberturas y asunción de costes</strong></p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                Durante la realización de las prácticas académicas externas, y sin perjuicio de la normativa imperativa que resulte de aplicación en el país donde estas se desarrollen, las partes acuerdan que iRG únicamente asumirá, respecto de las prácticas realizadas en España, la cobertura correspondiente al seguro de responsabilidad civil (RC) que, en su caso, resulte aplicable en los términos y con los límites establecidos por la póliza correspondiente.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                Para las prácticas realizadas fuera de España, y en particular en países de LATAM, así como para cualquier cobertura distinta de la responsabilidad civil asumida por iRG en España, el estudiante será el único responsable de contratar, mantener vigente y sufragar íntegramente, antes del inicio de las prácticas y durante toda su duración, los seguros, coberturas, autorizaciones o acreditaciones que sean exigidos por la legislación aplicable, por el CENTRO COLABORADOR, por la entidad de destino, por la autoridad administrativa competente o por las condiciones del lugar de realización de las prácticas.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                A título meramente enunciativo y no limitativo, dichas coberturas podrán incluir: seguro médico o de asistencia sanitaria, seguro de accidentes, seguro de enfermedad, seguro de repatriación, seguro de vida, cobertura por incapacidad temporal o permanente, cobertura frente a riesgos laborales, cobertura de bioseguridad, vacunaciones, reconocimientos médicos, seguros de viaje, seguros de responsabilidad profesional o cualquier otro seguro, garantía, requisito preventivo o cobertura complementaria que resulte exigible o recomendable según el país, la actividad, el centro de prácticas o la normativa aplicable.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                En particular, los seguros médicos, las coberturas por riesgos laborales y cualesquiera otros seguros o requisitos que el CENTRO COLABORADOR solicite expresa o implícitamente como condición para la incorporación o permanencia del estudiante en prácticas serán a cargo exclusivo del estudiante, quien deberá acreditar documentalmente su contratación y vigencia cuando le sea requerido.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                El CENTRO COLABORADOR podrá exigir, con carácter previo al inicio de las prácticas o en cualquier momento durante su desarrollo, la contratación de coberturas adicionales o la aportación de justificantes de seguro, certificados médicos, constancias de afiliación, vacunación o cualesquiera otros documentos equivalentes exigidos por la normativa local o por sus protocolos internos. La falta de aportación de dicha documentación por parte del estudiante facultará al CENTRO COLABORADOR y/o a iRG para no iniciar, suspender o dar por finalizadas las prácticas, sin que ello genere responsabilidad alguna para iRG ni para el CENTRO COLABORADOR.
+            </p>
+            <p style="text-align: justify; margin-bottom: 12px;">
+                Asimismo, el estudiante será responsable de verificar que las pólizas contratadas cumplen los requisitos exigidos en el país de destino y por el CENTRO COLABORADOR, manteniéndolas plenamente vigentes durante todo el periodo de prácticas.
+            </p>
+
+            <p><strong>5. Uso de la imagen social y marcas</strong></p>
+            <p style="text-align: justify; margin-bottom: 6px;">En este sentido, el logotipo podrá ser utilizado en cualquier soporte publicitario de iRG y/o EL CENTRO COLABORADOR, a título enunciativo, pero no limitativo, página web, folleto díptico, etc. durante la vigencia de este convenio.</p>
+            <p style="text-align: justify; margin-bottom: 6px;">Por lo expuesto anteriormente el presente convenio no constituye, de ninguna manera, transferencia o autorización del uso del patrimonio marcado o de exclusiva de ninguna de las partes, por lo que, y sin perjuicio de la autorización genérica que se confiere al presente convenio, cualquier uso de los derechos de propiedad intelectual y/o industrial titularidad de cualquiera de las partes requerirá la previa autorización expresa y escrita de éstas.</p>
+            <p style="text-align: justify; margin-bottom: 12px;">A la finalización de este Convenio las dos partes vendrán obligadas a cesar inmediatamente en el uso de la imagen, nombre o logotipo que cada una de las partes esté haciendo de la otra para razón de este Convenio.</p>
+
+            <p><strong>6. Vigencia</strong></p>
+            <p style="text-align: justify; margin-bottom: 12px;">
+                La duración de este convenio se establece por un periodo de un año, a partir de la fecha de su firma. Se entiende tácitamente prorrogado por otro año, y así sucesivamente, en caso de que no se produzca, por cualquiera de las dos partes, la comunicación por escrito en sentido contrario, con un mínimo de 3 meses de antelación a la expiración. En cualquier caso, las prácticas iniciadas con anterioridad a dicho momento deberán continuar hasta su finalización.
+            </p>
+
+            <p><strong>7. Causas de resolución</strong></p>
+            <p style="text-align: justify; margin-bottom: 6px;">Las causas de resolución del presente convenio de cooperación educativa serán:</p>
+            <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">La expiración del término de vigencia.</p>
+            <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">El mutuo acuerdo de las partes, manifestado por escrito.</p>
+            <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">La imposibilidad sobrevenida legal o material de dar cumplimiento al objeto de este convenio.</p>
+            <p style="text-align: justify; margin-bottom: 12px; margin-left: 16px;">El incumplimiento por cualquiera de las partes de este convenio de cooperación o de los específicos que se firmen, de las obligaciones asumidas por este convenio, por el convenio específico o por las disposiciones aplicables. En este caso, la parte interesada en resolver anticipadamente el convenio debe comunicar su intención a la otra parte con una antelación mínima de quince días. Las causas previstas en la legislación aplicable.</p>
+
+            <p><strong>8. Confidencialidad</strong></p>
+            <p style="text-align: justify; margin-bottom: 6px;">Ambas partes reconocen el carácter estrictamente confidencial de la siguiente información:</p>
+            <p style="text-align: justify; margin-bottom: 6px;">La que hayan recibido de la otra parte con motivo del proyecto de este Convenio y que haya sido identificada como confidencial, salvo que ya la conocieran previamente y lo puedan acreditar o sea de conocimiento público o llegue al conocimiento público.</p>
+            <p style="text-align: justify; margin-bottom: 6px;">Todo lo que sea resultado del desarrollo del proyecto común de este Convenio.</p>
+            <p style="text-align: justify; margin-bottom: 12px;">Por tanto, cada una de las partes se obliga a no difundir la información confidencial sin el consentimiento de la otra, así como a garantizar el cumplimiento de esta obligación por parte de todas las personas a su cargo que participan en el proyecto.</p>
+
+            <p><strong>9. Protección de datos</strong></p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                EL centro colaborador debe abstenerse de hacer cualquier tipo de tratamiento de los datos personales de los estudiantes en prácticas a menos que sea necesario para la consecución de las finalidades de este convenio. De la misma manera se compromete a no manipular, transformar, ni ceder a terceros estos datos o los archivos que contengan, fuera del estricto objeto de la relación suscrita por ambas partes, así como a guardarlos en la estricta confidencialidad y a informar el estudiante de la forma en que puede ejercer los derechos de acceso, rectificación, cancelación y oposición, de acuerdo con lo que dispone el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo, de 27 de abril de 2016, de Protección de datos de Carácter Personal y la normativa que la desarrolló.
+            </p>
+            <p style="text-align: justify; margin-bottom: 0;">
+                El incumplimiento directo o indirecto de esta cláusula por parte de la entidad colaboradora comporta su responsabilidad directa por los daños y perjuicios que pudiera representar para los estudiantes acogidos en prácticas o para el Centro.
+            </p>
+        </div>
+    </template>
+</odoo>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_practice_agreement_document_types"
+              inherit_id="irg_practice_agreement_sign.report_practice_agreement_document">
+        <xpath expr="//h4[contains(., 'CLÁUSULAS')]/parent::div" position="attributes">
+            <attribute name="t-if">doc.agreement_type != 'marco_internacional'</attribute>
+        </xpath>
+        <xpath expr="//h4[contains(., 'CLÁUSULAS')]/parent::div" position="after">
+            <t t-if="doc.agreement_type == 'marco_internacional'"
+               t-call="irg_practice_agreement_types.agreement_clauses_marco_internacional"/>
+        </xpath>
+    </template>
+
+    <!-- Expresión defensiva: si este módulo se desinstala, el xml_id sigue
+         en el módulo base y no debe evaluar object.agreement_type a ciegas. -->
+    <record id="irg_practice_agreement_sign.action_report_practice_agreement" model="ir.actions.report">
+        <field name="print_report_name">'Convenio_Marco_%s_%s_%s' % ('Internacional' if 'agreement_type' in object._fields and object.agreement_type == 'marco_internacional' else 'Nacional', object.center_official_name or 'Centro', object.name)</field>
+    </record>
+</odoo>

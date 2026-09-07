@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_practice_agreement_document_specific"
+              inherit_id="irg_practice_agreement_sign.report_practice_agreement_document">
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="t-if">doc.agreement_type != 'especifico_internacional'</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('page')]" position="after">
+            <div t-if="doc.agreement_type == 'especifico_internacional'"
+                 class="page"
+                 style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; color: #222222; padding: 10px 25px;">
+                <t t-call="irg_practice_agreement_specific.agreement_document_especifico_internacional"/>
+                <div style="margin-top: 30px; page-break-inside: avoid;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                        <tr>
+                            <td style="width: 33%; vertical-align: top; padding: 8px;">
+                                <div style="height: 90px; margin-bottom: 10px;">
+                                    <t t-if="doc.signature_student">
+                                        <img t-att-src="image_data_uri(doc.signature_student)" style="max-height: 85px; max-width: 180px;"/>
+                                    </t>
+                                </div>
+                                <p style="margin: 0; font-weight: bold;" t-out="doc.signed_by_student or doc.student_name or 'El estudiante'"/>
+                                <p style="margin: 0; color: #555555;">(El estudiante)</p>
+                            </td>
+                            <td style="width: 34%; vertical-align: top; padding: 8px;">
+                                <div style="height: 90px; margin-bottom: 10px;">
+                                    <t t-if="doc.signature_irg">
+                                        <img t-att-src="image_data_uri(doc.signature_irg)" style="max-height: 85px; max-width: 180px;"/>
+                                    </t>
+                                    <t t-else="">
+                                        <img src="/irg_practice_agreement_sign/static/src/img/firma_raimon.png" style="max-height: 85px; max-width: 180px;"/>
+                                    </t>
+                                </div>
+                                <p style="margin: 0; font-weight: bold;">Raimon Gaja</p>
+                                <p style="margin: 0; color: #555555;">Instituto Raimon Gaja</p>
+                            </td>
+                            <td style="width: 33%; vertical-align: top; padding: 8px;">
+                                <div style="height: 90px; margin-bottom: 10px;">
+                                    <t t-if="doc.signature_center">
+                                        <img t-att-src="image_data_uri(doc.signature_center)" style="max-height: 85px; max-width: 180px;"/>
+                                    </t>
+                                </div>
+                                <p style="margin: 0; font-weight: bold;" t-out="doc.signed_by or doc.signatory_name or 'Nombre del representante'"/>
+                                <p style="margin: 0; color: #555555;" t-out="doc.center_official_name or doc.practice_center_id.name or 'Centro colaborador'"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 8pt; color: #777777; text-align: center;" t-if="doc.state == 'completed'">
+                    Firmado digitalmente mediante plataforma iRG. | Ref: <span t-out="doc.name"/>
+                    | Estudiante: <span t-out="doc.signed_by_student or doc.student_name"/>
+                    (<span t-out="doc.signed_on_student"/>, IP <span t-out="doc.signed_ip_student"/>)
+                    | Centro: <span t-out="doc.signed_by or doc.signatory_name"/>
+                    (<span t-out="doc.signed_on"/>, IP <span t-out="doc.signed_ip"/>)
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Expresión defensiva: el xml_id sigue en el módulo base al desinstalar. -->
+    <record id="irg_practice_agreement_sign.action_report_practice_agreement" model="ir.actions.report">
+        <field name="print_report_name">'Convenio_%s_%s_%s' % ('Especifico_Internacional' if 'agreement_type' in object._fields and object.agreement_type == 'especifico_internacional' else 'Marco_Internacional' if 'agreement_type' in object._fields and object.agreement_type == 'marco_internacional' else 'Marco_Nacional', object.center_official_name or 'Centro', object.name)</field>
+    </record>
+</odoo>

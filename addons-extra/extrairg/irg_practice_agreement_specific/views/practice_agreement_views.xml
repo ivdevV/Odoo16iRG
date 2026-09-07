@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_agreement_form_specific" model="ir.ui.view">
+        <field name="name">practice.agreement.form.specific</field>
+        <field name="model">practice.agreement</field>
+        <field name="inherit_id" ref="irg_practice_agreement_sign.view_practice_agreement_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='pdf_attachment_id']/ancestor::group[2]" position="after">
+                <group string="Datos del convenio específico"
+                       attrs="{'invisible': [('agreement_type', '!=', 'especifico_internacional')]}">
+                    <group>
+                        <field name="practice_request_id" readonly="1"/>
+                        <field name="student_name"/>
+                        <field name="student_email"/>
+                        <field name="student_vat"/>
+                        <field name="course_name"/>
+                        <field name="modality"/>
+                        <field name="tutor_name"/>
+                        <field name="tutor_vat"/>
+                    </group>
+                    <group>
+                        <field name="start_date"/>
+                        <field name="final_date"/>
+                        <field name="total_hours"/>
+                        <field name="practice_days"/>
+                        <field name="schedule_hours"/>
+                        <field name="student_access_token" readonly="1"/>
+                    </group>
+                    <field name="student_proposed_activities" colspan="2"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='signature_center']/parent::group" position="after">
+                <group string="Firma del estudiante"
+                       attrs="{'invisible': [('agreement_type', '!=', 'especifico_internacional')]}">
+                    <field name="signed_by_student" readonly="1"/>
+                    <field name="signed_on_student" readonly="1"/>
+                    <field name="signed_ip_student" readonly="1"/>
+                    <field name="signature_student" widget="image" class="oe_avatar" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
