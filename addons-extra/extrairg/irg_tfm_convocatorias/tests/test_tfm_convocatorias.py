@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from pathlib import Path
 from threading import Barrier, Thread
+from unittest.mock import patch
 from uuid import uuid4
 
 from psycopg2 import IntegrityError
@@ -52,20 +53,19 @@ class TestTfmConvocatorias(TransactionCase):
             'last_name': suffix,
             'gender': 'o',
         })
-        return self.env['op.student.course'].create({
+        enrollment = self.env['op.student.course'].create({
             'student_id': student.id,
             'course_id': course.id,
             'batch_id': batch.id,
             'roll_number': 'TFM-%s' % suffix,
-            'completion_proc': progress,
         })
-
-    def _set_progress_without_activation_trigger(self, enrollment, progress):
-        self.env.cr.execute(
-            'UPDATE op_student_course SET completion_proc = %s WHERE id = %s',
-            [progress, enrollment.id],
-        )
-        enrollment.invalidate_recordset()
+        with patch.object(
+            type(enrollment),
+            '_irg_tfm_completion_percentage',
+            return_value=progress,
+        ):
+            enrollment._irg_ensure_tfm_record()
+        return enrollment
 
     def _create_committed_activation_case(self, registry):
         """Create an eligible fixture visible to independently committed cursors."""
@@ -103,12 +103,7 @@ class TestTfmConvocatorias(TransactionCase):
                 'course_id': course.id,
                 'batch_id': batch.id,
                 'roll_number': 'CONCURRENT-TFM-%s' % suffix,
-                'completion_proc': 49.99,
             })
-            cursor.execute(
-                'UPDATE op_student_course SET completion_proc = 50 WHERE id = %s',
-                [enrollment.id],
-            )
             identifiers = {
                 'course': course.id,
                 'channel': course.irg_tfm_channel_id.id,
@@ -119,6 +114,53 @@ class TestTfmConvocatorias(TransactionCase):
             }
             cursor.commit()
         return identifiers
+
+    def _gradebook_subjects_for(self, enrollment, count=2):
+        suffix = self._suffix()
+        product = self.env['product.product'].create({
+            'name': 'TFM academic service %s' % suffix,
+            'type': 'service',
+        })
+        register = self.env['op.admission.register'].create({
+            'name': 'TFM register %s' % suffix,
+            'course_id': enrollment.course_id.id,
+            'product_id': product.id,
+            'start_date': date.today(),
+            'end_date': date.today() + timedelta(days=60),
+            'min_count': 1,
+            'max_count': 10,
+        })
+        admission = self.env['op.admission'].create({
+            'name': enrollment.student_id.name,
+            'partner_id': enrollment.student_id.partner_id.id,
+            'student_id': enrollment.student_id.id,
+            'course_id': enrollment.course_id.id,
+            'batch_id': enrollment.batch_id.id,
+            'register_id': register.id,
+            'application_number': 'TFM-ADM-%s' % suffix,
+            'first_name': enrollment.student_id.first_name,
+            'last_name': enrollment.student_id.last_name,
+            'gender': enrollment.student_id.gender,
+            'email': enrollment.student_id.email,
+            'is_student': True,
+        })
+        gradebook = self.env['app.gradebook.student'].create({
+            'admission_id': admission.id,
+            'state': 'in_progress',
+        })
+        subjects = self.env['app.gradebook.subject']
+        for index in range(count):
+            subject = self.env['op.subject'].create({
+                'name': 'TFM subject %s %s' % (index, suffix),
+                'code': 'TFM-SUB-%s-%s' % (index, suffix),
+                'course_id': enrollment.course_id.id,
+                'subject_type': 'compulsory',
+            })
+            subjects |= self.env['app.gradebook.subject'].create({
+                'gradebook_student_id': gradebook.id,
+                'op_subject_id': subject.id,
+            })
+        return subjects
 
     def _cleanup_committed_activation_case(self, registry, identifiers):
         with registry.cursor() as cursor:
@@ -148,19 +190,56 @@ class TestTfmConvocatorias(TransactionCase):
         for code, result in expected.items():
             self.assertEqual(irg_parse_tfm_batch_eligibility(code), result, code)
 
+    def test_real_completion_field_is_available_nonstored_and_read_by_service(self):
+        field = self.env['op.student.course']._fields['completion_porc']
+        self.assertFalse(field.store)
+        enrollment = self._student_course(progress=0)
+        self.assertEqual(enrollment._irg_tfm_completion_percentage(), 0.0)
+
+    def test_exam_result_crossing_real_fifty_percent_activates_tfm(self):
+        enrollment = self._student_course(progress=0)
+        gradebook_subjects = self._gradebook_subjects_for(enrollment, count=2)
+        self.assertEqual(enrollment._irg_tfm_completion_percentage(), 0.0)
+
+        result = self.env['app.gradebook.result'].create({
+            'gradebook_subject_id': gradebook_subjects[0].id,
+            'survey_type': 'exam',
+            'scoring_total': 8.0,
+        })
+
+        self.assertEqual(enrollment._irg_tfm_completion_percentage(), 50.0)
+        thesis = self.env['tesis.model'].search([('course_id', '=', enrollment.id)])
+        self.assertEqual(len(thesis), 1)
+        result.write({'scoring_total': 7.0})
+        self.assertTrue(thesis.exists(), 'activation must remain after progress regression')
+
     def test_eligibility_requires_exactly_fifty_percent_enabled_course_and_batch(self):
-        self.assertFalse(self._student_course(progress=49.99)._irg_is_tfm_eligible())
-        self.assertFalse(self._student_course(code='PRS-HC2701')._irg_is_tfm_eligible())
-        self.assertFalse(self._student_course(code='HC2509')._irg_is_tfm_eligible())
-        self.assertFalse(self._student_course(activate_tesis=False)._irg_is_tfm_eligible())
-        self.assertTrue(self._student_course(progress=50)._irg_is_tfm_eligible())
+        cases = (
+            (self._student_course(progress=49.99), 49.99, False),
+            (self._student_course(code='PRS-HC2701'), 50, False),
+            (self._student_course(code='HC2509'), 50, False),
+            (self._student_course(activate_tesis=False), 50, False),
+            (self._student_course(progress=50), 50, True),
+        )
+        for enrollment, progress, expected in cases:
+            with patch.object(
+                type(enrollment),
+                '_irg_tfm_completion_percentage',
+                return_value=progress,
+            ):
+                self.assertEqual(enrollment._irg_is_tfm_eligible(), expected)
 
     def test_eligible_enrollment_creates_one_draft_thesis_without_notification(self):
         enrollment = self._student_course(progress=49.99)
         self.assertFalse(self.env['tesis.model'].search([('course_id', '=', enrollment.id)]))
 
         mail_count = self.env['mail.mail'].search_count([])
-        enrollment.write({'completion_proc': 50})
+        with patch.object(
+            type(enrollment),
+            '_irg_tfm_completion_percentage',
+            return_value=50,
+        ):
+            enrollment.write({'roll_number': enrollment.roll_number})
         thesis = self.env['tesis.model'].search([('course_id', '=', enrollment.id)])
         self.assertEqual(len(thesis), 1)
         self.assertEqual(thesis.state, 'draft')
@@ -177,7 +256,12 @@ class TestTfmConvocatorias(TransactionCase):
         enrollment = self._student_course(progress=50)
         thesis = enrollment._irg_ensure_tfm_record()
         self.assertEqual(thesis, enrollment._irg_ensure_tfm_record())
-        enrollment.write({'completion_proc': 10})
+        with patch.object(
+            type(enrollment),
+            '_irg_tfm_completion_percentage',
+            return_value=10,
+        ):
+            enrollment.write({'roll_number': enrollment.roll_number})
         self.assertTrue(self.env['tesis.model'].browse(thesis.id).exists())
 
     def test_postgresql_constraint_rejects_second_thesis_for_same_enrollment(self):
@@ -212,10 +296,15 @@ class TestTfmConvocatorias(TransactionCase):
 
         workers = [Thread(target=activate_in_separate_transaction) for _index in range(2)]
         try:
-            for worker in workers:
-                worker.start()
-            for worker in workers:
-                worker.join(timeout=15)
+            with patch.object(
+                type(self.env['op.student.course']),
+                '_irg_tfm_completion_percentage',
+                return_value=50,
+            ):
+                for worker in workers:
+                    worker.start()
+                for worker in workers:
+                    worker.join(timeout=15)
             self.assertFalse(any(worker.is_alive() for worker in workers))
             self.assertFalse(errors)
             with registry.cursor() as cursor:
@@ -231,26 +320,29 @@ class TestTfmConvocatorias(TransactionCase):
         Param = self.env['ir.config_parameter'].sudo()
         Param.set_param('irg_tfm_convocatorias.activation_cursor', '0')
         enrollments = [self._student_course(progress=49.99) for _index in range(3)]
-        for enrollment in enrollments:
-            self._set_progress_without_activation_trigger(enrollment, 50)
 
         StudentCourse = self.env['op.student.course'].with_context(
             irg_tfm_cron_batch_size=1,
         )
-        StudentCourse._cron_irg_ensure_tfm_records()
-        self.assertEqual(self.env['tesis.model'].search_count([
-            ('course_id', 'in', enrollments.ids),
-        ]), 1)
-        StudentCourse._cron_irg_ensure_tfm_records()
-        StudentCourse._cron_irg_ensure_tfm_records()
-        self.assertEqual(self.env['tesis.model'].search_count([
-            ('course_id', 'in', enrollments.ids),
-        ]), 3)
-        StudentCourse._cron_irg_ensure_tfm_records()
-        StudentCourse._cron_irg_ensure_tfm_records()
-        self.assertEqual(self.env['tesis.model'].search_count([
-            ('course_id', 'in', enrollments.ids),
-        ]), 3)
+        with patch.object(
+            type(StudentCourse),
+            '_irg_tfm_completion_percentage',
+            return_value=50,
+        ):
+            StudentCourse._cron_irg_ensure_tfm_records()
+            self.assertEqual(self.env['tesis.model'].search_count([
+                ('course_id', 'in', enrollments.ids),
+            ]), 1)
+            StudentCourse._cron_irg_ensure_tfm_records()
+            StudentCourse._cron_irg_ensure_tfm_records()
+            self.assertEqual(self.env['tesis.model'].search_count([
+                ('course_id', 'in', enrollments.ids),
+            ]), 3)
+            StudentCourse._cron_irg_ensure_tfm_records()
+            StudentCourse._cron_irg_ensure_tfm_records()
+            self.assertEqual(self.env['tesis.model'].search_count([
+                ('course_id', 'in', enrollments.ids),
+            ]), 3)
 
     def test_convocation_assignment_and_removal_are_internal_locked_and_keep_state(self):
         thesis = self._student_course(progress=50)._irg_ensure_tfm_record()

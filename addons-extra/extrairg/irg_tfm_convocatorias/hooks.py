@@ -7,12 +7,12 @@ def pre_init_hook(cr):
         SELECT 1
           FROM ir_model_fields
          WHERE model = 'op.student.course'
-           AND name = 'completion_proc'
+           AND name = 'completion_porc'
          LIMIT 1
     """)
     if not cr.fetchone():
         raise ValidationError(
-            'IRG TFM Convocatorias requires op.student.course.completion_proc. '
+            'IRG TFM Convocatorias requires op.student.course.completion_porc. '
             'Install the module that provisions it before installing this addon.'
         )
 

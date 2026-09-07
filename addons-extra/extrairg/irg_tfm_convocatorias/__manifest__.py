@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG TFM Convocatorias',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'summary': 'Activa y administra convocatorias de Trabajo Final de Máster',
     'category': 'Education',
     'author': 'IRG',
@@ -10,6 +10,8 @@
         'base',
         'mail',
         'openeducat_core',
+        'isep_student_filter',
+        'isep_gradebook',
         'website_slides',
         'isep_tesis_model',
         'irg_course_portal_tiles',

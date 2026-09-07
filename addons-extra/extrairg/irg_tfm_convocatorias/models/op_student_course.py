@@ -43,11 +43,18 @@ class OpStudentCourse(models.Model):
 
     _IRG_TFM_MEMBERSHIP_TRIGGER_FIELDS = {'student_id', 'course_id', 'batch_id'}
 
+    def _irg_tfm_completion_percentage(self):
+        """Read the real, non-stored course progress without trusting cache."""
+        self.ensure_one()
+        enrollment = self.sudo()
+        enrollment.invalidate_recordset(['completion_porc'])
+        return float(enrollment.completion_porc or 0.0)
+
     def _irg_is_tfm_eligible(self):
         self.ensure_one()
         return bool(
             self.course_id.activate_tesis
-            and float(self.completion_proc or 0.0) >= 50.0
+            and self._irg_tfm_completion_percentage() >= 50.0
             and irg_parse_tfm_batch_eligibility(self.batch_id.code)
         )
 
@@ -115,7 +122,6 @@ class OpStudentCourse(models.Model):
         domain = [
             ('id', '>', last_id),
             ('course_id.activate_tesis', '=', True),
-            ('completion_proc', '>=', 50),
         ]
         candidates = self.search(domain, order='id', limit=batch_size)
         if not candidates:

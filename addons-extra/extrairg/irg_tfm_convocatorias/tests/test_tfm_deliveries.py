@@ -4,6 +4,7 @@ import re
 import struct
 from datetime import date, timedelta
 from threading import Barrier, Event, Thread
+from unittest.mock import patch
 from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -145,9 +146,13 @@ class TfmFixtureMixin:
             'course_id': course.id,
             'batch_id': batch.id,
             'roll_number': 'TFM-%s' % suffix,
-            'completion_proc': progress,
         })
-        thesis = self.env['tesis.model'].search([('course_id', '=', enrollment.id)])
+        with patch.object(
+            type(enrollment),
+            '_irg_tfm_completion_percentage',
+            return_value=progress,
+        ):
+            thesis = enrollment._irg_ensure_tfm_record()
         return user, student, course, enrollment, thesis
 
     def _convocation(self, **overrides):

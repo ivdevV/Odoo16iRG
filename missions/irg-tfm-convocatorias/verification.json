@@ -4,23 +4,23 @@
   "checks": [
     {
       "name": "git_scope",
-      "command": "git status --porcelain=v1; git rev-parse HEAD; git merge-base HEAD origin/Dev_iRG; git branch --show-current",
+      "command": "git status --porcelain=v1; git rev-parse HEAD; git merge-base HEAD origin/Dev_iRG; git branch --show-current; git diff --check; git diff --name-only; git ls-files --others --exclude-standard",
       "result": "pass",
-      "detail": "Branch codex/irg-tfm-convocatorias and HEAD/merge-base both match the required base; only the new addon and external mission/specification paths are untracked.",
+      "detail": "Branch codex/irg-tfm-convocatorias-dev-integration is based exactly on origin/Dev_iRG at 9dfb9dff2816368d39b1e11858623bfb9f9fe382. The dirty state contains only the in-scope correction in irg_tfm_convocatorias, its tests and mission artifacts; git diff --check exited 0.",
       "evidence": "artifacts/git-scope.txt"
     },
     {
       "name": "static_validator",
       "command": "C:\\Users\\admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe missions\\irg-tfm-convocatorias\\artifacts\\static_validator.py",
       "result": "pass",
-      "detail": "13 validation groups passed: Python AST, XML, ACL CSV, manifest/imports, repository dependencies, test structure, style, pure eligibility and file-format helpers, grouped security/functional contracts, inheritance targets and artifact scope.",
+      "detail": "13 validation groups passed: 18 Python AST files, 7 XML files, ACL CSV, manifest 16.0.1.0.1 with 13 dependencies and 8 model imports, all repository dependencies, 55 test methods, style, pure helpers, 19 grouped contracts, inheritance targets and artifact scope. The contracts verify completion_porc, grade-result refresh and a cron without a domain on the non-searchable field.",
       "evidence": "artifacts/static-validation.txt"
     },
     {
       "name": "odoo_module_tests",
       "command": "not run",
       "result": "skipped",
-      "detail": "The user explicitly prohibited opening, querying or executing Docker on this computer; repository policy requires Odoo tests through docker-compose.local.yml. The 53 TransactionCase/HttpCase methods were validated structurally but no runtime result is claimed.",
+      "detail": "The user explicitly prohibited opening, querying or executing Docker on this computer; repository policy requires Odoo tests through docker-compose.local.yml. The 55 TransactionCase/HttpCase methods were validated structurally but no runtime result is claimed.",
       "evidence": "artifacts/runtime-skips.txt"
     },
     {
@@ -41,8 +41,8 @@
   "environment": {
     "runtime": "docker-compose.local.yml (not executed by user instruction)",
     "database": "unavailable (not accessed)",
-    "base_commit": "928c2974ba94acfa4bb6e8730c14426f9071fc6e",
-    "branch": "codex/irg-tfm-convocatorias",
+    "base_commit": "9dfb9dff2816368d39b1e11858623bfb9f9fe382",
+    "branch": "codex/irg-tfm-convocatorias-dev-integration",
     "static_python": "3.12.14 (Codex bundled runtime)"
   },
   "model_tier_used": "complex",
