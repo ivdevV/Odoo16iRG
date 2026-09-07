@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_slide_slide_form_tfm_convocations" model="ir.ui.view">
+        <field name="name">slide.slide.form.tfm.convocations</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id"
+               ref="irg_practice_slide_restrictions.view_slide_slide_form_practice_restriction"/>
+        <field name="priority" eval="120"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='irg_required_practice_type']" position="after">
+                <field name="irg_tfm_convocation_ids"
+                       widget="many2many_tags"
+                       groups="base.group_user"
+                       options="{'no_create': True}"
+                       attrs="{'invisible': [('is_category', '=', False)]}"
+                       help="Convocatorias TFM solo en categorías; vacío = común en el canal."/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_slide_channel_form_tfm_convocations" model="ir.ui.view">
+        <field name="name">slide.channel.form.tfm.convocations</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id"
+               ref="irg_practice_slide_restrictions.view_slide_channel_form_practice_restriction"/>
+        <field name="priority" eval="120"/>
+        <field name="arch" type="xml">
+            <xpath expr="(//field[@name='irg_required_practice_type'])[1]"
+                   position="after">
+                <field name="irg_tfm_convocation_ids"
+                       widget="many2many_tags"
+                       groups="base.group_user"
+                       options="{'no_create': True}"
+                       help="Convocatorias permitidas para esta categoría TFM."/>
+            </xpath>
+            <xpath expr="(//field[@name='irg_required_practice_type'])[2]"
+                   position="after">
+                <field name="irg_tfm_convocation_ids"
+                       widget="many2many_tags"
+                       groups="base.group_user"
+                       options="{'no_create': True}"
+                       help="Convocatorias permitidas para esta categoría TFM."/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
