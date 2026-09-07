@@ -64,6 +64,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_auto_translate](./irg_auto_translate.md) | Auto-traducción de cursos y asignaturas con DeepL/Google | `op.course`, `op.subject` | Instalable |
 | [irg_course_convocatorias](./irg_course_convocatorias.md) | Convocatorias HomeClass y Online por curso eLearning | `irg.course.convocatoria` (nuevo), `slide.channel`, `slide.slide`, `irg.slide.section` | Instalable |
 | [irg_course_portal_tiles](./irg_course_portal_tiles.md) | Tiles de acceso rápido en el campus | — | Instalable |
+| [irg_tfm_convocatorias](./irg_tfm_convocatorias.md) | Activa y gestiona el Trabajo Final de Máster por progreso y convocatoria | `irg.tfm.convocatoria`, `irg.tfm.entrega` (nuevos), `tesis.model`, `op.student.course`, `op.course`, `slide.slide`, `slide.channel.partner` | Instalable |
 | [irg_crm_extensions](./irg_crm_extensions.md) | Comercial anterior y fecha de reactivación en leads | `crm.lead` | Instalable |
 | [irg_crm_gclid](./irg_crm_gclid.md) | Campo GCLID de Google Ads en leads | `crm.lead` | Instalable |
 | [irg_crm_lead_dedup](./irg_crm_lead_dedup.md) | Cron de deduplicación de leads por email/teléfono | `crm.lead` | Instalable |

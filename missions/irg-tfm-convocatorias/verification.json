@@ -1,0 +1,56 @@
+{
+  "status": "passed",
+  "task": "irg-tfm-convocatorias",
+  "checks": [
+    {
+      "name": "git_scope",
+      "command": "git status --porcelain=v1; git rev-parse HEAD; git merge-base HEAD origin/Dev_iRG; git branch --show-current",
+      "result": "pass",
+      "detail": "Branch codex/irg-tfm-convocatorias and HEAD/merge-base both match the required base; only the new addon and external mission/specification paths are untracked.",
+      "evidence": "artifacts/git-scope.txt"
+    },
+    {
+      "name": "static_validator",
+      "command": "C:\\Users\\admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe missions\\irg-tfm-convocatorias\\artifacts\\static_validator.py",
+      "result": "pass",
+      "detail": "13 validation groups passed: Python AST, XML, ACL CSV, manifest/imports, repository dependencies, test structure, style, pure eligibility and file-format helpers, grouped security/functional contracts, inheritance targets and artifact scope.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "The user explicitly prohibited opening, querying or executing Docker on this computer; repository policy requires Odoo tests through docker-compose.local.yml. The 53 TransactionCase/HttpCase methods were validated structurally but no runtime result is claimed.",
+      "evidence": "artifacts/runtime-skips.txt"
+    },
+    {
+      "name": "odoo_integration_concurrency",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "PostgreSQL/Odoo integration and contention tests require the prohibited docker-compose.local.yml runtime. No database was accessed and no alternative runtime was invented.",
+      "evidence": "artifacts/runtime-skips.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "TestSprite MCP is unavailable in this session and its mandatory disposable local Odoo target on port 8069 cannot be started because Docker access is explicitly prohibited. No code upload or tunnel was attempted.",
+      "evidence": "artifacts/runtime-skips.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml (not executed by user instruction)",
+    "database": "unavailable (not accessed)",
+    "base_commit": "928c2974ba94acfa4bb6e8730c14426f9071fc6e",
+    "branch": "codex/irg-tfm-convocatorias",
+    "static_python": "3.12.14 (Codex bundled runtime)"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/git-scope.txt",
+    "artifacts/static_validator.py",
+    "artifacts/static-validation.txt",
+    "artifacts/runtime-skips.txt"
+  ]
+}

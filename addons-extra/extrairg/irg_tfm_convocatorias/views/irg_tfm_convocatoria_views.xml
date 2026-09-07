@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_irg_tfm_convocatoria_tree" model="ir.ui.view">
+        <field name="name">irg.tfm.convocatoria.tree</field>
+        <field name="model">irg.tfm.convocatoria</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="partial_open_date"/>
+                <field name="partial_close_date"/>
+                <field name="final_open_date"/>
+                <field name="final_close_date"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_irg_tfm_convocatoria_form" model="ir.ui.view">
+        <field name="name">irg.tfm.convocatoria.form</field>
+        <field name="model">irg.tfm.convocatoria</field>
+        <field name="arch" type="xml">
+            <form string="Convocatoria TFM">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="active"/>
+                    </group>
+                    <group string="Entrega parcial">
+                        <field name="partial_open_date"/>
+                        <field name="partial_close_date"/>
+                    </group>
+                    <group string="Entrega final">
+                        <field name="final_open_date"/>
+                        <field name="final_close_date"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_irg_tfm_convocatoria" model="ir.actions.act_window">
+        <field name="name">Convocatorias TFM</field>
+        <field name="res_model">irg.tfm.convocatoria</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_irg_tfm_convocatoria" name="Convocatorias TFM"
+              parent="isep_tesis_model.menu_practice_configuration"
+              action="action_irg_tfm_convocatoria" sequence="10"/>
+</odoo>
