@@ -51,7 +51,7 @@
               inherit_id="website_slides.course_slides_list_slide"
               name="Listado: ocultar contenidos restringidos por convocatoria TFM"
               priority="120">
-        <xpath expr="//div[hasclass('o_wslides_slides_list_slide')]"
+        <xpath expr="//li[contains(@t-attf-class, 'o_wslides_slides_list_slide')]"
                position="attributes">
             <attribute name="t-if">not slide.irg_has_tfm_requirement()
                 or slide.is_user_allowed_by_tfm_convocation(request.env.user)</attribute>

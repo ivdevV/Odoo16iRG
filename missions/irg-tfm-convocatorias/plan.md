@@ -67,3 +67,10 @@ Implementar el micro-spec `doc/micro-specs/2026-09-04-irg-tfm-convocatorias.md` 
 ## Publicación
 
 No se hará commit, push ni PR sin autorización independiente y explícita.
+
+## Corrección de instalación QWeb (beta)
+
+- Reproducir el `ParseError` de `course_slides_list_hide_tfm_content` contra la estructura real de `website_slides.course_slides_list_slide` de Odoo 16.
+- Sustituir el selector inexistente sobre `div.o_wslides_slides_list_slide` por el nodo raíz real `li` cuyo `t-attf-class` contiene esa clase.
+- Mantener el `t-if` en el contenedor completo para que un contenido restringido no deje iconos, badges ni controles visibles.
+- Añadir un contrato estático que aplique el XPath a una réplica mínima del padre oficial y exija una coincidencia única.

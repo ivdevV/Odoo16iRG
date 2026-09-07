@@ -1,17 +1,21 @@
-Runtime validation constraints — 2026-09-07
+Runtime validation constraints — QWeb XPath correction — 2026-09-07
 
-- Odoo TransactionCase/HttpCase: SKIPPED. The user explicitly prohibited opening,
-  querying, or executing Docker on this computer. Repository policy requires Odoo
-  validation through docker-compose.local.yml, so no alternate unapproved runtime
-  was used and no Odoo test result is claimed.
-- PostgreSQL/Odoo integration and concurrency: SKIPPED for the same reason. The 55
-  Odoo tests are structurally present, including the activation, submission,
-  ownership, HTTP, membership, real completion-field/grade-trigger, and two-cursor
-  contention cases, but were not run.
-- e2e_testsprite: SKIPPED. TestSprite MCP is not available in this session, and its
-  required local target on port 8069 cannot be started because Docker access is
-  explicitly prohibited. No upload or tunnel was attempted.
-- Database: unavailable and not accessed. No fixtures or services were created, so
-  cleanup/restoration is not applicable.
+- Odoo module installation and TransactionCase/HttpCase: SKIPPED. The user
+  explicitly prohibited opening, querying or executing Docker on this computer.
+  Repository policy requires Odoo validation through docker-compose.local.yml,
+  so no alternate unapproved runtime was used and no runtime result is claimed.
+- PostgreSQL/Odoo integration and concurrency: SKIPPED for the same reason. The
+  static validator confirms 55 Odoo test methods are structurally present, but
+  those tests were not executed.
+- e2e_testsprite: SKIPPED. The corrected diff touches a QWeb view, so E2E is in
+  scope, but TestSprite MCP is unavailable in this session and its mandatory
+  disposable local Odoo target on port 8069 cannot be started while Docker is
+  prohibited. No code upload, tunnel or beta/production access was attempted.
+- Database: unavailable and not accessed. No fixtures or services were created,
+  so cleanup/restoration is not applicable.
 - Docker commands executed: 0.
 - TestSprite calls executed: 0.
+
+Compensating evidence consists of complete XML parsing, a direct lxml evaluation
+of the corrected selector with exactly one match against the official Odoo 16
+parent-node fixture, the repository static contract suite and git diff checks.

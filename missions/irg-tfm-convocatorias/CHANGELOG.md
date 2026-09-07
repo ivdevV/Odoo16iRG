@@ -1,5 +1,19 @@
 # Changelog — irg_tfm_convocatorias
 
+## 16.0.1.0.2 — 2026-09-07
+
+### Corregido
+
+- Corregido el XPath QWeb del listado eLearning: `website_slides.course_slides_list_slide` usa un elemento raíz `li`, no un `div`.
+- La condición de convocatoria se aplica ahora al contenedor completo del material, ocultando también iconos, badges y controles.
+- Añadido un contrato de regresión contra la estructura relevante del padre oficial de Odoo 16.
+
+### Validación
+
+- Review independiente aprobada sin observaciones Critical, Important ni Minor.
+- Validador independiente aprobado: siete XML válidos, XPath con una coincidencia exacta y 20 contratos estáticos.
+- La instalación real en Odoo queda pendiente de repetirse en beta; no se utilizó Docker en este equipo.
+
 ## 16.0.1.0.1 — 2026-09-07
 
 ### Corregido

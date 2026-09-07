@@ -1,27 +1,36 @@
-Git and scope validation — 2026-09-07
+Git and scope validation — QWeb XPath correction — 2026-09-07
 
 Commands:
   git status --porcelain=v1
   git rev-parse HEAD
+  git rev-parse origin/Dev_iRG
   git merge-base HEAD origin/Dev_iRG
   git branch --show-current
   git diff --check
   git diff --name-only
   git ls-files --others --exclude-standard
+  git diff --numstat
 
 Result: exit code 0
 
 branch=codex/irg-tfm-convocatorias-dev-integration
-head=9dfb9dff2816368d39b1e11858623bfb9f9fe382
-merge_base_origin_Dev_iRG=9dfb9dff2816368d39b1e11858623bfb9f9fe382
+head=0e5b952e6f51b2bba8ba292bdf0d5ad0dc39aa52
+origin_Dev_iRG=0e5b952e6f51b2bba8ba292bdf0d5ad0dc39aa52
+merge_base_origin_Dev_iRG=0e5b952e6f51b2bba8ba292bdf0d5ad0dc39aa52
 git_diff_check_exit=0
 
-Git status contains only the progress-field correction in the existing new addon,
-its Odoo tests, and mission artifacts. The only untracked functional path is:
-  ?? addons-extra/extrairg/irg_tfm_convocatorias/models/app_gradebook_result.py
+Functional scope is limited to the existing new addon:
+  M addons-extra/extrairg/irg_tfm_convocatorias/__manifest__.py
+  M addons-extra/extrairg/irg_tfm_convocatorias/views/tfm_slide_templates.xml
 
-The other untracked path is RED evidence:
-  ?? missions/irg-tfm-convocatorias/artifacts/progress-field-red.txt
+The remaining changes are the regression contract and mission artifacts:
+  M missions/irg-tfm-convocatorias/artifacts/static_validator.py
+  M missions/irg-tfm-convocatorias/execution.md
+  M missions/irg-tfm-convocatorias/plan.md
+  ?? missions/irg-tfm-convocatorias/artifacts/qweb-xpath-red.txt
 
-No pre-existing addon outside irg_tfm_convocatorias is modified. HEAD and merge-base
-match origin/Dev_iRG, and git diff --check reports no whitespace errors.
+No pre-existing addon outside irg_tfm_convocatorias is modified. HEAD and its
+merge-base match origin/Dev_iRG. The manifest change is only the patch-version
+bump to 16.0.1.0.2, and the QWeb change replaces the invalid div selector with
+the verified li selector. git diff --check reports no whitespace errors; CRLF
+conversion notices are informational and are not whitespace failures.
