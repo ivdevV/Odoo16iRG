@@ -1,0 +1,47 @@
+{
+  "status": "passed",
+  "task": "irg-enrollment-modification-guard",
+  "checks": [
+    {
+      "name": "implementation_tests",
+      "command": "Comandos exactos en artifacts/implementation-report.txt, GREEN3 y concurrency-final",
+      "result": "pass",
+      "detail": "62 pruebas, 0 fallos y 0 errores tras corregir defaults ORM; incluye módulo base y guard.",
+      "evidence": "artifacts/independent-validation.txt"
+    },
+    {
+      "name": "independent_code_review",
+      "command": "Revisión independiente y rereview sobre diff funcional",
+      "result": "pass",
+      "detail": "Rereview aprobada; el fence cubre order_id resuelto por ir.default y se neutralizan defaults protegidos.",
+      "evidence": "artifacts/code-review-rereview.txt"
+    },
+    {
+      "name": "independent_validation",
+      "command": "docker compose -f docker-compose.local.yml -f scratch/irg-enrollment-guard/compose.guard.json run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d odoo16irg_guard_fix -u irg_enrollment_modification_guard --test-enable --test-tags=/irg_enrollment_modification,/irg_enrollment_modification_guard --stop-after-init --http-port=8079 --max-cron-threads=0",
+      "result": "pass",
+      "detail": "62 tests, 0 fallos y 0 errores.",
+      "evidence": "artifacts/independent-validation.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "No ejecutado",
+      "result": "skipped",
+      "detail": "Diff exclusivamente modelos Python y pruebas; no vistas/QWeb/static/HTTP ni plantillas."
+    },
+    {
+      "name": "cleanup",
+      "command": "runner concurrency.py + dropdb de bases desechables + eliminación de filestores + docker inspect",
+      "result": "pass",
+      "detail": "11 escenarios concurrentes PASS; cleanup del runner completado.",
+      "evidence": "artifacts/independent-concurrency.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml + overlay compose.guard.json",
+    "base_commit": "928c2974ba94acfa4bb6e8730c14426f9071fc6e",
+    "database": "odoo16irg_guard_fix, desechable"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0
+}
