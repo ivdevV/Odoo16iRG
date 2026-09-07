@@ -1,0 +1,7 @@
+from . import irg_tfm_convocatoria
+from . import op_course
+from . import op_student_course
+from . import tesis_model
+from . import irg_tfm_entrega
+from . import slide_slide
+from . import slide_channel_partner

@@ -1,0 +1,22 @@
+Git and scope validation — 2026-09-07
+
+Commands:
+  git status --porcelain=v1
+  git rev-parse HEAD
+  git merge-base HEAD origin/Dev_iRG
+  git branch --show-current
+  rg --files addons-extra/extrairg/irg_tfm_convocatorias
+
+Result: exit code 0
+
+branch=codex/irg-tfm-convocatorias
+head=928c2974ba94acfa4bb6e8730c14426f9071fc6e
+merge_base_origin_Dev_iRG=928c2974ba94acfa4bb6e8730c14426f9071fc6e
+
+Git status contains only new paths in scope:
+  ?? addons-extra/extrairg/irg_tfm_convocatorias/
+  ?? doc/micro-specs/2026-09-04-irg-tfm-convocatorias.md
+  ?? missions/irg-tfm-convocatorias/
+
+No tracked file in a pre-existing addon is modified. The functional implementation
+is isolated in the new addon. Mission/specification artifacts are outside it.
