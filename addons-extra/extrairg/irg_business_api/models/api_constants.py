@@ -70,7 +70,7 @@ OPERATION_CODES = [
     ('irg_apply_feedback_import', 'Apply TXT feedback import'),
     ('irg_get_attachment_metadata', 'Read private attachment metadata'),
     ('irg_upload_private_attachment', 'Upload a private attachment'),
-    ('irg_generate_gradebook_certificate', 'Generate gradebook certificate PDF'),
+    ('irg_generate_gradebook_certificate', 'Generate certificate PDF'),
 ]
 
 OPERATION_SPECS = {
@@ -159,6 +159,7 @@ OPERATION_SPECS = {
             'shipping_type',
             'custom_description',
             'custom_options',
+            'session_id',
         },
     },
 }

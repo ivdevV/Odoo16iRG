@@ -84,7 +84,7 @@ Los `irg_preview_*` son lecturas. Los `irg_apply_*` son escrituras (preview → 
 | `irg_preview_feedback_import` / `irg_apply_feedback_import` | `survey_id`, `txt_content` | Wizard TXT oficial |
 | `irg_get_attachment_metadata` | `attachment_id` | Sin binario |
 | `irg_upload_private_attachment` | `res_model`, `res_id`, `name`, `mimetype`, `file_b64` | `public=False`, máx. 32 KiB |
-| `irg_generate_gradebook_certificate` | `gradebook_student_id`, `document_type`, `certificate_type`, `signer`, `shipping_type?` | Write: preview → approve. Wizard oficial. Resultado: ids, `checksum`, `file_b64`. Adjunto `public=False`. Sin mail. `result_snapshot` retiene el PDF; no hay `unlink` ni cron de purga. |
+| `irg_generate_gradebook_certificate` | `gradebook_student_id`, `document_type`, `certificate_type`, `signer`, `shipping_type?`, `session_id?` | Write: preview → approve. `document_type`: `gradebook`, `gradebook_partial`, `diploma`, `attendance`, `enrollment`. Notas: wizard oficial. Diploma/matrícula/asistencia: `irg.certificate.request._generate_and_attach_pdf`. `gradebook` y `diploma` exigen libreta `done`. Asistencia exige `session_id` (módulo `irg_certificate_attendance`). Resultado: ids, `checksum`, `file_b64`. Adjunto `public=False`. Sin mail. `result_snapshot` retiene el PDF. |
 
 ## Meta
 
