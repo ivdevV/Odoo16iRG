@@ -4,9 +4,10 @@ Runtime validation constraints — 2026-09-07
   querying, or executing Docker on this computer. Repository policy requires Odoo
   validation through docker-compose.local.yml, so no alternate unapproved runtime
   was used and no Odoo test result is claimed.
-- PostgreSQL/Odoo integration and concurrency: SKIPPED for the same reason. The 53
+- PostgreSQL/Odoo integration and concurrency: SKIPPED for the same reason. The 55
   Odoo tests are structurally present, including the activation, submission,
-  ownership, HTTP, membership, and two-cursor contention cases, but were not run.
+  ownership, HTTP, membership, real completion-field/grade-trigger, and two-cursor
+  contention cases, but were not run.
 - e2e_testsprite: SKIPPED. TestSprite MCP is not available in this session, and its
   required local target on port 8069 cannot be started because Docker access is
   explicitly prohibited. No upload or tunnel was attempted.

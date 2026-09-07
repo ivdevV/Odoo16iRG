@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from unittest.mock import patch
 from uuid import uuid4
 
 from lxml import etree
@@ -57,9 +58,13 @@ class TestTfmElearning(TransactionCase):
             'course_id': course.id,
             'batch_id': batch.id,
             'roll_number': 'TFM-ELEARN-%s' % suffix,
-            'completion_proc': progress,
         })
-        thesis = self.env['tesis.model'].search([('course_id', '=', enrollment.id)])
+        with patch.object(
+            type(enrollment),
+            '_irg_tfm_completion_percentage',
+            return_value=progress,
+        ):
+            thesis = enrollment._irg_ensure_tfm_record()
         return user, partner, student, channel, course, batch, enrollment, thesis
 
     def _convocation(self, name='Current'):
@@ -153,13 +158,18 @@ class TestTfmElearning(TransactionCase):
             'start_date': date.today(),
             'end_date': date.today() + timedelta(days=30),
         })
-        self.env['op.student.course'].create({
+        ambiguous_enrollment = self.env['op.student.course'].create({
             'student_id': student.id,
             'course_id': other_course.id,
             'batch_id': other_batch.id,
             'roll_number': 'TFM-AMB-%s' % self._suffix(),
-            'completion_proc': 50,
         })
+        with patch.object(
+            type(ambiguous_enrollment),
+            '_irg_tfm_completion_percentage',
+            return_value=50,
+        ):
+            ambiguous_enrollment._irg_ensure_tfm_record()
         self.assertFalse(slide.is_user_allowed_by_tfm_convocation(owner))
 
     def test_assignment_requires_tfm_channel_and_reconciles_idempotently(self):
@@ -229,8 +239,13 @@ class TestTfmElearning(TransactionCase):
             'course_id': other_course.id,
             'batch_id': batch.id,
             'roll_number': 'TFM-SHARED-%s' % self._suffix(),
-            'completion_proc': 50,
         })
+        with patch.object(
+            type(second_enrollment),
+            '_irg_tfm_completion_percentage',
+            return_value=50,
+        ):
+            second_enrollment._irg_ensure_tfm_record()
         self.assertNotEqual(second_enrollment.course_id, thesis.course_id.course_id)
         self.assertEqual(second_enrollment.batch_id, batch)
         self.assertEqual(second_enrollment.course_id.irg_tfm_channel_id, channel)
@@ -403,11 +418,13 @@ class TestTfmElearningHttp(HttpCase):
             'course_id': course.id,
             'batch_id': batch.id,
             'roll_number': 'TFM-HTTP-%s' % suffix,
-            'completion_proc': 50,
         })
-        cls.thesis = cls.env['tesis.model'].search([
-            ('course_id', '=', enrollment.id),
-        ], limit=1)
+        with patch.object(
+            type(enrollment),
+            '_irg_tfm_completion_percentage',
+            return_value=50,
+        ):
+            cls.thesis = enrollment._irg_ensure_tfm_record()
         today = date.today()
         convocation = cls.env['irg.tfm.convocatoria'].create({
             'name': 'TFM HTTP current %s' % suffix,

@@ -2,7 +2,7 @@
 
 **Categoría:** extrairg
 
-**Versión:** 16.0.1.0.0
+**Versión:** 16.0.1.0.1
 
 **Licencia:** LGPL-3
 
@@ -10,7 +10,7 @@
 
 **Autor:** IRG
 
-**Depende de:** `base`, `mail`, `openeducat_core`, `website_slides`, `isep_tesis_model`, `irg_course_portal_tiles`, `irg_course_portal_tiles_diplomado_hide`, `irg_batch_slide_restrictions`, `irg_practice_slide_restrictions`, `irg_elearning_editable_sections`, `irg_auto_enroll_cron_robust`
+**Depende de:** `base`, `mail`, `openeducat_core`, `isep_student_filter`, `isep_gradebook`, `website_slides`, `isep_tesis_model`, `irg_course_portal_tiles`, `irg_course_portal_tiles_diplomado_hide`, `irg_batch_slide_restrictions`, `irg_practice_slide_restrictions`, `irg_elearning_editable_sections`, `irg_auto_enroll_cron_robust`
 
 ---
 
@@ -30,7 +30,7 @@ Este flujo sustituye, para las matrículas activadas por el módulo, las antigua
 
 Se crea una única ficha `tesis.model` por `op.student.course` cuando se cumplen simultáneamente estas condiciones:
 
-- `completion_proc >= 50`.
+- `completion_porc >= 50`, usando el progreso real calculado por `isep_student_filter`.
 - El curso tiene activado `activate_tesis`.
 - El código del lote cumple uno de los cortes admitidos.
 
@@ -41,7 +41,9 @@ Se crea una única ficha `tesis.model` por `op.student.course` cuando se cumplen
 | Online | `ONL2602` | Admite `ONL` desde febrero de 2026. |
 | Presencial | — | Todo código que contenga `PRS` queda excluido. |
 
-El parser también rechaza meses inválidos. La activación se intenta inmediatamente al crear o actualizar la matrícula y, como respaldo, mediante un cron horario. Es irreversible: si el progreso baja después del 50 %, el expediente y la tarjeta continúan activos.
+El parser también rechaza meses inválidos. La activación se intenta inmediatamente al crear o actualizar la matrícula y después de crear, modificar o eliminar una calificación `app.gradebook.result`. Antes de decidir, el módulo recalcula y persiste la nota final afectada, invalida el progreso y serializa la comprobación por matrícula. Como respaldo existe un cron horario. La activación es irreversible: si el progreso baja después del 50 %, el expediente y la tarjeta continúan activos.
+
+`completion_porc` no es una columna almacenada ni admite búsquedas SQL. Por eso el cron pagina matrículas de cursos TFM y calcula el porcentaje de cada candidata en Python. El progreso tampoco distingue lotes: si existen matrículas duplicadas del mismo alumno en el mismo curso, todas se evalúan y después se aplica a cada una su propio corte de lote. Operativamente debe mantenerse una sola matrícula válida por alumno y curso.
 
 La ficha se crea en estado borrador con nombre, correo, matrícula y fecha de activación. La operación es idempotente y una restricción PostgreSQL impide dos expedientes para la misma matrícula, incluso ante activaciones concurrentes.
 
@@ -198,17 +200,17 @@ El flujo nuevo no define plantillas ni crea mensajes `mail.mail`. La creación a
 Antes de instalar:
 
 1. Instale todas las dependencias declaradas en el manifest.
-2. Compruebe que el runtime aporta el campo manual/externo `op.student.course.completion_proc`.
+2. Compruebe que está instalado `isep_student_filter`, proveedor de `op.student.course.completion_porc`, e `isep_gradebook`.
 3. Resuelva cualquier duplicado existente de `tesis.model` por matrícula.
 4. Haga copia de seguridad y pruebe primero en una base desechable.
 
-El `pre_init_hook` aborta explícitamente si no existe `completion_proc` o si ya hay más de un expediente para la misma matrícula. El addon no elimina ni fusiona históricos para corregir duplicados.
+El `pre_init_hook` aborta explícitamente si no existe `completion_porc` o si ya hay más de un expediente para la misma matrícula. El addon no elimina ni fusiona históricos para corregir duplicados.
 
 En una máquina con el runtime autorizado, la instalación o actualización y las pruebas Odoo deben ejecutarse exclusivamente mediante `docker-compose.local.yml`, usando un overlay que monte este worktree cuando corresponda. Después se debe limpiar la base desechable y restaurar el servicio original. En este ordenador no se ejecutó Docker por instrucción expresa del usuario.
 
 ## Pruebas y estado de validación
 
-El addon contiene 53 métodos `TransactionCase`/`HttpCase` distribuidos en:
+El addon contiene 55 métodos `TransactionCase`/`HttpCase` distribuidos en:
 
 - `tests/test_tfm_convocatorias.py`: cortes, activación, cron, unicidad, concurrencia y asignación.
 - `tests/test_tfm_deliveries.py`: ventanas, formatos, límites, versionado, propiedad, inmutabilidad, portal y rutas legacy.
@@ -220,7 +222,7 @@ Limitaciones de la evidencia disponible en esta máquina:
 
 - No se ejecutaron tests de módulo Odoo, integración PostgreSQL ni concurrencia real porque el usuario prohibió abrir o consultar Docker en este ordenador.
 - TestSprite MCP no estaba disponible y no se pudo iniciar su destino Odoo local desechable en el puerto 8069; no se abrió túnel ni se subió código.
-- Los 53 tests Odoo están validados estructuralmente, pero no se afirma un resultado de runtime ni E2E.
+- Los 55 tests Odoo están validados estructuralmente, pero no se afirma un resultado de runtime ni E2E.
 
 Antes de desplegar a beta o producción se debe repetir la instalación, la actualización, la suite Odoo y el flujo E2E de MyCampus/eLearning en una máquina que sí disponga de `docker-compose.local.yml` y TestSprite.
 
@@ -229,6 +231,7 @@ Antes de desplegar a beta o producción se debe repetir la instalación, la actu
 | Archivo | Responsabilidad |
 | --- | --- |
 | `models/op_student_course.py` | Elegibilidad, activación inmediata, cron y unicidad. |
+| `models/app_gradebook_result.py` | Recalcula el progreso y dispara la activación después de cambios de calificación. |
 | `models/irg_tfm_convocatoria.py` | Catálogo y validación de ventanas. |
 | `models/tesis_model.py` | Convocatoria, propiedad, chatter y conciliación eLearning. |
 | `models/irg_tfm_entrega.py` | Subida, formatos, ventanas, versiones, adjuntos y excepciones. |

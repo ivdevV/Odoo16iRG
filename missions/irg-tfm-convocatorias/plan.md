@@ -9,7 +9,8 @@ Implementar el micro-spec `doc/micro-specs/2026-09-04-irg-tfm-convocatorias.md` 
 - `irg.tfm.convocatoria`: catálogo global con código y dos ventanas fechadas.
 - `tesis.model`: convocatoria, activación y relación con entregas; unicidad por matrícula.
 - `irg.tfm.entrega`: versiones inmutables por etapa `outline`, `partial`, `final` y convocatoria histórica.
-- `op.student.course`: servicio idempotente de elegibilidad llamado por `create/write` y cron horario.
+- `op.student.course`: servicio idempotente de elegibilidad basado en el campo real calculado `completion_porc`; se llama al crear/modificar la matrícula, al cambiar calificaciones y desde el cron horario.
+- `app.gradebook.result`: disparador heredado para reevaluar las matrículas afectadas después de crear, modificar o eliminar una calificación. El cron conserva la recuperación de cambios que eludan el ORM.
 - `op.course`: canal TFM configurado por máster.
 - `slide.slide`: convocatorias permitidas en categorías y predicado efectivo heredado por contenidos.
 - Controladores seguros de MyCampus para consulta/subida/descarga; se sobrescribe expresamente `/campus/course/<int:course_id>/tfm` sin `super()` y todas las rutas legacy se neutralizan por herencia. El manifest depende de `irg_course_portal_tiles` e `isep_tesis_model` para fijar el orden.
@@ -50,7 +51,11 @@ Implementar el micro-spec `doc/micro-specs/2026-09-04-irg-tfm-convocatorias.md` 
 
 ## Riesgos y controles
 
-- `completion_proc` no está en el código versionado: el hook debe abortar con diagnóstico si el campo no existe en `ir_model_fields`.
+- El progreso real es `op.student.course.completion_porc`, provisto por `isep_student_filter`; el manifest declarará dependencias directas de `isep_student_filter` y `isep_gradebook`, y el hook comprobará el nombre correcto. `irg_portal_student_fix` no se usará como sustituto transitivo.
+- `completion_porc` es calculado, no almacenado y no buscable: el cron no lo incluirá en su dominio SQL. Paginará matrículas de cursos TFM y evaluará el umbral en Python, invalidando antes la caché del progreso.
+- La activación inmediata se conectará a `app.gradebook.result.create/unlink` y a `write` solo para `scoring_total`, `survey_type` o `gradebook_subject_id`. Derivará únicamente las parejas alumno/curso de las asignaturas anteriores y posteriores afectadas.
+- Antes de comprobar el 50 %, el disparador bloqueará en orden las filas `op.student.course` exactas de esas parejas, recalculará explícitamente `final_subject_note`, persistirá el resultado, invalidará `completion_porc` y lo leerá con `sudo()` limitado a esas matrículas. Esto cierra tanto la caché obsoleta como la carrera entre calificaciones concurrentes.
+- El `create` de calificación diferirá el disparador durante la normalización interna de `scoring_total` mediante contexto privado y ejecutará una sola reevaluación al terminar.
 - Toda ruta con `sudo()` incorporará la cadena completa de propiedad en el dominio antes de recuperar el registro; no se autoriza por `create_uid`, email ni IDs aislados.
 - Asignación, retirada, excepción interna y sincronización de memberships verifican `base.group_user` dentro del método de negocio antes de cualquier `sudo()`.
 - El bloqueo de eLearning ocurrirá antes de llamar al controlador padre para impedir efectos como `action_set_viewed()`.

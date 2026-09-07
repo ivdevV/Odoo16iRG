@@ -5,18 +5,23 @@ Commands:
   git rev-parse HEAD
   git merge-base HEAD origin/Dev_iRG
   git branch --show-current
-  rg --files addons-extra/extrairg/irg_tfm_convocatorias
+  git diff --check
+  git diff --name-only
+  git ls-files --others --exclude-standard
 
 Result: exit code 0
 
-branch=codex/irg-tfm-convocatorias
-head=928c2974ba94acfa4bb6e8730c14426f9071fc6e
-merge_base_origin_Dev_iRG=928c2974ba94acfa4bb6e8730c14426f9071fc6e
+branch=codex/irg-tfm-convocatorias-dev-integration
+head=9dfb9dff2816368d39b1e11858623bfb9f9fe382
+merge_base_origin_Dev_iRG=9dfb9dff2816368d39b1e11858623bfb9f9fe382
+git_diff_check_exit=0
 
-Git status contains only new paths in scope:
-  ?? addons-extra/extrairg/irg_tfm_convocatorias/
-  ?? doc/micro-specs/2026-09-04-irg-tfm-convocatorias.md
-  ?? missions/irg-tfm-convocatorias/
+Git status contains only the progress-field correction in the existing new addon,
+its Odoo tests, and mission artifacts. The only untracked functional path is:
+  ?? addons-extra/extrairg/irg_tfm_convocatorias/models/app_gradebook_result.py
 
-No tracked file in a pre-existing addon is modified. The functional implementation
-is isolated in the new addon. Mission/specification artifacts are outside it.
+The other untracked path is RED evidence:
+  ?? missions/irg-tfm-convocatorias/artifacts/progress-field-red.txt
+
+No pre-existing addon outside irg_tfm_convocatorias is modified. HEAD and merge-base
+match origin/Dev_iRG, and git diff --check reports no whitespace errors.

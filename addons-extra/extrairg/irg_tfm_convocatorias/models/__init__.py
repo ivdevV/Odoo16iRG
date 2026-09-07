@@ -1,6 +1,7 @@
 from . import irg_tfm_convocatoria
 from . import op_course
 from . import op_student_course
+from . import app_gradebook_result
 from . import tesis_model
 from . import irg_tfm_entrega
 from . import slide_slide

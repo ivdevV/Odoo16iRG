@@ -5,24 +5,27 @@ Command:
 
 Result: exit code 0
 
-PASS python_ast: 17 files
+PASS python_ast: 18 files
 PASS xml_well_formed: 7 files
 PASS acl_csv: 2 unique canonical rows
-PASS manifest_imports: version 16.0.1.0.0; 11 dependencies; 8 data files; 7 model imports
-PASS repository_dependencies: all 8 repository-provided dependencies found
-PASS test_structure: 3 files; 5 test classes; 53 test methods
+PASS manifest_imports: version 16.0.1.0.1; 13 dependencies; 8 data files; 8 model imports
+PASS repository_dependencies: all 10 repository-provided dependencies found
+PASS test_structure: 3 files; 5 test classes; 55 test methods
 PASS style: no trailing whitespace; no Python line exceeds 119 columns
 PASS pure_eligibility: 11 cutoff/exclusion cases
 PASS pure_pdf_docx: valid PDF/DOCX plus malformed, flood, forged EOCD and bomb cases
 PASS pure_doc: real WordDocument/FIB accepted; named-only and forged inputs rejected
-PASS static_contracts: 18 grouped contracts
+PASS static_contracts: 19 grouped contracts
 PASS inheritance_targets: 10 repository XML ids
 PASS artifact_scope: plan and micro-spec remain outside the addon
 SUMMARY: 13 validation groups passed; 0 failed
 
-The grouped contracts cover activation threshold/cutoffs, immediate and hourly
-idempotent activation, PostgreSQL uniqueness/preflight, internal convocation
-authorization and warning trace, portal ownership/CSRF/legacy-route shutdown,
-bounded private immutable delivery files, version snapshots, server-side windows,
-configuration lock order, category inheritance, eLearning fail-closed checks before
-the inherited controller, combined QWeb restrictions, and membership provenance.
+The grouped contracts cover the real non-stored completion_porc provider and
+dependencies, activation threshold/cutoffs, the grade-result create/write/unlink
+refresh path, ordered enrollment locking, an hourly cron without a SQL domain on
+the non-searchable progress field, PostgreSQL uniqueness/preflight, internal
+convocation authorization and warning trace, portal ownership/CSRF/legacy-route
+shutdown, bounded private immutable delivery files, version snapshots, server-side
+windows, configuration lock order, category inheritance, eLearning fail-closed
+checks before the inherited controller, combined QWeb restrictions, and membership
+provenance.

@@ -1,5 +1,21 @@
 # Changelog — irg_tfm_convocatorias
 
+## 16.0.1.0.1 — 2026-09-07
+
+### Corregido
+
+- Sustituida la referencia inexistente `completion_proc` por el campo real calculado `op.student.course.completion_porc`.
+- Declaradas las dependencias directas `isep_student_filter` e `isep_gradebook`, de modo que el campo y la libreta estén disponibles antes del hook de instalación.
+- Adaptado el cron para evaluar en Python un progreso que no está almacenado ni admite dominios SQL.
+- Añadida la reevaluación inmediata tras crear, modificar o eliminar calificaciones, con recálculo persistido de la nota final, invalidación de caché y bloqueo ordenado por matrícula.
+- Corregidos los fixtures de prueba para no escribir un campo calculado y añadida cobertura del proveedor real y del cruce del 50 % desde una nota de examen.
+
+### Validación
+
+- Review independiente aprobada sin hallazgos Critical ni Important.
+- Validador estático independiente aprobado: 13 grupos, 18 archivos Python, 55 pruebas estructuradas y 19 contratos.
+- Odoo/PostgreSQL/TestSprite no se ejecutaron por la prohibición expresa de usar Docker en este equipo; no se afirma validación de runtime.
+
 ## 16.0.1.0.0 — 2026-09-07
 
 ### Añadido

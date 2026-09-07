@@ -86,8 +86,11 @@ missing_dependencies = [
     name for name in repository_dependencies if name not in dependency_locations
 ]
 assert not missing_dependencies, missing_dependencies
-assert len(repository_dependencies) == 8
-passed("repository_dependencies", "all 8 repository-provided dependencies found")
+assert len(repository_dependencies) == 10
+passed(
+    "repository_dependencies",
+    f"all {len(repository_dependencies)} repository-provided dependencies found",
+)
 
 test_files = sorted((ADDON / "tests").glob("test_*.py"))
 test_imports = {
@@ -115,7 +118,7 @@ for node in test_classes:
         for base in node.bases
     }
     assert base_names.intersection({"TransactionCase", "HttpCase"}), node.name
-assert test_count == 53
+assert test_count == 55
 passed("test_structure", f"3 files; 5 test classes; {test_count} test methods")
 
 long_lines = []
@@ -324,6 +327,7 @@ def source(relative):
 
 
 enrollment = source("models/op_student_course.py")
+gradebook_result = source("models/app_gradebook_result.py")
 thesis = source("models/tesis_model.py")
 delivery = source("models/irg_tfm_entrega.py")
 slide = source("models/slide_slide.py")
@@ -336,7 +340,9 @@ hooks = source("hooks.py")
 acl = source("security/ir.model.access.csv")
 contracts = {
     "activation_threshold": (
-        "float(self.completion_proc or 0.0) >= 50.0" in enrollment
+        "completion_porc" in enrollment
+        and "completion_proc" not in enrollment
+        and ">= 50.0" in enrollment
         and "self.course_id.activate_tesis" in enrollment
     ),
     "activation_immediate_and_cron": (
@@ -349,7 +355,21 @@ contracts = {
         "unique(course_id)" in thesis
         and "constraint_name" in enrollment
         and "HAVING count(*) > 1" in hooks
-        and "completion_proc" in hooks
+        and "completion_porc" in hooks
+        and "completion_proc" not in hooks
+    ),
+    "gradebook_progress_trigger": (
+        all(field in gradebook_result for field in (
+            "scoring_total", "survey_type", "gradebook_subject_id",
+        ))
+        and "FOR UPDATE" in gradebook_result
+        and "ORDER BY id" in gradebook_result
+        and "compute_final_subject_note" in gradebook_result
+        and "flush_recordset" in gradebook_result
+        and "completion_porc" in gradebook_result
+        and "invalidate_recordset" in gradebook_result
+        and "irg_tfm_defer_grade_trigger" in gradebook_result
+        and "completion_porc" not in enrollment[enrollment.index("domain = ["):]
     ),
     "convocation_auth_warning": (
         thesis.index("_irg_require_internal_user()")
