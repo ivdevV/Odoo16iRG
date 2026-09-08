@@ -1,16 +1,14 @@
-# Fachada API: certificado PDF (`file_b64`)
+# Fachada API: certificado de notas PDF (`file_b64`)
 
 ## Contexto
 
-Un agente no puede usar `execute_kw` ni `/web/content` de sesión. El comando `irg_generate_gradebook_certificate` genera el PDF oficial y deja el binario en `result_snapshot` para que el agente lo reenvíe por su canal.
+Un agente no puede usar `execute_kw` ni `/web/content` de sesión. El comando `irg_generate_gradebook_certificate` genera el PDF de **notas** (completo o parcial) y deja el binario en `result_snapshot` para que el agente lo reenvíe por su canal.
 
-`document_type` admite los tipos de `irg.certificate.request`: `gradebook`, `gradebook_partial`, `diploma`, `attendance`, `enrollment`. El código de operación no se duplicó para no romper a Lisa.
+`document_type` admite solo `gradebook` y `gradebook_partial`. Diploma, matrícula y asistencia son comandos propios (`irg_generate_diploma`, `irg_generate_enrollment_certificate`, `irg_generate_attendance_certificate`); si llegan como tipo de este comando, se rechazan con el nombre del comando nuevo. Ver `irg_business_api_academic_documents.md`.
 
 ## Split de generación
 
-El wizard backend (`irg.certificate.wizard`) solo selecciona notas. Notas van por `action_generate()`. Diploma, matrícula y asistencia crean `irg.certificate.request` (`origin=backend`, `state=done`) y llaman `_generate_and_attach_pdf()`.
-
-Diploma usa ReportLab (`_generate_diploma_pdf_content`), no LibreOffice. Un test que solo parchee `_convert_to_pdf` no cubre diploma.
+El wizard backend (`irg.certificate.wizard`) solo selecciona notas. Este comando llama a `action_generate()`. No crea `irg.certificate.request` para diploma/matrícula/asistencia.
 
 ## Gotcha: no usar la clave `datas`
 
@@ -26,13 +24,11 @@ El wizard backend tiene `default='raimon'`. La fachada exige `signer` en el payl
 
 ## Reglas de libreta
 
-Igual que el portal: `gradebook` y `diploma` exigen `state == done`. Parcial, asistencia y matrícula se permiten con libreta abierta. Asistencia exige `session_id` si `irg_certificate_attendance` está instalado (validación HC/HomeClass del modelo oficial vía `new()` en preview).
+Igual que el portal para notas: `gradebook` exige `state == done`. `gradebook_partial` se permite con libreta abierta.
 
 ## Fuera de este comando
 
-Diplomados (`irg.diplomado.wizard` / `irg.diplomado.registry`) y actas TFM/TFG son productos distintos.
-
-El `irg.diploma.registry` que crea `_generate_diploma_pdf_content` puede quedar sin `attachment_id`; el portal de diplomas no servirá ese PDF. El agente sí tiene `file_b64` en el snapshot.
+Diploma académico, certificado de matrícula y certificado de asistencia. Diplomados (`irg.diplomado.*`) y actas TFM/TFG.
 
 ## Retención
 

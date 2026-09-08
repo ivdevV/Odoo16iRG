@@ -6,3 +6,4 @@ from . import test_access_permissions
 from . import test_online_clone_operations
 from . import test_later_phase_operations
 from . import test_gradebook_certificate
+from . import test_academic_documents

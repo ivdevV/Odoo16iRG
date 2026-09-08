@@ -1,7 +1,7 @@
 # irg_business_api
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.3.0
+**Versión:** 16.0.1.4.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
@@ -19,7 +19,7 @@ Expone un modelo de comandos `irg.api.operation` para que un agente (Lisa/MCP) l
 - Lecturas opcionales de gradebook y estado Moodle si esos modelos existen (no son `depends`).
 - Escrituras en dos pasos: preview → Approve. Borradores de artículo no publicados; publicar/despublicar son operaciones separadas.
 - Clonación Online vía `action_copy_homeclass_to_online` (no un `create` vacío de canal).
-- Certificados vía `irg_generate_gradebook_certificate`: notas (wizard), diploma, asistencia y matrícula (`irg.certificate.request`). El resultado verificado incluye `file_b64`; el adjunto permanece privado y no se envía por mail.
+- Documentos PDF: notas (`irg_generate_gradebook_certificate`), diploma (`irg_generate_diploma`), matrícula (`irg_generate_enrollment_certificate`) y asistencia (`irg_generate_attendance_certificate`). El resultado verificado incluye `file_b64`; el adjunto permanece privado y no se envía por mail.
 - Idempotencia por `(usuario, código, idempotency_key)` y auditoría en snapshots.
 
 ## Vistas y UI
@@ -46,4 +46,4 @@ Pruebas: `--test-tags /irg_business_api`.
 
 ## Limitaciones
 
-`irg_apply_withdrawal` no ejecuta `action_down`. El sync de notas Moodle requiere credenciales del conector. Adjuntos de la fachada son privados y de tamaño acotado, salvo `irg_generate_gradebook_certificate`, cuyo `file_b64` puede ser grande y queda retenido en `result_snapshot` (las operaciones no se pueden borrar). Diploma y notas completas exigen libreta `done`. Asistencia exige `session_id`. No genera diplomados ni actas TFM. Desinstalar no revierte escrituras ya aplicadas.
+`irg_apply_withdrawal` no ejecuta `action_down`. El sync de notas Moodle requiere credenciales del conector. Adjuntos de la fachada son privados y de tamaño acotado, salvo los PDF de certificados/diploma, cuyo `file_b64` puede ser grande y queda retenido en `result_snapshot` (las operaciones no se pueden borrar). Notas completas exigen libreta `done`. El diploma exige curso `finished`, no libreta. Asistencia exige `session_id` y el módulo de asistencia. No genera diplomados de curso ni actas TFM. Desinstalar no revierte escrituras ya aplicadas.

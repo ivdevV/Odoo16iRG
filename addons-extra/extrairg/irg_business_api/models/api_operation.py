@@ -16,6 +16,7 @@ from .academic_service import AcademicService
 from .elearning_service import ElearningService
 from .access_service import AccessService
 from .gradebook_service import GradebookService
+from .document_service import AcademicDocumentService
 from .moodle_service import MoodleService
 from .survey_service import SurveyService
 
@@ -294,6 +295,9 @@ class IrgApiOperation(models.Model):
             'irg_apply_feedback_import': survey.preview_apply_feedback_import,
             'irg_upload_private_attachment': survey.preview_upload_private_attachment,
             'irg_generate_gradebook_certificate': GradebookService(env).preview_generate_gradebook_certificate,
+            'irg_generate_diploma': AcademicDocumentService(env).preview_generate_diploma,
+            'irg_generate_enrollment_certificate': AcademicDocumentService(env).preview_generate_enrollment,
+            'irg_generate_attendance_certificate': AcademicDocumentService(env).preview_generate_attendance,
         }
 
     def _irg_write_apply_handlers(self, env):
@@ -326,6 +330,9 @@ class IrgApiOperation(models.Model):
             'irg_apply_feedback_import': survey.apply_feedback_import,
             'irg_upload_private_attachment': survey.apply_upload_private_attachment,
             'irg_generate_gradebook_certificate': GradebookService(env).apply_generate_gradebook_certificate,
+            'irg_generate_diploma': AcademicDocumentService(env).apply_generate_diploma,
+            'irg_generate_enrollment_certificate': AcademicDocumentService(env).apply_generate_enrollment,
+            'irg_generate_attendance_certificate': AcademicDocumentService(env).apply_generate_attendance,
         }
 
     def _irg_run_meta(self, payload):

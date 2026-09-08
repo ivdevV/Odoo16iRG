@@ -8,11 +8,12 @@ from odoo.tools.translate import _
 
 from . import api_serializer as ser
 
-DOCUMENT_TYPES = {
-    'gradebook', 'gradebook_partial', 'diploma', 'attendance', 'enrollment',
+DOCUMENT_TYPES = {'gradebook', 'gradebook_partial'}
+MOVED_DOCUMENT_TYPES = {
+    'diploma': 'irg_generate_diploma',
+    'enrollment': 'irg_generate_enrollment_certificate',
+    'attendance': 'irg_generate_attendance_certificate',
 }
-WIZARD_DOCUMENT_TYPES = {'gradebook', 'gradebook_partial'}
-FINAL_DOCUMENT_TYPES = {'gradebook', 'diploma'}
 CERTIFICATE_TYPES = {'digital', 'physical', 'custom', 'physical_apostilled'}
 PHYSICAL_TYPES = {'physical', 'physical_apostilled'}
 SIGNERS = {'dpto_academico', 'raimon'}
@@ -102,11 +103,12 @@ class GradebookService:
     def _validated_certificate_vals(self, payload):
         gradebook = self._gradebook(payload)
         document_type = (payload.get('document_type') or '').strip()
-        if document_type not in DOCUMENT_TYPES:
+        if document_type in MOVED_DOCUMENT_TYPES:
             raise UserError(_(
-                'document_type must be gradebook, gradebook_partial, diploma, '
-                'attendance or enrollment.'
-            ))
+                'Use %s. This command only generates gradebook certificates.'
+            ) % MOVED_DOCUMENT_TYPES[document_type])
+        if document_type not in DOCUMENT_TYPES:
+            raise UserError(_('document_type must be gradebook or gradebook_partial.'))
         certificate_type = (payload.get('certificate_type') or '').strip()
         if certificate_type not in CERTIFICATE_TYPES:
             raise UserError(_('certificate_type is not valid.'))
@@ -122,10 +124,10 @@ class GradebookService:
         custom_options = payload.get('custom_options') or False
         if custom_options and custom_options not in CUSTOM_OPTIONS:
             raise UserError(_('custom_options is not valid.'))
-        if document_type in FINAL_DOCUMENT_TYPES and gradebook.state != 'done':
+        if document_type == 'gradebook' and gradebook.state != 'done':
             raise UserError(_(
-                "Para solicitar un Certificado de Notas Completo o un Diploma, "
-                "la libreta académica debe estar finalizada (estado 'Finalizado')."
+                "Para solicitar un Certificado de Notas Completo, la libreta académica "
+                "debe estar finalizada (estado 'Finalizado')."
             ))
         vals = {
             'gradebook_student_id': gradebook.id,
@@ -139,20 +141,6 @@ class GradebookService:
             vals['custom_description'] = custom_description
         if custom_options:
             vals['custom_options'] = custom_options
-        session_id = payload.get('session_id')
-        if document_type == 'attendance':
-            if 'session_id' not in self.env['irg.certificate.request']._fields:
-                raise UserError(_('Attendance certificates are not installed.'))
-            if not session_id:
-                raise UserError(_('session_id is required for attendance certificates.'))
-            session = self.env['op.session'].browse(
-                ser.require_positive_id(payload, 'session_id')
-            )
-            if not session.exists():
-                raise UserError(_('Unknown session_id.'))
-            vals['session_id'] = session.id
-        elif session_id:
-            raise UserError(_('session_id is only allowed for attendance certificates.'))
         return gradebook, vals
 
     def _certificate_from_download_action(self, action):
@@ -170,28 +158,9 @@ class GradebookService:
             raise UserError(_('Certificate PDF was not generated.'))
         return cert, attachment
 
-    def _issue_certificate(self, vals):
-        document_type = vals['document_type']
-        if document_type in WIZARD_DOCUMENT_TYPES:
-            wizard_vals = {key: value for key, value in vals.items() if key != 'session_id'}
-            wizard = self.env['irg.certificate.wizard'].create(wizard_vals)
-            return wizard.action_generate()
-        request_vals = dict(vals)
-        request_vals['state'] = 'done'
-        request_vals['origin'] = 'backend'
-        cert = self.env['irg.certificate.request'].create(request_vals)
-        cert._generate_and_attach_pdf()
-        return cert.action_download_pdf()
-
     def preview_generate_gradebook_certificate(self, payload):
         gradebook, vals = self._validated_certificate_vals(payload)
-        document_type = vals['document_type']
-        if document_type in WIZARD_DOCUMENT_TYPES:
-            wizard_vals = {key: value for key, value in vals.items() if key != 'session_id'}
-            self.env['irg.certificate.wizard'].create(wizard_vals)
-        elif document_type == 'attendance':
-            rec = self.env['irg.certificate.request'].new(vals)
-            rec._validate_attendance_request()
+        self.env['irg.certificate.wizard'].create(vals)
         count = self.env['irg.certificate.request'].search_count([
             ('gradebook_student_id', '=', gradebook.id),
         ])
@@ -202,10 +171,7 @@ class GradebookService:
         }
         proposed = dict(vals)
         proposed['gradebook_state'] = gradebook.state
-        if document_type in WIZARD_DOCUMENT_TYPES:
-            proposed['will_call'] = 'irg.certificate.wizard.action_generate'
-        else:
-            proposed['will_call'] = 'irg.certificate.request._generate_and_attach_pdf'
+        proposed['will_call'] = 'irg.certificate.wizard.action_generate'
         return before, proposed, {'model': 'app.gradebook.student', 'id': gradebook.id}
 
     def apply_generate_gradebook_certificate(self, proposed, before):
@@ -220,12 +186,11 @@ class GradebookService:
             payload['custom_description'] = proposed['custom_description']
         if proposed.get('custom_options'):
             payload['custom_options'] = proposed['custom_options']
-        if proposed.get('session_id'):
-            payload['session_id'] = proposed['session_id']
         gradebook, vals = self._validated_certificate_vals(payload)
         if gradebook.state != before.get('gradebook_state'):
             raise UserError(_('The gradebook changed after preview.'))
-        action = self._issue_certificate(vals)
+        wizard = self.env['irg.certificate.wizard'].create(vals)
+        action = wizard.action_generate()
         cert, attachment = self._certificate_from_download_action(action)
         if 'public' in attachment._fields and attachment.public:
             raise UserError(_('Certificate PDF must remain private.'))

@@ -70,7 +70,10 @@ OPERATION_CODES = [
     ('irg_apply_feedback_import', 'Apply TXT feedback import'),
     ('irg_get_attachment_metadata', 'Read private attachment metadata'),
     ('irg_upload_private_attachment', 'Upload a private attachment'),
-    ('irg_generate_gradebook_certificate', 'Generate certificate PDF'),
+    ('irg_generate_gradebook_certificate', 'Generate gradebook certificate PDF'),
+    ('irg_generate_diploma', 'Generate diploma PDF'),
+    ('irg_generate_enrollment_certificate', 'Generate enrolment certificate PDF'),
+    ('irg_generate_attendance_certificate', 'Generate attendance certificate PDF'),
 ]
 
 OPERATION_SPECS = {
@@ -159,7 +162,38 @@ OPERATION_SPECS = {
             'shipping_type',
             'custom_description',
             'custom_options',
+        },
+    },
+    'irg_generate_diploma': {
+        'kind': 'write',
+        'keys': {
+            'student_id',
+            'student_course_id',
+            'diploma_type',
+            'issue_date',
+        },
+    },
+    'irg_generate_enrollment_certificate': {
+        'kind': 'write',
+        'keys': {
+            'admission_id',
+            'certificate_type',
+            'signer',
+            'shipping_type',
+            'custom_description',
+            'custom_options',
+        },
+    },
+    'irg_generate_attendance_certificate': {
+        'kind': 'write',
+        'keys': {
+            'admission_id',
             'session_id',
+            'certificate_type',
+            'signer',
+            'shipping_type',
+            'custom_description',
+            'custom_options',
         },
     },
 }

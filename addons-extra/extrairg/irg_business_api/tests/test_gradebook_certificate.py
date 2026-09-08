@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 import base64
 import hashlib
-from contextlib import ExitStack
-from datetime import date
 from unittest.mock import patch
 
-from odoo import fields
 from odoo.exceptions import UserError
 from odoo.tests.common import tagged
 
@@ -60,57 +57,6 @@ class TestGradebookCertificateOperation(IrgBusinessApiCase):
                 })
                 if hasattr(cls.gb_subject, 'compute_final_subject_note'):
                     cls.gb_subject.compute_final_subject_note()
-        cls._attendance_available = (
-            'session_id' in cls.env['irg.certificate.request']._fields
-            and 'op.session' in cls.env
-            and 'op.faculty' in cls.env
-        )
-        cls.hc_gradebook = False
-        cls.hc_session = False
-        if cls._attendance_available:
-            hc_batch = cls.env['op.batch'].create({
-                'name': 'API Batch HC',
-                'code': 'APIHC%s' % cls.batch.code[-4:],
-                'course_id': cls.course.id,
-                'start_date': date(2026, 1, 1),
-                'end_date': date(2026, 12, 31),
-            })
-            hc_admission = cls.env['op.admission'].create({
-                'first_name': 'API',
-                'last_name': 'HC',
-                'name': 'API HC Student',
-                'birth_date': date(1990, 1, 1),
-                'gender': 'o',
-                'email': 'api.hc.student@example.com',
-                'register_id': cls.register.id,
-                'course_id': cls.course.id,
-                'batch_id': hc_batch.id,
-                'admission_date': date(2026, 5, 7),
-                'partner_id': cls.partner.id,
-                'state': 'done',
-            })
-            cls.hc_gradebook = cls.env['app.gradebook.student'].create({
-                'partner_id': cls.partner.id,
-                'course_id': cls.course.id,
-                'batch_id': hc_batch.id,
-                'admission_id': hc_admission.id,
-            })
-            faculty = cls.env['op.faculty'].create({
-                'name': 'API Faculty',
-                'first_name': 'API',
-                'last_name': 'Faculty',
-                'birth_date': date(1980, 1, 1),
-                'gender': 'male',
-            })
-            cls.hc_session = cls.env['op.session'].create({
-                'name': 'API HC Session',
-                'course_id': cls.course.id,
-                'batch_id': hc_batch.id,
-                'subject_id': cls.subject.id,
-                'start_datetime': fields.Datetime.now(),
-                'end_datetime': fields.Datetime.now(),
-                'faculty_id': faculty.id,
-            })
 
     def setUp(self):
         super().setUp()
@@ -133,40 +79,6 @@ class TestGradebookCertificateOperation(IrgBusinessApiCase):
             '_convert_to_pdf',
             return_value=PDF_BYTES,
         )
-
-    def _patch_diploma_pdf(self):
-        return patch.object(
-            type(self.env['irg.certificate.request']),
-            '_generate_diploma_pdf_content',
-            return_value=PDF_BYTES,
-        )
-
-    def _patch_attendance_pdf(self):
-        Request = type(self.env['irg.certificate.request'])
-        stack = ExitStack()
-        stack.enter_context(patch.object(
-            Request, '_fill_template', return_value='/tmp/irg-api-cert-stub.docx',
-        ))
-        stack.enter_context(patch.object(
-            Request, '_convert_to_pdf', return_value=PDF_BYTES,
-        ))
-        return stack
-
-    def _assert_verified_private_pdf(self, op, document_type):
-        op.invalidate_recordset()
-        data = self.result_json(op)
-        self.assertEqual(op.state, 'verified')
-        self.assertEqual(data['checksum'], PDF_CHECKSUM)
-        raw = base64.b64decode(data['file_b64'])
-        self.assertEqual(hashlib.sha256(raw).hexdigest(), data['checksum'])
-        self.assertFalse(data['public'])
-        cert = self.env['irg.certificate.request'].browse(data['certificate_request_id'])
-        self.assertEqual(cert.document_type, document_type)
-        self.assertEqual(cert.origin, 'backend')
-        self.assertFalse(cert.invoice_id)
-        attachment = self.env['ir.attachment'].browse(data['attachment_id'])
-        self.assertFalse(attachment.public)
-        return cert, data
 
     def test_unknown_payload_key_rejected(self):
         with self.assertRaises(UserError):
@@ -269,100 +181,20 @@ class TestGradebookCertificateOperation(IrgBusinessApiCase):
             self.run_op('irg_approve_operation', {'operation_id': op.id}, key='cert-no-mail-ok')
         self.assertEqual(Mail.search_count([]), before)
 
-    def test_enrollment_allows_open_gradebook(self):
-        op = self.run_op(
-            'irg_generate_gradebook_certificate',
-            self._payload(document_type='enrollment'),
-            key='cert-enroll-open',
-        )
-        self.assertEqual(op.state, 'preview')
-        proposed = self.proposed_json(op)
-        self.assertEqual(proposed['document_type'], 'enrollment')
-        self.assertEqual(
-            proposed['will_call'],
-            'irg.certificate.request._generate_and_attach_pdf',
-        )
-        self.assertNotIn('file_b64', proposed)
-
-    def test_enrollment_approve_returns_private_pdf(self):
-        op = self.run_op(
-            'irg_generate_gradebook_certificate',
-            self._payload(document_type='enrollment'),
-            key='cert-enroll-ok',
-        )
-        with self._patch_pdf():
-            self.run_op('irg_approve_operation', {'operation_id': op.id}, key='cert-enroll-ok-ok')
-        self._assert_verified_private_pdf(op, 'enrollment')
-
-    def test_diploma_requires_done_gradebook(self):
-        if self.gradebook.state == 'done':
-            self.skipTest('Gradebook fixture already done.')
+    def test_notes_command_rejects_diploma_type(self):
         with self.assertRaises(UserError) as ctx:
             self.run_op(
                 'irg_generate_gradebook_certificate',
                 self._payload(document_type='diploma'),
-                key='cert-diploma-open',
+                key='cert-notes-not-diploma',
             )
-        self.assertIn('finalizada', str(ctx.exception).lower())
+        self.assertIn('irg_generate_diploma', str(ctx.exception))
 
-    def test_diploma_approve_on_done_gradebook(self):
-        self.gradebook.write({'state': 'done'})
-        op = self.run_op(
-            'irg_generate_gradebook_certificate',
-            self._payload(document_type='diploma'),
-            key='cert-diploma-ok',
-        )
-        with self._patch_diploma_pdf():
-            self.run_op('irg_approve_operation', {'operation_id': op.id}, key='cert-diploma-ok-ok')
-        self._assert_verified_private_pdf(op, 'diploma')
-
-    def test_session_id_rejected_unless_attendance(self):
+    def test_notes_command_rejects_enrollment_type(self):
         with self.assertRaises(UserError) as ctx:
             self.run_op(
                 'irg_generate_gradebook_certificate',
-                self._payload(document_type='enrollment', session_id=1),
-                key='cert-session-enroll',
+                self._payload(document_type='enrollment'),
+                key='cert-notes-not-enroll',
             )
-        self.assertIn('attendance', str(ctx.exception).lower())
-
-    def test_attendance_requires_session_id(self):
-        if not self._attendance_available:
-            self.skipTest('Attendance certificates are not installed.')
-        with self.assertRaises(UserError) as ctx:
-            self.run_op(
-                'irg_generate_gradebook_certificate',
-                self._payload(
-                    document_type='attendance',
-                    gradebook_student_id=self.hc_gradebook.id,
-                ),
-                key='cert-att-no-session',
-            )
-        self.assertIn('session', str(ctx.exception).lower())
-
-    def test_attendance_without_module_is_rejected(self):
-        if self._attendance_available:
-            self.skipTest('Attendance module is installed.')
-        with self.assertRaises(UserError) as ctx:
-            self.run_op(
-                'irg_generate_gradebook_certificate',
-                self._payload(document_type='attendance'),
-                key='cert-att-missing-mod',
-            )
-        self.assertIn('attendance', str(ctx.exception).lower())
-
-    def test_attendance_approve_on_hc_batch(self):
-        if not self._attendance_available:
-            self.skipTest('Attendance certificates are not installed.')
-        op = self.run_op(
-            'irg_generate_gradebook_certificate',
-            self._payload(
-                document_type='attendance',
-                gradebook_student_id=self.hc_gradebook.id,
-                session_id=self.hc_session.id,
-            ),
-            key='cert-att-ok',
-        )
-        with self._patch_attendance_pdf():
-            self.run_op('irg_approve_operation', {'operation_id': op.id}, key='cert-att-ok-ok')
-        cert, _data = self._assert_verified_private_pdf(op, 'attendance')
-        self.assertEqual(cert.session_id.id, self.hc_session.id)
+        self.assertIn('irg_generate_enrollment_certificate', str(ctx.exception))
