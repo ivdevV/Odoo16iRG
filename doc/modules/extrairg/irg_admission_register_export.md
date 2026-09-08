@@ -1,7 +1,7 @@
 # irg_admission_register_export
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.0.0
+**Versión:** 16.0.1.1.0
 **Licencia:** LGPL-3
 **Instalable:** Sí
 **Autor:** iRG
@@ -17,6 +17,8 @@ Permite exportar todas las admisiones de un registro de admisiones a CSV o XLSX 
 
 - Wizard de exportación accesible desde el menú de acciones del registro de admisiones.
 - Soporte de exportación a CSV y XLSX.
+- Columnas: Nº Aplicación, Nombre, Email, Teléfono, Móvil, Fecha Aplicación, Fecha Admisión, Curso, Lote, Estado, Nacionalidad (`op.student.nationality`).
+- Si la admisión no tiene alumno o el alumno no tiene nacionalidad, la celda queda vacía.
 
 ## Modelos
 
@@ -31,6 +33,22 @@ Permite exportar todas las admisiones de un registro de admisiones a CSV o XLSX 
 ## Notas técnicas
 
 - Requiere `security/ir.model.access.csv` por el modelo del wizard.
+- CSV y XLSX comparten `_COLUMNS` / `_get_rows`. No se exporta `citizenship_country_id`.
+
+## Limitaciones
+
+- La nacionalidad sale del alumno vinculado (`student_id`), no del país de dirección del contacto.
+- Hace falta actualizar el módulo a `16.0.1.1.0` para que la columna aparezca.
+
+## Pruebas
+
+```bash
+docker compose -f docker-compose.local.yml exec -T odoo_local odoo \
+  -c /etc/odoo/odoo.conf -d <dbname> \
+  -u irg_admission_register_export --test-enable \
+  --test-tags=/irg_admission_register_export --stop-after-init \
+  --http-port=8099 --log-level=test --workers=0
+```
 
 ## Instalación / Actualización
 

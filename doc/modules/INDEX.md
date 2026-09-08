@@ -76,7 +76,7 @@
 | [irg_op_student_admission_editable](./extrairg/irg_op_student_admission_editable.md) | extrairg | Popup de admisión editable en alumno | 16.0.1.0.0 |
 | [irg_admissions_by_student](./extrairg/irg_admissions_by_student.md) | extrairg | Admisión usando student_id | 16.0.1.0.0 |
 | [irg_admission_birthdate_edit](./extrairg/irg_admission_birthdate_edit.md) | extrairg | birth_date editable en admisión | 16.0.1.0.0 |
-| [irg_admission_register_export](./extrairg/irg_admission_register_export.md) | extrairg | Exportación de admisiones a CSV/XLSX | 16.0.1.0.0 |
+| [irg_admission_register_export](./extrairg/irg_admission_register_export.md) | extrairg | Exportación de admisiones a CSV/XLSX | 16.0.1.1.0 |
 | [irg_auto_translate](./extrairg/irg_auto_translate.md) | extrairg | Auto-traducción con DeepL/Google Translate | 16.0.1.0.0 |
 | [irg_course_convocatorias](./extrairg/irg_course_convocatorias.md) | extrairg | Convocatorias HomeClass y Online por curso eLearning | 16.0.1.3.0 |
 | [irg_course_portal_tiles](./extrairg/irg_course_portal_tiles.md) | extrairg | Tiles de acceso rápido en el campus | 16.0.1.0.0 |

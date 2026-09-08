@@ -27,6 +27,7 @@ _COLUMNS = [
     (_('Curso'),            lambda a: a.course_id.name if a.course_id else ''),
     (_('Lote'),             lambda a: a.batch_id.name if a.batch_id else ''),
     (_('Estado'),           lambda a: dict(a._fields['state'].selection).get(a.state, a.state or '')),
+    (_('Nacionalidad'),     lambda a: a.student_id.nationality.name or ''),
 ]
 
 
