@@ -1,0 +1,12 @@
+{
+  "addons-extra/extrairg/irg_enrollment_modification_guard/__init__.py": "5fd10918e1361ad65b4b41bcd8fb525e659267f47c8c4334ae52530e58908e9e",
+  "addons-extra/extrairg/irg_enrollment_modification_guard/__manifest__.py": "41ddeca90f8e04d162fd073ec56200b1a1df2e3adc9f6e1f330432c807ea064b",
+  "addons-extra/extrairg/irg_enrollment_modification_guard/models/__init__.py": "145c2b69bbf14d116f8607fb8a11b6a111c6d2774827939564f0bdc8d04b26ff",
+  "addons-extra/extrairg/irg_enrollment_modification_guard/models/enrollment_change.py": "1e46331bb759e089a1ca99f98a309b2eef4e872e04712a657560e53763d5b58d",
+  "addons-extra/extrairg/irg_enrollment_modification_guard/models/sale_order_line.py": "41efa5ae7c29aeaa9615029f9302b3b708e178da4aec8ac82bbdece969a2c5be",
+  "addons-extra/extrairg/irg_enrollment_modification_guard/tests/__init__.py": "37c7bf004d3c05d7c1f4836f523d9f3be59127657b9c58ae486a3152008c483e",
+  "addons-extra/extrairg/irg_enrollment_modification_guard/tests/test_enrollment_guard.py": "6ab975f57f9c83266fe2c04bd3a6c57008665833354785e7a7bf3c891da0dd92",
+  "addons-extra/extrairg/irg_enrollment_modification_guard/tests/test_enrollment_guard_concurrency.py": "ee227f98d068cff391b49533ae26bff8f0ca48b3a09b2d13ef5686c22d6e54c0",
+  "missions/irg-enrollment-modification-guard/artifacts/prepare_red.py": "69e338c70eb58459b7cac772225d53e1d3ae1ce868ccd2b4cd1263c118600b36",
+  "missions/irg-enrollment-modification-guard/artifacts/concurrency.py": "1f3fdacb58de42d3758ce4e837392c5a7911652d0b24540b702751d0a43965ef"
+}

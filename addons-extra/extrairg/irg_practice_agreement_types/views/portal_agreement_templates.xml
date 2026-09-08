@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_agreement_page_types"
+              inherit_id="irg_practice_agreement_sign.portal_agreement_page">
+        <xpath expr="//h6[contains(., 'CLÁUSULAS')]/parent::div" position="attributes">
+            <attribute name="t-if">agreement.agreement_type != 'marco_internacional'</attribute>
+        </xpath>
+        <xpath expr="//h6[contains(., 'CLÁUSULAS')]/parent::div" position="after">
+            <t t-if="agreement.agreement_type == 'marco_internacional'">
+                <t t-set="doc" t-value="agreement"/>
+                <t t-call="irg_practice_agreement_types.agreement_clauses_marco_internacional"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>

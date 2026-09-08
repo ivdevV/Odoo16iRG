@@ -1,0 +1,4 @@
+RED (tras fixture min_count): 2 failed, 0 error(s) of 2 tests
+DB: test_irg_arex_nat_red_20260908
+Causa: AssertionError: 'Nacionalidad' not found in ['Nº Aplicación', 'Nombre', 'Email', 'Teléfono', 'Móvil', 'Fecha Aplicación', 'Fecha Admisión', 'Curso', 'Lote', 'Estado']
+Log completo: artifacts/red-install.txt

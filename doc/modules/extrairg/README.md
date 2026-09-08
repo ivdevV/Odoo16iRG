@@ -55,7 +55,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_survey_second_attempt_fix](./irg_survey_second_attempt_fix.md) | Fix nota mostrada en el segundo intento | `survey.user_input` | Instalable |
 | [irg_survey_txt_import_feedback](./irg_survey_txt_import_feedback.md) | Importación de preguntas desde TXT | `irg.survey.txt.import.wizard` (nuevo) | Instalable |
 | [irg_elearning_styles_rework](./irg_elearning_styles_rework.md) | Rework visual del eLearning | — | Instalable |
-| [irg_business_api](./irg_business_api.md) | Fachada de comandos académicos (lecturas y borradores eLearning) | `irg.api.operation` (nuevo) | Instalable |
+| [irg_business_api](./irg_business_api.md) | Fachada de comandos académicos (lecturas, eLearning y certificados/diplomas) | `irg.api.operation` (nuevo) | Instalable |
 | [irg_exam_score_100](./irg_exam_score_100.md) | Campo de compatibilidad escala 100 en surveys | `survey.survey` | Instalable |
 | [irg_op_student_admission_editable](./irg_op_student_admission_editable.md) | Popup de admisión editable en ficha del alumno | `op.student`, `op.admission` | Instalable |
 | [irg_admissions_by_student](./irg_admissions_by_student.md) | Crea admisiones usando student_id | `sale.order` | Instalable |
@@ -64,6 +64,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_auto_translate](./irg_auto_translate.md) | Auto-traducción de cursos y asignaturas con DeepL/Google | `op.course`, `op.subject` | Instalable |
 | [irg_course_convocatorias](./irg_course_convocatorias.md) | Convocatorias HomeClass y Online por curso eLearning | `irg.course.convocatoria` (nuevo), `slide.channel`, `slide.slide`, `irg.slide.section` | Instalable |
 | [irg_course_portal_tiles](./irg_course_portal_tiles.md) | Tiles de acceso rápido en el campus | — | Instalable |
+| [irg_tfm_convocatorias](./irg_tfm_convocatorias.md) | Activa y gestiona el Trabajo Final de Máster por progreso y convocatoria | `irg.tfm.convocatoria`, `irg.tfm.entrega` (nuevos), `tesis.model`, `op.student.course`, `op.course`, `slide.slide`, `slide.channel.partner` | Instalable |
 | [irg_crm_extensions](./irg_crm_extensions.md) | Comercial anterior y fecha de reactivación en leads | `crm.lead` | Instalable |
 | [irg_crm_gclid](./irg_crm_gclid.md) | Campo GCLID de Google Ads en leads | `crm.lead` | Instalable |
 | [irg_crm_lead_dedup](./irg_crm_lead_dedup.md) | Cron de deduplicación de leads por email/teléfono | `crm.lead` | Instalable |
@@ -85,6 +86,9 @@ Los módulos cubren áreas funcionales clave:
 | [irg_practicas_fix](./irg_practicas_fix.md) | user_id relacionado con el alumno en prácticas | Modelo prácticas | Instalable |
 | [irg_practice_center_type_modalities](./irg_practice_center_type_modalities.md) | Modalidades academicas para tipos de centro de practicas | `practice.center.type` | Instalable |
 | [irg_practice_center_restrict](./irg_practice_center_restrict.md) | Oculta centros de prácticas al alumno | — | Instalable |
+| [irg_practice_request_online_types](./irg_practice_request_online_types.md) | Filtra tipos de práctica en másteres online | `practice.request`, `op.student.course` | Instalable |
+| [irg_practice_agreement_types](./irg_practice_agreement_types.md) | Wizard de convenio marco nacional/internacional | `practice.agreement`, `practice.center` | Instalable |
+| [irg_practice_agreement_specific](./irg_practice_agreement_specific.md) | Convenios específicos nacional e internacional desde la solicitud | `practice.agreement`, `practice.request` | Instalable |
 | [irg_profile_batch_fix](./irg_profile_batch_fix.md) | Fix nombre de programa y filtro de calendario por lote | — | Instalable |
 | [irg_sign_position_fix](./irg_sign_position_fix.md) | Ajusta posición del bloque de firma en matrícula | `sign.template` | Instalable |
 | [irg_sign_reposition](./irg_sign_reposition.md) | Lógica alternativa de reposición de firma | `sign.template`, `sign.item` | Instalable |

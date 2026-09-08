@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_tesis_model_form_irg_tfm" model="ir.ui.view">
+        <field name="name">tesis.model.form.irg.tfm</field>
+        <field name="model">tesis.model</field>
+        <field name="inherit_id" ref="isep_tesis_model.view_tesis_model_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='course_id']" position="after">
+                <field name="irg_tfm_convocation_id"/>
+                <field name="irg_tfm_activated_at" readonly="1"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Entregas TFM">
+                    <field name="irg_tfm_submission_ids" readonly="1"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_tesis_model_search_irg_tfm" model="ir.ui.view">
+        <field name="name">tesis.model.search.irg.tfm</field>
+        <field name="model">tesis.model</field>
+        <field name="inherit_id" ref="isep_tesis_model.view_tesis_model_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="TFM pendientes" name="irg_tfm_pending"
+                        domain="[('irg_tfm_convocation_id', '=', False)]"/>
+                <filter string="TFM asignadas" name="irg_tfm_assigned"
+                        domain="[('irg_tfm_convocation_id', '!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

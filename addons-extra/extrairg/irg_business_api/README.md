@@ -45,6 +45,8 @@ Los borradores de slide se crean como artículo (`slide_category=article`) no pu
 
 **Baja:** `irg_apply_withdrawal` está rechazada a propósito (`action_down` cancela facturas). Hay que usar la UI oficial.
 
+**Documentos PDF (preview → approve):** cuatro comandos distintos. Notas: `irg_generate_gradebook_certificate` (`gradebook` / `gradebook_partial`). Diploma académico: `irg_generate_diploma` (`student_id` + `student_course_id`, curso `finished`). Matrícula: `irg_generate_enrollment_certificate` (`admission_id`). Asistencia: `irg_generate_attendance_certificate` (`admission_id` + `session_id`). Tras aprobar, `result_snapshot` incluye `file_b64` y `checksum`. El adjunto permanece privado y no se envía correo al alumno. Diploma, matrícula y asistencia no llevan `gradebook_student_id` en el payload. No cubre diplomados de curso (`irg.diplomado.registry`) ni actas TFM/TFG.
+
 Contrato detallado: [doc/api-contract.md](doc/api-contract.md).
 
 ## Pruebas
@@ -59,5 +61,9 @@ odoo -c /etc/odoo/odoo.conf -d <db_test> \
 
 - Sin controladores HTTP en esta entrega.
 - Página máxima 100; HTML de slide máximo 32k caracteres (`html_sanitize`).
+- Los cuatro comandos de PDF devuelven `file_b64` tras approve; el snapshot puede ser grande y no hay purga (`unlink` denegado). El adjunto sigue privado y Odoo no envía el PDF.
+- Notas completas (`gradebook`) exigen libreta `done`. El diploma exige `op.student.course.state == finished`, no libreta ni pago del portal de certificados.
+- Matrícula y asistencia resuelven la libreta internamente; si hay varias candidatas ambiguas, fallan. Asistencia exige `session_id` del lote de la admisión y el módulo `irg_certificate_attendance`.
+- `state` en el resultado de matrícula/asistencia es el de `irg.certificate.request`; en diploma es el de `irg.diploma.registry`.
 - No se pueden borrar operaciones históricas; desinstalar el módulo no deshace escrituras aplicadas.
 - E2E TestSprite de las vistas quedó fuera de esta corrida (herramienta ausente en el runtime de Cursor).

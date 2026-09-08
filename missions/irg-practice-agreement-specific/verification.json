@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "task": "irg-practice-agreement-specific",
+  "checks": [
+    {
+      "name": "syntax_py_compile",
+      "command": "python3 -m py_compile <11 ficheros .py del módulo irg_practice_agreement_specific>",
+      "result": "pass",
+      "detail": "11 ficheros compilados sin errores de sintaxis (exit 0, salida vacía)",
+      "evidence": "artifacts/syntax-py-compile.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_practice_agreement_specific -u irg_practice_agreement_specific --test-enable --test-tags /irg_practice_agreement_specific --without-demo=all --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 11 tests. irg_practice_agreement_specific: 13 tests 3.09s 649 queries",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "git_base_module_clean",
+      "command": "git status -- addons-extra/extrairg/irg_practice_agreement_sign/ && git diff --name-only -- addons-extra/extrairg/irg_practice_agreement_sign/ addons-extra/extrairg/irg_practice_agreement_types/",
+      "result": "pass",
+      "detail": "irg_practice_agreement_sign: working tree clean. irg_practice_agreement_types: untracked (módulo nuevo independiente). git diff vacío para ambos. Ninguno de los módulos base fue modificado.",
+      "evidence": "03-validation.md#check-3"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "GetDynamicTools(pattern='testsprite') → mcp__TestSprite__testsprite_bootstrap + testsprite_generate_code_and_execute",
+      "result": "skipped",
+      "detail": "MCP TestSprite no disponible en este runtime: GetDynamicTools(pattern='testsprite') devolvió matches:[]. Scope del diff OBLIGA al disparo (toca views/, portal, report/ y controladores HTTP). Skip por causa técnica objetiva; debe re-ejecutarse cuando el MCP esté activo. Flujos pendientes: wizard Crear Convenio, portal firma centro/alumno, PDF específico internacional.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "container": "odoo16irg_local",
+    "database": "test_irg_practice_agreement_specific",
+    "base_commit": "928c2974ba94acfa4bb6e8730c14426f9071fc6e"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/syntax-py-compile.txt",
+    "artifacts/validation-tests.txt",
+    "03-validation.md",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

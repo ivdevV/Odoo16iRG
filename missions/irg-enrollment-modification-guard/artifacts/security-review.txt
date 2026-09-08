@@ -1,0 +1,60 @@
+Security Advisor — 2026-09-07 — revisión previa a implementación
+Scope: plan.md, modelo/wizard/ACL del addon base y relaciones op.student.course / sale.order.student_id.
+No se ha editado código funcional. Esta revisión no afirma validación runtime.
+
+Hallazgo bloqueante S1: protección del conjunto de líneas insuficientemente concretada.
+SELECT FOR UPDATE de pedido y líneas existentes no garantiza detectar inserciones
+concurrentes invisibles a una transacción REPEATABLE READ. Invalidar caché ORM no
+renueva el snapshot PostgreSQL. El plan debe definir un mecanismo verificable.
+Solución propuesta: herencia de sale.order.line en el addon nuevo que actualice
+una versión de la fila del pedido (UPDATE parametrizado, incluso no-op) antes de
+create/unlink o write que altere order_id/modalidad. Aprobación/captura toma el mismo
+fence. Para mover líneas se cercan ambos pedidos en orden estable. Con snapshot
+antiguo debe propagarse SerializationFailure hacia el retry de Odoo, nunca
+traducirse en conflicto comercial ni reintentarse en el mismo cursor/snapshot.
+No usar locks globales de tablas. Añadir pruebas reales con inserción, eliminación,
+reasignación y edición simultánea; probar también aprobación vs aprobación.
+
+Requisitos concretos aceptables del resto del diseño:
+- Token Python singleton comparado por `is`, emitido solo por métodos privados;
+  ni bool ni string ni diccionario JSON pueden habilitarlo. Toda acción pública
+  verifica grupos/ACL/reglas y estado aunque reciba contexto. Evitar que defaults
+  de contexto (default_state/default_irg_guard_snapshot/etc.) eludan create.
+- Rechazar escrituras directas de campos protegidos incluso en sudo/admin.
+  Scope interno estrecho para super y documentos; no extenderlo a recordsets
+  arbitrarios ni devolver el token al cliente. copy no copia aprobación ni snapshot.
+- Comprobar lectura bajo usuario real antes de SQL/sudo. La aprobación mantiene
+  permiso de negocio del padre; no exigir permiso de write a matrícula al académico
+  (el ACL base deliberadamente solo concede read). Denegación/reintento también
+  serializados sobre solicitud para no producir dobles transiciones/documentos.
+- Pedido: student_id es res.partner en irg_sale_order_extended. Comprobar comodel;
+  si student_id explícito existe y apunta a otro alumno, rechazar aun si partner_id
+  coincide. Usar partner_id de fallback cuando student_id está vacío/no existe;
+  permite pagador distinto con student_id correcto. Registrar ambos vínculos y
+  compañía y comparar los relevantes antes de cada aprobación de pago/modalidad.
+- Legado: ausencia de snapshot no autoriza capturar estado actual como original.
+  Solo origin/dest/vistos persistidos acreditados; modalidad antigua sin conjunto
+  documentado se bloquea. Origen vacío necesario ambiguo bloquea. Legacy financiero
+  usa destino académico aprobado y origen de pago, nunca el estado actual como base.
+- Guardar bloqueo y chatter sin lanzar después excepción que los revierta; escapar
+  valores en mensajes HTML y limitar información a registros autorizados.
+
+Acción requerida: enmendar el plan concretando S1 (archivo/modelo adicional,
+fence/retries/pruebas), la precedencia de student_id y defaults de create; devolver
+el plan al Security Advisor para nuevo veredicto antes de producción.
+
+[NO] Reason: falta concretar protección contra fantasmas del conjunto de líneas bajo REPEATABLE READ; el plan debe incorporar el fence y las precisiones indicadas antes de implementar.
+
+Segunda revisión — mismo día, antes de implementación:
+El orquestador ha enmendado plan.md con models/sale_order_line.py y fence de
+versión de fila del pedido compartido por mutación de líneas y aprobación;
+ordena IDs, propaga serialización y exige pruebas de conexiones independientes.
+También explicita precedencia del student_id, defaults protegidos, token privado
+sin bypass de acciones públicas y locks para denegación/reintento PDF.
+Se considera resuelto el bloqueo de diseño S1 y las ambigüedades señaladas.
+La revisión/validación posterior debe comprobar implementación y pruebas del
+fence, permisos reales sin ampliar ACL, captura legacy y rollback/no commit.
+Este YES autoriza iniciar implementación del diseño, no publicación ni afirma
+que el código inexistente haya pasado pruebas.
+
+[YES] Reason: plan enmendado incorpora control server-side, token no falsificable por RPC, fence contra fantasmas y reintentos REPEATABLE READ, relaciones inequívocas y legado conservador; sin bloqueantes de diseño abiertos.

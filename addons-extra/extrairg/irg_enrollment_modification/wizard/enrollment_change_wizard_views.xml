@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_enrollment_change_wizard_form" model="ir.ui.view">
+        <field name="name">irg.enrollment.change.wizard.form</field>
+        <field name="model">irg.enrollment.change.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Modificación de matrícula">
+                <group>
+                    <field name="student_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="student_partner_id" invisible="1"/>
+                    <field name="student_course_id" options="{'no_create': True}"/>
+                    <field name="dest_batch_course_id" invisible="1"/>
+                </group>
+                <group string="Cambios a solicitar">
+                    <group>
+                        <field name="change_course"/>
+                        <field name="change_batch"/>
+                        <field name="change_modality"/>
+                    </group>
+                    <group>
+                        <field name="change_year"/>
+                        <field name="change_payment"/>
+                    </group>
+                </group>
+                <group string="Curso" attrs="{'invisible': [('change_course', '=', False)]}">
+                    <field name="origin_course_id"/>
+                    <field name="dest_course_id" options="{'no_create': True}"
+                           attrs="{'required': [('change_course', '=', True)]}"/>
+                </group>
+                <group string="Lote" attrs="{'invisible': [('change_batch', '=', False)]}">
+                    <field name="origin_batch_id"/>
+                    <field name="dest_batch_id" options="{'no_create': True}"
+                           attrs="{'required': [('change_batch', '=', True)]}"/>
+                </group>
+                <group string="Modalidad" attrs="{'invisible': [('change_modality', '=', False)]}">
+                    <field name="origin_modality"/>
+                    <field name="dest_modality"
+                           attrs="{'required': [('change_modality', '=', True)]}"/>
+                </group>
+                <group string="Pedido vinculado"
+                       attrs="{'invisible': [('change_payment', '=', False), ('change_modality', '=', False)]}">
+                    <field name="sale_order_id" options="{'no_create': True}"
+                           attrs="{'required': ['|', ('change_payment', '=', True), ('change_modality', '=', True)]}"/>
+                </group>
+                <group string="Año académico" attrs="{'invisible': [('change_year', '=', False)]}">
+                    <field name="origin_year_id"/>
+                    <field name="dest_year_id" options="{'no_create': True}"
+                           attrs="{'required': [('change_year', '=', True)]}"/>
+                </group>
+                <group string="Forma de pago" attrs="{'invisible': [('change_payment', '=', False)]}">
+                    <field name="origin_payment_mode_id"/>
+                    <field name="dest_payment_mode_id" options="{'no_create': True}"
+                           attrs="{'required': [('change_payment', '=', True)]}"/>
+                </group>
+                <footer>
+                    <button name="action_create_request" type="object"
+                            string="Crear solicitud" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

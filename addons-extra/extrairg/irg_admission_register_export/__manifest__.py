@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'iRG Admission Register Export',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Education',
     'summary': 'Exportar admisiones de un registro a CSV o XLSX desde el menú de acciones',
     'author': 'iRG',

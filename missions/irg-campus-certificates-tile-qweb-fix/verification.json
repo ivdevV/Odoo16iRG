@@ -1,0 +1,66 @@
+{
+  "status": "failed",
+  "task": "irg-campus-certificates-tile-qweb-fix",
+  "checks": [
+    {
+      "name": "py_compile",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_campus_certificates_tile_qweb_fix/**/*.py",
+      "result": "pass",
+      "detail": "4 archivos .py compilados sin errores; exit code 0",
+      "evidence": null
+    },
+    {
+      "name": "xml_parse",
+      "command": "python3 -c \"import xml.etree.ElementTree as ET; ET.parse('addons-extra/extrairg/irg_campus_certificates_tile_qweb_fix/views/campus_dashboard_override.xml')\"",
+      "result": "pass",
+      "detail": "XML válido; t-if = 'not course_id.is_diplomado()' — sin hasattr",
+      "evidence": null
+    },
+    {
+      "name": "lint",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "PROJECT.md declara que no hay linter ni formateador canónico.",
+      "evidence": null
+    },
+    {
+      "name": "module_tests",
+      "command": "docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_campus_certificates_tile_qweb_fix --test-enable --test-tags=/irg_campus_certificates_tile_qweb_fix --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "3 tests, 0 failed, 0 errors",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "portal_no_edit",
+      "command": "git status addons-extra/extrairg/irg_campus_certificates_portal/",
+      "result": "pass",
+      "detail": "irg_campus_certificates_portal no modificado",
+      "evidence": null
+    },
+    {
+      "name": "manifest_checks",
+      "command": "inspect __manifest__.py",
+      "result": "pass",
+      "detail": "auto_install=True; depends=['irg_campus_certificates_portal', 'irg_course_portal_tiles_diplomado_hide']",
+      "evidence": null
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "GetDynamicTools pattern=testsprite|TestSprite",
+      "result": "fail",
+      "detail": "MCP TestSprite no registrado en la sesión. Scope QWeb/portal: skip no permitido. 0 escenarios ejecutados.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_db",
+    "base_commit": "52c3e5d83"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

@@ -1,0 +1,44 @@
+Implementación funcional congelada — 2026-09-07
+Worktree: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-enrollment-modification-guard
+Addon nuevo: addons-extra/extrairg/irg_enrollment_modification_guard
+Versión 16.0.1.0.0; única dependencia irg_enrollment_modification; ningún cambio de vistas, ACL, módulos existentes ni configuración runtime.
+
+Archivos funcionales:
+__init__.py, __manifest__.py
+models/__init__.py, models/enrollment_change.py, models/sale_order_line.py
+tests/__init__.py, tests/test_enrollment_guard.py, tests/test_enrollment_guard_concurrency.py
+(8 archivos Python; el control AST se ejecuta sobre todos.)
+Scripts ejecutables de misión para revisar también:
+artifacts/prepare_red.py — SOLO sobre base desechable con addon base instalado y guard no instalado.
+artifacts/concurrency.py — wrapper del runner real de dos conexiones.
+
+Comportamiento:
+- Captura server-side y orígenes normalizados; snapshot JSON versionado; expectativas financieras derivadas de destinos persistidos inmutables.
+- Flags/destinos/identidad/pedido validados en modelo persistente, incluyendo precedencia sale.order.student_id=res.partner y compañía.
+- Bloqueo permanente con notificación y nota escapada, fuera del savepoint abortado, sin excepción que pierda el registro; admin tampoco fuerza. Denegación conserva flujo base.
+- Escrituras directas protegidas y default_* técnicos removidos; token Python privado por identidad ligado a IDs y campos. Copy requiere nueva solicitud.
+- Finanzas usa lectura académica privada y limitada aprobada por Security Advisor: reglas de registro y compañías originales, sin elevar padre/acción, sin filtrar valores en conflicto académico.
+- Locks solicitud/matrícula/relaciones/pedido/líneas y fence UPDATE id=id por pedido, compartido con create/write de order_id o modalidad/unlink de líneas; propagación PostgreSQL SerializationFailure, sin commits productivos.
+- Legado reconstruye solo evidencia guardada; modalidad histórica/dato ambiguo bloquean; done/refused no migrados. Word/PDF/denegación/reintento conservados.
+
+Reproducción independiente (desde checkout principal):
+cd '/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG'
+Base implementación odoo16irg_guard_test; validador dispone de odoo16irg_guard_validation con addon base instalado.
+En comandos siguientes sustituir <DB> por base desechable elegida, nunca test_irg_db fuente.
+1. docker compose -f docker-compose.local.yml -f scratch/irg-enrollment-guard/compose.guard.json run --rm --no-deps -T odoo_local odoo shell -c /etc/odoo/odoo.conf -d <DB> --no-http --max-cron-threads=0 < .worktrees/irg-enrollment-modification-guard/missions/irg-enrollment-modification-guard/artifacts/prepare_red.py
+   Crea Studio x_studio_modalidad local y fixtures históricas reales ANTES instalar guard; confirma RED base sobrescribe C. Guarda IDs en ir.config_parameter irg_guard_test_fixtures. No reejecutar sobre DB con guard instalado.
+2. docker compose -f docker-compose.local.yml -f scratch/irg-enrollment-guard/compose.guard.json run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d <DB> -i irg_enrollment_modification_guard --test-enable --test-tags=/irg_enrollment_modification,/irg_enrollment_modification_guard --stop-after-init --http-port=8079 --max-cron-threads=0 --logfile=/mnt/guard-mission/artifacts/validation-install-full.txt --log-level=test
+3. Repetir 2 con -u en lugar de -i y logfile distinto para actualización.
+4. docker compose -f docker-compose.local.yml -f scratch/irg-enrollment-guard/compose.guard.json run --rm --no-deps -T odoo_local odoo shell -c /etc/odoo/odoo.conf -d <DB> --no-http --max-cron-threads=0 < .worktrees/irg-enrollment-modification-guard/missions/irg-enrollment-modification-guard/artifacts/concurrency.py
+   Runner realiza commits solo de fixtures, limpia solicitudes nuevas y restaura datos afectados en finally; no altera servicio web compartido. Requiere preparación 1 y guard instalado.
+
+Evidencia obtenida por codificador (no sustituye validación independiente):
+red-base.txt: expected assertion baseline overwrote batch C + fixtures preinstall committed.
+red-suite.txt: suite antes modelos guard; 28 assertions failed, 10 errors por campos ausentes. Primera producción escrita después RED.
+green-full-3.txt: 60 tests 0 failed 0 errors; Studio probado sin skip.
+concurrency-final.txt: 10 escenarios PASS; PostgreSQL REPEATABLE READ comprobado y bloqueo real pg_stat_activity; errores 40001 esperados capturados por test, propagados por producción; cleanup PASS.
+AST y manifest pass; sin cambios ajenos ni publicación.
+
+Límites/pendientes del handoff:
+Review funcional y Validación independiente pendientes. Documentación final corresponde a fase posterior.
+La limpieza final de bases y verificación de servicio original corresponde al orquestador/validador; este agente solo ha ejecutado compose run --rm y nunca up/stop/reconfigurado el servicio compartido.

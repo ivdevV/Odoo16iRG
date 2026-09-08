@@ -1,0 +1,38 @@
+Security Advisor — ajuste de comprobación financiera — 2026-09-07
+
+Evidencia estática: ACL del addon base concede a Finanzas read sobre solicitud,
+op.student, sale.order y account.payment.mode, pero no op.student.course,
+op.course, op.batch ni op.academic.year. El flujo base sí autoriza su visto.
+Exigir nuevos ACL de lectura general cambia ese contrato innecesariamente.
+
+Se aprueba la lectura elevada privada para comprobar continuidad académica
+exclusivamente durante action_approve_finance con estas condiciones de diseño:
+1. Comprobar primero grupo financiero, ACL/regla write de solicitud, estado
+   academic_approved y change_payment, y ACL/reglas de lectura reales de alumno,
+   pedido y destino de pago. Mantener las comprobaciones normales de create y
+   aprobación académica, sin fallback sudo ante cualquier AccessError.
+2. Elevar solo matrícula/curso/lote/año referenciados por la solicitud; no ejecutar
+   toda action_approve_finance ni el super ni _guard_check_references en sudo.
+   El aprobador y la escritura de estado siguen con usuario original.
+3. Antes de leer sus datos elevados, ejecutar check_access_rule('read') sobre
+   esos recordsets en entorno NO sudo del usuario financiero. La exención es
+   del ACL de modelo ausente, nunca de reglas de registro o compañía. Comprobar
+   company_id explícitamente con compañías del entorno ORIGINAL (env.companies
+   bajo sudo no sirve como whitelist). Restringir IDs a referencias persistidas.
+4. Elevar lecturas necesarias de IDs/relaciones para comparar, no exponer nombres,
+   IDs actuales ni valores elevados en notificación, conflicto_detail, chatter
+   o retorno. Conflicto académico detectado por Finanzas usa mensaje genérico.
+   No devolver recordsets elevados ni ampliar la lectura desde endpoints públicos.
+5. Mantener locks/savepoint y propagación de SerializationFailure. La lectura
+   sudo no equivale a validación: verificar la identidad matrícula-alumno y la
+   relación pedido-alumno antes de aprobar. Nunca actualizar matrícula desde esta
+   comprobación financiera; solo lectura y locks.
+6. Añadir pruebas con usuario exclusivamente account.group_account_invoice:
+   aprobación legítima, conflicto académico sin filtración, compañía/regla
+   denegada y caller no financiero. Ninguna nueva ACL ni grupo implícito.
+
+El ajuste no permite elevar por un booleano de contexto aportable por RPC; usar
+parámetro privado explícito o helper privado derivado de fase financiera ya
+autorizada. El gate valida este diseño, sujeto a review y validación de código.
+
+[YES] Reason: comprobación financiera privada con elevación limitada a lectura académica y locks, conservando reglas/compañía/usuario original y mensajes genéricos, respeta el flujo base sin ampliar ACL ni permitir bypass.

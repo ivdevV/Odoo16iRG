@@ -1,0 +1,2 @@
+from odoo.addons.irg_enrollment_modification_guard.tests.test_enrollment_guard_concurrency import run
+run(env)

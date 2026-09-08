@@ -1,0 +1,22 @@
+## syntax_py_compile — irg_practice_agreement_specific
+## Comando:
+##   python3 -m py_compile <todos los .py del módulo>
+## Fecha: 2026-09-07
+
+Archivos comprobados:
+  addons-extra/extrairg/irg_practice_agreement_specific/__init__.py
+  addons-extra/extrairg/irg_practice_agreement_specific/__manifest__.py
+  addons-extra/extrairg/irg_practice_agreement_specific/models/__init__.py
+  addons-extra/extrairg/irg_practice_agreement_specific/models/practice_agreement.py
+  addons-extra/extrairg/irg_practice_agreement_specific/models/practice_request.py
+  addons-extra/extrairg/irg_practice_agreement_specific/controllers/__init__.py
+  addons-extra/extrairg/irg_practice_agreement_specific/controllers/portal_agreement.py
+  addons-extra/extrairg/irg_practice_agreement_specific/wizard/__init__.py
+  addons-extra/extrairg/irg_practice_agreement_specific/wizard/practice_agreement_specific_create_wizard.py
+  addons-extra/extrairg/irg_practice_agreement_specific/tests/__init__.py
+  addons-extra/extrairg/irg_practice_agreement_specific/tests/test_practice_agreement_specific.py
+
+Salida del comando: (vacía — ningún error de sintaxis)
+EXIT: 0
+
+RESULTADO: PASS — 11 ficheros compilados sin errores de sintaxis.

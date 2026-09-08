@@ -1,0 +1,10 @@
+0 failed, 0 error(s) of 8 tests when loading database 'test_irg_ot_20260902'
+
+Command:
+docker compose -f docker-compose.local.yml -f .worktrees/irg-practice-modality-elearning/missions/irg-practice-modality-elearning/docker-compose.worktree.yml run --rm --no-deps odoo_local \
+  odoo -c /etc/odoo/odoo.conf -d test_irg_ot_20260902 \
+  -u irg_practice_request_online_types --test-enable \
+  --test-tags /irg_practice_request_online_types \
+  --stop-after-init --workers=0 --http-port=18069 --log-level=test
+
+Fixture RED previa: Invalid field 'lang' on op.course (deps mínimas). GREEN tras pasar lang solo si el campo existe.
