@@ -1,0 +1,43 @@
+Command:
+C:\Users\admin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe missions\irg-tfm-convocatorias\artifacts\static_validator.py
+
+Exit code: 1 (expected RED)
+
+Passing baseline before the new assertions:
+- 18 Python files parsed.
+- 7 XML files well formed.
+- 63 Odoo test methods detected after adding the regression tests.
+- Existing eligibility and upload-format contracts passed.
+
+Expected failing contracts:
+- beta_effective_channel_model
+- beta_membership_hook_isolation
+- beta_controller_final_route_gate
+- beta_clone_fail_closed
+- beta_manifest_dependencies
+- beta_backend_delivery_columns
+- beta_legacy_tfm_fields_hidden
+- beta_section_category_force_save
+- beta_portal_copy_and_dates
+
+The failures are caused by the missing beta-acceptance implementation, not by
+syntax, XML parsing or the test harness.
+
+Second RED — independent Review findings (2026-09-08)
+Command:
+C:/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe missions/irg-tfm-convocatorias/artifacts/static_validator.py
+
+Result: exit 1, expected.
+The expanded suite discovered the six unimplemented contracts before the
+production correction:
+- beta_controller_final_route_gate
+- beta_legacy_tfm_fields_hidden
+- direct_slide_gate_before_super
+- invalid_clone_denied_before_common_content
+- channel_lifecycle_authorizes_before_sudo
+- channel_lifecycle_expands_inverse_family
+
+The Odoo suite now contains 69 test methods, including real Online admission,
+inverse-family repair/detach/unlink and HTTP fail-closed/non-TFM regression
+cases. Runtime execution remains deferred because this computer cannot run the
+project Docker environment, per explicit user instruction.

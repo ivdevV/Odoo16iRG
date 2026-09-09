@@ -188,9 +188,15 @@ class TesisModel(models.Model):
             if not convocation or not convocation.active:
                 raise ValidationError(_('An archived TFM convocation cannot be assigned.'))
             for record in records:
-                if not record.course_id.course_id.irg_tfm_channel_id:
+                configured_channel = record.course_id.course_id.irg_tfm_channel_id
+                effective_channel = (
+                    configured_channel._irg_tfm_effective_channel(record.course_id)
+                    if configured_channel else self.env['slide.channel']
+                )
+                if not effective_channel:
                     raise ValidationError(_(
-                        'The course must have a TFM eLearning channel before assigning a convocation.'
+                        'The enrollment must have an available TFM eLearning channel '
+                        'for its HomeClass or Online modality before assigning a convocation.'
                     ))
         result = super(TesisModel, records).write(vals)
         for record in records:

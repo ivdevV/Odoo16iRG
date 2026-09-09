@@ -41,6 +41,10 @@
                        options="{'no_create': True}"
                        help="Convocatorias permitidas para esta categoría TFM."/>
             </xpath>
+            <xpath expr="//field[@name='irg_native_section_ids']/form//field[@name='is_category']"
+                   position="attributes">
+                <attribute name="force_save">1</attribute>
+            </xpath>
         </field>
     </record>
 </odoo>

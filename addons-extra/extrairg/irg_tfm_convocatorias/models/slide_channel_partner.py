@@ -8,6 +8,10 @@ from odoo.exceptions import AccessError, ValidationError
 
 _TFM_ACTIVE_UNIQUE_INDEX = 'irg_scp_active_partner_channel_batch_uniq'
 _TFM_SYNC_CONTEXT = 'irg_tfm_membership_sync'
+_TFM_SERVICE_CONTEXT = {
+    _TFM_SYNC_CONTEXT: True,
+    'irg_skip_partner_sync': True,
+}
 _TFM_ALLOWED_MEMBERSHIP_FIELDS = {
     'id', 'display_name', 'channel_id', 'partner_id', 'batch_id', 'active',
     'irg_tfm_created', 'irg_tfm_thesis_ids', 'create_uid', 'create_date',
@@ -77,7 +81,11 @@ class SlideChannelPartner(models.Model):
         thesis.ensure_one()
         enrollment = thesis.course_id
         course = enrollment.course_id
-        channel = course.irg_tfm_channel_id
+        configured_channel = course.irg_tfm_channel_id
+        channel = (
+            configured_channel._irg_tfm_effective_channel(enrollment)
+            if configured_channel else self.env['slide.channel']
+        )
         partner = enrollment.student_id.partner_id
         if not channel or not partner or not enrollment:
             return False
@@ -101,7 +109,7 @@ class SlideChannelPartner(models.Model):
 
     def _irg_tfm_remove_reference(self, membership, thesis):
         references = membership.irg_tfm_thesis_ids - thesis
-        membership.with_context(**{_TFM_SYNC_CONTEXT: True}).write({
+        membership.with_context(**_TFM_SERVICE_CONTEXT).write({
             'irg_tfm_thesis_ids': [(6, 0, references.ids)],
         })
         if (
@@ -109,7 +117,7 @@ class SlideChannelPartner(models.Model):
             and membership.irg_tfm_created
             and not membership._irg_tfm_has_foreign_signals()
         ):
-            membership.with_context(**{_TFM_SYNC_CONTEXT: True}).write({'active': False})
+            membership.with_context(**_TFM_SERVICE_CONTEXT).write({'active': False})
 
     def _irg_tfm_find_active_target(self, values):
         memberships = self.with_context(active_test=False).search(
@@ -140,7 +148,7 @@ class SlideChannelPartner(models.Model):
         for membership in memberships:
             if membership._irg_tfm_has_foreign_signals():
                 continue
-            membership.with_context(**{_TFM_SYNC_CONTEXT: True}).write({'active': True})
+            membership.with_context(**_TFM_SERVICE_CONTEXT).write({'active': True})
             return membership
         return self.browse()
 
@@ -152,7 +160,7 @@ class SlideChannelPartner(models.Model):
         })
         try:
             with self.env.cr.savepoint():
-                return self.with_context(**{_TFM_SYNC_CONTEXT: True}).create(create_values)
+                return self.with_context(**_TFM_SERVICE_CONTEXT).create(create_values)
         except IntegrityError as exc:
             if getattr(exc.diag, 'constraint_name', None) != _TFM_ACTIVE_UNIQUE_INDEX:
                 raise
@@ -162,7 +170,7 @@ class SlideChannelPartner(models.Model):
             )
             active, foreign = self._irg_tfm_find_active_target(values)
             if active:
-                active.with_context(**{_TFM_SYNC_CONTEXT: True}).write({
+                active.with_context(**_TFM_SERVICE_CONTEXT).write({
                     'irg_tfm_thesis_ids': [(4, thesis.id)],
                 })
                 return active
@@ -211,7 +219,7 @@ class SlideChannelPartner(models.Model):
             if not selected or membership.id != selected.id:
                 self._irg_tfm_remove_reference(membership, thesis)
         if selected and thesis.id not in selected.irg_tfm_thesis_ids.ids:
-            selected.with_context(**{_TFM_SYNC_CONTEXT: True}).write({
+            selected.with_context(**_TFM_SERVICE_CONTEXT).write({
                 'irg_tfm_thesis_ids': [(4, thesis.id)],
             })
         return True

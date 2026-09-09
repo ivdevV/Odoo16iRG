@@ -74,3 +74,96 @@ No se hará commit, push ni PR sin autorización independiente y explícita.
 - Sustituir el selector inexistente sobre `div.o_wslides_slides_list_slide` por el nodo raíz real `li` cuyo `t-attf-class` contiene esa clase.
 - Mantener el `t-if` en el contenedor completo para que un contenido restringido no deje iconos, badges ni controles visibles.
 - Añadir un contrato estático que aplique el XPath a una réplica mínima del padre oficial y exija una coincidencia única.
+
+## Correcciones de aceptación beta (2026-09-08)
+
+### Objetivo y diagnóstico
+
+Corregir los defectos observados durante la prueba funcional completa sin
+alterar el flujo ya validado de activación, Esquema, convocatoria y entregas.
+Se mantiene el tier `complex`: la corrección cruza portal, matrícula,
+membresías, clonación HomeClass/Online, autorización server-side y vistas.
+
+- La pestaña backend muestra solo `ID` porque el one2many
+  `irg_tfm_submission_ids` no declara subvista tree propia.
+- El portal y la membresía usan directamente `op.course.irg_tfm_channel_id`;
+  por eso una matrícula Online recibe el canal HomeClass configurado.
+- `irg_course_convocatorias_v2` decide la redirección mediante admisiones
+  activas globales, no mediante la matrícula exacta del expediente TFM. La
+  ausencia o ambigüedad de admisión provoca el rebote Online → HomeClass.
+- La resolución de convocatoria TFM exige igualdad exacta con el canal
+  configurado y no reconoce que el canal Online es clon del HomeClass.
+- El bootstrap Online no copia `irg_tfm_convocation_ids`; para clones ya
+  creados, la restricción debe heredarse dinámicamente desde el original.
+- En la subvista de `Secciones iRG`, `is_category` es readonly sin
+  `force_save`; al crear sección y convocatoria en una sola operación el
+  servidor puede recibir la convocatoria sin el indicador de categoría.
+
+### Diseño aprobado
+
+1. Añadir una subvista tree explícita de entregas con etapa, versión, archivo,
+   comentario, convocatoria, autor y fecha, ordenada de más reciente a más
+   antigua. Ocultar para expedientes TFM nuevos la fase y documentos legacy.
+2. Cambiar el texto del botón a **Guía y recursos para el TFM** y presentar
+   las fechas como `dd/mm/aaaa`.
+3. Declarar dependencias directas de `irg_course_convocatorias_v2` y del
+   controlador final `irg_online_subject_portal_visibility`, y resolver
+   un canal base/effectivo con la matrícula exacta: lotes Online usan el clon
+   `irg_online_channel_id`; HomeClass usa el canal base. Si falta el clon, la
+   operación falla cerrada y no concede acceso al canal equivocado.
+4. Usar el canal efectivo tanto en el enlace del portal como en la membresía.
+   Al cambiar lote o canal, la conciliación retira solamente referencias TFM
+   antiguas conforme a las reglas de procedencia ya existentes.
+5. Resolver autorización eLearning dentro de la familia base/clon mediante la
+   cadena cerrada `res.users → un op.student activo → expedientes TFM
+   activados de la familia → exactamente una matrícula cuyo canal efectivo
+   coincide`. La búsqueda recogerá todos los candidatos antes de filtrar; no
+   usará `limit=2` sobre matrículas/expedientes antes de calcular el canal
+   efectivo. Cero o múltiples candidatos, lote PRS/desconocido, familia rota o
+   clon Online ausente deniegan/404. Las rutas de canal y slide neutralizarán
+   para familias TFM la decisión global por `op.admission`; solo podrán
+   redirigir al miembro efectivo de esa misma familia. El control directo de
+   convocatoria sigue ejecutándose antes de cualquier `super().slide_view()`
+   que pueda entregar o marcar el material como visto.
+6. Copiar `irg_tfm_convocation_ids` solo para categorías en futuros bootstraps
+   Online y, para clones existentes, heredar la restricción desde
+   `irg_original_slide_id` cuando el clon no tenga configuración local.
+   El fallback aceptará solo una categoría original del HomeClass de esa
+   familia; una referencia presente pero inconsistente se marca inválida y
+   deniega, en lugar de convertirse en contenido común.
+7. Heredar la subvista `Secciones iRG` para forzar el guardado de
+   `is_category`; mantener el constraint server-side que impide convocatorias
+   en materiales reales.
+8. Toda mutación de memberships realizada por TFM usará conjuntamente los
+   contextos `irg_tfm_membership_sync=True` e `irg_skip_partner_sync=True`, para
+   que los hooks de convocatorias V2 no creen, reactiven, archiven ni modifiquen
+   una fila hermana. Se probará asignación, retirada y reasignación con una
+   admisión Online ajena presente.
+9. Heredar `slide.channel.write/unlink` para capturar y reconciliar de forma
+   idempotente los expedientes afectados al reemplazar, desvincular o borrar
+   `irg_online_channel_id`/`irg_homeclass_channel_id`. La conciliación se hace
+   después de obtener el nuevo destino y solo retira referencias con procedencia
+   TFM; nunca hace `unlink` ni muta memberships ajenas. Cambiar estos enlaces
+   queda restringido server-side a usuarios internos.
+
+### TDD y verificación
+
+- RED/GREEN ORM para selección HomeClass/Online, enlace de portal, membresía
+  efectiva, autorización por familia, fallback de restricciones clonadas y
+  bootstrap futuro.
+- RED/GREEN de rutas de canal y slide para destino correcto y denegación ante
+  ambigüedad, lote desconocido o clon ausente; la prueba no confiará en una
+  membership como autorización de contenido exclusivo.
+- RED/GREEN de lifecycle de familia y de aislamiento de hooks V2, comprobando
+  que no quedan memberships TFM obsoletas y que las filas ajenas no cambian.
+- RED/GREEN de vistas para columnas del historial, ocultación legacy,
+  `force_save`, texto del botón y fechas legibles.
+- Review y validación independientes. Por instrucción expresa del usuario no
+  se ejecutará Docker en este ordenador; los tests Odoo/PostgreSQL/E2E se
+  registrarán como `skipped` con justificación y se ejecutarán los contratos
+  estáticos, AST/XML, compilación y comprobaciones Git disponibles.
+
+### Publicación
+
+Esta autorización permite implementar, no hacer commit ni push. Ambas acciones
+requieren autorizaciones posteriores, separadas y explícitas.

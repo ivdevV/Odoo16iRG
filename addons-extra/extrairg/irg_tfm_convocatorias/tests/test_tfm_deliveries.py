@@ -8,6 +8,8 @@ from unittest.mock import patch
 from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from lxml import etree
+
 from odoo import api, Command, http
 from odoo.exceptions import AccessError, ValidationError
 from odoo.modules.registry import Registry
@@ -171,6 +173,27 @@ class TfmFixtureMixin:
 
 @tagged('post_install', '-at_install')
 class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
+    def test_backend_history_lists_delivery_details_and_hides_legacy_tfm_fields(self):
+        view = self.env.ref('irg_tfm_convocatorias.view_tesis_model_form_irg_tfm')
+        arch = etree.fromstring(view.get_combined_arch())
+        tree = arch.xpath("//field[@name='irg_tfm_submission_ids']/tree")
+        self.assertEqual(len(tree), 1)
+        self.assertEqual(tree[0].get('default_order'), 'submitted_at desc, id desc')
+        columns = tree[0].xpath('./field/@name')
+        self.assertEqual(columns, [
+            'stage', 'version', 'attachment_id', 'comment', 'convocation_id',
+            'submitted_by', 'submitted_at', 'internal_exception',
+        ])
+        legacy_phase = arch.xpath("//sheet/group/group/field[@name='status_thesis']")
+        legacy_documents = arch.xpath("//page[.//field[@name='attachment2_ids']]")
+        self.assertTrue(legacy_phase)
+        self.assertTrue(legacy_documents)
+        self.assertEqual(len(legacy_phase), 1)
+        self.assertIn('irg_tfm_activated_at', legacy_phase[0].get('attrs') or '')
+        self.assertTrue(
+            all('irg_tfm_activated_at' in (node.get('attrs') or '') for node in legacy_documents),
+        )
+
     def test_upload_validation_rejects_empty_oversize_extension_signature_mime_and_generic_zip(self):
         Delivery = self.env['irg.tfm.entrega']
         invalid = (
@@ -659,10 +682,15 @@ class TestTfmPortal(TfmFixtureMixin, HttpCase):
         self.assertIn('Trabajo Final de Máster', active.text)
 
     def test_tfm_page_is_owned_and_contains_csrf_protected_form(self):
+        convocation = self._convocation()
+        self.thesis.write({'irg_tfm_convocation_id': convocation.id})
         self.authenticate(self.owner.login, self.owner.login)
         page = self.url_open('/campus/course/%s/tfm' % self.course.id)
         self.assertEqual(page.status_code, 200)
         self.assertIn('Trabajo Final de Máster', page.text)
+        self.assertIn('Guía y recursos para el TFM', page.text)
+        self.assertIn(date.today().strftime('%d/%m/%Y'), page.text)
+        self.assertNotIn('Acceder al contenido eLearning', page.text)
         self.assertRegex(page.text, r'name="csrf_token"\s+value="[^"]+"')
 
         self.authenticate(self.outsider.login, self.outsider.login)

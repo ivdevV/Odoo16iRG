@@ -33,17 +33,43 @@ class SlideSlide(models.Model):
         slide = self.sudo()
         if slide.is_category and slide.irg_tfm_convocation_ids:
             return slide.irg_tfm_convocation_ids
+        if slide.is_category and slide.irg_original_slide_id:
+            original = slide.irg_original_slide_id.sudo()
+            homeclass = slide.channel_id.sudo().irg_homeclass_channel_id
+            if original.is_category and homeclass and original.channel_id == homeclass:
+                return original.irg_tfm_convocation_ids
+            return self.env['irg.tfm.convocatoria']
         category = slide.category_id.sudo()
-        if category and category.irg_tfm_convocation_ids:
-            return category.irg_tfm_convocation_ids
+        if category:
+            return category._irg_effective_tfm_convocation_ids()
         parent = slide.parent_slide_id.sudo()
-        if parent and parent.irg_tfm_convocation_ids:
-            return parent.irg_tfm_convocation_ids
+        if parent:
+            return parent._irg_effective_tfm_convocation_ids()
         return self.env['irg.tfm.convocatoria']
+
+    def _irg_tfm_invalid_clone_origin(self):
+        self.ensure_one()
+        slide = self.sudo()
+        if slide.is_category and slide.irg_original_slide_id:
+            original = slide.irg_original_slide_id.sudo()
+            homeclass = slide.channel_id.sudo().irg_homeclass_channel_id
+            return not (
+                original.is_category
+                and homeclass
+                and original.channel_id == homeclass
+            )
+        if slide.category_id:
+            return slide.category_id._irg_tfm_invalid_clone_origin()
+        if slide.parent_slide_id:
+            return slide.parent_slide_id._irg_tfm_invalid_clone_origin()
+        return False
 
     def irg_has_tfm_requirement(self):
         self.ensure_one()
-        return bool(self._irg_effective_tfm_convocation_ids())
+        return bool(
+            self._irg_tfm_invalid_clone_origin()
+            or self._irg_effective_tfm_convocation_ids()
+        )
 
     def _irg_tfm_current_convocation_for_user(self, user, channel=None):
         """Resolve one portal enrollment and its one active TFM record.
@@ -60,44 +86,25 @@ class SlideSlide(models.Model):
         channel = (channel or self.sudo().channel_id).sudo()
         if not channel:
             return self.env['irg.tfm.convocatoria']
-
-        Student = self.env['op.student'].sudo().with_context(active_test=False)
-        students = Student.search([('user_id', '=', user.id)], limit=2)
-        if len(students) != 1 or not students.active:
+        thesis, effective_channel = channel._irg_tfm_route_for_user(user)
+        if not thesis or effective_channel != channel:
             return self.env['irg.tfm.convocatoria']
-
-        Enrollment = self.env['op.student.course'].sudo().with_context(active_test=False)
-        enrollments = Enrollment.search([
-            ('student_id', '=', students.id),
-            ('student_id.user_id', '=', user.id),
-            ('course_id.irg_tfm_channel_id', '=', channel.id),
-        ], limit=2)
-        if len(enrollments) != 1:
-            return self.env['irg.tfm.convocatoria']
-
-        theses = self.env['tesis.model'].sudo().with_context(active_test=False).search([
-            ('course_id', '=', enrollments.id),
-            ('course_id.student_id', '=', students.id),
-            ('course_id.student_id.user_id', '=', user.id),
-            ('course_id.course_id.irg_tfm_channel_id', '=', channel.id),
-            ('irg_tfm_activated_at', '!=', False),
-        ], limit=2)
-        if len(theses) != 1 or not theses.irg_tfm_convocation_id.active:
-            return self.env['irg.tfm.convocatoria']
-        return theses.irg_tfm_convocation_id
+        return thesis.irg_tfm_convocation_id
 
     def is_user_allowed_by_tfm_convocation(self, user=None):
         """Fail closed for portal users when a category is exclusive."""
         self.ensure_one()
-        required = self._irg_effective_tfm_convocation_ids()
-        if not required:
-            return True
-
         user = user or self.env.user
         if user and user.has_group('base.group_user'):
             return True
         if not user or user._is_public():
             return False
+        if self._irg_tfm_invalid_clone_origin():
+            return False
+
+        required = self._irg_effective_tfm_convocation_ids()
+        if not required:
+            return True
 
         current = self._irg_tfm_current_convocation_for_user(user)
         return bool(current and current.id in required.ids)

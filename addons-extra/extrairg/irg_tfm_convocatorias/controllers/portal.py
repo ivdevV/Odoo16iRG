@@ -7,6 +7,12 @@ from odoo.http import content_disposition, request
 from odoo.addons.irg_course_portal_tiles_diplomado_hide.controllers.main import (
     IrgTFMControllerDiplomado,
 )
+from odoo.addons.irg_course_convocatorias_v2.controllers.main import (
+    CourseConvocatoriasSlides,
+)
+from odoo.addons.irg_online_subject_portal_visibility.controllers.main import (
+    OnlineSubjectVisibilitySlides,
+)
 from odoo.addons.irg_practice_slide_restrictions.controllers.main import (
     WebsiteSlidesPracticeRestrictions,
 )
@@ -17,10 +23,63 @@ from odoo.addons.isep_tesis_model.controllers.my_tesis_model2 import (
 from odoo.addons.isep_tesis_model.controllers.my_tesis_model_new import (
     TessisreviewwPortal as LegacyTesisNewPortal,
 )
+from odoo.addons.website_slides.controllers.main import WebsiteSlides
 
 
-class WebsiteSlidesTfmRestrictions(WebsiteSlidesPracticeRestrictions):
-    """Add TFM authorization after batch/date/practice controller layers."""
+class WebsiteSlidesTfmRestrictions(
+        OnlineSubjectVisibilitySlides, WebsiteSlidesPracticeRestrictions):
+    """Compose exact TFM routing with every existing eLearning guard."""
+
+    @http.route([
+        '/slides/<model("slide.channel"):channel>',
+        '/slides/<model("slide.channel"):channel>/page/<int:page>',
+        '/slides/<model("slide.channel"):channel>/tag/<model("slide.tag"):tag>',
+        '/slides/<model("slide.channel"):channel>/tag/<model("slide.tag"):tag>/page/<int:page>',
+        '/slides/<model("slide.channel"):channel>/category/<model("slide.slide"):category>',
+        '/slides/<model("slide.channel"):channel>/category/<model("slide.slide"):category>/page/<int:page>',
+    ], type='http', auth='public', website=True, sitemap=WebsiteSlides.sitemap_slide)
+    def channel(
+        self,
+        channel,
+        category=None,
+        tag=None,
+        page=1,
+        slide_category=None,
+        uncategorized=False,
+        sorting=None,
+        search=None,
+        **kwargs
+    ):
+        user = request.env.user
+        if not user.has_group('base.group_user') and channel.sudo()._irg_tfm_is_configured_family():
+            thesis, effective = channel.sudo()._irg_tfm_route_for_user(user)
+            if not thesis or not effective:
+                return request.not_found()
+            if channel.id != effective.id:
+                return request.redirect('/slides/%s' % effective.id)
+            return WebsiteSlides.channel(
+                self,
+                channel,
+                category=category,
+                tag=tag,
+                page=page,
+                slide_category=slide_category,
+                uncategorized=uncategorized,
+                sorting=sorting,
+                search=search,
+                **kwargs
+            )
+        return super().channel(
+            channel,
+            category=category,
+            tag=tag,
+            page=page,
+            slide_category=slide_category,
+            uncategorized=uncategorized,
+            sorting=sorting,
+            search=search,
+            **kwargs
+        )
 
     @http.route(
         ['/slides/slide/<model("slide.slide"):slide>'],
@@ -30,8 +89,19 @@ class WebsiteSlidesTfmRestrictions(WebsiteSlidesPracticeRestrictions):
         sitemap=True,
     )
     def slide_view(self, slide, **kwargs):
+        user = request.env.user
+        channel = slide.sudo().channel_id
+        is_tfm_family = bool(
+            channel and channel._irg_tfm_is_configured_family()
+        )
+        if not user.has_group('base.group_user') and is_tfm_family:
+            thesis, effective = channel._irg_tfm_route_for_user(user)
+            if not thesis or not effective:
+                return request.not_found()
+            if channel.id != effective.id:
+                return self._irg_tfm_redirect_slide(slide.sudo(), effective)
+
         if slide.sudo().irg_has_tfm_requirement():
-            user = request.env.user
             if user._is_public():
                 return request.redirect(
                     '/web/login?redirect=/slides/slide/%s' % slide.id
@@ -41,10 +111,29 @@ class WebsiteSlidesTfmRestrictions(WebsiteSlidesPracticeRestrictions):
                     'irg_tfm_convocatorias.slide_tfm_restriction_error',
                     {'slide': slide},
                 )
-        # This is deliberately the first call into the inherited chain: a
-        # denied slide cannot reach the code that returns content or marks it
-        # viewed (action_set_viewed).
+        # For a TFM family, the exact enrollment above replaces V2's global
+        # admission heuristic. Continue after that controller so scheduled,
+        # batch, practice, debtor and prerequisite guards still execute. For a
+        # regular channel, preserve the complete Online/V2 chain unchanged.
+        if is_tfm_family:
+            return super(CourseConvocatoriasSlides, self).slide_view(
+                slide, **kwargs
+            )
         return super().slide_view(slide, **kwargs)
+
+    def _irg_tfm_redirect_slide(self, slide, effective_channel):
+        if effective_channel.irg_homeclass_channel_id:
+            counterpart = request.env['slide.slide'].sudo().search([
+                ('channel_id', '=', effective_channel.id),
+                ('irg_original_slide_id', '=', slide.id),
+            ], limit=1)
+        else:
+            counterpart = slide.irg_original_slide_id.sudo()
+            if counterpart and counterpart.channel_id != effective_channel:
+                counterpart = request.env['slide.slide']
+        if counterpart:
+            return request.redirect('/slides/slide/%s' % counterpart.id)
+        return request.redirect('/slides/%s' % effective_channel.id)
 
     def _get_slide_detail(self, slide):
         values = super()._get_slide_detail(slide)
@@ -82,7 +171,17 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         deliveries = thesis.irg_tfm_submission_ids.sorted(
             key=lambda delivery: (delivery.submitted_at, delivery.id), reverse=True,
         )
-        channel = course.irg_tfm_channel_id
+        channel = request.env['slide.channel']
+        if convocation and convocation.active and course.irg_tfm_channel_id:
+            resolved_thesis, effective = course.irg_tfm_channel_id._irg_tfm_route_for_user(
+                request.env.user,
+            )
+            if resolved_thesis.id == thesis.id:
+                channel = effective
+
+        def display_date(value):
+            return value.strftime('%d/%m/%Y') if value else '-'
+
         return {
             'thesis': thesis,
             'course': course,
@@ -94,6 +193,18 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
             'partial_open': partial_open,
             'final_open': final_open,
             'elearning_url': channel.website_url if channel else False,
+            'partial_open_label': display_date(
+                convocation.partial_open_date if convocation else False,
+            ),
+            'partial_close_label': display_date(
+                convocation.partial_close_date if convocation else False,
+            ),
+            'final_open_label': display_date(
+                convocation.final_open_date if convocation else False,
+            ),
+            'final_close_label': display_date(
+                convocation.final_close_date if convocation else False,
+            ),
             'error': error,
         }
 

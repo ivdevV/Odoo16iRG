@@ -1,0 +1,104 @@
+Code review independiente — correcciones de aceptación beta, ronda 2
+Fecha: 2026-09-08
+Base revisada: 7a14590fe08ae0e4df3fdbfbfdc474954e7e1d62
+Alcance: código funcional, tests, manifest y XML runtime de
+addons-extra/extrairg/irg_tfm_convocatorias.
+No se editó código funcional y no se usó Docker.
+
+Veredicto: APROBADO
+===================
+
+Critical
+========
+
+Ninguno.
+
+Important
+=========
+
+Ninguno.
+
+Minor
+=====
+
+Ninguno.
+
+Revisión de los hallazgos de la ronda anterior
+===============================================
+
+- C1, resuelto: slide_slide.py comprueba
+  _irg_tfm_invalid_clone_origin() antes del retorno por convocatoria vacía.
+  irg_has_tfm_requirement() también considera inválida esa procedencia, por lo
+  que QWeb y la URL directa fallan cerrados. Hay cobertura ORM y HTTP sobre el
+  contenido hijo de una categoría clonada con origen fuera de la familia.
+- I1, resuelto: WebsiteSlidesTfmRestrictions compone en una sola MRO
+  OnlineSubjectVisibilitySlides y WebsiteSlidesPracticeRestrictions. Para
+  canales no TFM, super() conserva Online/V2. Para una familia TFM ya resuelta,
+  super(CourseConvocatoriasSlides, self) salta únicamente la heurística global
+  de modalidad y continúa por CustomWebsiteSlides, práctica, lote,
+  morosidad/prerrequisitos y WebsiteSlides. La prueba de MRO y el HttpCase no
+  TFM verifican esta regresión.
+- I2, resuelto: _irg_tfm_expand_family_channels() cierra transitivamente enlaces
+  directos e inversos. La expansión encuentra una base que todavía apunta a un
+  clon cuyo backlink está roto; write captura la unión anterior/nueva y las
+  pruebas cubren desvinculación y reparación desde el extremo Online.
+- I3, resuelto: write/unlink comprueban base.group_user antes de cualquier sudo
+  del servicio. Los externos pasan por ACL nativa sin elevación. El hook solo
+  reconcilia cuando la familia expandida contiene un op.course TFM configurado,
+  incluso si aún no tiene tesis; las familias no TFM no reciben mutaciones
+  adicionales.
+- I4, resuelto: los HttpCase de outsider ahora esperan 404. También existen
+  escenarios de URL de canal y slide para matrícula ambigua, lote PRS/código
+  desconocido, redirección Online exacta e invalidación de origen.
+- I5, resuelto: la prueba de aislamiento crea una op.admission Online real no
+  relacionada y ejerce asignación, retirada y nueva asignación. El lifecycle
+  cubre reemplazo, rotura/reparación inversa y unlink, y verifica la retirada de
+  acceso obsoleto.
+- I6, resuelto: el XPath de status_thesis se limita al campo superior bajo
+  sheet/group/group; la prueba exige una única coincidencia y no intenta añadir
+  modificadores del modelo tesis al tree de ir.attachment.
+
+Controles adicionales revisados
+===============================
+
+- La selección de canal deriva exclusivamente del lote de la matrícula exacta:
+  ONL elegible usa el clon simétrico; HC/MONLHC usa la base; PRS, código
+  desconocido, familia rota o clon ausente devuelven recordset vacío.
+- _irg_tfm_route_for_user recoge todos los expedientes candidatos antes de
+  filtrar canal efectivo y exige exactamente uno con convocatoria activa. No
+  usa membership como prueba de autorización.
+- _irg_tfm_is_configured_family() usa la expansión inversa, por lo que una
+  relación rota no convierte el canal Online en un canal no TFM y las rutas
+  continúan denegando hasta reparar la familia.
+- Todas las create/write propias de conciliación de membership usan
+  irg_tfm_membership_sync e irg_skip_partner_sync conjuntamente. Las filas
+  ajenas no reciben procedencia TFM ni se archivan; el servicio nunca llama
+  unlink sobre memberships.
+- La asignación de convocatoria valida primero que la matrícula tenga un canal
+  efectivo; una matrícula Online sin clon no obtiene membership HomeClass.
+- El bootstrap copia irg_tfm_convocation_ids solo en categorías. El constraint
+  server-side sigue rechazando create y write maliciosos en materiales reales;
+  force_save solo corrige el transporte del formulario de categoría.
+- El XPath QWeb de contenido conserva el t-if sobre el li raíz completo. La
+  ocultación visual complementa, pero no sustituye, los gates server-side de
+  canal y slide.
+
+Comprobaciones ejecutadas
+=========================
+
+- static_validator.py: 13 grupos aprobados, 35 contratos agrupados, 70 métodos
+  de prueba detectados y 0 fallos.
+- compileall del addon: correcto.
+- git diff --check: sin errores; únicamente avisos de futura normalización
+  CRLF del checkout Windows.
+
+Limitación de evidencia
+=======================
+
+No se ejecutaron los tests ORM/HttpCase en un registro Odoo ni la instalación/
+actualización del addon porque el usuario prohibió Docker en este ordenador.
+La aprobación de Review se basa en inspección del diff, MRO, contratos
+estáticos, compilación y consistencia de las pruebas; la Validación debe
+registrar el runtime como skipped con esa justificación.
+
+APROBADO

@@ -1,0 +1,157 @@
+Code review independiente — correcciones de aceptación beta
+Fecha: 2026-09-08
+Base revisada: 7a14590fe08ae0e4df3fdbfbfdc474954e7e1d62
+Alcance: código funcional, tests, manifest y XML runtime de
+addons-extra/extrairg/irg_tfm_convocatorias.
+No se editó código funcional y no se usó Docker.
+
+Veredicto: NO APROBADO
+======================
+
+Critical
+========
+
+1. [C1] Una referencia original inconsistente se convierte en contenido común
+
+   Archivo: addons-extra/extrairg/irg_tfm_convocatorias/models/slide_slide.py
+   Líneas: 97-106
+
+   _irg_effective_tfm_convocation_ids() devuelve un recordset vacío cuando el
+   clon tiene irg_original_slide_id pero la referencia no es una categoría del
+   HomeClass válido. Sin embargo, is_user_allowed_by_tfm_convocation() retorna
+   True inmediatamente en `if not required` antes de consultar
+   _irg_tfm_invalid_clone_origin(). Por tanto el caso que el plan exige denegar
+   falla abierto y se interpreta como contenido común. El propio test
+   test_online_clone_inherits_only_valid_homeclass_category_restriction espera
+   False en este escenario y fallaría si se ejecutara.
+
+   Corrección requerida: comprobar _irg_tfm_invalid_clone_origin() antes del
+   retorno por ausencia de convocatorias. Añadir/retener una prueba que demuestre
+   RED/GREEN tanto sobre la categoría como sobre un contenido hijo y URL directa.
+
+Important
+=========
+
+2. [I1] El controlador final de slide no conserva la capa Online para contenido no TFM
+
+   Archivos:
+   - addons-extra/extrairg/irg_tfm_convocatorias/controllers/portal.py, líneas 81-118
+   - addons-extra/extrairg/irg_tfm_convocatorias/__manifest__.py, línea 23
+
+   El manifest fuerza que este addon cargue después de
+   irg_online_subject_portal_visibility, pero WebsiteSlidesTfmRestrictions hereda
+   únicamente WebsiteSlidesPracticeRestrictions. Para cualquier slide que no
+   pertenezca a una familia TFM, el retorno `super().slide_view()` recorre la
+   cadena practice -> batch -> restrictions -> WebsiteSlides y no la cadena
+   OnlineSubjectVisibilitySlides -> CourseConvocatoriasSlides. Así se pierde la
+   redirección HomeClass/Online existente para slides no TFM. Además hay dos
+   clases controladoras hermanas en el mismo archivo, una basada en Online para
+   channel y otra basada en Practice para slide, sin una MRO común que haga
+   verificable el orden completo.
+
+   Corrección requerida: conservar explícitamente la cadena Online para casos no
+   TFM y la cadena batch/practice para casos TFM autorizados, con pruebas HTTP de
+   regresión para una asignatura no TFM HomeClass/Online además de las rutas TFM.
+
+3. [I2] El lifecycle no encuentra tesis al reparar la relación inversa del clon
+
+   Archivo: addons-extra/extrairg/irg_tfm_convocatorias/models/slide_channel.py
+   Líneas: 104-114 y 120-136
+
+   _irg_tfm_theses_for_family_lifecycle() solo parte de self, de su HomeClass
+   actual y del online del base actual. No busca bases que apunten a self mediante
+   irg_online_channel_id. Si base.irg_online_channel_id ya apunta al clon pero el
+   clon perdió irg_homeclass_channel_id, escribir el backlink para reparar la
+   familia captura únicamente el id del clon; las tesis configuradas en base no
+   se reconcilian y no se crea/mueve su membership. El mismo hueco puede dejar
+   referencias obsoletas al borrar un clon con el backlink roto.
+
+   Corrección requerida: capturar también las relaciones inversas pre-write/pre-
+   unlink y reconciliar la unión de tesis de las familias anterior y nueva. Debe
+   probarse reparación, desvinculación y unlink de cada extremo, no solo reemplazo
+   de base.irg_online_channel_id.
+
+4. [I3] unlink consulta con sudo antes de autorizar y no protege familias sin tesis
+
+   Archivo: addons-extra/extrairg/irg_tfm_convocatorias/models/slide_channel.py
+   Líneas: 104-114 y 131-136
+
+   unlink llama primero a _irg_tfm_theses_for_family_lifecycle(), que ejecuta
+   self.sudo(), y solo después comprueba base.group_user. Esto contradice la
+   condición del Security Advisor de autorizar antes de cualquier sudo. Además
+   el rechazo externo depende de que existan tesis activadas: un canal configurado
+   como familia TFM pero todavía sin expedientes no queda protegido por esta capa.
+   En write sucede lo contrario en alcance: cualquier cambio de los dos campos en
+   un canal no TFM es interceptado, pese a que la revisión de seguridad exige no
+   interceptar canales fuera de familias TFM.
+
+   Corrección requerida: determinar sin elevar privilegios si la operación entra
+   en el servicio protegido, autorizar antes de sudo y limitar el hook a familias
+   TFM (incluidas las configuradas aunque aún no tengan tesis).
+
+5. [I4] Los tests HTTP existentes contradicen el nuevo contrato fail-closed
+
+   Archivo: addons-extra/extrairg/irg_tfm_convocatorias/tests/test_tfm_elearning.py
+   Líneas: 633-660
+
+   El controlador nuevo devuelve not_found() cuando un usuario sin tesis exacta
+   solicita un canal o slide de una familia TFM. No obstante,
+   test_restricted_slide_route_denies_before_inherited_controller_and_allows_owner
+   sigue exigiendo HTTP 200 y una plantilla de bloqueo para el outsider, y
+   test_tfm_category_and_content_are_omitted_from_channel_listing_for_outsider
+   sigue exigiendo HTTP 200 para el listado. Con el contrato aprobado de cero
+   candidatos => 404, ambas aserciones son obsoletas y fallarán; si pasan,
+   demostrarían que el nuevo controlador no es el endpoint efectivo.
+
+   Corrección requerida: alinear estas pruebas con 404 y añadir casos HTTP para
+   múltiple tesis, lote desconocido/PRS y clon Online ausente. La prueba estática
+   que solo busca el texto `return super().slide_view(...)` no prueba la MRO real.
+
+6. [I5] La cobertura de hooks V2 y lifecycle no satisface los escenarios aprobados
+
+   Archivo: addons-extra/extrairg/irg_tfm_convocatorias/tests/test_tfm_elearning.py
+   Líneas: 215-281
+
+   test_tfm_membership_does_not_trigger_v2_sibling_sync sustituye el detector V2
+   con un mock; no crea la admisión Online ajena requerida y solo prueba la
+   asignación inicial, no retirada y reasignación. El lifecycle solo prueba el
+   reemplazo del clon desde el campo del base; no prueba write/unlink de ambos
+   extremos, familia rota ni preservación de una fila ajena durante esos cambios.
+   Esos huecos ocultan I2/I3 y dejan sin evidencia el aislamiento real de ambos
+   contextos.
+
+   Corrección requerida: usar fixtures reales de admisión/membership V2 y cubrir
+   asignación, retirada, reasignación, reparación, desvinculación y unlink.
+
+7. [I6] La aserción de vista espera que el xpath modifique campos de dos modelos
+
+   Archivos:
+   - addons-extra/extrairg/irg_tfm_convocatorias/views/tesis_model_views.xml,
+     líneas 12-14
+   - addons-extra/extrairg/irg_tfm_convocatorias/tests/test_tfm_deliveries.py,
+     líneas 187-193
+
+   El formulario base contiene dos nodos `status_thesis`: el campo de tesis y
+   otro dentro del tree one2many de ir.attachment. El locator de herencia aplica
+   al primer match, que es el campo de tesis; el test recupera ambos nodos del
+   arch combinado y exige que todos contengan irg_tfm_activated_at. El segundo
+   pertenece al submodelo de adjuntos y no debe recibir un modificador basado en
+   un campo de tesis. La prueba fallará o incentivará una corrección inválida.
+
+   Corrección requerida: hacer preciso el xpath al campo superior y comprobar en
+   el test solo ese nodo; la ocultación de documentos legacy ya se cubre ocultando
+   la página padre.
+
+Minor
+=====
+
+No se registran observaciones Minor mientras existan los bloqueantes anteriores.
+
+Conclusión
+==========
+
+La selección HC/MONLHC/ONL reutiliza correctamente el parser de cortes y el
+servicio de memberships sí usa ambos contextos en todas sus mutaciones propias.
+Sin embargo, C1 es un fallo de autorización fail-open y los puntos I1-I6 dejan
+regresiones o contratos beta sin cubrir. Se requiere volver a Implementación/TDD
+y repetir Review antes de Validación.

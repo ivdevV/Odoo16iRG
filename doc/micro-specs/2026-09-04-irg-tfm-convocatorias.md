@@ -7,7 +7,7 @@ Automatizar el expediente de TFM desde el 50 % de progreso, habilitar el envío 
 ## Alcance aprobado
 
 - Addon nuevo `irg_tfm_convocatorias`; no se modifica código de addons existentes.
-- Una ficha `tesis.model` por `op.student.course`, creada al alcanzar `completion_proc >= 50` cuando `activate_tesis=True` y el lote cumple: HC desde 2511, MONLHC desde 2601, ONL desde 2602; PRS excluido.
+- Una ficha `tesis.model` por `op.student.course`, creada al alcanzar `completion_porc >= 50` cuando `activate_tesis=True` y el lote cumple: HC desde 2511, MONLHC desde 2601, ONL desde 2602; PRS excluido.
 - La ficha y la tarjeta “Trabajo Final de Máster” aparecen al 50 %. Sin convocatoria solo se admiten versiones de Esquema con comentario opcional.
 - La convocatoria es global, manual, editable por usuarios internos y contiene las ventanas de Entrega parcial y Entrega final, en días completos y zona Europe/Madrid.
 - La asignación sin Esquema emite advertencia no bloqueante. Asignar cierra el Esquema; retirar reabre el Esquema y retira accesos posteriores.

@@ -9,9 +9,27 @@
                 <field name="irg_tfm_convocation_id"/>
                 <field name="irg_tfm_activated_at" readonly="1"/>
             </xpath>
+            <xpath expr="//sheet/group/group/field[@name='status_thesis']" position="attributes">
+                <attribute name="attrs">{'invisible': [('irg_tfm_activated_at', '!=', False)]}</attribute>
+            </xpath>
+            <xpath expr="//page[.//field[@name='attachment2_ids']]" position="attributes">
+                <attribute name="attrs">{'invisible': [('irg_tfm_activated_at', '!=', False)]}</attribute>
+            </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Entregas TFM">
-                    <field name="irg_tfm_submission_ids" readonly="1"/>
+                    <field name="irg_tfm_submission_ids" readonly="1">
+                        <tree create="false" delete="false"
+                              default_order="submitted_at desc, id desc">
+                            <field name="stage"/>
+                            <field name="version"/>
+                            <field name="attachment_id" string="Archivo"/>
+                            <field name="comment"/>
+                            <field name="convocation_id"/>
+                            <field name="submitted_by"/>
+                            <field name="submitted_at"/>
+                            <field name="internal_exception" optional="hide"/>
+                        </tree>
+                    </field>
                 </page>
             </xpath>
         </field>

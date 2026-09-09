@@ -47,16 +47,16 @@
                         <h4>Convocatoria: <t t-esc="convocation.display_name"/></h4>
                         <p>
                             Entrega parcial:
-                            <t t-esc="convocation.partial_open_date or '-'"/> —
-                            <t t-esc="convocation.partial_close_date or '-'"/>
+                            <t t-esc="partial_open_label"/> —
+                            <t t-esc="partial_close_label"/>
                         </p>
                         <p>
                             Entrega final:
-                            <t t-esc="convocation.final_open_date or '-'"/> —
-                            <t t-esc="convocation.final_close_date or '-'"/>
+                            <t t-esc="final_open_label"/> —
+                            <t t-esc="final_close_label"/>
                         </p>
                         <a t-if="elearning_url" class="btn btn-outline-primary" t-att-href="elearning_url">
-                            Acceder al contenido eLearning
+                            Guía y recursos para el TFM
                         </a>
                     </div>
                 </div>

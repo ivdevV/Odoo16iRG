@@ -1,0 +1,84 @@
+Security Advisor independiente — correcciones de aceptación beta, ronda 2
+Fecha: 2026-09-08
+Alcance: enmiendas del plan para irg_tfm_convocatorias e integración con
+irg_course_convocatorias_v2 / irg_online_subject_portal_visibility.
+No se modificó código funcional.
+
+Veredicto
+=========
+
+Las enmiendas cierran los tres bloqueantes de la primera ronda y permiten
+iniciar Implementación/TDD. La aprobación es del diseño; la Review y la
+Validación posteriores deben comprobar que el código conserva exactamente
+estos controles.
+
+Comprobación de bloqueantes anteriores
+======================================
+
+1. RESUELTO — Efectos laterales de memberships V2
+
+   El punto 8 exige que toda mutación TFM use conjuntamente
+   irg_tfm_membership_sync=True e irg_skip_partner_sync=True. Esto evita que
+   create/write de la conciliación TFM active la réplica HomeClass→Online de
+   irg_course_convocatorias_v2, cree una fila hermana o propague procedencia y
+   active sobre una fila que TFM no posee. Las pruebas previstas cubren
+   asignación, retirada y reasignación con una admisión Online ajena.
+
+2. RESUELTO — Ciclo de vida de la familia HomeClass/Online
+
+   El punto 9 incorpora write/unlink de slide.channel para reemplazo,
+   desvinculación o borrado de irg_online_channel_id/irg_homeclass_channel_id.
+   Exige conciliación idempotente, retirada exclusiva de referencias con
+   procedencia TFM, ausencia de unlink de memberships y preservación de filas
+   ajenas. También restringe estas mutaciones server-side a usuarios internos.
+   Las pruebas de lifecycle exigidas en la sección TDD deben verificar tanto el
+   destino nuevo como el archivo de la referencia antigua.
+
+3. RESUELTO — Rutas directas y resolución exacta por matrícula
+
+   Los puntos 3 y 5 fijan el orden de controladores mediante dependencias
+   directas, incluida irg_online_subject_portal_visibility, y sustituyen para
+   familias TFM la decisión global basada en op.admission por la cadena cerrada
+   res.users -> un op.student activo -> expedientes TFM activados de la familia
+   -> exactamente una matrícula cuyo canal efectivo coincide.
+
+   La búsqueda debe recoger todos los candidatos antes de filtrar; cero o
+   múltiples candidatos, PRS/código desconocido, familia rota y clon ausente
+   deniegan/404. Las rutas de canal y slide solo pueden redirigir dentro de la
+   misma familia y el gate de convocatoria permanece antes de cualquier super()
+   que pueda entregar o marcar contenido. Esto cubre listado, URL directa y el
+   rebote Online→HomeClass observado en beta.
+
+Comprobación de observaciones
+=============================
+
+- Selección de modalidad: cerrada. Online usa únicamente el clon; HomeClass
+  usa la base; PRS/desconocido no se interpreta como HomeClass.
+- Clones existentes: el punto 6 exige fallback por irg_original_slide_id solo
+  hacia una categoría original del HomeClass de la misma familia. Una relación
+  presente pero inconsistente deniega. Los futuros bootstraps copian
+  irg_tfm_convocation_ids solo en categorías.
+- Constraint de categorías: el punto 7 conserva el @api.constrains server-side;
+  force_save se limita a corregir los valores enviados por la vista y no se usa
+  como autorización.
+- Procedencia: una membership ajena puede dar visibilidad genérica, pero las
+  pruebas declaran que no sirve como autorización de contenido exclusivo y no
+  debe modificarse durante el lifecycle.
+- Cambios de lote/canal: el punto 4 y el punto 9 obligan a retirar referencias
+  TFM obsoletas después de resolver el destino nuevo de forma fail-closed.
+
+Condiciones para Review/Validación
+=================================
+
+- Comprobar que no queda ninguna llamada create/write de la conciliación TFM
+  sin ambos contextos de aislamiento.
+- Comprobar autorización interna antes de sudo en write/unlink de
+  slide.channel y que no se interceptan canales fuera de familias TFM.
+- Comprobar que el filtrado ORM no limita resultados antes de calcular el canal
+  efectivo y que la ambigüedad no cae al booleano "no Online = HomeClass".
+- Comprobar con URL de canal y URL de slide que una denegación ocurre antes de
+  render, descarga o action_set_viewed.
+- Comprobar que una referencia original inconsistente falla cerrada y que el
+  constraint rechaza create y write de convocatorias sobre materiales reales.
+
+[YES] Reason: Las enmiendas neutralizan explícitamente los hooks de memberships V2, cubren el lifecycle completo de la familia de canales y definen autorización fail-closed por usuario y matrícula exacta para las rutas de canal y slide, manteniendo procedencia, controles server-side y denegación ante ambigüedad o clon ausente.
