@@ -1,0 +1,11 @@
+RED tras Review — 2026-09-09
+
+Comando: `static_validator.py`
+Resultado: exit 1
+
+Se detectaron 77 métodos de prueba. Único contrato fallido:
+
+`online_inverse_fallback_is_exact_and_bounded`
+
+La producción todavía no rechazaba `direct.id == base.id` ni excluía `base.id`
+del dominio inverso. El fallo corresponde exactamente al P2 de Review.

@@ -1,0 +1,76 @@
+{
+  "status": "passed",
+  "task": "irg-tfm-online-elearning-fix",
+  "checks": [
+    {
+      "name": "static_validator",
+      "command": "C:\\Users\\admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe missions/irg-tfm-convocatorias/artifacts/static_validator.py",
+      "result": "pass",
+      "detail": "13 grupos pasaron: 19 Python AST, 7 XML, 77 pruebas estructurales y 39 contratos; 0 fallos.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "python_compileall",
+      "command": "python.exe -Xpycache_prefix=<directorio temporal externo> -m compileall -f -q addons-extra/extrairg/irg_tfm_convocatorias",
+      "result": "pass",
+      "detail": "Exit 0; pycache creado fuera del addon y eliminado tras validar su ruta.",
+      "evidence": "artifacts/validation-compileall.txt"
+    },
+    {
+      "name": "manifest_xml_parse",
+      "command": "python.exe -c <ast.literal_eval manifest y ElementTree.parse XML>",
+      "result": "pass",
+      "detail": "Manifest 16.0.1.0.4 válido, 8 data files existentes y 7 XML parseados.",
+      "evidence": "artifacts/validation-xml-xpath.txt"
+    },
+    {
+      "name": "online_view_xpath",
+      "command": "python.exe -c <lxml XPath contra irg_course_convocatorias_v2.view_slide_channel_form_convocatorias_v2>",
+      "result": "pass",
+      "detail": "El XPath nuevo localiza exactamente un field irg_online_section_ids en la vista padre.",
+      "evidence": "artifacts/validation-xml-xpath.txt"
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check",
+      "result": "pass",
+      "detail": "Exit 0; sin errores de whitespace.",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
+      "name": "git_scope",
+      "command": "git diff --name-only origin/Dev_iRG && git ls-files --others --exclude-standard && git status --short",
+      "result": "pass",
+      "detail": "Alcance limitado al addon TFM, contratos, micro-spec y artefactos de la misión; base origin/Dev_iRG 2eda902239b45b16ec504d160ef6668d24fabc0d.",
+      "evidence": "artifacts/validation-git-scope.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "El repositorio exige docker-compose.local.yml para pruebas Odoo y el usuario prohibió explícitamente ejecutar Docker en este ordenador. Se usaron contratos estáticos, parseo y compileall como alternativa sin afirmar cobertura runtime.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "El cambio XML activa E2E, pero TestSprite requiere el runtime local de docker-compose.local.yml; Docker está explícitamente prohibido por el usuario. No se apuntó a beta ni producción.",
+      "evidence": "artifacts/validation-git-scope.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "not started; Docker prohibited by user",
+    "database": "not created",
+    "base_commit": "2eda902239b45b16ec504d160ef6668d24fabc0d",
+    "branch": "codex/tfm-online-elearning-fix"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-static.txt",
+    "artifacts/validation-compileall.txt",
+    "artifacts/validation-xml-xpath.txt",
+    "artifacts/validation-git-scope.txt"
+  ]
+}

@@ -1,0 +1,22 @@
+Validación independiente — contratos estáticos
+Fecha: 2026-09-09
+
+Comando:
+C:\Users\admin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe missions/irg-tfm-convocatorias/artifacts/static_validator.py
+
+Resultado: PASS (exit 0)
+
+PASS python_ast: 19 files
+PASS xml_well_formed: 7 files
+PASS acl_csv: 2 unique canonical rows
+PASS manifest_imports: version 16.0.1.0.4; 15 dependencies; 8 data files; 9 model imports
+PASS repository_dependencies: all 12 repository-provided dependencies found
+PASS test_structure: 3 files; 5 test classes; 77 test methods
+PASS style: no trailing whitespace; no Python line exceeds 119 columns
+PASS pure_eligibility: 11 cutoff/exclusion cases
+PASS pure_pdf_docx: valid PDF/DOCX plus malformed, flood, forged EOCD and bomb cases
+PASS pure_doc: real WordDocument/FIB accepted; named-only and forged inputs rejected
+PASS static_contracts: 39 grouped contracts
+PASS inheritance_targets: 11 repository XML ids
+PASS artifact_scope: plan and micro-spec remain outside the addon
+SUMMARY: 13 validation groups passed; 0 failed

@@ -1,0 +1,15 @@
+Review independiente — ronda 1 — 2026-09-09
+
+Hallazgo bloqueante P2:
+
+`models/slide_channel.py` aceptaba el propio canal base como Online cuando los
+datos contenían un autorenlace directo o inverso. Eso podía devolver HomeClass a
+una matrícula Online, en vez de fallar cerrado.
+
+Requerido:
+
+- exigir `direct.id != base.id`;
+- excluir `base.id` del dominio inverso;
+- añadir regresiones para ambos caminos.
+
+Estado: NO APROBADO. Se reabre Implementación.

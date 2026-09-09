@@ -1,5 +1,5 @@
 from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, ValidationError
 
 
 class SlideSlide(models.Model):
@@ -18,6 +18,25 @@ class SlideSlide(models.Model):
             'significa contenido común dentro del canal TFM.'
         ),
     )
+
+    def _irg_require_internal_tfm_convocation_edit(self, values):
+        if (
+            'irg_tfm_convocation_ids' in values
+            and not self.env.user.has_group('base.group_user')
+        ):
+            raise AccessError(_(
+                'Only internal users can configure TFM convocations.',
+            ))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for values in vals_list:
+            self._irg_require_internal_tfm_convocation_edit(values)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        self._irg_require_internal_tfm_convocation_edit(vals)
+        return super().write(vals)
 
     @api.constrains('irg_tfm_convocation_ids', 'is_category')
     def _check_tfm_convocations_only_on_categories(self):

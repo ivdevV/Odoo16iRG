@@ -159,6 +159,18 @@ class TestTfmElearning(TransactionCase):
                 'irg_tfm_convocation_ids': [Command.set(convocation.ids)],
             })
 
+    def test_portal_user_cannot_write_tfm_convocation_tags(self):
+        user, _partner, _student, channel, _course, _batch, _enrollment, _thesis = (
+            self._portal_case()
+        )
+        category = self._category(channel)
+        convocation = self._convocation()
+
+        with self.assertRaises(AccessError):
+            category.with_user(user).write({
+                'irg_tfm_convocation_ids': [Command.set(convocation.ids)],
+            })
+
     def test_online_enrollment_resolves_clone_and_membership_from_exact_batch(self):
         base = self.env['slide.channel'].create({
             'name': 'TFM HomeClass %s' % self._suffix(),
@@ -188,6 +200,97 @@ class TestTfmElearning(TransactionCase):
         ])
         self.assertEqual(memberships.channel_id, online)
         self.assertFalse(memberships.filtered(lambda membership: membership.channel_id == base))
+
+    def test_inverse_only_online_clone_resolves_real_batch_and_membership(self):
+        base = self.env['slide.channel'].create({
+            'name': 'TFM inverse-only HomeClass %s' % self._suffix(),
+        })
+        online = self.env['slide.channel'].create({
+            'name': 'TFM inverse-only Online %s' % self._suffix(),
+            'irg_homeclass_channel_id': base.id,
+        })
+        user, partner, _student, _channel, _course, batch, enrollment, thesis = (
+            self._portal_case(channel=base, batch_code='MOPCONL2606')
+        )
+
+        self.assertFalse(base.irg_online_channel_id)
+        self.assertEqual(base._irg_tfm_effective_channel(enrollment), online)
+        resolved_thesis, resolved_channel = base._irg_tfm_route_for_user(user)
+        self.assertEqual(resolved_thesis, thesis)
+        self.assertEqual(resolved_channel, online)
+
+        thesis.write({'irg_tfm_convocation_id': self._convocation().id})
+        membership = self.env['slide.channel.partner'].sudo().search([
+            ('partner_id', '=', partner.id),
+            ('channel_id', '=', online.id),
+            ('batch_id', '=', batch.id),
+            ('active', '=', True),
+        ])
+        self.assertEqual(len(membership), 1)
+
+    def test_invalid_direct_pointer_falls_back_to_unique_inverse_clone(self):
+        base = self.env['slide.channel'].create({
+            'name': 'TFM inconsistent HomeClass %s' % self._suffix(),
+        })
+        invalid_direct = self.env['slide.channel'].create({
+            'name': 'TFM inconsistent direct %s' % self._suffix(),
+        })
+        online = self.env['slide.channel'].create({
+            'name': 'TFM consistent inverse %s' % self._suffix(),
+            'irg_homeclass_channel_id': base.id,
+        })
+        base.irg_online_channel_id = invalid_direct
+        _user, _partner, _student, _channel, _course, _batch, enrollment, _thesis = (
+            self._portal_case(channel=base, batch_code='MOPCONL2606')
+        )
+
+        self.assertEqual(base._irg_tfm_effective_channel(enrollment), online)
+        self.assertNotIn(invalid_direct, base._irg_tfm_family_channels())
+
+    def test_ambiguous_inverse_online_clones_fail_closed(self):
+        base = self.env['slide.channel'].create({
+            'name': 'TFM ambiguous HomeClass %s' % self._suffix(),
+        })
+        for index in range(2):
+            self.env['slide.channel'].create({
+                'name': 'TFM ambiguous Online %s %s' % (index, self._suffix()),
+                'irg_homeclass_channel_id': base.id,
+            })
+        user, _partner, _student, _channel, _course, _batch, enrollment, _thesis = (
+            self._portal_case(channel=base, batch_code='MOPCONL2606')
+        )
+
+        self.assertFalse(base._irg_tfm_effective_channel(enrollment))
+        self.assertFalse(base._irg_tfm_route_for_user(user)[0])
+        self.assertFalse(base._irg_tfm_route_for_user(user)[1])
+
+    def test_direct_online_self_link_fails_closed(self):
+        base = self.env['slide.channel'].create({
+            'name': 'TFM direct self-link %s' % self._suffix(),
+        })
+        base.write({
+            'irg_homeclass_channel_id': base.id,
+            'irg_online_channel_id': base.id,
+        })
+        user, _partner, _student, _channel, _course, _batch, enrollment, _thesis = (
+            self._portal_case(channel=base, batch_code='MOPCONL2606')
+        )
+
+        self.assertFalse(base._irg_tfm_effective_channel(enrollment))
+        self.assertFalse(base._irg_tfm_route_for_user(user)[0])
+
+    def test_inverse_online_self_link_fails_closed(self):
+        base = self.env['slide.channel'].create({
+            'name': 'TFM inverse self-link %s' % self._suffix(),
+        })
+        base.irg_homeclass_channel_id = base
+        user, _partner, _student, _channel, _course, _batch, enrollment, _thesis = (
+            self._portal_case(channel=base, batch_code='MOPCONL2606')
+        )
+
+        self.assertFalse(base.irg_online_channel_id)
+        self.assertFalse(base._irg_tfm_effective_channel(enrollment))
+        self.assertFalse(base._irg_tfm_route_for_user(user)[0])
 
     def test_unknown_batch_and_missing_online_clone_fail_closed(self):
         base = self.env['slide.channel'].create({
@@ -614,6 +717,31 @@ class TestTfmElearning(TransactionCase):
         self.assertTrue(category_nodes)
         self.assertTrue(all(node.get('force_save') == '1' for node in category_nodes))
 
+    def test_online_section_view_only_allows_convocation_edit(self):
+        view = self.env.ref(
+            'irg_tfm_convocatorias.view_slide_channel_form_tfm_online_sections',
+        )
+        arch = etree.fromstring(view.get_combined_arch())
+        pages = arch.xpath("//page[@name='irg_online_sections']")
+        self.assertTrue(pages)
+        online_fields = pages[0].xpath("./field[@name='irg_online_slide_ids']")
+        self.assertEqual(len(online_fields), 1)
+        online_field = online_fields[0]
+        self.assertEqual(online_field.get('domain'), "[('is_category', '=', True)]")
+        trees = online_field.xpath('./tree')
+        self.assertEqual(len(trees), 1)
+        self.assertEqual(trees[0].get('create'), '0')
+        self.assertEqual(trees[0].get('delete'), '0')
+        forms = online_field.xpath('./form')
+        self.assertEqual(len(forms), 1)
+        convocation_fields = forms[0].xpath(".//field[@name='irg_tfm_convocation_ids']")
+        self.assertEqual(len(convocation_fields), 1)
+        protected_names = {
+            'name', 'channel_id', 'allowed_batch_ids', 'scheduled_date', 'is_published',
+        }
+        protected = forms[0].xpath('.//field[@readonly="1"]')
+        self.assertTrue(protected_names.issubset({node.get('name') for node in protected}))
+
     def test_controller_and_qweb_keep_batch_practice_and_date_layers(self):
         controller_path = __import__(
             'pathlib', fromlist=['Path'],
@@ -814,7 +942,6 @@ class TestTfmElearningHttp(HttpCase):
             'is_published': True,
             'irg_homeclass_channel_id': base.id,
         })
-        base.irg_online_channel_id = online
         course = self.env['op.course'].create({
             'name': 'TFM route course %s' % suffix,
             'code': 'TFM-ROUTE-%s' % suffix,
@@ -824,7 +951,7 @@ class TestTfmElearningHttp(HttpCase):
         })
         batch = self.env['op.batch'].create({
             'name': 'TFM route batch %s' % suffix,
-            'code': 'ONL2602',
+            'code': 'MOPCONL2606',
             'course_id': course.id,
             'start_date': date.today(),
             'end_date': date.today() + timedelta(days=30),

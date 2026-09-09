@@ -118,7 +118,7 @@ for node in test_classes:
         for base in node.bases
     }
     assert base_names.intersection({"TransactionCase", "HttpCase"}), node.name
-assert test_count == 70
+assert test_count == 77
 passed("test_structure", f"3 files; 5 test classes; {test_count} test methods")
 
 long_lines = []
@@ -447,6 +447,32 @@ contracts = {
         "irg_online_channel_id",
         "irg_homeclass_channel_id",
     )),
+    "online_inverse_fallback_is_exact_and_bounded": all(term in channel for term in (
+        "def _irg_tfm_online_channel",
+        "direct.id != base.id",
+        "('irg_homeclass_channel_id', '=', base.id)",
+        "('id', '!=', base.id)",
+        "limit=2",
+        "len(inverse) == 1",
+    )),
+    "online_convocation_write_is_server_guarded": all(term in slide for term in (
+        "def _irg_require_internal_tfm_convocation_edit",
+        "def create(self, vals_list)",
+        "def write(self, vals)",
+        "Only internal users can configure TFM convocations",
+    )),
+    "online_real_batch_and_ambiguity_regressions": all(term in source(
+        "tests/test_tfm_elearning.py"
+    ) for term in (
+        "test_inverse_only_online_clone_resolves_real_batch_and_membership",
+        "test_invalid_direct_pointer_falls_back_to_unique_inverse_clone",
+        "test_ambiguous_inverse_online_clones_fail_closed",
+        "test_direct_online_self_link_fails_closed",
+        "test_inverse_online_self_link_fails_closed",
+        "test_online_section_view_only_allows_convocation_edit",
+        "test_portal_user_cannot_write_tfm_convocation_tags",
+        "MOPCONL2606",
+    )),
     "beta_membership_hook_isolation": (
         "irg_skip_partner_sync" in membership
         and membership.count("_TFM_SYNC_CONTEXT: True")
@@ -498,6 +524,24 @@ category_force_save = slide_view_root.findall(
 contracts["beta_section_category_force_save"] = bool(
     category_force_save and category_force_save[0].text == "1",
 )
+online_view_records = slide_view_root.findall(
+    ".//record[@id='view_slide_channel_form_tfm_online_sections']",
+)
+online_view_xml = (
+    ElementTree.tostring(online_view_records[0], encoding="unicode")
+    if online_view_records else ""
+)
+contracts["online_section_editor_is_narrow"] = all(term in online_view_xml for term in (
+    "irg_course_convocatorias_v2.view_slide_channel_form_convocatorias_v2",
+    "page[@name='irg_online_sections']",
+    "field[@name='irg_online_section_ids']",
+    "position=\"replace\"",
+    "name=\"irg_online_slide_ids\"",
+    "[('is_category', '=', True)]",
+    "name=\"irg_tfm_convocation_ids\"",
+    "create=\"0\"",
+    "delete=\"0\"",
+))
 contracts["beta_portal_copy_and_dates"] = (
     "Guía y recursos para el TFM" in portal_xml
     and "partial_open_label" in portal_xml
@@ -620,6 +664,10 @@ inheritance_targets = {
     "irg_practice_slide_restrictions.view_slide_channel_form_practice_restriction": (
         "addons-extra/extrairg/irg_practice_slide_restrictions/views/slide_channel_view.xml",
         'id="view_slide_channel_form_practice_restriction"',
+    ),
+    "irg_course_convocatorias_v2.view_slide_channel_form_convocatorias_v2": (
+        "addons-extra/extrairg/irg_course_convocatorias_v2/views/slide_channel_views.xml",
+        'id="view_slide_channel_form_convocatorias_v2"',
     ),
     "irg_practice_slide_restrictions.slide_fullscreen_sidebar_practice_hide": (
         "addons-extra/extrairg/irg_practice_slide_restrictions/views/templates.xml",

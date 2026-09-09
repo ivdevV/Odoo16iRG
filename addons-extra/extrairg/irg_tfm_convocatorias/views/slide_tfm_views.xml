@@ -47,4 +47,47 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_slide_channel_form_tfm_online_sections" model="ir.ui.view">
+        <field name="name">slide.channel.form.tfm.online.sections</field>
+        <field name="model">slide.channel</field>
+        <field name="inherit_id"
+               ref="irg_course_convocatorias_v2.view_slide_channel_form_convocatorias_v2"/>
+        <field name="priority" eval="130"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='irg_online_sections']/field[@name='irg_online_section_ids']"
+                   position="replace">
+                <field name="irg_online_slide_ids"
+                       mode="tree,form"
+                       domain="[('is_category', '=', True)]"
+                       context="{'bin_size': True}">
+                    <tree create="0" delete="0" edit="0">
+                        <field name="sequence" readonly="1"/>
+                        <field name="name" readonly="1"/>
+                        <field name="allowed_batch_ids" widget="many2many_tags" readonly="1"/>
+                        <field name="irg_tfm_convocation_ids"
+                               string="Convocatorias TFM"
+                               widget="many2many_tags"
+                               options="{'no_create': True, 'no_create_edit': True}"/>
+                        <field name="scheduled_date" readonly="1"/>
+                        <field name="is_published" readonly="1"/>
+                    </tree>
+                    <form string="Configurar convocatorias TFM de la sección Online">
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="channel_id" readonly="1"/>
+                            <field name="allowed_batch_ids" widget="many2many_tags" readonly="1"/>
+                            <field name="irg_tfm_convocation_ids"
+                                   widget="many2many_tags"
+                                   groups="base.group_user"
+                                   options="{'no_create': True, 'no_create_edit': True}"
+                                   help="Vacío significa contenido común; selecciona una o varias convocatorias para restringir esta categoría Online."/>
+                            <field name="scheduled_date" readonly="1"/>
+                            <field name="is_published" readonly="1"/>
+                        </group>
+                    </form>
+                </field>
+            </xpath>
+        </field>
+    </record>
 </odoo>

@@ -2,7 +2,7 @@
 
 **Categoría:** extrairg
 
-**Versión:** 16.0.1.0.3
+**Versión:** 16.0.1.0.4
 
 **Licencia:** LGPL-3
 
@@ -127,9 +127,13 @@ del módulo `irg_course_convocatorias_v2`. El lote de la matrícula TFM decide e
 destino: `ONL` abre el clon Online; `HC` y `MONLHC` abren el canal base. Una
 admisión Online de otro curso no cambia esta decisión.
 
-La relación debe ser simétrica: la base apunta al clon en **Canal Online** y el
-clon apunta a la base en **Canal HomeClass origen**. Si falta uno de los enlaces,
-el acceso se deniega hasta reparar la familia; nunca se concede por aproximación.
+Se recomienda mantener la relación simétrica: la base apunta al clon en **Canal
+Online** y el clon apunta a la base en **Canal HomeClass origen**. Para conservar
+compatibilidad con canales antiguos, si el enlace directo falta o es inválido el
+módulo acepta exclusivamente un clon que apunte de vuelta a esa misma base. Con
+cero candidatos, varios candidatos o un autorenlace, el acceso falla de forma
+cerrada. No se recorren relaciones indirectas ni se escoge un canal por
+aproximación.
 
 Cambiar el canal de un curso vuelve a conciliar las membresías de sus expedientes. El módulo no se apropia de membresías creadas por otros procesos: una membresía activa ajena puede seguir dando acceso genérico al canal, pero no se marca, modifica ni archiva como TFM.
 
@@ -159,6 +163,14 @@ se colocan dentro de la categoría correspondiente. No se crean los materiales
 en Secciones iRG. La versión 16.0.1.0.3 guarda expresamente el indicador **Es una
 categoría** del formulario embebido para evitar el mensaje «TFM convocations can
 only be configured on eLearning categories».
+
+En el canal base, el bloque **Secciones Online** de **Secciones iRG** muestra las
+categorías del clon Online y permite editar únicamente **Convocatorias TFM**. No
+permite crear ni borrar categorías Online ni modificar desde ese espejo el
+título, el canal, los lotes, las fechas o la publicación. Estas operaciones se
+siguen realizando en el propio canal Online. Además, el servidor rechaza cambios
+de convocatorias realizados por usuarios externos aunque intenten evitar la
+interfaz.
 
 En una familia HomeClass/Online, la categoría Online debe conservar su referencia
 al original HomeClass. Los clones nuevos copian las etiquetas TFM únicamente en
@@ -198,7 +210,7 @@ datos históricos no se eliminan.
 ## Comprobación recomendada en beta
 
 1. Actualice el addon **IRG TFM Convocatorias** y compruebe que indica la versión
-   `16.0.1.0.3`.
+   `16.0.1.0.4`.
 2. En el máster, active **Revisión de tesis** y seleccione el canal TFM base.
    Compruebe además los dos enlaces de la familia HomeClass/Online.
 3. Cree dos convocatorias, por ejemplo `BETA-A` y `BETA-B`, con las ventanas de
@@ -206,7 +218,8 @@ datos históricos no se eliminan.
 4. En el canal base cree dos categorías desde **Secciones iRG**. Asigne `BETA-A`
    a una y `BETA-B` a la otra; publique las categorías y sus materiales.
 5. Use un alumno de prueba con una única matrícula elegible. Para probar Online,
-   el lote debe cumplir `ONL2602` o posterior; para HomeClass, `HC2511` o posterior.
+   puede usar `MOPCONL2606` o cualquier lote que cumpla `ONL2602` o posterior;
+   para HomeClass, `HC2511` o posterior.
 6. Lleve su progreso a 50 % y entre en `/campus`. La tarjeta **Trabajo Final de
    Máster** debe aparecer dentro del curso y permitir solo versiones de Esquema.
 7. Envíe dos Esquemas. En backend, abra el expediente y confirme que **Entregas
@@ -263,19 +276,24 @@ En una máquina con el runtime autorizado, la instalación o actualización y la
 
 ## Pruebas y estado de validación
 
-El addon contiene 70 métodos `TransactionCase`/`HttpCase` distribuidos en:
+El addon contiene 77 métodos `TransactionCase`/`HttpCase` distribuidos en:
 
 - `tests/test_tfm_convocatorias.py`: cortes, activación, cron, unicidad, concurrencia y asignación.
 - `tests/test_tfm_deliveries.py`: ventanas, formatos, límites, versionado, propiedad, inmutabilidad, portal y rutas legacy.
 - `tests/test_tfm_elearning.py`: categorías, filtrado, URL directa, QWeb y membresías.
 
-La validación independiente del 8 de septiembre de 2026 aprobó los checks estáticos de AST Python, XML, ACL, manifest, imports, dependencias, estructura de tests, estilo, helpers puros, 35 contratos funcionales/de seguridad, targets de herencia y alcance Git. La versión 16.0.1.0.3 añade regresiones de matrícula exacta, familias HomeClass/Online, admisión ajena, lifecycle, URLs fail-closed, MRO de controladores, listado backend y formulario de categorías.
+La validación independiente del 9 de septiembre de 2026 aprobó los checks
+estáticos de AST Python, XML, ACL, manifest, imports, dependencias, estructura de
+tests, estilo, helpers puros, 39 contratos funcionales/de seguridad, targets de
+herencia y alcance Git. La versión 16.0.1.0.4 añade regresiones para el lote real
+`MOPCONL2606`, recuperación inversa única, ambigüedad, autorenlaces, edición
+backend estrecha y protección server-side de las convocatorias eLearning.
 
 Limitaciones de la evidencia disponible en esta máquina:
 
 - No se ejecutaron tests de módulo Odoo, integración PostgreSQL ni concurrencia real porque el usuario prohibió abrir o consultar Docker en este ordenador.
 - TestSprite MCP no estaba disponible y no se pudo iniciar su destino Odoo local desechable en el puerto 8069; no se abrió túnel ni se subió código.
-- Los 70 tests Odoo están validados estructuralmente, pero no se afirma un resultado de runtime ni E2E.
+- Los 77 tests Odoo están validados estructuralmente, pero no se afirma un resultado de runtime ni E2E.
 
 Antes de desplegar a beta o producción se debe repetir la instalación, la actualización, la suite Odoo y el flujo E2E de MyCampus/eLearning en una máquina que sí disponga de `docker-compose.local.yml` y TestSprite.
 
@@ -299,5 +317,6 @@ Antes de desplegar a beta o producción se debe repetir la instalación, la actu
 ## Referencias
 
 - [Micro-spec](../../micro-specs/2026-09-04-irg-tfm-convocatorias.md)
+- [Micro-spec de la corrección Online](../../micro-specs/2026-09-09-irg-tfm-online-elearning-fix.md)
 - [Plan y controles de implementación](../../../missions/irg-tfm-convocatorias/plan.md)
 - [Verificación de la misión](../../../missions/irg-tfm-convocatorias/verification.json)

@@ -1,0 +1,16 @@
+Security Advisor — 2026-09-09
+
+- Mantener el aislamiento por usuario, matrícula exacta y expediente único.
+- El puntero directo solo es válido si el clon apunta de vuelta al mismo
+  HomeClass.
+- Sin puntero directo válido, aceptar únicamente un clon inverso exacto.
+- Cero o varios clones inversos deben fallar cerrados.
+- No usar expansión transitiva para seleccionar el canal efectivo.
+- Proteger server-side la escritura de `irg_tfm_convocation_ids`.
+- En el editor Online permitir únicamente la convocatoria; conservar creación,
+  borrado, lote, fecha, publicación, canal y estructura bloqueados.
+- Mantener el paso por los controladores de restricciones existentes.
+
+[YES] Reason: El diseño de recuperación exacta y fallo cerrado es seguro si la
+implementación incorpora la restricción server-side del campo y no amplía la
+familia mediante relaciones transitivas para seleccionar el canal efectivo.

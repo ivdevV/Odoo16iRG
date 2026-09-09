@@ -1,0 +1,27 @@
+Validación independiente — Git y alcance
+Fecha: 2026-09-09
+
+Base y HEAD antes de documentar esta validación:
+- base_commit: 2eda902239b45b16ec504d160ef6668d24fabc0d
+- head_commit: 2eda902239b45b16ec504d160ef6668d24fabc0d
+- branch: codex/tfm-online-elearning-fix
+
+git diff --check
+Resultado: PASS (exit 0). Los avisos LF/CRLF son informativos; no hubo errores
+de whitespace.
+
+Alcance funcional observado:
+- addons-extra/extrairg/irg_tfm_convocatorias/__manifest__.py
+- addons-extra/extrairg/irg_tfm_convocatorias/models/slide_channel.py
+- addons-extra/extrairg/irg_tfm_convocatorias/models/slide_slide.py
+- addons-extra/extrairg/irg_tfm_convocatorias/tests/test_tfm_elearning.py
+- addons-extra/extrairg/irg_tfm_convocatorias/views/slide_tfm_views.xml
+- missions/irg-tfm-convocatorias/artifacts/static_validator.py
+
+Artefactos nuevos observados:
+- doc/micro-specs/2026-09-09-irg-tfm-online-elearning-fix.md
+- missions/irg-tfm-online-elearning-fix/
+
+Resultado de alcance: PASS. Los cambios están limitados al addon TFM, sus
+contratos estáticos y los artefactos/documentación de esta misión. El worktree
+está correctamente sucio porque la implementación aún no ha sido publicada.

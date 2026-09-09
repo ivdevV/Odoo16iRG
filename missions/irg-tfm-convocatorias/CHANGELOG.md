@@ -1,5 +1,31 @@
 # Changelog — irg_tfm_convocatorias
 
+## 16.0.1.0.4 — 2026-09-09
+
+### Corregido
+
+- **Secciones Online** permite asignar **Convocatorias TFM** a categorías del
+  clon desde el canal base, sin habilitar la creación, el borrado ni la edición
+  de otros datos del contenido.
+- El canal Online puede recuperarse cuando un clon antiguo conserva únicamente
+  el enlace inverso hacia su HomeClass, siempre que exista un solo candidato
+  exacto.
+- La selección del canal falla cerrada ante relaciones ambiguas, inconsistentes
+  o autorreferenciadas y no recorre familias transitivas.
+- Los usuarios externos no pueden modificar las convocatorias de una categoría
+  mediante llamadas directas al servidor.
+- Se añadió cobertura específica del lote real `MOPCONL2606` para verificar que
+  el alumno es dirigido al canal Online y recibe la membresía correcta.
+
+### Validación
+
+- Security Advisor aprobó la resolución exacta y los controles server-side.
+- Review independiente aprobada tras corregir el caso de autorenlace.
+- Validación independiente `passed`: 13 grupos, 77 pruebas estructurales, 39
+  contratos, compilación, XML/XPath y alcance Git sin fallos.
+- Odoo/PostgreSQL/TestSprite no se ejecutaron porque el usuario prohibió usar
+  Docker en este equipo; no se afirma un resultado de runtime o E2E.
+
 ## 16.0.1.0.3 — 2026-09-08
 
 ### Corregido

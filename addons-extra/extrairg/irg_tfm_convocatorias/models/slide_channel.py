@@ -15,10 +15,24 @@ class SlideChannel(models.Model):
         self.ensure_one()
         base = self._irg_tfm_base_channel()
         family = base
-        online = base.irg_online_channel_id
-        if online and online.irg_homeclass_channel_id == base:
+        online = base._irg_tfm_online_channel()
+        if online:
             family |= online
         return family
+
+    def _irg_tfm_online_channel(self):
+        """Return the one authoritative Online clone or fail closed."""
+        self.ensure_one()
+        base = self._irg_tfm_base_channel()
+        direct = base.irg_online_channel_id.sudo()
+        if direct and direct.id != base.id and direct.irg_homeclass_channel_id == base:
+            return direct
+
+        inverse = self.env['slide.channel'].sudo().search([
+            ('irg_homeclass_channel_id', '=', base.id),
+            ('id', '!=', base.id),
+        ], order='id', limit=2)
+        return inverse if len(inverse) == 1 else self.browse()
 
     def _irg_tfm_effective_channel(self, enrollment):
         """Select the channel from the exact TFM enrollment, never admission."""
@@ -33,7 +47,7 @@ class SlideChannel(models.Model):
             return self.browse()
         modality = eligibility[0]
         if modality == 'ONL':
-            online = base.irg_online_channel_id
+            online = base._irg_tfm_online_channel()
             if online and online in family:
                 return online
             return self.browse()
