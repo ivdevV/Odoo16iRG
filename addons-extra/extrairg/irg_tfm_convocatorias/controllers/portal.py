@@ -256,7 +256,9 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
             'thesis': thesis,
             'course': thesis.course_id.course_id,
             'outline': outline,
-            'editable': bool(outline.state == 'draft' and not thesis.irg_tfm_convocation_id),
+            'tfm_outline_editable': bool(
+                outline.state == 'draft' and not thesis.irg_tfm_convocation_id
+            ),
             'review': bool(review),
             'step_key': step,
             'step_keys': self._outline_steps,

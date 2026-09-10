@@ -18,3 +18,5 @@
   versionado y regresión del flujo de archivos.
 - Corregida la compilación QWeb del cuestionario en Odoo 16: los campos de
   título y descripción ahora se renderizan sobre nodos HTML compatibles.
+- Evitada la colisión con la variable `editable` reservada por Website, que
+  mostraba como solo lectura un borrador válido de un alumno Portal.

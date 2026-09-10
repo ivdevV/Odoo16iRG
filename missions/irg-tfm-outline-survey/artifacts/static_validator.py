@@ -106,6 +106,14 @@ contracts = {
         element.tag == 't' and 't-field' in element.attrib
         for element in portal_tree.iter()
     ),
+    'portal_avoids_reserved_website_editable_context': all((
+        "'tfm_outline_editable':" in portal_source,
+        't-if="tfm_outline_editable and review"' in portal_xml,
+        't-elif="tfm_outline_editable"' in portal_xml,
+        "'editable':" not in portal_source,
+        't-if="editable' not in portal_xml,
+        't-elif="editable' not in portal_xml,
+    )),
     'reviewer_group': (
         'group_tfm_reviewer' in security_xml
         and "[('state', '=', 'done')]" in security_xml

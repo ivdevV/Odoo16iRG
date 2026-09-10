@@ -106,6 +106,12 @@ Prueba de cierre:
 - Límites: 500 caracteres en texto corto, 20.000 en texto largo, 50 selecciones
   por pregunta y 100.000 caracteres totales por Esquema.
 
+Si un borrador sin convocatoria aparece en lectura después de actualizar desde
+una versión anterior, confirme que el servidor ha cargado la última plantilla y
+actualice el addon. El indicador del formulario se llama
+`tfm_outline_editable` para no colisionar con el contexto `editable` reservado
+por Website.
+
 ## Validación local de esta versión
 
 Pasaron compilación Python, validación XML/manifest/ACL, 16 contratos estáticos,

@@ -67,3 +67,13 @@
   compilación Python, ausencia global de `<t t-field>` y `git diff --check`.
   La compilación QWeb dentro de Odoo y E2E continúan omitidos por la prohibición
   explícita de Docker.
+- 2026-09-10: la prueba manual posterior mostró un borrador sin convocatoria en
+  modo lectura. Las capturas descartaron estado y convocatoria; se trazó la
+  condición hasta la clave QWeb genérica `editable` y se confirmó en el código
+  oficial de Website 16 que Odoo aporta esa misma variable para el editor web.
+- 2026-09-10: TDD RED añadió el contrato
+  `portal_avoids_reserved_website_editable_context`; falló antes del cambio. La
+  clave se renombró de forma mínima a `tfm_outline_editable` en controlador y
+  plantilla. GREEN: 18 contratos. Review independiente `PASS`; validación
+  independiente `PASS` en contratos, Python, XML, nombres y diff. Docker no se
+  utilizó.

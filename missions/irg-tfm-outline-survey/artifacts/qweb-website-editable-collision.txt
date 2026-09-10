@@ -1,0 +1,34 @@
+Website editable context collision — 2026-09-10
+
+Observed behavior:
+A Portal student with a draft outline and no TFM convocation reached step 1,
+but the template rendered "Este cuestionario está disponible únicamente en
+modo lectura" and no questions.
+
+Root cause:
+The controller exposed the business permission as the generic QWeb key
+`editable`. Odoo Website 16 supplies that same key for website-editor state;
+for a Portal student it is false and overrides the questionnaire flag.
+
+Automated RED before production change:
+static_validator.py -> exit 1
+Failure: ['portal_avoids_reserved_website_editable_context']
+
+Minimal production change:
+- Controller key: editable -> tfm_outline_editable.
+- QWeb consumers: two conditions renamed to tfm_outline_editable.
+- Server-side ownership, draft-state and convocation checks unchanged.
+
+Independent GREEN validation:
+- static_validator.py: exit 0, 18 contracts.
+- compileall: exit 0.
+- ElementTree: valid XML, root odoo, 5 templates.
+- reserved runtime occurrences: 0.
+- tfm_outline_editable: 1 controller occurrence, 2 QWeb occurrences.
+- git diff --check: exit 0, informational LF/CRLF warnings only.
+- code review: PASS; validation: PASS.
+
+Runtime limitation:
+Odoo/QWeb, HTTP and E2E were not run because Docker is explicitly prohibited
+on this computer. Beta was used only to report the original symptom, not as an
+automated validation environment.

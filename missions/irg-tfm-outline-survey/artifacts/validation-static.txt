@@ -7,7 +7,7 @@ Exit code: 0
 Result:
 {
   "status": "pass",
-  "contracts": 17
+  "contracts": 18
 }
 
 The validator parsed every Python and XML file in the addon and checked the
@@ -17,3 +17,5 @@ escaped output, reviewer access, non-notifying chatter, legacy outline closure,
 immutability, and test scope.
 The seventeenth contract rejects `t-field` directives on virtual `<t>` nodes,
 which Odoo 16 cannot compile.
+The eighteenth contract prevents the portal flow from reusing Website's
+reserved `editable` context key.

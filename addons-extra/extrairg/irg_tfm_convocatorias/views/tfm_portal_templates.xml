@@ -178,7 +178,7 @@
                                     </div>
                                 </div>
                             </t>
-                            <form t-if="editable and review" method="post"
+                            <form t-if="tfm_outline_editable and review" method="post"
                                   t-attf-action="/campus/course/#{course.id}/tfm/outline/#{outline.id}/submit">
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                 <input type="hidden" name="revision" t-att-value="outline.revision"/>
@@ -188,7 +188,7 @@
                             </form>
                         </div>
 
-                        <form t-elif="editable" method="post"
+                        <form t-elif="tfm_outline_editable" method="post"
                               t-attf-action="/campus/course/#{course.id}/tfm/outline/#{outline.id}/save">
                             <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                             <input type="hidden" name="revision" t-att-value="outline.revision"/>

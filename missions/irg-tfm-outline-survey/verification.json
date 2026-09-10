@@ -6,7 +6,7 @@
       "name": "static_tdd_contracts",
       "command": "C:\\Users\\admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe missions/irg-tfm-outline-survey/artifacts/static_validator.py",
       "result": "pass",
-      "detail": "17 static architecture, security, portal, QWeb compatibility and TDD contracts passed.",
+      "detail": "18 static architecture, security, portal, QWeb compatibility and TDD contracts passed.",
       "evidence": "artifacts/validation-static.txt"
     },
     {
@@ -43,6 +43,13 @@
       "result": "pass",
       "detail": "The portal XML is well formed and no t-field directive remains on a virtual <t> node; independent code review and validation passed.",
       "evidence": "artifacts/qweb-t-field-hotfix.txt"
+    },
+    {
+      "name": "website_editable_context_collision",
+      "command": "Static controller/template name contract and repository scan",
+      "result": "pass",
+      "detail": "The reserved Website key editable has zero runtime occurrences in this flow; tfm_outline_editable appears once in the controller and twice in QWeb. Independent review and validation passed.",
+      "evidence": "artifacts/qweb-website-editable-collision.txt"
     },
     {
       "name": "odoo_module_tests",
@@ -84,6 +91,7 @@
     "artifacts/validation-git.txt",
     "artifacts/validation-security-scan.txt",
     "artifacts/qweb-t-field-hotfix.txt",
+    "artifacts/qweb-website-editable-collision.txt",
     "artifacts/validation-runtime-skips.txt"
   ]
 }
