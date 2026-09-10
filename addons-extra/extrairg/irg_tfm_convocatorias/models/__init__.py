@@ -4,6 +4,11 @@ from . import op_student_course
 from . import app_gradebook_result
 from . import tesis_model
 from . import irg_tfm_entrega
+from . import irg_tfm_esquema
+from . import survey_question
+from . import survey_survey
+from . import survey_user_input
+from . import res_config_settings
 from . import slide_channel
 from . import slide_slide
 from . import slide_channel_partner

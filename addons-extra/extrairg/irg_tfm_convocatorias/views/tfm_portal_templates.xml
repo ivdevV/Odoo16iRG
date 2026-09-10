@@ -64,12 +64,53 @@
                     Aún no hay convocatoria asignada. Puedes enviar nuevas versiones del Esquema.
                 </p>
 
-                <t t-call="irg_tfm_convocatorias.tfm_submission_section">
-                    <t t-set="title">Esquema</t>
-                    <t t-set="stage">outline</t>
-                    <t t-set="deliveries" t-value="outline_deliveries"/>
-                    <t t-set="is_open" t-value="outline_open"/>
-                </t>
+                <section class="card mb-4">
+                    <div class="card-body">
+                        <h3>Esquema</h3>
+                        <p t-if="not outline_versions and not outline_draft and not legacy_outline_deliveries"
+                           class="text-muted">No hay versiones todavía.</p>
+                        <div t-foreach="outline_versions" t-as="outline"
+                             class="border rounded p-2 mb-2">
+                            <strong>Versión <t t-esc="outline.version"/></strong>
+                            <span class="text-muted"> — <t t-esc="outline.submitted_at"/></span>
+                            <a class="ms-2"
+                               t-attf-href="/campus/course/#{course.id}/tfm/outline/#{outline.id}">
+                                Ver respuestas
+                            </a>
+                        </div>
+                        <div t-if="outline_draft" class="alert alert-secondary mt-3">
+                            <strong>Borrador guardado</strong>
+                            <span> — último paso:
+                                <t t-esc="outline_step_labels.get(outline_draft.current_step)"/>
+                            </span>
+                        </div>
+                        <form t-if="not convocation" method="post"
+                              t-attf-action="/campus/course/#{course.id}/tfm/outline/start"
+                              class="mt-3">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="btn btn-primary">
+                                <t t-if="outline_draft">Continuar borrador</t>
+                                <t t-else="">Comenzar cuestionario</t>
+                            </button>
+                        </form>
+                        <p t-else="" class="text-muted mt-3">
+                            El Esquema está cerrado porque ya tienes una convocatoria asignada.
+                        </p>
+
+                        <div t-if="legacy_outline_deliveries" class="mt-4">
+                            <h5>Esquemas anteriores en archivo</h5>
+                            <div t-foreach="legacy_outline_deliveries" t-as="delivery"
+                                 class="border rounded p-2 mb-2">
+                                <strong>Versión <t t-esc="delivery.version"/></strong>
+                                <span class="text-muted"> — <t t-esc="delivery.submitted_at"/></span>
+                                <p t-if="delivery.comment" class="mb-1"><t t-esc="delivery.comment"/></p>
+                                <a t-attf-href="/campus/tfm/delivery/#{delivery.id}/download">
+                                    Descargar archivo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
                 <t t-if="convocation or partial_deliveries or final_deliveries">
                     <t t-if="convocation or partial_deliveries">
                     <t t-call="irg_tfm_convocatorias.tfm_submission_section">
@@ -88,6 +129,121 @@
                     </t>
                     </t>
                 </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="tfm_outline_form" name="Cuestionario de Esquema TFM">
+        <t t-call="website.layout">
+            <div class="container mt-4 mb-5">
+                <a t-attf-href="/campus/course/#{course.id}/tfm" class="btn btn-link px-0">
+                    ← Volver a Trabajo Final de Máster
+                </a>
+                <h1>Esquema del Trabajo Final de Máster</h1>
+                <p class="text-muted"><t t-esc="course.name"/></p>
+
+                <div t-if="error" class="alert alert-danger" role="alert">
+                    <t t-esc="error"/>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="mb-0">
+                                <t t-if="outline.state == 'done'">Versión <t t-esc="outline.version"/></t>
+                                <t t-elif="review">Revisar respuestas</t>
+                                <t t-else=""><t t-esc="step_label"/></t>
+                            </h3>
+                            <span t-if="outline.state == 'draft' and not review" class="text-muted">
+                                Paso <t t-esc="step_number"/> de 3
+                            </span>
+                        </div>
+
+                        <div t-if="outline.state == 'done' or review">
+                            <t t-foreach="step_keys" t-as="review_step">
+                                <div class="mb-4">
+                                    <h4><t t-esc="step_labels.get(review_step)"/></h4>
+                                    <div t-foreach="outline.question_ids.filtered(lambda item: item.step_key == review_step)"
+                                         t-as="question" class="border rounded p-3 mb-2">
+                                        <strong><t t-field="question.title"/></strong>
+                                        <div t-if="question.question_type in ('simple_choice', 'multiple_choice')">
+                                            <span t-if="not question.selected_option_ids" class="text-muted">Sin respuesta</span>
+                                            <ul t-else="" class="mb-0">
+                                                <li t-foreach="question.selected_option_ids" t-as="option">
+                                                    <t t-esc="option.value"/>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <p t-else="" class="mb-0" style="white-space: pre-wrap;"><t t-esc="question.answer_text or 'Sin respuesta'"/></p>
+                                    </div>
+                                </div>
+                            </t>
+                            <form t-if="editable and review" method="post"
+                                  t-attf-action="/campus/course/#{course.id}/tfm/outline/#{outline.id}/submit">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="revision" t-att-value="outline.revision"/>
+                                <a t-attf-href="/campus/course/#{course.id}/tfm/outline/#{outline.id}?step=results"
+                                   class="btn btn-secondary">Volver a editar</a>
+                                <button type="submit" class="btn btn-primary">Enviar Esquema</button>
+                            </form>
+                        </div>
+
+                        <form t-elif="editable" method="post"
+                              t-attf-action="/campus/course/#{course.id}/tfm/outline/#{outline.id}/save">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="revision" t-att-value="outline.revision"/>
+                            <input type="hidden" name="step" t-att-value="step_key"/>
+                            <div t-foreach="step_questions" t-as="question" class="mb-4">
+                                <label t-attf-for="tfm_question_#{question.id}" class="form-label fw-bold">
+                                    <t t-field="question.title"/>
+                                    <span t-if="question.mandatory" class="text-danger"> *</span>
+                                </label>
+                                <div t-if="question.description" class="form-text mb-2">
+                                    <t t-field="question.description"/>
+                                </div>
+                                <input t-if="question.question_type == 'char_box'"
+                                       t-att-type="'email' if question.prefill_source == 'student_email' else 'text'"
+                                       t-attf-name="question_#{question.id}"
+                                       t-attf-id="tfm_question_#{question.id}"
+                                       t-att-value="question.answer_text or ''"
+                                       maxlength="500" class="form-control"/>
+                                <textarea t-if="question.question_type == 'text_box'"
+                                          t-attf-name="question_#{question.id}"
+                                          t-attf-id="tfm_question_#{question.id}"
+                                          maxlength="20000" rows="6" class="form-control"><t t-esc="question.answer_text or ''"/></textarea>
+                                <div t-if="question.question_type in ('simple_choice', 'multiple_choice')">
+                                    <div t-foreach="question.option_ids" t-as="option" class="form-check mb-1">
+                                        <input t-att-type="'radio' if question.question_type == 'simple_choice' else 'checkbox'"
+                                               t-attf-name="question_#{question.id}"
+                                               t-attf-id="tfm_question_#{question.id}_#{option.id}"
+                                               t-att-value="option.id"
+                                               t-att-checked="option in question.selected_option_ids"
+                                               class="form-check-input"/>
+                                        <label t-attf-for="tfm_question_#{question.id}_#{option.id}"
+                                               class="form-check-label"><t t-esc="option.value"/></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 justify-content-between">
+                                <a t-if="previous_step"
+                                   t-attf-href="/campus/course/#{course.id}/tfm/outline/#{outline.id}?step=#{previous_step}"
+                                   class="btn btn-secondary">Anterior</a>
+                                <span t-else=""/>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" name="action" value="save"
+                                            class="btn btn-outline-primary">Guardar borrador</button>
+                                    <button t-if="next_step" type="submit" name="action" value="next"
+                                            class="btn btn-primary">Siguiente</button>
+                                    <button t-else="" type="submit" name="action" value="review"
+                                            class="btn btn-primary">Revisar y enviar Esquema</button>
+                                </div>
+                            </div>
+                        </form>
+                        <p t-else="" class="text-muted mb-0">
+                            Este cuestionario está disponible únicamente en modo lectura.
+                        </p>
+                    </div>
+                </div>
             </div>
         </t>
     </template>

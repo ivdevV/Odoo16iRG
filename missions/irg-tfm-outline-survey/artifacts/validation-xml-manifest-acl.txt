@@ -1,0 +1,19 @@
+Independent validation — 2026-09-10
+
+Command: Python AST/ElementTree/CSV contract check over the addon manifest,
+all XML files, manifest data paths, load order and access-control rows.
+
+Exit code: 0
+Result:
+{'xml_files': 11, 'manifest_data': 12, 'acl_rows': 5,
+ 'required_acl': ['model_irg_tfm_esquema',
+                  'model_irg_tfm_esquema_opcion',
+                  'model_irg_tfm_esquema_pregunta'],
+ 'status': 'pass'}
+
+Confirmed:
+- every manifest data path exists;
+- all 11 addon XML files are well formed;
+- the TFM reviewer group is loaded before its ACL rows;
+- the three snapshot models have reviewer read-only ACLs;
+- none of those models grants an ACL to base.group_portal.

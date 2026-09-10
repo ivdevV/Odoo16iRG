@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG TFM Convocatorias',
-    'version': '16.0.1.0.4',
+    'version': '16.0.1.1.0',
     'summary': 'Activa y administra convocatorias de Trabajo Final de Máster',
     'category': 'Education',
     'author': 'IRG',
@@ -12,6 +12,7 @@
         'openeducat_core',
         'isep_student_filter',
         'isep_gradebook',
+        'survey',
         'website_slides',
         'isep_tesis_model',
         'irg_course_portal_tiles',
@@ -24,11 +25,15 @@
         'irg_auto_enroll_cron_robust',
     ],
     'data': [
+        'security/irg_tfm_security.xml',
         'security/ir.model.access.csv',
         'data/ir_cron.xml',
+        'data/tfm_outline_survey.xml',
         'views/irg_tfm_convocatoria_views.xml',
         'views/op_course_views.xml',
         'views/tesis_model_views.xml',
+        'views/survey_tfm_views.xml',
+        'views/res_config_settings_views.xml',
         'views/tfm_portal_templates.xml',
         'views/slide_tfm_views.xml',
         'views/tfm_slide_templates.xml',

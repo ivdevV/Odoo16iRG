@@ -1,3 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_irg_tfm_convocatoria_internal,irg.tfm.convocatoria internal,model_irg_tfm_convocatoria,base.group_user,1,1,1,1
 access_irg_tfm_entrega_internal_read,irg.tfm.entrega internal read,model_irg_tfm_entrega,base.group_user,1,0,0,0
+access_irg_tfm_esquema_reviewer_read,irg.tfm.esquema reviewer read,model_irg_tfm_esquema,group_tfm_reviewer,1,0,0,0
+access_irg_tfm_esquema_pregunta_reviewer_read,irg.tfm.esquema.pregunta reviewer read,model_irg_tfm_esquema_pregunta,group_tfm_reviewer,1,0,0,0
+access_irg_tfm_esquema_opcion_reviewer_read,irg.tfm.esquema.opcion reviewer read,model_irg_tfm_esquema_opcion,group_tfm_reviewer,1,0,0,0

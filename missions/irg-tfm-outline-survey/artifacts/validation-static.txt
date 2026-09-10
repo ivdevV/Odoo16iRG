@@ -1,0 +1,17 @@
+Independent validation — 2026-09-10
+
+Command:
+C:\Users\admin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe missions/irg-tfm-outline-survey/artifacts/static_validator.py
+
+Exit code: 0
+Result:
+{
+  "status": "pass",
+  "contracts": 16
+}
+
+The validator parsed every Python and XML file in the addon and checked the
+survey-template boundary, native Survey attempt blocking, private snapshot
+models, optimistic revision, lock ordering, input limits, three steps, CSRF,
+escaped output, reviewer access, non-notifying chatter, legacy outline closure,
+immutability, and test scope.

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="tfm_outline_survey" model="survey.survey">
+        <field name="title">Esquema preliminar y orientador del TFM</field>
+        <field name="questions_layout">page_per_section</field>
+        <field name="access_mode">token</field>
+        <field name="users_login_required" eval="True"/>
+        <field name="irg_tfm_template_only" eval="True"/>
+    </record>
+
+    <record id="tfm_outline_page_proposal" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Datos y propuesta</field>
+        <field name="sequence">10</field>
+        <field name="is_page" eval="True"/>
+        <field name="irg_tfm_step_key">proposal</field>
+    </record>
+    <record id="tfm_outline_name" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Nombre y apellidos</field>
+        <field name="sequence">20</field>
+        <field name="question_type">char_box</field>
+        <field name="constr_mandatory" eval="True"/>
+        <field name="irg_tfm_prefill_source">student_name</field>
+    </record>
+    <record id="tfm_outline_email" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Correo electrónico personal</field>
+        <field name="sequence">30</field>
+        <field name="question_type">char_box</field>
+        <field name="constr_mandatory" eval="True"/>
+        <field name="irg_tfm_prefill_source">student_email</field>
+    </record>
+    <record id="tfm_outline_master" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Máster en el que estudia</field>
+        <field name="sequence">40</field>
+        <field name="question_type">char_box</field>
+        <field name="constr_mandatory" eval="True"/>
+        <field name="irg_tfm_prefill_source">master_name</field>
+    </record>
+    <record id="tfm_outline_provisional_title" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Título provisional del TFM</field>
+        <field name="description">Formula un título claro y preciso que refleje el tema central del TFM y anticipe la finalidad o el enfoque principal del trabajo.</field>
+        <field name="sequence">50</field>
+        <field name="question_type">char_box</field>
+        <field name="constr_mandatory" eval="True"/>
+    </record>
+    <record id="tfm_outline_modality" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Modalidad del TFM</field>
+        <field name="sequence">60</field>
+        <field name="question_type">multiple_choice</field>
+        <field name="constr_mandatory" eval="True"/>
+    </record>
+    <record id="tfm_outline_modality_review" model="survey.question.answer">
+        <field name="question_id" ref="tfm_outline_modality"/>
+        <field name="value">Revisión bibliográfica</field>
+    </record>
+    <record id="tfm_outline_modality_resource" model="survey.question.answer">
+        <field name="question_id" ref="tfm_outline_modality"/>
+        <field name="value">Elaboración de recurso didáctico para la intervención</field>
+    </record>
+    <record id="tfm_outline_modality_apply" model="survey.question.answer">
+        <field name="question_id" ref="tfm_outline_modality"/>
+        <field name="value">Diseño, aplicación y evaluación de un programa de intervención</field>
+    </record>
+    <record id="tfm_outline_modality_design" model="survey.question.answer">
+        <field name="question_id" ref="tfm_outline_modality"/>
+        <field name="value">Diseño y evaluación de un programa de intervención (sin aplicación práctica)</field>
+    </record>
+
+    <record id="tfm_outline_page_approach" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Planteamiento</field>
+        <field name="sequence">70</field>
+        <field name="is_page" eval="True"/>
+        <field name="irg_tfm_step_key">approach</field>
+    </record>
+    <record id="tfm_outline_problem" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Planteamiento del problema</field>
+        <field name="description">Describe brevemente el fenómeno o necesidad que deseas abordar, su relevancia profesional o social, el contexto donde se presenta y las principales razones que justifican su estudio o intervención.</field>
+        <field name="sequence">80</field>
+        <field name="question_type">text_box</field>
+        <field name="constr_mandatory" eval="True"/>
+    </record>
+    <record id="tfm_outline_objective" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Objetivo general</field>
+        <field name="description">Redacta un enunciado que exprese la meta principal de tu trabajo, indicando qué pretendes lograr o aportar con el desarrollo del TFM.</field>
+        <field name="sequence">90</field>
+        <field name="question_type">text_box</field>
+        <field name="constr_mandatory" eval="True"/>
+    </record>
+    <record id="tfm_outline_research_question" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Pregunta de investigación (solo modalidad 1)</field>
+        <field name="description">Si has elegido revisión bibliográfica, formula la pregunta concreta que orientará la búsqueda y el análisis.</field>
+        <field name="sequence">100</field>
+        <field name="question_type">text_box</field>
+        <field name="constr_mandatory" eval="False"/>
+    </record>
+
+    <record id="tfm_outline_page_results" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Resultados y fuentes</field>
+        <field name="sequence">110</field>
+        <field name="is_page" eval="True"/>
+        <field name="irg_tfm_step_key">results</field>
+    </record>
+    <record id="tfm_outline_expected_results" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Resultados esperados</field>
+        <field name="description">Describe los logros o aportes que prevés alcanzar con tu TFM y cómo podrían mejorar la práctica profesional, el aprendizaje o el bienestar de los destinatarios.</field>
+        <field name="sequence">120</field>
+        <field name="question_type">text_box</field>
+        <field name="constr_mandatory" eval="True"/>
+    </record>
+    <record id="tfm_outline_references" model="survey.question">
+        <field name="survey_id" ref="tfm_outline_survey"/>
+        <field name="title">Referencias bibliográficas</field>
+        <field name="description">Indica al menos cinco fuentes académicas en formato APA 7.ª edición que utilizarías en tu trabajo.</field>
+        <field name="sequence">130</field>
+        <field name="question_type">text_box</field>
+        <field name="constr_mandatory" eval="True"/>
+    </record>
+
+</odoo>

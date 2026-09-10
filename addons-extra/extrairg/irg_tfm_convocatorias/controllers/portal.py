@@ -150,6 +150,23 @@ class WebsiteSlidesTfmRestrictions(
 
 
 class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
+    _outline_steps = ('proposal', 'approach', 'results')
+    _outline_step_labels = {
+        'proposal': 'Datos y propuesta',
+        'approach': 'Planteamiento',
+        'results': 'Resultados y fuentes',
+    }
+
+    def _frozen_outline_step_labels(self, outline):
+        labels = dict(self._outline_step_labels)
+        if outline:
+            for question in outline.question_ids.sorted(
+                key=lambda item: (item.sequence, item.id)
+            ):
+                if question.step_key in labels and question.section_title:
+                    labels[question.step_key] = question.section_title
+        return labels
+
     def _page_values(self, thesis, error=None):
         course = thesis.course_id.course_id
         convocation = thesis.irg_tfm_convocation_id
@@ -171,6 +188,9 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         deliveries = thesis.irg_tfm_submission_ids.sorted(
             key=lambda delivery: (delivery.submitted_at, delivery.id), reverse=True,
         )
+        outlines = request.env['irg.tfm.esquema'].sudo().search([
+            ('thesis_id', '=', thesis.id),
+        ], order='submitted_at desc, started_at desc, id desc')
         channel = request.env['slide.channel']
         if convocation and convocation.active and course.irg_tfm_channel_id:
             resolved_thesis, effective = course.irg_tfm_channel_id._irg_tfm_route_for_user(
@@ -182,11 +202,19 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         def display_date(value):
             return value.strftime('%d/%m/%Y') if value else '-'
 
+        outline_draft = outlines.filtered(
+            lambda outline: outline.state == 'draft'
+        )[:1]
         return {
             'thesis': thesis,
             'course': course,
             'convocation': convocation,
-            'outline_deliveries': deliveries.filtered(lambda delivery: delivery.stage == 'outline'),
+            'outline_versions': outlines.filtered(lambda outline: outline.state == 'done'),
+            'outline_draft': outline_draft,
+            'outline_step_labels': self._frozen_outline_step_labels(outline_draft),
+            'legacy_outline_deliveries': deliveries.filtered(
+                lambda delivery: delivery.stage == 'outline'
+            ),
             'partial_deliveries': deliveries.filtered(lambda delivery: delivery.stage == 'partial'),
             'final_deliveries': deliveries.filtered(lambda delivery: delivery.stage == 'final'),
             'outline_open': not convocation,
@@ -204,6 +232,44 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
             ),
             'final_close_label': display_date(
                 convocation.final_close_date if convocation else False,
+            ),
+            'error': error,
+        }
+
+    def _owned_outline(self, thesis, outline_id, draft_only=False):
+        try:
+            outline_id = int(outline_id)
+        except (TypeError, ValueError):
+            return request.env['irg.tfm.esquema']
+        domain = [('id', '=', outline_id), ('thesis_id', '=', thesis.id)]
+        if draft_only:
+            domain.extend([('state', '=', 'draft'), ('version', '=', 0)])
+        return request.env['irg.tfm.esquema'].sudo().search(domain, limit=1)
+
+    def _outline_values(self, thesis, outline, step=None, review=False, error=None):
+        step = step if step in self._outline_steps else outline.current_step
+        if step not in self._outline_steps:
+            step = self._outline_steps[0]
+        position = self._outline_steps.index(step)
+        step_labels = self._frozen_outline_step_labels(outline)
+        return {
+            'thesis': thesis,
+            'course': thesis.course_id.course_id,
+            'outline': outline,
+            'editable': bool(outline.state == 'draft' and not thesis.irg_tfm_convocation_id),
+            'review': bool(review),
+            'step_key': step,
+            'step_keys': self._outline_steps,
+            'step_labels': step_labels,
+            'step_label': step_labels[step],
+            'step_number': position + 1,
+            'previous_step': self._outline_steps[position - 1] if position else False,
+            'next_step': (
+                self._outline_steps[position + 1]
+                if position + 1 < len(self._outline_steps) else False
+            ),
+            'step_questions': outline.question_ids.filtered(
+                lambda question: question.step_key == step
             ),
             'error': error,
         }
@@ -229,6 +295,132 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         )
 
     @http.route(
+        ['/campus/course/<int:course_id>/tfm/outline/start'],
+        type='http', auth='user', website=True, methods=['POST'], csrf=True,
+    )
+    def tfm_outline_start(self, course_id, **post):
+        thesis = request.env['tesis.model']._irg_portal_owned_thesis(
+            course_id, raise_missing=False,
+        )
+        if not thesis or thesis.course_id.course_id.is_diplomado():
+            return request.not_found()
+        try:
+            outline = request.env['irg.tfm.esquema']._irg_portal_start(course_id)
+        except AccessError:
+            return request.not_found()
+        except ValidationError as exc:
+            return request.render(
+                'irg_tfm_convocatorias.tfm_mycampus_page',
+                self._page_values(thesis, error=str(exc)),
+            )
+        return request.redirect(
+            '/campus/course/%s/tfm/outline/%s' % (course_id, outline.id)
+        )
+
+    @http.route(
+        [
+            '/campus/course/<int:course_id>/tfm/outline/<int:outline_id>',
+        ],
+        type='http', auth='user', website=True, methods=['GET'],
+    )
+    def tfm_outline_page(self, course_id, outline_id, step=None, review=None, **kwargs):
+        thesis = request.env['tesis.model']._irg_portal_owned_thesis(
+            course_id, raise_missing=False,
+        )
+        if not thesis or thesis.course_id.course_id.is_diplomado():
+            return request.not_found()
+        outline = self._owned_outline(thesis, outline_id)
+        if not outline:
+            return request.not_found()
+        return request.render(
+            'irg_tfm_convocatorias.tfm_outline_form',
+            self._outline_values(thesis, outline, step=step, review=bool(review)),
+        )
+
+    @http.route(
+        ['/campus/course/<int:course_id>/tfm/outline/<int:outline_id>/save'],
+        type='http', auth='user', website=True, methods=['POST'], csrf=True,
+    )
+    def tfm_outline_save(self, course_id, outline_id, **post):
+        thesis = request.env['tesis.model']._irg_portal_owned_thesis(
+            course_id, raise_missing=False,
+        )
+        if not thesis or thesis.course_id.course_id.is_diplomado():
+            return request.not_found()
+        outline = self._owned_outline(thesis, outline_id, draft_only=True)
+        if not outline:
+            return request.not_found()
+        step = post.get('step')
+        if step not in self._outline_steps:
+            return request.not_found()
+        questions = outline.question_ids.filtered(
+            lambda question: question.step_key == step
+        )
+        answers = {}
+        for question in questions:
+            key = 'question_%s' % question.id
+            if question.question_type in ('simple_choice', 'multiple_choice'):
+                answers[str(question.id)] = request.httprequest.form.getlist(key)
+            else:
+                answers[str(question.id)] = post.get(key, '')
+        action = post.get('action')
+        if action not in ('save', 'next', 'review'):
+            return request.not_found()
+        try:
+            outline = request.env['irg.tfm.esquema']._irg_portal_save_step(
+                course_id,
+                outline.id,
+                step,
+                post.get('revision'),
+                answers,
+                advance=action in ('next', 'review'),
+            )
+        except AccessError:
+            return request.not_found()
+        except ValidationError as exc:
+            outline.invalidate_recordset()
+            return request.render(
+                'irg_tfm_convocatorias.tfm_outline_form',
+                self._outline_values(thesis, outline, step=step, error=str(exc)),
+            )
+        if action == 'save':
+            return request.redirect('/campus/course/%s/tfm' % course_id)
+        if action == 'review':
+            return request.redirect(
+                '/campus/course/%s/tfm/outline/%s?review=1' % (course_id, outline.id)
+            )
+        return request.redirect(
+            '/campus/course/%s/tfm/outline/%s?step=%s'
+            % (course_id, outline.id, outline.current_step)
+        )
+
+    @http.route(
+        ['/campus/course/<int:course_id>/tfm/outline/<int:outline_id>/submit'],
+        type='http', auth='user', website=True, methods=['POST'], csrf=True,
+    )
+    def tfm_outline_submit(self, course_id, outline_id, **post):
+        thesis = request.env['tesis.model']._irg_portal_owned_thesis(
+            course_id, raise_missing=False,
+        )
+        if not thesis or thesis.course_id.course_id.is_diplomado():
+            return request.not_found()
+        try:
+            request.env['irg.tfm.esquema']._irg_portal_submit(
+                course_id, outline_id, post.get('revision'),
+            )
+        except AccessError:
+            return request.not_found()
+        except ValidationError as exc:
+            outline = self._owned_outline(thesis, outline_id)
+            if not outline:
+                return request.not_found()
+            return request.render(
+                'irg_tfm_convocatorias.tfm_outline_form',
+                self._outline_values(thesis, outline, review=True, error=str(exc)),
+            )
+        return request.redirect('/campus/course/%s/tfm' % course_id)
+
+    @http.route(
         ['/campus/course/<int:course_id>/tfm/submit'],
         type='http',
         auth='user',
@@ -244,6 +436,10 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
             return request.not_found()
         upload = request.httprequest.files.get('file')
         try:
+            if post.get('stage') == 'outline':
+                raise ValidationError(_(
+                    'Los nuevos Esquemas se envían mediante el cuestionario TFM.'
+                ))
             if not upload:
                 raise ValidationError(_('Select a file to submit.'))
             request.env['irg.tfm.entrega']._irg_create_portal_submission(

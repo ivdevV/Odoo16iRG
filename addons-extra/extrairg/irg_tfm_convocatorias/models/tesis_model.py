@@ -17,6 +17,13 @@ class TesisModel(models.Model):
     irg_tfm_submission_ids = fields.One2many(
         'irg.tfm.entrega', 'thesis_id', string='Entregas TFM', readonly=True,
     )
+    irg_tfm_outline_ids = fields.One2many(
+        'irg.tfm.esquema',
+        'thesis_id',
+        string='Esquemas',
+        readonly=True,
+        groups='irg_tfm_convocatorias.group_tfm_reviewer',
+    )
 
     _sql_constraints = [
         ('irg_tfm_tesis_course_unique', 'unique(course_id)',
@@ -43,10 +50,14 @@ class TesisModel(models.Model):
     def _irg_has_tfm_outline_submission(self):
         """Use the Task 2 delivery predicate; no other stage satisfies it."""
         self.ensure_one()
-        return any(
+        legacy = any(
             submission._irg_is_tfm_outline_submission()
             for submission in self.irg_tfm_submission_ids
         )
+        survey_outline = bool(self.env['irg.tfm.esquema'].sudo().search_count([
+            ('thesis_id', '=', self.id), ('state', '=', 'done'),
+        ]))
+        return legacy or survey_outline
 
     @api.model
     def _irg_portal_student(self, raise_missing=True):
@@ -99,6 +110,10 @@ class TesisModel(models.Model):
     ):
         self._irg_require_internal_user()
         self.ensure_one()
+        if stage == 'outline':
+            raise ValidationError(_(
+                'Los nuevos Esquemas se registran mediante el cuestionario TFM.'
+            ))
         reason = (exception_reason or '').strip()
         if not reason:
             raise ValidationError(_('An exception reason is required.'))

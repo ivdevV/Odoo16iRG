@@ -1,5 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+    <record id="view_irg_tfm_outline_form" model="ir.ui.view">
+        <field name="name">irg.tfm.esquema.form.reviewer</field>
+        <field name="model">irg.tfm.esquema</field>
+        <field name="arch" type="xml">
+            <form string="Esquema TFM" create="false" edit="false" delete="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="thesis_id"/>
+                            <field name="survey_title"/>
+                            <field name="version"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="started_by"/>
+                            <field name="started_at"/>
+                            <field name="submitted_at"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Respuestas">
+                            <field name="question_ids" readonly="1">
+                                <tree create="false" delete="false" default_order="sequence, id">
+                                    <field name="step_key"/>
+                                    <field name="title"/>
+                                    <field name="answer_text"/>
+                                    <field name="selected_option_ids" widget="many2many_tags"/>
+                                </tree>
+                                <form string="Respuesta" create="false" edit="false" delete="false">
+                                    <group>
+                                        <field name="step_key"/>
+                                        <field name="section_title"/>
+                                        <field name="title"/>
+                                        <field name="description" widget="html"/>
+                                        <field name="question_type"/>
+                                        <field name="mandatory"/>
+                                        <field name="answer_text"
+                                               attrs="{'invisible': [('question_type', 'in', ['simple_choice', 'multiple_choice'])]}"/>
+                                        <field name="selected_option_ids" widget="many2many_tags"
+                                               attrs="{'invisible': [('question_type', 'not in', ['simple_choice', 'multiple_choice'])]}"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_irg_tfm_outline_tree" model="ir.ui.view">
+        <field name="name">irg.tfm.esquema.tree.reviewer</field>
+        <field name="model">irg.tfm.esquema</field>
+        <field name="arch" type="xml">
+            <tree string="Esquemas TFM" create="false" delete="false"
+                  default_order="version desc, submitted_at desc">
+                <field name="version"/>
+                <field name="survey_title"/>
+                <field name="started_by"/>
+                <field name="started_at"/>
+                <field name="submitted_at"/>
+            </tree>
+        </field>
+    </record>
+
     <record id="view_tesis_model_form_irg_tfm" model="ir.ui.view">
         <field name="name">tesis.model.form.irg.tfm</field>
         <field name="model">tesis.model</field>
@@ -16,6 +81,12 @@
                 <attribute name="attrs">{'invisible': [('irg_tfm_activated_at', '!=', False)]}</attribute>
             </xpath>
             <xpath expr="//notebook" position="inside">
+                <page string="Esquemas" groups="irg_tfm_convocatorias.group_tfm_reviewer">
+                    <field name="irg_tfm_outline_ids" readonly="1"
+                           domain="[('state', '=', 'done')]"
+                           context="{'tree_view_ref': 'irg_tfm_convocatorias.view_irg_tfm_outline_tree',
+                                     'form_view_ref': 'irg_tfm_convocatorias.view_irg_tfm_outline_form'}"/>
+                </page>
                 <page string="Entregas TFM">
                     <field name="irg_tfm_submission_ids" readonly="1">
                         <tree create="false" delete="false"
