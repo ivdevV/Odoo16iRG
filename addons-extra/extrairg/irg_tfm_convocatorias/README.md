@@ -98,6 +98,9 @@ Prueba de cierre:
 - El expediente, borrador, preguntas y opciones se comprueban contra la matrícula
   del usuario en servidor.
 - Una revisión de borrador evita que dos pestañas se sobrescriban silenciosamente.
+- La revisión inicial se serializa explícitamente como `value="0"`; así el
+  primer guardado conserva el control de concurrencia sin producir un falso
+  conflicto.
 - Las versiones enviadas, preguntas congeladas y respuestas son inmutables.
 - Los revisores solo pueden leer versiones enviadas; no pueden ver borradores ni
   modificar respuestas.
@@ -114,7 +117,7 @@ por Website.
 
 ## Validación local de esta versión
 
-Pasaron compilación Python, validación XML/manifest/ACL, 16 contratos estáticos,
+Pasaron compilación Python, validación XML/manifest/ACL, 19 contratos estáticos,
 `git diff --check` y escaneos de seguridad. Las suites Odoo y HTTP y TestSprite
 no se lanzaron porque el usuario prohibió Docker en este ordenador y la política
 del repositorio impide sustituir el entorno local por beta o producción.

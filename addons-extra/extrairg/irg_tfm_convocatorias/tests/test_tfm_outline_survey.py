@@ -388,6 +388,15 @@ class TestTfmOutlineSurveyPortal(TfmFixtureMixin, HttpCase):
         self.assertTrue(match, 'The rendered form must contain a CSRF token.')
         return match.group(1)
 
+    def _revision_from(self, response):
+        input_match = re.search(
+            r'<input\b[^>]*\bname="revision"[^>]*>', response.text,
+        )
+        self.assertTrue(input_match, 'The rendered form must contain a revision.')
+        value_match = re.search(r'\bvalue="([^"]*)"', input_match.group(0))
+        self.assertTrue(value_match, 'The rendered revision must have a value.')
+        return value_match.group(1)
+
     def test_portal_renders_multiple_questions_and_secures_start_save_and_ids(self):
         self.authenticate(self.owner.login, self.owner.login)
         landing = self.url_open('/campus/course/%s/tfm' % self.course.id)
@@ -420,6 +429,7 @@ class TestTfmOutlineSurveyPortal(TfmFixtureMixin, HttpCase):
         ], limit=1)
         self.assertTrue(outline)
         form = self.url_open(started.headers['Location'])
+        self.assertEqual(self._revision_from(form), '0')
         proposal = outline.question_ids.filtered(
             lambda question: question.step_key == 'proposal'
         )
@@ -449,7 +459,7 @@ class TestTfmOutlineSurveyPortal(TfmFixtureMixin, HttpCase):
             'csrf_token': self._csrf_from(form),
             'step': 'proposal',
             'action': 'next',
-            'revision': str(outline.revision),
+            'revision': self._revision_from(form),
         }
         for question in proposal:
             key = 'question_%s' % question.id
@@ -495,7 +505,7 @@ class TestTfmOutlineSurveyPortal(TfmFixtureMixin, HttpCase):
                 'csrf_token': self._csrf_from(step_form),
                 'step': step,
                 'action': action,
-                'revision': str(outline.revision),
+                'revision': self._revision_from(step_form),
             }
             for question in outline.question_ids.filtered(
                 lambda item: item.step_key == step
@@ -523,7 +533,7 @@ class TestTfmOutlineSurveyPortal(TfmFixtureMixin, HttpCase):
             % (self.course.id, outline.id),
             data={
                 'csrf_token': self._csrf_from(review),
-                'revision': str(outline.revision),
+                'revision': self._revision_from(review),
             },
             allow_redirects=False,
         )
@@ -561,7 +571,7 @@ class TestTfmOutlineSurveyPortal(TfmFixtureMixin, HttpCase):
                 'csrf_token': self._csrf_from(draft_form),
                 'step': 'proposal',
                 'action': 'save',
-                'revision': str(draft.revision),
+                'revision': self._revision_from(draft_form),
             },
             allow_redirects=False,
         )

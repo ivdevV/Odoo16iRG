@@ -77,3 +77,16 @@
   plantilla. GREEN: 18 contratos. Review independiente `PASS`; validación
   independiente `PASS` en contratos, Python, XML, nombres y diff. Docker no se
   utilizó.
+- 2026-09-10: una prueba manual limpia en beta descartó pestañas antiguas y
+  reprodujo un conflicto optimista permanente al guardar el primer bloque. El
+  código oficial de QWeb 16 confirmó que un atributo dinámico con valor entero
+  `0` se omite, por lo que el campo oculto `revision` llegaba vacío en el primer
+  guardado.
+- 2026-09-10: TDD RED añadió el contrato `rendered_zero_revision` y una HttpCase
+  que extrae la revisión del HTML; el contrato falló antes del cambio. Los dos
+  formularios serializan ahora la revisión mediante `t-attf-value`, conservando
+  explícitamente `value="0"`. GREEN: 19 contratos.
+- 2026-09-10: Review independiente del hotfix `PASS`, sin hallazgos bloqueantes.
+  Validación independiente `PASS`: 19 contratos, compilación Python, los 11 XML,
+  `git diff --check` y alcance. QWeb/HttpCase/E2E en runtime permanecen omitidos
+  por la prohibición explícita de Docker.

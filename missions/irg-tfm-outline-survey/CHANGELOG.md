@@ -20,3 +20,5 @@
   título y descripción ahora se renderizan sobre nodos HTML compatibles.
 - Evitada la colisión con la variable `editable` reservada por Website, que
   mostraba como solo lectura un borrador válido de un alumno Portal.
+- Corregido el primer guardado del cuestionario: la revisión inicial `0` se
+  serializa como texto en el HTML y ya no provoca un falso conflicto de edición.

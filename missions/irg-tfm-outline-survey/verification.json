@@ -6,7 +6,7 @@
       "name": "static_tdd_contracts",
       "command": "C:\\Users\\admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe missions/irg-tfm-outline-survey/artifacts/static_validator.py",
       "result": "pass",
-      "detail": "18 static architecture, security, portal, QWeb compatibility and TDD contracts passed.",
+      "detail": "19 static architecture, security, portal, QWeb compatibility and TDD contracts passed.",
       "evidence": "artifacts/validation-static.txt"
     },
     {
@@ -52,6 +52,13 @@
       "evidence": "artifacts/qweb-website-editable-collision.txt"
     },
     {
+      "name": "qweb_zero_revision_serialization",
+      "command": "Static QWeb contract plus independent source/diff review",
+      "result": "pass",
+      "detail": "Both hidden revision fields use t-attf-value, so the initial integer revision 0 is rendered as value=\"0\"; the HTTP regression test reads revisions from rendered HTML and the stale-revision server check remains active.",
+      "evidence": "artifacts/qweb-zero-revision-hotfix.txt"
+    },
+    {
       "name": "odoo_module_tests",
       "command": "not run",
       "result": "skipped",
@@ -79,7 +86,7 @@
     "worktree": "C:/Users/admin/AppData/Local/Temp/Odoo16iRG-worktrees/irg-tfm-convocatorias",
     "branch": "codex/tfm-outline-survey",
     "base_commit": "b38baaf04359b4a0c9db3c765a1a986afc406940",
-    "validation_head": "5b1a8e428857b4d94dcde609c24f20d3d49032fa",
+    "validation_head": "working tree over af2b9e729",
     "python": "3.12.14"
   },
   "model_tier_used": "complex",
@@ -92,6 +99,7 @@
     "artifacts/validation-security-scan.txt",
     "artifacts/qweb-t-field-hotfix.txt",
     "artifacts/qweb-website-editable-collision.txt",
+    "artifacts/qweb-zero-revision-hotfix.txt",
     "artifacts/validation-runtime-skips.txt"
   ]
 }

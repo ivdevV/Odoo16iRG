@@ -181,7 +181,7 @@
                             <form t-if="tfm_outline_editable and review" method="post"
                                   t-attf-action="/campus/course/#{course.id}/tfm/outline/#{outline.id}/submit">
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                <input type="hidden" name="revision" t-att-value="outline.revision"/>
+                                <input type="hidden" name="revision" t-attf-value="#{outline.revision}"/>
                                 <a t-attf-href="/campus/course/#{course.id}/tfm/outline/#{outline.id}?step=results"
                                    class="btn btn-secondary">Volver a editar</a>
                                 <button type="submit" class="btn btn-primary">Enviar Esquema</button>
@@ -191,7 +191,7 @@
                         <form t-elif="tfm_outline_editable" method="post"
                               t-attf-action="/campus/course/#{course.id}/tfm/outline/#{outline.id}/save">
                             <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                            <input type="hidden" name="revision" t-att-value="outline.revision"/>
+                            <input type="hidden" name="revision" t-attf-value="#{outline.revision}"/>
                             <input type="hidden" name="step" t-att-value="step_key"/>
                             <div t-foreach="step_questions" t-as="question" class="mb-4">
                                 <label t-attf-for="tfm_question_#{question.id}" class="form-label fw-bold">

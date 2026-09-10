@@ -1,0 +1,29 @@
+QWeb initial revision serialization hotfix — 2026-09-10
+
+Symptom
+- A newly started outline always returned the stale-tab warning on its first save,
+  including after closing every browser tab and reopening the draft.
+
+Root cause
+- The draft starts with integer revision 0.
+- Odoo 16 QWeb emits a dynamic attribute only when its value is truthy or already
+  a string. Therefore t-att-value="outline.revision" omitted the value attribute
+  for revision 0.
+- The POST reached _irg_assert_revision without a revision; it normalized the
+  missing value to -1 and correctly rejected it against database revision 0.
+
+TDD evidence
+- RED: static_validator.py failed with ['rendered_zero_revision'] before the
+  production template changed.
+- GREEN: both save and submit forms now use
+  t-attf-value="#{outline.revision}"; static_validator.py passed 19 contracts.
+- The HttpCase extracts revision from rendered HTML, asserts that the initial
+  value is "0", and reuses rendered revisions for saves and final submission.
+- The intentional stale revision POST remains and still expects the conflict.
+
+Independent gates
+- Code review: PASS, no blocking findings.
+- Validation: PASS for 19 contracts, Python compileall, 11 XML files,
+  git diff --check and scope review.
+- Runtime Odoo/QWeb, HttpCase and E2E were not run because Docker is explicitly
+  prohibited by the user and beta/production cannot replace the local test DB.

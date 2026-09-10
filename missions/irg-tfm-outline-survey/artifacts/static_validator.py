@@ -101,6 +101,12 @@ contracts = {
         'Guardar borrador', 'Siguiente', 'Anterior',
         'Revisar y enviar Esquema',
     )),
+    'rendered_zero_revision': all((
+        portal_xml.count('name="revision" t-attf-value="#{outline.revision}"') == 2,
+        'name="revision" t-att-value="outline.revision"' not in portal_xml,
+        'def _revision_from(self, response):' in tests,
+        "self.assertEqual(self._revision_from(form), '0')" in tests,
+    )),
     'escaped_student_output': 't-raw="question.answer_text"' not in portal_xml,
     'qweb_t_field_uses_html_nodes': not any(
         element.tag == 't' and 't-field' in element.attrib
