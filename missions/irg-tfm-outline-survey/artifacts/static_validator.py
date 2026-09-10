@@ -44,6 +44,7 @@ model_source = text('models/irg_tfm_esquema.py')
 delivery_source = text('models/irg_tfm_entrega.py')
 portal_source = text('controllers/portal.py')
 portal_xml = text('views/tfm_portal_templates.xml')
+portal_tree = ElementTree.fromstring(portal_xml)
 security_xml = text('security/irg_tfm_security.xml')
 data_xml = text('data/tfm_outline_survey.xml')
 tests = text('tests/test_tfm_outline_survey.py')
@@ -101,6 +102,10 @@ contracts = {
         'Revisar y enviar Esquema',
     )),
     'escaped_student_output': 't-raw="question.answer_text"' not in portal_xml,
+    'qweb_t_field_uses_html_nodes': not any(
+        element.tag == 't' and 't-field' in element.attrib
+        for element in portal_tree.iter()
+    ),
     'reviewer_group': (
         'group_tfm_reviewer' in security_xml
         and "[('state', '=', 'done')]" in security_xml

@@ -16,3 +16,5 @@
   registro de chatter sin notificaciones.
 - Incorporadas pruebas de modelo, HTTP, concurrencia, seguridad, límites,
   versionado y regresión del flujo de archivos.
+- Corregida la compilación QWeb del cuestionario en Odoo 16: los campos de
+  título y descripción ahora se renderizan sobre nodos HTML compatibles.

@@ -6,7 +6,7 @@
       "name": "static_tdd_contracts",
       "command": "C:\\Users\\admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe missions/irg-tfm-outline-survey/artifacts/static_validator.py",
       "result": "pass",
-      "detail": "16 static architecture, security, portal and TDD contracts passed.",
+      "detail": "17 static architecture, security, portal, QWeb compatibility and TDD contracts passed.",
       "evidence": "artifacts/validation-static.txt"
     },
     {
@@ -38,6 +38,13 @@
       "evidence": "artifacts/validation-security-scan.txt"
     },
     {
+      "name": "qweb_template_nodes",
+      "command": "ElementTree parse plus rg scan for <t ... t-field= across addon XML",
+      "result": "pass",
+      "detail": "The portal XML is well formed and no t-field directive remains on a virtual <t> node; independent code review and validation passed.",
+      "evidence": "artifacts/qweb-t-field-hotfix.txt"
+    },
+    {
       "name": "odoo_module_tests",
       "command": "not run",
       "result": "skipped",
@@ -65,6 +72,7 @@
     "worktree": "C:/Users/admin/AppData/Local/Temp/Odoo16iRG-worktrees/irg-tfm-convocatorias",
     "branch": "codex/tfm-outline-survey",
     "base_commit": "b38baaf04359b4a0c9db3c765a1a986afc406940",
+    "validation_head": "5b1a8e428857b4d94dcde609c24f20d3d49032fa",
     "python": "3.12.14"
   },
   "model_tier_used": "complex",
@@ -75,6 +83,7 @@
     "artifacts/validation-xml-manifest-acl.txt",
     "artifacts/validation-git.txt",
     "artifacts/validation-security-scan.txt",
+    "artifacts/qweb-t-field-hotfix.txt",
     "artifacts/validation-runtime-skips.txt"
   ]
 }

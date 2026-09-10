@@ -58,3 +58,12 @@
   prohibición explícita de Docker y la prohibición de usar beta/producción.
 - 2026-09-10: documentación completada en el README del addon, changelog de la
   misión y knowledge reutilizable sobre Survey como plantilla privada.
+- 2026-09-10: durante la prueba manual en beta, Odoo 16 rechazó la plantilla
+  `tfm_outline_form` porque tres directivas `t-field` estaban aplicadas a nodos
+  virtuales `<t>`. Se reprodujo el defecto con un nuevo contrato estático en RED
+  y se corrigió usando nodos HTML reales (`strong`, `span` y `div`).
+- 2026-09-10: Review independiente de la corrección QWeb `PASS`, sin hallazgos
+  bloqueantes. Validación independiente `PASS`: 17 contratos, XML válido,
+  compilación Python, ausencia global de `<t t-field>` y `git diff --check`.
+  La compilación QWeb dentro de Odoo y E2E continúan omitidos por la prohibición
+  explícita de Docker.

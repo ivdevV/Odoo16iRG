@@ -165,7 +165,7 @@
                                     <h4><t t-esc="step_labels.get(review_step)"/></h4>
                                     <div t-foreach="outline.question_ids.filtered(lambda item: item.step_key == review_step)"
                                          t-as="question" class="border rounded p-3 mb-2">
-                                        <strong><t t-field="question.title"/></strong>
+                                        <strong t-field="question.title"/>
                                         <div t-if="question.question_type in ('simple_choice', 'multiple_choice')">
                                             <span t-if="not question.selected_option_ids" class="text-muted">Sin respuesta</span>
                                             <ul t-else="" class="mb-0">
@@ -195,12 +195,11 @@
                             <input type="hidden" name="step" t-att-value="step_key"/>
                             <div t-foreach="step_questions" t-as="question" class="mb-4">
                                 <label t-attf-for="tfm_question_#{question.id}" class="form-label fw-bold">
-                                    <t t-field="question.title"/>
+                                    <span t-field="question.title"/>
                                     <span t-if="question.mandatory" class="text-danger"> *</span>
                                 </label>
-                                <div t-if="question.description" class="form-text mb-2">
-                                    <t t-field="question.description"/>
-                                </div>
+                                <div t-if="question.description" t-field="question.description"
+                                     class="form-text mb-2"/>
                                 <input t-if="question.question_type == 'char_box'"
                                        t-att-type="'email' if question.prefill_source == 'student_email' else 'text'"
                                        t-attf-name="question_#{question.id}"
