@@ -229,3 +229,24 @@ Después de Review y Validación satisfactorias:
 4. Realizar comprobación final acotada de Git y coherencia de artefactos.
 5. Detenerse sin commit, push ni PR. Solicitar autorización específica si el
    usuario quiere cualquiera de esas acciones.
+
+## Addendum 2026-09-14 — apertura de respuestas en backend
+
+- Incidencia: al abrir una versión enviada desde la pestaña **Esquemas**, el
+  cliente web falla en `BasicModel._sortList/compareRecords` al consultar el
+  tipo de un campo de ordenación inexistente en los metadatos del listado.
+- Causa confirmada: el árbol `question_ids` declara
+  `default_order="sequence, id"`, pero no carga `sequence` entre sus campos.
+  En listados `one2many` estáticos, Odoo 16 ordena en memoria y requiere la
+  descripción del campo en `list.fields`.
+- Alcance funcional: añadir `sequence` como columna invisible al árbol de
+  respuestas. No cambia datos, permisos, modelos ni el orden funcional.
+- Criterio de aceptación: un revisor abre una versión y ve el listado ordenado
+  sin error JavaScript; `sequence` no aparece como columna visible.
+- TDD: añadir primero una prueba de vista y un contrato estático que fallen si
+  un árbol ordena por `sequence` sin declararlo; ejecutar RED, aplicar el cambio
+  XML mínimo y ejecutar GREEN.
+- Gates: Review independiente, validación estática/Python/XML/diff y
+  documentación. Las pruebas Odoo/HTTP/E2E permanecen omitidas por la
+  prohibición explícita de Docker y no se sustituirán por beta.
+- Publicación: este hotfix no autoriza commit, push ni PR.

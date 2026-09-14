@@ -1,5 +1,7 @@
 import re
 
+from lxml import etree
+
 from odoo import Command
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests.common import HttpCase, TransactionCase, tagged
@@ -350,6 +352,23 @@ class TestTfmOutlineSurvey(TfmFixtureMixin, TransactionCase):
         self.assertEqual(visible, outline)
         with self.assertRaises(AccessError):
             visible.write({'current_step': 'proposal'})
+
+    def test_reviewer_question_tree_loads_every_explicit_order_field(self):
+        view = self.env.ref('irg_tfm_convocatorias.view_irg_tfm_outline_form')
+        arch = etree.fromstring(view.arch_db.encode())
+        question_trees = arch.xpath(".//field[@name='question_ids']/tree")
+        self.assertEqual(len(question_trees), 1)
+        question_tree = question_trees[0]
+        field_names = set(question_tree.xpath('./field/@name'))
+        ordered_fields = {
+            term.strip().split()[0]
+            for term in question_tree.get('default_order', '').split(',')
+            if term.strip()
+        }
+        self.assertFalse(
+            ordered_fields - field_names - {'id'},
+            'Every explicit x2many order field must be loaded by the tree view.',
+        )
 
     def test_template_and_portal_contract_do_not_create_native_survey_attempts(self):
         user, _student, _course, _enrollment, _thesis, _outline = self._start()

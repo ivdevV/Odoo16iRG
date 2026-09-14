@@ -90,3 +90,17 @@
   Validación independiente `PASS`: 19 contratos, compilación Python, los 11 XML,
   `git diff --check` y alcance. QWeb/HttpCase/E2E en runtime permanecen omitidos
   por la prohibición explícita de Docker.
+- 2026-09-14: la prueba manual en beta reprodujo al abrir respuestas el error
+  `compareRecords: Cannot read properties of undefined (reading 'type')`. Se
+  trazó hasta el listado `one2many` de preguntas: ordenaba por `sequence` sin
+  incluir ese campo en los metadatos de su árbol.
+- 2026-09-14: TDD RED añadió una prueba de vista y el contrato
+  `reviewer_x2many_order_fields_loaded`; el contrato falló antes del cambio. Se
+  añadió `sequence` como campo invisible del árbol. GREEN: 20 contratos.
+- 2026-09-14: Review independiente `PASS`, sin hallazgos bloqueantes. Validación
+  independiente `PASS`: 20 contratos, compilación Python, 11 XML, diff acotado y
+  reproducción estructural contra HEAD. Las pruebas Odoo/E2E no se ejecutaron
+  por la prohibición explícita de Docker.
+- 2026-09-14: el worktree presenta 1011 eliminaciones ajenas al hotfix. No se
+  modificaron ni restauraron; cualquier preparación Git debe limitarse a las
+  rutas documentadas y nunca usar `git add -A`.

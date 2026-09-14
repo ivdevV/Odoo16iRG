@@ -115,9 +115,13 @@ actualice el addon. El indicador del formulario se llama
 `tfm_outline_editable` para no colisionar con el contexto `editable` reservado
 por Website.
 
+La vista **Esquemas → Respuestas** carga `sequence` como campo técnico invisible.
+Debe conservarse mientras el árbol use `default_order="sequence, id"`; retirarlo
+provoca un error de ordenación en memoria en el cliente web de Odoo 16.
+
 ## Validación local de esta versión
 
-Pasaron compilación Python, validación XML/manifest/ACL, 19 contratos estáticos,
+Pasaron compilación Python, validación XML/manifest/ACL, 20 contratos estáticos,
 `git diff --check` y escaneos de seguridad. Las suites Odoo y HTTP y TestSprite
 no se lanzaron porque el usuario prohibió Docker en este ordenador y la política
 del repositorio impide sustituir el entorno local por beta o producción.

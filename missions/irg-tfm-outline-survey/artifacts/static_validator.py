@@ -45,6 +45,8 @@ delivery_source = text('models/irg_tfm_entrega.py')
 portal_source = text('controllers/portal.py')
 portal_xml = text('views/tfm_portal_templates.xml')
 portal_tree = ElementTree.fromstring(portal_xml)
+thesis_view_xml = text('views/tesis_model_views.xml')
+thesis_view_tree = ElementTree.fromstring(thesis_view_xml)
 security_xml = text('security/irg_tfm_security.xml')
 data_xml = text('data/tfm_outline_survey.xml')
 tests = text('tests/test_tfm_outline_survey.py')
@@ -123,6 +125,18 @@ contracts = {
     'reviewer_group': (
         'group_tfm_reviewer' in security_xml
         and "[('state', '=', 'done')]" in security_xml
+    ),
+    'reviewer_x2many_order_fields_loaded': all(
+        not (
+            {
+                term.strip().split()[0]
+                for term in tree.attrib.get('default_order', '').split(',')
+                if term.strip()
+            }
+            - {field.attrib.get('name') for field in tree.findall('./field')}
+            - {'id'}
+        )
+        for tree in thesis_view_tree.findall(".//field[@name='question_ids']/tree")
     ),
     'no_notifying_chatter': all(term in model_source for term in (
         "self.env['mail.message']", "'partner_ids': False",

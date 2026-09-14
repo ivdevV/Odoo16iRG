@@ -23,6 +23,7 @@
                         <page string="Respuestas">
                             <field name="question_ids" readonly="1">
                                 <tree create="false" delete="false" default_order="sequence, id">
+                                    <field name="sequence" invisible="1"/>
                                     <field name="step_key"/>
                                     <field name="title"/>
                                     <field name="answer_text"/>

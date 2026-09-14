@@ -1,5 +1,11 @@
 # Changelog — irg-tfm-outline-survey
 
+## 2026-09-14
+
+- Corregida la apertura de las respuestas en el backend: el listado carga de
+  forma invisible el campo `sequence` utilizado para ordenar, evitando el error
+  JavaScript de `compareRecords` sin añadir una columna visible.
+
 ## 2026-09-10
 
 - Sustituido el nuevo envío del Esquema como archivo por un cuestionario de tres
