@@ -79,12 +79,12 @@
             <p style="text-align: justify; margin-bottom: 12px; white-space: pre-wrap;" t-out="doc.student_proposed_activities"/>
         </t>
 
-        <p><strong>SEXTA:</strong></p>
+        <p><strong>QUINTA:</strong></p>
         <p style="text-align: justify; margin-bottom: 12px;">
             Las partes se reservan la facultad de rescindir unilateralmente este convenio.
         </p>
 
-        <p><strong>SÉPTIMA:</strong></p>
+        <p><strong>SEXTA:</strong></p>
         <p style="text-align: justify; margin-bottom: 8px;">
             Las presentes prácticas tienen carácter estrictamente formativo y no remunerado para el estudiante, en consonancia con su finalidad educativa y con la normativa vigente sobre prácticas académicas externas. En ningún caso estas prácticas generan vínculo laboral entre el estudiante y el centro colaborador, ni obligación retributiva alguna por parte de éste.
         </p>

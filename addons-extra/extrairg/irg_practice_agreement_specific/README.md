@@ -28,9 +28,9 @@ wizard, doble firma e informe. La excepción **no** autoriza editar
 
 El nacional cubre RC, accidentes y asistencia sanitaria a cargo de iRG
 (sin «fuera de España») y cita la ley 26/2015. El internacional
-mantiene la RC de iRG solo en España. El HomeClass síncronas no tiene
-QUINTA; la SÉPTIMA permite que el centro cobre a pacientes y deja el
-alumno sin remuneración.
+mantiene la RC de iRG solo en España. El HomeClass síncronas no cubre
+seguros en QUINTA (esa cláusula es la rescisión); la SEXTA permite que
+el centro cobre a pacientes y deja el alumno sin remuneración.
 
 ## Pruebas
 

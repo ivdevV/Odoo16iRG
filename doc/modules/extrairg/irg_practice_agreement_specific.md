@@ -1,7 +1,7 @@
 # irg_practice_agreement_specific
 
 **Categoria:** extrairg
-**Version:** 16.0.1.2.1
+**Version:** 16.0.1.2.2
 **Licencia:** LGPL-3
 **Instalable:** Si
 **Autor:** IRG
@@ -44,8 +44,8 @@ excepción **no** sienta precedente para tocar
 - Nacional: QUINTA = RC, accidentes y asistencia sanitaria a cargo de
   iRG (sin «fuera de España»); normativa (solo para estudiantes) con
   ley 26/2015.
-- HomeClass síncronas: PRIMERA online en tiempo real; sin QUINTA;
-  SÉPTIMA económica (el centro puede cobrar a pacientes; el alumno no
+- HomeClass síncronas: PRIMERA online en tiempo real; QUINTA rescisión;
+  SEXTA económica (el centro puede cobrar a pacientes; el alumno no
   cobra); normativa (solo para estudiantes) con ley 26/2015 y Zoom.
 - El bloque de actividades propuestas por el alumno solo se pinta si hay
   texto.

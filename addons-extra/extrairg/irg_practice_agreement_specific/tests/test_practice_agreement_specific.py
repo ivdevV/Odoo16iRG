@@ -295,7 +295,7 @@ class TestPracticeAgreementSpecific(TransactionCase):
         self.assertEqual(agreement.student_name, "Alumno Prueba Específico")
         self.assertTrue(agreement.student_access_token)
 
-    def test_html_homeclass_sync_online_no_quinta(self):
+    def test_html_homeclass_sync_online_no_irg_insurance(self):
         agreement = self._create_especifico(
             agreement_type="especifico_homeclass_sincronas"
         )
@@ -310,6 +310,9 @@ class TestPracticeAgreementSpecific(TransactionCase):
         self.assertIn("Alumno Prueba Específico", html)
         self.assertIn("Centro Colaborador Test", html)
         self.assertIn("Normativa (solo para estudiantes)", html)
+        self.assertIn("QUINTA", html)
+        self.assertIn("SEXTA", html)
+        self.assertNotIn("SÉPTIMA", html)
         self.assertNotIn("a cargo de iRG", html)
         self.assertNotIn("fuera de España", html)
         self.assertNotIn("Carrer Provença", html)
