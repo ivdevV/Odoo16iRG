@@ -1,7 +1,7 @@
 # irg_practice_agreement_specific
 
 **Categoria:** extrairg
-**Version:** 16.0.1.2.0
+**Version:** 16.0.1.2.1
 **Licencia:** LGPL-3
 **Instalable:** Si
 **Autor:** IRG
@@ -39,12 +39,14 @@ excepción **no** sienta precedente para tocar
   `_is_especifico()` cubre los tres.
 - Tokens distintos para centro y alumno. Dos plantillas de correo.
 - PDF y portal conmutan el cuerpo del marco por el documento del tipo.
-- Internacional: QUINTA deja la RC de iRG solo en España; Anexo I.
+- Internacional: QUINTA deja la RC de iRG solo en España; Anexo I –
+  Normativa (solo para estudiantes).
 - Nacional: QUINTA = RC, accidentes y asistencia sanitaria a cargo de
-  iRG (sin «fuera de España»); normativa con ley 26/2015.
+  iRG (sin «fuera de España»); normativa (solo para estudiantes) con
+  ley 26/2015.
 - HomeClass síncronas: PRIMERA online en tiempo real; sin QUINTA;
   SÉPTIMA económica (el centro puede cobrar a pacientes; el alumno no
-  cobra); normativa con ley 26/2015 y Zoom.
+  cobra); normativa (solo para estudiantes) con ley 26/2015 y Zoom.
 - El bloque de actividades propuestas por el alumno solo se pinta si hay
   texto.
 

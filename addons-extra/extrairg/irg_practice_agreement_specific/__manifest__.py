@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Practice Agreement Specific',
-    'version': '16.0.1.2.0',
+    'version': '16.0.1.2.1',
     'category': 'Education',
     'summary': 'Convenios específicos nacional, internacional y HomeClass síncronas',
     'author': 'IRG',
