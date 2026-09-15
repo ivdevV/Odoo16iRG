@@ -1,7 +1,7 @@
 # irg_practice_agreement_specific
 
 **Categoria:** extrairg
-**Version:** 16.0.1.1.0
+**Version:** 16.0.1.2.0
 **Licencia:** LGPL-3
 **Instalable:** Si
 **Autor:** IRG
@@ -12,8 +12,8 @@
 ## Que hace este modulo
 
 Añade **Crear Convenio** en la solicitud de prácticas (`practice.request`).
-El wizard (radio) crea un **Convenio Específico Internacional** o un
-**Convenio Específico Nacional** ligado a la solicitud y al centro
+El wizard (radio) crea un **Convenio Específico Internacional**,
+**Nacional** o **HomeClass Síncronas** ligado a la solicitud y al centro
 asignado, con copia de alumno, máster, documento, fechas, días, horario,
 horas y tutor.
 
@@ -24,24 +24,27 @@ existen las dos firmas.
 
 ## Excepción de módulo
 
-El nacional **no** tiene un módulo propio. Se añadió en este addon
-(16.0.1.1.0) como **excepción explícita y acotada** a la regla de no
-editar módulos existentes: wizard, doble firma y PDF son los mismos; un
-módulo nuevo solo para la variante no tiene sentido. La excepción **no**
-sienta precedente para tocar `irg_practice_agreement_sign` ni
-`irg_practice_agreement_types`.
+Nacional y HomeClass síncronas **no** tienen módulo propio. Se añadieron
+en este addon como **excepción explícita y acotada** a la regla de no
+editar módulos existentes: wizard, doble firma y PDF son los mismos. La
+excepción **no** sienta precedente para tocar
+`irg_practice_agreement_sign` ni `irg_practice_agreement_types`.
 
 ## Funcionalidades principales
 
 - Wizard `irg.practice.agreement.specific.create.wizard` (Internacional /
-  Nacional).
-- `practice.agreement.agreement_type`: valores `especifico_internacional`
-  y `especifico_nacional`. `_is_especifico()` cubre ambos.
+  Nacional / HomeClass Síncronas).
+- `practice.agreement.agreement_type`: `especifico_internacional`,
+  `especifico_nacional`, `especifico_homeclass_sincronas`.
+  `_is_especifico()` cubre los tres.
 - Tokens distintos para centro y alumno. Dos plantillas de correo.
 - PDF y portal conmutan el cuerpo del marco por el documento del tipo.
 - Internacional: QUINTA deja la RC de iRG solo en España; Anexo I.
-- Nacional: QUINTA = RC, accidentes personales y asistencia sanitaria a
-  cargo de iRG (sin «fuera de España»); normativa con ley 26/2015.
+- Nacional: QUINTA = RC, accidentes y asistencia sanitaria a cargo de
+  iRG (sin «fuera de España»); normativa con ley 26/2015.
+- HomeClass síncronas: PRIMERA online en tiempo real; sin QUINTA;
+  SÉPTIMA económica (el centro puede cobrar a pacientes; el alumno no
+  cobra); normativa con ley 26/2015 y Zoom.
 - El bloque de actividades propuestas por el alumno solo se pinta si hay
   texto.
 

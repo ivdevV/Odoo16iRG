@@ -1,0 +1,29 @@
+CHECK: syntax_py_compile
+DATE: 2026-09-15T10:27:57Z
+MODULE: irg_practice_agreement_specific
+NOTE: compiling real .py files (excluding __manifest__.py)
+==============================================================
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/__init__.py
+  exit=0
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/controllers/__init__.py
+  exit=0
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/controllers/portal_agreement.py
+  exit=0
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/models/__init__.py
+  exit=0
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/models/practice_agreement.py
+  exit=0
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/models/practice_request.py
+  exit=0
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/tests/__init__.py
+  exit=0
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/tests/test_practice_agreement_specific.py
+  exit=0
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/wizard/__init__.py
+  exit=0
+COMPILE: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_practice_agreement_specific/wizard/practice_agreement_specific_create_wizard.py
+  exit=0
+==============================================================
+FILE COUNT: 10
+EXIT CODE: 0
+RESULT: PASS — all real .py files compiled without syntax errors

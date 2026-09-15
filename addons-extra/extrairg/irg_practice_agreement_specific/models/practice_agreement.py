@@ -5,7 +5,11 @@ import uuid
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-ESPECIFICO_TYPES = ('especifico_internacional', 'especifico_nacional')
+ESPECIFICO_TYPES = (
+    'especifico_internacional',
+    'especifico_nacional',
+    'especifico_homeclass_sincronas',
+)
 
 
 class PracticeAgreement(models.Model):
@@ -15,10 +19,12 @@ class PracticeAgreement(models.Model):
         selection_add=[
             ('especifico_internacional', 'Convenio Específico Internacional'),
             ('especifico_nacional', 'Convenio Específico Nacional'),
+            ('especifico_homeclass_sincronas', 'Convenio Específico HomeClass Síncronas'),
         ],
         ondelete={
             'especifico_internacional': 'set default',
             'especifico_nacional': 'set default',
+            'especifico_homeclass_sincronas': 'set default',
         },
     )
     practice_request_id = fields.Many2one(
@@ -182,11 +188,12 @@ class PracticeAgreement(models.Model):
 
     def _especifico_pdf_filename(self):
         self.ensure_one()
-        slug = (
-            'Nacional'
-            if self.agreement_type == 'especifico_nacional'
-            else 'Internacional'
-        )
+        if self.agreement_type == 'especifico_nacional':
+            slug = 'Nacional'
+        elif self.agreement_type == 'especifico_homeclass_sincronas':
+            slug = 'Homeclass_Sincronas'
+        else:
+            slug = 'Internacional'
         student = self.student_name or 'Alumno'
         center = self.center_official_name or self.practice_center_id.name or 'Centro'
         return 'Convenio_Especifico_%s_%s_%s_%s.pdf' % (

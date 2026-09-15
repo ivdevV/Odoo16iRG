@@ -26,8 +26,8 @@ vigencia/resolución ampliadas, confidencialidad y protección de datos separada
 
 ## Fuera de alcance
 
-Los convenios específicos (nacional e internacional) están en
-`irg_practice_agreement_specific`, no en este módulo.
+Los convenios específicos (nacional, internacional y HomeClass
+síncronas) están en `irg_practice_agreement_specific`, no en este módulo.
 
 ## Pruebas
 
