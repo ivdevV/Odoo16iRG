@@ -1,36 +1,58 @@
-Git and scope validation — QWeb XPath correction — 2026-09-07
+Git and scope validation — rebased beta commit — 2026-09-09
 
 Commands:
   git status --porcelain=v1
   git rev-parse HEAD
+  git rev-parse HEAD^
   git rev-parse origin/Dev_iRG
   git merge-base HEAD origin/Dev_iRG
-  git branch --show-current
-  git diff --check
-  git diff --name-only
-  git ls-files --others --exclude-standard
-  git diff --numstat
+  git diff-tree --no-commit-id --name-status -r HEAD
+  git diff --stat origin/Dev_iRG..HEAD
+  git diff --check origin/Dev_iRG..HEAD
+  git diff-tree --check HEAD
+  git show --pretty=format: f4b023ef824e719152ab586bee6d520b11c6a896 | git patch-id --stable
+  git show --pretty=format: HEAD | git patch-id --stable
 
 Result: exit code 0
 
 branch=codex/irg-tfm-convocatorias-dev-integration
-head=0e5b952e6f51b2bba8ba292bdf0d5ad0dc39aa52
-origin_Dev_iRG=0e5b952e6f51b2bba8ba292bdf0d5ad0dc39aa52
-merge_base_origin_Dev_iRG=0e5b952e6f51b2bba8ba292bdf0d5ad0dc39aa52
-git_diff_check_exit=0
+head=faebadf2db0e82fd11a8e84204a0273ad9c6e30b
+parent=583891193dd161e21374a02950003c7e566d4033
+origin_Dev_iRG=583891193dd161e21374a02950003c7e566d4033
+merge_base_origin_Dev_iRG=583891193dd161e21374a02950003c7e566d4033
+range_diff_check_exit=0
+diff_tree_check_exit=0
+pre_rebase_patch_id=6893177d691ebb18c784b630db59673534f3b4b4
+rebased_patch_id=6893177d691ebb18c784b630db59673534f3b4b4
 
-Functional scope is limited to the existing new addon:
-  M addons-extra/extrairg/irg_tfm_convocatorias/__manifest__.py
-  M addons-extra/extrairg/irg_tfm_convocatorias/views/tfm_slide_templates.xml
+Functional changes are confined to the existing new addon
+addons-extra/extrairg/irg_tfm_convocatorias:
+  __manifest__.py
+  controllers/portal.py
+  models/__init__.py
+  models/slide_channel.py (new)
+  models/slide_channel_partner.py
+  models/slide_slide.py
+  models/tesis_model.py
+  tests/test_tfm_deliveries.py
+  tests/test_tfm_elearning.py
+  views/slide_tfm_views.xml
+  views/tesis_model_views.xml
+  views/tfm_portal_templates.xml
 
-The remaining changes are the regression contract and mission artifacts:
-  M missions/irg-tfm-convocatorias/artifacts/static_validator.py
-  M missions/irg-tfm-convocatorias/execution.md
-  M missions/irg-tfm-convocatorias/plan.md
-  ?? missions/irg-tfm-convocatorias/artifacts/qweb-xpath-red.txt
+Mission and verification support changes:
+  missions/irg-tfm-convocatorias/artifacts/static_validator.py
+  missions/irg-tfm-convocatorias/execution.md
+  missions/irg-tfm-convocatorias/plan.md
+  missions/irg-tfm-convocatorias/artifacts/beta-acceptance-green.txt (new)
+  missions/irg-tfm-convocatorias/artifacts/beta-acceptance-red.txt (new)
+  missions/irg-tfm-convocatorias/artifacts/review-beta-fixes-round2.txt (new)
+  missions/irg-tfm-convocatorias/artifacts/review-beta-fixes.txt (new)
+  missions/irg-tfm-convocatorias/artifacts/security-advisor-beta-fixes.txt (new)
 
-No pre-existing addon outside irg_tfm_convocatorias is modified. HEAD and its
-merge-base match origin/Dev_iRG. The manifest change is only the patch-version
-bump to 16.0.1.0.2, and the QWeb change replaces the invalid div selector with
-the verified li selector. git diff --check reports no whitespace errors; CRLF
-conversion notices are informational and are not whitespace failures.
+No pre-existing addon outside irg_tfm_convocatorias is modified. The commit parent,
+origin/Dev_iRG and merge-base all equal the requested new base
+583891193dd161e21374a02950003c7e566d4033. Both range and commit-tree whitespace
+checks exit 0. The stable patch-id is identical before and after rebase, confirming
+that the functional patch did not change. The worktree was clean before updating
+these three validation artifacts, and compileall left no cache files in the addon.

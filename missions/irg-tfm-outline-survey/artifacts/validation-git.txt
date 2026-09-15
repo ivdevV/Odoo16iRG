@@ -1,0 +1,21 @@
+Independent validation — 2026-09-10
+
+Worktree:
+C:/Users/admin/AppData/Local/Temp/Odoo16iRG-worktrees/irg-tfm-convocatorias
+
+Branch:
+codex/tfm-outline-survey (tracking origin/Dev_iRG)
+
+HEAD and merge-base with origin/Dev_iRG:
+b38baaf04359b4a0c9db3c765a1a986afc406940
+
+Command: git diff --check
+Exit code: 0
+Result: pass. No whitespace errors. Git emitted only informational LF-to-CRLF
+working-copy warnings.
+
+Command: rg -n "^(<{7}|={7}|>{7})" over addon, spec and mission
+Result: pass. No merge-conflict markers found.
+
+Git status: expected uncommitted functional, test, specification and mission
+changes on the isolated branch. No commit or push was performed by validation.

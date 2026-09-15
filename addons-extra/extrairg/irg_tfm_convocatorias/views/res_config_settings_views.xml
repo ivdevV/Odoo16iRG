@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_tfm_outline" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.tfm.outline</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Trabajo Final de Máster"
+                     string="Trabajo Final de Máster" data-key="irg_tfm_convocatorias"
+                     groups="base.group_system">
+                    <h2>Trabajo Final de Máster</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="irg_tfm_outline_survey_id"/>
+                                <div class="text-muted">
+                                    Plantilla editable para los nuevos Esquemas TFM.
+                                </div>
+                                <div class="content-group">
+                                    <field name="irg_tfm_outline_survey_id"
+                                           options="{'no_create': True}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

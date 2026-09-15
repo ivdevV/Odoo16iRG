@@ -1,0 +1,17 @@
+RED alternativo — 2026-09-09
+
+Comando:
+  C:\Users\admin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe missions\irg-tfm-convocatorias\artifacts\static_validator.py
+
+Resultado: exit code 1
+
+La estructura reconoció 75 métodos de prueba. El fallo fue el esperado:
+
+AssertionError: [
+  'online_inverse_fallback_is_exact_and_bounded',
+  'online_convocation_write_is_server_guarded',
+  'online_section_editor_is_narrow'
+]
+
+No se ejecutó Odoo porque el único runtime autorizado por el repositorio usa
+Docker y el usuario prohibió abrirlo en este equipo.

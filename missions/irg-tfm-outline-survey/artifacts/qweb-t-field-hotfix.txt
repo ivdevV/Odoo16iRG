@@ -1,0 +1,25 @@
+QWeb t-field hotfix — 2026-09-10
+
+User-visible RED:
+Odoo 16 failed to compile irg_tfm_convocatorias.tfm_outline_form with:
+"AssertionError: t-field can not be used on a t element, provide an actual HTML node".
+
+Automated RED before production change:
+C:\Users\admin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe missions/irg-tfm-outline-survey/artifacts/static_validator.py
+Exit code: 1
+Failure: ['qweb_t_field_uses_html_nodes']
+
+GREEN after the minimal QWeb correction:
+- static_validator.py: exit 0, 17 contracts.
+- Python compileall: exit 0.
+- ElementTree parse: pass, 5 templates.
+- rg scan for <t ... t-field=: no matches (expected exit 1).
+- git diff --check: exit 0; informational LF/CRLF warnings only.
+
+Independent code review: PASS, no blocking findings.
+Independent validation: PASS.
+
+Not run:
+Odoo QWeb runtime, HTTP integration and TestSprite require the repository's
+docker-compose.local.yml environment. Docker remained unused under the user's
+explicit instruction, and beta/production were not used as a validation runtime.

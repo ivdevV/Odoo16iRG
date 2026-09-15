@@ -1,0 +1,11 @@
+Independent validation — 2026-09-10
+
+Runtime:
+Python 3.12.14
+
+Command:
+C:\Users\admin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe -m compileall -q addons-extra/extrairg/irg_tfm_convocatorias
+
+Exit code: 0
+Output: none
+Result: pass

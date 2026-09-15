@@ -1,0 +1,113 @@
+{
+  "status": "passed",
+  "task": "irg-tfm-outline-survey",
+  "checks": [
+    {
+      "name": "static_tdd_contracts",
+      "command": "C:\\Users\\admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe missions/irg-tfm-outline-survey/artifacts/static_validator.py",
+      "result": "pass",
+      "detail": "20 static architecture, security, portal, backend list metadata and TDD contracts passed.",
+      "evidence": "artifacts/validation-static.txt"
+    },
+    {
+      "name": "python_compile",
+      "command": "C:\\Users\\admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe -m compileall -q addons-extra/extrairg/irg_tfm_convocatorias",
+      "result": "pass",
+      "detail": "All addon Python sources compiled with Python 3.12.14; exit code 0 and no output.",
+      "evidence": "artifacts/validation-python-compile.txt"
+    },
+    {
+      "name": "xml_manifest_acl_contracts",
+      "command": "Python AST/ElementTree/CSV validation of manifest, 11 XML files, 12 data paths and 5 ACL rows",
+      "result": "pass",
+      "detail": "XML is well formed, manifest paths and security load order are valid, and the three snapshot models have reviewer-only read ACLs with no portal ACL.",
+      "evidence": "artifacts/validation-xml-manifest-acl.txt"
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check",
+      "result": "pass",
+      "detail": "No whitespace errors; only informational LF-to-CRLF warnings were emitted.",
+      "evidence": "artifacts/validation-git.txt"
+    },
+    {
+      "name": "security_surface_scan",
+      "command": "rg scans for routes/auth/CSRF, Survey attempts, notifications, sudo, unsafe output, external URLs, credentials and conflict markers",
+      "result": "pass",
+      "detail": "No new public questionnaire route, unsafe answer rendering, external form, credential or notifying completion path was found; template-only Survey and reviewer boundaries are present.",
+      "evidence": "artifacts/validation-security-scan.txt"
+    },
+    {
+      "name": "qweb_template_nodes",
+      "command": "ElementTree parse plus rg scan for <t ... t-field= across addon XML",
+      "result": "pass",
+      "detail": "The portal XML is well formed and no t-field directive remains on a virtual <t> node; independent code review and validation passed.",
+      "evidence": "artifacts/qweb-t-field-hotfix.txt"
+    },
+    {
+      "name": "website_editable_context_collision",
+      "command": "Static controller/template name contract and repository scan",
+      "result": "pass",
+      "detail": "The reserved Website key editable has zero runtime occurrences in this flow; tfm_outline_editable appears once in the controller and twice in QWeb. Independent review and validation passed.",
+      "evidence": "artifacts/qweb-website-editable-collision.txt"
+    },
+    {
+      "name": "qweb_zero_revision_serialization",
+      "command": "Static QWeb contract plus independent source/diff review",
+      "result": "pass",
+      "detail": "Both hidden revision fields use t-attf-value, so the initial integer revision 0 is rendered as value=\"0\"; the HTTP regression test reads revisions from rendered HTML and the stale-revision server check remains active.",
+      "evidence": "artifacts/qweb-zero-revision-hotfix.txt"
+    },
+    {
+      "name": "backend_answer_list_order_metadata",
+      "command": "Static view contract, independent review and validation against the HEAD view",
+      "result": "pass",
+      "detail": "The question_ids x2many tree loads sequence invisibly while ordering by sequence,id; HEAD reproduces the missing-field condition and the regression test rejects explicit order fields absent from the tree metadata.",
+      "evidence": "artifacts/backend-answer-list-order-hotfix.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "The user explicitly prohibited opening or using Docker on this computer, and no other authorized local Odoo/PostgreSQL runtime is available.",
+      "evidence": "artifacts/validation-runtime-skips.txt"
+    },
+    {
+      "name": "integration_http",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "The HTTP integration suite requires the local Odoo/PostgreSQL runtime that cannot be started under the user's explicit Docker prohibition.",
+      "evidence": "artifacts/validation-runtime-skips.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Controller and QWeb changes trigger E2E, but repository policy permits TestSprite only against the disposable local docker-compose.local.yml runtime and forbids beta/production; Docker is explicitly prohibited on this computer.",
+      "evidence": "artifacts/validation-runtime-skips.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "not started; Docker explicitly prohibited by the user",
+    "database": "not used",
+    "worktree": "C:/Users/admin/AppData/Local/Temp/Odoo16iRG-worktrees/irg-tfm-convocatorias",
+    "branch": "codex/tfm-outline-survey",
+    "base_commit": "b38baaf04359b4a0c9db3c765a1a986afc406940",
+    "validation_head": "working tree over 4ac5b6811",
+    "python": "3.12.14"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-static.txt",
+    "artifacts/validation-python-compile.txt",
+    "artifacts/validation-xml-manifest-acl.txt",
+    "artifacts/validation-git.txt",
+    "artifacts/validation-security-scan.txt",
+    "artifacts/qweb-t-field-hotfix.txt",
+    "artifacts/qweb-website-editable-collision.txt",
+    "artifacts/qweb-zero-revision-hotfix.txt",
+    "artifacts/backend-answer-list-order-hotfix.txt",
+    "artifacts/validation-runtime-skips.txt"
+  ]
+}

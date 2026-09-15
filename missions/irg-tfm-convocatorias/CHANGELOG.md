@@ -1,5 +1,63 @@
 # Changelog — irg_tfm_convocatorias
 
+## 16.0.1.0.4 — 2026-09-09
+
+### Corregido
+
+- **Secciones Online** permite asignar **Convocatorias TFM** a categorías del
+  clon desde el canal base, sin habilitar la creación, el borrado ni la edición
+  de otros datos del contenido.
+- El canal Online puede recuperarse cuando un clon antiguo conserva únicamente
+  el enlace inverso hacia su HomeClass, siempre que exista un solo candidato
+  exacto.
+- La selección del canal falla cerrada ante relaciones ambiguas, inconsistentes
+  o autorreferenciadas y no recorre familias transitivas.
+- Los usuarios externos no pueden modificar las convocatorias de una categoría
+  mediante llamadas directas al servidor.
+- Se añadió cobertura específica del lote real `MOPCONL2606` para verificar que
+  el alumno es dirigido al canal Online y recibe la membresía correcta.
+
+### Validación
+
+- Security Advisor aprobó la resolución exacta y los controles server-side.
+- Review independiente aprobada tras corregir el caso de autorenlace.
+- Validación independiente `passed`: 13 grupos, 77 pruebas estructurales, 39
+  contratos, compilación, XML/XPath y alcance Git sin fallos.
+- Odoo/PostgreSQL/TestSprite no se ejecutaron porque el usuario prohibió usar
+  Docker en este equipo; no se afirma un resultado de runtime o E2E.
+
+## 16.0.1.0.3 — 2026-09-08
+
+### Corregido
+
+- La matrícula TFM decide el canal efectivo: los lotes Online elegibles abren el
+  clon Online y los lotes HomeClass/Neurologopedia abren el canal base, sin usar
+  admisiones ajenas como señal de modalidad.
+- Las rutas de canal y material fallan cerradas ante expediente ambiguo, lote
+  PRS/desconocido, clon ausente o relaciones base/Online inconsistentes.
+- Se conserva la redirección Online existente para cursos no TFM y, en TFM, se
+  mantienen las restricciones de fecha, lote, prácticas, morosidad y requisitos.
+- Las membresías creadas por TFM ya no disparan la réplica automática V2 y se
+  reconcilian al sustituir, desvincular, reparar o borrar un canal de la familia.
+- Los clones heredan la convocatoria únicamente desde una categoría HomeClass
+  válida; una referencia de origen inválida no se interpreta como contenido común.
+- La pestaña backend **Entregas TFM** muestra etapa, versión, archivo, comentario,
+  convocatoria, autor y fecha en lugar de mostrar solamente el ID.
+- En expedientes del flujo nuevo se ocultan la fase y los documentos legacy.
+- La categoría creada desde **Secciones iRG** conserva `Es una categoría`, por lo
+  que permite guardar **Convocatorias TFM** sin el error de validación observado.
+- El portal muestra fechas `dd/mm/aaaa` y renombra el acceso eLearning a
+  **Guía y recursos para el TFM**.
+
+### Validación
+
+- Security Advisor aprobado después de enmendar aislamiento y lifecycle.
+- Review independiente aprobada sin hallazgos Critical, Important ni Minor.
+- Validación independiente `passed`: 13 grupos, 70 pruebas estructurales, 35
+  contratos, XML/manifiesto, compilación y alcance Git sin fallos.
+- Odoo/PostgreSQL/TestSprite no se ejecutaron por la prohibición expresa de usar
+  Docker en este equipo; no se afirma un resultado de runtime o E2E.
+
 ## 16.0.1.0.2 — 2026-09-07
 
 ### Corregido

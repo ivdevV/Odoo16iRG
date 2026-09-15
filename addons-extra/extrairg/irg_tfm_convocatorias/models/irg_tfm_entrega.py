@@ -533,6 +533,10 @@ class IrgTfmEntrega(models.Model):
         thesis = self.env['tesis.model']._irg_portal_owned_thesis(course_id)
         if thesis.course_id.course_id.is_diplomado():
             raise AccessError(_('TFM submissions are not available for this course.'))
+        if stage == 'outline':
+            raise ValidationError(_(
+                'Los nuevos Esquemas se envían mediante el cuestionario TFM.'
+            ))
         safe_name, mimetype = self._irg_validate_upload(raw, filename, declared_mimetype)
         return self._irg_create_locked_submission(
             thesis,

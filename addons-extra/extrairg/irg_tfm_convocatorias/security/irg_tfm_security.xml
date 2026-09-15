@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_tfm" model="ir.module.category">
+        <field name="name">Trabajo Final de Máster</field>
+        <field name="sequence">35</field>
+    </record>
+
+    <record id="group_tfm_reviewer" model="res.groups">
+        <field name="name">Revisor TFM</field>
+        <field name="category_id" ref="module_category_tfm"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="rule_tfm_outline_reviewer_done" model="ir.rule">
+        <field name="name">Revisor TFM: esquemas enviados</field>
+        <field name="model_id" ref="model_irg_tfm_esquema"/>
+        <field name="groups" eval="[(4, ref('group_tfm_reviewer'))]"/>
+        <field name="domain_force">[('state', '=', 'done')]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_tfm_outline_question_reviewer_done" model="ir.rule">
+        <field name="name">Revisor TFM: respuestas enviadas</field>
+        <field name="model_id" ref="model_irg_tfm_esquema_pregunta"/>
+        <field name="groups" eval="[(4, ref('group_tfm_reviewer'))]"/>
+        <field name="domain_force">[('outline_id.state', '=', 'done')]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_tfm_outline_option_reviewer_done" model="ir.rule">
+        <field name="name">Revisor TFM: opciones enviadas</field>
+        <field name="model_id" ref="model_irg_tfm_esquema_opcion"/>
+        <field name="groups" eval="[(4, ref('group_tfm_reviewer'))]"/>
+        <field name="domain_force">[('question_id.outline_id.state', '=', 'done')]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+</odoo>

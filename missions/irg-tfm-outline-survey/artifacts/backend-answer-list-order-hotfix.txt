@@ -1,0 +1,29 @@
+Backend answer list ordering hotfix — 2026-09-14
+
+Symptom
+- Opening a submitted outline from Revision Tesis > Esquemas raised:
+  Cannot read properties of undefined (reading 'type') in compareRecords.
+
+Root cause
+- The static question_ids one2many tree declared default_order="sequence, id".
+- The tree did not load sequence, so Odoo 16 BasicModel._sortList could not find
+  list.fields['sequence'] when sorting the embedded records in memory.
+- The technical id is handled by the client; the adjacent working delivery tree
+  also orders by id without declaring an id column.
+
+TDD evidence
+- RED: static_validator.py failed only with
+  ['reviewer_x2many_order_fields_loaded'] before the view changed.
+- GREEN: sequence is loaded with invisible="1" and 20 contracts pass.
+- A TransactionCase inspects the reviewer form and rejects any explicit x2many
+  order field absent from the embedded tree, except the technical id.
+
+Independent gates
+- Code review: PASS, no blocking findings.
+- Validation: PASS for 20 contracts, Python compileall, all 11 addon XML files,
+  scoped git diff check and structural reproduction against HEAD.
+- Odoo runtime and E2E were not run because Docker remains explicitly prohibited.
+
+Scope note
+- The worktree also reports 1011 unrelated deletions. They were not touched and
+  must not be staged; use explicit hotfix paths only and never git add -A.

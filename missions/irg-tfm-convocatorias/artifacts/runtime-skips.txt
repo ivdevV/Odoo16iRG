@@ -1,21 +1,22 @@
-Runtime validation constraints — QWeb XPath correction — 2026-09-07
+Runtime validation constraints — complete beta implementation — 2026-09-08
 
 - Odoo module installation and TransactionCase/HttpCase: SKIPPED. The user
   explicitly prohibited opening, querying or executing Docker on this computer.
-  Repository policy requires Odoo validation through docker-compose.local.yml,
-  so no alternate unapproved runtime was used and no runtime result is claimed.
-- PostgreSQL/Odoo integration and concurrency: SKIPPED for the same reason. The
-  static validator confirms 55 Odoo test methods are structurally present, but
-  those tests were not executed.
-- e2e_testsprite: SKIPPED. The corrected diff touches a QWeb view, so E2E is in
-  scope, but TestSprite MCP is unavailable in this session and its mandatory
-  disposable local Odoo target on port 8069 cannot be started while Docker is
-  prohibited. No code upload, tunnel or beta/production access was attempted.
-- Database: unavailable and not accessed. No fixtures or services were created,
-  so cleanup/restoration is not applicable.
+  Repository policy requires Odoo validation through docker-compose.local.yml.
+  The static validator detected 70 Odoo test methods, but no runtime result is
+  claimed.
+- PostgreSQL/Odoo integration and concurrency: SKIPPED for the same reason. No
+  database was accessed and no alternate unapproved Odoo runtime was invented.
+- e2e_testsprite: SKIPPED. The current diff touches QWeb/views, portal and HTTP
+  controllers, so E2E is in scope. TestSprite MCP is unavailable in this session
+  and its required disposable local Odoo target on port 8069 cannot be started
+  while Docker is prohibited. No upload, tunnel, beta or production access was
+  attempted.
+- Database: unavailable and not accessed. No fixtures, users or services were
+  created, so runtime cleanup/restoration is not applicable.
 - Docker commands executed: 0.
 - TestSprite calls executed: 0.
 
-Compensating evidence consists of complete XML parsing, a direct lxml evaluation
-of the corrected selector with exactly one match against the official Odoo 16
-parent-node fixture, the repository static contract suite and git diff checks.
+Compensating evidence is limited to the independent static contract suite,
+complete Python compilation, XML/manifest parsing and Git scope/whitespace checks.
+These checks do not claim to replace Odoo/PostgreSQL or browser execution.
