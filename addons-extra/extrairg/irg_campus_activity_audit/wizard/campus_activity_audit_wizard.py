@@ -119,13 +119,18 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
             return True
         course_code = (enrollment.course_id.code or "").strip().lower()
         course_name = (enrollment.course_id.name or "").strip().lower()
+        batch_code = (enrollment.batch_id.code or "").strip().lower()
         if code and course_code == code:
+            return True
+        if code and batch_code == code:
             return True
         if code and code in course_name:
             return True
         if label and label == course_name:
             return True
         if label and course_code and ("(%s)" % course_code) in label:
+            return True
+        if label and batch_code and ("(%s)" % batch_code) in label:
             return True
         return False
 
@@ -152,7 +157,7 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
             ]
             if not hits:
                 unmatched.append(
-                    dict(item, reason=_("Sin matrícula en el curso del listado"))
+                    dict(item, reason=_("Sin matrícula en el curso o lote del listado"))
                 )
                 continue
             for enrollment in hits:

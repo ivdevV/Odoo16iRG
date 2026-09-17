@@ -330,6 +330,22 @@ class TestCampusActivityAudit(TransactionCase):
         self.assertEqual(len(unmatched), 1)
         self.assertIn("curso", unmatched[0].get("reason", "").lower())
 
+    def test_listado_matches_batch_code_in_parentheses(self):
+        """Prod listados put op.batch.code in parentheses, not op.course.code."""
+        wizard = self._wizard(listado_file=self._listado_xlsx([
+            (
+                self.partner.email,
+                "%s (%s)" % (self.course.name, self.batch.code),
+                self.student.name,
+                "México",
+                "Modalidad semipresencial",
+            ),
+        ]))
+        mapping, _sheets, unmatched = self._summary_by_email(wizard)
+        self.assertFalse(unmatched)
+        self.assertIn(self.partner.email, mapping)
+        self.assertEqual(mapping[self.partner.email]["lote"], self.batch.code)
+
     def test_parse_diplomados_listado_headers(self):
         payload = base64.b64decode(self._listado_xlsx([
             (
