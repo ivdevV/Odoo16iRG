@@ -29,7 +29,7 @@ continúan utilizando archivos.
 2. En Odoo, activar modo desarrollador.
 3. Ir a **Aplicaciones**, pulsar **Actualizar lista de aplicaciones** y buscar
    `IRG TFM Convocatorias`.
-4. Pulsar **Actualizar**. La versión esperada es `16.0.1.1.0`.
+4. Pulsar **Actualizar**. La versión esperada es `16.0.1.2.0`.
 5. Confirmar que la aplicación **Encuestas** está instalada; es una dependencia
    declarada y Odoo debe instalarla automáticamente si falta.
 
@@ -119,9 +119,78 @@ La vista **Esquemas → Respuestas** carga `sequence` como campo técnico invisi
 Debe conservarse mientras el árbol use `default_order="sequence, id"`; retirarlo
 provoca un error de ordenación en memoria en el cliente web de Odoo 16.
 
+## Revisión de entregas parcial y final
+
+Cada versión de entrega (`irg.tfm.entrega`) es inmutable. El revisor no edita el
+archivo: crea o actualiza una revisión (`irg.tfm.entrega.revision`) ligada a esa
+versión. Solo el grupo **Revisor TFM** puede crear o editar revisiones; no se
+pueden borrar. `reviewed_by` y `reviewed_at` los escribe el servidor.
+
+Estados:
+
+- **Pendiente de revisión**: el alumno ve el distintivo, no el comentario.
+- **Requiere correcciones** y **Aprobada**: el alumno ve el estado y el
+  comentario en `/campus/course/<course_id>/tfm`.
+
+## Sincronización de la nota TFM
+
+`tesis.model.points_fin` y el examen vinculado de la libreta
+(`app.gradebook.result.scoring_total`) se mantienen iguales. El vínculo
+`irg_tfm_thesis_id` lo calcula solo el servidor.
+
+Configuración exacta por máster:
+
+1. Un **Canal TFM** en el curso (`irg_tfm_channel_id`).
+2. Una asignatura del curso cuyo `slide_channel_id` apunta a ese canal o a su
+   pareja HomeClass/Online. No se resuelve por nombre, código ni `limit=1`.
+3. Una libreta para el alumno, curso y lote exactos.
+4. Una línea de libreta para esa asignatura TFM.
+5. Plantilla de libreta en escala 10, sin redondeo ni recorte que transforme la
+   nota. La nota aceptada es un número finito `0` o `1..10`.
+
+Solo un **Revisor TFM** puede escribir `points_fin`. Un usuario de libreta con
+permiso de administración de `isep_gradebook` puede crear o editar el examen
+vinculado; ese cambio vuelve al expediente.
+
+### Examen en la línea TFM sin expediente activo
+
+A partir de `16.0.1.2.0`, crear un examen en la asignatura TFM exige una
+matrícula única y un expediente TFM **activo** para esa matrícula. Si faltan,
+Odoo rechaza la operación con:
+
+- `No se encontró una única matrícula para el alumno, curso y lote de la libreta.`
+- `No se encontró un único expediente TFM activo para la matrícula de la libreta.`
+
+Remedio: configure el Canal TFM, active el expediente (progreso ≥ 50 % o
+activación interna) y deje una sola línea/examen candidato. Un segundo examen
+sin vínculo en la misma línea también se rechaza: hay que editar el vinculado.
+
+No se pueden cambiar a la vez la matrícula (`course_id`) y la convocatoria TFM
+del expediente, ni escribir en el mismo lote resultados TFM y no TFM.
+
+## Prueba beta de revisión y nota
+
+Preparación: módulo actualizado a `16.0.1.2.0`, máster con Canal TFM y asignatura
+puente, alumno con expediente activo, convocatoria y una entrega parcial.
+
+1. Como **Revisor TFM**, abrir el expediente en **Tesis Management → Management
+   → Revision Tesis**.
+2. En **Entregas TFM**, pulsar **Revisar entrega** de la versión parcial.
+3. Poner estado **Requiere correcciones**, escribir un comentario y guardar.
+4. Como el alumno dueño, abrir `/campus/course/<course_id>/tfm` y comprobar que
+   ve el estado y el comentario; otro alumno no debe verlos.
+5. Como revisor, escribir `points_fin` (por ejemplo `8.5`).
+6. En la libreta del alumno, la línea de la asignatura TFM debe mostrar un
+   examen con la misma nota.
+7. Como usuario de libreta, cambiar ese examen a `9.0` y volver al expediente:
+   `points_fin` debe ser `9.0`. El chatter del expediente registra la
+   sincronización.
+
 ## Validación local de esta versión
 
-Pasaron compilación Python, validación XML/manifest/ACL, 20 contratos estáticos,
-`git diff --check` y escaneos de seguridad. Las suites Odoo y HTTP y TestSprite
-no se lanzaron porque el usuario prohibió Docker en este ordenador y la política
-del repositorio impide sustituir el entorno local por beta o producción.
+Pasaron AST Python, XML bien formado, contratos estáticos de revisión/portal/sync
+(incluidos create list-safe y orden de bloqueo), `compileall` y `git diff --check`.
+Review independiente: sin hallazgos bloqueantes. Validación independiente
+`passed`. Las suites Odoo, la concurrencia de dos cursores y TestSprite no se
+lanzaron porque el usuario prohibió Docker en este ordenador y la política del
+repositorio impide sustituir el entorno local por beta o producción.

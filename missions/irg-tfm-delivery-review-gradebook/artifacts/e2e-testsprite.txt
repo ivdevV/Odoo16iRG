@@ -1,0 +1,7 @@
+e2e_testsprite: SKIPPED
+
+Command: not run
+
+Scope assessment: E2E WOULD be triggered because the functional changes include views/QWeb, portal, and controller code.
+
+Justification: the user does not have Docker on this machine and explicitly prohibited starting, querying, or using Docker or TestSprite. Consequently the docker-compose.local.yml runtime, disposable database, and TestSprite execution were not used.

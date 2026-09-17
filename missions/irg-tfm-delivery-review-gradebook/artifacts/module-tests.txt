@@ -1,0 +1,5 @@
+odoo_module_tests: SKIPPED
+
+Command: not run
+
+Justification: the user does not have Docker on this machine and explicitly prohibited starting, querying, or using Docker. The required docker-compose.local.yml Odoo runtime and disposable database were therefore unavailable.

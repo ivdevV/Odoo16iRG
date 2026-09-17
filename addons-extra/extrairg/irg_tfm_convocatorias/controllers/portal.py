@@ -188,6 +188,22 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         deliveries = thesis.irg_tfm_submission_ids.sorted(
             key=lambda delivery: (delivery.submitted_at, delivery.id), reverse=True,
         )
+        review_rows = request.env['irg.tfm.entrega.revision'].sudo().search_read(
+            [('delivery_id', 'in', deliveries.ids)],
+            fields=['delivery_id', 'state', 'comment'],
+        )
+        delivery_reviews = {
+            review['delivery_id'][0]: {
+                'state': review['state'],
+                'comment': review['comment'],
+            }
+            for review in review_rows
+        }
+        review_state_labels = {
+            'pending': _('Pendiente de revisión'),
+            'corrections': _('Requiere correcciones'),
+            'approved': _('Aprobada'),
+        }
         outlines = request.env['irg.tfm.esquema'].sudo().search([
             ('thesis_id', '=', thesis.id),
         ], order='submitted_at desc, started_at desc, id desc')
@@ -217,6 +233,8 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
             ),
             'partial_deliveries': deliveries.filtered(lambda delivery: delivery.stage == 'partial'),
             'final_deliveries': deliveries.filtered(lambda delivery: delivery.stage == 'final'),
+            'delivery_reviews': delivery_reviews,
+            'review_state_labels': review_state_labels,
             'outline_open': not convocation,
             'partial_open': partial_open,
             'final_open': final_open,
