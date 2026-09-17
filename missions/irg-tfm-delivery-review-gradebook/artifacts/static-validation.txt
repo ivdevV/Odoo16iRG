@@ -1,0 +1,24 @@
+Independent validation — 2026-09-16
+
+COMMAND: python -X pycache_prefix=%TEMP%\tfm-grade-validation-pycache missions/irg-tfm-delivery-review-gradebook/artifacts/static_validator.py
+EXIT: 0
+STDOUT/STDERR:
+PASS python_ast: 32 files
+PASS xml_well_formed: 12 files
+PASS style: no trailing whitespace or Python lines over 119 columns
+PASS task_2_and_3_contracts: 15 contracts
+PASS task_4_portal_contract: ownership-scoped allowlist, primitive payload, escaped readonly UI
+PASS task_5_grade_sync_contracts: 11 contracts
+PASS task_6_reverse_sync_contracts: 6 contracts
+PASS task_6_review_fix_contracts: 5 contracts
+SUMMARY: static validation passed; 0 failed
+
+COMMAND: python -X pycache_prefix=%TEMP%\tfm-grade-validation-pycache -m compileall -q addons-extra/extrairg/irg_tfm_convocatorias missions/irg-tfm-delivery-review-gradebook/artifacts
+EXIT: 0
+STDOUT/STDERR:
+<empty>
+
+COMMAND: python -c "from pathlib import Path; import xml.etree.ElementTree as ET; paths=list(Path('addons-extra/extrairg/irg_tfm_convocatorias').rglob('*.xml')); [ET.parse(p) for p in paths]; print('xml_ok', len(paths))"
+EXIT: 0
+STDOUT/STDERR:
+xml_ok 12

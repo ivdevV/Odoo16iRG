@@ -43,4 +43,18 @@
         <field name="perm_create" eval="False"/>
         <field name="perm_unlink" eval="False"/>
     </record>
+
+    <record id="rule_tfm_delivery_review_reviewer" model="ir.rule">
+        <field name="name">Revisor TFM: revisiones de entregas activas</field>
+        <field name="model_id" ref="model_irg_tfm_entrega_revision"/>
+        <field name="groups" eval="[(4, ref('group_tfm_reviewer'))]"/>
+        <field name="domain_force">[
+            ('delivery_id.stage', 'in', ('partial', 'final')),
+            ('delivery_id.thesis_id.irg_tfm_activated_at', '!=', False)
+        ]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
 </odoo>

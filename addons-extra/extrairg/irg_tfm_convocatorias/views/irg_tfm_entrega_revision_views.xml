@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_irg_tfm_entrega_revision_form" model="ir.ui.view">
+        <field name="name">irg.tfm.entrega.revision.form</field>
+        <field name="model">irg.tfm.entrega.revision</field>
+        <field name="arch" type="xml">
+            <form string="Revisión de entrega TFM" create="false" delete="false">
+                <sheet>
+                    <group>
+                        <field name="delivery_id" readonly="1"/>
+                        <field name="attachment_id" readonly="1"/>
+                        <field name="student_id" readonly="1"/>
+                        <field name="version" readonly="1"/>
+                        <field name="state"/>
+                        <field name="comment" placeholder="Escribe la devolución para el alumno..."/>
+                        <field name="reviewed_by" readonly="1"/>
+                        <field name="reviewed_at" readonly="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>

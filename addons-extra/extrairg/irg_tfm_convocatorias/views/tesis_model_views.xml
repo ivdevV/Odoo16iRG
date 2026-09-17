@@ -78,6 +78,9 @@
             <xpath expr="//sheet/group/group/field[@name='status_thesis']" position="attributes">
                 <attribute name="attrs">{'invisible': [('irg_tfm_activated_at', '!=', False)]}</attribute>
             </xpath>
+            <xpath expr="//sheet/group/group/field[@name='points_fin']" position="attributes">
+                <attribute name="groups">irg_tfm_convocatorias.group_tfm_reviewer</attribute>
+            </xpath>
             <xpath expr="//page[.//field[@name='attachment2_ids']]" position="attributes">
                 <attribute name="attrs">{'invisible': [('irg_tfm_activated_at', '!=', False)]}</attribute>
             </xpath>
@@ -100,6 +103,13 @@
                             <field name="submitted_by"/>
                             <field name="submitted_at"/>
                             <field name="internal_exception" optional="hide"/>
+                            <field name="irg_tfm_review_state"/>
+                            <field name="irg_tfm_reviewed_at" optional="hide"/>
+                            <button name="action_open_tfm_review" string="Revisar entrega"
+                                    type="object"
+                                    groups="irg_tfm_convocatorias.group_tfm_reviewer"
+                                    attrs="{'invisible': [('stage', 'not in', ['partial', 'final'])]}"
+                                    icon="fa-comment"/>
                         </tree>
                     </field>
                 </page>
