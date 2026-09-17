@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "iRG Campus Activity Audit",
-    "version": "16.0.1.1.0",
+    "version": "16.0.1.2.0",
     "category": "Education",
     "summary": "Informe Excel de actividad de campus a partir del listado de alumnos",
     "author": "iRG",

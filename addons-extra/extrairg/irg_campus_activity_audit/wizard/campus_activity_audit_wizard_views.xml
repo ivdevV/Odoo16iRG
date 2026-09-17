@@ -15,9 +15,9 @@
                             Sube el Excel de listado con las columnas
                             <b>Correo electrónico</b>, <b>Curso</b>, <b>Nombre</b>,
                             <b>País</b> y <b>modalidad</b>.
-                            El cruce usa el correo y el código del curso entre paréntesis
-                            (por ejemplo DITGHC2606). Las filas sin matrícula irán a
-                            la hoja «No encontrados».
+                            El cruce usa el correo y el código entre paréntesis
+                            (lote o curso, por ejemplo DITGHC2606). Las filas sin
+                            matrícula irán a la hoja «No encontrados».
                         </p>
                     </group>
                 </group>
