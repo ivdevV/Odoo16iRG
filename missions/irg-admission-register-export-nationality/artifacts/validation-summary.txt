@@ -1,0 +1,7 @@
+VALIDATION: 0 failed, 0 error(s) of 2 tests
+DB: test_irg_arex_nat_val_20260908
+python3 -m py_compile: PY_COMPILE_OK
+Tests: TestAdmissionRegisterExportNationality.test_export_includes_student_nationality
+       TestAdmissionRegisterExportNationality.test_export_nationality_empty_without_student_or_value
+odoo.tests.stats: irg_admission_register_export: 4 tests 0.10s 221 queries
+Log completo: artifacts/validation-tests.txt

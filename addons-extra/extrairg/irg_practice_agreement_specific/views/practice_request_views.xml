@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_request_form_agreement_specific" model="ir.ui.view">
+        <field name="name">practice.request.form.agreement.specific</field>
+        <field name="model">practice.request</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_request_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_open_create_specific_agreement_wizard"
+                        string="Crear Convenio"
+                        type="object"
+                        class="oe_highlight"
+                        groups="irg_practice_agreement_sign.group_practice_agreement_user"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="agreement_document_especifico_homeclass_sincronas">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <h3 style="font-size: 13pt; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; color: #111111;">
+                CONVENIO ESPECÍFICO DE PRÁCTICAS ANEXO AL CONVENIO MARCO DE COLABORACIÓN PARA LA REALIZACIÓN DE PRÁCTICAS DE FORMACIÓN
+                y
+                <t t-out="doc.center_official_name or doc.practice_center_id.name or 'CENTRO COLABORADOR'"/>
+            </h3>
+            <p style="font-size: 10.5pt; font-weight: bold;">
+                En <span t-out="doc.city_signature or 'Barcelona'"/>, a
+                <span t-out="doc.date_signature and doc.date_signature.strftime('%d de %B de %Y') or '___ de ____________ de ________'"/>
+            </p>
+        </div>
+
+        <p style="text-align: justify; margin-bottom: 16px;">
+            En el marco del convenio suscrito por iRG y
+            <strong t-out="doc.center_official_name or doc.practice_center_id.name or 'el CENTRO COLABORADOR'"/>
+            para la realización de prácticas formativas, se acuerda la realización de prácticas del estudiante del
+            <strong t-out="doc.course_name or 'máster correspondiente'"/>,
+            <strong t-out="doc.student_name or '_______________________'"/>,
+            con documento
+            <strong t-out="doc.student_vat or '_______________________'"/>,
+            bajo las siguientes Cláusulas:
+        </p>
+
+        <p><strong>PRIMERA:</strong></p>
+        <p style="text-align: justify; margin-bottom: 12px;">
+            Las prácticas se realizarán desde el
+            <span t-out="doc.start_date and doc.start_date.strftime('%d de %B de %Y') or '____________'"/>
+            hasta el
+            <span t-out="doc.final_date and doc.final_date.strftime('%d de %B de %Y') or '____________'"/>,
+            con una duración total estimada de
+            <strong t-out="int(doc.total_hours) if doc.total_hours else '___'"/>
+            horas. Las prácticas se desarrollarán en modalidad sincrónica online,
+            mediante conexión en tiempo real a través de plataformas digitales con los pacientes o usuarios asignados por el centro.
+        </p>
+
+        <p><strong>SEGUNDA:</strong></p>
+        <p style="text-align: justify; margin-bottom: 12px;">
+            La supervisión de las prácticas del estudiante será llevada a cabo por
+            <strong t-out="doc.tutor_name or '_______________________'"/>
+            <t t-if="doc.tutor_vat">
+                con documento <strong t-out="doc.tutor_vat"/>.
+            </t>
+            Dicha supervisión se realizará de manera virtual a través de encuentros sincrónicos online, los cuales serán pautados y acordados entre el tutor y el estudiante, garantizando el seguimiento y acompañamiento de las prácticas realizadas.
+        </p>
+
+        <p><strong>TERCERA:</strong></p>
+        <p style="text-align: justify; margin-bottom: 8px;">El estudiante se compromete a:</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Ser puntual en cada una de las sesiones sincrónicas acordadas.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Estar disponible en la plataforma online, con antelación suficiente, para garantizar el inicio puntual de cada sesión con pacientes o usuarios.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Asistir a todas las sesiones sincrónicas de prácticas programadas.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">No establecer ningún vínculo personal con los/las pacientes/usuarios o familiares fuera del marco de la práctica supervisada.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Respetar los horarios y metodología de trabajo del centro, adaptándose a la modalidad online.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Seguir las pautas establecidas por el tutor o responsable del centro, en todo momento, incluyendo:</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 32px;">No intervenir sin el permiso del terapeuta o tutor responsable.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 32px;">Mantener el secreto profesional y la confidencialidad, incluso en formato digital.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 32px;">Retirarse de la sesión si así lo solicita el paciente o el terapeuta.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 32px;">No grabar, almacenar ni compartir el contenido de las sesiones sincrónicas sin autorización explícita.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 32px;">Utilizar únicamente los materiales autorizados por el tutor.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 32px;">Realizar tareas complementarias relacionadas con las sesiones, como investigación, diseño de protocolos, preparación de materiales, etc.</p>
+        <p style="text-align: justify; margin-bottom: 12px; margin-left: 16px;">No hacer uso, reproducir, explotar comercialmente u otras actuaciones de naturaleza análoga, más allá de lo aplicado en la propia Memoria o Trabajo, de las actividades elaboradas en las prácticas, de acuerdo con la normativa de propiedad intelectual, marcas y patentes aplicable y demás disposiciones concordantes, en favor del centro.</p>
+
+        <p><strong>CUARTA:</strong></p>
+        <p style="text-align: justify; margin-bottom: 8px;">Las tareas que el estudiante puede abordar durante el período de prácticas son:</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Observación y/o participación en sesiones clínicas sincrónicas.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Soporte en el diseño de las sesiones de tratamiento y registro de las mismas.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Preparación y planificación de sesiones virtuales.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Búsqueda bibliográfica e investigación relevante.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Diseño de materiales o protocolos aplicables a la intervención online.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Implementación, junto con el tutor, de programas de intervención sincrónica.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Desarrollo de habilidades en evaluación a distancia, intervención terapéutica online, comunicación profesional y manejo ético de casos.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Creación de contenido de difusión del centro, con el fin de generar visibilidad.</p>
+        <p style="text-align: justify; margin-bottom: 4px; margin-left: 16px;">Creación y dictado de talleres para los pacientes o usuarios del centro.</p>
+        <p style="text-align: justify; margin-bottom: 8px; margin-left: 16px;">Elaboración de guías psicoeducativas dirigidas a los usuarios.</p>
+        <t t-if="doc.student_proposed_activities">
+            <p style="text-align: justify; margin-bottom: 4px;">Actividades propuestas por el alumno:</p>
+            <p style="text-align: justify; margin-bottom: 12px; white-space: pre-wrap;" t-out="doc.student_proposed_activities"/>
+        </t>
+
+        <p><strong>QUINTA:</strong></p>
+        <p style="text-align: justify; margin-bottom: 12px;">
+            Las partes se reservan la facultad de rescindir unilateralmente este convenio.
+        </p>
+
+        <p><strong>SEXTA:</strong></p>
+        <p style="text-align: justify; margin-bottom: 8px;">
+            Las presentes prácticas tienen carácter estrictamente formativo y no remunerado para el estudiante, en consonancia con su finalidad educativa y con la normativa vigente sobre prácticas académicas externas. En ningún caso estas prácticas generan vínculo laboral entre el estudiante y el centro colaborador, ni obligación retributiva alguna por parte de éste.
+        </p>
+        <p style="text-align: justify; margin-bottom: 8px;">
+            El estudiante declara conocer y aceptar que el centro colaborador podrá cobrar a los pacientes por las sesiones de terapia realizadas en el marco de sus prácticas, tanto en modalidad presencial como virtual o telemática. A tal efecto, el centro colaborador podrá aplicar, conforme a su política interna, cualquiera de las siguientes tarifas: (i) gratuita, (ii) bonificada con descuento, o (iii) de coste estándar.
+        </p>
+        <p style="text-align: justify; margin-bottom: 8px;">
+            La determinación de la tarifa aplicable en cada caso, así como la gestión íntegra de los cobros que, en su caso, se realicen a los pacientes, corresponden exclusivamente al centro colaborador. Estos importes no generan, directa ni indirectamente, derecho económico alguno a favor del estudiante ni se considerarán remuneración por su intervención en las sesiones.
+        </p>
+        <p style="text-align: justify; margin-bottom: 12px;">
+            El estudiante reconoce que el modelo descrito constituye una oportunidad para aplicar los conocimientos adquiridos con usuarios reales en un entorno supervisado, contribuyendo al cumplimiento de los fines formativos de las prácticas externas, sin que ello altere en ningún caso su naturaleza estrictamente formativa y no laboral.
+        </p>
+
+        <p style="text-align: justify; margin-bottom: 20px;">
+            Las partes implicadas suscriben el presente documento con las cláusulas expuestas y firman por triplicado en lugar y fecha arriba indicados.
+        </p>
+
+        <div style="margin-top: 28px;">
+            <h4 style="font-size: 11.5pt; font-weight: bold; margin-bottom: 10px;">Normativa (solo para estudiantes)</h4>
+            <p style="text-align: justify; margin-bottom: 8px;">Los estudiantes deben cumplir con la siguiente normativa:</p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                Inasistencia: en caso de no presentarse el día del inicio de las prácticas, el estudiante perderá el derecho a la misma. La ausencia durante más de dos días a las prácticas sin causa justificada/médica, supondrá la renuncia de las prácticas y, por tanto, su finalización automática. Cualquier problema que aparezca durante el transcurso de la estancia se tendrá que informar debidamente.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                No se puede rechazar o pedir cambio del centro asignado. Se realizará una entrevista previa y como requisito el estudiante debe completar el formulario Perfil y, en caso de que se le solicite, presentar su CV.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                Los cambios de modalidad a última hora dependen de la disponibilidad del centro; por tanto, no se garantiza la práctica presencial.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                Si el estudiante incumple con la asistencia o se retira del centro asignado será su responsabilidad conseguir un centro nuevo para sus prácticas.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                Relación laboral: las prácticas no constituirán una relación laboral de ningún tipo. Las prácticas son NO REMUNERADAS.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                Las prácticas no incluyen alojamiento, transporte hasta la ciudad donde se realicen las prácticas, visados o cualquier otra prestación no descrita. Va por cuenta del estudiante.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                La entrega de Memoria de Práctica fuera de plazo será suspendida sin excepción.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                El estudiante deberá aportar la certificación negativa del Registro central de delincuentes sexuales y/o el certificado de antecedentes penales. Siguiendo la ley 26/2015, de 28 de julio: es requisito para el acceso y ejercicio a las profesiones, oficios y actividades que impliquen contacto habitual con menores, el no haber sido condenado por sentencia firme por algún delito contra la libertad e indemnidad sexual, que incluye la agresión y abuso sexual, acoso sexual, exhibicionismo y provocación sexual, prostitución y explotación sexual y corrupción de menores, así como por trata de seres humanos.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                En todos los casos, el estudiante de prácticas presenciales se acogerá a los horarios establecidos según convenio con el centro colaborador.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                En caso de que el estudiante abandone o rechace la propuesta de prácticas de iRG, deberá aportar el centro de prácticas; iRG le facilitará el establecimiento de convenio.
+            </p>
+            <p style="text-align: justify; margin-bottom: 8px;">
+                El estudiante cuya práctica está vinculada a realizar terapias online debe utilizar la plataforma de Zoom por protección de datos.
+            </p>
+        </div>
+    </template>
+</odoo>

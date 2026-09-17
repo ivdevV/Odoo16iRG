@@ -1,0 +1,12 @@
+Validación independiente — compilación Python
+Fecha: 2026-09-09
+
+Comando equivalente:
+python.exe -Xpycache_prefix=C:\Users\admin\AppData\Local\Temp\codex-tfm-online-validate-20260909-01 -m compileall -f -q addons-extra/extrairg/irg_tfm_convocatorias
+
+Resultado: PASS (exit 0)
+La caché se creó fuera del addon y se eliminó después de verificar que su ruta
+resuelta pertenecía a C:\Users\admin\AppData\Local\Temp.
+
+compileall_exit=0
+pycache_cleanup=True

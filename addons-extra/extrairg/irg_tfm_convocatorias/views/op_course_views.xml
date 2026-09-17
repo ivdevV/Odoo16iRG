@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_op_course_form_irg_tfm_channel" model="ir.ui.view">
+        <field name="name">op.course.form.irg.tfm.channel</field>
+        <field name="model">op.course</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_course_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='min_unit_load']" position="after">
+                <field name="irg_tfm_channel_id" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

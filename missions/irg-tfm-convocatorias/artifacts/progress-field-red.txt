@@ -1,0 +1,5 @@
+Command: bundled-python missions/irg-tfm-convocatorias/artifacts/static_validator.py
+Result: fail (expected RED)
+Exit code: 1
+Relevant failure: FileNotFoundError for models/app_gradebook_result.py after the contract began requiring the real completion_porc grade-trigger integration.
+Baseline checks before the new contract: Python AST, XML, ACL, manifest/imports, dependencies, test structure, style and pure helpers passed.

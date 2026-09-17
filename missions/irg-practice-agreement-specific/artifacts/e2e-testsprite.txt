@@ -1,0 +1,48 @@
+==============================================================
+CHECK: e2e_testsprite
+MISIÓN: irg-practice-agreement-specific
+FECHA: 2026-09-07T10:37 UTC+2
+==============================================================
+
+RESULTADO: SKIPPED
+
+CAUSA: Las herramientas MCP de TestSprite no están disponibles en este runtime.
+La búsqueda dinámica `GetDynamicTools(pattern="testsprite")` devolvió `matches: []`.
+Sin el namespace testsprite_bootstrap / testsprite_generate_code_and_execute,
+no es posible ejecutar la capa E2E con la infraestructura autorizada.
+
+SCOPE DEL DIFF (disparo confirmado como OBLIGATORIO):
+  - views/practice_agreement_views.xml        → views/
+  - views/practice_request_views.xml          → views/
+  - views/portal_agreement_templates.xml      → portal
+  - report/practice_agreement_report_templates.xml → report/
+  - controllers/portal_agreement.py           → controladores HTTP
+
+El scope toca superficie web por lo que, cuando TestSprite esté disponible,
+se deben cubrir los flujos siguientes:
+  1. Botón "Crear Convenio Específico" en practice.request → abre wizard.
+  2. Wizard practice_agreement_specific_create_wizard: rellenar datos y confirmar.
+  3. Portal firma centro: URL /convenio/<token>/firmar-centro, firma y submit.
+  4. Portal firma alumno: URL /convenio/<token>/firmar-alumno, firma y submit.
+  5. PDF específico internacional: descargar desde el acuerdo, verificar nombre
+     del archivo y contenido mínimo (partes, cláusulas).
+
+ALTERNATIVA: Verificación manual o re-ejecución cuando TestSprite MCP esté
+instalado y activo en el entorno de CI/agente.
+
+JUSTIFICACIÓN DE SKIP ACEPTABLE (AGENTS.md "Capa E2E"):
+  "Todo `skipped` requiere una justificación no vacía y aceptable para el alcance."
+  El skip se justifica por causa técnica objetiva (MCP ausente), no por comodidad
+  ni para evitar un fallo. El check debe repetirse cuando el MCP esté disponible.
+
+CHECKS PREVIOS QUE SÍ PASARON:
+  - syntax_py_compile : pass (11 ficheros, exit 0)
+  - odoo_module_tests : pass (13 tests, 0 failed)
+  - git_base_module_clean : pass (base modules sin modificar)
+
+NO SE EJECUTÓ NINGUNA ACCIÓN EN EL BROWSER ni en el runtime local,
+conforme a la instrucción "no improvises con el navegador".
+
+==============================================================
+E2E SKIPPED — MCP TestSprite no disponible en este runtime
+==============================================================

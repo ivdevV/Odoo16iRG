@@ -1,0 +1,30 @@
+Independent validation — 2026-09-10
+
+Scope searched:
+- addon controllers, models, security, views, data and tests;
+- public/authenticated routes and CSRF declarations;
+- native survey.user_input access paths;
+- mail.message, mail.notification, mail.mail, message_post and partner_ids;
+- sudo() boundaries and answer rendering;
+- Google Forms/external URLs, API keys, client secrets and private-key headers.
+
+Result: pass for the statically verifiable contracts.
+
+Findings:
+- all newly added questionnaire routes use auth='user'; every mutation is POST
+  with csrf=True;
+- pre-existing public routes are eLearning route overrides and are outside the
+  new questionnaire surface;
+- the configured Survey is template-only and both survey.survey._create_answer
+  and survey.user_input create/write block native attempts;
+- no Google Forms URL or production credential was introduced;
+- URL hits are XML namespace constants and example.test test data only;
+- student answer output does not use t-raw;
+- completion creates mail.message directly with subtype mail.mt_note and
+  partner_ids=False; the questionnaire model contains no message_post call;
+- tests explicitly assert no mail.mail, mail.notification or recipients;
+- reviewer ACL/rules expose only state='done' snapshots and grant no portal ACL.
+
+Runtime authorization behavior remains covered only by tests that could not be
+executed without the prohibited local Odoo/PostgreSQL runtime; see the justified
+skips in verification.json.

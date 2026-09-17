@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_student_degree_type_user,irg.student.degree.type user,model_irg_student_degree_type,base.group_user,1,0,0,0
+access_irg_student_degree_type_back_office,irg.student.degree.type back office,model_irg_student_degree_type,openeducat_core.group_op_back_office,1,1,1,0
+access_irg_student_degree_type_admin,irg.student.degree.type admin,model_irg_student_degree_type,openeducat_core.group_op_back_office_admin,1,1,1,1

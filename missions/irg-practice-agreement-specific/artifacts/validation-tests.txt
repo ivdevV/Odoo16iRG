@@ -1,0 +1,35 @@
+## odoo_module_tests — irg_practice_agreement_specific
+## Comando:
+##   docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf \
+##     -d test_irg_practice_agreement_specific \
+##     -u irg_practice_agreement_specific \
+##     --test-enable --test-tags /irg_practice_agreement_specific \
+##     --without-demo=all --max-cron-threads=0 --stop-after-init \
+##     --http-port=8099 --log-level=test
+## Fecha: 2026-09-07
+
+Tests ejecutados (Starting log):
+  TestPracticeAgreementSpecific.test_agreement_type_includes_especifico_internacional
+  TestPracticeAgreementSpecific.test_both_signatures_complete
+  TestPracticeAgreementSpecific.test_center_signature_alone_does_not_complete
+  TestPracticeAgreementSpecific.test_html_has_insurance_and_no_inmira
+  TestPracticeAgreementSpecific.test_html_shows_optional_activities
+  TestPracticeAgreementSpecific.test_marco_still_completes_with_center_only
+  TestPracticeAgreementSpecific.test_request_button_opens_wizard
+  TestPracticeAgreementSpecific.test_student_and_center_urls_differ
+  TestPracticeAgreementSpecific.test_wizard_creates_especifico_with_snapshots
+  TestPracticeAgreementSpecific.test_wizard_model_exists
+  TestPracticeAgreementSpecific.test_wizard_requires_assigned_center
+
+Resumen Odoo:
+  irg_practice_agreement_specific: 13 tests 3.09s 649 queries
+  0 failed, 0 error(s) of 11 tests when loading database 'test_irg_practice_agreement_specific'
+
+Notas:
+  - Los "Failed to find attachment for assets" son errores de caché de assets
+    en una BD de pruebas sin filestore previo, sin impacto en el resultado.
+  - Los WARNING de campos (tracking, inverse_name, track_visibility) son de
+    otros módulos de la base (irg_practice_agreement_sign, isep_practices_2)
+    y no del módulo validado.
+
+RESULTADO: PASS — 0 fallos, 0 errores en 11 tests de módulo.

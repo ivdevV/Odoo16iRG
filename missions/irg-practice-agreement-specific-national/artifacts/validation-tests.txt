@@ -1,0 +1,532 @@
+2026-09-07 12:49:31,762 715 INFO ? odoo: Odoo version 16.0-20250909 
+2026-09-07 12:49:31,762 715 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-09-07 12:49:31,762 715 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-09-07 12:49:31,762 715 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-09-07 12:49:31,843 715 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-09-07 12:49:31,901 715 INFO ? odoo.service.server: HTTP service (werkzeug) running on 27f10a0153ff:8099 
+2026-09-07 12:49:31,911 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading 1 modules... 
+2026-09-07 12:49:31,914 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-09-07 12:49:31,923 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: updating modules list 
+2026-09-07 12:49:31,927 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-09-07 12:49:32,025 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-09-07 12:49:32,078 715 WARNING test_irg_practice_agreement_specific py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-07 12:49:32,081 715 WARNING test_irg_practice_agreement_specific py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-07 12:49:32,083 715 WARNING test_irg_practice_agreement_specific py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-07 12:49:32,303 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-09-07 12:49:32,337 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-09-07 12:49:32,462 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-09-07 12:49:32,464 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-09-07 12:49:32,465 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-09-07 12:49:32,630 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-09-07 12:49:32,800 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-09-07 12:49:32,908 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-09-07 12:49:32,915 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-09-07 12:49:32,964 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-09-07 12:49:33,038 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-09-07 12:49:33,095 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-09-07 12:49:33,097 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-09-07 12:49:33,099 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-09-07 12:49:33,101 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-09-07 12:49:33,171 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-09-07 12:49:33,187 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-09-07 12:49:33,188 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-09-07 12:49:33,199 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-09-07 12:49:33,207 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-09-07 12:49:33,229 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-09-07 12:49:33,233 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-09-07 12:49:33,240 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-09-07 12:49:33,241 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-09-07 12:49:33,243 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-09-07 12:49:33,246 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-09-07 12:49:33,247 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-09-07 12:49:33,256 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-09-07 12:49:33,261 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-09-07 12:49:33,269 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-09-07 12:49:33,276 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-09-07 12:49:33,279 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-09-07 12:49:33,287 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-09-07 12:49:33,290 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-09-07 12:49:33,299 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-09-07 12:49:33,817 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-09-07 12:49:33,942 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-09-07 12:49:33,956 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-09-07 12:49:34,181 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-09-07 12:49:34,223 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-09-07 12:49:34,475 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-09-07 12:49:34,477 715 WARNING test_irg_practice_agreement_specific odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-09-07 12:49:34,667 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['IRG Practice Agreement Specific'] to user __system__ #1 via n/a 
+2026-09-07 12:49:34,667 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['IRG Practice Agreement Specific'] to user __system__ #1 via n/a 
+2026-09-07 12:49:35,257 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a 
+2026-09-07 12:49:35,268 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading 92 modules... 
+2026-09-07 12:49:35,570 715 WARNING test_irg_practice_agreement_specific odoo.api.create: The model odoo.addons.isep_practices_2.models.a_practice_request is not overriding the create method in batch 
+2026-09-07 12:49:35,579 715 WARNING test_irg_practice_agreement_specific odoo.models: The model report.isep_practices_2.t_practices has no _description 
+2026-09-07 12:49:35,591 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: Loading module irg_practice_agreement_specific (92/92) 
+2026-09-07 12:49:35,621 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field ir.attachment.document_type: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,628 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.practice_schedule_id with unknown comodel_name 'practice.schedule' 
+2026-09-07 12:49:35,628 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,628 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,628 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,628 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,628 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,660 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field ir.attachment.document_type: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,667 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,667 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,667 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,667 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,667 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,676 715 INFO test_irg_practice_agreement_specific odoo.modules.registry: module irg_practice_agreement_specific: creating or updating database tables 
+2026-09-07 12:49:35,682 715 WARNING test_irg_practice_agreement_specific odoo.addons.base.models.ir_model: Two fields (op_student_course_course_id, course_id) of practice.request() have the same label: Course. [Modules: isep_practices_2 and isep_practices_2] 
+2026-09-07 12:49:35,682 715 WARNING test_irg_practice_agreement_specific odoo.addons.base.models.ir_model: Two fields (attachment2_ids, attachment_ids) of practice.request() have the same label: Adjuntos. [Modules: isep_practices_2 and isep_practices_2] 
+<string>:25: (ERROR/3) Unexpected indentation.
+<string>:23: (WARNING/2) Inline literal start-string without end-string.
+<string>:23: (WARNING/2) Inline interpreted text or phrase reference start-string without end-string.
+<string>:28: (WARNING/2) Block quote ends without a blank line; unexpected unindent.
+<string>:28: (WARNING/2) Inline literal start-string without end-string.
+<string>:28: (WARNING/2) Inline interpreted text or phrase reference start-string without end-string.
+2026-09-07 12:49:35,702 715 WARNING test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: docutils' system message present: <system_message backrefs="id2" ids="id1" level="2" line="23" source="<string>" type="WARNING"><paragraph>Inline literal start-string without end-string.</paragraph></system_message> 
+2026-09-07 12:49:35,702 715 WARNING test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: docutils' system message present: <system_message backrefs="id4" ids="id3" level="2" line="23" source="<string>" type="WARNING"><paragraph>Inline interpreted text or phrase reference start-string without end-string.</paragraph></system_message> 
+2026-09-07 12:49:35,702 715 WARNING test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: docutils' system message present: <system_message level="3" line="25" source="<string>" type="ERROR"><paragraph>Unexpected indentation.</paragraph></system_message> 
+2026-09-07 12:49:35,702 715 WARNING test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: docutils' system message present: <system_message level="2" line="28" source="<string>" type="WARNING"><paragraph>Block quote ends without a blank line; unexpected unindent.</paragraph></system_message> 
+2026-09-07 12:49:35,702 715 WARNING test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: docutils' system message present: <system_message backrefs="id6" ids="id5" level="2" line="28" source="<string>" type="WARNING"><paragraph>Inline literal start-string without end-string.</paragraph></system_message> 
+2026-09-07 12:49:35,702 715 WARNING test_irg_practice_agreement_specific odoo.addons.base.models.ir_module: docutils' system message present: <system_message backrefs="id8" ids="id7" level="2" line="28" source="<string>" type="WARNING"><paragraph>Inline interpreted text or phrase reference start-string without end-string.</paragraph></system_message> 
+2026-09-07 12:49:35,712 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading irg_practice_agreement_specific/security/ir.model.access.csv 
+2026-09-07 12:49:35,718 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading irg_practice_agreement_specific/data/mail_template_data.xml 
+2026-09-07 12:49:35,722 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading irg_practice_agreement_specific/wizard/practice_agreement_specific_create_wizard_views.xml 
+2026-09-07 12:49:35,727 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading irg_practice_agreement_specific/views/practice_request_views.xml 
+2026-09-07 12:49:35,732 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading irg_practice_agreement_specific/views/practice_agreement_views.xml 
+2026-09-07 12:49:35,736 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading irg_practice_agreement_specific/views/agreement_document_especifico_internacional.xml 
+2026-09-07 12:49:35,742 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading irg_practice_agreement_specific/views/agreement_document_especifico_nacional.xml 
+2026-09-07 12:49:35,747 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading irg_practice_agreement_specific/views/portal_agreement_templates.xml 
+2026-09-07 12:49:35,756 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: loading irg_practice_agreement_specific/report/practice_agreement_report_templates.xml 
+2026-09-07 12:49:35,777 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: Module irg_practice_agreement_specific loaded in 0.19s, 238 queries (+238 other) 
+2026-09-07 12:49:35,777 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: 92 modules loaded in 0.51s, 238 queries (+238 extra) 
+2026-09-07 12:49:35,796 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field ir.attachment.document_type: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,804 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,804 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,804 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,804 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,804 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,859 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field ir.attachment.document_type: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,870 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,870 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,870 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,870 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:35,870 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:36,141 715 INFO test_irg_practice_agreement_specific odoo.modules.loading: Modules loaded. 
+2026-09-07 12:49:36,145 715 INFO test_irg_practice_agreement_specific odoo.modules.registry: Registry loaded in 4.245s 
+2026-09-07 12:49:36,146 715 INFO test_irg_practice_agreement_specific odoo.service.server: Starting post tests 
+2026-09-07 12:49:36,185 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_agreement_type_includes_especifico_internacional ... 
+2026-09-07 12:49:36,190 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_both_signatures_complete ... 
+2026-09-07 12:49:36,331 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.css 
+2026-09-07 12:49:36,336 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_attachment: _read_file reading /var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982 
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.qweb', <function IrQWeb._generate_asset_nodes_cache at 0xffffa4c47310>, 'web.report_assets_common', True, False, '', False, False, False, False, (None, False, None, None, None, None, None, None))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1013, in get
+    cache_value = field_cache[record._ids[0]]
+KeyError: 190
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 1161, in __get__
+    value = env.cache.get(record, self)
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1020, in get
+    raise CacheMiss(record, field)
+odoo.exceptions.CacheMiss: 'ir.attachment(190,).raw'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_attachment.py", line 121, in _file_read
+    with open(full_path, 'rb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982'
+2026-09-07 12:49:36,640 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-7885d53/web.assets_common.min.js 
+2026-09-07 12:49:36,853 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.js 
+2026-09-07 12:49:36,864 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_center_signature_alone_does_not_complete ... 
+2026-09-07 12:49:36,875 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_html_has_insurance_and_no_inmira ... 
+2026-09-07 12:49:36,942 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.css 
+2026-09-07 12:49:36,946 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_attachment: _read_file reading /var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982 
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.qweb', <function IrQWeb._generate_asset_nodes_cache at 0xffffa4c47310>, 'web.report_assets_common', True, False, '', False, False, False, False, (None, False, None, None, None, None, None, None))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1013, in get
+    cache_value = field_cache[record._ids[0]]
+KeyError: 190
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 1161, in __get__
+    value = env.cache.get(record, self)
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1020, in get
+    raise CacheMiss(record, field)
+odoo.exceptions.CacheMiss: 'ir.attachment(190,).raw'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_attachment.py", line 121, in _file_read
+    with open(full_path, 'rb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982'
+2026-09-07 12:49:37,226 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-7885d53/web.assets_common.min.js 
+2026-09-07 12:49:37,439 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.js 
+2026-09-07 12:49:37,444 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_html_internacional_keeps_abroad_insurance ... 
+2026-09-07 12:49:37,510 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.css 
+2026-09-07 12:49:37,514 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_attachment: _read_file reading /var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982 
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.qweb', <function IrQWeb._generate_asset_nodes_cache at 0xffffa4c47310>, 'web.report_assets_common', True, False, '', False, False, False, False, (None, False, None, None, None, None, None, None))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1013, in get
+    cache_value = field_cache[record._ids[0]]
+KeyError: 190
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 1161, in __get__
+    value = env.cache.get(record, self)
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1020, in get
+    raise CacheMiss(record, field)
+odoo.exceptions.CacheMiss: 'ir.attachment(190,).raw'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_attachment.py", line 121, in _file_read
+    with open(full_path, 'rb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982'
+2026-09-07 12:49:37,813 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-7885d53/web.assets_common.min.js 
+2026-09-07 12:49:38,038 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.js 
+2026-09-07 12:49:38,043 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_html_nacional_has_irg_insurance_not_abroad ... 
+2026-09-07 12:49:38,118 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.css 
+2026-09-07 12:49:38,124 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_attachment: _read_file reading /var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982 
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.qweb', <function IrQWeb._generate_asset_nodes_cache at 0xffffa4c47310>, 'web.report_assets_common', True, False, '', False, False, False, False, (None, False, None, None, None, None, None, None))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1013, in get
+    cache_value = field_cache[record._ids[0]]
+KeyError: 190
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 1161, in __get__
+    value = env.cache.get(record, self)
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1020, in get
+    raise CacheMiss(record, field)
+odoo.exceptions.CacheMiss: 'ir.attachment(190,).raw'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_attachment.py", line 121, in _file_read
+    with open(full_path, 'rb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982'
+2026-09-07 12:49:38,432 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-7885d53/web.assets_common.min.js 
+2026-09-07 12:49:38,663 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.js 
+2026-09-07 12:49:38,669 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_html_shows_optional_activities ... 
+2026-09-07 12:49:38,748 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.css 
+2026-09-07 12:49:38,753 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_attachment: _read_file reading /var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982 
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.qweb', <function IrQWeb._generate_asset_nodes_cache at 0xffffa4c47310>, 'web.report_assets_common', True, False, '', False, False, False, False, (None, False, None, None, None, None, None, None))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1013, in get
+    cache_value = field_cache[record._ids[0]]
+KeyError: 190
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 1161, in __get__
+    value = env.cache.get(record, self)
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1020, in get
+    raise CacheMiss(record, field)
+odoo.exceptions.CacheMiss: 'ir.attachment(190,).raw'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_attachment.py", line 121, in _file_read
+    with open(full_path, 'rb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982'
+2026-09-07 12:49:39,057 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-7885d53/web.assets_common.min.js 
+2026-09-07 12:49:39,293 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.js 
+2026-09-07 12:49:39,298 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_marco_still_completes_with_center_only ... 
+2026-09-07 12:49:39,365 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.css 
+2026-09-07 12:49:39,370 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_attachment: _read_file reading /var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982 
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.qweb', <function IrQWeb._generate_asset_nodes_cache at 0xffffa4c47310>, 'web.report_assets_common', True, False, '', False, False, False, False, (None, False, None, None, None, None, None, None))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1013, in get
+    cache_value = field_cache[record._ids[0]]
+KeyError: 190
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 1161, in __get__
+    value = env.cache.get(record, self)
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1020, in get
+    raise CacheMiss(record, field)
+odoo.exceptions.CacheMiss: 'ir.attachment(190,).raw'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_attachment.py", line 121, in _file_read
+    with open(full_path, 'rb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982'
+2026-09-07 12:49:39,680 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-7885d53/web.assets_common.min.js 
+2026-09-07 12:49:39,912 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.js 
+2026-09-07 12:49:39,922 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_nacional_both_signatures_complete ... 
+2026-09-07 12:49:39,999 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.css 
+2026-09-07 12:49:40,004 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_attachment: _read_file reading /var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982 
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.qweb', <function IrQWeb._generate_asset_nodes_cache at 0xffffa4c47310>, 'web.report_assets_common', True, False, '', False, False, False, False, (None, False, None, None, None, None, None, None))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1013, in get
+    cache_value = field_cache[record._ids[0]]
+KeyError: 190
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 1161, in __get__
+    value = env.cache.get(record, self)
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 1020, in get
+    raise CacheMiss(record, field)
+odoo.exceptions.CacheMiss: 'ir.attachment(190,).raw'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_attachment.py", line 121, in _file_read
+    with open(full_path, 'rb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/var/lib/odoo/.local/share/Odoo/filestore/test_irg_practice_agreement_specific/6a/6a8d2ce207c6f1860f379cf9f75c8cc497c06982'
+2026-09-07 12:49:40,309 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-7885d53/web.assets_common.min.js 
+2026-09-07 12:49:40,525 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.assetsbundle: Failed to find attachment for assets /web/assets/%-ae79856/web.report_assets_common.min.js 
+2026-09-07 12:49:40,535 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_request_button_opens_wizard ... 
+2026-09-07 12:49:40,543 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_student_and_center_urls_differ ... 
+2026-09-07 12:49:40,555 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_wizard_creates_especifico_with_snapshots ... 
+2026-09-07 12:49:40,566 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_wizard_creates_nacional ... 
+2026-09-07 12:49:40,578 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_wizard_model_exists ... 
+2026-09-07 12:49:40,578 715 INFO test_irg_practice_agreement_specific odoo.addons.irg_practice_agreement_specific.tests.test_practice_agreement_specific: Starting TestPracticeAgreementSpecific.test_wizard_requires_assigned_center ... 
+2026-09-07 12:49:40,608 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field ir.attachment.document_type: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:40,615 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:40,615 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:40,616 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:40,616 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:40,616 715 WARNING test_irg_practice_agreement_specific odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-07 12:49:40,630 715 INFO test_irg_practice_agreement_specific odoo.addons.base.models.ir_attachment: filestore gc 8 checked, 8 removed 
+2026-09-07 12:49:40,631 715 INFO test_irg_practice_agreement_specific odoo.service.server: 15 post-tests in 4.49s, 1003 queries 
+2026-09-07 12:49:40,631 715 INFO test_irg_practice_agreement_specific odoo.tests.stats: irg_practice_agreement_specific: 17 tests 4.48s 1003 queries 
+2026-09-07 12:49:40,631 715 INFO test_irg_practice_agreement_specific odoo.tests.result: 0 failed, 0 error(s) of 15 tests when loading database 'test_irg_practice_agreement_specific' 
+2026-09-07 12:49:40,631 715 INFO test_irg_practice_agreement_specific odoo.service.server: Initiating shutdown 
+2026-09-07 12:49:40,631 715 INFO test_irg_practice_agreement_specific odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-09-07 12:49:40,750 715 INFO test_irg_practice_agreement_specific odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  

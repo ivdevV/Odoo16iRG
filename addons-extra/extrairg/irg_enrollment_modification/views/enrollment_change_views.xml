@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_enrollment_change_tree" model="ir.ui.view">
+        <field name="name">irg.enrollment.change.tree</field>
+        <field name="model">irg.enrollment.change</field>
+        <field name="arch" type="xml">
+            <tree string="Modificaciones de matrícula">
+                <field name="name"/>
+                <field name="student_id"/>
+                <field name="create_date"/>
+                <field name="state"/>
+                <field name="pdf_pending" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_enrollment_change_form" model="ir.ui.view">
+        <field name="name">irg.enrollment.change.form</field>
+        <field name="model">irg.enrollment.change</field>
+        <field name="arch" type="xml">
+            <form string="Modificación de matrícula">
+                <header>
+                    <button name="action_approve_academic" type="object"
+                            string="Visto académico" class="oe_highlight"
+                            groups="irg_enrollment_modification.group_academic"
+                            states="submitted"/>
+                    <button name="action_refuse" type="object"
+                            string="Denegar" class="btn-secondary"
+                            groups="irg_enrollment_modification.group_academic"
+                            states="submitted"/>
+                    <button name="action_approve_finance" type="object"
+                            string="Visto financiero" class="oe_highlight"
+                            groups="account.group_account_invoice"
+                            states="academic_approved"/>
+                    <button name="action_refuse" type="object"
+                            string="Denegar pago" class="btn-secondary"
+                            groups="account.group_account_invoice"
+                            states="academic_approved"/>
+                    <button name="action_retry_pdf" type="object"
+                            string="Reintentar PDF" class="btn-secondary"
+                            attrs="{'invisible': [('pdf_pending', '=', False)]}"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="submitted,academic_approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="student_id" readonly="1"/>
+                            <field name="student_course_id" readonly="1"/>
+                            <field name="sale_order_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="pdf_pending" readonly="1"/>
+                            <field name="request_attachment_id" readonly="1"/>
+                            <field name="final_attachment_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Cambios">
+                        <group>
+                            <field name="change_course" readonly="1"/>
+                            <field name="origin_course_id" readonly="1"
+                                   attrs="{'invisible': [('change_course', '=', False)]}"/>
+                            <field name="dest_course_id" readonly="1"
+                                   attrs="{'invisible': [('change_course', '=', False)]}"/>
+                            <field name="change_batch" readonly="1"/>
+                            <field name="origin_batch_id" readonly="1"
+                                   attrs="{'invisible': [('change_batch', '=', False)]}"/>
+                            <field name="dest_batch_id" readonly="1"
+                                   attrs="{'invisible': [('change_batch', '=', False)]}"/>
+                            <field name="change_modality" readonly="1"/>
+                            <field name="origin_modality" readonly="1"
+                                   attrs="{'invisible': [('change_modality', '=', False)]}"/>
+                            <field name="dest_modality" readonly="1"
+                                   attrs="{'invisible': [('change_modality', '=', False)]}"/>
+                        </group>
+                        <group>
+                            <field name="change_year" readonly="1"/>
+                            <field name="origin_year_id" readonly="1"
+                                   attrs="{'invisible': [('change_year', '=', False)]}"/>
+                            <field name="dest_year_id" readonly="1"
+                                   attrs="{'invisible': [('change_year', '=', False)]}"/>
+                            <field name="change_payment" readonly="1"/>
+                            <field name="origin_payment_mode_id" readonly="1"
+                                   attrs="{'invisible': [('change_payment', '=', False)]}"/>
+                            <field name="dest_payment_mode_id" readonly="1"
+                                   attrs="{'invisible': [('change_payment', '=', False)]}"/>
+                        </group>
+                    </group>
+                    <group string="Vistos">
+                        <group>
+                            <field name="academic_user_id"/>
+                            <field name="academic_date"/>
+                        </group>
+                        <group>
+                            <field name="finance_user_id"/>
+                            <field name="finance_date"/>
+                            <field name="refuse_user_id"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_irg_enrollment_change_search" model="ir.ui.view">
+        <field name="name">irg.enrollment.change.search</field>
+        <field name="model">irg.enrollment.change</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="student_id"/>
+                <filter name="submitted" string="Enviadas" domain="[('state', '=', 'submitted')]"/>
+                <filter name="waiting_finance" string="Pendiente de finanzas"
+                        domain="[('state', '=', 'academic_approved')]"/>
+                <filter name="pdf_pending" string="PDF pendiente" domain="[('pdf_pending', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_irg_enrollment_change" model="ir.actions.act_window">
+        <field name="name">Modificaciones de matrícula</field>
+        <field name="res_model">irg.enrollment.change</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree una solicitud desde la ficha del estudiante.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_irg_enrollment_change_root"
+              name="Modificación de matrícula"
+              groups="irg_enrollment_modification.group_academic,account.group_account_invoice"
+              sequence="55"/>
+    <menuitem id="menu_irg_enrollment_change"
+              name="Solicitudes"
+              parent="menu_irg_enrollment_change_root"
+              action="action_irg_enrollment_change"
+              sequence="10"/>
+</odoo>

@@ -1,0 +1,52 @@
+Independent validation Git scope — 2026-09-16
+
+COMMAND: git rev-parse HEAD
+EXIT: 0
+STDOUT/STDERR:
+1701cfe9b5475c7c5eed82a65e3304477bc70e93
+
+COMMAND: git branch --show-current
+EXIT: 0
+STDOUT/STDERR:
+codex/tfm-review-gradebook
+
+COMMAND: git diff --check -- addons-extra/extrairg/irg_tfm_convocatorias missions/irg-tfm-delivery-review-gradebook docs/superpowers
+EXIT: 0
+STDOUT/STDERR:
+warning: in the working copy of 'addons-extra/extrairg/irg_tfm_convocatorias/__manifest__.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'addons-extra/extrairg/irg_tfm_convocatorias/controllers/portal.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'addons-extra/extrairg/irg_tfm_convocatorias/models/irg_tfm_entrega.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'addons-extra/extrairg/irg_tfm_convocatorias/security/ir.model.access.csv', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'addons-extra/extrairg/irg_tfm_convocatorias/security/irg_tfm_security.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'addons-extra/extrairg/irg_tfm_convocatorias/tests/__init__.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'addons-extra/extrairg/irg_tfm_convocatorias/tests/test_tfm_deliveries.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'addons-extra/extrairg/irg_tfm_convocatorias/views/tesis_model_views.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'addons-extra/extrairg/irg_tfm_convocatorias/views/tfm_portal_templates.xml', LF will be replaced by CRLF the next time Git touches it
+
+COMMAND: git status --short -- addons-extra/extrairg/irg_tfm_convocatorias missions/irg-tfm-delivery-review-gradebook
+EXIT: 0
+STDOUT/STDERR:
+ M addons-extra/extrairg/irg_tfm_convocatorias/__manifest__.py
+ M addons-extra/extrairg/irg_tfm_convocatorias/controllers/portal.py
+ M addons-extra/extrairg/irg_tfm_convocatorias/models/__init__.py
+ M addons-extra/extrairg/irg_tfm_convocatorias/models/app_gradebook_result.py
+ M addons-extra/extrairg/irg_tfm_convocatorias/models/irg_tfm_entrega.py
+ M addons-extra/extrairg/irg_tfm_convocatorias/models/op_student_course.py
+ M addons-extra/extrairg/irg_tfm_convocatorias/models/tesis_model.py
+ M addons-extra/extrairg/irg_tfm_convocatorias/security/ir.model.access.csv
+ M addons-extra/extrairg/irg_tfm_convocatorias/security/irg_tfm_security.xml
+ M addons-extra/extrairg/irg_tfm_convocatorias/tests/__init__.py
+ M addons-extra/extrairg/irg_tfm_convocatorias/tests/test_tfm_deliveries.py
+ M addons-extra/extrairg/irg_tfm_convocatorias/views/tesis_model_views.xml
+ M addons-extra/extrairg/irg_tfm_convocatorias/views/tfm_portal_templates.xml
+?? addons-extra/extrairg/irg_tfm_convocatorias/models/app_gradebook_student.py
+?? addons-extra/extrairg/irg_tfm_convocatorias/models/app_gradebook_subject.py
+?? addons-extra/extrairg/irg_tfm_convocatorias/models/irg_tfm_entrega_revision.py
+?? addons-extra/extrairg/irg_tfm_convocatorias/models/irg_tfm_grade_sync.py
+?? addons-extra/extrairg/irg_tfm_convocatorias/models/op_admission.py
+?? addons-extra/extrairg/irg_tfm_convocatorias/tests/test_tfm_delivery_reviews.py
+?? addons-extra/extrairg/irg_tfm_convocatorias/tests/test_tfm_gradebook_sync.py
+?? addons-extra/extrairg/irg_tfm_convocatorias/views/irg_tfm_entrega_revision_views.xml
+?? missions/irg-tfm-delivery-review-gradebook/
+
+NOTE: The scoped status contains uncommitted functional work relative to base commit 1701cfe9b. The addon status was identical before and after independent validation; the validator did not modify any file under addons-extra/.

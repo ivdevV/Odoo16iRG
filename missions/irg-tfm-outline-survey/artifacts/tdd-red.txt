@@ -1,0 +1,10 @@
+Command:
+C:\Users\admin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe missions/irg-tfm-outline-survey/artifacts/static_validator.py
+
+Result: exit code 1 (expected RED)
+
+Failure:
+AssertionError at `assert 'survey' in manifest['depends']`.
+
+The new tests and contracts were present before production changes; the current
+addon did not yet declare or implement the approved Survey template flow.

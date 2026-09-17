@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "task": "irg-practice-request-online-types",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "command": "docker compose -f docker-compose.local.yml -f .worktrees/irg-practice-modality-elearning/missions/irg-practice-modality-elearning/docker-compose.worktree.yml run --rm --no-deps odoo_local odoo --config /etc/odoo/odoo.conf -d irg_ot_val2_20260902 --stop-after-init --workers 0 --http-port 18069 --test-enable --test-tags /irg_practice_request_online_types -i irg_practice_request_online_types",
+      "result": "pass",
+      "detail": "8 post-tests, 0 failed, 0 error(s). 10 tests total (including at_install) in 0.85s, 760 queries. DB nueva desechable irg_ot_val2_20260902; eliminada tras la ejecución.",
+      "evidence": "artifacts/unit-tests.txt"
+    },
+    {
+      "name": "py_compile",
+      "command": "python3 -m py_compile <10 .py files> && python3 -c \"import xml.etree.ElementTree as ET; ET.parse('views/practice_request_portal_templates.xml')\"",
+      "result": "pass",
+      "detail": "10 archivos .py sin errores de sintaxis. XML views/practice_request_portal_templates.xml parseado correctamente (root tag: odoo).",
+      "evidence": "artifacts/py-compile.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Scope del diff toca QWeb portal (views/practice_request_portal_templates.xml); el check es obligatorio según plan.md. TestSprite MCP no disponible en este runtime (GetDynamicTools pattern 'testsprite|sprite|e2e' devuelve 0 matches). Skip técnico por indisponibilidad de infraestructura.",
+      "evidence": "artifacts/e2e-skipped.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml + .worktrees/irg-practice-modality-elearning/missions/irg-practice-modality-elearning/docker-compose.worktree.yml overlay",
+    "database": "irg_ot_val2_20260902 (nueva, desechable; eliminada tras la ejecución)",
+    "base_commit": "e5eea35d0488837a1ab6a84993fe7570ea5b6959"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/unit-tests.txt",
+    "artifacts/py-compile.txt",
+    "artifacts/e2e-skipped.txt"
+  ]
+}

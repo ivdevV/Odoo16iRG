@@ -1,0 +1,8 @@
+Concurrencia independiente final — 2026-09-07
+
+Runner: artifacts/concurrency.py sobre odoo16irg_guard_fix.
+
+Resultado: 11 escenarios PASS, incluidos matrícula, pago, alta por
+ir.default, alta/baja/edición/traslado de líneas, doble aprobación,
+denegación, reintento PDF y escritor que espera el fence. Cleanup del runner
+PASS; matrícula, pedido y líneas restaurados.

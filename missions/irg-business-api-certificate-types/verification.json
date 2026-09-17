@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "task": "irg-business-api-certificate-types",
+  "checks": [
+    {
+      "name": "py_compile",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_business_api/models/api_constants.py addons-extra/extrairg/irg_business_api/models/gradebook_service.py addons-extra/extrairg/irg_business_api/tests/test_gradebook_certificate.py",
+      "result": "pass",
+      "detail": "exit 0, no syntax errors in the 3 modified files",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "unit_tests",
+      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_api_gradebook_cert -u irg_business_api --test-enable --test-tags /irg_business_api --without-demo=all --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test --workers=0",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 70 tests. 2 skipped (test_attendance_approve_on_hc_batch, test_attendance_requires_session_id) because irg_certificate_attendance is not installed — pulling it would add website/portal/Stripe. test_attendance_without_module_is_rejected covers the soft-reject path. irg_business_api: 84 tests 1.64s 4413 queries.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "attendance_hc_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "test_attendance_approve_on_hc_batch and test_attendance_requires_session_id require irg_certificate_attendance installed. Installing it pulls website/portal/Stripe into the test DB. Plan explicitly declares this skip; test_attendance_without_module_is_rejected covers the rejection path.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Diff touches only models/api_constants.py, models/gradebook_service.py, tests/test_gradebook_certificate.py and __manifest__.py. No .xml under views/templates/report, no static/, no portal, no website, no HTTP controllers. E2E trigger does not apply per plan declaration.",
+      "evidence": "missions/irg-business-api-certificate-types/03-validation.md"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_api_gradebook_cert",
+    "base_commit": "70cd1fe3a2d111dd90039e030ae7515b6524f991"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "missions/irg-business-api-certificate-types/03-validation.md"
+  ]
+}

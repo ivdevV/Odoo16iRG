@@ -1,0 +1,19 @@
+## Validación py_compile — irg-business-api-academic-documents
+## Ejecutado: 2026-09-08 10:54 UTC+2
+## Validador independiente (no el coder)
+
+Comando:
+  python3 -m py_compile \
+    addons-extra/extrairg/irg_business_api/models/document_service.py \
+    addons-extra/extrairg/irg_business_api/models/api_constants.py \
+    addons-extra/extrairg/irg_business_api/models/api_operation.py \
+    addons-extra/extrairg/irg_business_api/models/gradebook_service.py \
+    addons-extra/extrairg/irg_business_api/tests/test_academic_documents.py \
+    addons-extra/extrairg/irg_business_api/tests/test_gradebook_certificate.py
+
+Salida (stdout+stderr):
+  (vacía — ningún error de sintaxis)
+
+Exit code: 0
+
+Resultado: ALL OK — 6/6 archivos compilan sin error

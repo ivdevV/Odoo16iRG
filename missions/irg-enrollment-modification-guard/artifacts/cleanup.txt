@@ -1,0 +1,5 @@
+Bases odoo16irg_guard_fix, odoo16irg_guard_pushcheck y odoo16irg_guard_test
+eliminadas con dropdb.
+Filestores homónimos eliminados.
+Servicio compartido original: ID 27f10a0153ff3eed76dbf251bfe560305bc3afbed0bb67e74b10d6316cdb2b13,
+running=true, montajes idénticos al registro original.

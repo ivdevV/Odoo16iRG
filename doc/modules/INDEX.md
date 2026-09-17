@@ -76,7 +76,7 @@
 | [irg_op_student_admission_editable](./extrairg/irg_op_student_admission_editable.md) | extrairg | Popup de admisión editable en alumno | 16.0.1.0.0 |
 | [irg_admissions_by_student](./extrairg/irg_admissions_by_student.md) | extrairg | Admisión usando student_id | 16.0.1.0.0 |
 | [irg_admission_birthdate_edit](./extrairg/irg_admission_birthdate_edit.md) | extrairg | birth_date editable en admisión | 16.0.1.0.0 |
-| [irg_admission_register_export](./extrairg/irg_admission_register_export.md) | extrairg | Exportación de admisiones a CSV/XLSX | 16.0.1.0.0 |
+| [irg_admission_register_export](./extrairg/irg_admission_register_export.md) | extrairg | Exportación de admisiones a CSV/XLSX | 16.0.1.1.0 |
 | [irg_auto_translate](./extrairg/irg_auto_translate.md) | extrairg | Auto-traducción con DeepL/Google Translate | 16.0.1.0.0 |
 | [irg_course_convocatorias](./extrairg/irg_course_convocatorias.md) | extrairg | Convocatorias HomeClass y Online por curso eLearning | 16.0.1.3.0 |
 | [irg_course_portal_tiles](./extrairg/irg_course_portal_tiles.md) | extrairg | Tiles de acceso rápido en el campus | 16.0.1.0.0 |
@@ -100,6 +100,7 @@
 | [irg_practicas_fix](./extrairg/irg_practicas_fix.md) | extrairg | Fix user_id en prácticas | 16.0.1.0.0 |
 | [irg_practice_center_type_modalities](./extrairg/irg_practice_center_type_modalities.md) | extrairg | Modalidades academicas para tipos de centro de practicas | 16.0.1.0.0 |
 | [irg_practice_center_restrict](./extrairg/irg_practice_center_restrict.md) | extrairg | Oculta centros de prácticas al alumno | 16.0.1.0.0 |
+| [irg_practice_request_online_types](./extrairg/irg_practice_request_online_types.md) | extrairg | Filtra tipos de práctica en másteres online | 16.0.1.0.0 |
 | [irg_profile_batch_fix](./extrairg/irg_profile_batch_fix.md) | extrairg | Fix nombre de programa y filtro por lote | 16.0.1.0.0 |
 | [irg_sign_position_fix](./extrairg/irg_sign_position_fix.md) | extrairg | Fix posición del bloque de firma | 16.0.1.0.0 |
 | [irg_sign_reposition](./extrairg/irg_sign_reposition.md) | extrairg | Reposición alternativa de firma | 16.0.1.0.0 |

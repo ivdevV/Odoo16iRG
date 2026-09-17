@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_practice_restriction" model="ir.ui.view">
+        <field name="name">slide.slide.form.practice.restriction</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="irg_batch_slide_restrictions.view_slide_slide_form_batch_restriction"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='allowed_batch_ids']" position="after">
+                <field name="irg_required_practice_type"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

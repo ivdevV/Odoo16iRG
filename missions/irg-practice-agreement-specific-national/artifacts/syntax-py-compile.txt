@@ -1,0 +1,17 @@
+# syntax_py_compile — 2026-09-07
+# Comando: python3 -m py_compile <all .py in irg_practice_agreement_specific>
+
+Files compiled:
+  __init__.py
+  __manifest__.py
+  controllers/__init__.py
+  controllers/portal_agreement.py
+  models/__init__.py
+  models/practice_agreement.py
+  models/practice_request.py
+  tests/__init__.py
+  tests/test_practice_agreement_specific.py
+  wizard/__init__.py
+  wizard/practice_agreement_specific_create_wizard.py
+
+Result: EXIT CODE 0 — SYNTAX OK — all 11 .py compiled without error

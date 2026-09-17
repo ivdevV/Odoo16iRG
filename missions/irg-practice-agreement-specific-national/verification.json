@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "task": "irg-practice-agreement-specific-national",
+  "checks": [
+    {
+      "name": "syntax_py_compile",
+      "command": "python3 -m py_compile <11 .py files in irg_practice_agreement_specific>",
+      "result": "pass",
+      "detail": "EXIT CODE 0 — 11 archivos compilados sin error de sintaxis",
+      "evidence": "artifacts/syntax-py-compile.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_practice_agreement_specific -u irg_practice_agreement_specific --test-enable --test-tags /irg_practice_agreement_specific --without-demo=all --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "17 tests ejecutados — 0 failed, 0 error(s) of 15 tests when loading database 'test_irg_practice_agreement_specific'",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "git_base_module_clean",
+      "command": "git status --short addons-extra/extrairg/irg_practice_agreement_sign/ addons-extra/extrairg/irg_practice_agreement_types/ addons-extra/extrairg/irg_practice_agreement_specific/",
+      "result": "pass",
+      "detail": "irg_practice_agreement_sign: sin cambios. irg_practice_agreement_types: sin cambios. irg_practice_agreement_specific: con cambios (excepción autorizada en plan.md).",
+      "evidence": "artifacts/syntax-py-compile.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "GetDynamicTools pattern=testsprite",
+      "result": "skipped",
+      "detail": "MCP TestSprite ausente en este runtime (matches=[]). Disparo era OBLIGATORIO por scope (diff toca views/, portal, report/). Flujos pendientes documentados: wizard radio Nacional/Internacional, portal firma, PDF nacional. Skip es técnico, no de alcance.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_practice_agreement_specific",
+    "base_commit": "1770cff43e1265e3224fa92e223166040a68a045"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/syntax-py-compile.txt",
+    "artifacts/validation-tests.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

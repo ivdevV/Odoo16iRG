@@ -1,0 +1,4 @@
+GREEN: 0 failed, 0 error(s) of 2 tests
+DB: test_irg_arex_nat_red_20260908
+python3 -m py_compile: PY_COMPILE_OK
+Log completo: artifacts/green-install.txt

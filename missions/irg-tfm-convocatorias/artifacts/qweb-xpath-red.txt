@@ -1,0 +1,5 @@
+Command: bundled-python missions/irg-tfm-convocatorias/artifacts/static_validator.py
+Result: fail (expected RED)
+Exit code: 1
+Relevant failure: AssertionError: ['elearning_content_xpath_matches_odoo16_parent']
+Meaning: the addon XPath did not target the li root present in the official Odoo 16 course_slides_list_slide template.

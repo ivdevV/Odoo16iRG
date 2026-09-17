@@ -1,0 +1,873 @@
+ Container odoo16irg_local-odoo_local-run-2c045a0f92a3 Creating 
+ Container odoo16irg_local-odoo_local-run-2c045a0f92a3 Created 
+2026-09-02 10:57:16,561 1 INFO ? odoo: Odoo version 16.0-20250909 
+2026-09-02 10:57:16,561 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-09-02 10:57:16,561 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-09-02 10:57:16,561 1 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-09-02 10:57:16,611 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-09-02 10:57:16,661 1 INFO ? odoo.service.server: HTTP service (werkzeug) running on 0eebf1f5df49:18069 
+2026-09-02 10:57:16,669 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading 1 modules... 
+2026-09-02 10:57:16,671 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-09-02 10:57:16,677 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: updating modules list 
+2026-09-02 10:57:16,679 1 INFO test_irg_pm_val_20260902 odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-09-02 10:57:16,766 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-09-02 10:57:16,850 1 WARNING test_irg_pm_val_20260902 py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-02 10:57:16,853 1 WARNING test_irg_pm_val_20260902 py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-02 10:57:16,855 1 WARNING test_irg_pm_val_20260902 py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-02 10:57:17,118 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-09-02 10:57:17,152 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-09-02 10:57:17,234 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-09-02 10:57:17,236 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-09-02 10:57:17,237 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-09-02 10:57:17,307 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-09-02 10:57:17,494 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-09-02 10:57:17,586 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-09-02 10:57:17,593 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-09-02 10:57:17,639 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-09-02 10:57:17,723 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-09-02 10:57:17,780 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-09-02 10:57:17,782 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-09-02 10:57:17,785 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-09-02 10:57:17,787 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-09-02 10:57:17,876 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-09-02 10:57:17,898 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-09-02 10:57:17,900 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-09-02 10:57:17,914 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-09-02 10:57:17,925 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-09-02 10:57:17,957 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-09-02 10:57:17,962 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-09-02 10:57:17,972 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-09-02 10:57:17,973 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-09-02 10:57:17,977 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-09-02 10:57:17,980 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-09-02 10:57:17,982 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-09-02 10:57:17,995 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-09-02 10:57:18,002 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-09-02 10:57:18,013 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-09-02 10:57:18,023 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-09-02 10:57:18,028 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-09-02 10:57:18,038 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-09-02 10:57:18,042 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-09-02 10:57:18,054 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-09-02 10:57:18,761 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-09-02 10:57:18,916 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-09-02 10:57:18,938 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-09-02 10:57:19,230 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-09-02 10:57:19,279 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-09-02 10:57:19,611 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-09-02 10:57:19,612 1 WARNING test_irg_pm_val_20260902 odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-09-02 10:57:19,791 1 INFO test_irg_pm_val_20260902 odoo.addons.base.models.ir_module: ALLOW access to module.button_install on ['IRG Practice Slide Restrictions', 'IRG Student Course Practice Modality'] to user __system__ #1 via n/a 
+2026-09-02 10:57:19,828 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading 225 modules... 
+2026-09-02 10:57:20,275 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_documents_portal.models.folders is not overriding the create method in batch 
+2026-09-02 10:57:20,295 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch 
+2026-09-02 10:57:20,367 1 WARNING test_irg_pm_val_20260902 odoo.models: The model res.card has no _description 
+2026-09-02 10:57:20,367 1 WARNING test_irg_pm_val_20260902 odoo.models: The model isep.form.data.wizard has no _description 
+2026-09-02 10:57:20,389 1 WARNING test_irg_pm_val_20260902 py.warnings: /mnt/extra-addons/ent_addons/sale_account_accountant/models/account_reconcile_model.py:64: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/models/__init__.py", line 4, in <module>
+    from . import account_reconcile_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-02 10:57:20,427 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.irg_admission_class_start_date.models.op_admission is not overriding the create method in batch 
+2026-09-02 10:57:20,441 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.odoo_moodle_connector.models.calendar_event_custom is not overriding the create method in batch 
+2026-09-02 10:57:20,535 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-02 10:57:20,535 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-02 10:57:20,535 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_survey.models.survey_user_input is not overriding the create method in batch 
+2026-09-02 10:57:20,648 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-02 10:57:20,649 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-02 10:57:20,650 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch 
+2026-09-02 10:57:20,651 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch 
+2026-09-02 10:57:20,661 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_gradebook.models.app_gradebook_result is not overriding the create method in batch 
+2026-09-02 10:57:20,662 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_gradebook.models.survey_user_input is not overriding the create method in batch 
+2026-09-02 10:57:20,667 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook.template.line has no _description 
+2026-09-02 10:57:20,667 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook has no _description 
+2026-09-02 10:57:20,667 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook.result has no _description 
+2026-09-02 10:57:20,667 1 WARNING test_irg_pm_val_20260902 odoo.models: The model survey.user_input.write has no _description 
+2026-09-02 10:57:20,667 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook.subject has no _description 
+2026-09-02 10:57:20,667 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook.student has no _description 
+2026-09-02 10:57:20,676 1 WARNING test_irg_pm_val_20260902 odoo.models: The model record.request has no _description 
+2026-09-02 10:57:20,676 1 WARNING test_irg_pm_val_20260902 odoo.models: The model record.request.line has no _description 
+2026-09-02 10:57:20,676 1 WARNING test_irg_pm_val_20260902 odoo.models: The model record.request.list.line has no _description 
+2026-09-02 10:57:20,676 1 WARNING test_irg_pm_val_20260902 odoo.models: The model res.partner.document has no _description 
+2026-09-02 10:57:20,681 1 WARNING test_irg_pm_val_20260902 odoo.models: The model op.course.type has no _description 
+2026-09-02 10:57:20,681 1 WARNING test_irg_pm_val_20260902 odoo.models: The model op.area.course has no _description 
+2026-09-02 10:57:20,686 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_subject_precedence.wizard.subject_wizard is not overriding the create method in batch 
+2026-09-02 10:57:20,724 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook.result has no _description 
+2026-09-02 10:57:20,724 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook.student has no _description 
+2026-09-02 10:57:20,726 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook.subject has no _description 
+2026-09-02 10:57:20,732 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook.student has no _description 
+2026-09-02 10:57:20,736 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.op_admission is not overriding the create method in batch 
+2026-09-02 10:57:20,740 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.auto_admission_required is not overriding the create method in batch 
+2026-09-02 10:57:20,763 1 WARNING test_irg_pm_val_20260902 odoo.models: The model schedule.date.due.line has no _description 
+2026-09-02 10:57:20,778 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.irg_gradebook_certificates.models.irg_certificate_request is not overriding the create method in batch 
+2026-09-02 10:57:20,782 1 WARNING test_irg_pm_val_20260902 odoo.models: The model app.gradebook.student has no _description 
+2026-09-02 10:57:20,821 1 WARNING test_irg_pm_val_20260902 odoo.models: The model schedule.date.due.line has no _description 
+2026-09-02 10:57:20,858 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: 225 modules loaded in 1.03s, 0 queries (+0 extra) 
+2026-09-02 10:57:20,860 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading 236 modules... 
+2026-09-02 10:57:20,860 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module base_address_extended (2/236) 
+2026-09-02 10:57:20,886 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:20,886 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:20,896 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:20,906 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:20,921 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:20,921 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:20,923 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:20,923 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:20,923 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:20,923 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:20,923 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:20,923 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:20,923 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:20,947 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module base_address_extended: creating or updating database tables 
+2026-09-02 10:57:20,960 1 INFO test_irg_pm_val_20260902 odoo.models: Prepare computation of res.partner.street_name 
+2026-09-02 10:57:20,960 1 INFO test_irg_pm_val_20260902 odoo.models: Prepare computation of res.partner.street_number 
+2026-09-02 10:57:20,960 1 INFO test_irg_pm_val_20260902 odoo.models: Prepare computation of res.partner.street_number2 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.partner() have the same label: Language. [Modules: odoo_moodle_connector and base] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.partner() have the same label: Active. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.partner() have the same label: Moodle-ID. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of res.partner() have the same label: Department. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.partner() have the same label: Language. [Modules: irg_sale_order_extended and base] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.partner() have the same label: Stripe Customer ID. [Modules: irg_stripe_subscriptions and irg_payment_stripe_recurring] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department, department_id) of res.users() have the same label: Department. [Modules: None and hr] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.users() have the same label: Active. [Modules: None and base] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.users() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.users() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.faculty() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.faculty() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:20,968 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.faculty() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.faculty() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (titulacion, titulacion_from) of op.student() have the same label: Titulación. [Modules: None and isep_student_filter] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (finalizacionestudios, finalizacionestudios_from) of op.student() have the same label: Finalización de Estudios. [Modules: None and isep_student_filter] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.student() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.student() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.student() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:20,969 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.student() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:20,990 1 ERROR test_irg_pm_val_20260902 odoo.schema: Table 'res_partner': unable to set NOT NULL on column 'username' 
+2026-09-02 10:57:21,002 1 WARNING test_irg_pm_val_20260902 py.warnings: /usr/lib/python3/dist-packages/odoo/fields.py:809: UserWarning: Field 'op.student.op_course_ids' in dependency of op.student.total_completion_porc should be searchable. This is necessary to determine which records to recompute when op.student.course.completion_porc is modified. You should either make the field searchable, or simplify the field dependency.
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 493, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 210, in load_module_graph
+    registry.init_models(cr, model_names, {'module': package.name}, new_install)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 538, in init_models
+    func()
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_model.py", line 47, in mark_modified
+    records.modified(fnames)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 6165, in modified
+    todo = [self._modified([self._fields[fname] for fname in fnames], create)]
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 6216, in _modified
+    tree = self.pool.get_trigger_tree(fields, select=select)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 342, in get_trigger_tree
+    trees = [
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 345, in <listcomp>
+    if field in self._field_triggers
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 28, in __get__
+    value = self.fget(obj)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 439, in _field_triggers
+    dependencies = list(field.resolve_depends(self))
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 809, in resolve_depends
+    warnings.warn(
+ 
+2026-09-02 10:57:21,069 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_address_extended/security/ir.model.access.csv 
+2026-09-02 10:57:21,075 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_address_extended/views/base_address_extended.xml 
+2026-09-02 10:57:21,089 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_address_extended/views/res_city_view.xml 
+2026-09-02 10:57:21,095 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_address_extended/views/res_country_view.xml 
+2026-09-02 10:57:21,106 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module base_address_extended loaded in 0.25s, 210 queries (+210 other) 
+2026-09-02 10:57:21,106 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module base_location (53/236) 
+2026-09-02 10:57:21,117 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,117 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,128 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,140 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,155 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,155 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,157 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,157 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,157 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,157 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,157 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,157 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,157 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,179 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module base_location: creating or updating database tables 
+2026-09-02 10:57:21,186 1 INFO test_irg_pm_val_20260902 odoo.models: Prepare computation of res.partner.zip_id 
+2026-09-02 10:57:21,197 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.partner() have the same label: Language. [Modules: odoo_moodle_connector and base] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.partner() have the same label: Active. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.partner() have the same label: Moodle-ID. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of res.partner() have the same label: Department. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.partner() have the same label: Language. [Modules: irg_sale_order_extended and base] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.partner() have the same label: Stripe Customer ID. [Modules: irg_stripe_subscriptions and irg_payment_stripe_recurring] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department, department_id) of res.users() have the same label: Department. [Modules: None and hr] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.users() have the same label: Active. [Modules: None and base] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.users() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.users() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.faculty() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.faculty() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.faculty() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.faculty() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (titulacion, titulacion_from) of op.student() have the same label: Titulación. [Modules: None and isep_student_filter] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (finalizacionestudios, finalizacionestudios_from) of op.student() have the same label: Finalización de Estudios. [Modules: None and isep_student_filter] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.student() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.student() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.student() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,198 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.student() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:21,221 1 ERROR test_irg_pm_val_20260902 odoo.schema: Table 'res_partner': unable to set NOT NULL on column 'username' 
+2026-09-02 10:57:21,252 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location/security/ir.model.access.csv 
+2026-09-02 10:57:21,256 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location/views/res_city_zip_view.xml 
+2026-09-02 10:57:21,266 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location/views/res_city_view.xml 
+2026-09-02 10:57:21,275 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location/views/res_country_view.xml 
+2026-09-02 10:57:21,281 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location/views/res_company_view.xml 
+2026-09-02 10:57:21,286 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location/views/res_partner_view.xml 
+2026-09-02 10:57:21,304 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module base_location loaded in 0.20s, 302 queries (+302 other) 
+2026-09-02 10:57:21,305 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module base_location_geonames_import (69/236) 
+2026-09-02 10:57:21,315 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,315 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,325 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,338 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,352 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,353 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,354 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,355 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,355 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,355 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,355 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,355 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,355 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,378 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module base_location_geonames_import: creating or updating database tables 
+2026-09-02 10:57:21,463 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location_geonames_import/security/ir.model.access.csv 
+2026-09-02 10:57:21,467 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location_geonames_import/data/res_country_data.xml 
+2026-09-02 10:57:21,470 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location_geonames_import/views/res_country_view.xml 
+2026-09-02 10:57:21,474 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading base_location_geonames_import/wizard/geonames_import_view.xml 
+2026-09-02 10:57:21,489 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module base_location_geonames_import loaded in 0.18s, 146 queries (+146 other) 
+2026-09-02 10:57:21,489 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module irg_elearning_restrictions (165/236) 
+2026-09-02 10:57:21,499 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,499 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,509 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,522 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,536 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,536 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,539 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,539 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,539 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,539 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,539 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,539 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,539 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,561 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module irg_elearning_restrictions: creating or updating database tables 
+2026-09-02 10:57:21,594 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_elearning_restrictions/views/slide_slide_view.xml 
+2026-09-02 10:57:21,600 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_elearning_restrictions/views/templates.xml 
+2026-09-02 10:57:21,612 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module irg_elearning_restrictions loaded in 0.12s, 95 queries (+95 other) 
+2026-09-02 10:57:21,612 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module irg_elearning_scheduled (166/236) 
+2026-09-02 10:57:21,622 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,622 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,633 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,644 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,660 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,660 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,662 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,662 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,662 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,662 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,662 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,662 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,662 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,684 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module irg_elearning_scheduled: creating or updating database tables 
+2026-09-02 10:57:21,760 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_elearning_scheduled/views/slide_slide_view.xml 
+2026-09-02 10:57:21,766 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_elearning_scheduled/views/templates.xml 
+2026-09-02 10:57:21,775 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module irg_elearning_scheduled loaded in 0.16s, 72 queries (+72 other) 
+2026-09-02 10:57:21,775 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module isep_practices_2 (168/236) 
+2026-09-02 10:57:21,783 1 WARNING test_irg_pm_val_20260902 odoo.api.create: The model odoo.addons.isep_practices_2.models.a_practice_request is not overriding the create method in batch 
+2026-09-02 10:57:21,792 1 WARNING test_irg_pm_val_20260902 odoo.models: The model report.isep_practices_2.t_practices has no _description 
+2026-09-02 10:57:21,799 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,799 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:21,809 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,822 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:21,838 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,838 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,841 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,841 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,841 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,841 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,841 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,841 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,841 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,843 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.practice_schedule_id with unknown comodel_name 'practice.schedule' 
+2026-09-02 10:57:21,843 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,843 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,843 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,843 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,843 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:21,864 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module isep_practices_2: creating or updating database tables 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (op_student_course_course_id, course_id) of practice.request() have the same label: Course. [Modules: isep_practices_2 and isep_practices_2] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (attachment2_ids, attachment_ids) of practice.request() have the same label: Adjuntos. [Modules: isep_practices_2 and isep_practices_2] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.partner() have the same label: Language. [Modules: odoo_moodle_connector and base] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.partner() have the same label: Active. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.partner() have the same label: Moodle-ID. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of res.partner() have the same label: Department. [Modules: irg_sale_order_extended and odoo_moodle_connector] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.partner() have the same label: Language. [Modules: irg_sale_order_extended and base] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.partner() have the same label: Stripe Customer ID. [Modules: irg_stripe_subscriptions and irg_payment_stripe_recurring] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (file_name, name) of campus.files() have the same label: Nombre del archivo. [Modules: isep_practices_2 and isep_practices_2] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department, department_id) of res.users() have the same label: Department. [Modules: None and hr] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.users() have the same label: Active. [Modules: None and base] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of res.users() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of res.users() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:21,916 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.faculty() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.faculty() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.faculty() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.faculty() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (titulacion, titulacion_from) of op.student() have the same label: Titulación. [Modules: None and isep_student_filter] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (finalizacionestudios, finalizacionestudios_from) of op.student() have the same label: Finalización de Estudios. [Modules: None and isep_student_filter] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.student() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.student() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.student() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:21,917 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.student() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:21,947 1 ERROR test_irg_pm_val_20260902 odoo.schema: Table 'res_partner': unable to set NOT NULL on column 'username' 
+2026-09-02 10:57:22,036 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/data/cron.xml 
+2026-09-02 10:57:22,043 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/data/data.xml 
+2026-09-02 10:57:22,049 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/security/ir.model.access.csv 
+2026-09-02 10:57:22,058 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/menu_views.xml 
+2026-09-02 10:57:22,068 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/campus_files_views.xml 
+2026-09-02 10:57:22,076 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_center_day_views.xml 
+2026-09-02 10:57:22,084 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_center_shift_views.xml 
+2026-09-02 10:57:22,089 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_center_type_views.xml 
+2026-09-02 10:57:22,097 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_center_views.xml 
+2026-09-02 10:57:22,105 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_questionnaire_views.xml 
+2026-09-02 10:57:22,116 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_request_document_views.xml 
+2026-09-02 10:57:22,124 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/practice_request_views.xml 
+2026-09-02 10:57:22,134 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/reports/agreement_conditions_report.xml 
+2026-09-02 10:57:22,142 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/reports/practice_progress_report.xml 
+2026-09-02 10:57:22,147 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/reports/specific_agreement_report.xml 
+2026-09-02 10:57:22,151 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/templates/portal_my_centers.xml 
+2026-09-02 10:57:22,156 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/templates/portal_my_practices_request.xml 
+2026-09-02 10:57:22,159 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/templates/portal_practice_center.xml 
+2026-09-02 10:57:22,162 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/templates/practice_centers_template.xml 
+2026-09-02 10:57:22,165 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/templates/practice_request_form_template.xml 
+2026-09-02 10:57:22,169 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/templates/practice_request_portal_details_template.xml 
+2026-09-02 10:57:22,173 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/templates/practice_request_portal_template.xml 
+2026-09-02 10:57:22,176 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/templates/register_practice_center.xml 
+2026-09-02 10:57:22,179 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/templates/success_page.xml 
+2026-09-02 10:57:22,181 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading isep_practices_2/views/a_practice_doc_url_views.xml 
+2026-09-02 10:57:22,197 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module isep_practices_2 loaded in 0.42s, 1085 queries (+1085 other) 
+2026-09-02 10:57:22,197 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module irg_practice_center_type_modalities (185/236) 
+2026-09-02 10:57:22,206 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,206 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,216 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,280 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,296 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,296 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,298 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,298 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,298 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,298 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,298 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,298 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,299 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,301 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,301 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,301 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,301 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,301 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,322 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module irg_practice_center_type_modalities: creating or updating database tables 
+2026-09-02 10:57:22,351 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_practice_center_type_modalities/data/practice_center_type_data.xml 
+2026-09-02 10:57:22,362 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module irg_practice_center_type_modalities loaded in 0.17s, 42 queries (+42 other) 
+2026-09-02 10:57:22,362 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module irg_batch_slide_restrictions (202/236) 
+2026-09-02 10:57:22,372 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,372 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,382 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,394 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,411 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,411 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,413 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,413 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,414 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,414 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,414 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,414 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,414 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,416 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,416 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,416 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,416 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,417 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,437 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module irg_batch_slide_restrictions: creating or updating database tables 
+2026-09-02 10:57:22,519 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_batch_slide_restrictions/views/slide_slide_view.xml 
+2026-09-02 10:57:22,526 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_batch_slide_restrictions/views/templates.xml 
+2026-09-02 10:57:22,538 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module irg_batch_slide_restrictions loaded in 0.18s, 93 queries (+93 other) 
+2026-09-02 10:57:22,538 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module irg_student_course_practice_modality (203/236) 
+2026-09-02 10:57:22,548 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,548 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,558 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,570 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,587 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,587 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,589 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,589 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,590 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,590 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,590 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,590 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,590 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,592 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,592 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,592 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,592 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,592 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,613 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module irg_student_course_practice_modality: creating or updating database tables 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (lang_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (titulacion, titulacion_from) of op.student() have the same label: Titulación. [Modules: None and isep_student_filter] 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (finalizacionestudios, finalizacionestudios_from) of op.student() have the same label: Finalización de Estudios. [Modules: None and isep_student_filter] 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.student() have the same label: Active. [Modules: None and openeducat_core] 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (moodle_id, md_id) of op.student() have the same label: Moodle-ID. [Modules: None and None] 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (department_id, department) of op.student() have the same label: Department. [Modules: None and None] 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (stripe_customer_id, irg_stripe_customer_id) of op.student() have the same label: Stripe Customer ID. [Modules: None and None] 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (op_student_course_course_id, course_id) of practice.request() have the same label: Course. [Modules: isep_practices_2 and isep_practices_2] 
+2026-09-02 10:57:22,619 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (attachment2_ids, attachment_ids) of practice.request() have the same label: Adjuntos. [Modules: isep_practices_2 and isep_practices_2] 
+2026-09-02 10:57:22,650 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_student_course_practice_modality/views/op_student_course_views.xml 
+2026-09-02 10:57:22,658 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_student_course_practice_modality/views/user_profile_templates.xml 
+2026-09-02 10:57:22,661 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_student_course_practice_modality/views/educational_info_portal.xml 
+2026-09-02 10:57:22,673 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module irg_student_course_practice_modality loaded in 0.13s, 129 queries (+129 other) 
+2026-09-02 10:57:22,673 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module irg_elearning_editable_sections (208/236) 
+2026-09-02 10:57:22,682 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,682 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,693 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,704 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,720 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,721 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,725 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,725 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,725 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,725 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,725 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,746 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module irg_elearning_editable_sections: creating or updating database tables 
+2026-09-02 10:57:22,754 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_model: Two fields (slide_count, slide_ids) of irg.slide.section() have the same label: Contenidos. [Modules: irg_elearning_editable_sections and irg_elearning_editable_sections] 
+2026-09-02 10:57:22,839 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_elearning_editable_sections/security/ir.model.access.csv 
+2026-09-02 10:57:22,843 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_elearning_editable_sections/views/slide_channel_view.xml 
+2026-09-02 10:57:22,851 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_elearning_editable_sections/views/slide_slide_view.xml 
+2026-09-02 10:57:22,856 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_elearning_editable_sections/views/slide_slide_search_view.xml 
+2026-09-02 10:57:22,859 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_elearning_editable_sections/views/website_slides_section_visibility.xml 
+2026-09-02 10:57:22,864 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_ui_view: Error-prone use of @class in view fullscreen_sidebar_hide_restricted_sections (): use the hasclass(*classes) function to filter elements by their classes 
+2026-09-02 10:57:22,874 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module irg_elearning_editable_sections loaded in 0.20s, 183 queries (+183 other) 
+2026-09-02 10:57:22,874 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Loading module irg_practice_slide_restrictions (217/236) 
+2026-09-02 10:57:22,883 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,883 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:22,893 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,906 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:22,922 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,922 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,924 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,924 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,924 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,924 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,924 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,924 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,925 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,927 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,927 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,927 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,927 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,927 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:22,947 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: module irg_practice_slide_restrictions: creating or updating database tables 
+2026-09-02 10:57:22,977 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_practice_slide_restrictions/views/slide_slide_view.xml 
+2026-09-02 10:57:22,983 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: loading irg_practice_slide_restrictions/views/templates.xml 
+2026-09-02 10:57:22,987 1 WARNING test_irg_pm_val_20260902 odoo.addons.base.models.ir_ui_view: Error-prone use of @class in view fullscreen_sidebar_hide_practice_sections (): use the hasclass(*classes) function to filter elements by their classes 
+2026-09-02 10:57:23,000 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Module irg_practice_slide_restrictions loaded in 0.13s, 115 queries (+115 other) 
+2026-09-02 10:57:23,000 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: 236 modules loaded in 2.14s, 2472 queries (+2472 extra) 
+2026-09-02 10:57:23,006 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:23,006 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:23,016 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:23,029 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:23,045 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,045 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,048 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,048 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,048 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,048 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,048 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,048 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,048 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,050 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,050 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,051 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,051 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,051 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,077 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:23,077 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:23,133 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:23,145 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:23,161 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,161 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,164 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,164 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,164 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,164 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,164 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,164 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,164 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,166 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,166 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,167 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,167 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,167 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,469 1 INFO test_irg_pm_val_20260902 odoo.modules.loading: Modules loaded. 
+2026-09-02 10:57:23,473 1 INFO test_irg_pm_val_20260902 odoo.modules.registry: Registry loaded in 6.812s 
+2026-09-02 10:57:23,473 1 INFO test_irg_pm_val_20260902 odoo.service.server: Starting post tests 
+2026-09-02 10:57:23,475 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_approve_syncs_modality_to_enrollment ... 
+2026-09-02 10:57:23,494 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno APPR' is 'm' 
+2026-09-02 10:57:23,494 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno APPR -> m 
+2026-09-02 10:57:23,506 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_backend_views_include_practice_field ... 
+2026-09-02 10:57:23,509 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_draft_request_does_not_sync ... 
+2026-09-02 10:57:23,523 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno DRAFT' is 'm' 
+2026-09-02 10:57:23,523 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno DRAFT -> m 
+2026-09-02 10:57:23,531 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_enrollment_field_exists ... 
+2026-09-02 10:57:23,531 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_latest_synced_request_wins ... 
+2026-09-02 10:57:23,535 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_openeducat_sale_lote_custom.models.op_batch: IRG Custom: Create set date_start_class to 2026-09-02 for batch 
+2026-09-02 10:57:23,545 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno WIN' is 'm' 
+2026-09-02 10:57:23,545 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno WIN -> m 
+2026-09-02 10:57:23,556 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_progress_and_end_keep_syncing ... 
+2026-09-02 10:57:23,569 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno PROG' is 'm' 
+2026-09-02 10:57:23,569 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno PROG -> m 
+2026-09-02 10:57:23,580 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:23,581 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 125 and Message-Id '<161064145074914.1788346643.576825141906738-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 'a********og@example.test' successfully sent 
+2026-09-02 10:57:23,581 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:23,581 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:23,582 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:23,589 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:23,589 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 127 and Message-Id '<586778325450773.1788346643.586710929870605-openerp-5-practice.request@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 'a********og@example.test' successfully sent 
+2026-09-02 10:57:23,589 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:23,589 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:23,590 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_reject_does_not_clear_enrollment ... 
+2026-09-02 10:57:23,603 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno REJ' is 'm' 
+2026-09-02 10:57:23,603 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno REJ -> m 
+2026-09-02 10:57:23,615 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:23,615 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 128 and Message-Id '<352778169936467.1788346643.612468957901001-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 'a*******ej@example.test' successfully sent 
+2026-09-02 10:57:23,615 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:23,615 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:23,616 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:23,618 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_staff_can_write_enrollment_field ... 
+2026-09-02 10:57:23,631 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno STAFF' is 'm' 
+2026-09-02 10:57:23,631 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno STAFF -> m 
+2026-09-02 10:57:23,636 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_student_helper_returns_course_modality ... 
+2026-09-02 10:57:23,649 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno HELP' is 'm' 
+2026-09-02 10:57:23,649 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno HELP -> m 
+2026-09-02 10:57:23,654 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_student_course_practice_modality.tests.test_student_course_practice_modality: Starting TestStudentCoursePracticeModality.test_two_courses_are_independent ... 
+2026-09-02 10:57:23,665 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno A' is 'm' 
+2026-09-02 10:57:23,665 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno A -> m 
+2026-09-02 10:57:23,682 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:23,682 1 WARNING test_irg_pm_val_20260902 odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-09-02 10:57:23,693 1 WARNING test_irg_pm_val_20260902 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:23,704 1 WARNING test_irg_pm_val_20260902 odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-09-02 10:57:23,721 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,721 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,723 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,727 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.op_course_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,727 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.center.type_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,727 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.email_send: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,727 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_specific: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,727 1 WARNING test_irg_pm_val_20260902 odoo.fields: Field practice.request.status_sign_framework: unknown parameter 'track_visibility', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-02 10:57:23,809 1 INFO test_irg_pm_val_20260902 odoo.addons.base.models.ir_attachment: filestore gc 1 checked, 0 removed 
+2026-09-02 10:57:23,809 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_allows_when_course_linked_only_via_subject_course_id ... 
+2026-09-02 10:57:24,010 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:24,010 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 130 and Message-Id '<111840996931446.1788346644.004642724990845-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 's********bj@example.test' successfully sent 
+2026-09-02 10:57:24,010 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:24,011 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.mail records with IDs: [130] 
+2026-09-02 10:57:24,015 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.message records with IDs: [13932] 
+2026-09-02 10:57:24,015 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:24,016 1 INFO test_irg_pm_val_20260902 odoo.addons.auth_signup.models.res_users: Password reset email sent for user <slides.subj@example.test> to <slides.subj@example.test> 
+2026-09-02 10:57:24,018 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno slides SUBJ' is 'm' 
+2026-09-02 10:57:24,018 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno slides SUBJ -> m 
+2026-09-02 10:57:24,045 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_child_inherits_parent_requirement ... 
+2026-09-02 10:57:24,217 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:24,217 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 131 and Message-Id '<386294428149986.1788346644.211827278137207-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 's*********ld@example.test' successfully sent 
+2026-09-02 10:57:24,217 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:24,218 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.mail records with IDs: [131] 
+2026-09-02 10:57:24,220 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.message records with IDs: [13943] 
+2026-09-02 10:57:24,220 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:24,220 1 INFO test_irg_pm_val_20260902 odoo.addons.auth_signup.models.res_users: Password reset email sent for user <slides.child@example.test> to <slides.child@example.test> 
+2026-09-02 10:57:24,222 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno slides CHILD' is 'm' 
+2026-09-02 10:57:24,222 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno slides CHILD -> m 
+2026-09-02 10:57:24,242 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_empty_requirement_is_visible_to_everyone ... 
+2026-09-02 10:57:24,416 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:24,416 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 132 and Message-Id '<465159362902012.1788346644.410927295684814-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 's*********ty@example.test' successfully sent 
+2026-09-02 10:57:24,416 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:24,417 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.mail records with IDs: [132] 
+2026-09-02 10:57:24,418 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.message records with IDs: [13955] 
+2026-09-02 10:57:24,419 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:24,419 1 INFO test_irg_pm_val_20260902 odoo.addons.auth_signup.models.res_users: Password reset email sent for user <slides.empty@example.test> to <slides.empty@example.test> 
+2026-09-02 10:57:24,421 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno slides EMPTY' is 'm' 
+2026-09-02 10:57:24,421 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno slides EMPTY -> m 
+2026-09-02 10:57:24,438 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_error_template_contains_blocked_copy ... 
+2026-09-02 10:57:24,439 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_onchange_parent_keeps_batch_and_copies_practice ... 
+2026-09-02 10:57:24,612 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:24,612 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 133 and Message-Id '<283812548342768.1788346644.606509923934937-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 's********ch@example.test' successfully sent 
+2026-09-02 10:57:24,612 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:24,613 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.mail records with IDs: [133] 
+2026-09-02 10:57:24,615 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.message records with IDs: [13966] 
+2026-09-02 10:57:24,615 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:24,616 1 INFO test_irg_pm_val_20260902 odoo.addons.auth_signup.models.res_users: Password reset email sent for user <slides.onch@example.test> to <slides.onch@example.test> 
+2026-09-02 10:57:24,618 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno slides ONCH' is 'm' 
+2026-09-02 10:57:24,618 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno slides ONCH -> m 
+2026-09-02 10:57:24,637 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_required_field_exists ... 
+2026-09-02 10:57:24,638 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_required_section_allows_matching_modality ... 
+2026-09-02 10:57:24,809 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:24,809 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 134 and Message-Id '<366551372791816.1788346644.803939104080200-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 's*********ch@example.test' successfully sent 
+2026-09-02 10:57:24,809 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:24,810 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.mail records with IDs: [134] 
+2026-09-02 10:57:24,811 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.message records with IDs: [13977] 
+2026-09-02 10:57:24,812 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:24,812 1 INFO test_irg_pm_val_20260902 odoo.addons.auth_signup.models.res_users: Password reset email sent for user <slides.match@example.test> to <slides.match@example.test> 
+2026-09-02 10:57:24,814 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno slides MATCH' is 'm' 
+2026-09-02 10:57:24,814 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno slides MATCH -> m 
+2026-09-02 10:57:24,833 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_required_section_blocks_other_modality ... 
+2026-09-02 10:57:25,006 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:25,006 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 135 and Message-Id '<871719290216022.1788346645.001286029815674-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 's*********er@example.test' successfully sent 
+2026-09-02 10:57:25,006 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:25,008 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.mail records with IDs: [135] 
+2026-09-02 10:57:25,009 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.message records with IDs: [13988] 
+2026-09-02 10:57:25,009 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:25,010 1 INFO test_irg_pm_val_20260902 odoo.addons.auth_signup.models.res_users: Password reset email sent for user <slides.other@example.test> to <slides.other@example.test> 
+2026-09-02 10:57:25,012 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno slides OTHER' is 'm' 
+2026-09-02 10:57:25,012 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno slides OTHER -> m 
+2026-09-02 10:57:25,029 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_required_section_blocks_without_modality ... 
+2026-09-02 10:57:25,218 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:25,218 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 136 and Message-Id '<080060384346256.1788346645.212918996810913-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 's********ne@example.test' successfully sent 
+2026-09-02 10:57:25,218 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:25,219 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.mail records with IDs: [136] 
+2026-09-02 10:57:25,221 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.message records with IDs: [13999] 
+2026-09-02 10:57:25,221 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:25,222 1 INFO test_irg_pm_val_20260902 odoo.addons.auth_signup.models.res_users: Password reset email sent for user <slides.none@example.test> to <slides.none@example.test> 
+2026-09-02 10:57:25,224 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno slides NONE' is 'm' 
+2026-09-02 10:57:25,224 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno slides NONE -> m 
+2026-09-02 10:57:25,243 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_practice_slide_restrictions.tests.test_practice_slide_restrictions: Starting TestPracticeSlideRestrictions.test_two_courses_do_not_cross_modalities ... 
+2026-09-02 10:57:25,424 1 INFO test_irg_pm_val_20260902 odoo.tests: skip sending email in test mode 
+2026-09-02 10:57:25,424 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 137 and Message-Id '<875891303502119.1788346645.418258666992188-openerp-private@0eebf1f5df49>' from 'odoobot@example.com' to (redacted) 's*********ss@example.test' successfully sent 
+2026-09-02 10:57:25,424 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-09-02 10:57:25,425 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.mail records with IDs: [137] 
+2026-09-02 10:57:25,427 1 INFO test_irg_pm_val_20260902 odoo.models.unlink: User #1 deleted mail.message records with IDs: [14010] 
+2026-09-02 10:57:25,427 1 INFO test_irg_pm_val_20260902 odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-09-02 10:57:25,428 1 INFO test_irg_pm_val_20260902 odoo.addons.auth_signup.models.res_users: Password reset email sent for user <slides.cross@example.test> to <slides.cross@example.test> 
+2026-09-02 10:57:25,430 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Guessed gender for partner 'Alumno slides CROSS' is 'm' 
+2026-09-02 10:57:25,430 1 INFO test_irg_pm_val_20260902 odoo.addons.irg_admission_gender_fix.models.op_student: IRG Gender Fix: Mapping empty/default student gender to partner's gender: Alumno slides CROSS -> m 
+2026-09-02 10:57:25,461 1 INFO test_irg_pm_val_20260902 odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-09-02 10:57:25,461 1 INFO test_irg_pm_val_20260902 odoo.service.server: 20 post-tests in 1.99s, 2437 queries 
+2026-09-02 10:57:25,461 1 INFO test_irg_pm_val_20260902 odoo.tests.stats: irg_practice_slide_restrictions: 12 tests 1.65s 1735 queries 
+2026-09-02 10:57:25,461 1 INFO test_irg_pm_val_20260902 odoo.tests.stats: irg_student_course_practice_modality: 12 tests 0.33s 702 queries 
+2026-09-02 10:57:25,461 1 INFO test_irg_pm_val_20260902 odoo.tests.result: 0 failed, 0 error(s) of 20 tests when loading database 'test_irg_pm_val_20260902' 
+2026-09-02 10:57:25,461 1 INFO test_irg_pm_val_20260902 odoo.service.server: Initiating shutdown 
+2026-09-02 10:57:25,461 1 INFO test_irg_pm_val_20260902 odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-09-02 10:57:25,729 1 INFO test_irg_pm_val_20260902 odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  

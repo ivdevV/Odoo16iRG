@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_agreement_form_types" model="ir.ui.view">
+        <field name="name">practice.agreement.form.types</field>
+        <field name="model">practice.agreement</field>
+        <field name="inherit_id" ref="irg_practice_agreement_sign.view_practice_agreement_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_title')]" position="after">
+                <group>
+                    <field name="agreement_type"
+                           attrs="{'readonly': [('state', 'in', ['sent', 'completed', 'cancelled'])]}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_practice_agreement_tree_types" model="ir.ui.view">
+        <field name="name">practice.agreement.tree.types</field>
+        <field name="model">practice.agreement</field>
+        <field name="inherit_id" ref="irg_practice_agreement_sign.view_practice_agreement_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="agreement_type"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_practice_agreement_search_types" model="ir.ui.view">
+        <field name="name">practice.agreement.search.types</field>
+        <field name="model">practice.agreement</field>
+        <field name="inherit_id" ref="irg_practice_agreement_sign.view_practice_agreement_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="agreement_type"/>
+            </xpath>
+            <xpath expr="//filter[@name='group_by_state']" position="after">
+                <filter string="Tipo" name="group_by_type" context="{'group_by': 'agreement_type'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

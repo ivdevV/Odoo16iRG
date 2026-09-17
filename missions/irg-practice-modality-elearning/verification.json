@@ -1,0 +1,74 @@
+{
+  "status": "passed",
+  "task": "irg-practice-modality-elearning",
+  "checks": [
+    {
+      "name": "review_gate",
+      "command": "read missions/irg-practice-modality-elearning/02b-review.md",
+      "result": "pass",
+      "detail": "02b-review.md finaliza con REVIEW OK; sin bloqueantes abiertos",
+      "evidence": "missions/irg-practice-modality-elearning/02b-review.md"
+    },
+    {
+      "name": "python_syntax",
+      "command": "python3 -m py_compile [16 archivos .py de ambos módulos]",
+      "result": "pass",
+      "detail": "ALL_PY_OK — 16 archivos compilados sin errores (exit code 0)",
+      "evidence": "missions/irg-practice-modality-elearning/artifacts/validation-tests.txt"
+    },
+    {
+      "name": "scope_diff",
+      "command": "git -C .worktrees/irg-practice-modality-elearning status --short",
+      "result": "pass",
+      "detail": "Solo archivos untracked (??) en directorios nuevos; ningún módulo preexistente modificado",
+      "evidence": "missions/irg-practice-modality-elearning/03-validation.md#check-2"
+    },
+    {
+      "name": "xml_syntax",
+      "command": "python3 -c \"import xml.etree.ElementTree as ET; [ET.parse(f) for f in [5 xml files]]\"",
+      "result": "pass",
+      "detail": "ALL_XML_OK — 5 archivos XML parseados sin errores (exit code 0)",
+      "evidence": "missions/irg-practice-modality-elearning/03-validation.md#check-3"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "docker compose -f docker-compose.local.yml -f .worktrees/.../docker-compose.worktree.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_pm_val_20260902 -i irg_student_course_practice_modality,irg_practice_slide_restrictions --test-enable --test-tags /irg_student_course_practice_modality,/irg_practice_slide_restrictions --stop-after-init --workers=0 --http-port=18069 --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 20 tests; irg_practice_slide_restrictions: 12 tests 1.65s; irg_student_course_practice_modality: 12 tests 0.33s",
+      "evidence": "missions/irg-practice-modality-elearning/artifacts/validation-tests.txt"
+    },
+    {
+      "name": "docker_service_not_pointing_to_worktree",
+      "command": "docker inspect odoo16irg_local --format '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{println}}{{end}}'",
+      "result": "pass",
+      "detail": "/mnt/extra-addons montado desde checkout principal (Odoo16iRG/addons-extra), no desde el worktree",
+      "evidence": "missions/irg-practice-modality-elearning/03-validation.md#check-5"
+    },
+    {
+      "name": "cleanup_disposable_db",
+      "command": "docker exec pgodoo16irg_local dropdb -U odoo --if-exists test_irg_pm_val_20260902",
+      "result": "pass",
+      "detail": "DB test_irg_pm_val_20260902 dropeada correctamente (DB_DROPPED, exit code 0)",
+      "evidence": "missions/irg-practice-modality-elearning/03-validation.md#check-6"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "TestSprite MCP no está conectado en este runtime de Cursor. El diff toca QWeb/portal/website_slides, por lo que el check es obligatorio por scope (plan.md sección E2E). El gate de publicación queda bloqueado hasta que TestSprite MCP esté disponible y se ejecute contra la base local desechable. No se apuntó browser al servicio compartido porque no tiene los módulos nuevos instalados.",
+      "evidence": "missions/irg-practice-modality-elearning/03-validation.md#check-7"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_pm_val_20260902",
+    "base_commit": "cf0e8fd7e",
+    "overlay": ".worktrees/irg-practice-modality-elearning/missions/irg-practice-modality-elearning/docker-compose.worktree.yml"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "missions/irg-practice-modality-elearning/artifacts/validation-tests.txt",
+    "missions/irg-practice-modality-elearning/03-validation.md"
+  ]
+}

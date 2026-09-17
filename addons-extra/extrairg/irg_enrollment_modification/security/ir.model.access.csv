@@ -1,0 +1,19 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_enrollment_change_academic,irg.enrollment.change academic,model_irg_enrollment_change,group_academic,1,1,1,0
+access_enrollment_change_accountant,irg.enrollment.change accountant,model_irg_enrollment_change,account.group_account_invoice,1,1,0,0
+access_enrollment_change_system,irg.enrollment.change system,model_irg_enrollment_change,base.group_system,1,1,1,1
+access_enrollment_change_wizard_academic,irg.enrollment.change.wizard academic,model_irg_enrollment_change_wizard,group_academic,1,1,1,1
+access_enrollment_change_wizard_system,irg.enrollment.change.wizard system,model_irg_enrollment_change_wizard,base.group_system,1,1,1,1
+access_enroll_student_academic,op.student enroll academic,openeducat_core.model_op_student,group_academic,1,0,0,0
+access_enroll_student_course_academic,op.student.course enroll academic,openeducat_core.model_op_student_course,group_academic,1,0,0,0
+access_enroll_course_academic,op.course enroll academic,openeducat_core.model_op_course,group_academic,1,0,0,0
+access_enroll_batch_academic,op.batch enroll academic,openeducat_core.model_op_batch,group_academic,1,0,0,0
+access_enroll_year_academic,op.academic.year enroll academic,openeducat_core.model_op_academic_year,group_academic,1,0,0,0
+access_enroll_sale_order_academic,sale.order enroll academic,sale.model_sale_order,group_academic,1,0,0,0
+access_enroll_sale_line_academic,sale.order.line enroll academic,sale.model_sale_order_line,group_academic,1,0,0,0
+access_enroll_payment_mode_academic,account.payment.mode enroll academic,account_payment_mode.model_account_payment_mode,group_academic,1,0,0,0
+access_enroll_crm_team_academic,crm.team enroll academic,sales_team.model_crm_team,group_academic,1,0,0,0
+access_enroll_partner_academic,res.partner enroll academic,base.model_res_partner,group_academic,1,0,0,0
+access_enroll_student_accountant,op.student enroll accountant,openeducat_core.model_op_student,account.group_account_invoice,1,0,0,0
+access_enroll_sale_order_accountant,sale.order enroll accountant,sale.model_sale_order,account.group_account_invoice,1,0,0,0
+access_enroll_payment_mode_accountant,account.payment.mode enroll accountant,account_payment_mode.model_account_payment_mode,account.group_account_invoice,1,0,0,0

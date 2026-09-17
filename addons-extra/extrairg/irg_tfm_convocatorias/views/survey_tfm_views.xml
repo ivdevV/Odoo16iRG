@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="survey_question_form_tfm_metadata" model="ir.ui.view">
+        <field name="name">survey.question.form.tfm.metadata</field>
+        <field name="model">survey.question</field>
+        <field name="inherit_id" ref="survey.survey_question_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='title']" position="after">
+                <field name="irg_tfm_step_key"
+                       groups="survey.group_survey_manager"
+                       attrs="{'invisible': [('is_page', '=', False)]}"/>
+                <field name="irg_tfm_prefill_source"
+                       groups="survey.group_survey_manager"
+                       attrs="{'invisible': [('is_page', '=', True)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="survey_survey_form_tfm_template" model="ir.ui.view">
+        <field name="name">survey.survey.form.tfm.template</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='access_mode']" position="after">
+                <field name="irg_tfm_template_only"
+                       groups="survey.group_survey_manager"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

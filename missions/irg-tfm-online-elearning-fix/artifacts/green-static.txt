@@ -1,0 +1,19 @@
+GREEN del codificador — 2026-09-09
+
+Comandos y resultados:
+
+1. `static_validator.py`
+   - exit 0
+   - 19 Python AST, 7 XML, 77 tests estructurales, 39 contratos, 11 targets
+   - resumen: 13 grupos pasaron; 0 fallos
+2. `python.exe -X pycache_prefix=... -m compileall -f -q irg_tfm_convocatorias`
+   - exit 0
+3. `git diff --check`
+   - exit 0; avisos LF/CRLF informativos
+4. XPath contra la vista padre de `irg_course_convocatorias_v2`
+   - coincidencias: 1
+
+No se ejecutaron Odoo ni Docker por instrucción explícita del usuario.
+
+Tras Review ronda 1 se añadieron dos regresiones de autorenlace. El rerun GREEN
+con 77 pruebas mantuvo exit 0 en validador, compileall y diff-check.

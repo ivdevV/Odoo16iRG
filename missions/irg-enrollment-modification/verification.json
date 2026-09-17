@@ -1,0 +1,53 @@
+{
+  "status": "passed",
+  "task": "irg-enrollment-modification",
+  "checks": [
+    {
+      "name": "syntax_py",
+      "command": "python3 -m py_compile <all 11 .py files in irg_enrollment_modification>",
+      "result": "pass",
+      "detail": "All 11 .py files compiled without errors",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "syntax_xml",
+      "command": "python3 -c 'import xml.etree.ElementTree as ET; ET.parse(<each xml>)'",
+      "result": "pass",
+      "detail": "All 5 XML files parsed without errors",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "unit_tests",
+      "command": "docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_enroll_mod_val_20260904 -i irg_enrollment_modification --test-enable --test-tags=/irg_enrollment_modification --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "21 tests run (19 executed, 1 skipped: test_academic_approve_writes_sale_line_modality — x_studio_modalidad not installed on sale.order.line, 1 setup/teardown); 0 failed, 0 error(s). Exit code 0. Key result line: '0 failed, 0 error(s) of 19 tests when loading database test_irg_enroll_mod_val_20260904'",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "lint",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "PROJECT.md: no canonical linter configured for this project",
+      "evidence": null
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "testsprite_bootstrap + testsprite_generate_code_summary + testsprite_generate_standardized_prd + testsprite_generate_frontend_test_plan + testsprite_generate_code_and_execute",
+      "result": "skipped",
+      "detail": "Scope IN SCOPE (views XML touched). Runtime healthy (localhost:8069 → {\"status\":\"pass\"}). No prior fails. TestSprite MCP namespace not registered in this Cursor session — tools unavailable; cannot execute without inventing results. Re-run e2e-tester once TestSprite MCP is configured.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_enroll_mod_val_20260904 (cloned from test_irg_db, dropped after)",
+    "base_commit": "582520c413dd7728ddc6e868f8e80b3d6f6dfb49",
+    "odoo_version": "16.0-20250909"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

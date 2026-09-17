@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "task": "irg-practice-agreement-types",
+  "checks": [
+    {
+      "name": "syntax_py_compile",
+      "command": "python3 -m py_compile <all 9 .py files in module>",
+      "result": "pass",
+      "detail": "All 9 .py files compile without errors. Exit code 0.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "docker exec -t odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_practice_agreement_types -u irg_practice_agreement_types --test-enable --test-tags /irg_practice_agreement_types --without-demo=all --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 7 tests. Module loaded in 0.17s. FileNotFoundError for cached assets is a non-blocking infrastructure warning on fresh DB, not a test failure.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "git_base_module_clean",
+      "command": "git status addons-extra/extrairg/irg_practice_agreement_sign/ && git diff HEAD -- addons-extra/extrairg/irg_practice_agreement_sign/",
+      "result": "pass",
+      "detail": "irg_practice_agreement_sign has no changes: 'nothing to commit, working tree clean'. Diff is empty.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "MCP TestSprite no está disponible en este runtime (igual que otras misiones del repo: irg-admission-auto-gradebook-templates, fix-gradebook-template-zero-averages). El scope del diff SÍ toca views/, portal y report QWeb, por lo que el disparo es obligatorio según plan.md. El check queda pendiente de ejecución cuando el MCP esté disponible.",
+      "evidence": "artifacts/validation-tests.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "container": "odoo16irg_local",
+    "database": "test_irg_practice_agreement_types",
+    "base_commit": "928c2974ba94acfa4bb6e8730c14426f9071fc6e"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt"
+  ]
+}

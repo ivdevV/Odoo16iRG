@@ -1,0 +1,13 @@
+Validación independiente final — 2026-09-07
+
+Base: odoo16irg_guard_fix, preparada desde test_irg_db con
+irg_enrollment_modification, fixtures históricas y Studio local antes de
+instalar el guard.
+
+Comando: docker compose -f docker-compose.local.yml -f
+scratch/irg-enrollment-guard/compose.guard.json run --rm --no-deps
+odoo_local odoo -c /etc/odoo/odoo.conf -d odoo16irg_guard_fix -u
+irg_enrollment_modification_guard --test-enable --test-tags=/irg_enrollment_modification,/irg_enrollment_modification_guard
+--stop-after-init --http-port=8079 --max-cron-threads=0
+
+Resultado: 62 tests, 0 fallos, 0 errores.

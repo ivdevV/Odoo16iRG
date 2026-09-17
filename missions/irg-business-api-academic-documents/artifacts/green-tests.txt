@@ -1,0 +1,378 @@
+2026-09-08 08:31:01,342 122 INFO ? odoo: Odoo version 16.0-20250909 
+2026-09-08 08:31:01,342 122 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-09-08 08:31:01,342 122 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-09-08 08:31:01,342 122 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-09-08 08:31:01,389 122 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-09-08 08:31:01,423 122 INFO ? odoo.service.server: HTTP service (werkzeug) running on 27f10a0153ff:8099 
+2026-09-08 08:31:01,430 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: loading 1 modules... 
+2026-09-08 08:31:01,432 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-09-08 08:31:01,438 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: updating modules list 
+2026-09-08 08:31:01,438 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-09-08 08:31:01,508 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-09-08 08:31:01,549 122 WARNING test_irg_api_gradebook_cert py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-08 08:31:01,551 122 WARNING test_irg_api_gradebook_cert py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-08 08:31:01,552 122 WARNING test_irg_api_gradebook_cert py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-08 08:31:01,697 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-09-08 08:31:01,718 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-09-08 08:31:01,763 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-09-08 08:31:01,764 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-09-08 08:31:01,765 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-09-08 08:31:01,806 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-09-08 08:31:01,926 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-09-08 08:31:01,991 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-09-08 08:31:01,994 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-09-08 08:31:02,031 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-09-08 08:31:02,087 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-09-08 08:31:02,129 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-09-08 08:31:02,131 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-09-08 08:31:02,132 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-09-08 08:31:02,134 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-09-08 08:31:02,309 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-09-08 08:31:02,323 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-09-08 08:31:02,325 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-09-08 08:31:02,334 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-09-08 08:31:02,341 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-09-08 08:31:02,360 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-09-08 08:31:02,363 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-09-08 08:31:02,369 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-09-08 08:31:02,370 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-09-08 08:31:02,372 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-09-08 08:31:02,375 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-09-08 08:31:02,376 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-09-08 08:31:02,384 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-09-08 08:31:02,388 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-09-08 08:31:02,396 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-09-08 08:31:02,402 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-09-08 08:31:02,405 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-09-08 08:31:02,411 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-09-08 08:31:02,414 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-09-08 08:31:02,421 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-09-08 08:31:02,938 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-09-08 08:31:03,037 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-09-08 08:31:03,050 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-09-08 08:31:03,245 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-09-08 08:31:03,281 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-09-08 08:31:03,481 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-09-08 08:31:03,482 122 WARNING test_irg_api_gradebook_cert odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-09-08 08:31:03,587 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['IRG Business API'] to user __system__ #1 via n/a 
+2026-09-08 08:31:03,587 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['IRG Business API'] to user __system__ #1 via n/a 
+2026-09-08 08:31:04,136 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a 
+2026-09-08 08:31:04,147 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: loading 179 modules... 
+2026-09-08 08:31:04,410 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_documents_portal.models.folders is not overriding the create method in batch 
+2026-09-08 08:31:04,425 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch 
+2026-09-08 08:31:04,439 122 WARNING test_irg_api_gradebook_cert odoo.models: The model res.card has no _description 
+2026-09-08 08:31:04,439 122 WARNING test_irg_api_gradebook_cert odoo.models: The model isep.form.data.wizard has no _description 
+2026-09-08 08:31:04,523 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-08 08:31:04,523 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-08 08:31:04,524 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_survey.models.survey_user_input is not overriding the create method in batch 
+2026-09-08 08:31:04,608 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-08 08:31:04,608 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-08 08:31:04,610 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch 
+2026-09-08 08:31:04,610 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch 
+2026-09-08 08:31:04,622 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_gradebook.models.app_gradebook_result is not overriding the create method in batch 
+2026-09-08 08:31:04,623 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_gradebook.models.survey_user_input is not overriding the create method in batch 
+2026-09-08 08:31:04,627 122 WARNING test_irg_api_gradebook_cert odoo.models: The model app.gradebook.template.line has no _description 
+2026-09-08 08:31:04,627 122 WARNING test_irg_api_gradebook_cert odoo.models: The model app.gradebook has no _description 
+2026-09-08 08:31:04,627 122 WARNING test_irg_api_gradebook_cert odoo.models: The model app.gradebook.result has no _description 
+2026-09-08 08:31:04,627 122 WARNING test_irg_api_gradebook_cert odoo.models: The model survey.user_input.write has no _description 
+2026-09-08 08:31:04,627 122 WARNING test_irg_api_gradebook_cert odoo.models: The model app.gradebook.subject has no _description 
+2026-09-08 08:31:04,627 122 WARNING test_irg_api_gradebook_cert odoo.models: The model app.gradebook.student has no _description 
+2026-09-08 08:31:04,633 122 WARNING test_irg_api_gradebook_cert odoo.models: The model record.request has no _description 
+2026-09-08 08:31:04,633 122 WARNING test_irg_api_gradebook_cert odoo.models: The model record.request.line has no _description 
+2026-09-08 08:31:04,633 122 WARNING test_irg_api_gradebook_cert odoo.models: The model record.request.list.line has no _description 
+2026-09-08 08:31:04,633 122 WARNING test_irg_api_gradebook_cert odoo.models: The model res.partner.document has no _description 
+2026-09-08 08:31:04,636 122 WARNING test_irg_api_gradebook_cert odoo.models: The model op.course.type has no _description 
+2026-09-08 08:31:04,636 122 WARNING test_irg_api_gradebook_cert odoo.models: The model op.area.course has no _description 
+2026-09-08 08:31:04,639 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.isep_subject_precedence.wizard.subject_wizard is not overriding the create method in batch 
+2026-09-08 08:31:04,688 122 WARNING test_irg_api_gradebook_cert odoo.models: The model app.gradebook.student has no _description 
+2026-09-08 08:31:04,712 122 WARNING test_irg_api_gradebook_cert odoo.api.create: The model odoo.addons.irg_gradebook_certificates.models.irg_certificate_request is not overriding the create method in batch 
+2026-09-08 08:31:04,716 122 WARNING test_irg_api_gradebook_cert odoo.models: The model app.gradebook.student has no _description 
+2026-09-08 08:31:04,716 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: Loading module irg_business_api (178/179) 
+2026-09-08 08:31:04,749 122 WARNING test_irg_api_gradebook_cert odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-08 08:31:04,771 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:04,771 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:04,812 122 WARNING test_irg_api_gradebook_cert odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-08 08:31:04,833 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:04,833 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:04,852 122 INFO test_irg_api_gradebook_cert odoo.modules.registry: module irg_business_api: creating or updating database tables 
+2026-09-08 08:31:04,883 122 WARNING test_irg_api_gradebook_cert py.warnings: /usr/lib/python3/dist-packages/odoo/fields.py:809: UserWarning: Field 'op.student.op_course_ids' in dependency of op.student.total_completion_porc should be searchable. This is necessary to determine which records to recompute when op.student.course.completion_porc is modified. You should either make the field searchable, or simplify the field dependency.
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 232, in load_module_graph
+    module.write(module.get_values_from_terp(package.data))
+  File "/usr/lib/python3/dist-packages/odoo/addons/website/models/ir_module_module.py", line 96, in write
+    return super(IrModuleModule, self).write(vals)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 3766, in write
+    if self.pool.is_modifying_relations(field):
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 458, in is_modifying_relations
+    result = field in self._field_triggers and (
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 28, in __get__
+    value = self.fget(obj)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 439, in _field_triggers
+    dependencies = list(field.resolve_depends(self))
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 809, in resolve_depends
+    warnings.warn(
+ 
+2026-09-08 08:31:04,923 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: loading irg_business_api/security/groups.xml 
+2026-09-08 08:31:04,933 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: loading irg_business_api/security/ir.model.access.csv 
+2026-09-08 08:31:04,939 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: loading irg_business_api/security/ir_rule.xml 
+2026-09-08 08:31:04,943 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: loading irg_business_api/views/api_operation_views.xml 
+2026-09-08 08:31:04,970 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: Module irg_business_api loaded in 0.25s, 161 queries (+161 other) 
+2026-09-08 08:31:04,973 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: 179 modules loaded in 0.83s, 161 queries (+161 extra) 
+2026-09-08 08:31:04,987 122 WARNING test_irg_api_gradebook_cert odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-08 08:31:05,008 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:05,008 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:05,039 122 WARNING test_irg_api_gradebook_cert odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-08 08:31:05,059 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:05,060 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:05,332 122 INFO test_irg_api_gradebook_cert odoo.modules.loading: Modules loaded. 
+2026-09-08 08:31:05,336 122 INFO test_irg_api_gradebook_cert odoo.modules.registry: Registry loaded in 3.913s 
+2026-09-08 08:31:05,336 122 INFO test_irg_api_gradebook_cert odoo.service.server: Starting post tests 
+2026-09-08 08:31:05,414 122 WARNING test_irg_api_gradebook_cert odoo.models: method op.admission._check_birthdate: @constrains parameter 'birth_date' is not writeable 
+2026-09-08 08:31:05,426 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_academic_documents: Starting TestAcademicDocumentOperations.test_attendance_approve_on_hc_admission ... 
+2026-09-08 08:31:05,435 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_academic_documents: skipped TestAcademicDocumentOperations.test_attendance_approve_on_hc_admission : Attendance certificates are not installed. 
+2026-09-08 08:31:05,436 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_academic_documents: Starting TestAcademicDocumentOperations.test_attendance_requires_session_id ... 
+2026-09-08 08:31:05,436 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_academic_documents: skipped TestAcademicDocumentOperations.test_attendance_requires_session_id : Attendance certificates are not installed. 
+2026-09-08 08:31:05,436 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_academic_documents: Starting TestAcademicDocumentOperations.test_diploma_approve_returns_private_pdf ... 
+2026-09-08 08:31:05,463 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_academic_documents: Starting TestAcademicDocumentOperations.test_diploma_preview_has_no_gradebook_and_no_pdf ... 
+2026-09-08 08:31:05,468 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_academic_documents: Starting TestAcademicDocumentOperations.test_diploma_unknown_payload_key_rejected ... 
+2026-09-08 08:31:05,470 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_academic_documents: Starting TestAcademicDocumentOperations.test_enrollment_approve_returns_private_pdf ... 
+2026-09-08 08:31:05,557 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_academic_documents: Starting TestAcademicDocumentOperations.test_enrollment_uses_admission_not_gradebook_payload ... 
+2026-09-08 08:31:05,577 122 WARNING test_irg_api_gradebook_cert odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-08 08:31:05,599 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:05,599 122 WARNING test_irg_api_gradebook_cert odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 08:31:05,624 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_attachment: filestore gc 1 checked, 1 removed 
+2026-09-08 08:31:05,703 122 WARNING test_irg_api_gradebook_cert odoo.models: method op.admission._check_birthdate: @constrains parameter 'birth_date' is not writeable 
+2026-09-08 08:31:05,706 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_access_permissions: Starting TestAccessPermissions.test_client_cannot_set_requested_by ... 
+2026-09-08 08:31:05,716 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_access_permissions: Starting TestAccessPermissions.test_clone_wrong_payload_keys_rejected ... 
+2026-09-08 08:31:05,718 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_access_permissions: Starting TestAccessPermissions.test_plain_user_cannot_call_private_dispatch ... 
+2026-09-08 08:31:05,724 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_access_permissions: Starting TestAccessPermissions.test_plain_user_cannot_create_operation ... 
+2026-09-08 08:31:05,726 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_access_permissions: Starting TestAccessPermissions.test_unknown_operation_rejected ... 
+2026-09-08 08:31:05,728 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_access_permissions: Starting TestAccessPermissions.test_unlink_denied ... 
+2026-09-08 08:31:05,733 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_access_permissions: Starting TestAccessPermissions.test_write_cannot_forge_applied_state ... 
+2026-09-08 08:31:05,740 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-09-08 08:31:05,796 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_academic_incidents ... 
+2026-09-08 08:31:05,806 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_admission_overview ... 
+2026-09-08 08:31:05,811 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_admission_subject_openings ... 
+2026-09-08 08:31:05,815 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_course_batches ... 
+2026-09-08 08:31:05,819 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_course_overview ... 
+2026-09-08 08:31:05,823 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_course_structure ... 
+2026-09-08 08:31:05,828 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_gradebook_summary_optional ... 
+2026-09-08 08:31:05,832 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_moodle_sync_status_hides_secrets ... 
+2026-09-08 08:31:05,835 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_slide ... 
+2026-09-08 08:31:05,839 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_student_academic_360 ... 
+2026-09-08 08:31:05,844 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_student_access ... 
+2026-09-08 08:31:05,849 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_get_survey_structure_requires_id ... 
+2026-09-08 08:31:05,852 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_list_academic_periods_paginates ... 
+2026-09-08 08:31:05,856 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_list_courses_rejects_unknown_payload_keys ... 
+2026-09-08 08:31:05,858 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_list_courses_returns_real_fields ... 
+2026-09-08 08:31:05,862 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_list_subjects_includes_precedence ... 
+2026-09-08 08:31:05,866 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_missing_target_id ... 
+2026-09-08 08:31:05,870 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_page_size_cap ... 
+2026-09-08 08:31:05,874 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_api_read_contract: Starting TestApiReadContract.test_production_environment_rejected ... 
+2026-09-08 08:31:05,877 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-09-08 08:31:05,938 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_approve_does_not_queue_certificate_mail ... 
+2026-09-08 08:31:06,011 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_approve_returns_private_pdf_and_checksum ... 
+2026-09-08 08:31:06,080 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_final_certificate_requires_done_gradebook ... 
+2026-09-08 08:31:06,086 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_invalid_signer_rejected ... 
+2026-09-08 08:31:06,091 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_missing_signer_rejected ... 
+2026-09-08 08:31:06,096 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_notes_command_rejects_diploma_type ... 
+2026-09-08 08:31:06,100 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_notes_command_rejects_enrollment_type ... 
+2026-09-08 08:31:06,105 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_partial_allows_open_gradebook ... 
+2026-09-08 08:31:06,110 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_physical_requires_shipping ... 
+2026-09-08 08:31:06,114 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_same_idempotency_key_does_not_duplicate ... 
+2026-09-08 08:31:06,181 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_gradebook_certificate: Starting TestGradebookCertificateOperation.test_unknown_payload_key_rejected ... 
+2026-09-08 08:31:06,185 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_attachment: filestore gc 1 checked, 1 removed 
+2026-09-08 08:31:06,263 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_idempotency_and_concurrency: Starting TestIdempotencyAndConcurrency.test_concurrent_change_between_preview_and_apply ... 
+2026-09-08 08:31:06,280 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_idempotency_and_concurrency: Starting TestIdempotencyAndConcurrency.test_oversized_payload_rejected_before_apply ... 
+2026-09-08 08:31:06,282 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_idempotency_and_concurrency: Starting TestIdempotencyAndConcurrency.test_same_key_different_payload_rejected ... 
+2026-09-08 08:31:06,289 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_idempotency_and_concurrency: Starting TestIdempotencyAndConcurrency.test_same_key_same_hash_does_not_duplicate ... 
+2026-09-08 08:31:06,307 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-09-08 08:31:06,374 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_apply_enrollment_refuses_already_done ... 
+2026-09-08 08:31:06,387 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_apply_subject_opening ... 
+2026-09-08 08:31:06,394 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_apply_withdrawal_is_refused ... 
+2026-09-08 08:31:06,401 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_attachment_metadata_hides_payload ... 
+2026-09-08 08:31:06,409 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_batch_schedule_roundtrip ... 
+2026-09-08 08:31:06,417 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_create_survey_draft ... 
+2026-09-08 08:31:06,427 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_eligibility_read ... 
+2026-09-08 08:31:06,431 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_preview_withdrawal_does_not_call_action_down ... 
+2026-09-08 08:31:06,435 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_subject_opening_and_access_preview ... 
+2026-09-08 08:31:06,442 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_later_phase_operations: Starting TestLaterPhaseOperations.test_upload_private_attachment ... 
+2026-09-08 08:31:06,452 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_attachment: filestore gc 2 checked, 2 removed 
+2026-09-08 08:31:06,508 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_online_clone_operations: Starting TestOnlineCloneOperations.test_apply_online_clone_copies_content_not_memberships ... 
+2026-09-08 08:31:06,538 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_online_clone_operations: Starting TestOnlineCloneOperations.test_apply_online_clone_refuses_existing_online_content ... 
+2026-09-08 08:31:06,573 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_online_clone_operations: Starting TestOnlineCloneOperations.test_clone_rejects_online_channel_id ... 
+2026-09-08 08:31:06,607 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_online_clone_operations: Starting TestOnlineCloneOperations.test_content_reconciliation_reports_missing ... 
+2026-09-08 08:31:06,614 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_online_clone_operations: Starting TestOnlineCloneOperations.test_preview_online_clone_does_not_write ... 
+2026-09-08 08:31:06,621 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-09-08 08:31:06,691 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_slide_draft_operations: Starting TestSlideDraftOperations.test_approve_create_slide_draft_creates_unpublished_article ... 
+2026-09-08 08:31:06,710 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_slide_draft_operations: Starting TestSlideDraftOperations.test_create_and_reorder_section ... 
+2026-09-08 08:31:06,720 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_slide_draft_operations: Starting TestSlideDraftOperations.test_create_slide_draft_is_preview_only ... 
+2026-09-08 08:31:06,726 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_slide_draft_operations: Starting TestSlideDraftOperations.test_html_over_limit_rejected ... 
+2026-09-08 08:31:06,733 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_slide_draft_operations: Starting TestSlideDraftOperations.test_publish_is_separate_confirmation ... 
+2026-09-08 08:31:06,758 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_slide_draft_operations: Starting TestSlideDraftOperations.test_update_draft_allowlisted_fields ... 
+2026-09-08 08:31:06,767 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_slide_draft_operations: Starting TestSlideDraftOperations.test_update_draft_rejects_published_slide ... 
+2026-09-08 08:31:06,776 122 INFO test_irg_api_gradebook_cert odoo.addons.irg_business_api.tests.test_slide_draft_operations: Starting TestSlideDraftOperations.test_update_rejects_unknown_fields ... 
+2026-09-08 08:31:06,779 122 INFO test_irg_api_gradebook_cert odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-09-08 08:31:06,779 122 INFO test_irg_api_gradebook_cert odoo.service.server: 71 post-tests in 1.44s, 4739 queries 
+2026-09-08 08:31:06,779 122 INFO test_irg_api_gradebook_cert odoo.tests.stats: irg_business_api: 87 tests 1.44s 4739 queries 
+2026-09-08 08:31:06,779 122 INFO test_irg_api_gradebook_cert odoo.tests.result: 0 failed, 0 error(s) of 71 tests when loading database 'test_irg_api_gradebook_cert' 
+2026-09-08 08:31:06,779 122 INFO test_irg_api_gradebook_cert odoo.service.server: Initiating shutdown 
+2026-09-08 08:31:06,779 122 INFO test_irg_api_gradebook_cert odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-09-08 08:31:06,960 122 INFO test_irg_api_gradebook_cert odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  

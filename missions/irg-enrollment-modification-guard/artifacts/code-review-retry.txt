@@ -1,0 +1,32 @@
+Code review retry - irg_enrollment_modification_guard - 2026-09-07
+
+Scope reviewed:
+- New addon only: addons-extra/extrairg/irg_enrollment_modification_guard
+- Executable mission scripts only: artifacts/prepare_red.py and artifacts/concurrency.py
+- Context read: artifacts/review-brief.txt and artifacts/security-finance.txt
+
+Tests were not re-run in this review because review-brief.txt explicitly asks not to repeat tests and to avoid claiming execution results from reading. I was not blocked by usage/runtime limits.
+
+P0: None found.
+
+P1: sale.order.line.create does not fence order_id resolved by ORM defaults.
+File: addons-extra/extrairg/irg_enrollment_modification_guard/models/sale_order_line.py:21-26
+Trigger: create() is called without vals['order_id'] and without context default_order_id, but Odoo later resolves order_id through model defaults / ir.default before the base create inserts the line.
+Effect: the guard's pre-create fence_orders() sees no order_id and therefore does not version the parent sale_order row. A concurrent approval running in REPEATABLE READ can keep an old snapshot of order.order_line, miss the inserted line, and approve a modality change without SerializationFailure. This reopens the line-set phantom that security-review.txt required the new sale.order.line fence to close.
+Recommended correction: make create() fence every order that the ORM can use for the new line, not only vals/default_order_id. Resolve missing order_id through default_get(['order_id']) before super, or fence created.order_id in the same transaction after super as a backstop, and add a two-connection regression where order_id comes from ir.default / model defaults rather than vals or context.
+
+P2: create() still accepts request-field defaults from context.
+File: addons-extra/extrairg/irg_enrollment_modification_guard/models/enrollment_change.py:63-71
+Trigger: RPC supplies default_student_id, default_student_course_id, default_change_batch, default_dest_batch_id, etc. The code strips irg_guard_scope and default_* only for _TECHNICAL fields, then calls default_get(list(_REQUEST)).
+Effect: technical defaults are neutralized and server origins/snapshot are recalculated, so I do not see a direct privilege escalation. However, the accepted design says "neutralizar defaults protegidos"; request fields are part of _PROTECTED and can still be populated implicitly by context, leaving a contract/test gap in the RPC protection story.
+Recommended correction: either strip default_* for all _PROTECTED fields and require request values in vals_list, or document why request-field defaults remain an intentional supported creation path and add a focused test for that contract.
+
+Positive checks from static review:
+- Direct writes to _PROTECTED fields are blocked for all callers unless the private Python object token, target IDs, and exact allowed field set all match.
+- copy() is blocked, preventing snapshot/origin reuse.
+- Public approval/refuse/retry methods still go through role, ACL/rule, request lock, state, and parent-method checks; the private token is not a client-serializable bool/string/dict.
+- Finance sudo is limited to academic reference reads in _guard_read(), after real record-rule checks and explicit company checks using the original env.companies; the parent action and state writes run as the original user.
+- GuardConflict and ValidationError inside approval record a sticky permanent conflict without raising afterward, so the block/chatter can commit; PostgreSQL SerializationFailure is not caught.
+- The current worktree status shows only the new addon and mission artifacts as untracked; no existing addon file changes were detected.
+
+CHANGES_REQUESTED

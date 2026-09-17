@@ -1,0 +1,136 @@
+IRG Diplomado Class Start Date — Independent Security Advisor review
+Date: 2026-09-04
+Mission: irg-diplomado-class-start-date
+Status: APPROVED for implementation/TDD
+Reviewed as Security Advisor only. No production code was written or edited.
+
+Scope reviewed
+
+- Spec `docs/superpowers/specs/2026-09-04-irg-diplomado-class-start-date-design.md`
+- TDD plan `docs/superpowers/plans/2026-09-04-irg-diplomado-class-start-date.md`
+- Mission plan `missions/irg-diplomado-class-start-date/plan.md`
+- `irg_generacion_diplomados/models/diplomado_registry.py` (current `action_reprint` short-circuits when `attachment_id` exists)
+- `irg_diplomado_portal_request/controllers/portal.py` (auth='user'; partner + grade > 7.0 before `_send_diplomado_file`; sudo browse)
+- `irg_campus_diplomados_portal/controllers/portal.py` `download_diplomado` (same partner then grade pattern; reprint only if PDF missing)
+- `irg_generacion_diplomados_website_verify/models/diplomado_registry.py` (`_get_diplomado_pdf_data`, `action_reprint` without `super()`)
+- Public verify `/verificar` and `/verificar_api` (auth='public'; does not expose `start_date`)
+- ACL `irg_generacion_diplomados/security/ir.model.access.csv` (`base.group_user` full CRUD; no record rules; portal has no ACL)
+- Knowledge: `modding_rules_and_email_analysis.md`, `irg_diplomado_portal_request.md`, `portal_diplomados_download.md`, `irg_diplomado_website_verify_qr.md`
+
+Trigger for this review: in-place mutation of an already issued PDF (`ir.attachment.datas`) and `registry.start_date` on every reprint/download. That is historical-document mutation, not a mass migration, secret, or deploy-config change.
+
+------------------------------------------------------------------------------
+1. Alcance
+------------------------------------------------------------------------------
+
+Approved surface is a new inherit-only addon `irg_generacion_diplomados_class_start_date` under `addons-extra/extrairg/`. Existing addons stay untouched. Graduation diplomas (`irg.diploma.registry`) stay out of scope.
+
+In scope:
+- Celebration start from `op.batch.date_start_class` with fallback `op.batch.start_date`
+- Wizard onchange default
+- Dedicated portal create (`_create_diplomado_registry`) using the same helper
+- Always regenerate PDF in `action_reprint` and on both portal download paths
+- Overwrite the existing attachment in place
+
+Out of scope (must remain so):
+- End date resync, issue-date rule (26 September), stamp/QR payload shape
+- on-write hook on `op.batch`, install-time mass rewrite, registry `unlink`
+- New models, new ACL widening, new unauthenticated routes
+- TestSprite `projectPath` pointing at repo root, `etc/`, or `docker-compose*.yml`
+
+------------------------------------------------------------------------------
+2. Autorización server-side (binding)
+------------------------------------------------------------------------------
+
+UI hiding and QWeb eligibility flags are not authorization. Every PDF rewrite is a protected write and must be authorized on the server before `action_reprint()`.
+
+Dedicated portal (approved pattern):
+- Keep parent `download_diplomado` order: exists → `student_id.partner_id == request.env.user.partner_id` → course is diplomado → gradebook and `total_final > 7.0` → then `_send_diplomado_file`.
+- Keep parent `request_diplomado` eligibility (diplomado course, student, gradebook, `eligible`) before create/send.
+- Put always-reprint only inside `_send_diplomado_file` (after those checks), then `super()` to stream. Do not reprint in the HTTP method before the parent checks.
+
+Campus `/campus/certificates/download/diplomado/<id>` (binding):
+- The first Task-4 snippet (partner check, then reprint, then `super()` for grade) is NOT approved. It would mutate an issued PDF for an ineligible owner who knows the integer id.
+- Implement only the second variant: `exists` + partner ownership + the same gradebook/`total_final > 7.0` check as the parent, THEN `action_reprint`, THEN `super()`.
+- If any of those checks fail, return the parent redirect and do not write `start_date` or `attachment_id.datas`.
+
+Controller dispatch:
+- Overriding helpers without republishing HTTP methods leaves the parent class bound to the route in Odoo 16, so the new write path never runs (or, if later “fixed” with a new `@http.route`, auth can be weakened by mistake).
+- Republish overridden HTTP endpoints with empty `@http.route()` so parent routing is copied: `auth='user'`, `website=True`, same paths and methods, CSRF unchanged (`csrf=True` on POST; do not add `csrf=False`; do not use `auth='public'` or `auth='none'`).
+- Dedicated portal: republish `download_diplomado` and `request_diplomado` as `return super()...` so `self` is the child and `_send_diplomado_file` / `_create_diplomado_registry` actually run after parent auth.
+
+Negative tests required (module tests, not only HttpCase happy path):
+- Other partner’s `registry_id`: redirect; `start_date` and attachment bytes unchanged.
+- Same partner, grade ≤ 7.0 (or no gradebook): redirect; no mutation.
+- Own eligible download: mutation allowed as specified.
+
+------------------------------------------------------------------------------
+3. sudo(), ACL, RPC, APIs
+------------------------------------------------------------------------------
+
+- No new `sudo()`. Portal continues to browse/create registry with the parent’s existing `sudo()`. That sudo is acceptable only because partner (and campus/dedicated grade) checks run first in the controller.
+- Do not add sudo on `op.batch`, `op.student.course`, or `ir.attachment` inside the new model methods. `action_reprint` already runs as superuser on the portal path; extra sudo is unnecessary and widens blast radius if a helper is ever called without the controller gate.
+- `_irg_*` helpers are not a public RPC contract. Keep the underscore prefix. Do not add public methods such as `sync_celebration_start` / `celebration_start_from_batch`.
+- `action_reprint` stays the existing public staff button. ACL is unchanged (`base.group_user` already has full CRUD; portal users have no model ACL and cannot `call_kw` it). Do not grant portal ACL on `irg.diplomado.registry`.
+- No new HTTP routes and no new JSON/XML-RPC endpoints.
+- Public verify `/verificar` and `/verificar_api` already expose name, student, course, issue date; they do not show celebration start. Do not add `start_date` to the public payload.
+
+------------------------------------------------------------------------------
+4. Integridad y mutación de documento histórico
+------------------------------------------------------------------------------
+
+Product decision (accepted): the stored PDF is not an immutable legal snapshot. The next authorized backend reprint or portal download must reflect the live batch class start. Copies already on student devices are out of reach.
+
+Accepted because all of the following hold:
+- Lazy mutation only (no cron, no `op.batch` write hook, no install-time rewrite of every registry).
+- Registry rows are not deleted. Sequence/`name` (the public verify id) is unchanged.
+- QR/stamp come from `_get_diplomado_pdf_data()` (website_verify). Do not inline the old ReportLab dict. Do not call `super().action_reprint()`; website_verify returns early when `attachment_id` exists and would skip regeneration.
+- `issue_date`, `end_date`, student/course names, subjects, and stamp payload stay as stored. Only `start_date` may be synced from the resolved batch.
+- If `generate_diplomado_pdf` raises, do not write `datas`, do not create a replacement attachment, do not empty `attachment_id`. Keep the previous PDF. Dedicated portal may then surface `no_pdf`; do not leave the registry without a file that previously existed.
+- Overwrite `attachment_id.datas` in place only when that attachment is this registry’s file (`res_model == 'irg.diplomado.registry'` and `res_id == self.id`). If `attachment_id` is missing or points at a foreign `ir.attachment`, create a new attachment and point `attachment_id` at it. Never `unlink()` the registry. Prefer not to `unlink()` the old attachment; orphan binaries are preferable to deleting a file that might still be referenced.
+- Batch resolution is scoped to `registry.student_id` + `registry.course_id` (finished `op.student.course` preferred, else latest line, else that student’s gradebook). If no batch is found, do not change `start_date`. Do not search gradebooks without that student/course domain.
+
+Residual integrity (accepted, document at implementation time; do not expand):
+- No versioning/audit of previous PDF bytes. Staff with `base.group_user` can already replace `attachment_id` and `start_date` via ORM.
+- `date_start_class` can later be written by HomeClass sync (`irg_batch_homeclass_api_scheduler`). The next authorized download will follow that live value by design.
+- Cryptographic stamp does not include celebration start; verify page shows issue date, not start date. An old PDF in the wild can disagree with the current file after a date change.
+- GET download becomes a state-changing request (CSRF-equivalent to the student downloading their own diploma). Attacker cannot choose the new date without also changing the batch.
+
+------------------------------------------------------------------------------
+5. Pérdida de datos
+------------------------------------------------------------------------------
+
+- Intended loss: previous PDF bytes in the filestore object behind `attachment_id` when generation succeeds.
+- Forbidden loss: registry row, attachment pointer cleared after a failed render, overwrite of an `ir.attachment` that does not belong to this registry, graduation diploma files, celebration end date, issue date.
+- Fallback `date_start_class or start_date` avoids printing a blank celebration start; it must not invent dates from another student or course.
+
+------------------------------------------------------------------------------
+6. Contratos funcionales y comandos
+------------------------------------------------------------------------------
+
+- New diploma (wizard/portal create) stores class start (or batch start fallback) on `irg.diplomado.registry.start_date`.
+- Every authorized `action_reprint` / portal download syncs that field from the live batch and rebuilds the PDF.
+- Canonical tests: `docker compose -f docker-compose.local.yml` against disposable `test_irg_db` only. Raw SQL in tests (`UPDATE op_batch SET date_start_class = NULL WHERE id = %s`) is parameterized and test-only; do not use raw SQL in production methods.
+- E2E TestSprite is mandatory after module tests pass: `projectPath` = this module directory only; runtime local port 8069; disposable DB; never beta/prod; never upload compose/credentials.
+
+------------------------------------------------------------------------------
+7. Sintaxis / API pitfalls (must not ship)
+------------------------------------------------------------------------------
+
+- `self.env.get('app.gradebook.student')` is not a valid Odoo 16 Environment API. Use `'app.gradebook.student' in self.env` (or a try/except on `self.env['app.gradebook.student']`). A crash in `_irg_get_celebration_batch` would become a download outage under the portal `except Exception` path.
+- `action_reprint` must `ensure_one()`, encode PDF with `base64.b64encode`, and keep mimetype `application/pdf`.
+- Do not set `public=True` on the attachment.
+
+------------------------------------------------------------------------------
+8. Implementation conditions (gate; divergence reopens this review)
+------------------------------------------------------------------------------
+
+1. Campus download: partner + grade before reprint (second plan variant only).
+2. Dedicated portal: reprint only in `_send_diplomado_file` after parent auth; republish HTTP routes with empty `@http.route()` copying `auth='user'`.
+3. No new sudo, no new public routes, no portal ACL on the registry, `_irg_*` helpers stay private.
+4. `action_reprint` uses `_get_diplomado_pdf_data()`; no `super()`; fail-closed on render errors; overwrite only the registry’s own attachment.
+5. No batch on-write hook, no mass rewrite, no registry unlink, no change to issue/end date or public verify payload.
+6. Negative tests: foreign partner and ineligible grade do not mutate `start_date` or PDF bytes.
+7. Gradebook fallback uses `'app.gradebook.student' in self.env`, not `env.get`.
+
+[YES] Reason: Inherit-only module; issued PDF overwrite is explicit, lazy, fail-closed, and scoped to the registry’s own attachment; portal sudo stays behind partner+grade checks with no new public routes or RPC helpers.

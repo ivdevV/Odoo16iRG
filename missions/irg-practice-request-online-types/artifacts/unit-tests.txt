@@ -1,0 +1,30 @@
+=== UNIT TESTS — irg_ot_val2_20260902 (validador independiente, 2026-09-02) ===
+
+Comando:
+  docker compose -f docker-compose.local.yml \
+    -f .worktrees/irg-practice-modality-elearning/missions/irg-practice-modality-elearning/docker-compose.worktree.yml \
+    run --rm --no-deps odoo_local \
+    odoo --config /etc/odoo/odoo.conf \
+    -d irg_ot_val2_20260902 \
+    --stop-after-init --workers 0 --http-port 18069 \
+    --test-enable --test-tags /irg_practice_request_online_types \
+    -i irg_practice_request_online_types
+
+Tests ejecutados (post_install, tagged irg_practice_request_online_types):
+  test_batch_code_online_detection
+  test_controller_error_helper_blocks_onsite_on_online_batch
+  test_enrollment_flag_follows_batch_code
+  test_portal_template_marks_online_options
+  test_portal_user_can_pick_onsite_for_homeclass_neurologopedia
+  test_portal_user_can_pick_tfm_validation_for_online_master
+  test_portal_user_cannot_pick_onsite_for_online_master
+  test_staff_can_assign_any_type_on_online_enrollment
+
+Resultado (líneas clave del log):
+  INFO odoo.service.server: 8 post-tests in 0.85s, 760 queries
+  INFO odoo.tests.stats: irg_practice_request_online_types: 10 tests 0.82s 760 queries
+  INFO odoo.tests.result: 0 failed, 0 error(s) of 8 tests when loading database 'irg_ot_val2_20260902'
+
+VEREDICTO: PASS — 0 failed, 0 errors
+
+DB desechable irg_ot_val2_20260902 eliminada tras la ejecución (DROP DATABASE confirmado).

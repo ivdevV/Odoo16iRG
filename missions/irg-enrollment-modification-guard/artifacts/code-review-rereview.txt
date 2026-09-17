@@ -1,0 +1,33 @@
+Code review re-review - irg_enrollment_modification_guard - 2026-09-07
+
+Scope reviewed:
+- artifacts/code-review-retry.txt
+- artifacts/code-review-fix.txt
+- Current functional files under addons-extra/extrairg/irg_enrollment_modification_guard relevant to the retry findings
+- Current worktree status/diff scope
+
+Tests were not run; the task explicitly said no tests were necessary. No code or functional files were edited.
+
+P0: None found.
+P1: None found.
+P2: None found.
+
+Resolved retry findings:
+
+1. sale.order.line.create now fences ORM / ir.default order_id before insertion.
+File: addons-extra/extrairg/irg_enrollment_modification_guard/models/sale_order_line.py:21-32
+Review result: resolved.
+Reason: when any incoming vals omits order_id, create() now resolves self.default_get(['order_id']) before calling fence_orders(), copies incoming vals into prepared vals, injects that resolved order_id only for missing order_id, fences every truthy prepared order_id, and passes the prepared values to super().create(). Explicit order_id=False remains explicit and is not replaced by a fallback. This closes the prior path where base create could later apply an ir.default order_id that had not participated in the sale_order fence.
+
+2. Protected defaults from context and ir.default are neutralized for irg.enrollment.change.create.
+File: addons-extra/extrairg/irg_enrollment_modification_guard/models/enrollment_change.py:57-91
+Review result: resolved.
+Reason: create() now strips default_* context keys for every _PROTECTED field, not only _TECHNICAL. It also initializes all _PROTECTED fields to False before applying explicit incoming vals, so BaseModel/create cannot fill omitted protected fields from saved ir.default values after guard validation. Server-captured origins, state, snapshot and block flag are still overwritten from current server records before super().create().
+
+Regression review:
+- Normal wizard creation remains compatible because the base wizard sends protected request values explicitly in vals.
+- Multi-create behavior remains consistent with Odoo defaults: default_get(['order_id']) is resolved once per create call and applied only to records that omitted order_id.
+- The fix does not broaden ACLs, add views/controllers/static assets, change existing addons, or alter the finance sudo boundary reviewed previously.
+- Current git status still shows the new addon and mission artifacts only; no existing addon modifications were detected.
+
+APPROVED

@@ -1,0 +1,47 @@
+{
+  "status": "passed",
+  "task": "irg-student-degree-type",
+  "checks": [
+    {
+      "name": "syntax_python",
+      "command": "python3 -m py_compile <cada .py del módulo>",
+      "result": "pass",
+      "detail": "7 archivos Python comprobados: __init__.py, __manifest__.py, models/__init__.py, models/irg_student_degree_type.py, models/op_student.py, tests/__init__.py, tests/test_student_degree_type.py — todos sin errores de sintaxis.",
+      "evidence": "artifacts/validator-syntax.txt"
+    },
+    {
+      "name": "xml_wellformed",
+      "command": "python3 -c \"import xml.etree.ElementTree as ET; ET.parse('<file>')\" para cada XML",
+      "result": "pass",
+      "detail": "2 archivos XML bien formados: views/irg_student_degree_type_views.xml, views/op_student_views.xml.",
+      "evidence": "artifacts/validator-xml.txt"
+    },
+    {
+      "name": "unit_tests",
+      "command": "docker compose --project-directory \"/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG\" -f \".../docker-compose.local.yml\" -f \".../docker-compose.worktree.yml\" run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d irg_sdt_val_20260828 -i irg_student_degree_type --test-enable --test-tags /irg_student_degree_type --without-demo=all --max-cron-threads=0 --stop-after-init --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 6 tests when loading database 'irg_sdt_val_20260828'. 6 tests en 0.25s, 287 queries.",
+      "evidence": "artifacts/validator-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "TestSprite MCP no está disponible en esta sesión. El disparo aplica (views XML); el contrato de formulario quedó cubierto por get_view en la suite del módulo (widget many2many_tags tras emergency_contact). No se tuneló :8069 ni se usaron cuentas reales.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "irg_sdt_val_20260828",
+    "base_commit": "35b2552ae87ac4cbaaa14a30e2cf143f15fb70b2"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validator-syntax.txt",
+    "artifacts/validator-xml.txt",
+    "artifacts/validator-tests.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

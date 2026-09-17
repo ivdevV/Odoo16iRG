@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="slide_fullscreen_sidebar_tfm_hide"
+              inherit_id="irg_practice_slide_restrictions.slide_fullscreen_sidebar_practice_hide"
+              name="Sidebar: ocultar slides restringidos por convocatoria TFM"
+              priority="120">
+        <xpath expr="//li[contains(@t-attf-class, 'o_wslides_fs_sidebar_list_item')]" position="attributes">
+            <attribute name="t-if">not (batch_blocked_slide_ids and slide.id in batch_blocked_slide_ids)
+                and not (practice_blocked_slide_ids and slide.id in practice_blocked_slide_ids)
+                and not (tfm_blocked_slide_ids and slide.id in tfm_blocked_slide_ids)</attribute>
+        </xpath>
+    </template>
+
+    <template id="fullscreen_sidebar_hide_tfm_sections"
+              inherit_id="irg_practice_slide_restrictions.fullscreen_sidebar_hide_practice_sections"
+              name="Sidebar: ocultar categorías restringidas por convocatoria TFM"
+              priority="120">
+        <xpath expr="//li[contains(@class, 'o_wslides_fs_sidebar_section')]" position="attributes">
+            <attribute name="t-if">
+                not category
+                or (
+                    (not category.allowed_batch_ids
+                     or category.is_user_allowed_by_batch(request.env.user))
+                    and (not category.irg_has_practice_requirement()
+                         or category.is_user_allowed_by_practice_type(request.env.user))
+                    and (not category.irg_has_tfm_requirement()
+                         or category.is_user_allowed_by_tfm_convocation(request.env.user))
+                )
+            </attribute>
+        </xpath>
+    </template>
+
+    <template id="course_slides_list_hide_tfm_sections"
+              inherit_id="irg_practice_slide_restrictions.course_slides_list_hide_practice_sections"
+              name="Listado: ocultar categorías restringidas por convocatoria TFM"
+              priority="120">
+        <xpath expr="//t[@t-foreach='category_data']" position="attributes">
+            <attribute name="t-if">not category['id']
+                or (
+                    (not category['category'].allowed_batch_ids
+                     or category['category'].is_user_allowed_by_batch(request.env.user))
+                    and (not category['category'].irg_has_practice_requirement()
+                         or category['category'].is_user_allowed_by_practice_type(request.env.user))
+                    and (not category['category'].irg_has_tfm_requirement()
+                         or category['category'].is_user_allowed_by_tfm_convocation(request.env.user))
+                )</attribute>
+        </xpath>
+    </template>
+
+    <template id="course_slides_list_hide_tfm_content"
+              inherit_id="website_slides.course_slides_list_slide"
+              name="Listado: ocultar contenidos restringidos por convocatoria TFM"
+              priority="120">
+        <xpath expr="//li[contains(@t-attf-class, 'o_wslides_slides_list_slide')]"
+               position="attributes">
+            <attribute name="t-if">not slide.irg_has_tfm_requirement()
+                or slide.is_user_allowed_by_tfm_convocation(request.env.user)</attribute>
+        </xpath>
+    </template>
+
+    <template id="slide_tfm_restriction_error" name="Slide TFM Restriction Error">
+        <t t-call="website.layout">
+            <div class="container mt-5">
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Contenido Bloqueado</h4>
+                    <p>
+                        Este contenido está reservado para la convocatoria TFM asignada a tu expediente.
+                    </p>
+                    <hr/>
+                    <p class="mb-0">
+                        <a t-att-href="slide.channel_id.website_url" class="btn btn-primary">
+                            Volver al curso
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

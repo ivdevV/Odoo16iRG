@@ -1,0 +1,40 @@
+Review corrections — 2026-09-07 — functional version frozen for re-review
+
+P1 reproduced before production fix:
+- Added insert_default to the two-connection runner. Transaction B creates a zero-value line_section with order_id supplied exclusively by ir.default; neither vals nor context contains order_id. A had already established REPEATABLE READ snapshot.
+- RED review-fix-red-concurrency.txt: AssertionError: insert_default: stale snapshot did not propagate SerializationFailure.
+- This is the real missing fence, not an assertion against a mock or recomputation: line_section avoids incidental parent amount updates which could conceal it.
+
+P1 correction:
+- sale.order.line.create resolves default_get(['order_id']) once whenever order_id is absent, then passes that exact value explicitly to super.create.
+- Fence covers every resolved order ID in stable order, before insertion. Explicit False remains explicit (no fallback overriding caller vals). Input vals are copied.
+- Default test removes its own temporary ir.default, checks no existing fixture-user default is overwritten, and has the existing finally cleanup for requests/orders/lines.
+
+P2 reproduced and corrected in the same protected-default scope:
+- RED review-fix-red-context.txt: context default_change_payment injects True into a request whose explicit vals request only batch.
+- RED review-fix-red-saved-defaults.txt: ir.default academic_user_id injects an approver after guard validation; before fix, super.create could fill unspecified technical fields even with context stripped.
+- create now strips default_* for all _PROTECTED fields, seeds all protected fields to False, applies explicit request vals, and overwrites origins/state/snapshot with server values. This neutralizes context and saved ORM defaults, while normal wizard requests remain unchanged because they already send explicit values.
+
+Files changed since first review:
+models/sale_order_line.py
+models/enrollment_change.py
+tests/test_enrollment_guard.py (2 regression cases)
+tests/test_enrollment_guard_concurrency.py (insert_default regression)
+All under the new addon. No existing addon, ACL, view or runtime config changed.
+
+Reproduction environment:
+Initial odoo16irg_guard_test had already been removed by orchestration cleanup. On authorization, created odoo16irg_guard_fix from test_irg_db, installed base addon only, executed prepare_red.py (historical fixtures + Studio, baseline RED), then installed the uncorrected guard for the three regression REDs. Production fix followed RED evidence.
+Commands from checkout principal:
+- docker compose -f docker-compose.local.yml exec -T pgodoo_local sh -c 'createdb -U "$POSTGRES_USER" -T test_irg_db odoo16irg_guard_fix'
+- Standard compose run overlay, base install -i irg_enrollment_modification; prepare_red.py shell wrapper; guard install -i irg_enrollment_modification_guard, all against odoo16irg_guard_fix.
+- Full GREEN: docker compose -f docker-compose.local.yml -f scratch/irg-enrollment-guard/compose.guard.json run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d odoo16irg_guard_fix -u irg_enrollment_modification_guard --test-enable --test-tags=/irg_enrollment_modification,/irg_enrollment_modification_guard --stop-after-init --http-port=8079 --max-cron-threads=0 --logfile=/mnt/guard-mission/artifacts/review-fix-green-full.txt --log-level=test
+- Concurrency GREEN: same compose overlay run --rm --no-deps -T odoo_local odoo shell -c /etc/odoo/odoo.conf -d odoo16irg_guard_fix --no-http --max-cron-threads=0 < .worktrees/irg-enrollment-modification-guard/missions/irg-enrollment-modification-guard/artifacts/concurrency.py
+
+Results (codifier evidence; independent review/validation pending):
+review-fix-green-full.txt: 62 tests, 0 failed, 0 errors (all previous 60 + 2 default regressions).
+review-fix-green-concurrency.txt: 11 scenarios PASS (all previous 10 + ir.default phantom). Cleanup PASS.
+AST/syntax and whitespace: PASS, 8 Python files.
+No commit, push or PR. No service up/stop or modification to shared web runtime.
+
+Cleanup handoff:
+Only disposable databases used. odoo16irg_guard_fix remains ready for independent validation. The initial -u retry on missing guard_test appears to have recreated an empty guard_test database (0 tests); orquestador informed. guard_pushcheck belongs to orchestration and was not touched.

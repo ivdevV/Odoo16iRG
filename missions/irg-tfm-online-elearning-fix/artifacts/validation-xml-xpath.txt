@@ -1,0 +1,27 @@
+Validación independiente — manifest, XML y XPath
+Fecha: 2026-09-09
+
+1. Parseo independiente con ast.literal_eval y ElementTree
+Resultado: PASS (exit 0)
+
+manifest_version=16.0.1.0.4
+manifest_data_files=8
+xml_parsed=7
+result=pass
+
+2. XPath nuevo contra la vista padre real
+Vista padre:
+addons-extra/extrairg/irg_course_convocatorias_v2/views/slide_channel_views.xml
+
+Expresión verificada en el arch de
+view_slide_channel_form_convocatorias_v2:
+//page[@name='irg_online_sections']/field[@name='irg_online_section_ids']
+
+Resultado: PASS (exit 0)
+xpath_matches=1
+target_tag=field
+
+Nota de ejecución: dos intentos iniciales de comandos Python inline no llegaron
+a ejecutar las comprobaciones por escapado incorrecto de comillas en PowerShell.
+Se corrigió únicamente la invocación; los comandos efectivos anteriores
+terminaron en exit 0.

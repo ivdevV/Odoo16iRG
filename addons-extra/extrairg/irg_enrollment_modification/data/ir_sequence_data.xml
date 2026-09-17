@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_irg_enrollment_change" model="ir.sequence">
+        <field name="name">Modificación de matrícula</field>
+        <field name="code">irg.enrollment.change</field>
+        <field name="prefix">MM/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

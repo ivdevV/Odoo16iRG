@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_student_degree_type_tree" model="ir.ui.view">
+        <field name="name">irg.student.degree.type.tree</field>
+        <field name="model">irg.student.degree.type</field>
+        <field name="arch" type="xml">
+            <tree string="Tipos de titulación" editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_student_degree_type_form" model="ir.ui.view">
+        <field name="name">irg.student.degree.type.form</field>
+        <field name="model">irg.student.degree.type</field>
+        <field name="arch" type="xml">
+            <form string="Tipo de titulación">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="color" widget="color_picker"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_student_degree_type" model="ir.actions.act_window">
+        <field name="name">Tipos de titulación</field>
+        <field name="res_model">irg.student.degree.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem
+        id="menu_irg_student_degree_type"
+        name="Tipos de titulación"
+        parent="openeducat_core.menu_op_school_config_general"
+        action="action_irg_student_degree_type"
+        sequence="40"
+        groups="openeducat_core.group_op_back_office"
+    />
+</odoo>

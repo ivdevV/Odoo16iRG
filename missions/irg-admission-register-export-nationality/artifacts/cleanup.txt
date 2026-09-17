@@ -1,0 +1,33 @@
+=== cleanup 2026-09-08T10:49:28Z ===
+--- connections before drop ---
+ pid | usename | datname | state | application_name 
+-----+---------+---------+-------+------------------
+(0 rows)
+
+--- terminate backends ---
+ pg_terminate_backend 
+----------------------
+(0 rows)
+
+--- drop val ---
+DROP DATABASE
+--- drop red ---
+DROP DATABASE
+--- remaining matching databases ---
+ datname 
+---------
+(0 rows)
+
+--- odoo_local service ---
+NAME              IMAGE                  COMMAND                  SERVICE      CREATED       STATUS       PORTS
+odoo16irg_local   odoo16irg:16.0-local   "/entrypoint.sh odoo…"   odoo_local   11 days ago   Up 2 hours   0.0.0.0:8069->8069/tcp, [::]:8069->8069/tcp, 0.0.0.0:8072->8072/tcp, [::]:8072->8072/tcp
+--- odoo_local command / env db ---
+Status=running Running=true Cmd=["odoo","-c","/etc/odoo/odoo.conf"] EnvDB=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+running ["odoo","-c","/etc/odoo/odoo.conf"]
+--- pg_stat_activity current DBs used by odoo ---
+ datname  | count 
+----------+-------
+ postgres |     2
+          |     1
+(2 rows)
+

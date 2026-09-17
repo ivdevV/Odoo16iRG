@@ -1,0 +1,247 @@
+2026-09-08 10:42:31,454 272 INFO ? odoo: Odoo version 16.0-20250909 
+2026-09-08 10:42:31,454 272 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-09-08 10:42:31,454 272 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-09-08 10:42:31,454 272 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-09-08 10:42:31,500 272 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-09-08 10:42:31,534 272 INFO ? odoo.service.server: HTTP service (werkzeug) running on 27f10a0153ff:8099 
+2026-09-08 10:42:31,540 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: loading 1 modules... 
+2026-09-08 10:42:31,542 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-09-08 10:42:31,548 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: updating modules list 
+2026-09-08 10:42:31,549 272 INFO test_irg_arex_nat_red_20260908 odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-09-08 10:42:31,614 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-09-08 10:42:31,657 272 WARNING test_irg_arex_nat_red_20260908 py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-08 10:42:31,659 272 WARNING test_irg_arex_nat_red_20260908 py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-08 10:42:31,661 272 WARNING test_irg_arex_nat_red_20260908 py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-09-08 10:42:31,826 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-09-08 10:42:31,849 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-09-08 10:42:31,899 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-09-08 10:42:31,900 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-09-08 10:42:31,901 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-09-08 10:42:31,943 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-09-08 10:42:32,072 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-09-08 10:42:32,140 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-09-08 10:42:32,144 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-09-08 10:42:32,184 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-09-08 10:42:32,305 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-09-08 10:42:32,368 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-09-08 10:42:32,370 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-09-08 10:42:32,372 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-09-08 10:42:32,374 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-09-08 10:42:32,443 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-09-08 10:42:32,458 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-09-08 10:42:32,460 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-09-08 10:42:32,470 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-09-08 10:42:32,477 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-09-08 10:42:32,497 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-09-08 10:42:32,501 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-09-08 10:42:32,507 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-09-08 10:42:32,508 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-09-08 10:42:32,511 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-09-08 10:42:32,513 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-09-08 10:42:32,514 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-09-08 10:42:32,523 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-09-08 10:42:32,527 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-09-08 10:42:32,535 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-09-08 10:42:32,541 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-09-08 10:42:32,545 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-09-08 10:42:32,551 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-09-08 10:42:32,554 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-09-08 10:42:32,562 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-09-08 10:42:33,034 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-09-08 10:42:33,131 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-09-08 10:42:33,144 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-09-08 10:42:33,348 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-09-08 10:42:33,383 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-09-08 10:42:33,596 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-09-08 10:42:33,597 272 WARNING test_irg_arex_nat_red_20260908 odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-09-08 10:42:33,742 272 INFO test_irg_arex_nat_red_20260908 odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['iRG Admission Register Export'] to user __system__ #1 via n/a 
+2026-09-08 10:42:33,742 272 INFO test_irg_arex_nat_red_20260908 odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['iRG Admission Register Export'] to user __system__ #1 via n/a 
+2026-09-08 10:42:34,400 272 INFO test_irg_arex_nat_red_20260908 odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a 
+2026-09-08 10:42:34,410 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: loading 114 modules... 
+2026-09-08 10:42:34,664 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch 
+2026-09-08 10:42:34,694 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: Loading module irg_admission_register_export (99/114) 
+2026-09-08 10:42:34,787 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.registry: module irg_admission_register_export: creating or updating database tables 
+2026-09-08 10:42:34,814 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: loading irg_admission_register_export/security/ir.model.access.csv 
+2026-09-08 10:42:34,822 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: loading irg_admission_register_export/wizard/admission_export_wizard_view.xml 
+2026-09-08 10:42:34,833 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: Module irg_admission_register_export loaded in 0.14s, 67 queries (+67 other) 
+2026-09-08 10:42:34,842 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-08 10:42:34,842 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-09-08 10:42:34,843 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.isep_survey.models.survey_user_input is not overriding the create method in batch 
+2026-09-08 10:42:34,864 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-08 10:42:34,865 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-09-08 10:42:34,868 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch 
+2026-09-08 10:42:34,869 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch 
+2026-09-08 10:42:34,876 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.isep_gradebook.models.app_gradebook_result is not overriding the create method in batch 
+2026-09-08 10:42:34,877 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.isep_gradebook.models.survey_user_input is not overriding the create method in batch 
+2026-09-08 10:42:34,886 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook.template.line has no _description 
+2026-09-08 10:42:34,886 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook has no _description 
+2026-09-08 10:42:34,886 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook.result has no _description 
+2026-09-08 10:42:34,886 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model survey.user_input.write has no _description 
+2026-09-08 10:42:34,886 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook.subject has no _description 
+2026-09-08 10:42:34,886 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook.student has no _description 
+2026-09-08 10:42:34,892 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model op.course.type has no _description 
+2026-09-08 10:42:34,892 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model op.area.course has no _description 
+2026-09-08 10:42:34,897 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.irg_batch_homeclass_api_scheduler.models.op_batch is not overriding the create method in batch 
+2026-09-08 10:42:34,903 272 WARNING test_irg_arex_nat_red_20260908 odoo.api.create: The model odoo.addons.irg_exam_second_attempt.models.survey is not overriding the create method in batch 
+2026-09-08 10:42:34,908 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook.result has no _description 
+2026-09-08 10:42:34,908 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook.student has no _description 
+2026-09-08 10:42:34,908 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook.subject has no _description 
+2026-09-08 10:42:34,910 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook.subject has no _description 
+2026-09-08 10:42:34,912 272 WARNING test_irg_arex_nat_red_20260908 odoo.models: The model app.gradebook.subject has no _description 
+2026-09-08 10:42:34,912 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: 114 modules loaded in 0.50s, 67 queries (+67 extra) 
+2026-09-08 10:42:34,927 272 WARNING test_irg_arex_nat_red_20260908 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-08 10:42:34,942 272 WARNING test_irg_arex_nat_red_20260908 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 10:42:34,942 272 WARNING test_irg_arex_nat_red_20260908 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 10:42:35,000 272 WARNING test_irg_arex_nat_red_20260908 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-08 10:42:35,015 272 WARNING test_irg_arex_nat_red_20260908 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 10:42:35,016 272 WARNING test_irg_arex_nat_red_20260908 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 10:42:35,206 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.loading: Modules loaded. 
+2026-09-08 10:42:35,212 272 INFO test_irg_arex_nat_red_20260908 odoo.modules.registry: Registry loaded in 3.677s 
+2026-09-08 10:42:35,212 272 INFO test_irg_arex_nat_red_20260908 odoo.service.server: Starting post tests 
+2026-09-08 10:42:35,212 272 INFO test_irg_arex_nat_red_20260908 odoo.addons.irg_admission_register_export.tests.test_admission_export: Starting TestAdmissionRegisterExportNationality.test_export_includes_student_nationality ... 
+2026-09-08 10:42:35,246 272 INFO test_irg_arex_nat_red_20260908 odoo.addons.irg_admission_register_export.tests.test_admission_export: Starting TestAdmissionRegisterExportNationality.test_export_nationality_empty_without_student_or_value ... 
+2026-09-08 10:42:35,283 272 WARNING test_irg_arex_nat_red_20260908 odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-09-08 10:42:35,298 272 WARNING test_irg_arex_nat_red_20260908 odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 10:42:35,298 272 WARNING test_irg_arex_nat_red_20260908 odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-09-08 10:42:35,318 272 INFO test_irg_arex_nat_red_20260908 odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-09-08 10:42:35,318 272 INFO test_irg_arex_nat_red_20260908 odoo.service.server: 2 post-tests in 0.11s, 221 queries 
+2026-09-08 10:42:35,318 272 INFO test_irg_arex_nat_red_20260908 odoo.tests.stats: irg_admission_register_export: 4 tests 0.11s 221 queries 
+2026-09-08 10:42:35,318 272 INFO test_irg_arex_nat_red_20260908 odoo.tests.result: 0 failed, 0 error(s) of 2 tests when loading database 'test_irg_arex_nat_red_20260908' 
+2026-09-08 10:42:35,318 272 INFO test_irg_arex_nat_red_20260908 odoo.service.server: Initiating shutdown 
+2026-09-08 10:42:35,318 272 INFO test_irg_arex_nat_red_20260908 odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-09-08 10:42:35,550 272 INFO test_irg_arex_nat_red_20260908 odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  

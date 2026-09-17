@@ -1,0 +1,12 @@
+RED (módulo sin vista inherit). 1 failed + 2 error(s) of 3 tests.
+
+AssertionError: 'hasattr' unexpectedly found in "not hasattr(course_id, 'irg_is_diplomado') or not course_id.irg_is_diplomado()"
+
+ERROR test_diplomado_tile_guard_hides_tile
+TypeError: 'NoneType' object is not callable
+
+ERROR test_master_tile_guard_renders_without_typeerror
+TypeError: 'NoneType' object is not callable
+
+Comando:
+docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_campus_certificates_tile_qweb_fix --test-enable --test-tags=/irg_campus_certificates_tile_qweb_fix --stop-after-init --http-port=8099 --log-level=test

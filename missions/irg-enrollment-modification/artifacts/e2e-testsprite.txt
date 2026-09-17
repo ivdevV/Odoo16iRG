@@ -1,0 +1,55 @@
+E2E TestSprite Gate — irg-enrollment-modification
+==================================================
+Date:     2026-09-04
+Tester:   e2e-tester subagent
+
+## Scope check
+
+Diff touches views XML (op.student header button, wizard form, request form) →
+e2e_testsprite is IN SCOPE per AGENTS.md "Capa E2E" rules.
+
+## Prior checks check
+
+verification.json prior checks:
+  syntax_py   → pass
+  syntax_xml  → pass
+  unit_tests  → pass
+  lint        → skipped (justified: no linter configured)
+  e2e         → pending (this run)
+
+No prior `fail` checks → gate cleared to proceed.
+
+## Runtime check
+
+Local Odoo on docker-compose.local.yml port 8069: HEALTHY
+  Command: curl -s --max-time 5 http://localhost:8069/web/health
+  Response: {"status": "pass"}
+
+## TestSprite MCP availability
+
+Dynamic tool search (pattern "testsprite|TestSprite"):
+  Result: [] — no matches
+
+The TestSprite MCP namespace is NOT registered/available in this Cursor session.
+The tools required to execute the e2e gate are:
+  - testsprite_bootstrap
+  - testsprite_generate_code_summary
+  - testsprite_generate_standardized_prd
+  - testsprite_generate_frontend_test_plan
+  - testsprite_generate_code_and_execute
+
+None are available. Inventing a pass without executing is explicitly prohibited
+by the e2e-tester instructions and AGENTS.md. The gate is therefore recorded as
+`skipped` with this justification.
+
+## Conclusion
+
+e2e_testsprite: SKIPPED
+Reason: TestSprite MCP namespace not registered in this Cursor session.
+        Runtime is healthy; scope is in scope; no prior failures.
+        Cannot execute without MCP tools.
+
+To unblock: ensure TestSprite MCP is configured in the Cursor workspace and
+re-run the e2e-tester subagent.
+
+E2E SKIPPED — TestSprite MCP unavailable

@@ -1,0 +1,43 @@
+# e2e_testsprite — 2026-09-07
+# Check: E2E TestSprite — irg_practice_agreement_specific-national
+
+## Resultado: SKIPPED — MCP ausente en este runtime
+
+### Motivo técnico
+GetDynamicTools pattern="testsprite" devolvió matches=[].
+El MCP de TestSprite no está disponible en este entorno de ejecución;
+no existe ningún namespace "testsprite" registrado. La omisión es técnica,
+no de alcance: el diff SÍ toca views/, portal y report/ y el disparo era OBLIGATORIO.
+
+### Flujos E2E pendientes (pendientes de ejecución cuando el MCP esté disponible)
+
+1. **wizard_radio_nacional_internacional**
+   - Abrir el wizard de creación de convenio específico desde una solicitud con
+     centro asignado.
+   - Verificar que aparece el radio button "Nacional / Internacional".
+   - Seleccionar "Nacional" y confirmar que se crea un convenio de tipo
+     `especifico_nacional`.
+   - Seleccionar "Internacional" y confirmar que se crea un convenio de tipo
+     `especifico_internacional`.
+
+2. **portal_firma_nacional**
+   - Acceder como alumno (usuario portal) a la URL del convenio específico nacional.
+   - Verificar que se renderiza la plantilla portal correcta
+     (`portal_agreement_templates.xml`).
+   - Verificar que el botón / formulario de firma está presente y activo.
+   - Confirmar firma del alumno y verificar cambio de estado.
+
+3. **pdf_nacional_render**
+   - Generar el PDF del convenio de tipo `especifico_nacional` desde el backend.
+   - Verificar que el PDF utiliza la plantilla
+     `agreement_document_especifico_nacional.xml`.
+   - Confirmar que campos nacionales (fechas, días, horario, horas, dirección del
+     centro, párrafo de flexibilidad) están presentes en el PDF generado.
+   - Verificar que `print_report_name` genera un nombre correcto (rama
+     `especifico_nacional`).
+
+### Configuración requerida cuando el MCP esté disponible
+- projectPath: addons-extra/extrairg/irg_practice_agreement_specific
+- puerto: 8069
+- base: desechable (no beta, no producción)
+- credenciales: usuario local de la base desechable

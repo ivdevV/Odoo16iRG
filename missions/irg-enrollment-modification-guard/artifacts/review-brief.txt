@@ -1,0 +1,30 @@
+Review funcional de irg_enrollment_modification_guard
+Base 928c2974ba94acfa4bb6e8730c14426f9071fc6e. Sin commits nuevos.
+Revisar únicamente addon nuevo y scripts ejecutables de pruebas, no calidad
+editorial de plan, execution, changelog ni evidencias textuales.
+
+Requisitos del usuario:
+1. Comparar campos afectados y relaciones antes de aprobar; datos ajenos no bloquean.
+2. Conflicto permanente para todos, admin incluido, exige nueva solicitud.
+3. Dos etapas: Académico aplica; Finanzas valida pago original y continuidad
+   de los académicos aprobados. No revertir cambios ya aplicados al bloquear.
+4. Pendientes previas: datos guardados suficientes o bloqueo conservador.
+5. No modificar addons existentes.
+
+Requisitos técnicos aprobados:
+Snapshot de origen del servidor, creación batch, inmutabilidad frente a RPC,
+neutralizar defaults protegidos y tokens serializables. Token privado no
+elude controles de acciones públicas. Identidad matrícula/alumno y pedido:
+student_id explícito prevalece; partner_id solo fallback.
+Notification persistente para conflictos; evitar rollback del registro de bloqueo.
+Serialización real en REPEATABLE READ: filas y conjunto de líneas protegidos,
+fence pedido compartido en sale.order.line create/write/unlink y acciones;
+reintentos de serialización completos sin commit manual en producción.
+Denegación/PDF retry compatibles sin mutar nuevamente la matrícula.
+No ampliar ACL ni añadir vistas/HTTP/static (E2E por scope skipped).
+
+Entregar hallazgos concretos con prioridad, archivo/línea, disparador/efecto y
+corrección recomendada; cerrar con APPROVED o CHANGES_REQUESTED. No corregir
+código ni repetir pruebas: validación independiente viene después. No afirmar
+resultado de ejecución solo por lectura. Cualquier requisito no verificable
+señalarlo explícitamente para que el orquestador lo resuelva.

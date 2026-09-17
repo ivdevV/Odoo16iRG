@@ -84,6 +84,10 @@ Los `irg_preview_*` son lecturas. Los `irg_apply_*` son escrituras (preview → 
 | `irg_preview_feedback_import` / `irg_apply_feedback_import` | `survey_id`, `txt_content` | Wizard TXT oficial |
 | `irg_get_attachment_metadata` | `attachment_id` | Sin binario |
 | `irg_upload_private_attachment` | `res_model`, `res_id`, `name`, `mimetype`, `file_b64` | `public=False`, máx. 32 KiB |
+| `irg_generate_gradebook_certificate` | `gradebook_student_id`, `document_type`, `certificate_type`, `signer`, `shipping_type?` | Solo notas: `gradebook` o `gradebook_partial`. Wizard oficial. `gradebook` exige libreta `done`. `diploma` / `enrollment` / `attendance` se rechazan y nombran el comando nuevo. Resultado: ids, `checksum`, `file_b64`. Adjunto `public=False`. Sin mail. |
+| `irg_generate_diploma` | `student_id`, `student_course_id`, `diploma_type` (`digital`\|`physical`), `issue_date?` | Diploma académico: `irg.diploma.wizard.action_print_diploma`. El curso (`op.student.course`) debe estar `finished`. Sin `gradebook_student_id`. No usa el pago del portal de certificados. Preview declara `course_state` y `will_create: irg.diploma.registry`. Resultado: `file_b64`, `checksum`, `diploma_registry_id`, `registry_number`; `state` es el del registro. |
+| `irg_generate_enrollment_certificate` | `admission_id`, `certificate_type`, `signer`, `shipping_type?`, `custom_description?`, `custom_options?` | Certificado de matrícula Word (`irg.certificate.request`, `origin=backend`). La libreta se resuelve en servidor; no va en payload ni en el resultado. Firmante obligatorio (`dpto_academico` o `raimon`). |
+| `irg_generate_attendance_certificate` | `admission_id`, `session_id`, `certificate_type`, `signer`, `shipping_type?`, `custom_description?`, `custom_options?` | Certificado de asistencia. Exige `irg_certificate_attendance`. `session_id` debe pertenecer al lote de la admisión. Validación HC del modelo oficial. `state` del resultado es el de la solicitud. |
 
 ## Meta
 

@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "task": "irg-admission-register-export-nationality",
+  "checks": [
+    {
+      "name": "syntax_py_compile",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_admission_register_export/wizard/admission_export_wizard.py addons-extra/extrairg/irg_admission_register_export/tests/test_admission_export.py addons-extra/extrairg/irg_admission_register_export/tests/__init__.py",
+      "result": "pass",
+      "detail": "py_compile exit 0 on wizard and tests; no syntax errors.",
+      "evidence": "artifacts/validation-summary.txt"
+    },
+    {
+      "name": "odoo_test_suite",
+      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_arex_nat_val_20260908 -i irg_admission_register_export --test-enable --test-tags=/irg_admission_register_export --stop-after-init --http-port=8098 --log-level=test --workers=0",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 2 tests when loading database 'test_irg_arex_nat_val_20260908'. Tests: test_export_includes_student_nationality, test_export_nationality_empty_without_student_or_value. Stats: irg_admission_register_export: 4 tests 0.10s 221 queries.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "El diff no toca vistas/QWeb, static/, portal, website, controladores HTTP ni plantillas de diploma/certificado; solo Python del wizard y tests. El orquestador declara el skip en plan.md; no se ejecuta TestSprite.",
+      "evidence": "plan.md"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_arex_nat_val_20260908",
+    "base_commit": "0fc4765def6f0f082eec28f4d303f589b98718c1"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/validation-summary.txt",
+    "artifacts/cleanup.txt",
+    "plan.md"
+  ]
+}
