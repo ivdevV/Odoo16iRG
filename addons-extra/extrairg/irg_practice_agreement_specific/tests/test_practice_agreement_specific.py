@@ -117,6 +117,7 @@ class TestPracticeAgreementSpecific(TransactionCase):
         keys = dict(field.selection)
         self.assertIn("especifico_internacional", keys)
         self.assertIn("especifico_nacional", keys)
+        self.assertIn("especifico_homeclass_sincronas", keys)
         self.assertIn("marco_nacional", keys)
         self.assertIn("marco_internacional", keys)
 
@@ -176,6 +177,7 @@ class TestPracticeAgreementSpecific(TransactionCase):
         html = self._render_agreement_html(agreement)
         self.assertIn("fuera de España", html)
         self.assertIn("Anexo I", html)
+        self.assertIn("Normativa (solo para estudiantes)", html)
         self.assertIn("no remunerad", html.lower())
         self.assertIn("Alumno Prueba Específico", html)
         self.assertIn("Centro Colaborador Test", html)
@@ -253,6 +255,7 @@ class TestPracticeAgreementSpecific(TransactionCase):
         self.assertIn("asistencia sanitaria", html.lower())
         self.assertIn("Alumno Prueba Específico", html)
         self.assertIn("Centro Colaborador Test", html)
+        self.assertIn("Normativa (solo para estudiantes)", html)
         self.assertNotIn("fuera de España", html)
         self.assertNotIn("Encuentro", html)
         self.assertNotIn("Miroslava", html)
@@ -279,6 +282,63 @@ class TestPracticeAgreementSpecific(TransactionCase):
         )
         self.assertEqual(agreement.state, "completed")
         self.assertIn("Especifico_Nacional", agreement.pdf_attachment_id.name)
+        self.assertNotIn("Marco", agreement.pdf_attachment_id.name)
+
+    def test_wizard_creates_homeclass(self):
+        agreement = self._create_especifico(
+            agreement_type="especifico_homeclass_sincronas"
+        )
+        self.assertEqual(
+            agreement.agreement_type, "especifico_homeclass_sincronas"
+        )
+        self.assertEqual(agreement.practice_request_id, self.request)
+        self.assertEqual(agreement.student_name, "Alumno Prueba Específico")
+        self.assertTrue(agreement.student_access_token)
+
+    def test_html_homeclass_sync_online_no_irg_insurance(self):
+        agreement = self._create_especifico(
+            agreement_type="especifico_homeclass_sincronas"
+        )
+        html = self._render_agreement_html(agreement)
+        self.assertIn("sincrónica", html.lower())
+        self.assertIn("tiempo real", html.lower())
+        self.assertIn("plataformas digitales", html.lower())
+        self.assertIn("no grabar", html.lower())
+        self.assertIn("cobrar a los pacientes", html.lower())
+        self.assertIn("26/2015", html)
+        self.assertIn("guías psicoeducativas", html.lower())
+        self.assertIn("Alumno Prueba Específico", html)
+        self.assertIn("Centro Colaborador Test", html)
+        self.assertIn("Normativa (solo para estudiantes)", html)
+        self.assertIn("QUINTA", html)
+        self.assertIn("SEXTA", html)
+        self.assertNotIn("SÉPTIMA", html)
+        self.assertNotIn("a cargo de iRG", html)
+        self.assertNotIn("fuera de España", html)
+        self.assertNotIn("Carrer Provença", html)
+        self.assertNotIn("FUPPEMM", html)
+        self.assertNotIn("Luz Mary", html)
+        self.assertNotIn("Área de Psicología", html)
+        self.assertNotIn("ÁREA DE PSICOLOGÍA", html)
+        self.assertNotIn("INMIRA", html)
+
+    def test_homeclass_both_signatures_complete(self):
+        agreement = self._create_especifico(
+            agreement_type="especifico_homeclass_sincronas"
+        )
+        agreement.action_complete_signature(
+            signature_base64=DUMMY_SIGNATURE,
+            signer_name="Ana Representante",
+            ip_address="192.168.1.10",
+        )
+        self.assertNotEqual(agreement.state, "completed")
+        agreement.action_complete_student_signature(
+            signature_base64=DUMMY_SIGNATURE,
+            signer_name="Alumno Prueba Específico",
+            ip_address="192.168.1.20",
+        )
+        self.assertEqual(agreement.state, "completed")
+        self.assertIn("Homeclass_Sincronas", agreement.pdf_attachment_id.name)
         self.assertNotIn("Marco", agreement.pdf_attachment_id.name)
 
     def test_marco_still_completes_with_center_only(self):

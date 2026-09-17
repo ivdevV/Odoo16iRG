@@ -1,0 +1,6 @@
+Contrato aislado ampliado del código actual, tras conservar el retorno heredado `None`.
+
+Resultado real:
+{'status':'pass','cases':[{'case':'satisfaction survey','base_send_calls':0,'returned':None},{'case':'scored survey','base_send_calls':1,'returned':'base-result'},{'case':'assignment using no_scoring','base_send_calls':1,'returned':'base-result'},{'case':'automatic_and_pending_sync','pending_count':0}],'assertions':'all category contracts passed'}
+
+Cubre: send_result, filtro de sincronización automática y acción de sincronización pendiente.

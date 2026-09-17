@@ -1,0 +1,17 @@
+Independent validation — 2026-09-10
+
+odoo_module_tests: skipped
+The user explicitly prohibited opening or using Docker on this computer, and no
+other authorized local Odoo/PostgreSQL runtime is available.
+
+integration_http: skipped
+The HTTP integration suite requires the same local Odoo/PostgreSQL runtime that
+cannot be started under the user's explicit Docker prohibition.
+
+e2e_testsprite: skipped
+The diff activates the E2E gate because it changes controllers and QWeb. Repository
+policy requires TestSprite to run only against the disposable local runtime from
+docker-compose.local.yml and explicitly forbids beta or production. Since Docker
+cannot be opened on this computer, there is no policy-compliant target to tunnel.
+
+No request was sent to beta or production, and Docker was not opened.

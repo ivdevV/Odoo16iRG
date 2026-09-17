@@ -1,0 +1,983 @@
+================================================================================
+INDEPENDENT CODE REVIEW — irg-tfm-delivery-review-gradebook (Tasks 2-6)
+================================================================================
+
+Reviewer role : Senior Code Reviewer (did not implement this change)
+Worktree      : C:/tmp/Odoo16iRG-tfm-review-gradebook
+Branch        : codex/tfm-review-gradebook
+Base commit   : 1701cfe9b  ("fix(tfm): load answer list order field")
+Head          : uncommitted working tree
+Scope         : addons-extra/extrairg/irg_tfm_convocatorias only
+Spec          : docs/superpowers/specs/2026-09-14-tfm-delivery-review-gradebook-design.md
+Plan          : docs/superpowers/plans/2026-09-14-tfm-delivery-review-gradebook.md (Tasks 2-6)
+Mode          : read-only; index/HEAD/branches/production code untouched
+
+Files read in full (production)
+  models/irg_tfm_grade_sync.py                (new, 1216 lines)
+  models/irg_tfm_entrega_revision.py          (new)
+  models/app_gradebook_student.py             (new)
+  models/app_gradebook_subject.py             (new)
+  models/op_admission.py                      (new)
+  models/app_gradebook_result.py              (modified)
+  models/tesis_model.py                       (modified)
+  models/irg_tfm_entrega.py                   (modified hunks)
+  models/op_student_course.py                 (modified)
+  models/__init__.py                          (modified)
+  controllers/portal.py                       (modified hunks + _page_values)
+  security/ir.model.access.csv                (modified)
+  security/irg_tfm_security.xml               (modified)
+  views/irg_tfm_entrega_revision_views.xml    (new)
+  views/tesis_model_views.xml                 (modified hunks)
+  views/tfm_portal_templates.xml              (modified hunks)
+  __manifest__.py                             (modified)
+
+Files read in full (tests)
+  tests/test_tfm_gradebook_sync.py            (new, ~1180 lines)
+  tests/test_tfm_delivery_reviews.py          (new)
+  tests/__init__.py, tests/test_tfm_deliveries.py (modified hunks)
+
+Upstream cross-checks (read only, not modified)
+  addons-extra/addons_uisep/isep_gradebook/models/app_gradebook_result.py
+  addons-extra/addons_uisep/isep_gradebook/models/app_gradebook_subject.py
+  addons-extra/addons_uisep/isep_gradebook/models/app_gradebook_student.py
+  addons-extra/addons_uisep/isep_gradebook/models/app_gradebook.py
+  addons-extra/addons_uisep/isep_gradebook/models/op_subject.py
+  addons-extra/addons_uisep/isep_gradebook/views/app_gradebook_subject.xml
+  addons-extra/addons_uisep/isep_gradebook/views/app_gradebook_student.xml
+  addons-extra/addons_uisep/isep_gradebook/security/res_groups.xml
+  addons-extra/addons_uisep/isep_tesis_model/models/a_tesis_model.py
+  addons-extra/addons_uisep/isep_tesis_model/views/tesis_model_views.xml
+  odoo/fields.py @ 16.0 (One2many.write_real, fetched from upstream for verification)
+
+Static checks I ran myself
+  python -m compileall -q addons-extra/extrairg/irg_tfm_convocatorias   -> exit 0
+
+Runtime limitation (accepted, not counted as a defect)
+  Docker is prohibited, so no Odoo module tests, no HttpCase and no two-cursor
+  concurrency runs were executed. Every finding below is derived statically from
+  production code plus verified upstream ORM/base-module source. Where a finding
+  needs runtime confirmation this is stated explicitly.
+
+================================================================================
+STRENGTHS
+================================================================================
+
+1. The internal-origin marker is a real capability, not a string.
+   irg_tfm_grade_sync.py:12 defines `_TFM_INTERNAL_TOKEN = object()` and every
+   boundary compares with `is` (app_gradebook_result.py:225-227, 259-261,
+   297-300; tesis_model.py:180-183). An RPC payload is JSON, so a client cannot
+   fabricate the token. This is a genuinely stronger answer to the spec's
+   "contexto falsificable" finding than a presence/absence check, and the
+   `_TFM_GRADE_SYNC_ORIGIN`/`default_irg_tfm_thesis_id` keys are rejected
+   outright rather than interpreted.
+
+2. The inverse primitive is guarded by an unforgeable savepoint capability.
+   `_TfmSyncSavepoint` (irg_tfm_grade_sync.py:73-93) binds the proof to the
+   exact cursor and to an "open" flag, and
+   `_irg_tfm_apply_inverse_from_verified_gradebook` (1042-1078) refuses anything
+   that is not an instance, re-verifies the link direction, the actor recordset
+   and the score before writing, and reaches `points_fin` only through
+   `_irg_tfm_write_business` — never through the public `tesis.model.write`
+   boundary. This satisfies spec contract §2 precisely.
+
+3. Authorization genuinely precedes elevation.
+   `_irg_tfm_require_grade_actor` (tesis_model.py:236-246) checks the reviewer
+   group, then `check_access_rights` / `check_access_rule`, then the enrollment's
+   read rights, and only afterwards does the coordinator use `sudo()`.
+   `_irg_tfm_authorize_reverse_parent` (app_gradebook_result.py:192-201) does the
+   same for the gradebook side and explicitly validates the *proposed* parent on
+   `create`, which is the hard case the spec called out.
+   `_irg_tfm_guard_linked_identity` (irg_tfm_grade_sync.py:1208-1215) also checks
+   the actor before reading links with elevation.
+
+4. Normalization emulation matches upstream exactly rather than approximately.
+   `_irg_tfm_validate_normalization` (irg_tfm_grade_sync.py:164-194) reproduces
+   isep_gradebook's `round_custom` (`num - int(num) >= 0.5` -> ceil else floor)
+   and the `> grading_scale` clamp, reading the same
+   `line.gradebook_id or line.gradebook_student_id.gradebook_id` template that
+   `isep_gradebook/models/app_gradebook_result.py:52-81` uses. Pre-validation is
+   then backed by a post-hook re-read with exact equality
+   (`_irg_tfm_apply_forward_result` 518-530, `_irg_tfm_assert_reverse_pair`
+   819-829), so a future upstream change to the rounding rule degrades into a
+   loud `ValidationError` instead of a silent drift.
+
+5. Identity is compared by a full fingerprint, not by spot checks.
+   `_irg_tfm_identity_fingerprint` (271-350) captures enrollment, batch code,
+   configured channel, the whole channel family, every course subject with its
+   channel/template, the admission triple, every gradebook line and every result
+   row (type, link, optionally score). `_irg_tfm_assert_same_mapping` (361-385)
+   correctly excludes only the score this operation just wrote and the row it
+   just created, which is exactly the right seam.
+
+6. Parent-identity protection is complete across the routes the spec listed.
+   Guards exist on the result (app_gradebook_result.py:116-125, 296-303), the
+   line, the gradebook student, the admission and the enrollment
+   (app_gradebook_subject.py, app_gradebook_student.py, op_admission.py,
+   op_student_course.py:94-96, 109-111) and on the thesis itself
+   (tesis_model.py:254-268), and the guard locks the whole hierarchy and
+   re-reads before deciding (`_irg_tfm_assert_no_linked_identity` 1197-1206).
+   `_TFM_LINK_GUARD_LOCK_PHASES` is deliberately built so the coordinator's
+   phase list stays a subsequence of it (irg_tfm_grade_sync.py:22-28) — the
+   comment explaining why is the kind of note that earns its place.
+
+7. Review metadata is truly server-owned.
+   irg_tfm_entrega_revision.py rejects any client `reviewed_by`/`reviewed_at`
+   including `False` (68-72), rejects reserved context keys, validates stage and
+   activated thesis in Python (74-89) rather than trusting the record rule, and
+   `unlink()` is an unconditional `AccessError` (172-173). The ACL grants
+   reviewers 1,1,1,0 and no `base.group_user` line exists, so ordinary internal
+   users get nothing on the model — confirmed by
+   `test_internal_user_reads_only_delivery_summary_without_review_acl`.
+
+8. Portal reads prove ownership first and the template escapes.
+   `_page_values` is only reachable after `_irg_portal_owned_thesis()`
+   (tesis_model.py:84-112) and the `sudo().search_read` is scoped to
+   `deliveries.ids` of that owned thesis (portal.py:191-194). Labels are built
+   server-side, the QWeb uses `t-esc` only, and
+   `test_only_owner_sees_escaped_readonly_feedback_for_exact_delivery` asserts
+   the `<script>` payload is escaped and invisible to student B.
+
+9. The test matrix is unusually honest for a change of this size.
+   Exact error-message assertions, `_assert_reverse_state_unchanged` for
+   caller-caught rollback, `_sync_counters` to prove one hop per direction,
+   forged context/link matrices across four actor types, an `ir.default`
+   personal-default case, a post-hook discrepancy injected with raw SQL, and a
+   refresh-hook counter. These are behavioural tests, not mock theatre.
+
+10. Global constraints respected: no native/OCA/OpenEduCat/isep file is touched
+    (all changes live under addons-extra/extrairg/irg_tfm_convocatorias),
+    `irg.tfm.entrega` stays immutable (the review is a separate model), subject
+    resolution goes only through `irg_tfm_channel_id` ->
+    `_irg_tfm_family_channels()` -> `op.subject.slide_channel_id` with strict
+    `len(...) != 1` cardinality and no `limit=1` shortcut, and the xpath
+    `//sheet/group/group/field[@name='points_fin']` does resolve against
+    isep_tesis_model/views/tesis_model_views.xml:53.
+
+================================================================================
+ISSUES
+================================================================================
+
+--------------------------------------------------------------------------------
+CRITICAL (Must Fix)
+--------------------------------------------------------------------------------
+
+C1. `app.gradebook.result.create` is no longer list-safe, which breaks the
+    standard inline gradebook data-entry UI for every subject, TFM or not.
+
+    Files:
+      addons-extra/extrairg/irg_tfm_convocatorias/models/app_gradebook_result.py
+        :127-136  `_irg_tfm_materialize_protected_create_defaults` -> `dict(values)`
+        :204-210  `_irg_tfm_create_business` -> `super().create(dict(values))`
+        :220-221  `@api.model def create(self, values)`
+
+    What is wrong
+      The override is declared `@api.model` (single dict) and now *materializes*
+      the payload with `dict(values)`. Odoo's ORM does not honour that
+      assumption: `One2many.write_real` collects every `Command.CREATE` into a
+      list and issues exactly one call
+
+          if to_create:
+              comodel.create(to_create)          # odoo/16.0/odoo/fields.py:4438-4441
+
+      with `to_create` a *list of dicts* even when the user added a single row
+      (built at fields.py:4452-4454). I fetched and read this from upstream
+      odoo 16.0 to be sure rather than relying on memory.
+
+      isep_gradebook exposes `gradebook_result_ids` as an `editable="bottom"`
+      One2many tree in both
+        addons_uisep/isep_gradebook/views/app_gradebook_subject.xml:44-47
+        addons_uisep/isep_gradebook/views/app_gradebook_student.xml:80-83
+      so saving a new evaluation row from the normal gradebook form now enters
+      `create()` with `values = [{...}]`.
+
+      Tracing that payload:
+        - `_irg_tfm_reject_untrusted_sync_context()` passes.
+        - `_irg_tfm_reject_public_relationship_values(values, creating=True)`
+          evaluates `'irg_tfm_thesis_id' in values`, which on a list is a
+          membership test against dict *elements*, so it is always False. The
+          reserved-link rejection is silently skipped.
+        - `_irg_tfm_materialize_protected_create_defaults(values)` then calls
+          `dict(values)`. For a vals dict with 3+ keys (the normal case:
+          survey_type, description, scoring_total, plus the injected inverse
+          `gradebook_subject_id`) Python raises
+          `ValueError: dictionary update sequence element #0 has length 4;
+          2 is required`.
+          For the pathological 2-key case it does not raise at all: it produces
+          `{first_key: second_key}` and the code proceeds to create one garbage
+          row.
+        - `values.get('gradebook_subject_id')` would in any case be `None` for a
+          list, so `_irg_tfm_reverse_candidate_line` returns empty and the whole
+          reverse-sync branch is bypassed.
+
+    Why it matters
+      This is a regression, not a pre-existing bug. Before this change the same
+      override did `super(...).create(values)` and the list passed through
+      isep_gradebook's `@api.model create` into `BaseModel.create`, which is
+      `@api.model_create_multi` and normalizes it. Today the primary UI path for
+      entering *any* gradebook result raises `ValueError`, and if it were patched
+      naively the list path would still bypass both the reserved-link check and
+      TFM candidate detection — i.e. an exam created inline on the TFM line would
+      never link or mirror.
+
+    How to fix
+      Decorate the override `@api.model_create_multi`, accept `vals_list`, and
+      run the existing per-payload logic (context rejection, relationship
+      rejection, default materialization, candidate resolution, coordinator
+      dispatch) once per entry, keeping the coordinator call per candidate.
+      Then add a test that creates two result rows through
+      `app.gradebook.subject.write({'gradebook_result_ids': [(0,0,..),(0,0,..)]})`
+      — one TFM candidate and one ordinary — and asserts both the ValueError is
+      gone and the TFM row links and mirrors.
+
+    Confidence
+      High on the code path and on the upstream ORM behaviour (source verified).
+      The exact exception text is inferred from CPython semantics; runtime
+      confirmation still requires Docker.
+
+--------------------------------------------------------------------------------
+IMPORTANT (Should Fix)
+--------------------------------------------------------------------------------
+
+I1. Lock-order inversion when `course_id` and `irg_tfm_convocation_id` are
+    written together on a thesis.
+
+    Files:
+      models/tesis_model.py:253-264   (`write`: guard on `course_id`, then
+                                       `_irg_tfm_write_business`)
+      models/tesis_model.py:284-308   (convocation path: locks
+                                       irg_tfm_convocatoria -> op_course ->
+                                       tesis_model)
+      models/irg_tfm_grade_sync.py:1197-1206 (`_irg_tfm_assert_no_linked_identity`)
+
+    What is wrong
+      For `write({'course_id': X, 'irg_tfm_convocation_id': Y})` the guard runs
+      first and locks op_student_course -> op_admission -> tesis_model ->
+      app_gradebook_student -> app_gradebook_subject -> app_gradebook_result.
+      Control then falls into `_irg_tfm_write_business`, which locks
+      irg_tfm_convocatoria, then `op_course`, then tesis_model again. The
+      resulting effective order puts `op_course` *after* `tesis_model`.
+
+      The comment at tesis_model.py:285-291 states the intended invariant
+      explicitly: `op.course.write` takes the course row before reconciling (and
+      therefore before any thesis row), "so this common order avoids
+      course/thesis lock inversions". The new guard breaks exactly that
+      invariant: thread A (this combined write) holds tesis_model and waits for
+      op_course; thread B (`op.course.write`) holds op_course and waits for
+      tesis_model.
+
+      Spec §4 requires this case to be handled: "Operaciones combinadas con
+      cambio de convocatoria o configuracion que activen otro orden de locks se
+      rechazan antes de mutar cuando no puedan integrarse en el orden comun."
+      `_irg_tfm_coordinate_forward_write` (irg_tfm_grade_sync.py:703-708) does
+      implement that rejection, but only for the combination with `points_fin`.
+      The `course_id` + `irg_tfm_convocation_id` combination has no such gate.
+
+    Why it matters
+      A deadlock here is a hard 500 for the user and rolls back an
+      identity-changing operation. It is also the one class of defect the spec
+      singled out and that the accepted Docker limitation prevents the validator
+      from catching empirically.
+
+    How to fix
+      Reject the combination in `tesis_model.write` before any lock (same shape
+      as the existing `points_fin` guard), or acquire `op_course` inside the
+      guard's ordered phase list so the order stays common.
+
+I2. The reverse coordinator acquires enrollment locks after result locks when a
+    mixed recordset is written.
+
+    File: models/irg_tfm_grade_sync.py:968-973
+
+        untouched = (previous_subjects | results.sudo()._irg_tfm_affected_subjects()) - synced_lines
+        if untouched:
+            Result = self.env['app.gradebook.result'].sudo()
+            Result._irg_tfm_refresh_affected_enrollments(untouched)
+
+    What is wrong
+      That call omits `locked_enrollments`, so
+      `_irg_tfm_refresh_affected_enrollments` takes the `locked_enrollments is
+      None` branch (app_gradebook_result.py:82-87) and issues a fresh
+      `SELECT id FROM op_student_course ... FOR UPDATE`. At that point the
+      savepoint already holds locks through `app_gradebook_result`, so a
+      *first-phase* lock is acquired last — the inversion the common order
+      exists to prevent.
+
+      It is reachable: write `scoring_total` on a recordset that mixes one TFM
+      candidate with one ordinary result. `previous_subjects` then contains the
+      ordinary line, `synced_lines` does not, and `untouched` is non-empty.
+      Every other call site correctly threads `locked_enrollments` through
+      (irg_tfm_grade_sync.py:578, 886, 966).
+
+    How to fix
+      Either add the ordinary lines' enrollments to the identity set that is
+      locked in phase 1 before any mutation, or reject a mixed recordset write
+      at the public boundary and let the caller split it.
+
+I3. `_irg_tfm_link_guard_scope` over-approximates admissions for a multi-record
+    enrollment, producing false rejections and wider locks.
+
+    File: models/irg_tfm_grade_sync.py:1147-1155
+
+        admissions |= Admission.search([
+            ('student_id', 'in', enrollments.student_id.ids),
+            ('course_id', 'in', enrollments.course_id.ids),
+            ('batch_id',  'in', enrollments.batch_id.ids),
+        ], order='id')
+
+    What is wrong
+      For more than one enrollment this is a cross product of the three id sets,
+      so it matches (student, course, batch) triples that belong to no enrollment
+      in the set. Those extra admissions pull in their gradebooks, lines and
+      results at 1156-1167, and `linked_results` at 1192-1194 can therefore
+      contain a link that has nothing to do with the records being written —
+      `_irg_tfm_assert_no_linked_identity` then raises `AccessError` for a
+      legitimate operation.
+
+      The same file gets this right elsewhere: the per-admission expansion at
+      1179-1185 matches exact triples, and
+      `_irg_tfm_refresh_affected_enrollments` builds a `pairs` set and filters
+      the search result against it (app_gradebook_result.py:49-78). The guard
+      simply never applies that filter.
+
+    Why it matters
+      Two concrete consequences: a batch write or unlink of enrollments is
+      blocked by an unrelated student's linked TFM grade (false positive on a
+      path with no override), and the lock set is larger than necessary, which
+      widens the deadlock surface addressed in I1/I2. Only single-record paths
+      are covered by the tests
+      (`test_linked_parent_identity_reassignment_is_rejected_server_side`,
+      `test_linked_result_cannot_be_deleted_through_any_route`), so nothing
+      currently detects this.
+
+    How to fix
+      Build the exact `(student_id, course_id, batch_id)` triple set from the
+      enrollments and either search per triple or post-filter the search, mirroring
+      `_irg_tfm_refresh_affected_enrollments`. Add a multi-record guard test with
+      two students in overlapping batches where only one has a linked result.
+
+--------------------------------------------------------------------------------
+MINOR (Nice to Have)
+--------------------------------------------------------------------------------
+
+M1. Module-level `_()` constants are never translated at runtime.
+    models/irg_tfm_grade_sync.py:30-70 builds ten message constants with `_()`
+    at import time. Odoo's `GettextAlias` resolves the language from the calling
+    frame's `env`; at import there is none, so it returns the source string and
+    the constant is frozen for the process. Odoo's own convention for
+    module-level strings is `_lt()` (lazy translation), which keeps extraction
+    and defers resolution to render time. Practical impact today is nil (the
+    strings are already the Spanish source and the tests assert them verbatim),
+    but it silently defeats any future translation of these ten messages.
+
+M2. `points_fin` becomes invisible, not read-only, for non-reviewers.
+    views/tesis_model_views.xml adds
+    `<attribute name="groups">irg_tfm_convocatorias.group_tfm_reviewer</attribute>`
+    to the form field. Plan Task 3 asked to "restrict editable final score to
+    reviewers"; `groups` removes the field from the form entirely, so a
+    non-reviewer coordinator loses read visibility of the grade in the record
+    they are looking at (the tree at isep_tesis_model line 16 still shows it,
+    which makes the behaviour inconsistent rather than deliberate). If read
+    access is intended, prefer `attrs`/`readonly` driven by a group-computed
+    boolean, or restrict via the field's own `groups=` on the model so both views
+    agree.
+
+M3. The delivery review summary compute has no `@api.depends` and can be handed
+    NewIds.
+    models/irg_tfm_entrega.py:107-108 declares only
+    `@api.depends_context('uid')`. Freshness therefore depends entirely on the
+    two manual `_irg_invalidate_delivery_summary()` calls in
+    irg_tfm_entrega_revision.py:131 and :169; any future write path to the
+    review model (or a data migration) will serve stale state in the delivery
+    tree. Separately, the compute feeds `self.ids` straight into a `search_read`
+    domain (`('delivery_id', 'in', self.ids)`); in an onchange the recordset can
+    contain `NewId` values, which are not valid domain operands. Adding
+    `@api.depends('thesis_id')` plus an explicit `self.filtered('id')` (or
+    `self._origin`) would make both properties structural instead of incidental.
+
+M4. Review state and date are readable by any internal user through a sudo
+    compute, while the review link is group-gated.
+    models/irg_tfm_entrega.py:109-121 reads the reviews with `sudo()` and gates
+    only `irg_tfm_review_id` on `group_tfm_reviewer`; `irg_tfm_review_state` and
+    `irg_tfm_reviewed_at` are assigned for everyone, and the tree fields in
+    views/tesis_model_views.xml carry no `groups`. Spec ("Otros usuarios internos
+    no obtendran permisos sobre el nuevo modelo") is satisfied at the ACL layer,
+    and `test_internal_user_reads_only_delivery_summary_without_review_acl`
+    asserts this exact behaviour, so I read it as an intentional choice — but the
+    asymmetry deserves a one-line comment or the same `groups` treatment, because
+    the next reader cannot tell the difference between a decision and an
+    oversight.
+
+M5. `_irg_tfm_refresh_affected_enrollments` now silently skips gradebooks whose
+    admission has no batch.
+    app_gradebook_result.py:49-58 added `batch_id` to both the pair tuple and the
+    `if` filter. Rows where `gradebook_student_id.batch_id` is empty were
+    previously refreshed on student+course alone and are now dropped, so their
+    derived `completion_porc` / TFM auto-activation refresh stops happening. The
+    batch tightening itself is correct and is covered by
+    `test_forward_refresh_is_scoped_to_the_exact_enrollment_batch`, but the
+    legacy no-batch case is neither tested nor mentioned. Worth a one-line note
+    in the migration/limitations section.
+
+M6. A non-serializable object lives in `env.context`.
+    `_TFM_INTERNAL_TOKEN = object()` is placed into the context by
+    `_irg_tfm_internal_create`, `_irg_tfm_internal_write`,
+    `_irg_tfm_create_business` and `_irg_tfm_write_business`. It is hashable, so
+    `frozendict` is happy, and the code is careful to strip it before handing
+    records back (app_gradebook_result.py:222-223, 251, and the assertion in
+    `test_public_result_create_returns_clean_context_and_link_write_is_rejected`).
+    The residual risk is any path that serializes the context while the token is
+    present — a queued job, a bus notification, an action returned from inside
+    the coordinator. None exists today; a short comment stating the invariant
+    ("this context must never escape the coordinator") would keep it that way.
+
+M7. `irg_tfm_thesis_id` is not surfaced anywhere in the gradebook UI.
+    The field is `readonly` and indexed on `app.gradebook.result` but no view
+    exposes it, so an administrator diagnosing "why does this exam refuse to
+    move" has no way to see the link that is refusing. A read-only optional
+    column on the existing result tree would make the guard's `AccessError`
+    self-explanatory.
+
+M8. Plan File Map deviation worth an explicit confirmation.
+    Task 6 lists only `irg_tfm_grade_sync.py` and `app_gradebook_result.py`, but
+    the implementation adds three new guard files (`op_admission.py`,
+    `app_gradebook_student.py`, `app_gradebook_subject.py`). I consider this a
+    justified improvement — spec §5 demands guards on those exact parents and
+    one-file-per-model is the better structure — but it is a deviation and should
+    be recorded as intentional rather than discovered later.
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+R1. Document the operational consequence of "never swallow a TFM candidate".
+    `_irg_tfm_resolve_reverse_identity` (irg_tfm_grade_sync.py:780-806) raises
+    `_TFM_ENROLLMENT_ERROR` / `_TFM_THESIS_ERROR` whenever the TFM line cannot
+    resolve exactly one enrollment and exactly one *activated* thesis. This is
+    literally what the spec asks for, and I am not flagging it as a defect — but
+    it means that from the moment this module is upgraded, a gradebook user can
+    no longer register an exam on the TFM subject line for a student whose thesis
+    is not yet activated, or whose Canal TFM / gradebook configuration is
+    ambiguous. Combined with `_TFM_EXAM_ERROR` on a second unlinked exam, this is
+    a visible day-one behaviour change for gradebook staff. It belongs in the
+    Task 8 README/known-limitations section with the exact remediation steps
+    ("configure Canal TFM", "activate the thesis"), otherwise it will arrive as a
+    support ticket rather than as a designed constraint.
+
+R2. Consider tightening the write boundary instead of widening the coordinator.
+    I1, I2 and I3 all stem from the coordinator/guard trying to absorb arbitrary
+    multi-record and multi-field payloads. Rejecting the awkward shapes at the
+    public boundary (combined identity+convocation writes; recordsets mixing TFM
+    and non-TFM results; multi-record identity writes) would shrink the lock
+    graph, remove two inversions and let the guard scope stay exact. The spec
+    already sanctions this approach ("se rechazan antes de mutar cuando no puedan
+    integrarse en el orden comun").
+
+R3. Add the list-payload case to the static validator.
+    The C1 class of bug — an `@api.model` `create` override that assumes a dict —
+    is invisible to `compileall`, to the XML parse and to every existing test,
+    because all tests call `create({...})` with a dict. A contract that asserts
+    each `create` override on a model reachable through a One2many is decorated
+    `@api.model_create_multi` would have caught it without Docker.
+
+R4. Two audit paths, two mechanisms.
+    `_irg_tfm_audit_forward` posts via `thesis.with_user(actor).message_post(...)`
+    (irg_tfm_grade_sync.py:569) while `_irg_tfm_audit_reverse` posts via
+    `thesis.sudo().message_post(body=..., author_id=actor.partner_id.id)` (1111).
+    Both preserve the actor and both are tested, so this is not a defect — but a
+    single helper taking `(thesis, actor, origin, old_thesis, old_result, value,
+    result)` would remove the duplicated body template and guarantee the two
+    formats never drift apart.
+
+================================================================================
+ASSESSMENT
+================================================================================
+
+Ready to proceed to Validation? No
+
+Blocking findings open? Yes
+
+Blocking: C1 (app.gradebook.result.create is not list-safe and breaks the inline
+gradebook result tree for every subject, while also bypassing the reserved-link
+check and TFM candidate detection on that path). I1, I2 and I3 are lock-order and
+guard-scope defects that Validation cannot detect while Docker is prohibited, so
+they should be corrected in the same Implementation pass rather than deferred to
+a runtime that is not currently authorized.
+
+Reasoning: the security architecture is the strongest part of this change — the
+object-identity origin token, the savepoint capability object, actor-before-sudo
+ordering, full-fingerprint re-reads and exact emulation of the upstream
+normalization policy all answer the amended spec contract properly, and the test
+matrix is behavioural rather than decorative. What is not yet safe is the
+interaction with the surrounding ORM and with the pre-existing lock order: one
+regression makes ordinary gradebook data entry raise, and three ordering/scope
+defects trade a documented invariant for a wider lock graph. None of them require
+redesign; they are localized fixes plus targeted tests.
+
+Missing Docker runtime proof and the unexecuted two-cursor scenarios are recorded
+here as the documented environmental limitation they are, and are not counted
+among the findings above.
+
+================================================================================
+END OF REVIEW
+================================================================================
+
+================================================================================
+RE-REVIEW (second pass, same worktree, uncommitted diff against 1701cfe9b)
+================================================================================
+
+Scope of this pass: production and test files under
+`addons-extra/extrairg/irg_tfm_convocatorias/` only. No git state and no
+production code was mutated. Docker remains prohibited, so this pass is again
+static reading plus MRO/lock-order reasoning; missing runtime proof is not
+counted as a finding. Minors M1-M8 from the first pass were not re-audited and
+remain open.
+
+Verified against the base module actually installed in this worktree:
+`addons-extra/addons_uisep/isep_gradebook/models/app_gradebook_result.py:51-62`
+(`@api.model def create(self, values)` doing `res.gradebook_subject_id...`).
+
+--------------------------------------------------------------------------------
+C1 - app.gradebook.result.create list-safety .......................... RESOLVED
+--------------------------------------------------------------------------------
+`create` is now `@api.model_create_multi` and takes `vals_list`
+(app_gradebook_result.py:220-275). Every requirement holds:
+
+  * Per-payload reserved-link rejection: the loop at :233-241 calls
+    `_irg_tfm_reject_public_relationship_values(values, creating=True)` and
+    `_irg_tfm_materialize_protected_create_defaults(values)` once per dict, so a
+    client `irg_tfm_thesis_id` in ANY payload aborts the whole call, and
+    `default_get`/`ir.default` link injection is still rejected at :130-135.
+    Covered by `test_one2many_create_list_rejects_client_link_on_each_payload`.
+  * Reverse sync survives mixed lists: `_irg_tfm_reverse_candidate_line` is
+    evaluated per payload (:257-260) and TFM payloads are dispatched to
+    `_irg_tfm_sync_gradebook_to_points`, ordinary ones accumulate in
+    `ordinary_batch`. `create([{ordinary},{tfm}])` links the TFM exam and leaves
+    the ordinary row untouched
+    (`test_one2many_create_list_links_tfm_exam_and_keeps_ordinary_row`).
+  * `dict(values)` is now applied to a single dict, never to a list, so the
+    `ValueError` that broke the inline result tree is gone.
+  * Returned recordset order matches input order in all interleavings
+    (`flush_ordinary()` is called before each TFM dispatch and once at the end),
+    which matters for `@api.model_create_multi` callers.
+  * `_irg_tfm_create_business` is `@api.model_create_multi` and forwards the
+    list; `_irg_tfm_internal_create` still passes a Mapping and is normalized to
+    a one-element list by the decorator, so the internal payload whitelist at
+    :142-148 is unchanged.
+  * The internal short-circuit at :228-230 correctly bypasses the public
+    boundary (the payload whitelist already validated it) and strips the token
+    from the returned records.
+
+Residual, NOT a regression - see M9: a multi-payload ordinary batch still dies
+inside upstream `isep_gradebook`, because that `create` is `@api.model` and
+dereferences `res.gradebook_subject_id` on the returned recordset. This is
+identical to the behaviour at the base commit, so C1 is resolved as scoped, but
+the fix stopped one line short of also curing it.
+
+--------------------------------------------------------------------------------
+I1 - tesis.model.write lock-order inversion ........................... RESOLVED
+--------------------------------------------------------------------------------
+`tesis_model.py:253-268`. The combined-write rejection is now the second
+statement of `write`, after the pure `_irg_tfm_reject_reserved_public_input`
+(which takes no locks) and strictly BEFORE `_irg_tfm_guard_linked_identity`
+(:260) and before `_irg_tfm_write_business`, which is where the `op_course`
+convocation lock lives (:274-289). No lock can therefore be taken on a request
+that mixes `course_id` and `irg_tfm_convocation_id`; the documented common order
+can no longer be inverted from this entry point. Covered by
+`test_course_and_convocation_cannot_be_written_together`, which also asserts the
+exact message and that neither field moved.
+
+--------------------------------------------------------------------------------
+I2 - out-of-order enrollment locks on the reverse write path .......... RESOLVED
+--------------------------------------------------------------------------------
+Two independent reasons, both checked:
+
+  * Mixed sets are rejected before any coordinator work
+    (app_gradebook_result.py:288-304). `candidate_records != self` raises
+    `ValidationError`, so `_irg_tfm_coordinate_reverse_write` can now only be
+    entered with a set in which every record is a TFM candidate. Covered by
+    `test_mixed_result_write_is_rejected_without_partial_state`, which also
+    asserts the ordinary row's score did not move.
+  * With that precondition, `synced_lines` provably equals
+    `previous_subjects`: `_irg_tfm_coordinate_reverse_write:913-917` aborts with
+    `_TFM_REVERSE_ADOPTION_ERROR` unless `record.gradebook_subject_id ==
+    identity['line']`, and a `gradebook_subject_id` move is rejected earlier
+    (linked records by the identity guard, unlinked ones by that same adoption
+    check). So the `untouched` branch at irg_tfm_grade_sync.py:968-973 - the
+    refresh call without `locked_enrollments` - is now unreachable. Recorded as
+    M10 rather than a finding, because dead code that would break the lock order
+    if the mixed-set guard is ever relaxed is a maintenance hazard, not a
+    current defect.
+
+--------------------------------------------------------------------------------
+I3 - link guard scope cross product .................................. RESOLVED
+--------------------------------------------------------------------------------
+`irg_tfm_grade_sync.py:1147-1173`. The enrollment -> admission expansion now
+builds the exact `(student_id, course_id, batch_id)` triple set and applies a
+`filtered(...)` on the searched admissions, so the `in`-based SQL prefilter can
+no longer leak the cross-product rows into the scope. Theses still expand from
+`enrollments.ids` via `search([('course_id', 'in', enrollments.ids)])` at
+:1148-1150, i.e. the thesis leg of the graph was not narrowed by the fix. The
+admission -> enrollment expansion at :1197-1202 was already triple-exact and is
+unchanged, so the guard is now symmetric in both directions.
+`test_link_guard_scope_uses_exact_enrollment_triples` builds precisely the
+false-positive shape (a same-student/other-course enrollment plus an
+other-student/same-course enrollment) and asserts the scope stays clean and the
+multi-enrollment write is allowed.
+
+--------------------------------------------------------------------------------
+Security contract - NO REGRESSION
+--------------------------------------------------------------------------------
+  * Object-identity origin token: `_TFM_INTERNAL_TOKEN` is still an `object()`
+    compared with `is` at app_gradebook_result.py:107, :226, :280, :327 and
+    tesis_model.py:182. Nothing switched to a truthy or string marker, so it
+    remains unforgeable through JSON-RPC.
+  * Savepoint capability primitive:
+    `_irg_tfm_apply_inverse_from_verified_gradebook` still requires
+    `isinstance(sync_savepoint, _TfmSyncSavepoint)`, calls
+    `assert_open(self.env.cr)`, revalidates the actor record and re-checks the
+    link, the survey type and the score equality before the elevated
+    `points_fin` write (irg_tfm_grade_sync.py:1042-1078). Unchanged.
+  * Actor-before-sudo: `_irg_tfm_require_grade_actor` (tesis_model.py:236-246)
+    still checks the reviewer group and then `check_access_rights` /
+    `check_access_rule` before any elevation, and it is still called before
+    `_irg_tfm_sync_points_to_gradebook` on both create (:159-168) and write
+    (:262). `_irg_tfm_authorize_reverse_parent` (app_gradebook_result.py:192-201)
+    still authorizes against the proposed parent before `super()`, and is now
+    correctly invoked per TFM payload inside the create loop (:263).
+    `_irg_tfm_guard_linked_identity` still authorizes on the caller's rights
+    before the sudo scope walk (irg_tfm_grade_sync.py:1226-1233).
+  * `_irg_tfm_internal_create` / `_irg_tfm_internal_write` still require
+    `self.env.su` and still enforce their exact payload whitelists.
+
+--------------------------------------------------------------------------------
+I4 (NEW, Important) - the C1 fix reintroduces an enrollment lock taken last
+--------------------------------------------------------------------------------
+File: models/app_gradebook_result.py:246-254 (`flush_ordinary`), reached from
+`create` at :262 and :274.
+
+`flush_ordinary()` ends with
+`created._irg_tfm_refresh_affected_enrollments(created._irg_tfm_affected_subjects())`
+with no `locked_enrollments` argument, so `_irg_tfm_refresh_affected_enrollments`
+takes its own first-phase lock:
+
+    SELECT id FROM op_student_course WHERE id IN %s ORDER BY id FOR UPDATE
+
+That is correct when it is the only work in the transaction. It is not correct
+in the interleaving `create([{tfm}, {ordinary}])`: the TFM payload is dispatched
+first, `_irg_tfm_sync_gradebook_to_points` runs its coordinator and acquires the
+documented phases (op_student_course, op_admission, tesis_model,
+app_gradebook_student, app_gradebook_subject, app_gradebook_result), and those
+row locks are still held afterwards - `RELEASE SAVEPOINT` does not release locks
+acquired inside the savepoint, only `ROLLBACK TO SAVEPOINT` does. The trailing
+`flush_ordinary()` then acquires a phase-1 `op_student_course` lock on a row the
+transaction does not hold yet, i.e. a phase-1 acquisition after phase-6. This is
+the same invariant violation I2 described, in a new place created by the C1 fix.
+
+It is harmless when the ordinary payload resolves to the same enrollment as the
+TFM one (the row is already held, `FOR UPDATE` is a no-op). It bites on a
+cross-student batch: T1 = `create([{tfm for enrollment A}, {ordinary for
+enrollment B}])` holds A plus the whole A identity chain and then waits for B,
+while a concurrent T2 that locks several enrollments in ascending id order
+through `_irg_tfm_assert_no_linked_identity` holds B and waits for A. Classic
+two-transaction cycle, and Postgres will resolve it by aborting one of them.
+
+Reachability is narrower than I2's: both inline result trees in the gradebook UI
+are scoped to one gradebook/line, so a mixed cross-student payload comes from
+`base_import`/`load()` or an RPC client that batches, not from ordinary data
+entry. The existing test only covers the safe ordering
+(`test_one2many_create_list_links_tfm_exam_and_keeps_ordinary_row` sends
+`[{ordinary},{tfm}]`, where the flush happens before the coordinator), which is
+why the regression is not visible in the suite.
+
+Fix, smallest form: make the ordinary work a first pass. Create and refresh all
+ordinary payloads before dispatching any TFM payload, so every `op_student_course`
+lock is taken in phase 1 and the coordinator sees a superset it can only extend.
+Alternatively thread the union of already-locked enrollments into the refresh so
+`_irg_tfm_refresh_affected_enrollments` validates instead of locking, or - the
+cheapest and most consistent with the write path - reject a `create` payload list
+that mixes TFM and ordinary rows, exactly as `write` now does. Whichever route is
+chosen, add the `[{tfm},{ordinary}]` ordering to the test, with the two payloads
+on different students' gradebooks.
+
+--------------------------------------------------------------------------------
+New Minor observations
+--------------------------------------------------------------------------------
+M9. Multi-payload ordinary batch still dies upstream (pre-existing, not a
+    regression). Odoo 16 batches all One2many CREATE commands into a single
+    `comodel.create(vals_list)`, so adding two grade rows to one subject line in
+    one save reaches `isep_gradebook`'s `@api.model create`, which dereferences
+    `res.gradebook_subject_id` on a two-record recordset and raises "Expected
+    singleton". This is exactly the base-commit behaviour, so it is not counted
+    against this change - but since `_irg_tfm_create_business` is now the
+    declared `@api.model_create_multi` boundary, flushing the ordinary batch in
+    one-payload chunks would make the module genuinely multi-safe and would fix
+    a real UI limitation for free.
+
+M10. Dead defensive branch with the wrong lock order. The `untouched` refresh at
+    irg_tfm_grade_sync.py:968-973 is unreachable now that mixed sets are
+    rejected (see I2), and it is the one remaining call site that refreshes
+    without `locked_enrollments`. Either delete it or replace it with an
+    assertion that the set is empty, so a future relaxation of the mixed-set
+    guard cannot silently restore the inversion.
+
+M11. The internal token is now in scope during the ordinary refresh. Previously
+    the refresh ran under the scrubbed `caller_context`; `flush_ordinary` now
+    calls it on `created`, whose env still carries
+    `_TFM_DEFER_GRADE_TRIGGER: _TFM_INTERNAL_TOKEN` (app_gradebook_result.py:250,
+    records returned by `_irg_tfm_create_business`). It is not exploitable - the
+    token is unforgeable, and the refresh only computes
+    `final_subject_note` and calls `_irg_ensure_tfm_record()`, which needs the
+    token to pass `_irg_tfm_reject_reserved_public_input` and still hits the
+    reviewer check if an `ir.default` supplies `points_fin`. Still, the elevated
+    marker is now live across a wider span than necessary; browsing the created
+    ids under `caller_context` before refreshing restores the previous, tighter
+    scope.
+
+================================================================================
+ASSESSMENT (after re-review)
+================================================================================
+
+Ready to proceed to Validation? No
+
+Blocking findings open? Yes
+
+Remaining: Critical 0, Important 1 (I4), Minor 11 (M1-M8 open from the first
+pass, plus M9, M10, M11).
+
+Blocking: I4 only. C1, I1, I2 and I3 are genuinely fixed - not patched around -
+and each fix arrives with a behavioural test that reproduces the original
+failure shape, including the two false-positive enrollments for the guard scope
+and the no-partial-state assertions for the mixed write. The security contract
+is intact on all three axes I was asked to recheck.
+
+I4 is blocked for the same reason I1-I3 were: with Docker prohibited, Validation
+cannot observe a lock-order inversion, so the invariant has to hold by
+construction at review time. It is a small, localized change (order the ordinary
+pass first, or reject mixed create payloads the way `write` already does) plus
+one test with the `[{tfm},{ordinary}]` ordering across two students. That is the
+only thing standing between this change and Validation.
+
+Missing Docker runtime proof and the unexecuted two-cursor deadlock scenarios
+remain the documented environmental limitation and are not counted above.
+
+================================================================================
+END OF RE-REVIEW
+================================================================================
+
+================================================================================
+RE-REVIEW (third pass, I4) - same worktree, uncommitted diff against 1701cfe9b
+================================================================================
+
+Scope of this pass: the I4 hotspot (`app.gradebook.result.create`) and a
+confirmation sweep over C1, I1, I2, I3 and the security contract, in the
+production and test files under `addons-extra/extrairg/irg_tfm_convocatorias/`.
+Read-only: no mutation of the worktree, index, HEAD or branch; branch remains
+`codex/tfm-review-gradebook` with HEAD at 1701cfe9b and production changes
+uncommitted. No Docker, no commit, no TestSprite. Minors M1-M11 from the earlier
+passes were not re-audited and remain open except where noted.
+
+The static validator was read as a statement of intent, not as evidence: every
+claim below was verified against the production and test sources directly.
+
+--------------------------------------------------------------------------------
+I4 - enrollment lock taken last in the public create path ............. RESOLVED
+--------------------------------------------------------------------------------
+`models/app_gradebook_result.py:220-279`. The fix is the one this review
+recommended, implemented cleanly rather than patched around:
+
+  * `flush_ordinary` is gone. There is no longer any nested helper that can be
+    invoked mid-loop, so the ordering of lock acquisition is now visible in one
+    linear read of `create`.
+  * Classification is a separate, side-effect-free pass (:247-256): each payload
+    is sorted into `candidate_items` or `ordinary_indexes`/`ordinary_vals` by
+    `_irg_tfm_reverse_candidate_line`, with no create, no refresh and no lock.
+  * The ordinary group is created and refreshed as one block (:258-264), which
+    is strictly before the TFM dispatch loop (:266-275). The refresh therefore
+    takes its `SELECT ... FROM op_student_course ... ORDER BY id FOR UPDATE`
+    while the transaction holds no coordinator locks at all, and every later
+    coordinator starts its own chain from phase 1. The phase-1-after-phase-6
+    acquisition that I4 described no longer exists on any interleaving of the
+    payload list.
+  * Requirement 1 - `create([{tfm},{ordinary}])` on different enrollments: this
+    is exactly the interleaving that used to invert, and it is now safe because
+    the classification pass hoists the ordinary work in front of the TFM
+    dispatch regardless of input position.
+    `test_one2many_create_list_tfm_before_ordinary_still_links` (tests:1222-1262)
+    builds a second student/course/batch/gradebook via `_build_case`, asserts
+    `assertNotEqual(self.enrollment.id, other['enrollment'].id)` so the two rows
+    genuinely belong to two different enrollments, and puts the TFM payload
+    first. The pass-2 test with the safe ordering is kept
+    (tests:1188-1220), so both interleavings are now covered.
+  * Requirement 2 - input order: `created_by_index` is keyed by the original
+    payload index, ordinary ids are zipped back onto `ordinary_indexes`
+    (:263-264), each coordinator result is stored under its own index (:275),
+    and the return browses `[created_by_index[index] for index in
+    range(len(prepared))]` (:277-279). `browse()` preserves the id sequence it
+    is given, so the returned recordset matches input order for any
+    interleaving, not just for the two the tests exercise. Asserted positionally
+    at tests:1257-1260 (`created[0]` is the TFM row, `created[1]` the ordinary
+    one) and by `filtered` in the pass-2 test. If a payload were ever dropped the
+    dict lookup raises `KeyError`, i.e. it fails loudly rather than returning a
+    short recordset.
+  * Requirement 3 - reserved-link rejection before any mutation: the validation
+    loop at :233-241 runs `_irg_tfm_reject_public_relationship_values(values,
+    creating=True)` and `_irg_tfm_materialize_protected_create_defaults(values)`
+    over *all* payloads before the classification pass and therefore before the
+    first `super().create()`. `test_one2many_create_list_rejects_client_link_on_each_payload`
+    (tests:1264-1285) now injects the forged `irg_tfm_thesis_id` into each
+    position in turn and asserts `AccessError` plus `assertFalse(self._linked_results())`
+    both times. That is a stronger test than the pass-2 version: with the forged
+    link in the second position it proves the ordinary row was not created
+    before the rejection fired.
+
+Verdict: I4 is fixed, and the fix removes the defect class from this entry point
+rather than moving it.
+
+--------------------------------------------------------------------------------
+Requirement 4 - can ordinary-first invert phase-1 id order? YES, and it is a
+Minor out of I4 scope (recorded as M12)
+--------------------------------------------------------------------------------
+Honest answer to the question as asked: yes, it can, and my pass-2 sentence "the
+coordinator only extends the lock set" was true only when the coordinator's
+enrollment sorts above the ordinary batch. It does not hold in general.
+
+The mechanics. `create([{tfm on enrollment A}, {ordinary on enrollment B}])`
+with `A.id < B.id` now locks B first (ordinary refresh, one statement, ascending
+within its own set) and A second (coordinator, `_irg_tfm_lock_identities` ->
+`_irg_tfm_lock_rows`, ascending within its own set). Globally the phase-1
+sequence is B then A, i.e. descending. A concurrent mirror-image batch
+`create([{tfm on B}, {ordinary on A}])` locks A then B, and the two transactions
+deadlock on phase 1. The design doc is explicit that this should not happen:
+"Dentro de cada fase se ordenan los IDs ascendentemente, tambien en lotes y
+operaciones multirregistro" (design:192-193).
+
+Why it is nevertheless not an I4 leftover and not blocking:
+
+  * It is not introduced by this fix and does not need an ordinary row at all.
+    `create([{tfm on A}, {tfm on B}])` has the same property: the dispatch loop
+    calls `_irg_tfm_sync_gradebook_to_points` once per candidate, so each
+    coordinator locks its own chain in full and the union is not globally
+    ordered. That was equally true in the pass-2 code and in the code I reviewed
+    in pass 1, and I did not raise it in either pass. The ordinary-first pass
+    joins that pre-existing sequence; it does not create it.
+  * It follows from a spec requirement, not from a coding slip. "Cada operacion
+    pareada es un savepoint" (design:236-238) forces per-candidate coordination,
+    and a per-candidate coordinator can only lock the chain it is about to
+    mutate. The forward path escapes this because it can resolve every identity
+    up front and lock them together - `_irg_tfm_coordinate_forward_create`
+    calls `_irg_tfm_lock_identities([all entries], extra_theses=...)` once
+    (irg_tfm_grade_sync.py:629-632), and `_irg_tfm_lock_rows` sorts ids
+    ascending per phase (:387-399). The reverse write path escapes it the same
+    way (:929). Only the reverse *create* path, which is multi-payload by
+    construction, does not.
+  * The exposure is materially smaller than the I4 defect it replaced. Before
+    the fix, the transaction held a full six-phase chain and then reached back
+    for a phase-1 row, so the deadlock partner could be almost any concurrent
+    single-chain operation touching that enrollment. Now both sides of the cycle
+    must be multi-chain create batches with opposite TFM/ordinary orderings.
+    Neither inline result tree in the gradebook UI can produce a multi-chain
+    batch (both are scoped to a single gradebook/line), so the partner has to
+    come from `base_import`/`load()` or an RPC client that batches across
+    students, running concurrently with another such batch.
+
+M12 (Minor, recommended hardening, not blocking). If the batch clause of
+design:192-193 is to hold literally for the reverse create path, the shape is:
+resolve every candidate identity in the classification pass, take one lock pass
+over the union of the ordinary enrollments and all candidate identities in
+ascending id order per phase - reusing `_irg_tfm_lock_identities`, which already
+does exactly this - and only then create the ordinary block and dispatch the
+per-candidate savepoints. Locks survive `RELEASE SAVEPOINT`, so pre-locking
+outside the per-candidate savepoints does not weaken the atomic boundary. Two
+notes if this is picked up later: the pre-pass must not mutate, and the
+re-resolve-after-locks step inside each coordinator must stay, because
+pre-locking does not remove the need to re-read.
+
+--------------------------------------------------------------------------------
+C1, I1, I2, I3 - still resolved
+--------------------------------------------------------------------------------
+Re-verified in the sources, not assumed from the previous pass:
+
+  * C1. `create` is still `@api.model_create_multi` over `vals_list`
+    (app_gradebook_result.py:220-221); the per-payload rejection loop is intact
+    (:233-241); `_irg_tfm_create_business` is still the
+    `@api.model_create_multi` boundary that forwards the list to `super()`
+    without `dict(values)` (:203-210). The residual M9 is unchanged in kind and
+    in exposure: all ordinary payloads still go to upstream `isep_gradebook` as
+    one list, and that `create` is `@api.model`, so a two-ordinary-row batch
+    still raises "Expected singleton" upstream exactly as it did at the base
+    commit. Pre-existing, not a regression, still worth one chunking line.
+  * I1. `tesis.model.write` still rejects the combined `course_id` +
+    `irg_tfm_convocation_id` payload at tesis_model.py:255-258, after the
+    lock-free `_irg_tfm_reject_reserved_public_input` and strictly before
+    `_irg_tfm_guard_linked_identity` (:260) and before the `op_course`
+    convocation lock inside `_irg_tfm_write_business`.
+  * I2. The mixed TFM/ordinary write is still rejected before any coordinator
+    work (app_gradebook_result.py:304-308), so the `untouched` refresh at
+    irg_tfm_grade_sync.py:968-973 remains unreachable. M10 stays open: that is
+    still the only surviving call site that refreshes without
+    `locked_enrollments`, and it should be deleted or turned into an assertion.
+  * I3. `_irg_tfm_link_guard_scope` still builds the exact
+    `(student_id, course_id, batch_id)` triple set and still filters the
+    searched admissions against it (irg_tfm_grade_sync.py:1151-1173), and theses
+    still expand from `enrollments.ids` (:1148-1150).
+
+--------------------------------------------------------------------------------
+Security contract - NO REGRESSION
+--------------------------------------------------------------------------------
+  * Object-identity token: `_TFM_INTERNAL_TOKEN = object()`
+    (irg_tfm_grade_sync.py:12), still compared with `is` at the public
+    boundaries (app_gradebook_result.py:107, :226, :283, :330 and
+    tesis_model.py:182). The new `create` body did not weaken this: the internal
+    short-circuit at :228-230 still tests identity, and the caller context it
+    returns still has the marker popped (:222-223).
+  * Savepoint capability primitive:
+    `_irg_tfm_apply_inverse_from_verified_gradebook` still requires
+    `isinstance(sync_savepoint, _TfmSyncSavepoint)` and `assert_open(self.env.cr)`
+    before revalidating actor, link, survey type and score equality
+    (irg_tfm_grade_sync.py:1056-1078). Unchanged.
+  * Actor-before-sudo: `_irg_tfm_require_grade_actor` still gates on
+    `group_tfm_reviewer` and then `check_access_rights`/`check_access_rule`
+    before any elevation (tesis_model.py:236-246).
+    `_irg_tfm_authorize_reverse_parent` is still called per TFM payload before
+    the coordinator (app_gradebook_result.py:267) and still authorizes the actor
+    against the proposed parent before `super()` (:192-201).
+    `_irg_tfm_guard_linked_identity` still authorizes on the caller's own rights
+    before the sudo scope walk (irg_tfm_grade_sync.py:1226-1233).
+  * M11 stays open and unchanged: the ordinary refresh still runs on `created`,
+    whose env carries the internal marker. Same reasoning as pass 2 - not
+    exploitable, wider scope than necessary.
+
+================================================================================
+ASSESSMENT (after third pass)
+================================================================================
+
+Ready to proceed to Validation? Yes
+
+Blocking findings open? No
+
+This pass: Critical 0, Important 0, Minor 1 new (M12). Carried forward and still
+open: M1-M11 (none blocking).
+
+C1, I1, I2, I3 and I4 are all resolved, each with a behavioural test that
+reproduces the original failure shape rather than asserting the new code back to
+itself, and the security contract holds on all three axes. The I4 fix in
+particular is the right shape: it removes the mid-loop helper, makes the lock
+sequence readable in one pass, and covers both payload interleavings across two
+distinct enrollments.
+
+M12 is the one place where the letter of design:192-193 is still not satisfied
+for multi-chain reverse create batches. It is recorded as Minor and explicitly
+not blocking, because it predates the I4 fix, follows from the spec's
+one-savepoint-per-paired-operation rule rather than from an implementation
+mistake, is unreachable from the gradebook UI, and requires two concurrent
+mirror-image import/RPC batches to bite. Blocking it would be holding the change
+to an invariant the surrounding design does not currently provide anywhere in
+the reverse create path; it belongs in a follow-up that hardens the whole path
+with a single pre-lock pass.
+
+Missing Docker runtime proof and the unexecuted two-cursor deadlock scenarios
+remain the documented environmental limitation and are not counted above.
+
+================================================================================
+END OF THIRD PASS
+================================================================================

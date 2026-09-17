@@ -1,0 +1,13 @@
+Review independiente — ronda 2 — 2026-09-09
+
+El P2 de autorenlace está resuelto:
+
+- el directo rechaza `direct.id == base.id`;
+- el dominio inverso excluye `base.id`;
+- se mantiene `limit=2` y solo se acepta exactamente un candidato;
+- existen regresiones separadas para autorenlace directo e inverso.
+
+Sin nuevos hallazgos. MRO, controles server-side, resolución exacta, fallo
+cerrado por ambigüedad y edición limitada a convocatoria son coherentes.
+
+Estado: APROBADO.

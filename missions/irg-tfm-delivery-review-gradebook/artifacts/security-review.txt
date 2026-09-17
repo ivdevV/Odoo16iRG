@@ -1,0 +1,94 @@
+Security Advisor review — 2026-09-14 — first pass
+
+Scope: portal ownership, ACLs, server-side authorization, immutable delivery
+history, one-to-one linking, adoption, reassignment/deletion, bidirectional
+synchronization, concurrency, rollback and historical data.
+
+P1 — A client can forge context keys.
+
+The proposed `irg_tfm_grade_sync_origin` context may control recursion only; it
+must never bypass authorization or relationship protection. Reject external
+`irg_tfm_thesis_id` mutations in both create and write, cover points_fin during
+thesis creation, and test forged contexts with internal, portal and gradebook
+users.
+
+P1 — Lock order can invert between both synchronization directions.
+
+The thesis-first path and gradebook-first path must acquire a shared lock
+hierarchy before the first mutation. The hierarchy must include the exact
+enrollment, thesis, gradebook, gradebook-subject line and existing result rows.
+The gradebook-subject row serializes result adoption/creation when no result row
+exists. After locks, invalidate/re-read relevant caches and defer nested hooks
+until normalization is complete. Add two-cursor concurrency scenarios when the
+runtime becomes available.
+
+P1 — Protecting only app.gradebook.result is insufficient.
+
+The effective identity also depends on `app.gradebook.subject.op_subject_id`,
+`app.gradebook.subject.gradebook_student_id`, `app.gradebook.student.admission_id`,
+the enrollment identity and the thesis enrollment. The addon must reject parent
+reassignment/deletion whenever a linked TFM result exists, protect
+`survey_type='exam'`, and revalidate the complete mapping before every
+propagation. No RPC-provided context may disable these invariants.
+
+P1 — Existing gradebook normalization may break equality.
+
+The gradebook may round or clamp scoring_total. The amended contract rejects a
+TFM mapping whose configured gradebook/template would transform the submitted
+value, with an actionable ValidationError, instead of silently changing the TFM
+grade. Validate finite numeric values and the complete `0 or 1..10` scale at both
+entry points, including negatives, NaN and infinity. Read the effective result
+after writes.
+
+P2 — Rollback needs an explicit operation boundary.
+
+Resolve, validate and lock before mutating. Execute each paired synchronization
+inside one savepoint and do not catch/suppress integrity or validation errors.
+Tests must catch a synchronization error in their caller and then verify inside
+the same transaction that thesis grade, result grade and link are unchanged.
+
+P2 — Least privilege and audit must be explicit.
+
+Authorize the initiating user before any narrowly scoped sudo write. Log actor,
+origin, previous/new grade and linked result in the thesis chatter. Reject client
+supplied reviewed_by/reviewed_at values and validate delivery stage plus active
+thesis server-side, not only in record rules.
+
+Positive findings: separate review record with unique(delivery_id), no-delete
+contract, no portal ACL, immutable delivery/attachments, no bulk historical
+rewrite, and current owner-bound portal thesis resolution are sound.
+
+[NO] Reason: El plan debe eliminar la autorización basada en contexto falsificable y concretar el orden de bloqueos, la identidad protegida de las relaciones, el tratamiento del redondeo y la atomicidad antes de implementar.
+
+---
+
+Security Advisor review — 2026-09-15 — second pass
+
+The amendment covered the original findings, but two contradictory plan
+instructions remained:
+
+1. Task 6 still showed inverse propagation through public
+   `thesis.with_context(...).sudo().write(...)`. That path must instead call the
+   private coordinator's scoped internal primitive with an already-authorized
+   actor and verified link inside the same savepoint.
+2. The first-adoption wording could suppress configuration/security/concurrency
+   failures before a result was linked. Only truly unrelated non-TFM results may
+   be ignored; once a result is selected for TFM creation/adoption/linking, every
+   scale, normalization, authorization, resolution and concurrency error must
+   propagate.
+
+[NO] Reason: Deben eliminarse la llamada pública con contexto/sudo de Task 6 y la exclusión de errores durante la primera adopción para que el plan sea coherente con su contrato de seguridad antes de implementar.
+
+---
+
+Security Advisor scoped re-review — 2026-09-15 — pass 3
+
+1. ADDRESSED — inverse propagation now uses only the private coordinator
+   primitive with authorized actor, verified link and the existing savepoint;
+   the public thesis boundary is not used.
+2. ADDRESSED — only demonstrably unrelated non-TFM results are ignored; every
+   candidate first selection/adoption/creation propagates authorization,
+   cardinality, scale, normalization, lock/re-read, integrity and concurrency
+   failures.
+
+[YES] Reason: Los dos hallazgos abiertos están corregidos coherentemente en plan y especificación; la implementación puede comenzar conforme al contrato enmendado.

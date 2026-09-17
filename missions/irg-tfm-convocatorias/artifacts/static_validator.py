@@ -86,7 +86,7 @@ missing_dependencies = [
     name for name in repository_dependencies if name not in dependency_locations
 ]
 assert not missing_dependencies, missing_dependencies
-assert len(repository_dependencies) == 10
+assert len(repository_dependencies) == 12
 passed(
     "repository_dependencies",
     f"all {len(repository_dependencies)} repository-provided dependencies found",
@@ -118,7 +118,7 @@ for node in test_classes:
         for base in node.bases
     }
     assert base_names.intersection({"TransactionCase", "HttpCase"}), node.name
-assert test_count == 55
+assert test_count == 77
 passed("test_structure", f"3 files; 5 test classes; {test_count} test methods")
 
 long_lines = []
@@ -332,8 +332,12 @@ thesis = source("models/tesis_model.py")
 delivery = source("models/irg_tfm_entrega.py")
 slide = source("models/slide_slide.py")
 membership = source("models/slide_channel_partner.py")
+channel_path = ADDON / "models/slide_channel.py"
+channel = source("models/slide_channel.py") if channel_path.is_file() else ""
 portal = source("controllers/portal.py")
 portal_xml = source("views/tfm_portal_templates.xml")
+thesis_view_xml = source("views/tesis_model_views.xml")
+slide_view_xml = source("views/slide_tfm_views.xml")
 slide_xml = source("views/tfm_slide_templates.xml")
 slide_xml_tree = ElementTree.fromstring(slide_xml)
 cron_xml = source("data/ir_cron.xml")
@@ -417,9 +421,9 @@ contracts = {
     ),
     "elearning_category_and_fail_closed": (
         "irg_tfm_convocation_ids and not slide.is_category" in slide
-        and "len(students) != 1" in slide
-        and "len(enrollments) != 1" in slide
-        and "len(theses) != 1" in slide
+        and "len(students) != 1" in channel
+        and "len(candidates) != 1" in channel
+        and "thesis.irg_tfm_convocation_id.active" in channel
     ),
     "elearning_qweb_composition": all(term in slide_xml for term in (
         "batch_blocked_slide_ids", "practice_blocked_slide_ids",
@@ -434,7 +438,116 @@ contracts = {
         and "irg_scp_active_partner_channel_batch_uniq" in membership
     ),
     "portal_no_direct_acl": "base.group_portal" not in acl,
+    "beta_effective_channel_model": all(term in channel for term in (
+        "def _irg_tfm_effective_channel",
+        "def _irg_tfm_route_for_user",
+        "def _irg_bootstrap_prepare_slide_values",
+        "self.sudo()._irg_tfm_expand_family_channels()",
+        "irg_parse_tfm_batch_eligibility",
+        "irg_online_channel_id",
+        "irg_homeclass_channel_id",
+    )),
+    "online_inverse_fallback_is_exact_and_bounded": all(term in channel for term in (
+        "def _irg_tfm_online_channel",
+        "direct.id != base.id",
+        "('irg_homeclass_channel_id', '=', base.id)",
+        "('id', '!=', base.id)",
+        "limit=2",
+        "len(inverse) == 1",
+    )),
+    "online_convocation_write_is_server_guarded": all(term in slide for term in (
+        "def _irg_require_internal_tfm_convocation_edit",
+        "def create(self, vals_list)",
+        "def write(self, vals)",
+        "Only internal users can configure TFM convocations",
+    )),
+    "online_real_batch_and_ambiguity_regressions": all(term in source(
+        "tests/test_tfm_elearning.py"
+    ) for term in (
+        "test_inverse_only_online_clone_resolves_real_batch_and_membership",
+        "test_invalid_direct_pointer_falls_back_to_unique_inverse_clone",
+        "test_ambiguous_inverse_online_clones_fail_closed",
+        "test_direct_online_self_link_fails_closed",
+        "test_inverse_online_self_link_fails_closed",
+        "test_online_section_view_only_allows_convocation_edit",
+        "test_portal_user_cannot_write_tfm_convocation_tags",
+        "MOPCONL2606",
+    )),
+    "beta_membership_hook_isolation": (
+        "irg_skip_partner_sync" in membership
+        and membership.count("_TFM_SYNC_CONTEXT: True")
+        == membership.count("irg_skip_partner_sync")
+    ),
+    "beta_controller_final_route_gate": all(term in portal for term in (
+        "OnlineSubjectVisibilitySlides",
+        "CourseConvocatoriasSlides",
+        "class WebsiteSlidesTfmRestrictions(\n"
+        "        OnlineSubjectVisibilitySlides, WebsiteSlidesPracticeRestrictions",
+        "def channel(",
+        "_irg_tfm_route_for_user",
+        "WebsiteSlides.channel",
+        "_irg_tfm_redirect_slide",
+        "super(CourseConvocatoriasSlides, self).slide_view",
+    )),
+    "beta_clone_fail_closed": all(term in slide for term in (
+        "_irg_tfm_invalid_clone_origin",
+        "irg_original_slide_id",
+        "irg_homeclass_channel_id",
+    )),
+    "beta_manifest_dependencies": all(name in manifest["depends"] for name in (
+        "irg_course_convocatorias_v2",
+        "irg_online_subject_portal_visibility",
+    )),
 }
+
+thesis_view_root = ElementTree.fromstring(thesis_view_xml)
+submission_fields = thesis_view_root.findall(
+    ".//field[@name='irg_tfm_submission_ids']/tree/field",
+)
+contracts["beta_backend_delivery_columns"] = (
+    [field.get("name") for field in submission_fields]
+    == [
+        "stage", "version", "attachment_id", "comment", "convocation_id",
+        "submitted_by", "submitted_at", "internal_exception",
+    ]
+)
+contracts["beta_legacy_tfm_fields_hidden"] = (
+    "//sheet/group/group/field[@name='status_thesis']" in thesis_view_xml
+    and "attachment2_ids" in thesis_view_xml
+    and thesis_view_xml.count("[('irg_tfm_activated_at', '!=', False)]") >= 2
+)
+slide_view_root = ElementTree.fromstring(slide_view_xml)
+category_force_save = slide_view_root.findall(
+    ".//xpath[@expr=\"//field[@name='irg_native_section_ids']/form//field[@name='is_category']\"]"
+    "/attribute[@name='force_save']",
+)
+contracts["beta_section_category_force_save"] = bool(
+    category_force_save and category_force_save[0].text == "1",
+)
+online_view_records = slide_view_root.findall(
+    ".//record[@id='view_slide_channel_form_tfm_online_sections']",
+)
+online_view_xml = (
+    ElementTree.tostring(online_view_records[0], encoding="unicode")
+    if online_view_records else ""
+)
+contracts["online_section_editor_is_narrow"] = all(term in online_view_xml for term in (
+    "irg_course_convocatorias_v2.view_slide_channel_form_convocatorias_v2",
+    "page[@name='irg_online_sections']",
+    "field[@name='irg_online_section_ids']",
+    "position=\"replace\"",
+    "name=\"irg_online_slide_ids\"",
+    "[('is_category', '=', True)]",
+    "name=\"irg_tfm_convocation_ids\"",
+    "create=\"0\"",
+    "delete=\"0\"",
+))
+contracts["beta_portal_copy_and_dates"] = (
+    "Guía y recursos para el TFM" in portal_xml
+    and "partial_open_label" in portal_xml
+    and "final_open_label" in portal_xml
+    and "Acceder al contenido eLearning" not in portal_xml
+)
 tfm_content_template = slide_xml_tree.find(
     ".//template[@id='course_slides_list_hide_tfm_content']"
 )
@@ -474,9 +587,51 @@ slide_view = portal[
     portal.index("    def _get_slide_detail", portal.index("    def slide_view(self, slide, **kwargs):"))
 ]
 contracts["direct_slide_gate_before_super"] = (
-    slide_view.index("irg_has_tfm_requirement")
-    < slide_view.index("return super().slide_view")
+    "super(CourseConvocatoriasSlides, self).slide_view" in slide_view
+    and slide_view.index("irg_has_tfm_requirement")
+    < slide_view.index("super(CourseConvocatoriasSlides, self).slide_view")
 )
+allowance = slide[slide.index("    def is_user_allowed_by_tfm_convocation"):]
+contracts["invalid_clone_denied_before_common_content"] = (
+    allowance.index("_irg_tfm_invalid_clone_origin")
+    < allowance.index("if not required")
+)
+write_hook = channel[channel.index("    def write(self, values):"):channel.index("    def unlink(self):")]
+unlink_hook = channel[channel.index("    def unlink(self):"):]
+contracts["channel_lifecycle_authorizes_before_sudo"] = (
+    "sudo()" in write_hook
+    and write_hook.index("has_group('base.group_user')") < write_hook.index("sudo()")
+    and "sudo()" in unlink_hook
+    and unlink_hook.index("has_group('base.group_user')") < unlink_hook.index("sudo()")
+)
+contracts["channel_lifecycle_expands_inverse_family"] = all(term in channel for term in (
+    "('irg_online_channel_id', 'in', list(previous_ids))",
+    "('irg_homeclass_channel_id', 'in', list(previous_ids))",
+    "before_theses | after_theses",
+))
+configured_family = channel[
+    channel.index("    def _irg_tfm_is_configured_family"):
+    channel.index("    def _irg_tfm_route_for_user")
+]
+contracts["configured_family_includes_broken_inverse"] = (
+    "self.sudo()._irg_tfm_expand_family_channels()" in configured_family
+)
+contracts["http_fail_closed_and_non_tfm_regression"] = all(term in source(
+    "tests/test_tfm_elearning.py"
+) for term in (
+    "test_owner_with_unknown_or_prs_tfm_batch_gets_not_found",
+    "test_owner_with_ambiguous_tfm_enrollments_gets_not_found",
+    "test_non_tfm_online_slide_keeps_existing_v2_redirection",
+    "self.assertEqual(response.status_code, 404)",
+))
+contracts["real_v2_admission_lifecycle_fixture"] = all(term in source(
+    "tests/test_tfm_elearning.py"
+) for term in (
+    "def _online_admission_for_partner",
+    "test_real_unrelated_online_admission_never_redirects_tfm_membership",
+    "test_inverse_clone_detach_and_repair_reconciles_exact_tfm_membership",
+    "test_unlinking_online_clone_removes_stale_tfm_access_and_fails_closed",
+))
 failed_contracts = [name for name, result in contracts.items() if not result]
 assert not failed_contracts, failed_contracts
 passed("static_contracts", f"{len(contracts)} grouped contracts")
@@ -509,6 +664,10 @@ inheritance_targets = {
     "irg_practice_slide_restrictions.view_slide_channel_form_practice_restriction": (
         "addons-extra/extrairg/irg_practice_slide_restrictions/views/slide_channel_view.xml",
         'id="view_slide_channel_form_practice_restriction"',
+    ),
+    "irg_course_convocatorias_v2.view_slide_channel_form_convocatorias_v2": (
+        "addons-extra/extrairg/irg_course_convocatorias_v2/views/slide_channel_views.xml",
+        'id="view_slide_channel_form_convocatorias_v2"',
     ),
     "irg_practice_slide_restrictions.slide_fullscreen_sidebar_practice_hide": (
         "addons-extra/extrairg/irg_practice_slide_restrictions/views/templates.xml",

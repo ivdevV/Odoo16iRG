@@ -1,0 +1,71 @@
+{
+  "status": "passed",
+  "task": "irg-tfm-delivery-review-gradebook",
+  "checks": [
+    {
+      "name": "static_validator",
+      "command": "python -X pycache_prefix=%TEMP%\\tfm-grade-validation-pycache missions/irg-tfm-delivery-review-gradebook/artifacts/static_validator.py",
+      "result": "pass",
+      "detail": "Static validation passed: 32 Python AST files, 12 XML files, style checks, and all Task 2-6 contracts; 0 failed.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "python_compileall",
+      "command": "python -X pycache_prefix=%TEMP%\\tfm-grade-validation-pycache -m compileall -q addons-extra/extrairg/irg_tfm_convocatorias missions/irg-tfm-delivery-review-gradebook/artifacts",
+      "result": "pass",
+      "detail": "compileall completed successfully with exit code 0 and wrote bytecode outside the addon.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "xml_parse",
+      "command": "python -c \"from pathlib import Path; import xml.etree.ElementTree as ET; paths=list(Path('addons-extra/extrairg/irg_tfm_convocatorias').rglob('*.xml')); [ET.parse(p) for p in paths]; print('xml_ok', len(paths))\"",
+      "result": "pass",
+      "detail": "All 12 XML files parsed successfully.",
+      "evidence": "artifacts/static-validation.txt"
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check -- addons-extra/extrairg/irg_tfm_convocatorias missions/irg-tfm-delivery-review-gradebook docs/superpowers",
+      "result": "pass",
+      "detail": "Exit code 0; only LF-to-CRLF working-copy warnings were emitted. HEAD and branch matched the required values.",
+      "evidence": "artifacts/git-scope.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "The user does not have Docker on this machine and explicitly prohibited starting, querying, or using Docker; docker-compose.local.yml and a disposable Odoo database were unavailable.",
+      "evidence": "artifacts/module-tests.txt"
+    },
+    {
+      "name": "odoo_integration_concurrency",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "The integration and two-cursor concurrency checks require the Docker-backed Odoo/PostgreSQL runtime, but the user explicitly prohibited Docker on this machine.",
+      "evidence": "artifacts/runtime-skips.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Scope WOULD trigger E2E because views/QWeb/portal/controllers changed, but the user does not have Docker and explicitly prohibited both Docker and TestSprite.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml not executed",
+    "database": "unavailable",
+    "base_commit": "1701cfe9b",
+    "branch": "codex/tfm-review-gradebook",
+    "documentation_version": "16.0.1.2.0"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/static-validation.txt",
+    "artifacts/git-scope.txt",
+    "artifacts/runtime-skips.txt",
+    "artifacts/module-tests.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

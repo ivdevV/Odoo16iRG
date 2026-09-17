@@ -39,6 +39,7 @@ class PracticeAgreementSpecificCreateWizard(models.TransientModel):
         [
             ('especifico_internacional', 'Convenio Específico Internacional'),
             ('especifico_nacional', 'Convenio Específico Nacional'),
+            ('especifico_homeclass_sincronas', 'Convenio Específico HomeClass Síncronas'),
         ],
         string='Tipo de convenio',
         required=True,

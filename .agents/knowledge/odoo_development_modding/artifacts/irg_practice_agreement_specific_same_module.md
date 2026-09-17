@@ -23,6 +23,6 @@ mismo predicado el mismo día. Ver
 
 ## Motivos
 
-El específico nacional es otra plantilla del mismo flujo, no otro
-producto. Un módulo nuevo solo para esa variante no aporta arquitectura
-y duplica `print_report_name`, tokens y firmar.
+El específico nacional y el HomeClass síncronas son otras plantillas del
+mismo flujo, no otro producto. Un módulo nuevo solo para esa variante
+no aporta arquitectura y duplica `print_report_name`, tokens y firmar.

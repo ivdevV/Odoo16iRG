@@ -77,6 +77,24 @@ class IrgTfmEntrega(models.Model):
     submitted_at = fields.Datetime(required=True, readonly=True)
     internal_exception = fields.Boolean(readonly=True)
     exception_reason = fields.Text(readonly=True)
+    irg_tfm_review_id = fields.Many2one(
+        'irg.tfm.entrega.revision',
+        string='Revisión TFM',
+        compute='_compute_irg_tfm_review_summary',
+    )
+    irg_tfm_review_state = fields.Selection(
+        [
+            ('pending', 'Pendiente de revisión'),
+            ('corrections', 'Requiere correcciones'),
+            ('approved', 'Aprobada'),
+        ],
+        string='Estado de revisión',
+        compute='_compute_irg_tfm_review_summary',
+    )
+    irg_tfm_reviewed_at = fields.Datetime(
+        string='Fecha de revisión',
+        compute='_compute_irg_tfm_review_summary',
+    )
 
     _sql_constraints = [
         (
@@ -85,6 +103,48 @@ class IrgTfmEntrega(models.Model):
             'La versión de la entrega ya existe para esta etapa y convocatoria.',
         ),
     ]
+
+    @api.depends_context('uid')
+    def _compute_irg_tfm_review_summary(self):
+        review_values = self.env['irg.tfm.entrega.revision'].sudo().search_read([
+            ('delivery_id', 'in', self.ids),
+            ('delivery_id.stage', 'in', ('partial', 'final')),
+            ('delivery_id.thesis_id.irg_tfm_activated_at', '!=', False),
+        ], fields=['delivery_id', 'state', 'reviewed_at'])
+        reviews_by_delivery = {
+            values['delivery_id'][0]: values
+            for values in review_values
+        }
+        can_read_review = self.env.su or self.env.user.has_group(
+            'irg_tfm_convocatorias.group_tfm_reviewer'
+        )
+        Review = self.env['irg.tfm.entrega.revision']
+        for delivery in self:
+            values = reviews_by_delivery.get(delivery.id, {})
+            delivery.irg_tfm_review_id = (
+                Review.browse(values['id']) if can_read_review and values else False
+            )
+            delivery.irg_tfm_review_state = values.get('state') or False
+            delivery.irg_tfm_reviewed_at = values.get('reviewed_at') or False
+
+    def action_open_tfm_review(self):
+        self.ensure_one()
+        Review = self.env['irg.tfm.entrega.revision']
+        Review._irg_require_reviewer()
+        if self.stage not in ('partial', 'final'):
+            raise ValidationError(_('Solo se revisan entregas parciales o finales.'))
+        if not self.thesis_id.irg_tfm_activated_at:
+            raise ValidationError(_('La ficha TFM de la entrega no está activada.'))
+        review = self.irg_tfm_review_id
+        if not review:
+            review = Review.create({'delivery_id': self.id})
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'irg.tfm.entrega.revision',
+            'res_id': review.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -533,6 +593,10 @@ class IrgTfmEntrega(models.Model):
         thesis = self.env['tesis.model']._irg_portal_owned_thesis(course_id)
         if thesis.course_id.course_id.is_diplomado():
             raise AccessError(_('TFM submissions are not available for this course.'))
+        if stage == 'outline':
+            raise ValidationError(_(
+                'Los nuevos Esquemas se envían mediante el cuestionario TFM.'
+            ))
         safe_name, mimetype = self._irg_validate_upload(raw, filename, declared_mimetype)
         return self._irg_create_locked_submission(
             thesis,

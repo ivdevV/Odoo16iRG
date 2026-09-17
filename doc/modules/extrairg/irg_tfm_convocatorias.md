@@ -2,7 +2,7 @@
 
 **Categoría:** extrairg
 
-**Versión:** 16.0.1.0.2
+**Versión:** 16.0.1.2.0
 
 **Licencia:** LGPL-3
 
@@ -10,7 +10,7 @@
 
 **Autor:** IRG
 
-**Depende de:** `base`, `mail`, `openeducat_core`, `isep_student_filter`, `isep_gradebook`, `website_slides`, `isep_tesis_model`, `irg_course_portal_tiles`, `irg_course_portal_tiles_diplomado_hide`, `irg_batch_slide_restrictions`, `irg_practice_slide_restrictions`, `irg_elearning_editable_sections`, `irg_auto_enroll_cron_robust`
+**Depende de:** `base`, `mail`, `openeducat_core`, `isep_student_filter`, `isep_gradebook`, `website_slides`, `isep_tesis_model`, `irg_course_portal_tiles`, `irg_course_portal_tiles_diplomado_hide`, `irg_batch_slide_restrictions`, `irg_practice_slide_restrictions`, `irg_elearning_editable_sections`, `irg_course_convocatorias_v2`, `irg_online_subject_portal_visibility`, `irg_auto_enroll_cron_robust`
 
 ---
 
@@ -110,6 +110,22 @@ El versionado se calcula por expediente, etapa y convocatoria histórica. Por el
 
 Las entregas históricas y sus adjuntos nunca se borran durante estos cambios.
 
+### 7. Revisión de cada versión de entrega
+
+El revisor no modifica el archivo. Cada versión inmutable tiene como máximo una
+revisión `irg.tfm.entrega.revision` (estado, comentario, revisor y fecha
+calculados por el servidor). Solo el grupo **Revisor TFM** crea o edita; no hay
+borrado. El alumno dueño ve en MyCampus el distintivo siempre y el comentario
+cuando el estado no es pendiente.
+
+### 8. Nota final y libreta
+
+`points_fin` y el examen vinculado de la asignatura TFM se mantienen iguales.
+La asignatura se resuelve solo por Canal TFM y `op.subject.slide_channel_id`.
+La plantilla de libreta no puede redondear ni recortar esa nota. Un examen
+nuevo en esa línea exige expediente activo; si no, la operación se rechaza
+hasta activar el expediente o corregir la configuración.
+
 ## Configuración
 
 ### Curso y canal TFM
@@ -120,6 +136,20 @@ En el formulario del máster (`op.course`):
 2. Seleccione un **Canal TFM** (`irg_tfm_channel_id`).
 
 Se recomienda un canal TFM claramente identificado por máster. Si un alumno queda asociado de forma ambigua a más de una matrícula para el mismo canal, el acceso exclusivo falla de forma cerrada.
+
+Cuando el máster tiene contenido separado por modalidad, configure como **Canal
+TFM** el canal base HomeClass y vincule su **Canal Online** mediante los campos
+del módulo `irg_course_convocatorias_v2`. El lote de la matrícula TFM decide el
+destino: `ONL` abre el clon Online; `HC` y `MONLHC` abren el canal base. Una
+admisión Online de otro curso no cambia esta decisión.
+
+Se recomienda mantener la relación simétrica: la base apunta al clon en **Canal
+Online** y el clon apunta a la base en **Canal HomeClass origen**. Para conservar
+compatibilidad con canales antiguos, si el enlace directo falta o es inválido el
+módulo acepta exclusivamente un clon que apunte de vuelta a esa misma base. Con
+cero candidatos, varios candidatos o un autorenlace, el acceso falla de forma
+cerrada. No se recorren relaciones indirectas ni se escoge un canal por
+aproximación.
 
 Cambiar el canal de un curso vuelve a conciliar las membresías de sus expedientes. El módulo no se apropia de membresías creadas por otros procesos: una membresía activa ajena puede seguir dando acceso genérico al canal, pero no se marca, modifica ni archiva como TFM.
 
@@ -143,6 +173,26 @@ En el contenido del canal, el campo **Convocatorias TFM** solo puede configurars
 - categoría con una o varias convocatorias: contenido exclusivo de esas convocatorias;
 - los materiales heredan la restricción de su categoría o de su padre.
 
+Las categorías se crean o editan desde **Secciones iRG**. Los artículos,
+documentos, vídeos y demás materiales continúan creándose desde **Contenido** y
+se colocan dentro de la categoría correspondiente. No se crean los materiales
+en Secciones iRG. La versión 16.0.1.0.3 guarda expresamente el indicador **Es una
+categoría** del formulario embebido para evitar el mensaje «TFM convocations can
+only be configured on eLearning categories».
+
+En el canal base, el bloque **Secciones Online** de **Secciones iRG** muestra las
+categorías del clon Online y permite editar únicamente **Convocatorias TFM**. No
+permite crear ni borrar categorías Online ni modificar desde ese espejo el
+título, el canal, los lotes, las fechas o la publicación. Estas operaciones se
+siguen realizando en el propio canal Online. Además, el servidor rechaza cambios
+de convocatorias realizados por usuarios externos aunque intenten evitar la
+interfaz.
+
+En una familia HomeClass/Online, la categoría Online debe conservar su referencia
+al original HomeClass. Los clones nuevos copian las etiquetas TFM únicamente en
+categorías; los materiales heredan la decisión de su categoría. Una referencia
+a una categoría de otro canal se bloquea en vez de convertirse en contenido común.
+
 El filtrado se combina con las restricciones existentes de lote y prácticas. Las categorías y materiales no autorizados se ocultan en listados y sidebar, y el controlador vuelve a validar antes de entregar el contenido o marcarlo como visto. Una URL directa no evita la restricción.
 
 ## Uso operativo
@@ -152,7 +202,7 @@ El filtrado se combina con las restricciones existentes de lote y prácticas. La
 1. Entra al curso cuando la matrícula ya alcanzó el hito del 50 %.
 2. Abre la tarjeta **Trabajo Final de Máster**.
 3. Envía una o varias versiones del Esquema mientras no haya convocatoria.
-4. Tras la asignación, consulta las fechas y entra al contenido eLearning.
+4. Tras la asignación, consulta las fechas y entra mediante **Guía y recursos para el TFM**.
 5. Envía Entrega parcial y Entrega final dentro de sus ventanas.
 6. Conserva acceso de lectura a todas sus versiones y convocatorias históricas.
 
@@ -167,6 +217,38 @@ La entrada heredada **Revisión de tesis** desaparece de `/my`. Las rutas antigu
 5. Consulta el historial inmutable en la pestaña **Entregas TFM** y la trazabilidad en chatter.
 
 Las excepciones fuera de plazo solo pueden crearlas usuarios internos mediante el servicio `_irg_create_delivery_exception`. Requieren un motivo no vacío, generan una versión nueva y dejan mensaje en chatter. Esta versión no incorpora un botón específico para la excepción; una acción interna que lo invoque debe aportar archivo, MIME, etapa, motivo y comentario opcional. La excepción no permite reabrir un Esquema después de asignar convocatoria y tampoco permite usar una convocatoria archivada.
+
+La pestaña backend **Entregas TFM** muestra directamente etapa, versión, archivo,
+comentario, convocatoria, autor y fecha. La fase heredada «Sección1» y la pestaña
+legacy de documentos se ocultan en los expedientes activados por este addon; sus
+datos históricos no se eliminan.
+
+## Comprobación recomendada en beta
+
+1. Actualice el addon **IRG TFM Convocatorias** y compruebe que indica la versión
+   `16.0.1.0.4`.
+2. En el máster, active **Revisión de tesis** y seleccione el canal TFM base.
+   Compruebe además los dos enlaces de la familia HomeClass/Online.
+3. Cree dos convocatorias, por ejemplo `BETA-A` y `BETA-B`, con las ventanas de
+   entrega incluyendo el día de la prueba.
+4. En el canal base cree dos categorías desde **Secciones iRG**. Asigne `BETA-A`
+   a una y `BETA-B` a la otra; publique las categorías y sus materiales.
+5. Use un alumno de prueba con una única matrícula elegible. Para probar Online,
+   puede usar `MOPCONL2606` o cualquier lote que cumpla `ONL2602` o posterior;
+   para HomeClass, `HC2511` o posterior.
+6. Lleve su progreso a 50 % y entre en `/campus`. La tarjeta **Trabajo Final de
+   Máster** debe aparecer dentro del curso y permitir solo versiones de Esquema.
+7. Envíe dos Esquemas. En backend, abra el expediente y confirme que **Entregas
+   TFM** muestra dos filas con todos sus datos, no solamente los IDs.
+8. Asigne `BETA-A`. En el portal, el Esquema debe quedar cerrado, las fechas deben
+   mostrarse como `dd/mm/aaaa` y debe aparecer **Guía y recursos para el TFM**.
+9. Abra la guía. Una matrícula Online debe llegar al canal Online; una HomeClass o
+   MONLHC, al canal base. Debe ver contenido común y `BETA-A`, pero no `BETA-B`.
+10. Pruebe una URL directa de un material `BETA-B`: debe quedar oculto o bloqueado
+    y no marcarse como visto. Después cambie a `BETA-B` y confirme que se invierte
+    el contenido visible sin perder entregas anteriores.
+11. Retire la convocatoria. La guía y las entregas parcial/final deben cerrarse,
+    el Esquema debe reabrirse y la tarjeta debe permanecer en `/campus`.
 
 ## Seguridad e integridad
 
@@ -210,19 +292,24 @@ En una máquina con el runtime autorizado, la instalación o actualización y la
 
 ## Pruebas y estado de validación
 
-El addon contiene 55 métodos `TransactionCase`/`HttpCase` distribuidos en:
+El addon contiene 77 métodos `TransactionCase`/`HttpCase` distribuidos en:
 
 - `tests/test_tfm_convocatorias.py`: cortes, activación, cron, unicidad, concurrencia y asignación.
 - `tests/test_tfm_deliveries.py`: ventanas, formatos, límites, versionado, propiedad, inmutabilidad, portal y rutas legacy.
 - `tests/test_tfm_elearning.py`: categorías, filtrado, URL directa, QWeb y membresías.
 
-La validación independiente del 7 de septiembre de 2026 aprobó los checks estáticos de AST Python, XML, ACL, manifest, imports, dependencias, estructura de tests, estilo, helpers puros, contratos funcionales/de seguridad, targets de herencia y alcance Git. La versión 16.0.1.0.2 añade una regresión específica que comprueba que el XPath del listado de contenidos coincide una sola vez con el nodo raíz oficial de Odoo 16.
+La validación independiente del 9 de septiembre de 2026 aprobó los checks
+estáticos de AST Python, XML, ACL, manifest, imports, dependencias, estructura de
+tests, estilo, helpers puros, 39 contratos funcionales/de seguridad, targets de
+herencia y alcance Git. La versión 16.0.1.0.4 añade regresiones para el lote real
+`MOPCONL2606`, recuperación inversa única, ambigüedad, autorenlaces, edición
+backend estrecha y protección server-side de las convocatorias eLearning.
 
 Limitaciones de la evidencia disponible en esta máquina:
 
 - No se ejecutaron tests de módulo Odoo, integración PostgreSQL ni concurrencia real porque el usuario prohibió abrir o consultar Docker en este ordenador.
 - TestSprite MCP no estaba disponible y no se pudo iniciar su destino Odoo local desechable en el puerto 8069; no se abrió túnel ni se subió código.
-- Los 55 tests Odoo están validados estructuralmente, pero no se afirma un resultado de runtime ni E2E.
+- Los 77 tests Odoo están validados estructuralmente, pero no se afirma un resultado de runtime ni E2E.
 
 Antes de desplegar a beta o producción se debe repetir la instalación, la actualización, la suite Odoo y el flujo E2E de MyCampus/eLearning en una máquina que sí disponga de `docker-compose.local.yml` y TestSprite.
 
@@ -231,19 +318,29 @@ Antes de desplegar a beta o producción se debe repetir la instalación, la actu
 | Archivo | Responsabilidad |
 | --- | --- |
 | `models/op_student_course.py` | Elegibilidad, activación inmediata, cron y unicidad. |
-| `models/app_gradebook_result.py` | Recalcula el progreso y dispara la activación después de cambios de calificación. |
+| `models/app_gradebook_result.py` | Recalcula el progreso, dispara la activación y coordina el sync inverso. |
+| `models/irg_tfm_grade_sync.py` | Coordinadores de nota, savepoint, vínculo y guardas de identidad. |
+| `models/irg_tfm_entrega_revision.py` | Revisión auditada por versión de entrega. |
+| `models/op_admission.py` | Impide reasignar alumno/curso/lote si hay nota TFM vinculada. |
+| `models/app_gradebook_student.py` | Impide reasignar la libreta de una nota TFM vinculada. |
+| `models/app_gradebook_subject.py` | Impide reasignar la línea de una nota TFM vinculada. |
 | `models/irg_tfm_convocatoria.py` | Catálogo y validación de ventanas. |
-| `models/tesis_model.py` | Convocatoria, propiedad, chatter y conciliación eLearning. |
-| `models/irg_tfm_entrega.py` | Subida, formatos, ventanas, versiones, adjuntos y excepciones. |
+| `models/tesis_model.py` | Convocatoria, propiedad, chatter, conciliación eLearning y `points_fin`. |
+| `models/irg_tfm_entrega.py` | Subida, formatos, ventanas, versiones, adjuntos, excepciones y acción de revisión. |
 | `models/slide_slide.py` | Restricción efectiva por convocatoria. |
+| `models/slide_channel.py` | Familia HomeClass/Online, canal efectivo, rutas fail-closed y lifecycle. |
 | `models/slide_channel_partner.py` | Membresías con procedencia segura. |
 | `controllers/portal.py` | MyCampus, descarga, control directo de slides y neutralización legacy. |
-| `views/tfm_portal_templates.xml` | Tarjeta, página e historial de entregas. |
+| `views/tfm_portal_templates.xml` | Tarjeta, página, historial de entregas y feedback de revisión. |
+| `views/irg_tfm_entrega_revision_views.xml` | Formulario backend de revisión. |
 | `views/slide_tfm_views.xml` | Configuración de convocatorias en categorías eLearning. |
 | `views/tfm_slide_templates.xml` | Ocultación QWeb combinada con lote y prácticas. |
 
 ## Referencias
 
 - [Micro-spec](../../micro-specs/2026-09-04-irg-tfm-convocatorias.md)
+- [Micro-spec de la corrección Online](../../micro-specs/2026-09-09-irg-tfm-online-elearning-fix.md)
+- [Diseño de revisión y sync de nota](../../../docs/superpowers/specs/2026-09-14-tfm-delivery-review-gradebook-design.md)
 - [Plan y controles de implementación](../../../missions/irg-tfm-convocatorias/plan.md)
-- [Verificación de la misión](../../../missions/irg-tfm-convocatorias/verification.json)
+- [Misión revisión/sync](../../../missions/irg-tfm-delivery-review-gradebook/plan.md)
+- [Verificación de la misión de revisión/sync](../../../missions/irg-tfm-delivery-review-gradebook/verification.json)

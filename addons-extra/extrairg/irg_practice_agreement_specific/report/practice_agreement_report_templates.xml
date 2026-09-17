@@ -3,7 +3,7 @@
     <template id="report_practice_agreement_document_specific"
               inherit_id="irg_practice_agreement_sign.report_practice_agreement_document">
         <xpath expr="//div[hasclass('page')]" position="attributes">
-            <attribute name="t-if">doc.agreement_type not in ('especifico_internacional', 'especifico_nacional')</attribute>
+            <attribute name="t-if">doc.agreement_type not in ('especifico_internacional', 'especifico_nacional', 'especifico_homeclass_sincronas')</attribute>
         </xpath>
         <xpath expr="//div[hasclass('page')]" position="after">
             <div t-if="doc.agreement_type == 'especifico_internacional'"
@@ -16,6 +16,12 @@
                  class="page"
                  style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; color: #222222; padding: 10px 25px;">
                 <t t-call="irg_practice_agreement_specific.agreement_document_especifico_nacional"/>
+                <t t-call="irg_practice_agreement_specific.agreement_especifico_signatures"/>
+            </div>
+            <div t-if="doc.agreement_type == 'especifico_homeclass_sincronas'"
+                 class="page"
+                 style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; color: #222222; padding: 10px 25px;">
+                <t t-call="irg_practice_agreement_specific.agreement_document_especifico_homeclass_sincronas"/>
                 <t t-call="irg_practice_agreement_specific.agreement_especifico_signatures"/>
             </div>
         </xpath>
@@ -69,6 +75,6 @@
 
     <!-- Expresión defensiva: el xml_id sigue en el módulo base al desinstalar. -->
     <record id="irg_practice_agreement_sign.action_report_practice_agreement" model="ir.actions.report">
-        <field name="print_report_name">'Convenio_%s_%s_%s' % ('Especifico_Internacional' if 'agreement_type' in object._fields and object.agreement_type == 'especifico_internacional' else 'Especifico_Nacional' if 'agreement_type' in object._fields and object.agreement_type == 'especifico_nacional' else 'Marco_Internacional' if 'agreement_type' in object._fields and object.agreement_type == 'marco_internacional' else 'Marco_Nacional', object.center_official_name or 'Centro', object.name)</field>
+        <field name="print_report_name">'Convenio_%s_%s_%s' % ('Especifico_Internacional' if 'agreement_type' in object._fields and object.agreement_type == 'especifico_internacional' else 'Especifico_Nacional' if 'agreement_type' in object._fields and object.agreement_type == 'especifico_nacional' else 'Especifico_Homeclass_Sincronas' if 'agreement_type' in object._fields and object.agreement_type == 'especifico_homeclass_sincronas' else 'Marco_Internacional' if 'agreement_type' in object._fields and object.agreement_type == 'marco_internacional' else 'Marco_Nacional', object.center_official_name or 'Centro', object.name)</field>
     </record>
 </odoo>

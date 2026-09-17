@@ -1,41 +1,40 @@
-Independent static validation — QWeb XPath correction — 2026-09-07
+Independent static validation — rebased beta commit — 2026-09-09
 
-Primary command:
+Validated commit: faebadf2db0e82fd11a8e84204a0273ad9c6e30b
+Parent/base: 583891193dd161e21374a02950003c7e566d4033
+
+Commands:
   C:\Users\admin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe missions\irg-tfm-convocatorias\artifacts\static_validator.py
+  C:\Users\admin\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe -m compileall -f -q addons-extra\extrairg\irg_tfm_convocatorias
 
-Result: exit code 0
+Final results:
+  static_validator_exit=0
+  compileall_exit=0
 
-PASS python_ast: 18 files
+PASS python_ast: 19 files
 PASS xml_well_formed: 7 files
 PASS acl_csv: 2 unique canonical rows
-PASS manifest_imports: version 16.0.1.0.2; 13 dependencies; 8 data files; 8 model imports
-PASS repository_dependencies: all 10 repository-provided dependencies found
-PASS test_structure: 3 files; 5 test classes; 55 test methods
+PASS manifest_imports: version 16.0.1.0.3; 15 dependencies; 8 data files; 9 model imports
+PASS repository_dependencies: all 12 repository-provided dependencies found
+PASS test_structure: 3 files; 5 test classes; 70 test methods
 PASS style: no trailing whitespace; no Python line exceeds 119 columns
 PASS pure_eligibility: 11 cutoff/exclusion cases
 PASS pure_pdf_docx: valid PDF/DOCX plus malformed, flood, forged EOCD and bomb cases
 PASS pure_doc: real WordDocument/FIB accepted; named-only and forged inputs rejected
-PASS static_contracts: 20 grouped contracts
+PASS static_contracts: 35 grouped contracts
 PASS inheritance_targets: 10 repository XML ids
 PASS artifact_scope: plan and micro-spec remain outside the addon
 SUMMARY: 13 validation groups passed; 0 failed
 
-Independent QWeb/XML check:
-  The seven addon XML files were parsed successfully. The expression extracted
-  from course_slides_list_hide_tfm_content is:
-    //li[contains(@t-attf-class, 'o_wslides_slides_list_slide')]
+The validator parsed all addon XML and the manifest. The manifest is exactly
+16.0.1.0.3 and all declared repository dependencies, data files and model imports
+were resolved by the static contracts. The 35 grouped contracts cover the full
+beta acceptance implementation reviewed in review-beta-fixes-round2.txt,
+including exact-enrollment TFM routing, Online/HomeClass channel selection,
+fail-closed family resolution, direct channel/slide access, membership
+reconciliation and provenance, category-only convocation configuration, portal
+ownership, delivery controls and the corrected backend view inheritance.
 
-  It was evaluated with lxml against the exact relevant node shape from the
-  official Odoo 16 parent template website_slides.course_slides_list_slide:
-    <li ... t-attf-class="o_wslides_slides_list_slide o_wslides_js_list_item ...">
-
-  Official source inspected read-only:
-    https://raw.githubusercontent.com/odoo/odoo/16.0/addons/website_slides/views/website_slides_templates_course.xml
-
-  XML_PARSE=PASS
-  OFFICIAL_PARENT_FIXTURE_MATCHES=1
-  RESULT=PASS
-
-This directly covers the beta installation failure: the previous XPath targeted
-a div that does not exist in the inherited parent, while the corrected XPath
-targets the single outer li carrying the dynamic t-attf-class in Odoo 16.
+The rebased commit was checked from a clean worktree. compileall used
+PYTHONPYCACHEPREFIX outside the addon and exited 0, so no source or functional
+file was changed by validation.

@@ -1,0 +1,4 @@
+RED local parser (before implementation):
+extract_course_code missing
+course_code was full Curso label, not DITGHC2606
+name/country/modality not parsed

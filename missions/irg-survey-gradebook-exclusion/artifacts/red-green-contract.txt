@@ -1,0 +1,5 @@
+Resultado real tras preservar el retorno heredado:
+pre-fix: encuesta `survey` + `no_scoring` → `base_send_calls=1`, `returned='base-result'`, contrato incumplido.
+current: encuesta `survey` + `no_scoring` → `base_send_calls=0`, `returned=None`, contrato cumplido.
+
+Interpretación: la versión previa llamaba al flujo heredado para una encuesta `survey` sin puntuación; la versión actual la omite y conserva el retorno `None` del método base.

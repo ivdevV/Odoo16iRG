@@ -8,6 +8,8 @@ from unittest.mock import patch
 from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from lxml import etree
+
 from odoo import api, Command, http
 from odoo.exceptions import AccessError, ValidationError
 from odoo.modules.registry import Registry
@@ -171,6 +173,28 @@ class TfmFixtureMixin:
 
 @tagged('post_install', '-at_install')
 class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
+    def test_backend_history_lists_delivery_details_and_hides_legacy_tfm_fields(self):
+        view = self.env.ref('irg_tfm_convocatorias.view_tesis_model_form_irg_tfm')
+        arch = etree.fromstring(view.get_combined_arch())
+        tree = arch.xpath("//field[@name='irg_tfm_submission_ids']/tree")
+        self.assertEqual(len(tree), 1)
+        self.assertEqual(tree[0].get('default_order'), 'submitted_at desc, id desc')
+        columns = tree[0].xpath('./field/@name')
+        self.assertEqual(columns, [
+            'stage', 'version', 'attachment_id', 'comment', 'convocation_id',
+            'submitted_by', 'submitted_at', 'internal_exception',
+            'irg_tfm_review_state', 'irg_tfm_reviewed_at',
+        ])
+        legacy_phase = arch.xpath("//sheet/group/group/field[@name='status_thesis']")
+        legacy_documents = arch.xpath("//page[.//field[@name='attachment2_ids']]")
+        self.assertTrue(legacy_phase)
+        self.assertTrue(legacy_documents)
+        self.assertEqual(len(legacy_phase), 1)
+        self.assertIn('irg_tfm_activated_at', legacy_phase[0].get('attrs') or '')
+        self.assertTrue(
+            all('irg_tfm_activated_at' in (node.get('attrs') or '') for node in legacy_documents),
+        )
+
     def test_upload_validation_rejects_empty_oversize_extension_signature_mime_and_generic_zip(self):
         Delivery = self.env['irg.tfm.entrega']
         invalid = (
@@ -276,28 +300,31 @@ class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
         )
         self.assertEqual(safe_doc, ('Legacy.DOC', 'application/msword'))
 
-    def test_outline_closes_on_assignment_and_reopens_on_removal(self):
+    def test_legacy_outline_file_upload_is_always_read_only(self):
         user, _student, course, _enrollment, thesis = self._portal_case()
         Delivery = self.env['irg.tfm.entrega'].with_user(user)
 
-        first = Delivery._irg_create_portal_submission(
-            course.id, 'outline', PDF_BYTES, 'outline.pdf', 'application/pdf', 'first',
-        )
-        self.assertEqual(first.stage, 'outline')
-        self.assertFalse(first.convocation_id)
+        with self.assertRaisesRegex(ValidationError, 'cuestionario TFM'):
+            Delivery._irg_create_portal_submission(
+                course.id, 'outline', PDF_BYTES, 'outline.pdf', 'application/pdf', 'first',
+            )
+        with self.assertRaisesRegex(ValidationError, 'cuestionario TFM'):
+            thesis._irg_create_delivery_exception(
+                'outline', PDF_BYTES, 'outline.pdf', 'application/pdf', 'manual',
+            )
 
         convocation = self._convocation()
         thesis.write({'irg_tfm_convocation_id': convocation.id})
-        with self.assertRaises(ValidationError):
+        with self.assertRaisesRegex(ValidationError, 'cuestionario TFM'):
             Delivery._irg_create_portal_submission(
                 course.id, 'outline', PDF_BYTES, 'closed.pdf', 'application/pdf', '',
             )
 
         thesis.write({'irg_tfm_convocation_id': False})
-        reopened = Delivery._irg_create_portal_submission(
-            course.id, 'outline', PDF_BYTES, 'reopened.pdf', 'application/pdf', '',
-        )
-        self.assertEqual(reopened.version, 2)
+        with self.assertRaisesRegex(ValidationError, 'cuestionario TFM'):
+            Delivery._irg_create_portal_submission(
+                course.id, 'outline', PDF_BYTES, 'reopened.pdf', 'application/pdf', '',
+            )
 
     def test_partial_and_final_windows_are_inclusive_and_server_selects_current_snapshot(self):
         user, _student, course, _enrollment, thesis = self._portal_case()
@@ -351,9 +378,10 @@ class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
         self.assertTrue(first.attachment_id.exists())
 
     def test_delivery_and_linked_attachment_are_immutable(self):
-        user, _student, course, _enrollment, _thesis = self._portal_case()
+        user, _student, course, _enrollment, thesis = self._portal_case()
+        thesis.write({'irg_tfm_convocation_id': self._convocation().id})
         delivery = self.env['irg.tfm.entrega'].with_user(user)._irg_create_portal_submission(
-            course.id, 'outline', PDF_BYTES, 'outline.pdf', 'application/pdf', '',
+            course.id, 'partial', PDF_BYTES, 'partial.pdf', 'application/pdf', '',
         )
         with self.assertRaises(AccessError):
             delivery.sudo().write({'comment': 'changed'})
@@ -408,12 +436,12 @@ class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
                 'partial', PDF_BYTES, 'exception.pdf', 'application/pdf', 'manual exception',
             )
 
-    def test_internal_exception_cannot_reopen_outline_after_assignment(self):
+    def test_internal_exception_cannot_create_legacy_outline(self):
         _portal_user, _student, _course, _enrollment, thesis = self._portal_case()
         convocation = self._convocation()
         thesis.write({'irg_tfm_convocation_id': convocation.id})
 
-        with self.assertRaisesRegex(ValidationError, 'Outline submissions close'):
+        with self.assertRaisesRegex(ValidationError, 'cuestionario TFM'):
             thesis._irg_create_delivery_exception(
                 'outline', PDF_BYTES, 'outline.pdf', 'application/pdf', 'manual exception',
             )
@@ -501,6 +529,28 @@ class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
                 'DELETE FROM irg_tfm_entrega WHERE thesis_id = %s',
                 [identifiers['thesis']],
             )
+            cursor.execute(
+                'DELETE FROM irg_tfm_outline_question_option_rel '
+                'WHERE question_id IN ('
+                'SELECT id FROM irg_tfm_esquema_pregunta WHERE outline_id IN ('
+                'SELECT id FROM irg_tfm_esquema WHERE thesis_id = %s))',
+                [identifiers['thesis']],
+            )
+            cursor.execute(
+                'DELETE FROM irg_tfm_esquema_opcion WHERE question_id IN ('
+                'SELECT id FROM irg_tfm_esquema_pregunta WHERE outline_id IN ('
+                'SELECT id FROM irg_tfm_esquema WHERE thesis_id = %s))',
+                [identifiers['thesis']],
+            )
+            cursor.execute(
+                'DELETE FROM irg_tfm_esquema_pregunta WHERE outline_id IN ('
+                'SELECT id FROM irg_tfm_esquema WHERE thesis_id = %s)',
+                [identifiers['thesis']],
+            )
+            cursor.execute(
+                'DELETE FROM irg_tfm_esquema WHERE thesis_id = %s',
+                [identifiers['thesis']],
+            )
             env['ir.attachment'].browse(attachment_ids).unlink()
             env['tesis.model'].browse(identifiers['thesis']).exists().unlink()
             if identifiers.get('convocation'):
@@ -516,7 +566,7 @@ class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
 
     def test_concurrent_submissions_receive_distinct_atomic_versions(self):
         registry = Registry(self.env.cr.dbname)
-        identifiers = self._create_committed_submission_case(registry)
+        identifiers = self._create_committed_partial_case(registry)
         barrier = Barrier(2)
         errors = []
 
@@ -526,8 +576,8 @@ class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
                     env = api.Environment(cursor, identifiers['user'], {})
                     barrier.wait(timeout=10)
                     env['irg.tfm.entrega']._irg_create_portal_submission(
-                        identifiers['course'], 'outline', PDF_BYTES,
-                        'outline-%s.pdf' % index, 'application/pdf', '',
+                        identifiers['course'], 'partial', PDF_BYTES,
+                        'partial-%s.pdf' % index, 'application/pdf', '',
                     )
                     cursor.commit()
             except Exception as exc:
@@ -545,9 +595,49 @@ class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
                 env = api.Environment(cursor, self.env.uid, {})
                 deliveries = env['irg.tfm.entrega'].search([
                     ('thesis_id', '=', identifiers['thesis']),
-                    ('stage', '=', 'outline'),
+                    ('stage', '=', 'partial'),
                 ], order='version')
                 self.assertEqual(deliveries.mapped('version'), [1, 2])
+        finally:
+            self._cleanup_committed_submission_case(registry, identifiers)
+            self.env.invalidate_all()
+
+    def test_concurrent_outline_start_reuses_one_atomic_draft(self):
+        registry = Registry(self.env.cr.dbname)
+        identifiers = self._create_committed_submission_case(registry)
+        barrier = Barrier(2)
+        outline_ids = []
+        errors = []
+
+        def start_outline():
+            try:
+                with registry.cursor() as cursor:
+                    env = api.Environment(cursor, identifiers['user'], {})
+                    barrier.wait(timeout=10)
+                    outline = env['irg.tfm.esquema']._irg_portal_start(
+                        identifiers['course']
+                    )
+                    outline_ids.append(outline.id)
+                    cursor.commit()
+            except Exception as exc:
+                errors.append(exc)
+
+        workers = [Thread(target=start_outline) for _index in range(2)]
+        try:
+            for worker in workers:
+                worker.start()
+            for worker in workers:
+                worker.join(timeout=15)
+            self.assertFalse(any(worker.is_alive() for worker in workers))
+            self.assertFalse(errors)
+            self.assertEqual(len(outline_ids), 2)
+            self.assertEqual(len(set(outline_ids)), 1)
+            with registry.cursor() as cursor:
+                env = api.Environment(cursor, self.env.uid, {})
+                self.assertEqual(env['irg.tfm.esquema'].search_count([
+                    ('thesis_id', '=', identifiers['thesis']),
+                    ('state', '=', 'draft'),
+                ]), 1)
         finally:
             self._cleanup_committed_submission_case(registry, identifiers)
             self.env.invalidate_all()
@@ -645,8 +735,9 @@ class TestTfmPortal(TfmFixtureMixin, HttpCase):
             progress=50, login='tfm_diploma_portal',
         )
         cls.diploma_course.write({'code': 'DI-TFM-PORTAL'})
+        cls.thesis.write({'irg_tfm_convocation_id': helper._convocation().id})
         cls.delivery = cls.thesis._irg_create_delivery_exception(
-            'outline', PDF_BYTES, 'private.pdf', 'application/pdf', 'fixture',
+            'partial', PDF_BYTES, 'private.pdf', 'application/pdf', 'fixture',
         )
 
     def test_course_tile_appears_only_after_activation_with_exact_text(self):
@@ -659,10 +750,15 @@ class TestTfmPortal(TfmFixtureMixin, HttpCase):
         self.assertIn('Trabajo Final de Máster', active.text)
 
     def test_tfm_page_is_owned_and_contains_csrf_protected_form(self):
+        convocation = self._convocation()
+        self.thesis.write({'irg_tfm_convocation_id': convocation.id})
         self.authenticate(self.owner.login, self.owner.login)
         page = self.url_open('/campus/course/%s/tfm' % self.course.id)
         self.assertEqual(page.status_code, 200)
         self.assertIn('Trabajo Final de Máster', page.text)
+        self.assertIn('Guía y recursos para el TFM', page.text)
+        self.assertIn(date.today().strftime('%d/%m/%Y'), page.text)
+        self.assertNotIn('Acceder al contenido eLearning', page.text)
         self.assertRegex(page.text, r'name="csrf_token"\s+value="[^"]+"')
 
         self.authenticate(self.outsider.login, self.outsider.login)

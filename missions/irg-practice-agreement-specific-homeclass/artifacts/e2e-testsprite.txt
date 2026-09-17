@@ -1,0 +1,31 @@
+# e2e_testsprite — 2026-09-15
+# Check: E2E TestSprite — irg_practice_agreement_specific HomeClass síncronas
+
+## Resultado: SKIPPED — MCP ausente en este runtime
+
+### Motivo técnico
+GetDynamicTools pattern="testsprite" devolvió matches=[].
+El MCP de TestSprite no está disponible. La omisión es técnica, no de
+alcance: el diff toca views/, portal y report/.
+
+### Flujos E2E pendientes
+
+1. **wizard_radio_tres_opciones**
+   - Abrir Crear Convenio desde una solicitud con centro asignado.
+   - Verificar radio Internacional / Nacional / HomeClass Síncronas.
+   - Crear un convenio `especifico_homeclass_sincronas`.
+
+2. **portal_firma_homeclass**
+   - Portal alumno y centro: se renderiza
+     `agreement_document_especifico_homeclass_sincronas`.
+   - Firma del alumno y del centro; completed solo con ambas.
+
+3. **pdf_homeclass_render**
+   - PDF HomeClass: modalidad sincrónica, sin QUINTA, SÉPTIMA económica.
+   - `print_report_name` / adjunto con `Homeclass_Sincronas`.
+   - Sin FUPPEMM, Luz Mary ni Área de Psicología.
+
+### Configuración cuando el MCP esté disponible
+- projectPath: addons-extra/extrairg/irg_practice_agreement_specific
+- puerto: 8069
+- base desechable (no beta, no producción)

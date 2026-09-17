@@ -4,18 +4,18 @@
               inherit_id="irg_practice_agreement_sign.portal_agreement_page">
         <xpath expr="//div[hasclass('card-header')]/h3" position="replace">
             <h3 class="mb-1 text-white">
-                <t t-if="agreement.agreement_type in ('especifico_internacional', 'especifico_nacional')">Convenio Específico de Prácticas</t>
+                <t t-if="agreement.agreement_type in ('especifico_internacional', 'especifico_nacional', 'especifico_homeclass_sincronas')">Convenio Específico de Prácticas</t>
                 <t t-else="">Convenio Marco de Colaboración Educativa</t>
             </h3>
         </xpath>
         <xpath expr="//h5[contains(., 'Texto Completo')]" position="attributes">
-            <attribute name="t-if">agreement.agreement_type not in ('especifico_internacional', 'especifico_nacional')</attribute>
+            <attribute name="t-if">agreement.agreement_type not in ('especifico_internacional', 'especifico_nacional', 'especifico_homeclass_sincronas')</attribute>
         </xpath>
         <xpath expr="//h5[contains(., 'Texto Completo')]/following-sibling::div[1]" position="attributes">
-            <attribute name="t-if">agreement.agreement_type not in ('especifico_internacional', 'especifico_nacional')</attribute>
+            <attribute name="t-if">agreement.agreement_type not in ('especifico_internacional', 'especifico_nacional', 'especifico_homeclass_sincronas')</attribute>
         </xpath>
         <xpath expr="//h5[contains(., 'Texto Completo')]" position="after">
-            <h5 t-if="agreement.agreement_type in ('especifico_internacional', 'especifico_nacional')"
+            <h5 t-if="agreement.agreement_type in ('especifico_internacional', 'especifico_nacional', 'especifico_homeclass_sincronas')"
                 class="text-primary border-bottom pb-2 my-4">
                 2. Texto Completo del Convenio Específico
             </h5>
@@ -30,6 +30,12 @@
                  style="max-height: 480px; overflow-y: auto; font-size: 13.5px; line-height: 1.6; color: #212529; border: 1px solid #ced4da;">
                 <t t-set="doc" t-value="agreement"/>
                 <t t-call="irg_practice_agreement_specific.agreement_document_especifico_nacional"/>
+            </div>
+            <div t-if="agreement.agreement_type == 'especifico_homeclass_sincronas'"
+                 class="bg-white p-4 rounded border mb-4 shadow-sm"
+                 style="max-height: 480px; overflow-y: auto; font-size: 13.5px; line-height: 1.6; color: #212529; border: 1px solid #ced4da;">
+                <t t-set="doc" t-value="agreement"/>
+                <t t-call="irg_practice_agreement_specific.agreement_document_especifico_homeclass_sincronas"/>
             </div>
         </xpath>
     </template>
@@ -117,6 +123,9 @@
                                             <t t-set="doc" t-value="agreement"/>
                                             <t t-if="agreement.agreement_type == 'especifico_nacional'">
                                                 <t t-call="irg_practice_agreement_specific.agreement_document_especifico_nacional"/>
+                                            </t>
+                                            <t t-elif="agreement.agreement_type == 'especifico_homeclass_sincronas'">
+                                                <t t-call="irg_practice_agreement_specific.agreement_document_especifico_homeclass_sincronas"/>
                                             </t>
                                             <t t-else="">
                                                 <t t-call="irg_practice_agreement_specific.agreement_document_especifico_internacional"/>

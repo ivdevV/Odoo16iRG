@@ -30,3 +30,32 @@
 - 2026-09-07: GREEN QWeb en 16.0.1.0.2: el `t-if` se aplica al `li` raíz real mediante `//li[contains(@t-attf-class, 'o_wslides_slides_list_slide')]`. Validador local: 13 grupos, 20 contratos y 0 fallos.
 - 2026-09-07: Review independiente aprobada con 0 Critical, 0 Important y 0 Minor. Confirmó una coincidencia raíz, composición con otras herencias y permanencia del control server-side.
 - 2026-09-07: Validación independiente `passed`: siete XML válidos, XPath evaluado con una coincidencia contra el padre oficial Odoo 16, manifest 16.0.1.0.2 y `git diff --check` exit 0. Runtime Odoo/TestSprite quedaron `skipped` sin usar Docker.
+- 2026-09-08: La aceptación beta completó activación, dos versiones de Esquema, asignación y apertura de Entrega parcial. Detectó cuatro regresiones de presentación/integración: lista backend sin columnas, copy del portal poco operativo, creación de sección con `is_category` readonly y canal/contenido Online incorrectos.
+- 2026-09-08: Diagnóstico de causa raíz: el one2many carece de tree; portal y membership usan siempre el canal configurado; el router de modalidades consulta `op.admission` en lugar de la matrícula TFM; la autorización exige igualdad exacta de canal; y el bootstrap no incluye convocatorias. Plan ampliado antes de cambios funcionales. El usuario aprobó implementar con «adelante» y mantuvo la prohibición de usar Docker.
+- 2026-09-08: Security Advisor beta ronda 1 emitió `[NO]`: identificó efectos laterales de los hooks V2 sobre memberships hermanas, falta de conciliación al romper/reemplazar la familia de canales y persistencia de decisiones por admisión global en las rutas directas. El plan se enmendó con doble contexto de aislamiento, lifecycle `slide.channel`, gate exacto en canal+slide, búsqueda completa antes de filtrar y fallback de clones fail-closed. Pendiente segunda revisión.
+- 2026-09-08: Security Advisor beta ronda 2 emitió `[YES]`; autorizó iniciar Implementación/TDD con los controles enmendados.
+- 2026-09-08: TDD RED ejecutado sin Docker. Se añadieron ocho regresiones ORM/HTTP de aceptación (63 tests totales) y nueve contratos estáticos. El validador alcanzó las nuevas aserciones y falló con exit 1 exclusivamente porque la implementación aún no existe; evidencia en `artifacts/beta-acceptance-red.txt`.
+- 2026-09-08: GREEN 16.0.1.0.3 implementado por herencia: canal efectivo desde la matrícula exacta, gate de rutas TFM posterior al controlador Online final, memberships aisladas de hooks V2, lifecycle de familia, fallback seguro de categorías clonadas, bootstrap futuro, listado backend con columnas, ocultación legacy, `force_save` y copy/fechas del portal. Validador 13/13 y 29 contratos, compileall y `git diff --check` terminaron con exit 0; evidencia en `artifacts/beta-acceptance-green.txt`. No se usó Docker.
+- 2026-09-08: Review independiente beta no aprobó la primera versión: detectó un
+  fail-open de clones inválidos, pérdida de la cadena Online en slides no TFM,
+  relaciones inversas omitidas en lifecycle, elevación prematura y huecos de
+  pruebas. Se reabrió Implementación/TDD.
+- 2026-09-08: TDD RED 2 amplió la suite a 69 métodos. El validador terminó con
+  exit 1 exactamente por seis contratos derivados del Review antes de tocar de
+  nuevo código productivo. No se usó Docker por instrucción expresa.
+- 2026-09-08: GREEN 2 cerró los seis contratos y añadió defensa para familias
+  con backlinks rotos. La suite quedó en 70 métodos y 35 contratos; el
+  validador local pasó 13/13, compileall y `git diff --check` terminaron con
+  exit 0. Review independiente ronda 2: APROBADO, sin observaciones Critical,
+  Important ni Minor. No se usó Docker.
+- 2026-09-08: Validación independiente final `passed`: base `7a14590fe`, versión
+  16.0.1.0.3, 13 grupos, 70 pruebas estructurales, 35 contratos, compileall,
+  XML/manifiesto y `git diff --check` sin fallos. Odoo/PostgreSQL/TestSprite se
+  registraron como `skipped` por la prohibición de Docker, sin afirmar runtime.
+- 2026-09-08: Documentación posterior a gates actualizada: guía 16.0.1.0.3,
+  configuración base/Online, diferencia entre Secciones iRG y Contenido,
+  checklist beta, changelog y corrección de `completion_porc` en el micro-spec.
+- 2026-09-08: Comprobación final acotada: `verification.json` parseable y
+  `passed`, versión manifest/guía coincidente, conteo documentado de 70 pruebas,
+  tres enlaces resueltos, cero `__pycache__` en el addon y `git diff --check`
+  exit 0. No se repitió Review/Validación porque Documentación no cambió runtime.

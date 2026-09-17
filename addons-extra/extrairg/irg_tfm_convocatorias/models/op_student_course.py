@@ -92,6 +92,8 @@ class OpStudentCourse(models.Model):
         return records
 
     def write(self, vals):
+        if self._IRG_TFM_MEMBERSHIP_TRIGGER_FIELDS.intersection(vals):
+            self.env['tesis.model']._irg_tfm_guard_linked_identity(self, 'write')
         result = super().write(vals)
         for record in self:
             record._irg_ensure_tfm_record()
@@ -103,6 +105,10 @@ class OpStudentCourse(models.Model):
                 for thesis in theses:
                     thesis._irg_reconcile_tfm_membership()
         return result
+
+    def unlink(self):
+        self.env['tesis.model']._irg_tfm_guard_linked_identity(self, 'unlink')
+        return super().unlink()
 
     @api.model
     def _cron_irg_ensure_tfm_records(self):
