@@ -1,0 +1,82 @@
+{
+  "status": "passed",
+  "task": "irg-survey-gradebook-exclusion",
+  "checks": [
+    {
+      "name": "red_green_contract",
+      "command": "execute_code: arnés aislado HEAD vs checkout actual",
+      "result": "pass",
+      "detail": "La versión previa llama al flujo heredado para survey + no_scoring; la versión actual no lo llama.",
+      "evidence": "missions/irg-survey-gradebook-exclusion/artifacts/red-green-contract.txt"
+    },
+    {
+      "name": "category_contract_suite",
+      "command": "execute_code: arnés aislado de tres categorías y pendientes",
+      "result": "pass",
+      "detail": "Pasaron encuesta no puntuable, encuesta puntuable, asignación no_scoring y filtro de sincronización pendiente.",
+      "evidence": "missions/irg-survey-gradebook-exclusion/artifacts/contract-suite.txt"
+    },
+    {
+      "name": "python_syntax",
+      "command": "python3 -m compileall -q addons-extra/extrairg/irg_exam_second_attempt",
+      "result": "pass",
+      "detail": "Compilación sintáctica del módulo y sus pruebas sin errores.",
+      "evidence": "missions/irg-survey-gradebook-exclusion/artifacts/static-checks.txt"
+    },
+    {
+      "name": "manifest_and_xml",
+      "command": "ast.parse(manifest) + ElementTree.parse(survey_templates.xml)",
+      "result": "pass",
+      "detail": "Manifest y XML válidos.",
+      "evidence": "missions/irg-survey-gradebook-exclusion/artifacts/static-checks.txt"
+    },
+    {
+      "name": "diff_whitespace",
+      "command": "git diff --check -- alcance de la misión",
+      "result": "pass",
+      "detail": "Sin errores de whitespace en el alcance revisado.",
+      "evidence": "missions/irg-survey-gradebook-exclusion/artifacts/static-checks.txt"
+    },
+    {
+      "name": "security_scan",
+      "command": "execute_code: escaneo de líneas añadidas",
+      "result": "pass",
+      "detail": "Sin secretos hardcodeados, shell execution, eval/exec, pickle ni SQL formateado.",
+      "evidence": "missions/irg-survey-gradebook-exclusion/artifacts/static-checks.txt"
+    },
+    {
+      "name": "independent_code_review",
+      "command": "delegate_task + irg-developer Bot Chat: revisión estática fail-closed",
+      "result": "pass",
+      "detail": "Revisión inicial y seguimiento aprobados; sin observaciones de seguridad o lógica. Se aplicaron las sugerencias de cobertura y se conservó el retorno heredado None.",
+      "evidence": "missions/irg-survey-gradebook-exclusion/artifacts/code-review-summary.json"
+    },
+    {
+      "name": "odoo_transaction_tests",
+      "command": "python3 -m unittest addons-extra/extrairg/irg_exam_second_attempt/tests/test_survey_gradebook_sync.py",
+      "result": "skipped",
+      "detail": "Bloqueado antes de cargar tests: no existe el módulo Python odoo y no hay Docker/compose ni docker-compose.local.yml en el host. Requiere ejecución en runtime Odoo local autorizado.",
+      "evidence": "missions/irg-survey-gradebook-exclusion/artifacts/static-checks.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "No aplica al diff: no se modificaron vistas, QWeb, assets, portal, website ni controladores.",
+      "evidence": "missions/irg-survey-gradebook-exclusion/plan.md"
+    }
+  ],
+  "environment": {
+    "runtime": "Odoo local no disponible; docker-compose.local.yml ausente",
+    "database": "no ejecutada",
+    "base_commit": "a6d4b0d31"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "missions/irg-survey-gradebook-exclusion/artifacts/red-green-contract.txt",
+    "missions/irg-survey-gradebook-exclusion/artifacts/contract-suite.txt",
+    "missions/irg-survey-gradebook-exclusion/artifacts/static-checks.txt",
+    "missions/irg-survey-gradebook-exclusion/artifacts/code-review-summary.json"
+  ]
+}
