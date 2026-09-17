@@ -1,0 +1,9 @@
+Independent validation runtime skips — 2026-09-16
+
+Docker prohibition: the user does not have Docker on this machine and explicitly prohibited starting, querying, or using Docker or TestSprite.
+
+Odoo runtime/module tests: SKIPPED. docker-compose.local.yml was not executed; no runtime database was available.
+
+Odoo integration/concurrency tests: SKIPPED. These require the prohibited Docker-backed Odoo/PostgreSQL runtime.
+
+TestSprite E2E: SKIPPED. The scope would trigger E2E because views/QWeb/portal/controllers changed, but Docker and TestSprite are explicitly prohibited.

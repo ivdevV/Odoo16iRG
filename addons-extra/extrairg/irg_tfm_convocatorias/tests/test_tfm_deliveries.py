@@ -183,6 +183,7 @@ class TestTfmDeliveries(TfmFixtureMixin, TransactionCase):
         self.assertEqual(columns, [
             'stage', 'version', 'attachment_id', 'comment', 'convocation_id',
             'submitted_by', 'submitted_at', 'internal_exception',
+            'irg_tfm_review_state', 'irg_tfm_reviewed_at',
         ])
         legacy_phase = arch.xpath("//sheet/group/group/field[@name='status_thesis']")
         legacy_documents = arch.xpath("//page[.//field[@name='attachment2_ids']]")

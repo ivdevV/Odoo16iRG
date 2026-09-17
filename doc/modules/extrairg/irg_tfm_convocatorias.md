@@ -2,7 +2,7 @@
 
 **Categoría:** extrairg
 
-**Versión:** 16.0.1.0.4
+**Versión:** 16.0.1.2.0
 
 **Licencia:** LGPL-3
 
@@ -109,6 +109,22 @@ El versionado se calcula por expediente, etapa y convocatoria histórica. Por el
 - **Archivar la convocatoria del catálogo:** no equivale a retirarla del expediente. Una convocatoria archivada no admite nuevas entregas ni puede asignarse, pero el Esquema continúa cerrado mientras el expediente conserve esa referencia. Para reabrir el Esquema se debe retirar expresamente la convocatoria del expediente.
 
 Las entregas históricas y sus adjuntos nunca se borran durante estos cambios.
+
+### 7. Revisión de cada versión de entrega
+
+El revisor no modifica el archivo. Cada versión inmutable tiene como máximo una
+revisión `irg.tfm.entrega.revision` (estado, comentario, revisor y fecha
+calculados por el servidor). Solo el grupo **Revisor TFM** crea o edita; no hay
+borrado. El alumno dueño ve en MyCampus el distintivo siempre y el comentario
+cuando el estado no es pendiente.
+
+### 8. Nota final y libreta
+
+`points_fin` y el examen vinculado de la asignatura TFM se mantienen iguales.
+La asignatura se resuelve solo por Canal TFM y `op.subject.slide_channel_id`.
+La plantilla de libreta no puede redondear ni recortar esa nota. Un examen
+nuevo en esa línea exige expediente activo; si no, la operación se rechaza
+hasta activar el expediente o corregir la configuración.
 
 ## Configuración
 
@@ -302,15 +318,21 @@ Antes de desplegar a beta o producción se debe repetir la instalación, la actu
 | Archivo | Responsabilidad |
 | --- | --- |
 | `models/op_student_course.py` | Elegibilidad, activación inmediata, cron y unicidad. |
-| `models/app_gradebook_result.py` | Recalcula el progreso y dispara la activación después de cambios de calificación. |
+| `models/app_gradebook_result.py` | Recalcula el progreso, dispara la activación y coordina el sync inverso. |
+| `models/irg_tfm_grade_sync.py` | Coordinadores de nota, savepoint, vínculo y guardas de identidad. |
+| `models/irg_tfm_entrega_revision.py` | Revisión auditada por versión de entrega. |
+| `models/op_admission.py` | Impide reasignar alumno/curso/lote si hay nota TFM vinculada. |
+| `models/app_gradebook_student.py` | Impide reasignar la libreta de una nota TFM vinculada. |
+| `models/app_gradebook_subject.py` | Impide reasignar la línea de una nota TFM vinculada. |
 | `models/irg_tfm_convocatoria.py` | Catálogo y validación de ventanas. |
-| `models/tesis_model.py` | Convocatoria, propiedad, chatter y conciliación eLearning. |
-| `models/irg_tfm_entrega.py` | Subida, formatos, ventanas, versiones, adjuntos y excepciones. |
+| `models/tesis_model.py` | Convocatoria, propiedad, chatter, conciliación eLearning y `points_fin`. |
+| `models/irg_tfm_entrega.py` | Subida, formatos, ventanas, versiones, adjuntos, excepciones y acción de revisión. |
 | `models/slide_slide.py` | Restricción efectiva por convocatoria. |
 | `models/slide_channel.py` | Familia HomeClass/Online, canal efectivo, rutas fail-closed y lifecycle. |
 | `models/slide_channel_partner.py` | Membresías con procedencia segura. |
 | `controllers/portal.py` | MyCampus, descarga, control directo de slides y neutralización legacy. |
-| `views/tfm_portal_templates.xml` | Tarjeta, página e historial de entregas. |
+| `views/tfm_portal_templates.xml` | Tarjeta, página, historial de entregas y feedback de revisión. |
+| `views/irg_tfm_entrega_revision_views.xml` | Formulario backend de revisión. |
 | `views/slide_tfm_views.xml` | Configuración de convocatorias en categorías eLearning. |
 | `views/tfm_slide_templates.xml` | Ocultación QWeb combinada con lote y prácticas. |
 
@@ -318,5 +340,7 @@ Antes de desplegar a beta o producción se debe repetir la instalación, la actu
 
 - [Micro-spec](../../micro-specs/2026-09-04-irg-tfm-convocatorias.md)
 - [Micro-spec de la corrección Online](../../micro-specs/2026-09-09-irg-tfm-online-elearning-fix.md)
+- [Diseño de revisión y sync de nota](../../../docs/superpowers/specs/2026-09-14-tfm-delivery-review-gradebook-design.md)
 - [Plan y controles de implementación](../../../missions/irg-tfm-convocatorias/plan.md)
-- [Verificación de la misión](../../../missions/irg-tfm-convocatorias/verification.json)
+- [Misión revisión/sync](../../../missions/irg-tfm-delivery-review-gradebook/plan.md)
+- [Verificación de la misión de revisión/sync](../../../missions/irg-tfm-delivery-review-gradebook/verification.json)

@@ -260,6 +260,19 @@
                     <span class="text-muted"> — <t t-esc="delivery.submitted_at"/></span>
                     <p t-if="delivery.comment" class="mb-1"><t t-esc="delivery.comment"/></p>
                     <a t-attf-href="/campus/tfm/delivery/#{delivery.id}/download">Descargar archivo</a>
+                    <t t-set="review" t-value="delivery_reviews.get(delivery.id)"/>
+                    <div t-if="review" class="mt-2">
+                        <span t-att-class="'badge bg-warning text-dark' if review.get('state') == 'corrections' else ('badge bg-success' if review.get('state') == 'approved' else 'badge bg-secondary')">
+                            <t t-esc="review_state_labels.get(review.get('state'))"/>
+                        </span>
+                        <p t-if="review.get('state') != 'pending' and review.get('comment')"
+                           class="mb-1 mt-2" style="white-space: pre-wrap;">
+                            <t t-esc="review.get('comment')"/>
+                        </p>
+                    </div>
+                    <span t-else="" class="badge bg-secondary mt-2">
+                        Pendiente de revisión
+                    </span>
                 </div>
                 <form t-if="is_open"
                       t-attf-action="/campus/course/#{course.id}/tfm/submit"

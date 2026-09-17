@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG TFM Convocatorias',
-    'version': '16.0.1.1.0',
+    'version': '16.0.1.2.0',
     'summary': 'Activa y administra convocatorias de Trabajo Final de Máster',
     'category': 'Education',
     'author': 'IRG',
@@ -31,6 +31,7 @@
         'data/tfm_outline_survey.xml',
         'views/irg_tfm_convocatoria_views.xml',
         'views/op_course_views.xml',
+        'views/irg_tfm_entrega_revision_views.xml',
         'views/tesis_model_views.xml',
         'views/survey_tfm_views.xml',
         'views/res_config_settings_views.xml',

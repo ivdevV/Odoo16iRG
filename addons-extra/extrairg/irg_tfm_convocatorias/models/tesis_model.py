@@ -3,6 +3,12 @@ from markupsafe import escape
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, ValidationError
 
+from .irg_tfm_grade_sync import (
+    _TFM_DEFER_GRADE_TRIGGER,
+    _TFM_GRADE_SYNC_ORIGIN,
+    _TFM_INTERNAL_TOKEN,
+)
+
 
 class TesisModel(models.Model):
     _inherit = 'tesis.model'
@@ -137,11 +143,107 @@ class TesisModel(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        self._irg_tfm_reject_reserved_public_input(vals_list)
         if any(vals.get('irg_tfm_convocation_id') for vals in vals_list):
             raise ValidationError(
                 _('Create the thesis first, then assign its TFM convocation.'),
             )
+        prepared_vals, graded_indexes = self._irg_tfm_prepare_grade_create_values(
+            vals_list
+        )
+        if graded_indexes:
+            enrollments = self._irg_tfm_grade_create_enrollments(
+                prepared_vals,
+                graded_indexes,
+            )
+            actor = self._irg_tfm_require_grade_actor(
+                'create',
+                enrollments=enrollments,
+            )
+            return self._irg_tfm_sync_points_to_gradebook(
+                operation='create',
+                actor=actor,
+                values=prepared_vals,
+                graded_indexes=graded_indexes,
+            )
+        return self._irg_tfm_create_business(prepared_vals)
+
+    @api.model_create_multi
+    def _irg_tfm_create_business(self, vals_list):
         return super().create(vals_list)
+
+    def _irg_tfm_reject_reserved_public_input(self, values):
+        payloads = values if isinstance(values, list) else [values]
+        context = self.env.context
+        forged_context = (
+            _TFM_GRADE_SYNC_ORIGIN in context
+            or (
+                _TFM_DEFER_GRADE_TRIGGER in context
+                and context.get(_TFM_DEFER_GRADE_TRIGGER) is not _TFM_INTERNAL_TOKEN
+            )
+            or 'irg_tfm_thesis_id' in context
+            or 'default_irg_tfm_thesis_id' in context
+        )
+        forged_payload = any(
+            'irg_tfm_thesis_id' in payload for payload in payloads
+        )
+        if forged_context or forged_payload:
+            raise AccessError(_(
+                'Los marcadores y vínculos de sincronización TFM son internos.'
+            ))
+
+    def _irg_tfm_prepare_grade_create_values(self, vals_list):
+        missing_grade = any('points_fin' not in values for values in vals_list)
+        effective_defaults = (
+            self.default_get(['points_fin']) if missing_grade else {}
+        )
+        prepared = []
+        graded_indexes = []
+        for index, original in enumerate(vals_list):
+            values = dict(original)
+            grade_was_supplied = 'points_fin' in values
+            if (
+                'points_fin' not in values
+                and 'points_fin' in effective_defaults
+            ):
+                values['points_fin'] = effective_defaults['points_fin']
+                grade_was_supplied = True
+            elif 'points_fin' not in values:
+                values['points_fin'] = 0.0
+            if grade_was_supplied:
+                graded_indexes.append(index)
+            prepared.append(values)
+        return prepared, graded_indexes
+
+    def _irg_tfm_grade_create_enrollments(self, vals_list, graded_indexes):
+        enrollment_ids = []
+        for index in graded_indexes:
+            raw_id = vals_list[index].get('course_id')
+            try:
+                enrollment_id = int(raw_id)
+            except (TypeError, ValueError):
+                raise ValidationError(_('La matrícula TFM indicada no es válida.'))
+            if enrollment_id <= 0:
+                raise ValidationError(_('La matrícula TFM indicada no es válida.'))
+            enrollment_ids.append(enrollment_id)
+        enrollments = self.env['op.student.course'].browse(
+            sorted(set(enrollment_ids))
+        ).exists()
+        if set(enrollments.ids) != set(enrollment_ids):
+            raise ValidationError(_('La matrícula TFM indicada no es válida.'))
+        return enrollments
+
+    def _irg_tfm_require_grade_actor(self, operation, enrollments=None):
+        actor = self.env.user
+        if not actor.has_group('irg_tfm_convocatorias.group_tfm_reviewer'):
+            raise AccessError(_('Solo un Revisor TFM puede modificar la nota final.'))
+        self.check_access_rights(operation)
+        if operation == 'write':
+            self.check_access_rule('write')
+        if enrollments:
+            enrollments.check_access_rights('read')
+            enrollments.check_access_rule('read')
+        return actor
 
     def _send_email_notification(self):
         if self.env.context.get('irg_tfm_auto_activation'):
@@ -149,6 +251,27 @@ class TesisModel(models.Model):
         return super()._send_email_notification()
 
     def write(self, vals):
+        self._irg_tfm_reject_reserved_public_input(vals)
+        if 'course_id' in vals and 'irg_tfm_convocation_id' in vals:
+            raise ValidationError(_(
+                'Cambie la matrícula y la convocatoria TFM en operaciones separadas.'
+            ))
+        if 'course_id' in vals:
+            self.env['tesis.model']._irg_tfm_guard_linked_identity(self, 'write')
+        if 'points_fin' in vals:
+            actor = self._irg_tfm_require_grade_actor('write')
+            return self._irg_tfm_sync_points_to_gradebook(
+                operation='write',
+                actor=actor,
+                values=dict(vals),
+            )
+        return self._irg_tfm_write_business(vals)
+
+    def unlink(self):
+        self.env['tesis.model']._irg_tfm_guard_linked_identity(self, 'unlink')
+        return super().unlink()
+
+    def _irg_tfm_write_business(self, vals):
         if 'irg_tfm_convocation_id' not in vals:
             return super().write(vals)
 

@@ -127,3 +127,86 @@ class TestSurveyGradebookSync(TransactionCase):
         user_input.invalidate_recordset(['result_id'])
         self.assertTrue(user_input.result_id, "La regularizacion masiva debe asociar el result_id")
         self.assertEqual(user_input.result_id.scoring_total, 9.0)
+
+    def test_no_scoring_survey_is_not_synced_to_gradebook(self):
+        """Las encuestas de satisfacción sin puntuación no son evaluaciones académicas."""
+        satisfaction_survey = self.env['survey.survey'].create({
+            'title': 'Encuesta de satisfacción sin nota',
+            'survey_type': 'survey',
+            'scoring_type': 'no_scoring',
+        })
+        satisfaction_slide = self.env['slide.slide'].create({
+            'name': 'Slide Encuesta de satisfacción',
+            'channel_id': self.channel.id,
+            'slide_category': 'document',
+            'survey_id': satisfaction_survey.id,
+        })
+        slide_partner = self.env['slide.slide.partner'].create({
+            'slide_id': satisfaction_slide.id,
+            'partner_id': self.partner.id,
+        })
+        user_input = self.env['survey.user_input'].create({
+            'survey_id': satisfaction_survey.id,
+            'partner_id': self.partner.id,
+            'slide_partner_id': slide_partner.id,
+            'slide_id': satisfaction_slide.id,
+        })
+
+        user_input.write({
+            'state': 'done',
+            'scoring_percentage': 0.0,
+        })
+        user_input.send_result()
+        self.assertFalse(user_input.result_id)
+        self.assertFalse(user_input.gradebook_subject_id)
+        self.assertFalse(user_input.gradebook_student_id)
+
+        pending_attempts = self.env['survey.user_input'].search([
+            ('survey_type', 'in', ('exam', 'assignment', 'survey', 'cert')),
+            ('state', '=', 'done'),
+            ('test_entry', '=', False),
+            ('result_id', '=', False),
+        ])
+        self.assertIn(user_input, pending_attempts)
+        self.env['survey.user_input'].action_sync_pending_survey_gradebooks()
+        user_input.invalidate_recordset([
+            'result_id',
+            'gradebook_subject_id',
+            'gradebook_student_id',
+        ])
+        self.assertFalse(user_input.result_id)
+        self.assertFalse(user_input.gradebook_subject_id)
+        self.assertFalse(user_input.gradebook_student_id)
+
+    def test_no_scoring_assignment_still_syncs_to_gradebook(self):
+        """Las asignaciones pueden usar no_scoring y seguir siendo académicas."""
+        assignment_survey = self.env['survey.survey'].create({
+            'title': 'Asignación evaluable sin puntuación nativa',
+            'survey_type': 'assignment',
+            'scoring_type': 'no_scoring',
+        })
+        assignment_slide = self.env['slide.slide'].create({
+            'name': 'Slide Asignación evaluable',
+            'channel_id': self.channel.id,
+            'slide_category': 'document',
+            'survey_id': assignment_survey.id,
+        })
+        slide_partner = self.env['slide.slide.partner'].create({
+            'slide_id': assignment_slide.id,
+            'partner_id': self.partner.id,
+        })
+        user_input = self.env['survey.user_input'].create({
+            'survey_id': assignment_survey.id,
+            'partner_id': self.partner.id,
+            'slide_partner_id': slide_partner.id,
+            'slide_id': assignment_slide.id,
+        })
+
+        user_input.write({
+            'state': 'done',
+            'scoring_percentage': 75.0,
+        })
+
+        self.assertTrue(user_input.result_id)
+        self.assertEqual(user_input.result_id.survey_type, 'assignment')
+        self.assertEqual(user_input.result_id.scoring_total, 7.5)

@@ -8,6 +8,24 @@ _logger = logging.getLogger(__name__)
 class SurveyUserInputExamSecondAttempt(models.Model):
     _inherit = 'survey.user_input'
 
+    def _irg_is_non_scored_survey(self):
+        """Return whether this response is a non-academic survey."""
+        self.ensure_one()
+        return bool(
+            self.survey_type == 'survey'
+            and self.survey_id
+            and self.survey_id.scoring_type == 'no_scoring'
+        )
+
+    def send_result(self):
+        """Do not send non-scored satisfaction surveys to the gradebook."""
+        eligible = self.filtered(
+            lambda record: not record._irg_is_non_scored_survey()
+        )
+        if not eligible:
+            return None
+        return super(SurveyUserInputExamSecondAttempt, eligible).send_result()
+
     def _irg_get_exam_score_for_gradebook(self):
         self.ensure_one()
         if 'answer_score_total' in self._fields:
@@ -22,11 +40,14 @@ class SurveyUserInputExamSecondAttempt(models.Model):
                 lambda attempt: (
                     attempt.survey_id == self.survey_id
                     and attempt.survey_type in ('exam', 'assignment', 'survey', 'cert')
+                    and not attempt._irg_is_non_scored_survey()
                     and not attempt.test_entry
                     and attempt.state == 'done'
                 )
             )
-        return attempts | self
+        return (attempts | self).filtered(
+            lambda attempt: not attempt._irg_is_non_scored_survey()
+        )
 
     def _irg_sync_exam_gradebook_result(self):
         if not all(
@@ -48,6 +69,7 @@ class SurveyUserInputExamSecondAttempt(models.Model):
         for record in self.filtered(
             lambda attempt: (
                 attempt.survey_type in target_types
+                and not attempt._irg_is_non_scored_survey()
                 and not attempt.test_entry
                 and attempt.state == 'done'
             )
@@ -153,7 +175,9 @@ class SurveyUserInputExamSecondAttempt(models.Model):
             ('state', '=', 'done'),
             ('test_entry', '=', False),
             ('result_id', '=', False),
-        ])
+        ]).filtered(
+            lambda attempt: not attempt._irg_is_non_scored_survey()
+        )
         _logger.info("Sincronizando %s intentos pendientes a libretas", len(pending_attempts))
         pending_attempts._irg_sync_exam_gradebook_result()
         return len(pending_attempts)

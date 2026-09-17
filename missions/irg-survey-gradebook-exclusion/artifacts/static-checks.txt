@@ -1,0 +1,10 @@
+Validaciones estáticas ejecutadas.
+
+- `python3 -m compileall -q addons-extra/extrairg/irg_exam_second_attempt` → código 0.
+- `git diff --check -- <archivos del módulo>` → código 0 después de retirar una línea en blanco extra.
+- Parseo AST del manifest y parseo XML de `views/survey_templates.xml` → `manifest_ast=pass xml_parse=pass`.
+- `python3 -m unittest addons-extra/extrairg/irg_exam_second_attempt/tests/test_survey_gradebook_sync.py` → bloqueado antes de cargar tests: `ModuleNotFoundError: No module named 'odoo'`.
+- `docker compose version` → el subcomando no está instalado.
+- `docker-compose version` → binario no instalado; `docker ps` tampoco puede conectar con `/var/run/docker.sock`.
+
+La suite TransactionCase de Odoo queda pendiente de un runtime local disponible; no se marca como pasada.
