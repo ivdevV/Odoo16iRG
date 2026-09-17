@@ -8,7 +8,10 @@ import xml.etree.ElementTree as ET
 from odoo.exceptions import AccessError, UserError
 from odoo.tests.common import TransactionCase, tagged
 
-from odoo.addons.irg_campus_activity_audit.wizard.listado_parser import parse_listado_xlsx
+from odoo.addons.irg_campus_activity_audit.wizard.listado_parser import (
+    extract_course_code,
+    parse_listado_xlsx,
+)
 from odoo.addons.irg_campus_activity_audit.wizard.xlsx_export import SHEET_ORDER
 
 try:
@@ -85,27 +88,54 @@ class TestCampusActivityAudit(TransactionCase):
             "groups_id": [(6, 0, [cls.env.ref("base.group_user").id])],
         })
 
-    def _wizard(self, **vals):
-        values = {"batch_id": self.batch.id}
-        values.update(vals)
-        return self.env["irg.campus.activity.audit.wizard"].create(values)
+    def _course_label(self, course=None):
+        course = course or self.course
+        return "%s (%s)" % (course.name, course.code)
 
     def _listado_xlsx(self, rows):
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {"in_memory": True})
-        sheet = workbook.add_worksheet("Listado")
-        sheet.write(0, 0, "email")
-        sheet.write(0, 1, "curso")
-        for index, (email, course) in enumerate(rows, start=1):
+        sheet = workbook.add_worksheet("Hoja1")
+        sheet.write(0, 0, "Correo electrónico")
+        sheet.write(0, 1, "Curso")
+        sheet.write(0, 2, "Nombre")
+        sheet.write(0, 3, "País")
+        sheet.write(0, 5, "modalidad")
+        for index, row in enumerate(rows, start=1):
+            email, course = row[0], row[1]
+            name = row[2] if len(row) > 2 else ""
+            country = row[3] if len(row) > 3 else ""
+            modality = row[4] if len(row) > 4 else ""
             sheet.write(index, 0, email)
             sheet.write(index, 1, course)
+            sheet.write(index, 2, name)
+            sheet.write(index, 3, country)
+            sheet.write(index, 4, "ODOO ULTIMO")
+            sheet.write(index, 5, modality)
         workbook.close()
         return base64.b64encode(output.getvalue())
 
+    def _wizard(self, **vals):
+        values = {
+            "listado_filename": "listado diplomados.xlsx",
+        }
+        if "listado_file" not in vals:
+            values["listado_file"] = self._listado_xlsx([
+                (
+                    self.partner.email,
+                    self._course_label(),
+                    self.student.name,
+                    "México",
+                    "Modalidad semipresencial",
+                ),
+            ])
+        values.update(vals)
+        return self.env["irg.campus.activity.audit.wizard"].create(values)
+
     def _summary_by_email(self, wizard):
-        enrollments = wizard._enrollments()
-        matched, unmatched = wizard._match_enrollments(enrollments, wizard._listado_rows())
-        sheets = wizard._build_sheets(matched, unmatched, bool(wizard.listado_file))
+        listado = wizard._listado_rows()
+        matched, unmatched = wizard._match_enrollments(listado)
+        sheets = wizard._build_sheets(matched, unmatched)
         headers, rows = sheets["Resumen alumnos"]
         mapping = {row[0]: dict(zip(headers, row)) for row in rows}
         return mapping, sheets, unmatched
@@ -115,21 +145,49 @@ class TestCampusActivityAudit(TransactionCase):
         with self.assertRaises(AccessError):
             wizard.with_user(self.plain_user).action_generate()
 
-    def test_empty_batch_raises(self):
-        self.enrollment.unlink()
-        wizard = self._wizard()
+    def test_missing_listado_raises(self):
+        wizard = self._wizard(listado_file=False)
         with self.assertRaises(UserError):
             wizard.action_generate()
 
-    def test_batch_action_opens_wizard(self):
-        action = self.batch.action_open_campus_activity_audit()
-        self.assertEqual(action["res_model"], "irg.campus.activity.audit.wizard")
-        self.assertEqual(action["context"]["default_batch_id"], self.batch.id)
+    def test_listado_without_emails_raises(self):
+        wizard = self._wizard(listado_file=self._listado_xlsx([]))
+        with self.assertRaises(UserError):
+            wizard.action_generate()
 
-    def test_enrollments_come_from_batch(self):
-        wizard = self._wizard()
-        enrollments = wizard._enrollments()
-        self.assertEqual(enrollments, self.enrollment)
+    def test_menu_opens_wizard(self):
+        menu = self.env.ref("irg_campus_activity_audit.menu_irg_campus_activity_audit")
+        self.assertTrue(menu.action)
+        self.assertEqual(menu.action.res_model, "irg.campus.activity.audit.wizard")
+
+    def test_batch_form_has_no_audit_button(self):
+        xmlid = "irg_campus_activity_audit.view_op_batch_form_campus_activity_audit"
+        with self.assertRaises(ValueError):
+            self.env.ref(xmlid)
+
+    def test_only_listado_students_in_summary(self):
+        other_partner = self.env["res.partner"].create({
+            "name": "Otro Alumno Auditoria",
+            "email": "otro.audit.%s@example.com" % uuid.uuid4().hex[:6],
+        })
+        other_vals = {
+            "first_name": "Otro",
+            "last_name": "Alumno",
+            "partner_id": other_partner.id,
+        }
+        if "gender" in self.env["op.student"]._fields:
+            other_vals["gender"] = "m"
+        other_student = self.env["op.student"].create(other_vals)
+        self.env["op.student.course"].create({
+            "student_id": other_student.id,
+            "course_id": self.course.id,
+            "batch_id": self.batch.id,
+            "state": "running",
+        })
+        mapping, _sheets, unmatched = self._summary_by_email(self._wizard())
+        self.assertIn(self.partner.email, mapping)
+        self.assertNotIn(other_partner.email, mapping)
+        self.assertFalse(unmatched)
 
     def test_matricula_finalizada_flag(self):
         wizard = self._wizard()
@@ -254,8 +312,8 @@ class TestCampusActivityAudit(TransactionCase):
 
     def test_listado_unmatched_goes_to_sheet(self):
         wizard = self._wizard(listado_file=self._listado_xlsx([
-            (self.partner.email, self.course.code),
-            ("nadie.audit@example.com", self.course.code),
+            (self.partner.email, self._course_label(), self.student.name, "México", "semipresencial"),
+            ("nadie.audit@example.com", self._course_label(), "Nadie", "España", "semipresencial"),
         ]))
         mapping, sheets, unmatched = self._summary_by_email(wizard)
         self.assertIn(self.partner.email, mapping)
@@ -263,14 +321,43 @@ class TestCampusActivityAudit(TransactionCase):
         self.assertEqual(unmatched[0]["email_norm"], "nadie.audit@example.com")
         self.assertEqual(sheets["No encontrados"][1][0][0], "nadie.audit@example.com")
 
-    def test_parse_listado_xlsx_headers(self):
+    def test_wrong_course_on_listado_is_unmatched(self):
+        wizard = self._wizard(listado_file=self._listado_xlsx([
+            (self.partner.email, "Otro diplomado (OTRO9999)", self.student.name, "México", ""),
+        ]))
+        mapping, _sheets, unmatched = self._summary_by_email(wizard)
+        self.assertFalse(mapping)
+        self.assertEqual(len(unmatched), 1)
+        self.assertIn("curso", unmatched[0].get("reason", "").lower())
+
+    def test_parse_diplomados_listado_headers(self):
         payload = base64.b64decode(self._listado_xlsx([
-            ("Ana@Example.com", "CAUD"),
+            (
+                "Ana@Example.com",
+                "Diplomado en Evaluación (DITGHC2606)",
+                "Ana Ejemplo",
+                "México",
+                "Modalidad semipresencial",
+            ),
         ]))
         rows = parse_listado_xlsx(payload)
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["email_norm"], "ana@example.com")
-        self.assertEqual(rows[0]["course_code"], "CAUD")
+        self.assertEqual(rows[0]["course_code"], "DITGHC2606")
+        self.assertIn("Diplomado en Evaluación", rows[0]["course_label"])
+        self.assertEqual(rows[0]["name"], "Ana Ejemplo")
+        self.assertEqual(rows[0]["country"], "México")
+        self.assertEqual(rows[0]["modality"], "Modalidad semipresencial")
+
+    def test_extract_course_code_from_parentheses(self):
+        self.assertEqual(
+            extract_course_code(
+                "Diplomado en Evaluación e Intervención desde las Terapias de Tercera Generación (DITGHC2606)"
+            ),
+            "DITGHC2606",
+        )
+        self.assertEqual(extract_course_code("CAUD123"), "CAUD123")
+        self.assertEqual(extract_course_code(""), "")
 
     def test_generate_xlsx_contains_expected_sheets(self):
         wizard = self._wizard()

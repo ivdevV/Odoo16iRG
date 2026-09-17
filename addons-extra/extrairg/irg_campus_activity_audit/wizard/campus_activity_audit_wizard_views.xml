@@ -7,15 +7,17 @@
             <form string="Informe de actividad de campus">
                 <group attrs="{'invisible': [('state', '=', 'done')]}">
                     <group>
-                        <field name="batch_id" readonly="1"/>
                         <field name="listado_filename" invisible="1"/>
-                        <field name="listado_file" filename="listado_filename"/>
+                        <field name="listado_file" filename="listado_filename" required="1"/>
                     </group>
                     <group>
                         <p>
-                            Se incluirán los alumnos matriculados en este lote.
-                            Si se adjunta un listado, el cruce es por correo y las filas
-                            sin matrícula en el lote irán a la hoja «No encontrados».
+                            Sube el Excel de listado con las columnas
+                            <b>Correo electrónico</b>, <b>Curso</b>, <b>Nombre</b>,
+                            <b>País</b> y <b>modalidad</b>.
+                            El cruce usa el correo y el código del curso entre paréntesis
+                            (por ejemplo DITGHC2606). Las filas sin matrícula irán a
+                            la hoja «No encontrados».
                         </p>
                     </group>
                 </group>
@@ -48,8 +50,13 @@
         <field name="res_model">irg.campus.activity.audit.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
-        <field name="binding_model_id" ref="openeducat_core.model_op_batch"/>
-        <field name="binding_view_types">form</field>
         <field name="groups_id" eval="[(4, ref('openeducat_core.group_op_faculty'))]"/>
     </record>
+
+    <menuitem id="menu_irg_campus_activity_audit"
+              name="Informe de actividad"
+              parent="openeducat_core.menu_op_report_main"
+              action="action_irg_campus_activity_audit_wizard"
+              groups="openeducat_core.group_op_faculty"
+              sequence="80"/>
 </odoo>

@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "task": "irg-campus-activity-audit-listado",
+  "checks": [
+    {
+      "name": "syntax_ast",
+      "command": "python3 ast.parse wizard, parser, export, tests",
+      "result": "pass",
+      "detail": "syntax_ok",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "parser_real_listado",
+      "command": "python3 parse listado diplomados (1).xlsx",
+      "result": "pass",
+      "detail": "565 rows; first course_code=DITGHC2606; 5 course codes",
+      "evidence": "artifacts/parser-green.txt"
+    },
+    {
+      "name": "unit_tests",
+      "command": "docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_db -u irg_campus_activity_audit --test-enable --test-tags /irg_campus_activity_audit --without-demo=all --max-cron-threads=0 --stop-after-init --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 15 tests when loading database 'test_irg_db'",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "El diff no toca QWeb, static/, portal, website ni controladores HTTP. El wizard es TransientModel de backend; la descarga queda cubierta por TransactionCase.",
+      "evidence": "artifacts/scope-review.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_db",
+    "base_commit": "6010bba00ab39dcea440517f2238f2062a5cd994"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/red-tests.txt",
+    "artifacts/green-tests.txt",
+    "artifacts/parser-green.txt",
+    "artifacts/validation-tests.txt",
+    "artifacts/scope-review.txt"
+  ]
+}

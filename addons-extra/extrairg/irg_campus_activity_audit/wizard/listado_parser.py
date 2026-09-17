@@ -26,6 +26,24 @@ _COURSE_HEADERS = {
     "código_curso",
     "course_code",
 }
+_NAME_HEADERS = {
+    "nombre",
+    "name",
+    "alumno",
+    "estudiante",
+    "nombre completo",
+}
+_COUNTRY_HEADERS = {
+    "pais",
+    "país",
+    "country",
+}
+_MODALITY_HEADERS = {
+    "modalidad",
+    "modality",
+}
+
+_COURSE_CODE_RE = re.compile(r"\(([^()]+)\)\s*$")
 
 
 def _col_row(ref: str) -> tuple[int, int]:
@@ -57,8 +75,21 @@ def _header_key(label: str) -> str:
     return (label or "").strip().lower()
 
 
+def extract_course_code(course_label: str) -> str:
+    """Return the code in trailing parentheses, or a compact label as-is."""
+    text = (course_label or "").strip()
+    if not text:
+        return ""
+    match = _COURSE_CODE_RE.search(text)
+    if match:
+        return match.group(1).strip()
+    if " " not in text:
+        return text
+    return ""
+
+
 def parse_listado_xlsx(data: bytes) -> list[dict]:
-    """Return rows with email, email_norm, course_code, excel_row."""
+    """Return rows with email, course, name, country and modality."""
     if not data:
         return []
     with zipfile.ZipFile(BytesIO(data)) as archive:
@@ -94,14 +125,19 @@ def parse_listado_xlsx(data: bytes) -> list[dict]:
         return []
     header_row = min(rows)
     headers = rows.get(header_row, {})
-    email_col = None
-    course_col = None
+    email_col = course_col = name_col = country_col = modality_col = None
     for col, label in headers.items():
         key = _header_key(label)
         if email_col is None and key in _EMAIL_HEADERS:
             email_col = col
-        if course_col is None and key in _COURSE_HEADERS:
+        elif course_col is None and key in _COURSE_HEADERS:
             course_col = col
+        elif name_col is None and key in _NAME_HEADERS:
+            name_col = col
+        elif country_col is None and key in _COUNTRY_HEADERS:
+            country_col = col
+        elif modality_col is None and key in _MODALITY_HEADERS:
+            modality_col = col
     if email_col is None:
         email_col = min(headers) if headers else 1
 
@@ -111,15 +147,19 @@ def parse_listado_xlsx(data: bytes) -> list[dict]:
         email = (data_row.get(email_col) or "").strip()
         if not email:
             continue
-        course_code = ""
+        course_label = ""
         if course_col is not None:
-            course_code = (data_row.get(course_col) or "").strip()
+            course_label = (data_row.get(course_col) or "").strip()
         result.append(
             {
                 "excel_row": row_number,
                 "email": email,
                 "email_norm": email.lower(),
-                "course_code": course_code,
+                "course_label": course_label,
+                "course_code": extract_course_code(course_label),
+                "name": (data_row.get(name_col) or "").strip() if name_col else "",
+                "country": (data_row.get(country_col) or "").strip() if country_col else "",
+                "modality": (data_row.get(modality_col) or "").strip() if modality_col else "",
             }
         )
     return result

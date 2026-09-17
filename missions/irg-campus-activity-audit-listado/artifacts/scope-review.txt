@@ -1,0 +1,1 @@
+E2E TestSprite skipped: no QWeb, static/, portal, website or HTTP controllers in the diff. Backend TransientModel wizard covered by TransactionCase.

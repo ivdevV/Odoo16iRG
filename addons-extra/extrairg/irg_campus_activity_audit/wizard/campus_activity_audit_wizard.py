@@ -2,8 +2,9 @@
 import base64
 from collections import defaultdict
 
-from odoo import _, api, fields, models
+from odoo import _, fields, models
 from odoo.exceptions import AccessError, UserError
+from odoo.osv.expression import OR
 
 from .listado_parser import parse_listado_xlsx
 from .xlsx_export import build_xlsx, methodology_rows, xlsxwriter
@@ -26,8 +27,7 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
     _name = "irg.campus.activity.audit.wizard"
     _description = "Informe de actividad de campus"
 
-    batch_id = fields.Many2one("op.batch", string="Lote", required=True)
-    listado_file = fields.Binary(string="Listado de alumnos (opcional)")
+    listado_file = fields.Binary(string="Listado de alumnos")
     listado_filename = fields.Char(string="Nombre del listado")
     file_data = fields.Binary(string="Informe", readonly=True)
     filename = fields.Char(string="Nombre del archivo", readonly=True)
@@ -37,29 +37,16 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
         string="Estado",
     )
 
-    @api.model
-    def default_get(self, fields_list):
-        values = super().default_get(fields_list)
-        active_id = self.env.context.get("active_id")
-        if (
-            active_id
-            and self.env.context.get("active_model") == "op.batch"
-            and "batch_id" in fields_list
-            and not values.get("batch_id")
-        ):
-            values["batch_id"] = active_id
-        return values
-
     def _assert_can_export(self):
         self.ensure_one()
-        if self.env.su:
-            return
-        if not self.env.user.has_group("openeducat_core.group_op_faculty"):
+        if not self.env.su and not self.env.user.has_group(
+            "openeducat_core.group_op_faculty"
+        ):
             raise AccessError(
                 _("Solo el personal interno de Facultad puede generar el informe de actividad.")
             )
-        if not self.batch_id:
-            raise UserError(_("No se ha seleccionado ningún lote."))
+        if not self.listado_file:
+            raise UserError(_("Adjunta el listado de alumnos en Excel."))
         if xlsxwriter is None:
             raise UserError(_("La librería xlsxwriter no está instalada."))
 
@@ -67,15 +54,12 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
         self.ensure_one()
         self._assert_can_export()
         data_wizard = self.sudo()
-        enrollments = data_wizard._enrollments()
         listado = data_wizard._listado_rows()
-        matched, unmatched = data_wizard._match_enrollments(enrollments, listado)
-        if not matched and not unmatched:
-            raise UserError(_("No hay estudiantes en este lote."))
-        sheets = data_wizard._build_sheets(matched, unmatched, bool(listado))
-        payload = build_xlsx(sheets)
-        filename = "informe_actividad_%s_%s.xlsx" % (
-            self.batch_id.code or self.batch_id.name or "lote",
+        if not listado:
+            raise UserError(_("El listado no contiene correos electrónicos."))
+        matched, unmatched = data_wizard._match_enrollments(listado)
+        payload = build_xlsx(data_wizard._build_sheets(matched, unmatched))
+        filename = "informe_actividad_listado_%s.xlsx" % (
             fields.Date.today().strftime("%Y%m%d"),
         )
         self.write(
@@ -94,21 +78,59 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
             "context": self.env.context,
         }
 
-    def _enrollments(self):
-        self.ensure_one()
-        return self.env["op.student.course"].search(
-            [("batch_id", "=", self.batch_id.id)]
-        )
-
     def _listado_rows(self):
         self.ensure_one()
         if not self.listado_file:
             return []
         return parse_listado_xlsx(base64.b64decode(self.listado_file))
 
-    def _match_enrollments(self, enrollments, listado):
-        if not listado:
-            return enrollments, []
+    def _enrollments_for_listado(self, listado):
+        emails = {
+            (item.get("email_norm") or "").strip()
+            for item in listado
+            if item.get("email_norm")
+        }
+        emails.update(
+            (item.get("email") or "").strip()
+            for item in listado
+            if item.get("email")
+        )
+        wanted = [email for email in emails if email]
+        if not wanted:
+            return self.env["op.student.course"]
+        partners = self.env["res.partner"].search([("email", "in", wanted)])
+        clauses = [
+            [("email", "in", wanted)],
+            [("user_id.login", "in", wanted)],
+        ]
+        if partners:
+            clauses.append([("partner_id", "in", partners.ids)])
+        students = self.env["op.student"].search(OR(clauses))
+        if not students:
+            return self.env["op.student.course"]
+        return self.env["op.student.course"].search(
+            [("student_id", "in", students.ids)]
+        )
+
+    def _course_matches(self, enrollment, item):
+        code = (item.get("course_code") or "").strip().lower()
+        label = (item.get("course_label") or "").strip().lower()
+        if not code and not label:
+            return True
+        course_code = (enrollment.course_id.code or "").strip().lower()
+        course_name = (enrollment.course_id.name or "").strip().lower()
+        if code and course_code == code:
+            return True
+        if code and code in course_name:
+            return True
+        if label and label == course_name:
+            return True
+        if label and course_code and ("(%s)" % course_code) in label:
+            return True
+        return False
+
+    def _match_enrollments(self, listado):
+        enrollments = self._enrollments_for_listado(listado)
         by_email = defaultdict(list)
         for enrollment in enrollments:
             for email in self._enrollment_emails(enrollment):
@@ -117,16 +139,21 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
         unmatched = []
         seen = set()
         for item in listado:
-            hits = by_email.get(item["email_norm"]) or []
-            if item.get("course_code"):
-                code = item["course_code"].lower()
-                hits = [
-                    enrollment
-                    for enrollment in hits
-                    if (enrollment.course_id.code or "").lower() == code
-                ]
+            email_hits = by_email.get(item["email_norm"]) or []
+            if not email_hits:
+                unmatched.append(
+                    dict(item, reason=_("Sin matrícula con ese correo"))
+                )
+                continue
+            hits = [
+                enrollment
+                for enrollment in email_hits
+                if self._course_matches(enrollment, item)
+            ]
             if not hits:
-                unmatched.append(item)
+                unmatched.append(
+                    dict(item, reason=_("Sin matrícula en el curso del listado"))
+                )
                 continue
             for enrollment in hits:
                 if enrollment.id not in seen:
@@ -206,10 +233,23 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
         campus_done = bool(total) and done == total
         return done, total, campus_done
 
-    def _build_sheets(self, enrollments, unmatched, has_listado):
+    def _listado_by_email(self, unmatched):
+        mapping = {}
+        for item in unmatched:
+            mapping[item.get("email_norm") or ""] = item
+        for item in self._listado_rows():
+            mapping.setdefault(item.get("email_norm") or "", item)
+        return mapping
+
+    def _build_sheets(self, enrollments, unmatched):
+        listado_map = self._listado_by_email(unmatched)
         summary_headers = [
             "email",
             "nombre",
+            "listado_nombre",
+            "listado_pais",
+            "listado_modalidad",
+            "curso_listado",
             "id_estudiante",
             "id_partner",
             "lote",
@@ -237,6 +277,7 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
             flags = self._completion_flags(enrollment)
             partner = enrollment.student_id.partner_id
             email = partner.email or enrollment.student_id.user_id.login or ""
+            listado_item = listado_map.get((email or "").strip().lower()) or {}
             memberships = self._campus_memberships(enrollment)
             channels_done = sum(
                 1
@@ -247,6 +288,10 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
                 [
                     email,
                     enrollment.student_id.name,
+                    listado_item.get("name") or "",
+                    listado_item.get("country") or "",
+                    listado_item.get("modality") or "",
+                    listado_item.get("course_label") or "",
                     enrollment.student_id.id,
                     partner.id,
                     enrollment.batch_id.code,
@@ -275,9 +320,10 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
         unmatched_rows = [
             [
                 item.get("email") or "",
-                item.get("course_code") or "",
+                item.get("course_label") or item.get("course_code") or "",
+                item.get("name") or "",
                 item.get("excel_row") or "",
-                _("Sin matrícula en el lote"),
+                item.get("reason") or _("Sin matrícula"),
             ]
             for item in unmatched
         ]
@@ -359,14 +405,16 @@ class IrgCampusActivityAuditWizard(models.TransientModel):
                 result_rows,
             ),
             "No encontrados": (
-                ["email", "curso_listado", "fila_excel", "motivo"],
+                ["email", "curso_listado", "nombre_listado", "fila_excel", "motivo"],
                 unmatched_rows,
             ),
             "Metodologia": (
                 ["Campo", "Valor"],
                 methodology_rows(
-                    batch_code=self.batch_id.code or "",
-                    has_listado=has_listado,
+                    listado_name=self.listado_filename or "",
+                    listado_count=len(self._listado_rows()),
+                    matched_count=len(enrollments),
+                    unmatched_count=len(unmatched),
                 )[1:],
             ),
         }

@@ -1,0 +1,5 @@
+extract_course_code=DITGHC2606
+real_rows=565
+first_email=2406056@ugestalt.edu.mx
+first_code=DITGHC2606
+codes=['DIDCHC2606', 'DIHDHC2606', 'DIIAHC2606', 'DILDHC2606', 'DITGHC2606']

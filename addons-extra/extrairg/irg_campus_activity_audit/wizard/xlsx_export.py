@@ -54,13 +54,22 @@ def build_xlsx(sheets: dict) -> bytes:
     return output.getvalue()
 
 
-def methodology_rows(generated_at=None, batch_code="", has_listado=False):
+def methodology_rows(
+    generated_at=None,
+    listado_name="",
+    listado_count=0,
+    matched_count=0,
+    unmatched_count=0,
+):
     stamp = generated_at or datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z")
     return [
         ["Campo", "Valor"],
         ["Generado", stamp],
-        ["Lote", batch_code],
-        ["Listado opcional", "Sí" if has_listado else "No"],
+        ["Origen", "Listado Excel de alumnos"],
+        ["Archivo de listado", listado_name or ""],
+        ["Filas del listado", listado_count],
+        ["Matrículas encontradas", matched_count],
+        ["No encontrados", unmatched_count],
         ["Consulta", "Solo lectura sobre matrícula, campus y libreta"],
         [
             "matricula_finalizada",
@@ -72,7 +81,7 @@ def methodology_rows(generated_at=None, batch_code="", has_listado=False):
         ],
         [
             "campus_completado",
-            "Todos los contenidos publicados del lote están completados",
+            "Todos los contenidos publicados de la matrícula están completados",
         ],
         [
             "Fuera de alcance",
