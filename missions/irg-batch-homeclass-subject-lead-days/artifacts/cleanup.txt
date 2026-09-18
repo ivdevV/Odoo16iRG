@@ -1,0 +1,35 @@
+=== cleanup 2026-09-18T08:35:29Z ===
+--- connections before drop ---
+ pid | usename | datname | state | application_name 
+-----+---------+---------+-------+------------------
+(0 rows)
+
+--- leftover odoo_local-run containers ---
+--- terminate backends if any ---
+ pg_terminate_backend 
+----------------------
+(0 rows)
+
+--- connections after terminate ---
+ pid | usename | datname | state 
+-----+---------+---------+-------
+(0 rows)
+
+--- drop test_irg_hc_lead ---
+DROP DATABASE
+--- remaining matching databases ---
+ datname 
+---------
+(0 rows)
+
+--- odoo_local service ---
+NAME              IMAGE                  COMMAND                  SERVICE      CREATED       STATUS          PORTS
+odoo16irg_local   odoo16irg:16.0-local   "/entrypoint.sh odoo…"   odoo_local   3 weeks ago   Up 12 minutes   0.0.0.0:8069->8069/tcp, [::]:8069->8069/tcp, 0.0.0.0:8072->8072/tcp, [::]:8072->8072/tcp
+--- extra-addons mount ---
+/var/lib/docker/volumes/odoo16irg_local_odoo16irg-local-filestore/_data -> /var/lib/odoo
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/log -> /var/log/odoo
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/etc/odoo/odoo.local.conf -> /etc/odoo/odoo.conf
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra -> /mnt/extra-addons
+
+--- odoo_local command ---
+Status=running Running=true Cmd=["odoo","-c","/etc/odoo/odoo.conf"]

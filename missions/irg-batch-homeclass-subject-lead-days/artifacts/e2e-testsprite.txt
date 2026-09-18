@@ -1,0 +1,13 @@
+e2e_testsprite: skipped
+
+Scope of this mission diff is the new addon
+addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/ (Python models and
+module tests only). It does not touch views, QWeb, static assets, portal,
+website, HTTP controllers, or diploma/certificate templates.
+
+Plan (missions/irg-batch-homeclass-subject-lead-days/01-plan.md) declared E2E
+skipped for that reason. Validator does not lower or raise the trigger.
+
+TestSprite was not run. No tunnel to :8069. No real accounts used.
+
+E2E SKIPPED

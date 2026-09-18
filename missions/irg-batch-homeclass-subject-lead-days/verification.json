@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "task": "irg-batch-homeclass-subject-lead-days",
+  "checks": [
+    {
+      "name": "syntax_py_compile",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/__init__.py addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/__manifest__.py addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/models/__init__.py addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/models/op_batch.py addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/tests/__init__.py addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/tests/test_subject_lead_days.py",
+      "result": "pass",
+      "detail": "6 .py files compiled without errors (exit 0)",
+      "evidence": "artifacts/py-compile.txt"
+    },
+    {
+      "name": "lint",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "No linter exists in this project. PROJECT.md: no canonical linter or formatter; do not invent one.",
+      "evidence": "artifacts/lint.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_hc_lead -u irg_batch_homeclass_subject_lead_days --test-enable --test-tags=/irg_batch_homeclass_subject_lead_days --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 5 tests when loading database 'test_irg_hc_lead'. Independent re-run; docker_exit=0.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "scheduler_unmodified",
+      "command": "git status --short addons-extra/extrairg/irg_batch_homeclass_api_scheduler",
+      "result": "pass",
+      "detail": "Empty porcelain. irg_batch_homeclass_api_scheduler is unmodified.",
+      "evidence": "artifacts/scheduler-unmodified.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Diff does not touch views, QWeb, static, portal, website, HTTP controllers, or diploma templates. Plan declared E2E skipped for that scope.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    },
+    {
+      "name": "cleanup",
+      "command": "docker compose -f docker-compose.local.yml exec -T pgodoo_local psql -U odoo -d postgres -c \"DROP DATABASE IF EXISTS test_irg_hc_lead;\"",
+      "result": "pass",
+      "detail": "0 connections; DROP DATABASE succeeded; test_irg_hc_lead gone. odoo16irg_local still Up and mounts /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra (main checkout, not a worktree).",
+      "evidence": "artifacts/cleanup.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_hc_lead",
+    "base_commit": "35c912bc7c2d2c7564a7e7a9f39e82fb79f558b4"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/py-compile.txt",
+    "artifacts/lint.txt",
+    "artifacts/validation-tests.txt",
+    "artifacts/scheduler-unmodified.txt",
+    "artifacts/e2e-testsprite.txt",
+    "artifacts/cleanup.txt"
+  ]
+}
