@@ -1,0 +1,4 @@
+check: lint
+result: skipped
+justification: No canonical Python/Odoo linter configured in AGENTS.md or repo CI for addon-only scope; plan declares lint skipped with same rationale.
+command: not run

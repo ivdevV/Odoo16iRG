@@ -65,6 +65,7 @@
 | [irg_gradebook_certificates](./extrairg/irg_gradebook_certificates.md) | extrairg | Solicitud y generación de certificados | 16.0.1.0.0 |
 | [irg_gradebook_autoload_subjects](./extrairg/irg_gradebook_autoload_subjects.md) | extrairg | Auto-carga asignaturas en libreta | 16.0.1.0.0 |
 | [irg_gradebook_clear_subjects](./extrairg/irg_gradebook_clear_subjects.md) | extrairg | Botón para borrar asignaturas de la libreta | 16.0.1.0.0 |
+| [irg_gradebook_elearning_exam_qty](./extrairg/irg_gradebook_elearning_exam_qty.md) | extrairg | Qty de exámenes desde e-learning por lote | 16.0.1.0.0 |
 | [irg_gradebook_exam_as_final](./extrairg/irg_gradebook_exam_as_final.md) | extrairg | Nota del examen como nota final | 16.0.1.0.0 |
 | [irg_admission_auto_gradebook](./extrairg/irg_admission_auto_gradebook.md) | extrairg | Auto-crea libreta al matricular | 16.0.1.0.0 |
 | [irg_quiz_auto_scoring](./extrairg/irg_quiz_auto_scoring.md) | extrairg | Auto-puntuación y sync con libreta | 16.0.1.0 |
