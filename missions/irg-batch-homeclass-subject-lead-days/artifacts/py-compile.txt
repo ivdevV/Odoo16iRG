@@ -1,0 +1,16 @@
+command: python3 -m py_compile
+  addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/__init__.py
+  addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/__manifest__.py
+  addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/models/__init__.py
+  addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/models/op_batch.py
+  addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/tests/__init__.py
+  addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/tests/test_subject_lead_days.py
+
+py_compile_exit=0
+OK addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/__init__.py
+OK addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/__manifest__.py
+OK addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/models/__init__.py
+OK addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/models/op_batch.py
+OK addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/tests/__init__.py
+OK addons-extra/extrairg/irg_batch_homeclass_subject_lead_days/tests/test_subject_lead_days.py
+compiled=6

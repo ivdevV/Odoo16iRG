@@ -104,6 +104,7 @@
 | [irg_profile_batch_fix](./extrairg/irg_profile_batch_fix.md) | extrairg | Fix nombre de programa y filtro por lote | 16.0.1.0.0 |
 | [irg_sign_position_fix](./extrairg/irg_sign_position_fix.md) | extrairg | Fix posición del bloque de firma | 16.0.1.0.0 |
 | [irg_sign_reposition](./extrairg/irg_sign_reposition.md) | extrairg | Reposición alternativa de firma | 16.0.1.0.0 |
+| [irg_batch_homeclass_subject_lead_days](./extrairg/irg_batch_homeclass_subject_lead_days.md) | extrairg | Adelanta 3 días el date_from HomeClass | 16.0.1.0.0 |
 | [irg_subject_fix](./extrairg/irg_subject_fix.md) | extrairg | Fix filtrado de asignaturas por lote | 16.0.1.0.0 |
 | [irg_web_editor_fix](./extrairg/irg_web_editor_fix.md) | extrairg | Guarda JS en OdooEditor | 16.0.1.0.0 |
 | [looker_connector](./extrairg/looker_connector.md) | extrairg | Conector Odoo → Google Looker Studio | 2.0.4 |
