@@ -6,6 +6,8 @@ from odoo import api, Command, fields, models, _
 from odoo.exceptions import AccessError, ValidationError
 from odoo.tools import email_split
 
+from .irg_tfm_logic import render_outline_text
+
 
 _MAX_CHAR_ANSWER = 500
 _MAX_TEXT_ANSWER = 20000
@@ -63,6 +65,10 @@ class IrgTfmEsquema(models.Model):
     question_ids = fields.One2many(
         'irg.tfm.esquema.pregunta', 'outline_id', string='Respuestas', readonly=True,
     )
+    feedback_filename = fields.Char(
+        string='Retroalimentación',
+        compute='_compute_feedback_filename',
+    )
 
     _sql_constraints = [
         (
@@ -113,6 +119,60 @@ class IrgTfmEsquema(models.Model):
 
     def copy(self, default=None):
         raise AccessError(_('TFM outline history is immutable.'))
+
+    def _compute_feedback_filename(self):
+        feedbacks = self.env['irg.tfm.esquema.feedback'].sudo().search([
+            ('outline_id', 'in', self.ids),
+        ])
+        names = {item.outline_id.id: item.filename for item in feedbacks}
+        for record in self:
+            record.feedback_filename = names.get(record.id) or False
+
+    def _irg_outline_download_text(self):
+        self.ensure_one()
+        questions = []
+        for question in self.question_ids.sorted(key=lambda item: (item.sequence, item.id)):
+            if question.question_type in ('simple_choice', 'multiple_choice'):
+                answer = ', '.join(question.selected_option_ids.mapped('value')) or 'Sin respuesta'
+            else:
+                answer = question.answer_text or 'Sin respuesta'
+            questions.append({
+                'section': question.section_title,
+                'title': question.title,
+                'answer': answer,
+            })
+        return render_outline_text(self.version, questions)
+
+    def action_download_outline(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/irg/tfm/outline/%s/download' % self.id,
+            'target': 'self',
+        }
+
+    def action_download_feedback(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/campus/tfm/outline/%s/feedback' % self.id,
+            'target': 'self',
+        }
+
+    def action_upload_feedback(self):
+        self.ensure_one()
+        if not self.env.user.has_group('irg_tfm_convocatorias.group_tfm_reviewer'):
+            raise AccessError(_('Solo un revisor TFM puede subir la retroalimentación del esquema.'))
+        if self.state != 'done':
+            raise ValidationError(_('Solo se retroalimenta un esquema ya enviado.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Retroalimentación del esquema'),
+            'res_model': 'irg.tfm.esquema.feedback.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_outline_id': self.id},
+        }
 
     @api.model
     def _irg_configured_survey(self):

@@ -171,31 +171,38 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         course = thesis.course_id.course_id
         convocation = thesis.irg_tfm_convocation_id
         today = request.env['irg.tfm.entrega']._irg_madrid_today()
-        partial_open = bool(
-            convocation
-            and convocation.active
-            and convocation.partial_open_date
-            and convocation.partial_close_date
-            and convocation.partial_open_date <= today <= convocation.partial_close_date
+        Entrega = request.env['irg.tfm.entrega']
+
+        def stage_window(stage):
+            if not convocation:
+                return False, False, False
+            opening, closing = Entrega._irg_stage_dates(thesis, stage)
+            is_open = bool(
+                convocation.active
+                and opening
+                and closing
+                and opening <= today <= closing
+            )
+            return opening, closing, is_open
+
+        preliminary_open_date, preliminary_close_date, preliminary_open = stage_window(
+            'preliminary'
         )
-        final_open = bool(
-            convocation
-            and convocation.active
-            and convocation.final_open_date
-            and convocation.final_close_date
-            and convocation.final_open_date <= today <= convocation.final_close_date
-        )
+        partial_open_date, partial_close_date, partial_open = stage_window('partial')
+        final_open_date, final_close_date, final_open = stage_window('final')
         deliveries = thesis.irg_tfm_submission_ids.sorted(
             key=lambda delivery: (delivery.submitted_at, delivery.id), reverse=True,
         )
         review_rows = request.env['irg.tfm.entrega.revision'].sudo().search_read(
             [('delivery_id', 'in', deliveries.ids)],
-            fields=['delivery_id', 'state', 'comment'],
+            fields=['delivery_id', 'state', 'comment', 'observation_filename'],
         )
         delivery_reviews = {
             review['delivery_id'][0]: {
+                'id': review['id'],
                 'state': review['state'],
                 'comment': review['comment'],
+                'observation_filename': review['observation_filename'],
             }
             for review in review_rows
         }
@@ -221,6 +228,9 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         outline_draft = outlines.filtered(
             lambda outline: outline.state == 'draft'
         )[:1]
+        feedbacks = request.env['irg.tfm.esquema.feedback'].sudo().search([
+            ('outline_id', 'in', outlines.ids),
+        ])
         return {
             'thesis': thesis,
             'course': course,
@@ -231,26 +241,25 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
             'legacy_outline_deliveries': deliveries.filtered(
                 lambda delivery: delivery.stage == 'outline'
             ),
+            'preliminary_deliveries': deliveries.filtered(
+                lambda delivery: delivery.stage == 'preliminary'
+            ),
             'partial_deliveries': deliveries.filtered(lambda delivery: delivery.stage == 'partial'),
             'final_deliveries': deliveries.filtered(lambda delivery: delivery.stage == 'final'),
             'delivery_reviews': delivery_reviews,
             'review_state_labels': review_state_labels,
+            'outline_feedback_ids': set(feedbacks.mapped('outline_id').ids),
             'outline_open': not convocation,
+            'preliminary_open': preliminary_open,
             'partial_open': partial_open,
             'final_open': final_open,
             'elearning_url': channel.website_url if channel else False,
-            'partial_open_label': display_date(
-                convocation.partial_open_date if convocation else False,
-            ),
-            'partial_close_label': display_date(
-                convocation.partial_close_date if convocation else False,
-            ),
-            'final_open_label': display_date(
-                convocation.final_open_date if convocation else False,
-            ),
-            'final_close_label': display_date(
-                convocation.final_close_date if convocation else False,
-            ),
+            'preliminary_open_label': display_date(preliminary_open_date),
+            'preliminary_close_label': display_date(preliminary_close_date),
+            'partial_open_label': display_date(partial_open_date),
+            'partial_close_label': display_date(partial_close_date),
+            'final_open_label': display_date(final_open_date),
+            'final_close_label': display_date(final_close_date),
             'error': error,
         }
 
@@ -506,6 +515,87 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         return request.make_response(raw, headers=[
             ('Content-Type', attachment.mimetype or 'application/octet-stream'),
             ('Content-Disposition', content_disposition(attachment.name)),
+            ('X-Content-Type-Options', 'nosniff'),
+        ])
+
+    def _irg_outline_for_reader(self, outline_id):
+        outline = request.env['irg.tfm.esquema'].sudo().browse(outline_id).exists()
+        if len(outline) != 1 or outline.state != 'done':
+            return request.env['irg.tfm.esquema']
+        if request.env.user.has_group('irg_tfm_convocatorias.group_tfm_reviewer'):
+            return outline
+        course = outline.thesis_id.course_id.course_id
+        thesis = request.env['tesis.model']._irg_portal_owned_thesis(
+            course.id, raise_missing=False,
+        )
+        if thesis and thesis.id == outline.thesis_id.id:
+            return outline
+        return request.env['irg.tfm.esquema']
+
+    @http.route(
+        ['/campus/tfm/outline/<int:outline_id>/download',
+         '/irg/tfm/outline/<int:outline_id>/download'],
+        type='http', auth='user', methods=['GET'],
+    )
+    def tfm_outline_download(self, outline_id, **kwargs):
+        outline = self._irg_outline_for_reader(outline_id)
+        if not outline:
+            return request.not_found()
+        text = outline._irg_outline_download_text()
+        filename = 'esquema-tfm-v%s.txt' % outline.version
+        return request.make_response(text.encode('utf-8'), headers=[
+            ('Content-Type', 'text/plain; charset=utf-8'),
+            ('Content-Disposition', content_disposition(filename)),
+            ('X-Content-Type-Options', 'nosniff'),
+        ])
+
+    @http.route(
+        ['/campus/tfm/outline/<int:outline_id>/feedback'],
+        type='http', auth='user', website=True, methods=['GET'],
+    )
+    def tfm_outline_feedback_download(self, outline_id, **kwargs):
+        outline = self._irg_outline_for_reader(outline_id)
+        feedback = request.env['irg.tfm.esquema.feedback'].sudo().search([
+            ('outline_id', '=', outline.id),
+        ], limit=1) if outline else False
+        if not feedback or not feedback.file:
+            return request.not_found()
+        raw = base64.b64decode(feedback.file)
+        return request.make_response(raw, headers=[
+            ('Content-Type', 'application/octet-stream'),
+            ('Content-Disposition', content_disposition(feedback.filename)),
+            ('X-Content-Type-Options', 'nosniff'),
+        ])
+
+    @http.route(
+        ['/campus/tfm/review/<int:review_id>/file'],
+        type='http', auth='user', website=True, methods=['GET'],
+    )
+    def tfm_review_file_download(self, review_id, **kwargs):
+        review = request.env['irg.tfm.entrega.revision'].sudo().browse(review_id).exists()
+        if (
+            len(review) != 1
+            or review.state == 'pending'
+            or not review.observation_file
+        ):
+            return request.not_found()
+        delivery = review.delivery_id
+        if request.env.user.has_group('irg_tfm_convocatorias.group_tfm_reviewer'):
+            allowed = True
+        else:
+            course = delivery.thesis_id.course_id.course_id
+            thesis = request.env['tesis.model']._irg_portal_owned_thesis(
+                course.id, raise_missing=False,
+            )
+            allowed = bool(thesis and thesis.id == delivery.thesis_id.id)
+        if not allowed:
+            return request.not_found()
+        raw = base64.b64decode(review.observation_file)
+        return request.make_response(raw, headers=[
+            ('Content-Type', 'application/octet-stream'),
+            ('Content-Disposition', content_disposition(
+                review.observation_filename or 'observaciones.pdf'
+            )),
             ('X-Content-Type-Options', 'nosniff'),
         ])
 

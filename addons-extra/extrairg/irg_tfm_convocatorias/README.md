@@ -20,8 +20,22 @@ inicio, la edición y el envío del Esquema. Al retirarla, el alumno puede conti
 su borrador o crear una versión nueva.
 
 Los Esquemas antiguos subidos como PDF/DOC/DOCX se conservan en lectura. Ya no
-se pueden crear nuevos Esquemas como archivo; las entregas parcial y final
-continúan utilizando archivos.
+se pueden crear nuevos Esquemas como archivo; las entregas de observaciones
+previas, parcial y final continúan utilizando archivos.
+
+## Ventanas, notas y archivos (16.0.1.3.0)
+
+- En la ficha del alumno, **Ventanas del alumno** cambia la apertura o el cierre
+  de una etapa solo para ese expediente. Si la fecha queda vacía, vale la de la
+  convocatoria.
+- La convocatoria tiene fechas para **Observaciones previas a la entrega** y
+  los pesos de **Nota del tutor**, **Nota del borrador** y **Nota de defensa**.
+  Los tres pesos deben sumar 100. Cuando el revisor informa las tres notas, el
+  punteo final se calcula y se sincroniza con la libreta como hasta ahora.
+- En el esquema enviado, el revisor descarga las respuestas y puede subir un
+  PDF, DOC o DOCX de retroalimentación. El alumno lo descarga en el portal.
+- En la revisión de una entrega, el revisor puede adjuntar el archivo de
+  observaciones. El alumno lo descarga cuando la revisión deja de estar pendiente.
 
 ## Actualización en beta
 
@@ -29,7 +43,7 @@ continúan utilizando archivos.
 2. En Odoo, activar modo desarrollador.
 3. Ir a **Aplicaciones**, pulsar **Actualizar lista de aplicaciones** y buscar
    `IRG TFM Convocatorias`.
-4. Pulsar **Actualizar**. La versión esperada es `16.0.1.2.0`.
+4. Pulsar **Actualizar**. La versión esperada es `16.0.1.3.0`.
 5. Confirmar que la aplicación **Encuestas** está instalada; es una dependencia
    declarada y Odoo debe instalarla automáticamente si falta.
 

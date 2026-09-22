@@ -5,6 +5,15 @@
         <field name="model">irg.tfm.esquema</field>
         <field name="arch" type="xml">
             <form string="Esquema TFM" create="false" edit="false" delete="false">
+                <header>
+                    <button name="action_download_outline" type="object"
+                            string="Descargar esquema" class="btn-primary"/>
+                    <button name="action_download_feedback" type="object"
+                            string="Descargar retroalimentación" class="btn-secondary"
+                            attrs="{'invisible': [('feedback_filename', '=', False)]}"/>
+                    <button name="action_upload_feedback" type="object"
+                            string="Subir retroalimentación" class="btn-secondary"/>
+                </header>
                 <sheet>
                     <group>
                         <group>
@@ -18,6 +27,9 @@
                             <field name="started_at"/>
                             <field name="submitted_at"/>
                         </group>
+                    </group>
+                    <group>
+                        <field name="feedback_filename" readonly="1"/>
                     </group>
                     <notebook>
                         <page string="Respuestas">
@@ -80,6 +92,13 @@
             </xpath>
             <xpath expr="//sheet/group/group/field[@name='points_fin']" position="attributes">
                 <attribute name="groups">irg_tfm_convocatorias.group_tfm_reviewer</attribute>
+                <attribute name="readonly">1</attribute>
+                <attribute name="string">Punteo final</attribute>
+            </xpath>
+            <xpath expr="//sheet/group/group/field[@name='points_fin']" position="after">
+                <field name="irg_tfm_nota_tutor" groups="irg_tfm_convocatorias.group_tfm_reviewer"/>
+                <field name="irg_tfm_nota_borrador" groups="irg_tfm_convocatorias.group_tfm_reviewer"/>
+                <field name="irg_tfm_nota_defensa" groups="irg_tfm_convocatorias.group_tfm_reviewer"/>
             </xpath>
             <xpath expr="//page[.//field[@name='attachment2_ids']]" position="attributes">
                 <attribute name="attrs">{'invisible': [('irg_tfm_activated_at', '!=', False)]}</attribute>
@@ -108,8 +127,17 @@
                             <button name="action_open_tfm_review" string="Revisar entrega"
                                     type="object"
                                     groups="irg_tfm_convocatorias.group_tfm_reviewer"
-                                    attrs="{'invisible': [('stage', 'not in', ['partial', 'final'])]}"
+                                    attrs="{'invisible': [('stage', '=', 'outline')]}"
                                     icon="fa-comment"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Ventanas del alumno">
+                    <field name="irg_tfm_window_ids">
+                        <tree editable="bottom">
+                            <field name="stage"/>
+                            <field name="open_date"/>
+                            <field name="close_date"/>
                         </tree>
                     </field>
                 </page>

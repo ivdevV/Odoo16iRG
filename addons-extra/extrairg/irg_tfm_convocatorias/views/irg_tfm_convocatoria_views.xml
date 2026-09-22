@@ -7,6 +7,7 @@
             <tree>
                 <field name="name"/>
                 <field name="code"/>
+                <field name="preliminary_close_date" optional="hide"/>
                 <field name="partial_open_date"/>
                 <field name="partial_close_date"/>
                 <field name="final_open_date"/>
@@ -26,6 +27,10 @@
                         <field name="code"/>
                         <field name="active"/>
                     </group>
+                    <group string="Observaciones previas a la entrega">
+                        <field name="preliminary_open_date"/>
+                        <field name="preliminary_close_date"/>
+                    </group>
                     <group string="Entrega parcial">
                         <field name="partial_open_date"/>
                         <field name="partial_close_date"/>
@@ -33,6 +38,11 @@
                     <group string="Entrega final">
                         <field name="final_open_date"/>
                         <field name="final_close_date"/>
+                    </group>
+                    <group string="Ponderación del punteo final">
+                        <field name="weight_tutor"/>
+                        <field name="weight_draft"/>
+                        <field name="weight_defense"/>
                     </group>
                 </sheet>
             </form>

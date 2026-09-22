@@ -1,4 +1,6 @@
+from . import irg_tfm_logic
 from . import irg_tfm_convocatoria
+from . import irg_tfm_student_extensions
 from . import op_course
 from . import op_student_course
 from . import irg_tfm_grade_sync
