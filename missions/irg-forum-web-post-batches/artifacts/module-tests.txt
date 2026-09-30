@@ -1,0 +1,4 @@
+2026-09-30 13:07:30,492 INFO test_irg_web_post_batches odoo.tests.result: 0 failed, 0 error(s) of 8 tests when loading database 'test_irg_web_post_batches'
+
+Command: docker run --rm --network odoo16irg_local_default -v addons-extra:/mnt/extra-addons -v etc/odoo/odoo.local.conf:/etc/odoo/odoo.conf:ro odoo:16.0 -c /etc/odoo/odoo.conf -d test_irg_web_post_batches --stop-after-init --test-enable --test-tags /irg_forum_web_post_batches --log-level=test
+Exit code: 0
