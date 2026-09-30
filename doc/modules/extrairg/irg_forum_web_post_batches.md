@@ -4,7 +4,7 @@ Un usuario interno puede marcar, al crear un tema en la web del foro, los lotes 
 
 ## Uso
 
-En el formulario web de alta de un tema, debajo de las etiquetas, aparecen los lotes activos del curso de OpenEduCat vinculado al foro (`irg_course_id`).
+En el formulario web de alta de un tema, a la derecha del cuadro de descripción, aparecen los lotes activos del curso de OpenEduCat vinculado al foro (`irg_course_id`).
 
 - Sin ninguna casilla marcada, la publicación la ve quien ya puede entrar en ese foro.
 - Con una o varias casillas, solo la ven los alumnos de esos lotes.
