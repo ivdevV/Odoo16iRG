@@ -4,33 +4,32 @@
         <xpath expr="//form" position="attributes">
             <attribute name="class" add="irg_web_post_form" separator=" "/>
         </xpath>
-        <xpath expr="//form" position="before">
-            <style>
-                @media (min-width: 992px) {
-                    form.irg_web_post_form:has(&gt; .irg_batch_selector) {
-                        display: grid;
-                        grid-template-columns: minmax(0, 1fr) 17rem;
-                        column-gap: 1.5rem;
-                        align-items: start;
-                    }
-                    form.irg_web_post_form:has(&gt; .irg_batch_selector) &gt; :not(.irg_batch_selector) {
-                        grid-column: 1;
-                    }
-                    form.irg_web_post_form &gt; .irg_batch_selector {
-                        grid-column: 2;
-                        grid-row: 2;
-                    }
-                    form.irg_web_post_form .irg_batch_selector_list {
-                        max-height: 18rem;
-                        overflow-y: auto;
-                    }
-                }
-            </style>
-        </xpath>
         <xpath expr="//input[@name='post_tags']/parent::div" position="after">
             <t t-if="request.env.user.has_group('base.group_user')">
                 <t t-set="irg_batches" t-value="forum._irg_web_post_batches()"/>
                 <div class="irg_batch_selector mb-3" t-if="irg_batches">
+                    <!-- El style va dentro del selector. Delante del form rompe el t-else del alta. -->
+                    <style>
+                        @media (min-width: 992px) {
+                            form.irg_web_post_form:has(&gt; .irg_batch_selector) {
+                                display: grid;
+                                grid-template-columns: minmax(0, 1fr) 17rem;
+                                column-gap: 1.5rem;
+                                align-items: start;
+                            }
+                            form.irg_web_post_form:has(&gt; .irg_batch_selector) &gt; :not(.irg_batch_selector) {
+                                grid-column: 1;
+                            }
+                            form.irg_web_post_form &gt; .irg_batch_selector {
+                                grid-column: 2;
+                                grid-row: 2;
+                            }
+                            form.irg_web_post_form .irg_batch_selector_list {
+                                max-height: 18rem;
+                                overflow-y: auto;
+                            }
+                        }
+                    </style>
                     <div class="form-label">Lotes que pueden visualizar</div>
                     <div class="form-text small text-muted mb-2">
                         Si no marcas ninguno, la publicación la ve quien ya puede entrar en este foro.

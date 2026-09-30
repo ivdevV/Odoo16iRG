@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG - Forum Web Post Batches',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Website/Forum',
     'summary': 'Choose visible batches when an internal user creates a forum post on the website',
     'author': 'IRG',
