@@ -1,0 +1,4 @@
+check: e2e_testsprite
+result: skipped
+justification: Diff scope is new addon with models/tests only — no views/, templates/, static/, portal, website, HTTP controllers, or diploma/certificate templates (per 01-plan.md E2E trigger rules).
+command: not run

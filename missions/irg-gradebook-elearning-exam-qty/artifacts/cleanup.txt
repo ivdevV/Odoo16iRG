@@ -1,0 +1,51 @@
+=== DROP test DBs ===
+         datname          
+--------------------------
+ test_irg_gb_exam_qty
+ test_irg_gb_exam_qty_val
+(2 rows)
+
+ pg_terminate_backend 
+----------------------
+(0 rows)
+
+DROP DATABASE
+DROP DATABASE
+
+=== verify dropped ===
+ datname 
+---------
+(0 rows)
+
+
+=== odoo16irg_local mount (addons-extra) ===
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/etc/odoo/odoo.local.conf -> /etc/odoo/odoo.conf
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra -> /mnt/extra-addons
+/var/lib/docker/volumes/odoo16irg_local_odoo16irg-local-filestore/_data -> /var/lib/odoo
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/log -> /var/log/odoo
+
+extra-addons mount: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra
+expected main checkout: /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra
+mount_match: YES
+
+worktree check: git worktree list
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG                                               ab9b96ee0 [feat/irg-gradebook-elearning-exam-qty]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/fix-auto-enroll-cron                                 65ec4a043 [fix/auto-enroll-cron]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/gradebook-moodle-routing                             1c8d10c43 [codex/gradebook-moodle-routing]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/gradebook-moodle-wizard                              e2b479840 [feat/gradebook-moodle-wizard]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/improve-agents-md                                    d777a0a9c [codex/improve-agents-md]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/irg-elearning-completion-rules                       ff32a4022 [feat/irg-elearning-completion-rules]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/irg-forum-notice-global-seen                         7d5f304f4 [codex/irg-forum-notice-global-seen]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/oficialidad-webhook                                  26d80a11d [feat/oficialidad-webhook]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/student-birth-citizenship-fields                     976c7a24a [codex/student-birth-citizenship-fields]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/student-campus-block                                 f5977a0ed [feat/student-campus-block]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/student-payment-installments                         5c93d3228 [feat/student-payment-installments]
+/Users/ivrogo/.codex/worktrees/Odoo16iRG/student-payment-status                               5c93d3228 [feat/student-payment-status]
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/fix-moodle-iteminstance-matching   132cb6b7b [codex/fix-moodle-iteminstance-matching]
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/fix-moodle-iteminstance-priority   12335fb39 [codex/fix-moodle-iteminstance-priority]
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-business-api                   a6d4b0d31 [feat/irg-business-api-phases-3-6]
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-diplomado-fixed-issue-date     cf0e8fd7e [feat/irg-diplomado-fixed-issue-date]
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-enrollment-modification-guard  ab2051767 [codex/irg-enrollment-modification-guard]
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-gradebook-moodle-mapping-admin a1f8415e4 [codex/fix-homeclass-edition-fallback]
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-practice-modality-elearning    e20ad2797 [feat/irg-practice-modality-elearning]
+/Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/.worktrees/irg-student-degree-type            128fb02e1 [feat/irg-student-degree-type]

@@ -1,0 +1,8 @@
+lint: skipped
+
+No linter or formatter exists in this project. PROJECT.md states there is
+no canonical linter and that verification.json must not invent one or
+declare lint: pass without a command.
+
+command: not run
+result: skipped

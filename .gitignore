@@ -77,3 +77,9 @@ htmlcov/
 .github/knowledge/datos_reales_produccion.json
 .github/temp/
 
+
+# Variables de entorno locales (direnv) - nunca commitear
+.envrc
+
+# Mockups del companion visual de brainstorming
+.superpowers/

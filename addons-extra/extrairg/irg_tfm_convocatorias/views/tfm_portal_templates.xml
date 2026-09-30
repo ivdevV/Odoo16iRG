@@ -46,6 +46,11 @@
                     <div class="card-body">
                         <h4>Convocatoria: <t t-esc="convocation.display_name"/></h4>
                         <p>
+                            Observaciones previas a la entrega:
+                            <t t-esc="preliminary_open_label"/> —
+                            <t t-esc="preliminary_close_label"/>
+                        </p>
+                        <p>
                             Entrega parcial:
                             <t t-esc="partial_open_label"/> —
                             <t t-esc="partial_close_label"/>
@@ -76,6 +81,14 @@
                             <a class="ms-2"
                                t-attf-href="/campus/course/#{course.id}/tfm/outline/#{outline.id}">
                                 Ver respuestas
+                            </a>
+                            <a class="ms-2"
+                               t-attf-href="/campus/tfm/outline/#{outline.id}/download">
+                                Descargar esquema
+                            </a>
+                            <a t-if="outline.id in outline_feedback_ids" class="ms-2"
+                               t-attf-href="/campus/tfm/outline/#{outline.id}/feedback">
+                                Descargar retroalimentación
                             </a>
                         </div>
                         <div t-if="outline_draft" class="alert alert-secondary mt-3">
@@ -111,7 +124,15 @@
                         </div>
                     </div>
                 </section>
-                <t t-if="convocation or partial_deliveries or final_deliveries">
+                <t t-if="convocation or preliminary_deliveries or partial_deliveries or final_deliveries">
+                    <t t-if="convocation or preliminary_deliveries">
+                    <t t-call="irg_tfm_convocatorias.tfm_submission_section">
+                        <t t-set="title">Observaciones previas a la entrega</t>
+                        <t t-set="stage">preliminary</t>
+                        <t t-set="deliveries" t-value="preliminary_deliveries"/>
+                        <t t-set="is_open" t-value="preliminary_open"/>
+                    </t>
+                    </t>
                     <t t-if="convocation or partial_deliveries">
                     <t t-call="irg_tfm_convocatorias.tfm_submission_section">
                         <t t-set="title">Entrega parcial</t>
@@ -269,6 +290,11 @@
                            class="mb-1 mt-2" style="white-space: pre-wrap;">
                             <t t-esc="review.get('comment')"/>
                         </p>
+                        <a t-if="review.get('state') != 'pending' and review.get('observation_filename')"
+                           class="d-block mt-1"
+                           t-attf-href="/campus/tfm/review/#{review.get('id')}/file">
+                            Descargar observaciones
+                        </a>
                     </div>
                     <span t-else="" class="badge bg-secondary mt-2">
                         Pendiente de revisión

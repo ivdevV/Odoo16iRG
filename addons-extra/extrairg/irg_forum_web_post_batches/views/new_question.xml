@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="new_question_batch_selector" inherit_id="website_forum.new_question">
+        <xpath expr="//form" position="attributes">
+            <attribute name="class" add="irg_web_post_form" separator=" "/>
+        </xpath>
+        <xpath expr="//input[@name='post_tags']/parent::div" position="after">
+            <t t-if="request.env.user.has_group('base.group_user')">
+                <t t-set="irg_batches" t-value="forum._irg_web_post_batches()"/>
+                <div class="irg_batch_selector mb-3" t-if="irg_batches">
+                    <!-- El style va dentro del selector. Delante del form rompe el t-else del alta. -->
+                    <style>
+                        @media (min-width: 992px) {
+                            form.irg_web_post_form:has(&gt; .irg_batch_selector) {
+                                display: grid;
+                                grid-template-columns: minmax(0, 1fr) 17rem;
+                                column-gap: 1.5rem;
+                                align-items: start;
+                            }
+                            form.irg_web_post_form:has(&gt; .irg_batch_selector) &gt; :not(.irg_batch_selector) {
+                                grid-column: 1;
+                            }
+                            form.irg_web_post_form &gt; .irg_batch_selector {
+                                grid-column: 2;
+                                grid-row: 2;
+                            }
+                            form.irg_web_post_form .irg_batch_selector_list {
+                                max-height: 18rem;
+                                overflow-y: auto;
+                            }
+                        }
+                    </style>
+                    <div class="form-label">Lotes que pueden visualizar</div>
+                    <div class="form-text small text-muted mb-2">
+                        Si no marcas ninguno, la publicación la ve quien ya puede entrar en este foro.
+                    </div>
+                    <div class="irg_batch_selector_list border rounded p-2 bg-white">
+                        <div t-foreach="irg_batches" t-as="batch" class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   name="irg_visibility_batch_ids"
+                                   t-att-value="batch.id"
+                                   t-att-id="'irg_batch_%s' % batch.id"/>
+                            <label class="form-check-label"
+                                   t-att-for="'irg_batch_%s' % batch.id"
+                                   t-esc="batch.name"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

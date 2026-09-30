@@ -1,5 +1,9 @@
+import base64
+
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, ValidationError
+
+from .irg_tfm_logic import TfmRuleError, safe_feedback_name
 
 
 _REVIEW_STATES = ('pending', 'corrections', 'approved')
@@ -49,6 +53,11 @@ class IrgTfmEntregaRevision(models.Model):
         ('approved', 'Aprobada'),
     ], required=True, default='pending', tracking=True)
     comment = fields.Text(tracking=True)
+    observation_file = fields.Binary(
+        string='Archivo de observaciones',
+        attachment=True,
+    )
+    observation_filename = fields.Char(string='Nombre del archivo')
     reviewed_by = fields.Many2one('res.users', readonly=True, tracking=True)
     reviewed_at = fields.Datetime(readonly=True, tracking=True)
 
@@ -82,21 +91,56 @@ class IrgTfmEntregaRevision(models.Model):
             raise ValidationError(_('La entrega TFM seleccionada no existe.'))
         delivery.check_access_rights('read')
         delivery.check_access_rule('read')
-        if delivery.stage not in ('partial', 'final'):
-            raise ValidationError(_('Solo se revisan entregas parciales o finales.'))
+        if delivery.stage not in ('preliminary', 'partial', 'final'):
+            raise ValidationError(_('Solo se revisan entregas de convocatoria.'))
         if not delivery.thesis_id.irg_tfm_activated_at:
             raise ValidationError(_('La ficha TFM de la entrega no está activada.'))
         return delivery
 
     @api.model
     def _irg_validate_review_values(self, values, current=None):
-        state = values.get('state', current.state if current else 'pending')
-        comment = values.get('comment', current.comment if current else False)
         if state not in _REVIEW_STATES:
             raise ValidationError(_('El estado de revisión no es válido.'))
-        if state == 'corrections' and not (comment or '').strip():
-            raise ValidationError(_('Indique las correcciones necesarias antes de publicar.'))
+        if state == 'corrections' and not self._irg_review_has_feedback(values, current):
+            raise ValidationError(_(
+                'Indica las correcciones en el comentario o adjunta el archivo de observaciones.'
+            ))
+        if 'observation_file' in values or 'observation_filename' in values:
+            self._irg_validate_observation(values, current)
         return state
+
+    @api.model
+    def _irg_review_has_feedback(self, values, current):
+        comment = values.get('comment', current.comment if current else False)
+        if (comment or '').strip():
+            return True
+        if 'observation_file' in values:
+            return bool(values.get('observation_file'))
+        return bool(current and current.observation_filename)
+
+    @api.model
+    def _irg_validate_observation(self, values, current):
+        payload = values.get('observation_file', current.observation_file if current else False)
+        filename = values.get(
+            'observation_filename',
+            current.observation_filename if current else False,
+        )
+        if not payload:
+            return
+        try:
+            raw = base64.b64decode(payload)
+        except (TypeError, ValueError) as exc:
+            raise ValidationError(_('El archivo de observaciones no es válido.')) from exc
+        try:
+            safe_feedback_name(filename, len(raw))
+        except TfmRuleError as exc:
+            if str(exc) == 'size':
+                raise ValidationError(_(
+                    'El archivo de observaciones supera el límite de 20 MB.'
+                )) from exc
+            raise ValidationError(_(
+                'Las observaciones deben ser un PDF, DOC o DOCX.'
+            )) from exc
 
     @api.model_create_multi
     def create(self, vals_list):

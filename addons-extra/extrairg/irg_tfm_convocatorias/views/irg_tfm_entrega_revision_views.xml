@@ -13,6 +13,8 @@
                         <field name="version" readonly="1"/>
                         <field name="state"/>
                         <field name="comment" placeholder="Escribe la devolución para el alumno..."/>
+                        <field name="observation_file" filename="observation_filename"/>
+                        <field name="observation_filename" invisible="1"/>
                         <field name="reviewed_by" readonly="1"/>
                         <field name="reviewed_at" readonly="1"/>
                     </group>

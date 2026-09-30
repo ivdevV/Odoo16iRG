@@ -1,0 +1,7 @@
+command: git status --short addons-extra/extrairg/irg_batch_homeclass_api_scheduler
+
+exit=0
+output: (empty)
+
+CLEAN: no modifications. irg_batch_homeclass_api_scheduler is unmodified.
+git diff --stat addons-extra/extrairg/irg_batch_homeclass_api_scheduler: empty

@@ -1,0 +1,11 @@
+=== git status (isep_gradebook, irg_batch_slide_restrictions) ===
+
+=== git diff (staged+unstaged) paths ===
+
+=== branch ===
+feat/irg-gradebook-elearning-exam-qty
+
+=== base commit ===
+ab9b96ee0d6b475d63dc785f7c6eca361db11f39
+=== explicit paths ===
+result: no paths listed above => pass

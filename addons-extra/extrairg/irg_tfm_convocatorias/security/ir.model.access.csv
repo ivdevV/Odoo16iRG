@@ -5,3 +5,6 @@ access_irg_tfm_entrega_revision_reviewer,irg.tfm.entrega.revision reviewer,model
 access_irg_tfm_esquema_reviewer_read,irg.tfm.esquema reviewer read,model_irg_tfm_esquema,group_tfm_reviewer,1,0,0,0
 access_irg_tfm_esquema_pregunta_reviewer_read,irg.tfm.esquema.pregunta reviewer read,model_irg_tfm_esquema_pregunta,group_tfm_reviewer,1,0,0,0
 access_irg_tfm_esquema_opcion_reviewer_read,irg.tfm.esquema.opcion reviewer read,model_irg_tfm_esquema_opcion,group_tfm_reviewer,1,0,0,0
+access_irg_tfm_ventana_alumno_internal,irg.tfm.ventana.alumno internal,model_irg_tfm_ventana_alumno,base.group_user,1,1,1,1
+access_irg_tfm_esquema_feedback_reviewer,irg.tfm.esquema.feedback reviewer,model_irg_tfm_esquema_feedback,group_tfm_reviewer,1,1,1,0
+access_irg_tfm_esquema_feedback_wizard_reviewer,irg.tfm.esquema.feedback.wizard reviewer,model_irg_tfm_esquema_feedback_wizard,group_tfm_reviewer,1,1,1,1

@@ -1,0 +1,5 @@
+APPROVE. No blocking issues.
+
+Portal and foreign batch ids are rejected in the controller and again in forum.post.create. The field is written inside create. The website selector is limited to internal users. No existing module was modified.
+
+Non-blocking notes addressed: the create context is accepted only when it is a list or tuple. The catalog read uses sudo and stays limited to active batches of the forum course.

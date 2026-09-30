@@ -13,6 +13,8 @@ from werkzeug.utils import secure_filename
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, ValidationError
 
+from .irg_tfm_logic import effective_dates, window_is_open
+
 
 _MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 _VERSION_CONSTRAINT = 'irg_tfm_entrega_version_unique'
@@ -55,7 +57,12 @@ class IrgTfmEntrega(models.Model):
         'tesis.model', required=True, readonly=True, index=True, ondelete='restrict',
     )
     stage = fields.Selection(
-        [('outline', 'Esquema'), ('partial', 'Entrega parcial'), ('final', 'Entrega final')],
+        [
+            ('outline', 'Esquema'),
+            ('preliminary', 'Observaciones previas a la entrega'),
+            ('partial', 'Entrega parcial'),
+            ('final', 'Entrega final'),
+        ],
         required=True,
         readonly=True,
         index=True,
@@ -108,7 +115,7 @@ class IrgTfmEntrega(models.Model):
     def _compute_irg_tfm_review_summary(self):
         review_values = self.env['irg.tfm.entrega.revision'].sudo().search_read([
             ('delivery_id', 'in', self.ids),
-            ('delivery_id.stage', 'in', ('partial', 'final')),
+            ('delivery_id.stage', 'in', ('preliminary', 'partial', 'final')),
             ('delivery_id.thesis_id.irg_tfm_activated_at', '!=', False),
         ], fields=['delivery_id', 'state', 'reviewed_at'])
         reviews_by_delivery = {
@@ -131,8 +138,8 @@ class IrgTfmEntrega(models.Model):
         self.ensure_one()
         Review = self.env['irg.tfm.entrega.revision']
         Review._irg_require_reviewer()
-        if self.stage not in ('partial', 'final'):
-            raise ValidationError(_('Solo se revisan entregas parciales o finales.'))
+        if self.stage not in ('preliminary', 'partial', 'final'):
+            raise ValidationError(_('Solo se revisan entregas de convocatoria.'))
         if not self.thesis_id.irg_tfm_activated_at:
             raise ValidationError(_('La ficha TFM de la entrega no está activada.'))
         review = self.irg_tfm_review_id
@@ -154,7 +161,7 @@ class IrgTfmEntrega(models.Model):
             convocation_id = vals.get('convocation_id') or 0
             if vals.get('convocation_key', 0) != convocation_id:
                 raise ValidationError(_('The delivery snapshot key is inconsistent.'))
-            if vals.get('stage') in ('partial', 'final') and not convocation_id:
+            if vals.get('stage') in ('preliminary', 'partial', 'final') and not convocation_id:
                 raise ValidationError(_('A convocation snapshot is required for this delivery stage.'))
             if int(vals.get('version') or 0) < 1:
                 raise ValidationError(_('The delivery version must be positive.'))
@@ -566,8 +573,29 @@ class IrgTfmEntrega(models.Model):
         return datetime.now(_MADRID_TZ).date()
 
     @api.model
+    def _irg_stage_dates(self, thesis, stage):
+        convocation = thesis.irg_tfm_convocation_id
+        date_fields = {
+            'preliminary': ('preliminary_open_date', 'preliminary_close_date'),
+            'partial': ('partial_open_date', 'partial_close_date'),
+            'final': ('final_open_date', 'final_close_date'),
+        }
+        open_field, close_field = date_fields[stage]
+        base_open = convocation[open_field] if convocation else False
+        base_close = convocation[close_field] if convocation else False
+        override = thesis.irg_tfm_window_ids.filtered(
+            lambda window: window.stage == stage
+        )[:1]
+        return effective_dates(
+            base_open,
+            base_close,
+            override.open_date if override else False,
+            override.close_date if override else False,
+        )
+
+    @api.model
     def _irg_validate_stage(self, thesis, stage, today, internal_exception=False):
-        if stage not in ('outline', 'partial', 'final'):
+        if stage not in ('outline', 'preliminary', 'partial', 'final'):
             raise ValidationError(_('Invalid TFM delivery stage.'))
         convocation = thesis.irg_tfm_convocation_id
         if stage == 'outline':
@@ -580,9 +608,8 @@ class IrgTfmEntrega(models.Model):
             raise ValidationError(_('An archived TFM convocation cannot accept new deliveries.'))
         if internal_exception:
             return convocation
-        opening = convocation.partial_open_date if stage == 'partial' else convocation.final_open_date
-        closing = convocation.partial_close_date if stage == 'partial' else convocation.final_close_date
-        if not opening or not closing or not (opening <= today <= closing):
+        opening, closing = self._irg_stage_dates(thesis, stage)
+        if not window_is_open(opening, closing, today):
             raise ValidationError(_('This TFM delivery window is closed.'))
         return convocation
 

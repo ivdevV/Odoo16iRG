@@ -8,6 +8,24 @@ from .irg_tfm_grade_sync import (
     _TFM_GRADE_SYNC_ORIGIN,
     _TFM_INTERNAL_TOKEN,
 )
+from .irg_tfm_logic import TfmRuleError, render_outline_text, weighted_points
+
+
+_COMPONENT_NOTE_FIELDS = (
+    'irg_tfm_nota_tutor',
+    'irg_tfm_nota_borrador',
+    'irg_tfm_nota_defensa',
+)
+_COMPONENT_SET_FIELDS = {
+    'irg_tfm_nota_tutor': 'irg_tfm_nota_tutor_set',
+    'irg_tfm_nota_borrador': 'irg_tfm_nota_borrador_set',
+    'irg_tfm_nota_defensa': 'irg_tfm_nota_defensa_set',
+}
+_COMPONENT_KEYS = {
+    'tutor': ('irg_tfm_nota_tutor', 'irg_tfm_nota_tutor_set'),
+    'draft': ('irg_tfm_nota_borrador', 'irg_tfm_nota_borrador_set'),
+    'defense': ('irg_tfm_nota_defensa', 'irg_tfm_nota_defensa_set'),
+}
 
 
 class TesisModel(models.Model):
@@ -28,6 +46,35 @@ class TesisModel(models.Model):
         'thesis_id',
         string='Esquemas',
         readonly=True,
+        groups='irg_tfm_convocatorias.group_tfm_reviewer',
+    )
+    irg_tfm_window_ids = fields.One2many(
+        'irg.tfm.ventana.alumno',
+        'thesis_id',
+        string='Ventanas por alumno',
+    )
+    irg_tfm_nota_tutor = fields.Float(
+        string='Nota del tutor',
+        digits=(16, 2),
+        groups='irg_tfm_convocatorias.group_tfm_reviewer',
+    )
+    irg_tfm_nota_tutor_set = fields.Boolean(
+        groups='irg_tfm_convocatorias.group_tfm_reviewer',
+    )
+    irg_tfm_nota_borrador = fields.Float(
+        string='Nota del borrador',
+        digits=(16, 2),
+        groups='irg_tfm_convocatorias.group_tfm_reviewer',
+    )
+    irg_tfm_nota_borrador_set = fields.Boolean(
+        groups='irg_tfm_convocatorias.group_tfm_reviewer',
+    )
+    irg_tfm_nota_defensa = fields.Float(
+        string='Nota de defensa',
+        digits=(16, 2),
+        groups='irg_tfm_convocatorias.group_tfm_reviewer',
+    )
+    irg_tfm_nota_defensa_set = fields.Boolean(
         groups='irg_tfm_convocatorias.group_tfm_reviewer',
     )
 
@@ -245,6 +292,43 @@ class TesisModel(models.Model):
             enrollments.check_access_rule('read')
         return actor
 
+    def _irg_tfm_points_from_components(self, values):
+        """Calcula el punteo solo cuando las tres notas ya fueron informadas."""
+        self.ensure_one()
+        notes = {}
+        for key, (note_field, set_field) in _COMPONENT_KEYS.items():
+            is_set = values[set_field] if set_field in values else getattr(self, set_field)
+            if not is_set:
+                return None
+            notes[key] = values[note_field] if note_field in values else getattr(self, note_field)
+        convocation = self.irg_tfm_convocation_id
+        if not convocation:
+            raise ValidationError(_(
+                'Asigna una convocatoria antes de calcular el punteo final.'
+            ))
+        weights = {
+            'tutor': convocation.weight_tutor,
+            'draft': convocation.weight_draft,
+            'defense': convocation.weight_defense,
+        }
+        try:
+            points = weighted_points(notes, weights)
+        except TfmRuleError as exc:
+            if str(exc) == 'weights':
+                raise ValidationError(_(
+                    'Las ponderaciones de la convocatoria deben sumar 100.'
+                )) from exc
+            raise ValidationError(_(
+                'La nota TFM debe ser 0 o un número finito entre 1 y 10.'
+            )) from exc
+        try:
+            self._irg_tfm_validate_score(points)
+        except ValidationError as exc:
+            raise ValidationError(_(
+                'La nota ponderada (%s) debe ser 0 o estar entre 1 y 10.'
+            ) % points) from exc
+        return points
+
     def _send_email_notification(self):
         if self.env.context.get('irg_tfm_auto_activation'):
             return True
@@ -258,6 +342,12 @@ class TesisModel(models.Model):
             ))
         if 'course_id' in vals:
             self.env['tesis.model']._irg_tfm_guard_linked_identity(self, 'write')
+        if 'points_fin' in vals and any(name in vals for name in _COMPONENT_NOTE_FIELDS):
+            raise ValidationError(_(
+                'El punteo final se calcula con las tres notas. No lo escribas a mano en la misma operación.'
+            ))
+        if any(name in vals for name in _COMPONENT_SET_FIELDS.values()):
+            raise AccessError(_('Los indicadores de nota TFM son internos.'))
         if 'points_fin' in vals:
             actor = self._irg_tfm_require_grade_actor('write')
             return self._irg_tfm_sync_points_to_gradebook(
@@ -265,6 +355,26 @@ class TesisModel(models.Model):
                 actor=actor,
                 values=dict(vals),
             )
+        touched = [name for name in _COMPONENT_NOTE_FIELDS if name in vals]
+        if touched:
+            if len(self) != 1:
+                for record in self:
+                    record.write(dict(vals))
+                return True
+            actor = self._irg_tfm_require_grade_actor('write')
+            prepared = dict(vals)
+            for name in touched:
+                self._irg_tfm_validate_score(prepared[name])
+                prepared[_COMPONENT_SET_FIELDS[name]] = True
+            points = self._irg_tfm_points_from_components(prepared)
+            if points is not None:
+                prepared['points_fin'] = points
+                return self._irg_tfm_sync_points_to_gradebook(
+                    operation='write',
+                    actor=actor,
+                    values=prepared,
+                )
+            return self._irg_tfm_write_business(prepared)
         return self._irg_tfm_write_business(vals)
 
     def unlink(self):
