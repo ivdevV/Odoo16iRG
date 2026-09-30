@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="new_question_batch_selector" inherit_id="website_forum.new_question">
+        <xpath expr="//input[@name='post_tags']/parent::div" position="after">
+            <t t-if="request.env.user.has_group('base.group_user')">
+                <t t-set="irg_batches" t-value="forum._irg_web_post_batches()"/>
+                <div class="mb-3" t-if="irg_batches">
+                    <div class="form-label">Lotes que pueden visualizar</div>
+                    <div class="form-text small text-muted mb-2">
+                        Si no marcas ninguno, la publicación la ve quien ya puede entrar en este foro.
+                    </div>
+                    <div t-foreach="irg_batches" t-as="batch" class="form-check">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="irg_visibility_batch_ids"
+                               t-att-value="batch.id"
+                               t-att-id="'irg_batch_%s' % batch.id"/>
+                        <label class="form-check-label"
+                               t-att-for="'irg_batch_%s' % batch.id"
+                               t-esc="batch.name"/>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

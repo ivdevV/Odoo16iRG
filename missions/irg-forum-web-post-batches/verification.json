@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "task": "irg-forum-web-post-batches",
+  "checks": [
+    {
+      "name": "module_tests",
+      "command": "docker run --rm --network odoo16irg_local_default -v addons-extra:/mnt/extra-addons -v etc/odoo/odoo.local.conf:/etc/odoo/odoo.conf:ro odoo:16.0 -c /etc/odoo/odoo.conf -d test_irg_web_post_batches --stop-after-init --test-enable --test-tags /irg_forum_web_post_batches --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 8 tests",
+      "evidence": "artifacts/module-tests.txt"
+    },
+    {
+      "name": "code_review",
+      "command": "independent reviewer on irg_forum_web_post_batches",
+      "result": "pass",
+      "detail": "APPROVE, no blocking issues",
+      "evidence": "artifacts/code-review.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "El diff toca plantilla web y controlador HTTP, pero la imagen docker-compose.local.yml no compiló (apt 404 de Debian 11) y no había un Odoo de campus en el puerto 8069. Las reglas de servidor quedaron cubiertas por las pruebas del módulo.",
+      "evidence": "execution.md"
+    }
+  ],
+  "environment": {
+    "runtime": "odoo:16.0 with docker-compose.local.yml postgres",
+    "database": "test_irg_web_post_batches",
+    "base_commit": "fec6149f3"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/module-tests.txt",
+    "artifacts/code-review.txt"
+  ]
+}
