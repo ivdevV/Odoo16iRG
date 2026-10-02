@@ -46,6 +46,44 @@ class WeightedPointsTest(unittest.TestCase):
         self.assertFalse(logic.score_is_valid(0.4))
 
 
+class DeliveryStageTest(unittest.TestCase):
+    def test_each_block_has_provisional_and_final(self):
+        self.assertEqual(logic.DELIVERY_STAGES, (
+            'partial_provisional',
+            'partial',
+            'final_provisional',
+            'final',
+        ))
+        self.assertEqual(
+            set(logic.DELIVERY_STAGE_DATES),
+            set(logic.DELIVERY_STAGES),
+        )
+
+
+class BatchEligibilityTest(unittest.TestCase):
+    def test_online_starts_at_second_convocation_of_2026(self):
+        cases = {
+            'ONL261': False,
+            'ONL262': ('ONL', 262),
+            'MPSCONL263': ('ONL', 263),
+            'ONL264': ('ONL', 264),
+            'ONL271': ('ONL', 271),
+            'ONL254': False,
+            'ONL2602': False,
+            'MOPCONL2606': False,
+            'MONLONL262': ('ONL', 262),
+            'HC2509': False,
+            'HC2511': ('HC', 2511),
+            'MONLHC2511': False,
+            'monlhc2601': ('HC', 2601),
+            'PRS-ONL262': False,
+            'PRS-HC2701': False,
+            'other': False,
+        }
+        for code, result in cases.items():
+            self.assertEqual(logic.irg_parse_tfm_batch_eligibility(code), result, code)
+
+
 class WindowTest(unittest.TestCase):
     def test_student_close_replaces_only_that_date(self):
         opening, closing = logic.effective_dates(

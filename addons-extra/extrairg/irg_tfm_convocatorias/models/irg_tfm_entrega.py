@@ -13,7 +13,13 @@ from werkzeug.utils import secure_filename
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, ValidationError
 
-from .irg_tfm_logic import effective_dates, window_is_open
+from .irg_tfm_logic import (
+    DELIVERY_STAGE_DATES,
+    DELIVERY_STAGE_LABELS,
+    DELIVERY_STAGES,
+    effective_dates,
+    window_is_open,
+)
 
 
 _MAX_UPLOAD_BYTES = 20 * 1024 * 1024
@@ -59,9 +65,7 @@ class IrgTfmEntrega(models.Model):
     stage = fields.Selection(
         [
             ('outline', 'Esquema'),
-            ('preliminary', 'Observaciones previas a la entrega'),
-            ('partial', 'Entrega parcial'),
-            ('final', 'Entrega final'),
+            *DELIVERY_STAGE_LABELS,
         ],
         required=True,
         readonly=True,
@@ -115,7 +119,7 @@ class IrgTfmEntrega(models.Model):
     def _compute_irg_tfm_review_summary(self):
         review_values = self.env['irg.tfm.entrega.revision'].sudo().search_read([
             ('delivery_id', 'in', self.ids),
-            ('delivery_id.stage', 'in', ('preliminary', 'partial', 'final')),
+            ('delivery_id.stage', 'in', DELIVERY_STAGES),
             ('delivery_id.thesis_id.irg_tfm_activated_at', '!=', False),
         ], fields=['delivery_id', 'state', 'reviewed_at'])
         reviews_by_delivery = {
@@ -138,7 +142,7 @@ class IrgTfmEntrega(models.Model):
         self.ensure_one()
         Review = self.env['irg.tfm.entrega.revision']
         Review._irg_require_reviewer()
-        if self.stage not in ('preliminary', 'partial', 'final'):
+        if self.stage not in DELIVERY_STAGES:
             raise ValidationError(_('Solo se revisan entregas de convocatoria.'))
         if not self.thesis_id.irg_tfm_activated_at:
             raise ValidationError(_('La ficha TFM de la entrega no está activada.'))
@@ -161,7 +165,7 @@ class IrgTfmEntrega(models.Model):
             convocation_id = vals.get('convocation_id') or 0
             if vals.get('convocation_key', 0) != convocation_id:
                 raise ValidationError(_('The delivery snapshot key is inconsistent.'))
-            if vals.get('stage') in ('preliminary', 'partial', 'final') and not convocation_id:
+            if vals.get('stage') in DELIVERY_STAGES and not convocation_id:
                 raise ValidationError(_('A convocation snapshot is required for this delivery stage.'))
             if int(vals.get('version') or 0) < 1:
                 raise ValidationError(_('The delivery version must be positive.'))
@@ -575,12 +579,7 @@ class IrgTfmEntrega(models.Model):
     @api.model
     def _irg_stage_dates(self, thesis, stage):
         convocation = thesis.irg_tfm_convocation_id
-        date_fields = {
-            'preliminary': ('preliminary_open_date', 'preliminary_close_date'),
-            'partial': ('partial_open_date', 'partial_close_date'),
-            'final': ('final_open_date', 'final_close_date'),
-        }
-        open_field, close_field = date_fields[stage]
+        open_field, close_field = DELIVERY_STAGE_DATES[stage]
         base_open = convocation[open_field] if convocation else False
         base_close = convocation[close_field] if convocation else False
         override = thesis.irg_tfm_window_ids.filtered(
@@ -595,7 +594,7 @@ class IrgTfmEntrega(models.Model):
 
     @api.model
     def _irg_validate_stage(self, thesis, stage, today, internal_exception=False):
-        if stage not in ('outline', 'preliminary', 'partial', 'final'):
+        if stage not in ('outline',) + DELIVERY_STAGES:
             raise ValidationError(_('Invalid TFM delivery stage.'))
         convocation = thesis.irg_tfm_convocation_id
         if stage == 'outline':
@@ -764,8 +763,12 @@ class IrgTfmEntrega(models.Model):
         if current_convocation:
             current_convocation.invalidate_recordset([
                 'active',
+                'partial_provisional_open_date',
+                'partial_provisional_close_date',
                 'partial_open_date',
                 'partial_close_date',
+                'final_provisional_open_date',
+                'final_provisional_close_date',
                 'final_open_date',
                 'final_close_date',
             ])

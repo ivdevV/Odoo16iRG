@@ -45,21 +45,14 @@
                 <div t-if="convocation" class="card mb-4">
                     <div class="card-body">
                         <h4>Convocatoria: <t t-esc="convocation.display_name"/></h4>
-                        <p>
-                            Observaciones previas a la entrega:
-                            <t t-esc="preliminary_open_label"/> —
-                            <t t-esc="preliminary_close_label"/>
-                        </p>
-                        <p>
-                            Entrega parcial:
-                            <t t-esc="partial_open_label"/> —
-                            <t t-esc="partial_close_label"/>
-                        </p>
-                        <p>
-                            Entrega final:
-                            <t t-esc="final_open_label"/> —
-                            <t t-esc="final_close_label"/>
-                        </p>
+                        <div t-foreach="delivery_groups" t-as="group" class="mb-3">
+                            <h5 class="mb-2"><t t-esc="group['title']"/></h5>
+                            <p t-foreach="group['sections']" t-as="section" class="mb-1">
+                                <t t-esc="section['title']"/>:
+                                <t t-esc="section['open_label']"/> —
+                                <t t-esc="section['close_label']"/>
+                            </p>
+                        </div>
                         <a t-if="elearning_url" class="btn btn-outline-primary" t-att-href="elearning_url">
                             Guía y recursos para el TFM
                         </a>
@@ -124,31 +117,18 @@
                         </div>
                     </div>
                 </section>
-                <t t-if="convocation or preliminary_deliveries or partial_deliveries or final_deliveries">
-                    <t t-if="convocation or preliminary_deliveries">
-                    <t t-call="irg_tfm_convocatorias.tfm_submission_section">
-                        <t t-set="title">Observaciones previas a la entrega</t>
-                        <t t-set="stage">preliminary</t>
-                        <t t-set="deliveries" t-value="preliminary_deliveries"/>
-                        <t t-set="is_open" t-value="preliminary_open"/>
-                    </t>
-                    </t>
-                    <t t-if="convocation or partial_deliveries">
-                    <t t-call="irg_tfm_convocatorias.tfm_submission_section">
-                        <t t-set="title">Entrega parcial</t>
-                        <t t-set="stage">partial</t>
-                        <t t-set="deliveries" t-value="partial_deliveries"/>
-                        <t t-set="is_open" t-value="partial_open"/>
-                    </t>
-                    </t>
-                    <t t-if="convocation or final_deliveries">
-                    <t t-call="irg_tfm_convocatorias.tfm_submission_section">
-                        <t t-set="title">Entrega final</t>
-                        <t t-set="stage">final</t>
-                        <t t-set="deliveries" t-value="final_deliveries"/>
-                        <t t-set="is_open" t-value="final_open"/>
-                    </t>
-                    </t>
+                <t t-foreach="delivery_groups" t-as="group">
+                    <div t-if="group['visible']" class="mb-4">
+                        <h2 class="h4"><t t-esc="group['title']"/></h2>
+                        <t t-foreach="group['sections']" t-as="section">
+                            <t t-call="irg_tfm_convocatorias.tfm_submission_section">
+                                <t t-set="title" t-value="section['title']"/>
+                                <t t-set="stage" t-value="section['stage']"/>
+                                <t t-set="deliveries" t-value="section['deliveries']"/>
+                                <t t-set="is_open" t-value="section['is_open']"/>
+                            </t>
+                        </t>
+                    </div>
                 </t>
             </div>
         </t>

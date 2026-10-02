@@ -127,7 +127,7 @@
                             <button name="action_open_tfm_review" string="Revisar entrega"
                                     type="object"
                                     groups="irg_tfm_convocatorias.group_tfm_reviewer"
-                                    attrs="{'invisible': [('stage', '=', 'outline')]}"
+                                    attrs="{'invisible': [('stage', 'not in', ['partial_provisional', 'partial', 'final_provisional', 'final'])]}"
                                     icon="fa-comment"/>
                         </tree>
                     </field>

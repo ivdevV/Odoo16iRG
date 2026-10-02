@@ -3,6 +3,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
+from .irg_tfm_logic import DELIVERY_STAGE_DATES, DELIVERY_STAGE_LABELS
+
 
 class IrgTfmConvocatoria(models.Model):
     _name = 'irg.tfm.convocatoria'
@@ -12,16 +14,22 @@ class IrgTfmConvocatoria(models.Model):
     name = fields.Char(required=True, translate=True)
     code = fields.Char(required=True, index=True)
     active = fields.Boolean(default=True)
-    preliminary_open_date = fields.Date(
-        string='Apertura observaciones previas',
+    partial_provisional_open_date = fields.Date(
+        string='Apertura provisional del borrador',
     )
-    preliminary_close_date = fields.Date(
-        string='Cierre observaciones previas',
+    partial_provisional_close_date = fields.Date(
+        string='Cierre provisional del borrador',
     )
-    partial_open_date = fields.Date(string='Apertura entrega parcial')
-    partial_close_date = fields.Date(string='Cierre entrega parcial')
-    final_open_date = fields.Date(string='Apertura entrega final')
-    final_close_date = fields.Date(string='Cierre entrega final')
+    partial_open_date = fields.Date(string='Apertura final del borrador')
+    partial_close_date = fields.Date(string='Cierre final del borrador')
+    final_provisional_open_date = fields.Date(
+        string='Apertura provisional del depósito',
+    )
+    final_provisional_close_date = fields.Date(
+        string='Cierre provisional del depósito',
+    )
+    final_open_date = fields.Date(string='Apertura final del depósito')
+    final_close_date = fields.Date(string='Cierre final del depósito')
     weight_tutor = fields.Float(string='Peso nota del tutor (%)', digits=(16, 2))
     weight_draft = fields.Float(string='Peso nota del borrador (%)', digits=(16, 2))
     weight_defense = fields.Float(string='Peso nota de defensa (%)', digits=(16, 2))
@@ -44,24 +52,21 @@ class IrgTfmConvocatoria(models.Model):
         return super().write(vals)
 
     @api.constrains(
-        'preliminary_open_date', 'preliminary_close_date',
+        'partial_provisional_open_date', 'partial_provisional_close_date',
         'partial_open_date', 'partial_close_date',
+        'final_provisional_open_date', 'final_provisional_close_date',
         'final_open_date', 'final_close_date',
     )
     def _check_delivery_windows(self):
+        labels = dict(DELIVERY_STAGE_LABELS)
         for record in self:
-            for opening, closing, label in (
-                (
-                    record.preliminary_open_date,
-                    record.preliminary_close_date,
-                    _('observaciones previas'),
-                ),
-                (record.partial_open_date, record.partial_close_date, _('partial delivery')),
-                (record.final_open_date, record.final_close_date, _('final delivery')),
-            ):
+            for stage, (open_field, close_field) in DELIVERY_STAGE_DATES.items():
+                opening = record[open_field]
+                closing = record[close_field]
                 if opening and closing and opening > closing:
                     raise ValidationError(
-                        _('The opening date cannot be after the closing date for %s.') % label
+                        _('The opening date cannot be after the closing date for %s.')
+                        % labels[stage]
                     )
 
     @api.constrains('weight_tutor', 'weight_draft', 'weight_defense')
