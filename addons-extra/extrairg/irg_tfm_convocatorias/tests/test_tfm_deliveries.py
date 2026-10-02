@@ -774,8 +774,13 @@ class TestTfmPortal(TfmFixtureMixin, HttpCase):
         page = self.url_open('/campus/course/%s/tfm' % self.course.id)
 
         self.assertEqual(page.status_code, 200)
-        self.assertIn('Entrega parcial', page.text)
-        self.assertNotRegex(page.text, r'name="stage"\s+value="(?:partial|final)"')
+        self.assertIn('Borrador', page.text)
+        self.assertIn('Depósito', page.text)
+        self.assertNotIn('Observaciones previas', page.text)
+        self.assertNotRegex(
+            page.text,
+            r'name="stage"\s+value="(?:partial_provisional|partial|final_provisional|final)"',
+        )
 
     def test_owned_diplomado_keeps_late_controller_and_tile_restrictions(self):
         self.authenticate(self.diploma_owner.login, self.diploma_owner.login)

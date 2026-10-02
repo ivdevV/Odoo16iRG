@@ -109,7 +109,7 @@ class TestTfmGradebookSync(TransactionCase):
         })
         batch = self.env['op.batch'].create({
             'name': 'TFM grade sync batch %s' % suffix,
-            'code': 'ONL2602' if modality == 'ONL' else 'HC2511',
+            'code': 'ONL262' if modality == 'ONL' else 'HC2511',
             'course_id': course.id,
             'start_date': date.today(),
             'end_date': date.today() + timedelta(days=60),

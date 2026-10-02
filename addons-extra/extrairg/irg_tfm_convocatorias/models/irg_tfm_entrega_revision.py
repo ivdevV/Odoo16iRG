@@ -3,7 +3,7 @@ import base64
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, ValidationError
 
-from .irg_tfm_logic import TfmRuleError, safe_feedback_name
+from .irg_tfm_logic import DELIVERY_STAGES, TfmRuleError, safe_feedback_name
 
 
 _REVIEW_STATES = ('pending', 'corrections', 'approved')
@@ -91,7 +91,7 @@ class IrgTfmEntregaRevision(models.Model):
             raise ValidationError(_('La entrega TFM seleccionada no existe.'))
         delivery.check_access_rights('read')
         delivery.check_access_rule('read')
-        if delivery.stage not in ('preliminary', 'partial', 'final'):
+        if delivery.stage not in DELIVERY_STAGES:
             raise ValidationError(_('Solo se revisan entregas de convocatoria.'))
         if not delivery.thesis_id.irg_tfm_activated_at:
             raise ValidationError(_('La ficha TFM de la entrega no está activada.'))
@@ -99,6 +99,12 @@ class IrgTfmEntregaRevision(models.Model):
 
     @api.model
     def _irg_validate_review_values(self, values, current=None):
+        if 'state' in values:
+            state = values.get('state')
+        elif current:
+            state = current.state
+        else:
+            state = 'pending'
         if state not in _REVIEW_STATES:
             raise ValidationError(_('El estado de revisión no es válido.'))
         if state == 'corrections' and not self._irg_review_has_feedback(values, current):

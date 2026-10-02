@@ -92,7 +92,7 @@ class TestTfmDeliveryReview(TfmFixtureMixin, TransactionCase):
             and button.get('string') == 'Revisar entrega'
             and button.get('groups') == 'irg_tfm_convocatorias.group_tfm_reviewer'
             and button.get('attrs') == (
-                "{'invisible': [('stage', 'not in', ['partial', 'final'])]}"
+                "{'invisible': [('stage', 'not in', ['partial_provisional', 'partial', 'final_provisional', 'final'])]}"
             )
             for button in submission_tree.findall('button')
         ))

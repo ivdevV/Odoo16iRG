@@ -23,13 +23,33 @@ Los Esquemas antiguos subidos como PDF/DOC/DOCX se conservan en lectura. Ya no
 se pueden crear nuevos Esquemas como archivo; las entregas de observaciones
 previas, parcial y final continúan utilizando archivos.
 
+## Borrador y depósito (16.0.1.5.0)
+
+Cada convocatoria tiene dos bloques, y cada bloque tiene dos ventanas:
+
+- **Borrador**, la entrega parcial del TFM: entrega provisional y entrega final.
+- **Depósito**, la entrega final del TFM: entrega provisional y entrega final.
+
+La etapa única «Observaciones previas a la entrega» ya no se usa. Si había
+fechas o entregas en esa etapa, al actualizar el módulo pasan a la entrega
+provisional del borrador. En **Ventanas del alumno** se elige una de las cuatro
+etapas.
+
+## Lotes online (16.0.1.4.0)
+
+Los lotes online usan cuatro convocatorias al año. El código termina en `ONL`,
+el año en dos cifras y la convocatoria del 1 al 4. El TFM entra desde
+`...ONL262` (segunda convocatoria de 2026): `ONL263`, `ONL264` y `ONL271`
+también entran. `ONL261` y los códigos mensuales antiguos, como `ONL2602` o
+`MOPCONL2606`, no entran. HomeClass y `MONLHC` no cambian.
+
 ## Ventanas, notas y archivos (16.0.1.3.0)
 
 - En la ficha del alumno, **Ventanas del alumno** cambia la apertura o el cierre
   de una etapa solo para ese expediente. Si la fecha queda vacía, vale la de la
   convocatoria.
-- La convocatoria tiene fechas para **Observaciones previas a la entrega** y
-  los pesos de **Nota del tutor**, **Nota del borrador** y **Nota de defensa**.
+- La convocatoria tiene los pesos de **Nota del tutor**, **Nota del borrador**
+  y **Nota de defensa**.
   Los tres pesos deben sumar 100. Cuando el revisor informa las tres notas, el
   punteo final se calcula y se sincroniza con la libreta como hasta ahora.
 - En el esquema enviado, el revisor descarga las respuestas y puede subir un
@@ -43,7 +63,7 @@ previas, parcial y final continúan utilizando archivos.
 2. En Odoo, activar modo desarrollador.
 3. Ir a **Aplicaciones**, pulsar **Actualizar lista de aplicaciones** y buscar
    `IRG TFM Convocatorias`.
-4. Pulsar **Actualizar**. La versión esperada es `16.0.1.3.0`.
+4. Pulsar **Actualizar**. La versión esperada es `16.0.1.5.0`.
 5. Confirmar que la aplicación **Encuestas** está instalada; es una dependencia
    declarada y Odoo debe instalarla automáticamente si falta.
 
