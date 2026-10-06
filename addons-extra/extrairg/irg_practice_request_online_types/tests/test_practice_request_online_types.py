@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from contextlib import nullcontext
+from unittest.mock import patch
+
 from dateutil.relativedelta import relativedelta
 from lxml import etree
 
@@ -63,6 +66,16 @@ class TestPracticeRequestOnlineTypes(TransactionCase):
         })
         return student, enrollment
 
+    def _with_practice_eligibility(self, enrollment):
+        """Keep type checks independent if the 50% practice gate is installed."""
+        if not hasattr(type(enrollment), '_irg_practice_completion_percentage'):
+            return nullcontext()
+        return patch.object(
+            type(enrollment),
+            '_irg_practice_completion_percentage',
+            return_value=100.0,
+        )
+
     def test_enrollment_flag_follows_batch_code(self):
         _student, online = self._make_enrollment('ONL', 'MPPCONL2603')
         _student_hc, homeclass = self._make_enrollment('HC', 'MONLHC2505')
@@ -97,13 +110,14 @@ class TestPracticeRequestOnlineTypes(TransactionCase):
         )
         user.partner_id = student.partner_id
         student.user_id = user.id
-        with self.assertRaises(ValidationError):
-            self.env['practice.request'].with_user(user).sudo().create({
-                'name': student.name,
-                'email': user.login,
-                'course_id': enrollment.id,
-                'practice_center_type_id': on_site.id,
-            })
+        with self._with_practice_eligibility(enrollment):
+            with self.assertRaises(ValidationError):
+                self.env['practice.request'].with_user(user).sudo().create({
+                    'name': student.name,
+                    'email': user.login,
+                    'course_id': enrollment.id,
+                    'practice_center_type_id': on_site.id,
+                })
 
     def test_portal_user_can_pick_tfm_validation_for_online_master(self):
         student, enrollment = self._make_enrollment('TFM', 'MONLONL2505')
@@ -118,12 +132,13 @@ class TestPracticeRequestOnlineTypes(TransactionCase):
         )
         user.partner_id = student.partner_id
         student.user_id = user.id
-        request = self.env['practice.request'].with_user(user).sudo().create({
-            'name': student.name,
-            'email': user.login,
-            'course_id': enrollment.id,
-            'practice_center_type_id': tfm.id,
-        })
+        with self._with_practice_eligibility(enrollment):
+            request = self.env['practice.request'].with_user(user).sudo().create({
+                'name': student.name,
+                'email': user.login,
+                'course_id': enrollment.id,
+                'practice_center_type_id': tfm.id,
+            })
         self.assertEqual(request.practice_center_type_id, tfm)
 
     def test_portal_user_can_pick_onsite_for_homeclass_neurologopedia(self):
@@ -139,12 +154,13 @@ class TestPracticeRequestOnlineTypes(TransactionCase):
         )
         user.partner_id = student.partner_id
         student.user_id = user.id
-        request = self.env['practice.request'].with_user(user).sudo().create({
-            'name': student.name,
-            'email': user.login,
-            'course_id': enrollment.id,
-            'practice_center_type_id': on_site.id,
-        })
+        with self._with_practice_eligibility(enrollment):
+            request = self.env['practice.request'].with_user(user).sudo().create({
+                'name': student.name,
+                'email': user.login,
+                'course_id': enrollment.id,
+                'practice_center_type_id': on_site.id,
+            })
         self.assertEqual(request.practice_center_type_id, on_site)
 
     def test_controller_error_helper_blocks_onsite_on_online_batch(self):

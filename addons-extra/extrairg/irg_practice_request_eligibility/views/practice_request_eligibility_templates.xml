@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="course_tile_practice_eligibility"
+              inherit_id="irg_course_portal_tiles.irg_user_profile_content_details_inherit"
+              name="IRG - Prácticas solo con 50% y sin diplomado">
+        <xpath expr="//div[t[@t-if='practicas_link']]" position="attributes">
+            <attribute name="t-if">env['op.student.course'].sudo().irg_portal_practice_allowed_for_course(course_id, user.partner_id)</attribute>
+        </xpath>
+    </template>
+
+    <template id="portal_menu_practice_eligibility"
+              inherit_id="isep_website_custom.user_profile_openeducat"
+              name="IRG - Menú de prácticas según avance de matrícula">
+        <xpath expr="//div[hasclass('student_tile_portal')]" position="attributes">
+            <attribute name="t-if">(not menu.requires_completing_half or (menu.requires_completing_half and course and course.student_id and menu.percentage &lt;= course.student_id.total_completion_porc)) and (not menu.irg_is_practice_menu() or (user.partner_id and env['op.student'].sudo().search([('partner_id', '=', user.partner_id.id)], limit=1).irg_can_request_any_practice()))</attribute>
+        </xpath>
+    </template>
+
+    <template id="practice_request_form_eligibility"
+              inherit_id="isep_practices_2.practice_request_form_template"
+              name="IRG - Formulario de prácticas solo con matrículas elegibles">
+        <xpath expr="//h2" position="after">
+            <p t-if="not courses.filtered(lambda c: c.irg_can_request_practice())" class="alert alert-info">
+                Puedes solicitar prácticas cuando el avance de un curso que no sea diplomado llegue al 50% de las asignaturas obligatorias.
+            </p>
+        </xpath>
+        <xpath expr="//select[@id='course_id']/t[@t-as='course']" position="attributes">
+            <attribute name="t-if">course.irg_can_request_practice()</attribute>
+        </xpath>
+        <xpath expr="//select[@id='op_admission_id']/t[@t-as='admission']" position="attributes">
+            <attribute name="t-if">admission.irg_can_request_practice()</attribute>
+        </xpath>
+    </template>
+
+    <template id="practice_request_list_eligibility"
+              inherit_id="isep_practices_2.practice_request_portal_template"
+              name="IRG - Botón Nueva solicitud solo si hay matrícula elegible">
+        <xpath expr="//a[contains(@t-att-href, '/my/practice_requests/new')]" position="attributes">
+            <attribute name="t-if">irg_can_request_practice</attribute>
+        </xpath>
+    </template>
+
+</odoo>
