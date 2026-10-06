@@ -171,25 +171,6 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         course = thesis.course_id.course_id
         convocation = thesis.irg_tfm_convocation_id
         today = request.env['irg.tfm.entrega']._irg_madrid_today()
-        Entrega = request.env['irg.tfm.entrega']
-
-        def stage_window(stage):
-            if not convocation:
-                return False, False, False
-            opening, closing = Entrega._irg_stage_dates(thesis, stage)
-            is_open = bool(
-                convocation.active
-                and opening
-                and closing
-                and opening <= today <= closing
-            )
-            return opening, closing, is_open
-
-        preliminary_open_date, preliminary_close_date, preliminary_open = stage_window(
-            'preliminary'
-        )
-        partial_open_date, partial_close_date, partial_open = stage_window('partial')
-        final_open_date, final_close_date, final_open = stage_window('final')
         deliveries = thesis.irg_tfm_submission_ids.sorted(
             key=lambda delivery: (delivery.submitted_at, delivery.id), reverse=True,
         )
@@ -225,6 +206,9 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
         def display_date(value):
             return value.strftime('%d/%m/%Y') if value else '-'
 
+        delivery_groups = self._delivery_groups(
+            thesis, convocation, today, deliveries, display_date,
+        )
         outline_draft = outlines.filtered(
             lambda outline: outline.state == 'draft'
         )[:1]
@@ -241,27 +225,60 @@ class IrgTfmSecurePortal(IrgTFMControllerDiplomado):
             'legacy_outline_deliveries': deliveries.filtered(
                 lambda delivery: delivery.stage == 'outline'
             ),
-            'preliminary_deliveries': deliveries.filtered(
-                lambda delivery: delivery.stage == 'preliminary'
-            ),
-            'partial_deliveries': deliveries.filtered(lambda delivery: delivery.stage == 'partial'),
-            'final_deliveries': deliveries.filtered(lambda delivery: delivery.stage == 'final'),
+            'delivery_groups': delivery_groups,
             'delivery_reviews': delivery_reviews,
             'review_state_labels': review_state_labels,
             'outline_feedback_ids': set(feedbacks.mapped('outline_id').ids),
             'outline_open': not convocation,
-            'preliminary_open': preliminary_open,
-            'partial_open': partial_open,
-            'final_open': final_open,
             'elearning_url': channel.website_url if channel else False,
-            'preliminary_open_label': display_date(preliminary_open_date),
-            'preliminary_close_label': display_date(preliminary_close_date),
-            'partial_open_label': display_date(partial_open_date),
-            'partial_close_label': display_date(partial_close_date),
-            'final_open_label': display_date(final_open_date),
-            'final_close_label': display_date(final_close_date),
             'error': error,
         }
+
+    def _delivery_groups(self, thesis, convocation, today, deliveries, display_date):
+        definitions = (
+            ('Borrador', (
+                ('Entrega provisional', 'partial_provisional'),
+                ('Entrega final', 'partial'),
+            )),
+            ('Depósito', (
+                ('Entrega provisional', 'final_provisional'),
+                ('Entrega final', 'final'),
+            )),
+        )
+        Entrega = request.env['irg.tfm.entrega']
+        groups = []
+        for title, sections in definitions:
+            rendered = []
+            for section_title, stage in sections:
+                opening = closing = False
+                is_open = False
+                if convocation:
+                    opening, closing = Entrega._irg_stage_dates(thesis, stage)
+                    is_open = bool(
+                        convocation.active
+                        and opening
+                        and closing
+                        and opening <= today <= closing
+                    )
+                stage_deliveries = deliveries.filtered(
+                    lambda delivery, stage=stage: delivery.stage == stage
+                )
+                rendered.append({
+                    'title': section_title,
+                    'stage': stage,
+                    'deliveries': stage_deliveries,
+                    'is_open': is_open,
+                    'open_label': display_date(opening),
+                    'close_label': display_date(closing),
+                })
+            groups.append({
+                'title': title,
+                'sections': rendered,
+                'visible': bool(convocation) or any(
+                    section['deliveries'] for section in rendered
+                ),
+            })
+        return groups
 
     def _owned_outline(self, thesis, outline_id, draft_only=False):
         try:

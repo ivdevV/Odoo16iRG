@@ -16,13 +16,13 @@
 
 ## Objetivo
 
-Automatiza el inicio y las entregas del **Trabajo Final de Máster (TFM)** a partir del progreso académico. Al alcanzar el 50 % en una matrícula elegible, el módulo crea un expediente interno `tesis.model` y muestra una tarjeta de TFM dentro del curso en MyCampus. El alumno puede enviar primero el **Esquema**; después, un revisor asigna una convocatoria y se habilitan las ventanas de **Entrega parcial** y **Entrega final**, además del canal eLearning configurado para el máster.
+Automatiza el inicio y las entregas del **Trabajo Final de Máster (TFM)** a partir del progreso académico. Al alcanzar el 50 % en una matrícula elegible, el módulo crea un expediente interno `tesis.model` y muestra una tarjeta de TFM dentro del curso en MyCampus. El alumno puede enviar primero el **Esquema**; después, un revisor asigna una convocatoria y se habilitan **Borrador** (entrega provisional y entrega final) y **Depósito** (entrega provisional y entrega final), además del canal eLearning configurado para el máster.
 
 Este flujo sustituye, para las matrículas activadas por el módulo, las antiguas secciones 1–5 por tres etapas versionadas:
 
 1. Esquema.
-2. Entrega parcial.
-3. Entrega final.
+2. Borrador: entrega provisional y entrega final.
+3. Depósito: entrega provisional y entrega final.
 
 ## Flujo funcional
 
@@ -38,7 +38,7 @@ Se crea una única ficha `tesis.model` por `op.student.course` cuando se cumplen
 | --- | --- | --- |
 | HomeClass | `HC2511` | Admite `HC` desde noviembre de 2025. |
 | Neurologopedia | `MONLHC2601` | Usa el corte especial desde enero de 2026. |
-| Online | `ONL2602` | Admite `ONL` desde febrero de 2026. |
+| Online | `ONL262` | Cuatro convocatorias al año: `AA` más `1`–`4`. Entra desde la segunda de 2026 (`...ONL262`). |
 | Presencial | — | Todo código que contenga `PRS` queda excluido. |
 
 El parser también rechaza meses inválidos. La activación se intenta inmediatamente al crear o actualizar la matrícula y después de crear, modificar o eliminar una calificación `app.gradebook.result`. Antes de decidir, el módulo recalcula y persiste la nota final afectada, invalida el progreso y serializa la comprobación por matrícula. Como respaldo existe un cron horario. La activación es irreversible: si el progreso baja después del 50 %, el expediente y la tarjeta continúan activos.
@@ -61,7 +61,7 @@ Mientras el expediente no tenga convocatoria, el alumno solo puede:
 - añadir un comentario opcional;
 - consultar y descargar todas las versiones que haya enviado.
 
-El alumno puede añadir nuevas versiones, pero no editar ni borrar el historial. La Entrega parcial, la Entrega final y el acceso TFM al canal eLearning todavía no se habilitan.
+El alumno puede añadir nuevas versiones, pero no editar ni borrar el historial. El Borrador, el Depósito y el acceso TFM al canal eLearning todavía no se habilitan.
 
 ### 3. Revisión y asignación de convocatoria
 
@@ -78,10 +78,10 @@ Para asignar una convocatoria, el curso debe tener configurado un canal TFM. Al 
 - se cierra el formulario de Esquema;
 - se sincroniza la membresía del alumno en el canal;
 - se aplican las fechas de la convocatoria;
-- el portal muestra Entrega parcial, Entrega final y el enlace eLearning;
+- el portal muestra Borrador, Depósito y el enlace eLearning;
 - el filtrado eLearning usa siempre la convocatoria vigente del expediente.
 
-### 4. Entrega parcial y final
+### 4. Borrador y depósito
 
 Las ventanas se definen con campos `Date`. El servidor obtiene el día actual en la zona horaria `Europe/Madrid` y considera inclusivos los dos extremos:
 
@@ -160,8 +160,8 @@ Los usuarios internos gestionan **Convocatorias TFM** desde la configuración de
 - nombre;
 - código global único, normalizado en mayúsculas, por ejemplo `CONV0326`;
 - estado activo;
-- apertura y cierre de Entrega parcial;
-- apertura y cierre de Entrega final.
+- apertura y cierre de la entrega provisional y de la entrega final del Borrador;
+- apertura y cierre de la entrega provisional y de la entrega final del Depósito.
 
 La fecha de apertura no puede ser posterior a la de cierre. Las convocatorias archivadas quedan disponibles como referencia histórica, pero no se pueden asignar ni recibir entregas nuevas.
 
@@ -203,7 +203,7 @@ El filtrado se combina con las restricciones existentes de lote y prácticas. La
 2. Abre la tarjeta **Trabajo Final de Máster**.
 3. Envía una o varias versiones del Esquema mientras no haya convocatoria.
 4. Tras la asignación, consulta las fechas y entra mediante **Guía y recursos para el TFM**.
-5. Envía Entrega parcial y Entrega final dentro de sus ventanas.
+5. Envía la entrega provisional y la entrega final del Borrador y del Depósito dentro de sus ventanas.
 6. Conserva acceso de lectura a todas sus versiones y convocatorias históricas.
 
 La entrada heredada **Revisión de tesis** desaparece de `/my`. Las rutas antiguas de creación, listado, detalle, aceptación, rechazo, envío, descarga, borrado y comentario quedan neutralizadas: las consultas se redirigen a `/campus` cuando corresponde y las mutaciones o accesos a documentos devuelven recurso no encontrado.
@@ -234,7 +234,7 @@ datos históricos no se eliminan.
 4. En el canal base cree dos categorías desde **Secciones iRG**. Asigne `BETA-A`
    a una y `BETA-B` a la otra; publique las categorías y sus materiales.
 5. Use un alumno de prueba con una única matrícula elegible. Para probar Online,
-   puede usar `MOPCONL2606` o cualquier lote que cumpla `ONL2602` o posterior;
+   puede usar `MPSCONL262` o cualquier lote que cumpla `...ONL262` o posterior;
    para HomeClass, `HC2511` o posterior.
 6. Lleve su progreso a 50 % y entre en `/campus`. La tarjeta **Trabajo Final de
    Máster** debe aparecer dentro del curso y permitir solo versiones de Esquema.

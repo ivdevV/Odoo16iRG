@@ -4,6 +4,7 @@ from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, ValidationError
 
 from .irg_tfm_logic import (
+    DELIVERY_STAGE_LABELS,
     TfmRuleError,
     safe_feedback_name,
 )
@@ -18,11 +19,7 @@ class IrgTfmVentanaAlumno(models.Model):
         'tesis.model', required=True, ondelete='cascade', index=True,
     )
     stage = fields.Selection(
-        [
-            ('preliminary', 'Observaciones previas a la entrega'),
-            ('partial', 'Entrega parcial'),
-            ('final', 'Entrega final'),
-        ],
+        list(DELIVERY_STAGE_LABELS),
         required=True,
     )
     open_date = fields.Date(string='Apertura')

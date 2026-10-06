@@ -181,7 +181,7 @@ class TestTfmElearning(TransactionCase):
         })
         base.irg_online_channel_id = online
         user, partner, _student, _channel, _course, batch, enrollment, thesis = (
-            self._portal_case(channel=base, batch_code='ONL2602')
+            self._portal_case(channel=base, batch_code='ONL262')
         )
         convocation = self._convocation()
 
@@ -297,7 +297,7 @@ class TestTfmElearning(TransactionCase):
             'name': 'TFM closed family %s' % self._suffix(),
         })
         user, _partner, _student, _channel, _course, _batch, enrollment, thesis = (
-            self._portal_case(channel=base, batch_code='ONL2602')
+            self._portal_case(channel=base, batch_code='ONL262')
         )
         self.assertFalse(base._irg_tfm_effective_channel(enrollment))
         self.assertFalse(base._irg_tfm_route_for_user(user)[0])
@@ -317,7 +317,7 @@ class TestTfmElearning(TransactionCase):
         })
         base.irg_online_channel_id = online
         user, _partner, _student, _channel, _course, _batch, _enrollment, thesis = (
-            self._portal_case(channel=base, batch_code='ONL2602')
+            self._portal_case(channel=base, batch_code='ONL262')
         )
         convocation = self._convocation()
         thesis.write({'irg_tfm_convocation_id': convocation.id})
@@ -398,7 +398,7 @@ class TestTfmElearning(TransactionCase):
         })
         base.irg_online_channel_id = online
         _user, partner, _student, _channel, _course, batch, _enrollment, thesis = (
-            self._portal_case(channel=base, batch_code='ONL2602')
+            self._portal_case(channel=base, batch_code='ONL262')
         )
         thesis.write({'irg_tfm_convocation_id': self._convocation().id})
         Membership = self.env['slide.channel.partner'].sudo().with_context(active_test=False)
@@ -430,7 +430,7 @@ class TestTfmElearning(TransactionCase):
         })
         base.irg_online_channel_id = online
         user, partner, _student, _channel, _course, batch, _enrollment, thesis = (
-            self._portal_case(channel=base, batch_code='ONL2602')
+            self._portal_case(channel=base, batch_code='ONL262')
         )
         thesis.write({'irg_tfm_convocation_id': self._convocation().id})
         Membership = self.env['slide.channel.partner'].sudo().with_context(active_test=False)
@@ -470,7 +470,7 @@ class TestTfmElearning(TransactionCase):
         })
         base.irg_online_channel_id = old_online
         _user, partner, _student, _channel, _course, batch, _enrollment, thesis = (
-            self._portal_case(channel=base, batch_code='ONL2602')
+            self._portal_case(channel=base, batch_code='ONL262')
         )
         thesis.write({'irg_tfm_convocation_id': self._convocation().id})
         Membership = self.env['slide.channel.partner'].sudo().with_context(active_test=False)

@@ -1,41 +1,16 @@
 import logging
-import re
 
 from psycopg2 import IntegrityError
 
 from odoo import api, fields, models
 
+from .irg_tfm_logic import irg_parse_tfm_batch_eligibility
+
 
 _logger = logging.getLogger(__name__)
 _TFM_THESIS_UNIQUE_CONSTRAINT = 'irg_tfm_tesis_course_unique'
-_BATCH_CODE_RE = re.compile(r'(HC|ONL)(\d{4})', re.IGNORECASE)
 _TFM_CRON_CURSOR_PARAM = 'irg_tfm_convocatorias.activation_cursor'
 _TFM_CRON_BATCH_SIZE = 500
-
-
-def irg_parse_tfm_batch_eligibility(code):
-    """Return the eligible modality and YYMM extracted from a batch code.
-
-    The parser is deliberately pure so eligibility rules can be covered without
-    coupling them to the OpenEduCat ORM.
-    """
-    if not code or 'PRS' in code.upper():
-        return False
-    match = _BATCH_CODE_RE.search(code)
-    if not match:
-        return False
-    modality = match.group(1).upper()
-    yymm = int(match.group(2))
-    month = yymm % 100
-    if not 1 <= month <= 12:
-        return False
-    if 'MONLHC' in code.upper():
-        minimum = 2601
-    elif modality == 'HC':
-        minimum = 2511
-    else:
-        minimum = 2602
-    return (modality, yymm) if yymm >= minimum else False
 
 
 class OpStudentCourse(models.Model):

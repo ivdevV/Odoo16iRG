@@ -182,8 +182,11 @@ class TestTfmConvocatorias(TransactionCase):
             'HC2511': ('HC', 2511),
             'MONLHC2511': False,
             'monlhc2601': ('HC', 2601),
-            'ONL2601': False,
-            'ONL2602': ('ONL', 2602),
+            'ONL261': False,
+            'ONL262': ('ONL', 262),
+            'MPSCONL263': ('ONL', 263),
+            'ONL2602': False,
+            'MOPCONL2606': False,
             'PRS-HC2701': False,
             'other': False,
         }
