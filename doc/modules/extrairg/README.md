@@ -87,6 +87,7 @@ Los módulos cubren áreas funcionales clave:
 | [irg_practicas_fix](./irg_practicas_fix.md) | user_id relacionado con el alumno en prácticas | Modelo prácticas | Instalable |
 | [irg_practice_center_type_modalities](./irg_practice_center_type_modalities.md) | Modalidades academicas para tipos de centro de practicas | `practice.center.type` | Instalable |
 | [irg_practice_center_restrict](./irg_practice_center_restrict.md) | Oculta centros de prácticas al alumno | — | Instalable |
+| [irg_practice_center_cif](./irg_practice_center_cif.md) | CIF en la ficha del centro de prácticas | `practice.center` | Instalable |
 | [irg_practice_request_online_types](./irg_practice_request_online_types.md) | Filtra tipos de práctica en másteres online | `practice.request`, `op.student.course` | Instalable |
 | [irg_practice_agreement_types](./irg_practice_agreement_types.md) | Wizard de convenio marco nacional/internacional | `practice.agreement`, `practice.center` | Instalable |
 | [irg_practice_agreement_specific](./irg_practice_agreement_specific.md) | Convenios específicos nacional, internacional y HomeClass síncronas | `practice.agreement`, `practice.request` | Instalable |

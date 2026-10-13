@@ -1,0 +1,51 @@
+{
+  "status": "failed",
+  "task": "irg-practice-center-cif",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "command": "python3 addons-extra/extrairg/irg_practice_center_cif/tests/test_resolve_center_cif.py",
+      "result": "pass",
+      "detail": "4 passed, 0 failed",
+      "evidence": "artifacts/unit-tests.txt"
+    },
+    {
+      "name": "syntax_py_compile",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_practice_center_cif/cif.py addons-extra/extrairg/irg_practice_center_cif/models/practice_center.py addons-extra/extrairg/irg_practice_center_cif/models/practice_agreement.py",
+      "result": "pass",
+      "detail": "py_compile sin errores",
+      "evidence": "artifacts/unit-tests.txt"
+    },
+    {
+      "name": "xml_well_formed",
+      "command": "python3 -c \"import xml.etree.ElementTree as ET; ET.parse('addons-extra/extrairg/irg_practice_center_cif/views/practice_center_views.xml')\"",
+      "result": "pass",
+      "detail": "xml_ok",
+      "evidence": "artifacts/unit-tests.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "El daemon de Docker no esta en marcha y docker-compose.local.yml no se puede usar.",
+      "evidence": "execution.md"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Obligatorio porque el diff toca views/practice_center_views.xml. No se ejecuto: el daemon de Docker no esta en marcha.",
+      "evidence": "execution.md"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "not available",
+    "base_commit": "1116b8493"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/unit-tests.txt"
+  ]
+}
