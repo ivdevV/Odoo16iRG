@@ -1,0 +1,7 @@
+python3 addons-extra/extrairg/irg_practice_center_cif/tests/test_resolve_center_cif.py
+
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+OK

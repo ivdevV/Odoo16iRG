@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_practice_center_form_cif" model="ir.ui.view">
+        <field name="name">practice.center.form.cif</field>
+        <field name="model">practice.center</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_center_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='official_name']" position="after">
+                <field name="cif"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_practice_center_tree_cif" model="ir.ui.view">
+        <field name="name">practice.center.tree.cif</field>
+        <field name="model">practice.center</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_center_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="cif"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_practice_center_search_cif" model="ir.ui.view">
+        <field name="name">practice.center.search.cif</field>
+        <field name="model">practice.center</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_center_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="cif"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
