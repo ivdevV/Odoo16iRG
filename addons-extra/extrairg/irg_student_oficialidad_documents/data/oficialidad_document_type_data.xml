@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="document_type_titulo_universitario" model="irg.oficialidad.document.type">
+        <field name="key">titulo-universitario</field>
+        <field name="name">Título universitario</field>
+        <field name="student_type_scope">nacional</field>
+    </record>
+    <record id="document_type_certificado_notas" model="irg.oficialidad.document.type">
+        <field name="key">certificado-notas</field>
+        <field name="name">Certificado oficial de notas</field>
+        <field name="student_type_scope">nacional</field>
+    </record>
+    <record id="document_type_documento_identificativo_nacional" model="irg.oficialidad.document.type">
+        <field name="key">documento-identificativo-nacional</field>
+        <field name="name">DNI / documento identificativo</field>
+        <field name="student_type_scope">nacional</field>
+    </record>
+    <record id="document_type_titulo_universitario_apostillado" model="irg.oficialidad.document.type">
+        <field name="key">titulo-universitario-apostillado</field>
+        <field name="name">Título universitario apostillado</field>
+        <field name="student_type_scope">internacional</field>
+    </record>
+    <record id="document_type_apostilla_certificado_notas" model="irg.oficialidad.document.type">
+        <field name="key">apostilla-certificado-notas</field>
+        <field name="name">Apostilla del certificado oficial de notas</field>
+        <field name="student_type_scope">internacional</field>
+    </record>
+    <record id="document_type_pasaporte" model="irg.oficialidad.document.type">
+        <field name="key">pasaporte</field>
+        <field name="name">Pasaporte</field>
+        <field name="student_type_scope">internacional</field>
+    </record>
+    <record id="document_type_matricula_unimarconi" model="irg.oficialidad.document.type">
+        <field name="key">matricula-unimarconi</field>
+        <field name="name">Matrícula Unimarconi cumplimentada</field>
+        <field name="student_type_scope">both</field>
+    </record>
+</odoo>

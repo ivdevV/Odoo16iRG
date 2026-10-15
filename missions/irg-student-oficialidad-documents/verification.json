@@ -1,0 +1,61 @@
+{
+  "status": "passed",
+  "task": "irg-student-oficialidad-documents",
+  "checks": [
+    {
+      "name": "module_update",
+      "command": "docker run --rm --network odoo16irg_local_default odoo:16.0 odoo -c /etc/odoo/odoo.conf -d test_irg_oficialidad_val [-i isep_gradebook | -i isep_control_escolar | -i irg_student_oficialidad_documents,irg_student_oficialidad_webhook | -u irg_student_oficialidad_documents,irg_student_oficialidad_webhook] --stop-after-init --workers=0",
+      "result": "pass",
+      "detail": "Fresh disposable DB: install isep_gradebook, isep_control_escolar, both irg modules (rc=0 each), then -u of both irg modules (rc=0). Registry loaded without module-load errors.",
+      "evidence": "artifacts/validator-unit-runs.txt"
+    },
+    {
+      "name": "unit_types",
+      "command": "same runner, --test-enable --test-tags=/irg_student_oficialidad_documents,/irg_student_oficialidad_webhook (test_oficialidad_document_types)",
+      "result": "pass",
+      "detail": "4 tests run, 0 failed, 0 errors (both -i and -u runs)",
+      "evidence": "artifacts/validator-unit-runs.txt"
+    },
+    {
+      "name": "unit_summary",
+      "command": "same runner (test_oficialidad_summary)",
+      "result": "pass",
+      "detail": "21 tests run, 0 failed, 0 errors (both -i and -u runs)",
+      "evidence": "artifacts/validator-unit-runs.txt"
+    },
+    {
+      "name": "unit_webhook",
+      "command": "same runner (test_oficialidad_webhook)",
+      "result": "pass",
+      "detail": "66 tests run, 0 failed, 0 errors (both -i and -u runs). Combined result line: 0 failed, 0 error(s) of 91 tests.",
+      "evidence": "artifacts/validator-unit-runs.txt"
+    },
+    {
+      "name": "static_syntax",
+      "command": "python3 compile() on all .py + xml.etree.ElementTree.parse on all .xml in both modules",
+      "result": "pass",
+      "detail": "17 .py compiled and 4 .xml parsed (views, data, webhook params) with 0 failures",
+      "evidence": "artifacts/validator-static.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "testsprite_bootstrap(type=frontend, localPort=8069, pathname=web/login, testScope=codebase, projectPath=<repo>/addons-extra/extrairg/irg_student_oficialidad_documents) -> generate_code_summary -> generate_standardized_prd -> generate_frontend_test_plan(needLogin=true) -> generate_code_and_execute (node testsprite-mcp generateCodeAndExecute); 5 runs, last valid run per scenario counted",
+      "result": "pass",
+      "detail": "8 escenarios (TC001-TC008), 0 fallidos en la ultima corrida valida de cada uno (TC001/005/006/008 run4; TC002/003/004/007 run5). Corrida 1 descartada (pass vacuos + login bloqueado); runs 2-3 bloqueadas por defecto de fixture propio (usuario sin grupo OpenEduCat), corregido. Run4 fallo en 4 TC solo por aserción de descarga (/web/content anchors + tunel); run5 con aserción Odoo-correcta 4/4 pass. Descarga real verificada en servidor: GET /web/content/irg.oficialidad.document/{1,2}/file?download=true -> 200 attachment (anonimo 404). Vista: tipo Internacional, 2/4, alerta VAT, checklist Recibido/Pendiente, listado de 2 documentos. BD desechable e2e_irg_oficialidad en :8069 (contenedor e2e_odoo_oficialidad), limpiada y servicio odoo16irg_local restaurado.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker run odoo:16.0 on network odoo16irg_local_default (docker-compose.local.yml odoo_local image not buildable; see execution.md); Postgres pgodoo_local",
+    "database": "test_irg_oficialidad_val (disposable, dropped after run; shared odoo16irg_local DB untouched, shared containers still up)",
+    "base_commit": "30a6f9383d128d80d38623d2a1fb28a7108dc9b8"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validator-unit-runs.txt",
+    "artifacts/validator-static.txt",
+    "artifacts/e2e-testsprite.txt",
+    "artifacts/e2e-cleanup.txt"
+  ]
+}

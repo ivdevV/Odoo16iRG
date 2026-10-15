@@ -1,0 +1,208 @@
+SECURITY ADVISOR REVIEW — irg-student-oficialidad-documents
+Fecha: 2026-10-15
+Alcance revisado: diseño aprobado (docs/superpowers/specs/2026-10-15-irg-student-oficialidad-documents-design.md)
+y referencia funcional del patrón de becas (irg_student_scholarship_webhook: controllers/webhook.py,
+models/scholarship_webhook_service.py). No hay código de la misión todavía.
+
+Decisión revisada (verbatim):
+  Route: POST /irg/oficialidad/webhook/document auth=none csrf=False
+  Auth: Bearer vs ir.config_parameter irg_student_oficialidad_webhook.token
+  Compare: hmac.compare_digest
+  sudo: only after token+payload+email+type+file validation
+  Stores: binary student documents (PII) on irg.oficialidad.document
+  ACL: internal users read/write documents; no portal routes in v1
+  student_type: trusted from app; VAT mismatch is UI-only warning
+  No secrets in XML/repo; token param empty noupdate
+
+======================================================================
+1. ALCANCE
+======================================================================
+- Una sola ruta pública nueva, POST-only, server-to-server (app Next.js). Sin rutas de portal ni de lectura.
+- Superficie de escritura limitada a: crear/actualizar irg.oficialidad.document y escribir
+  irg_oficialidad_student_type en res.partner. No toca annex_9 / certificate_type ni el webhook
+  outbound de admisiones.
+- Veredicto de alcance: ACEPTABLE. Mínimo privilegio razonable: la ruta no devuelve datos del alumno
+  salvo IDs numéricos (document_id, partner_id, student_id) en caso de éxito.
+
+======================================================================
+2. AUTENTICACIÓN / TOKEN (hallazgos y requisitos)
+======================================================================
+2.1 auth='none' + csrf=False es correcto y necesario para un cliente servidor-servidor sin sesión;
+    el control de acceso REAL es el Bearer token y debe ejecutarse antes de cualquier lectura de
+    modelo de negocio o sudo sobre datos de alumnos.
+2.2 hmac.compare_digest: correcto para evitar timing attacks. REQUISITO (bug latente detectado en
+    el patrón de becas): compare_digest con str lanza TypeError si algún argumento contiene
+    caracteres no ASCII. Un atacante sin token puede enviar "Authorization: Bearer ñ" y provocar
+    una excepción no controlada (500, ruido en logs, posible fuga de traza). Implementar la
+    comparación sobre bytes: hmac.compare_digest(received.encode('utf-8'), configured.encode('utf-8')).
+    La validación de autorización debe ir FUERA de cualquier ruta que pueda propagar excepciones sin
+    capturar, o envuelta en try/except que devuelva invalid_token (401).
+2.3 Token no configurado: fail-closed (401 webhook_token_not_configured). Mantener. La cadena
+    vacía / solo espacios debe tratarse como no configurado (strip()).
+2.4 El parámetro irg_student_oficialidad_webhook.token se declara en XML vacío con noupdate=1:
+    - Sin secreto en el repo ni en XML (correcto). Con noupdate, una actualización de módulo no
+      sobrescribe el valor configurado en producción (correcto).
+    - El valor real se establece por entorno (Ajustes > Técnico > Parámetros del sistema) y se
+      rota fuera del repo. Documentar procedimiento de rotación y longitud mínima recomendada
+      (>= 32 bytes aleatorios, p. ej. secrets.token_urlsafe(32)).
+    - Tras acceso, ir.config_parameter se lee con sudo() solo para el token: aceptable y acotado.
+2.5 El token no debe aparecer en logs, mensajes de error, excepciones ni en tests versionados.
+    Los tests deben fijar un token de prueba efímero en la base de test y no en el repo.
+2.6 Un único token compartido: no hay identidad por llamada. Riesgo residual aceptado en v1
+    (mismo patrón que becas). Recomendación no bloqueante: registrar en log (sin token) IP/
+    resultado de rechazos 401 para detección; plan de rotación si hay sospecha de fuga.
+2.7 Fuerza bruta: sin rate limiting en Odoo. Mitigación a nivel proxy (nginx limit_req / WAF) es
+    recomendación de despliegue, no bloqueante, dado un token de alta entropía.
+2.8 Multi-base de datos: con auth='none' el entorno de request depende de db/dbfilter. Confirmar que
+    el despliegue usa dbfilter o db_name único para que la ruta resuelva la base correcta (igual que
+    becas). Verificar en la fase de documentación/despliegue; no cambia el diseño.
+
+======================================================================
+3. SUDO / ORDEN DE VALIDACIÓN
+======================================================================
+3.1 Requisito de orden (diseño: "sudo only after token+payload+email+type+file validation"):
+    a) validar token (único sudo permitido: leer ir.config_parameter);
+    b) parsear JSON y validar que es objeto;
+    c) validar presencia/tipos de campos obligatorios y student_type ∈ {nacional, internacional};
+    d) validar tamaño/extensión/base64/archivo no vacío ANTES de tocar datos de alumno;
+    e) resolver document_type_key (catálogo) y compatibilidad con student_type;
+    f) solo entonces resolver partner por email y escribir con sudo.
+    NOTA: el patrón de becas resuelve el partner por email ANTES de validar el archivo. Aquí debe
+    validarse el archivo antes de la búsqueda por email para no convertir la ruta en un oráculo de
+    existencia de emails con payloads inválidos y para minimizar trabajo con sudo. Aunque el token
+    ya filtra, es mejor práctica y el diseño lo exige explícitamente. (El orden concreto de errores
+    401/400/404 no debe contradecir el contrato de códigos del diseño; tests de orden recomendados.)
+3.2 El sudo se limita a: search de op.student/res.partner por email, search del tipo de documento,
+    create/write de irg.oficialidad.document y write de irg_oficialidad_student_type. Sin sudo
+    genérico del controlador; el servicio (AbstractModel) lo aplica en puntos explícitos y comentados.
+3.3 Búsqueda por email: usar '=ilike' con el email normalizado puede interpretar '%' y '_' como
+    comodines (patrón de becas). REQUISITO: escapar comodines o validar formato de email y usar
+    comparación exacta (=ilike con valor escapado, o lower() + '='), para impedir que un payload
+    con email "%" enumere/empareje partners arbitrarios. Con token válido el riesgo es de integridad
+    (adjuntar PII al partner equivocado) y de resolución ambigua; ambiguous_email (409) mitiga pero
+    no debe depender de ello.
+3.4 Ambigüedad: más de un alumno/contacto → 409 ambiguous_email sin escribir. Mantener.
+3.5 Excepciones: el controlador captura excepciones inesperadas y devuelve 500 genérico sin detalles
+    (logger.exception sin payload/token). Mantener y NO registrar el payload (contiene PII y base64).
+
+======================================================================
+4. ALMACENAMIENTO DE PII (documentos de alumnos)
+======================================================================
+4.1 irg.oficialidad.document guarda títulos, certificados de notas, DNI/pasaporte: PII sensible.
+    Binary attachment=True → ir.attachment ligado a res_model/res_id, privado (public=False). Los
+    adjuntos NO deben crearse como públicos y NO deben exponerse por ruta pública. Verificar en tests
+    que attachment.public es False.
+4.2 ACL (ir.model.access): lectura/escritura para usuarios internos (base.group_user o grupo
+    operativo de control escolar), sin acceso a base.group_portal / base.group_public. Sin rutas de
+    portal en v1: cumple mínimo privilegio. REQUISITOS:
+      - NO conceder acceso a portal/public en ir.model.access.csv.
+      - Si se añaden record rules, deben ser coherentes con el acceso a op.student (multi-company).
+      - Evaluar restringir create/unlink a un grupo de control escolar/administración: lectura para
+        internos es aceptable, pero unlink de documentos con PII por cualquier interno es amplio;
+        recomendación (no bloqueante) alinear permisos con el patrón de becas.
+4.3 Descarga: la descarga desde el backoffice usa el mecanismo estándar (/web/content) con ACL de
+    sesión; no crear controladores de descarga propios sin comprobación de acceso.
+4.4 Validación de fichero: extensión en lista blanca, 10 MB, no vacío. LIMITACIÓN conocida: la
+    extensión no garantiza contenido (un .pdf puede ser otro formato). Riesgo mitigado porque solo
+    personal interno descarga y no hay renderizado en navegador desde dominio público. Recomendación
+    no bloqueante: comprobar magic bytes básicos (PDF/JPEG/PNG/OLE/ZIP) y servir con
+    Content-Disposition: attachment (comportamiento estándar de /web/content con download=true).
+4.5 Saneado de filename: tratar filename como dato no confiable. Almacenar solo basename
+    (os.path.basename), limitar longitud, eliminar caracteres de control y separadores de ruta; nunca
+    usarlo para construir rutas de filesystem (el almacenamiento lo gestiona el filestore de Odoo).
+    En QWeb/vistas Odoo escapa por defecto; no usar t-raw/Markup con filename, note ni document_name.
+4.6 Tamaño y memoria (DoS): el patrón de becas decodifica base64 completo y luego mide. Un cuerpo
+    de decenas de MB+ consume memoria antes de rechazarse. REQUISITO: comprobar el tamaño del
+    cuerpo/cadena base64 ANTES de decodificar (len(b64) > ceil(10MB*4/3)+margen → 413) y, si es
+    posible, limitar Content-Length en el controlador; mantener límite a nivel proxy
+    (client_max_body_size ~14m). Solo con token válido, riesgo medio-bajo, pero es sencillo de cerrar.
+4.7 Datos en logs: no registrar email, filename, nota ni contenido; solo IDs y códigos de error.
+4.8 Retención/borrado: ondelete cascade desde partner; el reemplazo idempotente (partner +
+    document_type) SOBREESCRIBE el archivo anterior: pérdida de histórico de versiones. Aceptado por
+    el diseño (action=updated); recomendado dejar traza (mail.thread/chatter o log de auditoría con
+    usuario/fecha) y documentarlo como limitación. No hay borrado masivo de datos históricos en el
+    alcance.
+
+======================================================================
+5. INTEGRIDAD / student_type CONFIADO DESDE LA APP
+======================================================================
+5.1 Odoo confía en student_type enviado por la app y lo persiste en el partner. Un token comprometido
+    o un bug de la app puede cambiar el tipo (nacional/internacional) de un alumno y alterar la
+    checklist (completitud X/4). Impacto: integridad de datos operativos, no escalada de privilegios,
+    sin datos de otros alumnos expuestos. Riesgo ACEPTADO explícitamente por diseño (la app decide).
+5.2 Mitigaciones requeridas por el diseño: type_mismatch por VAT es solo aviso en UI; no bloquea ni
+    sobrescribe. Mantener que el hint VAT NO influya en autorización ni en validación server-side.
+5.3 Recomendación: al cambiar irg_oficialidad_student_type de un valor ya existente a otro, dejar
+    registro auditable (message_post/log) con valor anterior/nuevo. No bloqueante.
+5.4 Validar server-side que student_type y document_type_key sean compatibles (409
+    document_type_student_type_mismatch) — requerido y ya contemplado; la UI no sustituye el control.
+5.5 Idempotencia por (partner_id, document_type_id): un índice/constraint único (o búsqueda con lock)
+    evita duplicados bajo reintentos concurrentes de la app. REQUISITO: añadir SQL constraint
+    UNIQUE(partner_id, document_type_id) o manejar la condición de carrera (búsqueda + create bajo
+    transacción; con la constraint, el segundo intento falla y se reintenta como update). Sin esto,
+    dos POST simultáneos del mismo tipo pueden crear duplicados. (Concurrencia: riesgo bajo; el
+    constraint lo elimina.)
+
+======================================================================
+6. CONTRATOS FUNCIONALES, API Y SINTAXIS
+======================================================================
+6.1 Contrato de códigos HTTP del diseño es coherente (401/400/413/404/409/200/500). Los mensajes de
+    error no deben reflejar entradas del cliente sin escapar ni incluir datos sensibles.
+6.2 Respuesta de éxito expone solo IDs numéricos internos; aceptable para cliente autenticado.
+6.3 Métodos: solo POST; sin GET/OPTIONS permisivos; sin CORS (cliente servidor-servidor). No añadir
+    cors='*' en la ruta.
+6.4 Tipos de campos: validar que email/filename/document_content_base64/document_type_key/
+    student_type sean str; el resto de campos opcionales ignorados si no son str (patrón de becas
+    correcto).
+6.5 Sintaxis/versión: Odoo 16, controlador type='http' + json.loads manual, servicio AbstractModel
+    `irg.oficialidad.webhook.service` (mismo patrón que irg.scholarship.webhook.service). Sin
+    interpolación SQL propia; ORM con dominios parametrizados.
+6.6 Catálogo de tipos (irg.oficialidad.document.type) en XML noupdate: la key es identificador
+    funcional; unique constraint sobre key para evitar ambiguous_document_type en 409 por datos
+    corruptos.
+
+======================================================================
+7. PÉRDIDA DE DATOS, COMANDOS Y DESPLIEGUE
+======================================================================
+- Sin migraciones destructivas, sin borrado de datos históricos, sin comandos de despliegue.
+  Módulos nuevos aditivos; campos nuevos en res.partner (aditivos). Riesgo de pérdida de datos:
+  bajo (solo el sobreescrito idempotente de documento, ver 4.8).
+- El valor real del token se provisiona fuera del repo (parámetros del sistema/entorno); no se
+  incluye en XML, manifest, tests ni artefactos de la misión.
+- Cleanup de fixtures y restauración del token de prueba a vacío definidos en plan.md.
+- E2E: TestSprite sube código del módulo a su nube; projectPath debe ser el directorio del módulo,
+  nunca etc/ ni docker*, y el token de prueba debe ser desechable (nunca el de producción).
+
+======================================================================
+8. CONDICIONES DE IMPLEMENTACIÓN (OBLIGATORIAS PARA EL CODER/REVIEWER)
+======================================================================
+C1. compare_digest sobre bytes UTF-8 + manejo de errores en la validación de cabecera (2.2).
+C2. Token vacío/solo espacios == no configurado; fail-closed (2.3).
+C3. Orden de validación: token → JSON objeto → campos/student_type → archivo (tamaño base64 antes de
+    decodificar, base64, extensión, vacío) → tipo documento/compatibilidad → email/partner → sudo
+    write (3.1, 4.6).
+C4. Email: sin comodines ilike no escapados (3.3).
+C5. filename saneado (basename, longitud, control chars) y solo texto escapado en vistas (4.5).
+C6. UNIQUE(partner_id, document_type_id) en irg.oficialidad.document y UNIQUE(key) en el catálogo
+    (5.5, 6.6).
+C7. ACL solo grupos internos; sin acceso portal/public; attachments no públicos (4.1, 4.2).
+C8. Sin PII/token en logs; excepción genérica 500 (3.5, 4.7).
+C9. Tests de seguridad: token ausente/inválido/no ASCII/no configurado, email con comodín,
+    base64 sobredimensionado, attachment no público, duplicado concurrente/idempotente, que type_mismatch
+    no bloquea y student_type incompatible con tipo → 409.
+C10. Token real fuera del repo; param vacío noupdate (2.4).
+
+Estas condiciones no cambian el diseño ni el contrato del webhook; son refinamientos de
+implementación verificables por el Reviewer y el Validator. Ninguna es un bloqueo del diseño
+aprobado.
+
+======================================================================
+VEREDICTO
+======================================================================
+Autenticación pública con Bearer + hmac.compare_digest, sudo diferido tras validación, almacenamiento
+privado con ACL solo interna, sin portal, token vacío noupdate sin secretos en repo y hint VAT sólo
+informativo forman un diseño aceptable con riesgo residual bajo-medio (token compartido, student_type
+confiado, sobreescritura de documento) explícitamente aceptado; las condiciones C1–C10 deben cumplirse
+en Implementación.
+
+[YES] Reason: el diseño es aceptable (Bearer token con compare_digest, fail-closed, sudo solo tras validar, PII en adjuntos privados con ACL interna, sin portal ni secretos en repo) siempre que Implementación cumpla las condiciones C1–C10 (compare sobre bytes, orden de validación con límite antes de decodificar, email sin comodines, UNIQUE constraints, ACL sin portal, sin PII/token en logs).
