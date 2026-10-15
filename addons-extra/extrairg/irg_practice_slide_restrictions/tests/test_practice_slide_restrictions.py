@@ -96,6 +96,75 @@ class TestPracticeSlideRestrictions(TransactionCase):
             vals['irg_required_practice_type'] = required
         return self.env['slide.slide'].create(vals)
 
+    def _create_slide_channel(self, name, extra_vals=None):
+        channel_vals = {
+            'name': name,
+            'channel_type': 'training',
+            'enroll': 'public',
+        }
+        if extra_vals:
+            channel_vals.update(extra_vals)
+        SlideChannel = self.env['slide.channel']
+        if (
+            'category_id' in SlideChannel._fields
+            and 'moodle.categories' in self.env
+        ):
+            MoodleCategory = self.env['moodle.categories']
+            moodle_category = MoodleCategory.search([], limit=1)
+            if not moodle_category:
+                moodle_category = MoodleCategory.create({
+                    'name': 'IRG Practice Tests',
+                })
+            channel_vals.setdefault('category_id', moodle_category.id)
+        with ExitStack() as stack:
+            try:
+                stack.enter_context(patch(
+                    'odoo.addons.odoo_moodle_connector.models.'
+                    'slide_channel_custom.utils.get_moodle_credentials',
+                    return_value=False,
+                ))
+            except (ImportError, AttributeError):
+                pass
+            return SlideChannel.create(channel_vals)
+
+    def _make_online_clone_course(self, suffix, student):
+        """Master has the subject; online clone has none (production shape)."""
+        if 'irg_homeclass_channel_id' not in self.env['slide.channel']._fields:
+            self.skipTest('irg_homeclass_channel_id is not available')
+        today = fields.Date.today()
+        course = self.env['op.course'].create({
+            'name': 'Curso elearning %s' % suffix,
+            'code': 'IRG-PS-%s' % suffix,
+            'lang': self.env.user.lang or 'en_US',
+        })
+        batch = self.env['op.batch'].create({
+            'name': 'Lote elearning %s' % suffix,
+            'code': 'IRG-PS-B-%s' % suffix,
+            'course_id': course.id,
+            'start_date': today,
+            'end_date': today + relativedelta(months=1),
+        })
+        home_channel = self._create_slide_channel(
+            'Canal practicas home %s' % suffix
+        )
+        subject = self.env['op.subject'].create({
+            'name': 'Practicas %s' % suffix,
+            'code': 'IRG-PS-S-%s' % suffix,
+            'slide_channel_id': home_channel.id,
+        })
+        course.subject_ids = [(4, subject.id)]
+        online_channel = self._create_slide_channel(
+            'Canal practicas online %s' % suffix,
+            {'irg_homeclass_channel_id': home_channel.id},
+        )
+        self.assertFalse(online_channel.op_subject_ids)
+        enrollment = self.env['op.student.course'].create({
+            'student_id': student.id,
+            'course_id': course.id,
+            'batch_id': batch.id,
+        })
+        return course, home_channel, online_channel, enrollment
+
     def test_required_field_exists(self):
         self.assertIn(
             'irg_required_practice_type',
@@ -246,3 +315,41 @@ class TestPracticeSlideRestrictions(TransactionCase):
                 "field[@name='irg_required_practice_type']"
             )
         )
+
+    def test_online_clone_allows_matching_modality_via_homeclass(self):
+        student, user = self._make_student_user('ONLCL')
+        _course, _home, online, enrollment = self._make_online_clone_course(
+            'ONLCL', student
+        )
+        practice_type = self.env['practice.center.type'].create({
+            'type_of_practice': 'homeclass_asincronas',
+        })
+        enrollment.irg_practice_center_type_id = practice_type
+        section = self._make_section(
+            online, 'Asincronas ONL', required='homeclass_asincronas'
+        )
+        self.assertTrue(section.is_user_allowed_by_practice_type(user))
+
+    def test_online_clone_blocks_without_modality(self):
+        student, user = self._make_student_user('ONLNO')
+        _course, _home, online, _enrollment = self._make_online_clone_course(
+            'ONLNO', student
+        )
+        section = self._make_section(
+            online, 'Asincronas ONLNO', required='homeclass_asincronas'
+        )
+        self.assertFalse(section.is_user_allowed_by_practice_type(user))
+
+    def test_online_clone_blocks_other_modality(self):
+        student, user = self._make_student_user('ONLOTH')
+        _course, _home, online, enrollment = self._make_online_clone_course(
+            'ONLOTH', student
+        )
+        practice_type = self.env['practice.center.type'].create({
+            'type_of_practice': 'on_site',
+        })
+        enrollment.irg_practice_center_type_id = practice_type
+        section = self._make_section(
+            online, 'Asincronas ONLOTH', required='homeclass_asincronas'
+        )
+        self.assertFalse(section.is_user_allowed_by_practice_type(user))

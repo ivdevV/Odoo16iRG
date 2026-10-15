@@ -36,9 +36,27 @@ class SlideSlide(models.Model):
         self.ensure_one()
         return bool(self._irg_effective_practice_type())
 
-    def _irg_courses_for_channel(self):
+    def _irg_resolution_channel(self):
+        """Canal desde el que se resuelven cursos/asignaturas.
+
+        Los clones online no tienen ``op_subject_ids`` propios: la asignatura
+        apunta al maestro. Si existe ``irg_homeclass_channel_id``, se usa el
+        maestro; si no, el canal del slide.
+        """
         self.ensure_one()
         channel = self.channel_id.sudo()
+        if not channel:
+            return channel
+        if (
+            'irg_homeclass_channel_id' in channel._fields
+            and channel.irg_homeclass_channel_id
+        ):
+            return channel.irg_homeclass_channel_id.sudo()
+        return channel
+
+    def _irg_courses_for_channel(self):
+        self.ensure_one()
+        channel = self._irg_resolution_channel()
         Course = self.env['op.course'].sudo()
         Subject = self.env['op.subject'].sudo()
         courses = Course.browse()
