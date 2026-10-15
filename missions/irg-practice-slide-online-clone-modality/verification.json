@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "task": "irg-practice-slide-online-clone-modality",
+  "checks": [
+    {
+      "name": "unit_tests",
+      "command": "docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf -d test_irg_psr_online_clone_val -i irg_course_convocatorias,irg_practice_slide_restrictions --test-enable --test-tags /irg_practice_slide_restrictions --stop-after-init --workers=0 --http-port=18071 --log-level=test",
+      "result": "pass",
+      "detail": "14 tests, 0 failed, 0 error(s). 3 nuevos tests (online_clone_allows_matching_modality_via_homeclass, online_clone_blocks_other_modality, online_clone_blocks_without_modality) en verde. Base desechable nueva: test_irg_psr_online_clone_val (eliminada tras validación).",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "syntax",
+      "command": "python3 -m py_compile models/slide_slide.py tests/test_practice_slide_restrictions.py __manifest__.py __init__.py models/__init__.py",
+      "result": "pass",
+      "detail": "5/5 archivos compilados sin errores de sintaxis.",
+      "evidence": "artifacts/syntax-py-compile.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Diff toca solo Python de modelo y tests; ningún fichero bajo views/, templates/, report/, static/, portal/, website/ ni controlador HTTP nuevo. Scope no activa la capa E2E según AGENTS.md.",
+      "evidence": null
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "container": "odoo16irg_local",
+    "database": "test_irg_psr_online_clone_val (nueva, eliminada)",
+    "base_commit": "30a6f9383d128d80d38623d2a1fb28a7108dc9b8"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/syntax-py-compile.txt"
+  ]
+}

@@ -1,0 +1,36 @@
+# Unit tests — irg_practice_slide_restrictions (independent validation)
+# Executed: 2026-10-15  Base: test_irg_psr_online_clone_val (NUEVA — desechable)
+# Command:
+#   docker exec odoo16irg_local odoo -c /etc/odoo/odoo.conf \
+#     -d test_irg_psr_online_clone_val \
+#     -i irg_course_convocatorias,irg_practice_slide_restrictions \
+#     --test-enable --test-tags /irg_practice_slide_restrictions \
+#     --stop-after-init --workers=0 --http-port=18071 --log-level=test
+
+--- TESTS EJECUTADOS ---
+Starting TestPracticeSlideRestrictions.test_allows_when_course_linked_only_via_subject_course_id
+Starting TestPracticeSlideRestrictions.test_child_inherits_parent_requirement
+Starting TestPracticeSlideRestrictions.test_empty_requirement_is_visible_to_everyone
+Starting TestPracticeSlideRestrictions.test_error_template_contains_blocked_copy
+Starting TestPracticeSlideRestrictions.test_irg_sections_tab_includes_practice_field
+Starting TestPracticeSlideRestrictions.test_onchange_parent_keeps_batch_and_copies_practice
+Starting TestPracticeSlideRestrictions.test_online_clone_allows_matching_modality_via_homeclass   ← NUEVO
+Starting TestPracticeSlideRestrictions.test_online_clone_blocks_other_modality                    ← NUEVO
+Starting TestPracticeSlideRestrictions.test_online_clone_blocks_without_modality                  ← NUEVO
+Starting TestPracticeSlideRestrictions.test_required_field_exists
+Starting TestPracticeSlideRestrictions.test_required_section_allows_matching_modality
+Starting TestPracticeSlideRestrictions.test_required_section_blocks_other_modality
+Starting TestPracticeSlideRestrictions.test_required_section_blocks_without_modality
+Starting TestPracticeSlideRestrictions.test_two_courses_do_not_cross_modalities
+
+--- RESULTADO FINAL ---
+14 post-tests in 2.54s, 2286 queries
+irg_practice_slide_restrictions: 16 tests 2.47s 2286 queries
+0 failed, 0 error(s) of 14 tests when loading database 'test_irg_psr_online_clone_val'
+
+--- NOTAS ---
+Los 2 ERRORs de schema (sign_template.sale_id NOT NULL, op_course.lang NOT NULL) son
+pre-existentes en el entorno y no pertenecen a irg_practice_slide_restrictions.
+No impactan ningún test de este módulo.
+
+RESULT: PASS (0 failed, 0 errors of 14 tests)

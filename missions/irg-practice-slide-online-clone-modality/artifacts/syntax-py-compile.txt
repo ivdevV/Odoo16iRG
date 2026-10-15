@@ -1,0 +1,19 @@
+# Syntax check — py_compile
+# Executed: 2026-10-15
+
+python3 -m py_compile addons-extra/extrairg/irg_practice_slide_restrictions/models/slide_slide.py
+OK: slide_slide.py
+
+python3 -m py_compile addons-extra/extrairg/irg_practice_slide_restrictions/tests/test_practice_slide_restrictions.py
+OK: test_practice_slide_restrictions.py
+
+python3 -m py_compile addons-extra/extrairg/irg_practice_slide_restrictions/__manifest__.py
+OK: __manifest__.py
+
+python3 -m py_compile addons-extra/extrairg/irg_practice_slide_restrictions/__init__.py
+OK: __init__.py
+
+python3 -m py_compile addons-extra/extrairg/irg_practice_slide_restrictions/models/__init__.py
+OK: models/__init__.py
+
+RESULT: ALL PASS (5/5)

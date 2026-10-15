@@ -1,7 +1,7 @@
 # irg_practice_slide_restrictions
 
 **Categoría:** extrairg
-**Versión:** 16.0.1.1.0
+**Versión:** 16.0.1.2.0
 **Licencia:** LGPL-3
 **Depende de:** `irg_student_course_practice_modality`, `irg_elearning_editable_sections`, `isep_elearning_custom`, `irg_batch_slide_restrictions`
 
@@ -26,11 +26,17 @@ Staff lo pone en las secciones del canal de prácticas de cada curso, campo **Mo
 
 ## Resolución curso ↔ canal
 
+Si el canal visto tiene `irg_homeclass_channel_id` (clon online), la resolución
+usa el **canal maestro**; si no, el propio canal. Soft-check: sin ese campo, sin cambio.
+
 1. `slide.channel.op_subject_ids` → `op.subject.course_id`
 2. `op.course.subject_ids` que contienen esas asignaturas
-3. `op.course.slide_channel_ids` que contienen el canal
+3. `op.course.slide_channel_ids` que contienen el canal de resolución
 
 Si un canal resuelve varios cursos, basta que **alguna** matrícula coincida.
+
+Los clones online no enlazan asignaturas propias (`op_subject_ids` vacío); sin el
+salto al maestro, las secciones con modalidad requerida quedarían siempre ocultas.
 
 ## Instalación
 
@@ -60,3 +66,4 @@ Al crear canales en tests, `category_id` de Moodle solo se rellena si el modelo 
 - Canal compartido entre cursos: se admite si alguna matrícula coincide.
 - Alumnos sin modalidad no ven secciones etiquetadas.
 - No clona canales ni mezcla con `irg_content_modality`.
+- En clon, solo se consultan cursos del maestro (no se unen enlaces directos del clon vía `slide_channel_ids`); en producción los clones no llevan esos enlaces.

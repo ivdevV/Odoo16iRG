@@ -21,3 +21,4 @@ Resolución curso↔canal: `op_subject_ids.course_id` ∪ `op.course.subject_ids
 - Un hijo dentro de una sección etiquetada queda restringido aunque su campo esté vacío (`_irg_effective_practice_type` mira categoría y padre). El flag `inherit_limitations_from_parent` solo copia el valor al hijo.
 - `op.subject.course_id` y `op.course.subject_ids` no son inversos. Hace falta unir ambas vías.
 - Contexto `irg_skip_parent_propagation`: los overrides de `_apply_parent_limitations` deben respetarlo.
+- Clones online (`irg_homeclass_channel_id`): la asignatura apunta al maestro; el clon no tiene `op_subject_ids`. `_irg_courses_for_channel` debe resolver vía el maestro (soft-check del campo) o las secciones con `irg_required_practice_type` quedan ocultas aunque la matrícula tenga modalidad.
