@@ -1,0 +1,25 @@
+# Task 3 — document model + partner summary evidence
+
+## Runner (/tmp/t3/run_odoo.sh, docker run on odoo:16.0; compose image not buildable, same as Task 2)
+docker run --rm --network odoo16irg_local_default -v <repo>/addons-extra:/mnt/extra-addons:ro -v <repo>/etc/odoo/odoo.local.conf:/etc/odoo/odoo.conf:ro odoo:16.0 odoo -c /etc/odoo/odoo.conf -d <db> <flags> --stop-after-init --workers=0 --http-port=18069
+
+## Bootstrap (disposable DB test_irg_oficialidad_summary)
+run_odoo.sh test_irg_oficialidad_summary -i isep_gradebook --without-demo=all
+run_odoo.sh test_irg_oficialidad_summary -i isep_control_escolar --without-demo=all
+run_odoo.sh test_irg_oficialidad_summary -i irg_student_oficialidad_documents --test-enable --test-tags=/irg_student_oficialidad_documents --log-level=test   # RED
+run_odoo.sh test_irg_oficialidad_summary -u irg_student_oficialidad_documents --test-enable --test-tags=/irg_student_oficialidad_documents --log-level=test   # GREEN
+
+## RED (tests written first; model/fields missing)
+   8 AttributeError: 'res.partner' object has no attribute 'irg_oficialidad_student_type'
+   5 KeyError: 'irg.oficialidad.document'
+   5 AttributeError: 'res.partner' object has no attribute '_irg_oficialidad_vat_hint_from_vat'
+   1 AttributeError: 'res.partner' object has no attribute 'irg_oficialidad_expected_count'
+   1 AttributeError: 'res.partner' object has no attribute 'irg_oficialidad_checklist_html'
+   1 AssertionError: ir.model.access() is not true
+   1 2026-10-15 09:23:53,967 1 ERROR test_irg_oficialidad_summary odoo.tests.result: 1 failed, 20 error(s) of 25 tests when loading database 'test_irg_oficialidad_summary' 
+2026-10-15 09:23:53,689 1 ERROR test_irg_oficialidad_summary odoo.modules.loading: Module irg_student_oficialidad_documents: 1 failures, 20 errors of 25 tests 
+2026-10-15 09:23:53,967 1 ERROR test_irg_oficialidad_summary odoo.tests.result: 1 failed, 20 error(s) of 25 tests when loading database 'test_irg_oficialidad_summary' 
+
+## GREEN
+2026-10-15 09:24:50,630 1 INFO test_irg_oficialidad_summary odoo.tests.stats: irg_student_oficialidad_documents: 29 tests 0.26s 836 queries 
+2026-10-15 09:24:50,630 1 INFO test_irg_oficialidad_summary odoo.tests.result: 0 failed, 0 error(s) of 25 tests when loading database 'test_irg_oficialidad_summary' 

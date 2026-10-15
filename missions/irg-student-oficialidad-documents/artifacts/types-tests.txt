@@ -1,0 +1,26 @@
+# Task 2 — document type catalogue evidence
+
+## Runner (docker compose service odoo_local has no built image: Debian 11 apt 404, so docker run on odoo:16.0, as prior missions)
+#!/bin/sh
+# usage: run_odoo.sh <db> <odoo flags...>
+DB=$1; shift
+docker run --rm --network odoo16irg_local_default --name odoo_test_oficialidad_types \
+  -v "<repo>/addons-extra:/mnt/extra-addons:ro" \
+  -v "<repo>/etc/odoo/odoo.local.conf:/etc/odoo/odoo.conf:ro" \
+  odoo:16.0 odoo -c /etc/odoo/odoo.conf -d $DB "$@" \
+  --stop-after-init --workers=0 --http-port=18069
+
+## Deps bootstrap (fresh DB test_irg_oficialidad_types)
+run_odoo.sh test_irg_oficialidad_types -i isep_gradebook --without-demo=all   # isep_control_escolar has undeclared dep on isep_gradebook
+run_odoo.sh test_irg_oficialidad_types -i isep_control_escolar --without-demo=all
+
+## RED command
+run_odoo.sh test_irg_oficialidad_types -i irg_student_oficialidad_documents --test-enable --test-tags=/irg_student_oficialidad_documents --log-level=test
+## RED output
+192:2026-10-15 09:01:36,469 1 WARNING test_irg_oficialidad_types odoo.modules.loading: invalid module names, ignored: irg_student_oficialidad_documents 
+224:2026-10-15 09:01:37,091 1 WARNING test_irg_oficialidad_types odoo.tests.result: 0 failed, 0 error(s) of 0 tests when loading database 'test_irg_oficialidad_types' 
+
+## GREEN (same command)
+230:2026-10-15 09:01:52,441 1 INFO test_irg_oficialidad_types odoo.modules.loading: Module irg_student_oficialidad_documents loaded in 0.23s (incl. 0.09s test), 95 queries (+18 test, +95 other) 
+242:2026-10-15 09:01:52,729 1 INFO test_irg_oficialidad_types odoo.tests.stats: irg_student_oficialidad_documents: 6 tests 0.09s 18 queries 
+243:2026-10-15 09:01:52,729 1 INFO test_irg_oficialidad_types odoo.tests.result: 0 failed, 0 error(s) of 4 tests when loading database 'test_irg_oficialidad_types' 
