@@ -1,0 +1,106 @@
+E2E TestSprite — irg-student-activity
+Fecha: 2026-10-16 ~10:18–10:25 CEST
+Rol: e2e-tester
+
+ESTADO: BLOQUEADO — NO SE EJECUTÓ TestSprite (ningún escenario corrido).
+
+Disparo (AGENTS.md, capa E2E): SÍ. El diff toca views/op_student_views.xml.
+Checks previos: module_tests / syntax_check / scope_review = pass.
+
+Causa del bloqueo: conflicto de puerto 8069 entre dos daemons Docker
+---------------------------------------------------------------------
+- OrbStack (contexto activo, /var/run/docker.sock): contenedor odoo16irg_local
+  (docker-compose.local.yml, mapeo 8069) + pgodoo16irg_local con la BD
+  e2e_irg_student_activity (módulo irg_student_activity 'installed', usuario
+  e2e_faculty_activity presente; verificado por psql dentro del contenedor pg).
+- Docker Desktop (~/.docker/run/docker.sock): contenedor e2e_odoo_unimarconi,
+  creado 10:16:29, "Up" durante toda la sesión, publica 0.0.0.0:8069.
+  Es la corrida E2E de OTRA misión (irg-admission-unimarconi-mail) y está
+  en uso activo. Tiene su propia red (172.18.0.x) y NO ve la BD
+  e2e_irg_student_activity.
+- lsof: el único listener en *:8069 es com.docker.backend (Docker Desktop).
+  Por tanto http://127.0.0.1:8069 (HTTP 200 en el login) NO es el Odoo de
+  esta misión.
+
+Evidencia
+- xmlrpc authenticate(db=e2e_irg_student_activity, e2e_faculty_activity) contra
+  127.0.0.1:8069 -> Fault: psycopg2.OperationalError ... connection to server at
+  "pgodoo_local" (172.18.0.4) ... FATAL: database "e2e_irg_student_activity"
+  does not exist   (IP 172.18.x = red de Docker Desktop, no la de OrbStack
+  192.168.97.x donde vive odoo16irg_local).
+- docker exec pgodoo16irg_local (OrbStack) psql: la BD e2e_irg_student_activity
+  existe, ir_module_module irg_student_activity = installed, login
+  e2e_faculty_activity existe.
+- Esperados ~3 min; e2e_odoo_unimarconi seguía Up y reteniendo 8069.
+
+Por qué no se continuó
+- Ejecutar TestSprite ahora tunelaría el Odoo equivocado (otra misión): el login
+  fallaría por BD inexistente o, peor, ejercería datos de otra misión.
+- Parar/borrar e2e_odoo_unimarconi interrumpiría la E2E de otra misión en curso
+  y no es competencia de este rol; remapear el puerto contradice AGENTS.md
+  (runtime en 8069). Se escala en lugar de improvisar.
+- No se llamó a ninguna herramienta MCP de TestSprite (nada subido a su nube).
+
+Acción requerida (orquestador / usuario)
+1. Esperar a que termine la E2E de irg-admission-unimarconi-mail, o parar
+   e2e_odoo_unimarconi (docker context desktop-linux) y liberar 8069.
+2. Confirmar que 127.0.0.1:8069 responde desde odoo16irg_local (OrbStack) con
+   e2e_irg_student_activity (xmlrpc authenticate OK).
+3. Relanzar este gate. Flujos acotados: login Facultad; ficha "Alumno E2E
+   Activity"; pestaña Actividad con fila Campus / "Contenido E2E"; botón
+   "Exportar CSV". projectPath =
+   addons-extra/extrairg/irg_student_activity. Nota: testsprite_bootstrap no
+   expone needLogin (schema: type, projectPath, testScope, localPort,
+   pathname); needLogin va en testsprite_generate_frontend_test_plan.
+
+Limpieza
+- Esta corrida no creó nada nuevo (sin fixtures, sin contenedores, sin
+  testsprite_tests/ en el módulo, sin cambios en el runtime).
+- Fixtures PREEXISTENTES se conservan a propósito para el reintento: BD
+  e2e_irg_student_activity y usuario e2e_faculty_activity (OrbStack pg).
+  Eliminarlos tras el E2E definitivo (dropdb e2e_irg_student_activity).
+- Servicios originales sin tocar: odoo16irg_local (OrbStack) estaba Up;
+  e2e_odoo_unimarconi no se tocó.
+
+E2E BLOCKED (ni PASS ni FAIL: sin veredicto; la misión NO puede cerrarse)
+
+=====================================================================
+REINTENTO 2 — 2026-10-16 ~11:10 CEST (e2e-tester)
+=====================================================================
+ESTADO: BLOQUEADO — MCP TestSprite desconectado. 0 escenarios ejecutados.
+
+Precondiciones verificadas (OK)
+- 127.0.0.1:8069 -> HTTP 303 en /web/login (Odoo OrbStack odoo16irg_local).
+- xmlrpc authenticate(db=e2e_irg_student_activity, e2e_faculty_activity) -> uid=6.
+- op.student search_read 'Alumno E2E' -> [{id:1, name:'Alumno E2E Activity'}].
+- testsprite_tests/tmp/config.json existe (no se llamo a bootstrap); no hay
+  execution.lock; no hay procesos testsprite vivos.
+
+Ejecucion
+- testsprite_generate_code_and_execute(projectName=irg_student_activity,
+  projectPath=<modulo>, testIds=[TC001,TC002,TC005,TC006], serverMode=production)
+  -> {"error":"Not connected"}
+- testsprite_check_account_info -> {"error":"Not connected"} (confirma que es el
+  servidor MCP, no la llamada).
+- GetDynamicTools: namespace user-TestSprite en estado "error": "This MCP server
+  failed during live tool discovery. Its tools are unavailable until the
+  connection is fixed." Causa probable: el proceso MCP murio al matar procesos
+  tras la segunda corrida colgada.
+- Un solo reintento de conexion (limite: misma causa dos veces -> escalar).
+- No se subio nada a la nube de TestSprite. No se ejecutaron los .py generados
+  a mano: no equivaldria a la capa E2E TestSprite exigida por AGENTS.md.
+
+Accion requerida (usuario)
+1. En Cursor: Settings > MCP > reiniciar/reconectar el servidor "TestSprite"
+   (o recargar la ventana). Verificar que sale con tools.
+2. Relanzar este gate (misma config; Odoo y fixtures siguen listos).
+
+Limpieza
+- Esta corrida no creo nada. Se CONSERVAN a proposito para el reintento:
+  BD e2e_irg_student_activity y usuario e2e_faculty_activity (OrbStack pg),
+  mas la ACL de lectura Facultad sobre op.student.fees.details creada en esa BD
+  (fixture, solo en la BD desechable; no esta en el codigo del modulo).
+  Tras el veredicto definitivo: dropdb e2e_irg_student_activity.
+- Servicio odoo16irg_local sin tocar.
+
+E2E BLOCKED (ni PASS ni FAIL: sin veredicto; la misión NO puede cerrarse)

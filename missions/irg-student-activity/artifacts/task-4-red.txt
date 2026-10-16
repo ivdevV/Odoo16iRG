@@ -1,0 +1,5 @@
+Task 4 RED (before implementation):
+- test_compute_activity_line_ids_populated: FAIL 0 != 1
+- test_export_csv_headers_and_row: ERROR no action_export_activity_csv
+- test_export_denied_without_faculty: ERROR no action_export_activity_csv
+- 1 failed, 2 error(s) of 8 tests

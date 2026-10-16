@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_irg_student_activity_line_faculty,irg.student.activity.line.faculty,model_irg_student_activity_line,openeducat_core.group_op_faculty,1,1,1,1
+access_irg_student_activity_export_wizard_faculty,irg.student.activity.export.wizard.faculty,model_irg_student_activity_export_wizard,openeducat_core.group_op_faculty,1,1,1,1

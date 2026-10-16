@@ -1,0 +1,45 @@
+{
+  "status": "pending_e2e",
+  "task": "irg-student-activity",
+  "checks": [
+    {
+      "name": "module_tests",
+      "command": "docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_student_activity -u irg_student_activity --test-enable --test-tags=/irg_student_activity --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "Re-ejecutado por el validador: 0 failed, 0 error(s) of 11 tests (exit 0); sin ERROR/CRITICAL en el log",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "syntax_check",
+      "command": "python3 -m py_compile (módulo) + xml.dom.minidom parse views/op_student_views.xml",
+      "result": "pass",
+      "detail": "Python y XML válidos; __pycache__ generado por el check eliminado",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "scope_review",
+      "command": "git status --short --untracked-files=all; grep student_access|Acceso en el módulo",
+      "result": "pass",
+      "detail": "isep_student_access sin modificar (solo dependencia en __manifest__). Cambios funcionales de la misión solo en addons-extra/extrairg/irg_student_activity/. Las modificaciones preexistentes en irg_hide_portal_servicios pertenecen a otra misión y no a esta. Control Facultad server-side (has_group + AccessError) presente en models/op_student.py.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "testsprite_generate_code_and_execute(projectName=irg_student_activity, testIds=[TC001,TC002,TC005,TC006], serverMode=production) -> error 'Not connected'",
+      "result": "skipped",
+      "detail": "BLOQUEADO, NO es un skip aceptable: E2E obligatorio por scope (views XML). Reintento 2026-10-16 11:1x: Odoo local correcto (127.0.0.1:8069, BD e2e_irg_student_activity, uid=6, alumno 'Alumno E2E Activity' legible), pero el servidor MCP user-TestSprite esta en estado error ('failed during live tool discovery') y toda llamada devuelve 'Not connected' (tambien check_account_info). 0 escenarios ejecutados. Requiere reconectar/reiniciar el MCP TestSprite en Cursor y relanzar el gate. Sin E2E PASS la mision no se cierra.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_student_activity",
+    "base_commit": "2e3da613d7d89e3f1d9d4c67c245f52374be21c3"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

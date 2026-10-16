@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_student_activity_export_wizard_form" model="ir.ui.view">
+        <field name="name">irg.student.activity.export.wizard.form</field>
+        <field name="model">irg.student.activity.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Exportar actividad CSV">
+                <div class="alert alert-info" role="status">
+                    <p>
+                        Archivo CSV listo para descargar:
+                        <field name="filename" nolabel="1" readonly="1"/>
+                    </p>
+                </div>
+                <group>
+                    <field name="student_id" readonly="1"/>
+                    <field name="file_data"
+                            string="Descargar CSV"
+                            filename="filename"
+                            readonly="1"
+                            widget="binary"/>
+                    <field name="state" invisible="1"/>
+                </group>
+                <footer>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
