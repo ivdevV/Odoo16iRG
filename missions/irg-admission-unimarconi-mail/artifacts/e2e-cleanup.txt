@@ -1,0 +1,19 @@
+E2E cleanup evidence - mission irg-admission-unimarconi-mail (2026-10-16 ~10:30)
+
+Disposable databases (Docker Desktop engine, container pgodoo16irg_local):
+- e2e_unimarconi_20261015: gone before cleanup (removed by someone else while run 2 was in progress).
+- e2e_unimarconi_20261016: DROP DATABASE executed, confirmed.
+- Check: select count(*) from pg_database where datname like 'e2e_%'  -> 0 on Docker Desktop.
+- The OrbStack engine has one e2e_ database, e2e_irg_student_activity. It belongs to another mission and was not touched.
+Disposable user e2e_unimarconi lived only in those databases and went with them.
+Disposable container e2e_odoo_unimarconi: removed (docker rm -f).
+Temporary files: testsprite_tests/ deleted from the module directory (it included tmp/config.json with the disposable credentials).
+
+Shared container odoo16irg_local:
+- Docker Desktop copy: NOT running. I stopped it to bind 8069 and could not restart it. `docker start odoo16irg_local` fails with
+  "listen tcp 0.0.0.0:8069: bind: address already in use". The port is held by OrbStack (pid 39610).
+- OrbStack copy: running ("Up", answers HTTP 303 to /web/database/selector on port 8069). It was started
+  by someone else, not by this run. It is a different stack from the one I stopped.
+- I did not stop the OrbStack stack, because another mission uses it.
+  To bring the Docker Desktop copy back: stop the OrbStack stack, then
+  docker --context desktop-linux start odoo16irg_local

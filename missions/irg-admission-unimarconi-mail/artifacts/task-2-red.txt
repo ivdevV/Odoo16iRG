@@ -1,0 +1,474 @@
+2026-10-15 13:44:49,964 149 INFO ? odoo: Odoo version 16.0-20250909 
+2026-10-15 13:44:49,964 149 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-10-15 13:44:49,964 149 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-10-15 13:44:49,964 149 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-10-15 13:44:50,023 149 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-10-15 13:44:50,070 149 INFO ? odoo.service.server: HTTP service (werkzeug) running on 27f10a0153ff:8099 
+2026-10-15 13:44:50,079 149 INFO test_irg_unimarconi_mail odoo.modules.loading: loading 1 modules... 
+2026-10-15 13:44:50,082 149 INFO test_irg_unimarconi_mail odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-10-15 13:44:50,089 149 INFO test_irg_unimarconi_mail odoo.modules.loading: updating modules list 
+2026-10-15 13:44:50,091 149 INFO test_irg_unimarconi_mail odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-10-15 13:44:50,169 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-10-15 13:44:50,233 149 WARNING test_irg_unimarconi_mail py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-15 13:44:50,235 149 WARNING test_irg_unimarconi_mail py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-15 13:44:50,237 149 WARNING test_irg_unimarconi_mail py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-15 13:44:50,484 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-10-15 13:44:50,520 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-10-15 13:44:50,589 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-10-15 13:44:50,591 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-10-15 13:44:50,593 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-10-15 13:44:50,661 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-10-15 13:44:50,830 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-10-15 13:44:50,926 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-10-15 13:44:50,931 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-10-15 13:44:51,048 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-10-15 13:44:51,136 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-10-15 13:44:51,201 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-10-15 13:44:51,203 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-10-15 13:44:51,205 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-10-15 13:44:51,207 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-10-15 13:44:51,328 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-10-15 13:44:51,348 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-10-15 13:44:51,350 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-10-15 13:44:51,362 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-10-15 13:44:51,372 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-10-15 13:44:51,401 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-10-15 13:44:51,405 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-10-15 13:44:51,414 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-10-15 13:44:51,415 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-10-15 13:44:51,418 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-10-15 13:44:51,421 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-10-15 13:44:51,423 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-10-15 13:44:51,434 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-10-15 13:44:51,440 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-10-15 13:44:51,451 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-10-15 13:44:51,460 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-10-15 13:44:51,465 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-10-15 13:44:51,473 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-10-15 13:44:51,477 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-10-15 13:44:51,493 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-10-15 13:44:52,161 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-10-15 13:44:52,303 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-10-15 13:44:52,325 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-10-15 13:44:52,622 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-10-15 13:44:52,677 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-10-15 13:44:52,969 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-10-15 13:44:52,971 149 WARNING test_irg_unimarconi_mail odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-10-15 13:44:53,131 149 INFO test_irg_unimarconi_mail odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['IRG Admission Unimarconi Mail'] to user __system__ #1 via n/a 
+2026-10-15 13:44:53,131 149 INFO test_irg_unimarconi_mail odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['IRG Admission Unimarconi Mail'] to user __system__ #1 via n/a 
+2026-10-15 13:44:54,516 149 INFO test_irg_unimarconi_mail odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a 
+2026-10-15 13:44:54,529 149 INFO test_irg_unimarconi_mail odoo.modules.loading: loading 247 modules... 
+2026-10-15 13:44:54,934 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.irg_generacion_diplomados.models.diplomado_registry is not overriding the create method in batch 
+2026-10-15 13:44:54,945 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_documents_portal.models.folders is not overriding the create method in batch 
+2026-10-15 13:44:54,960 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.openeducat_onboarding.models.onboarding_steps is not overriding the create method in batch 
+2026-10-15 13:44:55,025 149 WARNING test_irg_unimarconi_mail odoo.models: The model res.card has no _description 
+2026-10-15 13:44:55,025 149 WARNING test_irg_unimarconi_mail odoo.models: The model isep.form.data.wizard has no _description 
+2026-10-15 13:44:55,042 149 WARNING test_irg_unimarconi_mail py.warnings: /mnt/extra-addons/ent_addons/sale_account_accountant/models/account_reconcile_model.py:64: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/models/__init__.py", line 4, in <module>
+    from . import account_reconcile_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-15 13:44:55,072 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.irg_admission_class_start_date.models.op_admission is not overriding the create method in batch 
+2026-10-15 13:44:55,073 149 INFO test_irg_unimarconi_mail odoo.modules.loading: Loading module irg_admission_unimarconi_mail (172/247) 
+2026-10-15 13:44:55,237 149 INFO test_irg_unimarconi_mail odoo.modules.registry: module irg_admission_unimarconi_mail: creating or updating database tables 
+2026-10-15 13:44:55,246 149 INFO test_irg_unimarconi_mail odoo.schema: Table 'op_admission': unable to set NOT NULL on column 'email' 
+2026-10-15 13:44:55,246 149 INFO test_irg_unimarconi_mail odoo.schema: Table 'op_admission': unable to set NOT NULL on column 'birth_date' 
+2026-10-15 13:44:55,260 149 INFO test_irg_unimarconi_mail odoo.schema: Keep unexpected index op_admission_application_number_index on table op_admission 
+2026-10-15 13:44:55,287 149 INFO test_irg_unimarconi_mail odoo.modules.loading: Module irg_admission_unimarconi_mail loaded in 0.21s, 49 queries (+49 other) 
+2026-10-15 13:44:55,299 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.odoo_moodle_connector.models.calendar_event_custom is not overriding the create method in batch 
+2026-10-15 13:44:55,377 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-10-15 13:44:55,377 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_survey.models.survey is not overriding the create method in batch 
+2026-10-15 13:44:55,378 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_survey.models.survey_user_input is not overriding the create method in batch 
+2026-10-15 13:44:55,507 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-10-15 13:44:55,507 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_admission is not overriding the create method in batch 
+2026-10-15 13:44:55,509 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_elearning_custom.models.op_batch is not overriding the create method in batch 
+2026-10-15 13:44:55,509 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_elearning_custom.models.down_consult is not overriding the create method in batch 
+2026-10-15 13:44:55,519 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_gradebook.models.app_gradebook_result is not overriding the create method in batch 
+2026-10-15 13:44:55,519 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_gradebook.models.survey_user_input is not overriding the create method in batch 
+2026-10-15 13:44:55,523 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook.template.line has no _description 
+2026-10-15 13:44:55,523 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook has no _description 
+2026-10-15 13:44:55,523 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook.result has no _description 
+2026-10-15 13:44:55,523 149 WARNING test_irg_unimarconi_mail odoo.models: The model survey.user_input.write has no _description 
+2026-10-15 13:44:55,524 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook.subject has no _description 
+2026-10-15 13:44:55,524 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook.student has no _description 
+2026-10-15 13:44:55,529 149 WARNING test_irg_unimarconi_mail odoo.models: The model record.request has no _description 
+2026-10-15 13:44:55,529 149 WARNING test_irg_unimarconi_mail odoo.models: The model record.request.line has no _description 
+2026-10-15 13:44:55,529 149 WARNING test_irg_unimarconi_mail odoo.models: The model record.request.list.line has no _description 
+2026-10-15 13:44:55,530 149 WARNING test_irg_unimarconi_mail odoo.models: The model res.partner.document has no _description 
+2026-10-15 13:44:55,533 149 WARNING test_irg_unimarconi_mail odoo.models: The model op.course.type has no _description 
+2026-10-15 13:44:55,533 149 WARNING test_irg_unimarconi_mail odoo.models: The model op.area.course has no _description 
+2026-10-15 13:44:55,537 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_subject_precedence.wizard.subject_wizard is not overriding the create method in batch 
+2026-10-15 13:44:55,544 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.irg_diplomado_portal_request.models.diplomado_portal_request is not overriding the create method in batch 
+2026-10-15 13:44:55,544 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.irg_diplomado_portal_request.models.diplomado_registry is not overriding the create method in batch 
+2026-10-15 13:44:55,550 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook.result has no _description 
+2026-10-15 13:44:55,550 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook.student has no _description 
+2026-10-15 13:44:55,551 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook.subject has no _description 
+2026-10-15 13:44:55,555 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook.student has no _description 
+2026-10-15 13:44:55,558 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.op_admission is not overriding the create method in batch 
+2026-10-15 13:44:55,561 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.isep_openeducat_sale.models.auto_admission_required is not overriding the create method in batch 
+2026-10-15 13:44:55,578 149 WARNING test_irg_unimarconi_mail odoo.models: The model schedule.date.due.line has no _description 
+2026-10-15 13:44:55,593 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.irg_gradebook_certificates.models.irg_certificate_request is not overriding the create method in batch 
+2026-10-15 13:44:55,599 149 WARNING test_irg_unimarconi_mail odoo.models: The model app.gradebook.student has no _description 
+2026-10-15 13:44:55,635 149 WARNING test_irg_unimarconi_mail odoo.models: The model schedule.date.due.line has no _description 
+2026-10-15 13:44:55,673 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.irg_campus_diplomados_portal.models.diplomado_request is not overriding the create method in batch 
+2026-10-15 13:44:55,674 149 WARNING test_irg_unimarconi_mail odoo.api.create: The model odoo.addons.irg_campus_diplomados_portal.models.diplomado_registry is not overriding the create method in batch 
+2026-10-15 13:44:55,687 149 INFO test_irg_unimarconi_mail odoo.modules.loading: 247 modules loaded in 1.16s, 49 queries (+49 extra) 
+2026-10-15 13:44:55,701 149 WARNING test_irg_unimarconi_mail odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-10-15 13:44:55,701 149 WARNING test_irg_unimarconi_mail odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-10-15 13:44:55,712 149 WARNING test_irg_unimarconi_mail odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-10-15 13:44:55,725 149 WARNING test_irg_unimarconi_mail odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-10-15 13:44:55,741 149 WARNING test_irg_unimarconi_mail odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,741 149 WARNING test_irg_unimarconi_mail odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,744 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,744 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,744 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,744 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,744 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,744 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,744 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,784 149 WARNING test_irg_unimarconi_mail odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-10-15 13:44:55,784 149 WARNING test_irg_unimarconi_mail odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-10-15 13:44:55,796 149 WARNING test_irg_unimarconi_mail odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-10-15 13:44:55,808 149 WARNING test_irg_unimarconi_mail odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-10-15 13:44:55,825 149 WARNING test_irg_unimarconi_mail odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,825 149 WARNING test_irg_unimarconi_mail odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,828 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,828 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,828 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,828 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,828 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,828 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,828 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:55,990 149 WARNING test_irg_unimarconi_mail py.warnings: /usr/lib/python3/dist-packages/odoo/fields.py:809: UserWarning: Field 'op.student.op_course_ids' in dependency of op.student.total_completion_porc should be searchable. This is necessary to determine which records to recompute when op.student.course.completion_porc is modified. You should either make the field searchable, or simplify the field dependency.
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 556, in load_modules
+    vacuum_cron._trigger(at=datetime.datetime.now() + datetime.timedelta(minutes=1))
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_cron.py", line 494, in _trigger
+    self._trigger_list(at_list)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_cron.py", line 513, in _trigger_list
+    self.env['ir.cron.trigger'].sudo().create([
+  File "<decorator-gen-68>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_fields.py", line 670, in create
+    recs = super().create(vals_list)
+  File "<decorator-gen-15>", line 2, in create
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 431, in _model_create_multi
+    return create(self, arg)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4019, in create
+    records = self._create(data_list)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 4250, in _create
+    records.modified(self._fields, create=True)
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 6165, in modified
+    todo = [self._modified([self._fields[fname] for fname in fnames], create)]
+  File "/usr/lib/python3/dist-packages/odoo/models.py", line 6216, in _modified
+    tree = self.pool.get_trigger_tree(fields, select=select)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 342, in get_trigger_tree
+    trees = [
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 345, in <listcomp>
+    if field in self._field_triggers
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 28, in __get__
+    value = self.fget(obj)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 439, in _field_triggers
+    dependencies = list(field.resolve_depends(self))
+  File "/usr/lib/python3/dist-packages/odoo/fields.py", line 809, in resolve_depends
+    warnings.warn(
+ 
+2026-10-15 13:44:55,995 149 INFO test_irg_unimarconi_mail odoo.modules.registry: verifying fields for every extended model 
+2026-10-15 13:44:56,206 149 INFO test_irg_unimarconi_mail odoo.modules.loading: Modules loaded. 
+2026-10-15 13:44:56,211 149 INFO test_irg_unimarconi_mail odoo.modules.registry: Registry loaded in 6.141s 
+2026-10-15 13:44:56,211 149 INFO test_irg_unimarconi_mail odoo.service.server: Starting post tests 
+2026-10-15 13:44:56,211 149 INFO test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: Starting TestUnimarconiMailTemplate.test_button_flag_follows_batch_code ... 
+2026-10-15 13:44:56,235 149 INFO test_irg_unimarconi_mail odoo.addons.irg_openeducat_sale_lote_custom.models.op_batch: IRG Custom: Create set date_start_class to 2026-10-01 for batch 
+2026-10-15 13:44:56,241 149 WARNING test_irg_unimarconi_mail odoo.models: method op.admission._check_birthdate: @constrains parameter 'birth_date' is not writeable 
+2026-10-15 13:44:56,242 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=243 
+2026-10-15 13:44:56,245 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=244 
+2026-10-15 13:44:56,247 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=245 
+2026-10-15 13:44:56,250 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=246 
+2026-10-15 13:44:56,253 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=247 
+2026-10-15 13:44:56,253 149 INFO test_irg_unimarconi_mail odoo.addons.irg_openeducat_sale_lote_custom.models.op_batch: IRG Custom: Create set date_start_class to 2026-10-01 for batch 
+2026-10-15 13:44:56,255 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=248 
+2026-10-15 13:44:56,256 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=249 
+2026-10-15 13:44:56,258 149 INFO test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: Starting TestUnimarconiMailTemplate.test_prefix_helper ... 
+2026-10-15 13:44:56,272 149 INFO test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: Starting TestUnimarconiMailTemplate.test_rendered_body_uses_course_and_oficialidad_url ... 
+2026-10-15 13:44:56,288 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=250 
+2026-10-15 13:44:56,290 149 INFO test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: ====================================================================== 
+2026-10-15 13:44:56,290 149 ERROR test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: ERROR: TestUnimarconiMailTemplate.test_rendered_body_uses_course_and_oficialidad_url
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.model.data', <function IrModelData._xmlid_lookup at 0xffff860bd430>, 'irg_admission_unimarconi_mail.email_template_admission_unimarconi')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_admission_unimarconi_mail/tests/test_unimarconi_mail.py", line 97, in test_rendered_body_uses_course_and_oficialidad_url
+    body = self._body(admission)
+  File "/mnt/extra-addons/extrairg/irg_admission_unimarconi_mail/tests/test_unimarconi_mail.py", line 90, in _body
+    template = self.env.ref(
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 611, in ref
+    res_model, res_id = self['ir.model.data']._xmlid_to_res_model_res_id(
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_model.py", line 2059, in _xmlid_to_res_model_res_id
+    return self._xmlid_lookup(xmlid)[1:3]
+  File "<decorator-gen-43>", line 2, in _xmlid_lookup
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 90, in lookup
+    value = d[key] = self.method(*args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_model.py", line 2052, in _xmlid_lookup
+    raise ValueError('External ID not found in the system: %s' % xmlid)
+ValueError: External ID not found in the system: irg_admission_unimarconi_mail.email_template_admission_unimarconi
+ 
+2026-10-15 13:44:56,291 149 INFO test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: Starting TestUnimarconiMailTemplate.test_rendered_body_without_course_name ... 
+2026-10-15 13:44:56,307 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=251 
+2026-10-15 13:44:56,308 149 INFO test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: ====================================================================== 
+2026-10-15 13:44:56,308 149 ERROR test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: ERROR: TestUnimarconiMailTemplate.test_rendered_body_without_course_name
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "<decorator-gen-8>", line 2, in __getitem__
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.model.data', <function IrModelData._xmlid_lookup at 0xffff860bd430>, 'irg_admission_unimarconi_mail.email_template_admission_unimarconi')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_admission_unimarconi_mail/tests/test_unimarconi_mail.py", line 123, in test_rendered_body_without_course_name
+    body = self._body(admission)
+  File "/mnt/extra-addons/extrairg/irg_admission_unimarconi_mail/tests/test_unimarconi_mail.py", line 90, in _body
+    template = self.env.ref(
+  File "/usr/lib/python3/dist-packages/odoo/api.py", line 611, in ref
+    res_model, res_id = self['ir.model.data']._xmlid_to_res_model_res_id(
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_model.py", line 2059, in _xmlid_to_res_model_res_id
+    return self._xmlid_lookup(xmlid)[1:3]
+  File "<decorator-gen-43>", line 2, in _xmlid_lookup
+  File "/usr/lib/python3/dist-packages/odoo/tools/cache.py", line 90, in lookup
+    value = d[key] = self.method(*args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_model.py", line 2052, in _xmlid_lookup
+    raise ValueError('External ID not found in the system: %s' % xmlid)
+ValueError: External ID not found in the system: irg_admission_unimarconi_mail.email_template_admission_unimarconi
+ 
+2026-10-15 13:44:56,317 149 WARNING test_irg_unimarconi_mail odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro')] overrides existing selection; use selection_add instead 
+2026-10-15 13:44:56,317 149 WARNING test_irg_unimarconi_mail odoo.fields: res.partner.gender: selection=[('m', 'Masculino'), ('f', 'Femenino'), ('o', 'Otro'), ('male', 'Male'), ('female', 'Female'), ('not-sure', 'Not Sure')] overrides existing selection; use selection_add instead 
+2026-10-15 13:44:56,327 149 WARNING test_irg_unimarconi_mail odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-10-15 13:44:56,340 149 WARNING test_irg_unimarconi_mail odoo.fields: sale.order.line.course_type: selection attribute will be ignored as the field is related 
+2026-10-15 13:44:56,356 149 WARNING test_irg_unimarconi_mail odoo.fields: Field op.batch.acknowledgments: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:56,356 149 WARNING test_irg_unimarconi_mail odoo.fields: Field op.batch.reconeixements: unknown parameter 'size', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:56,358 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:56,358 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:56,358 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:56,358 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.due_line_ids: unknown parameter 'inverse_name', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:56,358 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.total_paid: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:56,358 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.total_recurring: unknown parameter 'currency_field', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:56,358 149 WARNING test_irg_unimarconi_mail odoo.fields: Field sale.order.line.state_academic: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-15 13:44:56,388 149 INFO test_irg_unimarconi_mail odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-10-15 13:44:56,388 149 INFO test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: Starting TestUnimarconiMailVisibility.test_button_flag_follows_batch_code ... 
+2026-10-15 13:44:56,469 149 INFO test_irg_unimarconi_mail odoo.addons.irg_openeducat_sale_lote_custom.models.op_batch: IRG Custom: Create set date_start_class to 2026-10-01 for batch 
+2026-10-15 13:44:56,473 149 WARNING test_irg_unimarconi_mail odoo.models: method op.admission._check_birthdate: @constrains parameter 'birth_date' is not writeable 
+2026-10-15 13:44:56,474 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=252 
+2026-10-15 13:44:56,477 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=253 
+2026-10-15 13:44:56,480 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=254 
+2026-10-15 13:44:56,482 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=255 
+2026-10-15 13:44:56,484 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=256 
+2026-10-15 13:44:56,484 149 INFO test_irg_unimarconi_mail odoo.addons.irg_openeducat_sale_lote_custom.models.op_batch: IRG Custom: Create set date_start_class to 2026-10-01 for batch 
+2026-10-15 13:44:56,487 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=257 
+2026-10-15 13:44:56,488 149 WARNING test_irg_unimarconi_mail odoo.addons.isep_admission_from_student_field.models.op_admission: ISEP_ADMISSION_FROM_STUDENT: search_user_portal INVOCADO para id=258 
+2026-10-15 13:44:56,489 149 INFO test_irg_unimarconi_mail odoo.addons.irg_admission_unimarconi_mail.tests.test_unimarconi_mail: Starting TestUnimarconiMailVisibility.test_prefix_helper ... 
+2026-10-15 13:44:56,503 149 INFO test_irg_unimarconi_mail odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-10-15 13:44:56,503 149 INFO test_irg_unimarconi_mail odoo.service.server: 6 post-tests in 0.29s, 501 queries 
+2026-10-15 13:44:56,503 149 INFO test_irg_unimarconi_mail odoo.tests.stats: irg_admission_unimarconi_mail: 10 tests 0.29s 501 queries 
+2026-10-15 13:44:56,503 149 ERROR test_irg_unimarconi_mail odoo.tests.result: 0 failed, 2 error(s) of 6 tests when loading database 'test_irg_unimarconi_mail' 
+2026-10-15 13:44:56,503 149 INFO test_irg_unimarconi_mail odoo.service.server: Initiating shutdown 
+2026-10-15 13:44:56,503 149 INFO test_irg_unimarconi_mail odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-10-15 13:44:56,623 149 INFO test_irg_unimarconi_mail odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  

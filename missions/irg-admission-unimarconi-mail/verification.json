@@ -1,0 +1,31 @@
+{
+  "status": "failed",
+  "task": "irg-admission-unimarconi-mail",
+  "checks": [
+    {
+      "name": "module_tests",
+      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_unimarconi_mail -u irg_admission_unimarconi_mail --test-enable --test-tags=/irg_admission_unimarconi_mail --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 14 tests",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "testsprite_generate_code_and_execute projectPath=addons-extra/extrairg/irg_admission_unimarconi_mail localPort=8069 testIds=TC001,TC002",
+      "result": "fail",
+      "detail": "2 escenarios, 2 bloqueados. Corrida 1: pantalla en blanco. Corrida 2: login rechazado. El botón sí se calcula en servidor (MO visible, MP oculto).",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_unimarconi_mail",
+    "base_commit": "2e3da613d"
+  },
+  "model_tier_used": "complex",
+  "escalations": 1,
+  "evidence": [
+    "artifacts/validation-tests.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

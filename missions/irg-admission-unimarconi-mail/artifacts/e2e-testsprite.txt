@@ -1,0 +1,53 @@
+E2E report - mission irg-admission-unimarconi-mail
+Date: 2026-10-15/16. Role: e2e-tester. Check name: e2e_testsprite
+
+Trigger: diff touches addons-extra/extrairg/irg_admission_unimarconi_mail/views/op_admission_views.xml (view XML) -> E2E mandatory.
+Prior gate: module tests 0 failed, 0 errors of 14 (artifacts/validation-tests.txt).
+
+TestSprite call parameters (MCP, local runtime only, never beta/prod):
+- testsprite_bootstrap: localPort 8069, type frontend, testScope codebase, pathname web/login,
+  projectPath /Users/ivrogo/Workspace/Proyectos iRG/Odoo16iRG/addons-extra/extrairg/irg_admission_unimarconi_mail
+  (bootstrap call timed out on its interactive config page; testsprite_tests/tmp/config.json had been written, so the
+  remaining tools were called directly)
+- testsprite_generate_code_summary, testsprite_generate_standardized_prd (with a small prd.md describing the two flows)
+- testsprite_generate_frontend_test_plan: needLogin true. Plan had 7 cases; only TC001 and TC002 were executed (the two requested flows).
+- testsprite_generate_code_and_execute: testIds [TC001, TC002], serverMode development, run 3 times (see below).
+- Credentials: disposable internal user e2e_unimarconi on a disposable database only. No real account.
+
+Scenarios:
+- TC001 Open composer from MO admission (batch MOPCONL2606): BLOCKED in every run, never reached the button.
+- TC002 Button absent on MP admission (batch MPTEST01): BLOCKED in every run, never reached the form.
+Result: 2 scenarios, 0 passed, 0 failed by assertion, 2 blocked. No assertion about the product was executed.
+
+Run 1 (2026-10-15 16:16 UTC+2): both BLOCKED, blank Odoo SPA, 0 interactive elements.
+  Cause (mine, fixture): the disposable DB was cloned with CREATE DATABASE ... TEMPLATE, but the filestore was not
+  copied, so /web/assets/* returned 500 (FileNotFoundError in the filestore). Found by curl. Fixed by deleting the
+  /web/assets/% rows of ir_attachment so Odoo regenerates them; assets then returned 200.
+Run 2 (2026-10-16 09:53): both BLOCKED, "Wrong login/password".
+  Cause (environment): the shared odoo16irg_local container was recreated by someone else at about 09:58 and my
+  disposable runtime container and database were gone; port 8069 answered with the database selector.
+Run 3 (2026-10-16 10:20): both BLOCKED, Odoo web client rendered and login worked, but
+  "Access Error: You are not allowed to access 'Admission' (op.admission) records".
+  Cause (mine, fixture): the disposable user was created with Settings and Internal User groups but not with
+  Admission/User or Admission/Manager (res_groups 47, 48). I added both groups afterwards; there was no time
+  window to run a fourth attempt, because the runtime was taken over (below).
+
+Why no fourth attempt: during run 3 the machine's Docker setup changed under the run. The Docker Desktop
+engine (where odoo16irg_local, pgodoo16irg_local and my disposable container lived) lost port 8069 to a second
+engine, OrbStack, which now runs its own odoo16irg_local stack on 8069 and also hosts another mission's
+disposable database (e2e_irg_student_activity). My disposable container was stopped and 8069 could not be bound again
+without stopping that other stack, which is not mine. Each failure had a different cause, so the
+"same cause twice" stop rule was not triggered, but none of them was a product defect, and none produced an
+assertion on the feature.
+
+Verdict reasoning: the gate needs an E2E PASS or a justified skip. Neither exists. Product behaviour is
+covered only by the 14 module tests, not by the rendered web layer. The mission cannot close the e2e_testsprite check.
+
+Next step for whoever continues: run the two flows on a single container engine, with a disposable DB created from
+a fresh install (or with the filestore copied), a user in group Admission/User (group_op_admission_user) plus
+Internal User, and admission ids looked up after seeding (they were 403 MO and 404 MP in the last seed).
+
+No production code was edited. verification.json was not touched. Generated testsprite_tests/ output was removed
+from the module directory after the run.
+
+E2E FAIL
