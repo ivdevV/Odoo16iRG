@@ -52,6 +52,18 @@ invalidar la mutación principal, capturar únicamente la excepción de negocio 
 (`UserError` en este caso), registrar el motivo y dejar el registro sin transicionar.
 No usar `except Exception`, porque ocultaría defectos de programación o infraestructura.
 
+## Patrón: un efecto posterior que no puede deshacer el cierre
+
+Un aviso o cualquier escritura hecha después de que la libreta ya pasó a `done`
+es otro caso. Ahí el efecto sí debe absorber cualquier fallo, incluido un error
+de PostgreSQL. `except Exception` no basta: si la consulta falló, la transacción
+queda abortada y el `commit` del cierre se deshace igual.
+
+El efecto va dentro de `with self.env.cr.savepoint():`, y ese bloque dentro del
+`try`. La fecha o el estado que deben sobrevivir se escriben antes de abrir el
+savepoint. Al fallar, el savepoint se revierte, el log guarda el id de la libreta
+y la excepción no se relanza.
+
 ## Gotcha reproducido en Dev: el template de línea puede ampliar por error el principal
 
 La libreta `AD003762` mostraba en cabecera el template principal `Solo Examen`, pero

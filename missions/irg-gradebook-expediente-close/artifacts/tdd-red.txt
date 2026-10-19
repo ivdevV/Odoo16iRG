@@ -1,0 +1,38 @@
+Starting TestExpedienteClose.test_auto_close_stamps_empty_date_and_notifies ... 
+2026-10-19 11:18:42,745 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: ====================================================================== 
+2026-10-19 11:18:42,745 1 ERROR test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: FAIL: TestExpedienteClose.test_auto_close_stamps_empty_date_and_notifies
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_gradebook_expediente_close/tests/test_expediente_close.py", line 182, in test_auto_close_stamps_empty_date_and_notifies
+    self._assert_notice(gradebook)
+  File "/mnt/extra-addons/extrairg/irg_gradebook_expediente_close/tests/test_expediente_close.py", line 148, in _assert_notice
+    self.assertEqual(
+AssertionError: False != datetime.date(2026, 10, 19)
+ 
+2026-10-19 11:18:42,746 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_existing_date_is_kept_and_no_mail_is_sent ... 
+2026-10-19 11:18:42,761 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_mail_failure_keeps_close_and_date ... 
+2026-10-19 11:18:42,776 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: ====================================================================== 
+2026-10-19 11:18:42,776 1 ERROR test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: FAIL: TestExpedienteClose.test_mail_failure_keeps_close_and_date
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_gradebook_expediente_close/tests/test_expediente_close.py", line 227, in test_mail_failure_keeps_close_and_date
+    self.assertEqual(
+AssertionError: False != datetime.date(2026, 10, 19)
+ 
+2026-10-19 11:18:42,777 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_manual_done_does_not_stamp_or_notify ... 
+2026-10-19 11:18:42,791 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_two_gradebooks_same_student_send_one_notice ... 
+2026-10-19 11:18:42,811 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: ====================================================================== 
+2026-10-19 11:18:42,811 1 ERROR test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: FAIL: TestExpedienteClose.test_two_gradebooks_same_student_send_one_notice
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_gradebook_expediente_close/tests/test_expediente_close.py", line 250, in test_two_gradebooks_same_student_send_one_notice
+    self.assertEqual(
+AssertionError: False != datetime.date(2026, 10, 19)
+ 
+2026-10-19 11:18:42,812 1 INFO test_irg_gradebook_expediente_close odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-10-19 11:18:42,813 1 INFO test_irg_gradebook_expediente_close odoo.service.server: 5 post-tests in 0.15s, 482 queries 
+2026-10-19 11:18:42,813 1 INFO test_irg_gradebook_expediente_close odoo.tests.stats: irg_gradebook_expediente_close: 7 tests 0.12s 482 queries 
+2026-10-19 11:18:42,813 1 ERROR test_irg_gradebook_expediente_close odoo.tests.result: 3 failed, 0 error(s) of 5 tests when loading database 'test_irg_gradebook_expediente_close' 
+2026-10-19 11:18:42,813 1 INFO test_irg_gradebook_expediente_close odoo.service.server: Initiating shutdown 
+2026-10-19 11:18:42,813 1 INFO test_irg_gradebook_expediente_close odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-10-19 11:18:43,136 1 INFO test_irg_gradebook_expediente_close odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  
+
+
+---

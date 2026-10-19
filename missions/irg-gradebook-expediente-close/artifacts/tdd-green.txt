@@ -1,0 +1,47 @@
+Starting TestExpedienteClose.test_auto_close_stamps_empty_date_and_notifies ... 
+2026-10-19 11:34:14,732 1 INFO test_irg_gradebook_expediente_close odoo.tests: skip sending email in test mode 
+2026-10-19 11:34:14,732 1 INFO test_irg_gradebook_expediente_close odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 11 and Message-Id '<458555691835232.1792409654.728269100189209-openerp-35-app.gradebook.student@f52f979d4116>' from 'academica@institutoraimongaja.com' to (redacted) 'a******ca@institutoraimongaja.com' successfully sent 
+2026-10-19 11:34:14,732 1 INFO test_irg_gradebook_expediente_close odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-10-19 11:34:14,732 1 INFO test_irg_gradebook_expediente_close odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-10-19 11:34:14,734 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_database_error_while_sending_keeps_close_and_date ... 
+2026-10-19 11:34:14,752 1 ERROR test_irg_gradebook_expediente_close odoo.sql_db: bad query: SELECT 1 FROM irg_expediente_missing_relation
+ERROR: relation "irg_expediente_missing_relation" does not exist
+LINE 1: SELECT 1 FROM irg_expediente_missing_relation
+                      ^
+ 
+2026-10-19 11:34:14,752 1 ERROR test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.models.app_gradebook_student: Expediente close notice failed for gradebook 36 
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_gradebook_expediente_close/models/app_gradebook_student.py", line 47, in _irg_stamp_expediente_close
+    template.sudo().send_mail(
+  File "/mnt/extra-addons/extrairg/irg_gradebook_expediente_close/tests/test_expediente_close.py", line 294, in _abort
+    self.env.cr.execute("SELECT 1 FROM irg_expediente_missing_relation")
+  File "/usr/lib/python3/dist-packages/odoo/sql_db.py", line 324, in execute
+    res = self._obj.execute(query, params)
+psycopg2.errors.UndefinedTable: relation "irg_expediente_missing_relation" does not exist
+LINE 1: SELECT 1 FROM irg_expediente_missing_relation
+                      ^
+
+2026-10-19 11:34:14,754 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_existing_date_is_kept_and_no_mail_is_sent ... 
+2026-10-19 11:34:14,770 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_mail_failure_keeps_close_and_date ... 
+2026-10-19 11:34:14,789 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_manual_done_does_not_stamp_or_notify ... 
+2026-10-19 11:34:14,805 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_two_gradebooks_same_student_send_one_notice ... 
+2026-10-19 11:34:14,835 1 INFO test_irg_gradebook_expediente_close odoo.tests: skip sending email in test mode 
+2026-10-19 11:34:14,835 1 INFO test_irg_gradebook_expediente_close odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 12 and Message-Id '<295525356478613.1792409654.831927299499512-openerp-40-app.gradebook.student@f52f979d4116>' from 'academica@institutoraimongaja.com' to (redacted) 'a******ca@institutoraimongaja.com' successfully sent 
+2026-10-19 11:34:14,835 1 INFO test_irg_gradebook_expediente_close odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-10-19 11:34:14,835 1 INFO test_irg_gradebook_expediente_close odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-10-19 11:34:14,836 1 INFO test_irg_gradebook_expediente_close odoo.addons.irg_gradebook_expediente_close.tests.test_expediente_close: Starting TestExpedienteClose.test_user_without_student_write_still_stamps ... 
+2026-10-19 11:34:14,866 1 INFO test_irg_gradebook_expediente_close odoo.addons.base.models.ir_model: Access Denied by ACLs for operation: write, uid: 8, model: op.student 
+2026-10-19 11:34:14,879 1 INFO test_irg_gradebook_expediente_close odoo.tests: skip sending email in test mode 
+2026-10-19 11:34:14,879 1 INFO test_irg_gradebook_expediente_close odoo.addons.mail.models.mail_mail: Mail (mail.mail) with ID 13 and Message-Id '<138522293552356.1792409654.876491308212280-openerp-42-app.gradebook.student@f52f979d4116>' from 'academica@institutoraimongaja.com' to (redacted) 'a******ca@institutoraimongaja.com' successfully sent 
+2026-10-19 11:34:14,879 1 INFO test_irg_gradebook_expediente_close odoo.addons.mail.models.mail_mail: Total emails tried by SMTP: 1 
+2026-10-19 11:34:14,879 1 INFO test_irg_gradebook_expediente_close odoo.addons.mail.models.mail_mail: Sent batch 1 emails via mail server ID #False 
+2026-10-19 11:34:14,894 1 WARNING test_irg_gradebook_expediente_close odoo.fields: survey.user_input.survey_type: selection attribute will be ignored as the field is related 
+2026-10-19 11:34:14,965 1 INFO test_irg_gradebook_expediente_close odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-10-19 11:34:14,965 1 INFO test_irg_gradebook_expediente_close odoo.service.server: 7 post-tests in 0.28s, 936 queries 
+2026-10-19 11:34:14,965 1 INFO test_irg_gradebook_expediente_close odoo.tests.stats: irg_gradebook_expediente_close: 9 tests 0.28s 936 queries 
+2026-10-19 11:34:14,965 1 INFO test_irg_gradebook_expediente_close odoo.tests.result: 0 failed, 0 error(s) of 7 tests when loading database 'test_irg_gradebook_expediente_close' 
+2026-10-19 11:34:14,965 1 INFO test_irg_gradebook_expediente_close odoo.service.server: Initiating shutdown 
+2026-10-19 11:34:14,965 1 INFO test_irg_gradebook_expediente_close odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-10-19 11:34:15,042 1 INFO test_irg_gradebook_expediente_close odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  
+
+---
