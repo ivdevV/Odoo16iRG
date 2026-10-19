@@ -13,7 +13,7 @@ from odoo.addons.isep_practices_2.controllers.my_practice_request2 import (
 
 
 class IrgPracticeRequestEligibility(IrgPracticeRequestOnlineTypes):
-    """Reject portal practice requests below 50% or for diplomado courses."""
+    """Reject portal practice requests below 60% or for diplomado courses."""
 
     def _irg_create_portal_request(self, **kwargs):
         error = self._irg_practice_eligibility_error(kwargs, env=request.env)
@@ -80,10 +80,7 @@ class IrgPracticeRequestEligibility(IrgPracticeRequestOnlineTypes):
         ):
             return _('Los diplomados no incluyen solicitud de prácticas.')
         if reason:
-            return _(
-                'Puedes solicitar prácticas cuando el avance del curso '
-                'llegue al 50% de las asignaturas obligatorias.'
-            )
+            return env['op.student.course'].irg_practice_locked_message()
         if (
             admission
             and admission.course_id

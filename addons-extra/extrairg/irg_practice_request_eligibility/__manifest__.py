@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Practice Request Eligibility',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Education',
-    'summary': 'Solicitud de prácticas desde el 50% de avance, sin diplomados',
+    'summary': 'Solicitud de prácticas desde el 60% de avance, sin diplomados',
     'description': """
 El alumno solo puede solicitar prácticas cuando la matrícula alcanza
-al menos el 50% de completion_porc y el curso no es un diplomado.
-El bloqueo se aplica en el servidor.
+al menos el 60% de completion_porc y el curso no es un diplomado.
+Dentro del máster, el cuadro de prácticas permanece visible y explica
+el bloqueo hasta que se cumple ese avance.
     """,
     'author': 'iRG',
     'license': 'LGPL-3',

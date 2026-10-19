@@ -54,10 +54,9 @@ class PracticeRequest(models.Model):
                 'Los diplomados no incluyen solicitud de prácticas.'
             ))
         if reason:
-            raise ValidationError(_(
-                'Puedes solicitar prácticas cuando el avance del curso '
-                'llegue al 50% de las asignaturas obligatorias.'
-            ))
+            raise ValidationError(
+                self.env['op.student.course'].irg_practice_locked_message()
+            )
         if (
             admission
             and admission.course_id

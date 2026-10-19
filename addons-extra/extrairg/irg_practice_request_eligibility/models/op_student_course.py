@@ -2,7 +2,17 @@
 
 from odoo import api, models
 
-IRG_PRACTICE_COMPLETION_MINIMUM = 50.0
+IRG_PRACTICE_COMPLETION_MINIMUM = 60.0
+IRG_PRACTICE_LOCKED_PARAGRAPHS = (
+    'Para poder acceder al formulario de prácticas, el alumnado deberá haber '
+    'completado previamente, como mínimo, el 60% de los módulos correspondientes '
+    'al programa formativo, porcentaje que equivale aproximadamente a 6 exámenes '
+    'superados.',
+    'Hasta que no se alcance este requisito académico, el formulario de prácticas '
+    'permanecerá inhabilitado.',
+    'Una vez cumplido dicho porcentaje, el alumnado podrá acceder al formulario '
+    'e iniciar el procedimiento de solicitud y gestión de las prácticas.',
+)
 
 
 class OpStudentCourse(models.Model):
@@ -28,6 +38,10 @@ class OpStudentCourse(models.Model):
     def irg_can_request_practice(self):
         self.ensure_one()
         return not self.irg_practice_request_block_reason()
+
+    @api.model
+    def irg_practice_locked_message(self):
+        return '\n'.join(IRG_PRACTICE_LOCKED_PARAGRAPHS)
 
     @api.model
     def irg_portal_practice_allowed_for_course(self, course, partner):
