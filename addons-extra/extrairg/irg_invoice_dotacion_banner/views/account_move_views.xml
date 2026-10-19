@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_dotacion_banner" model="ir.ui.view">
+        <field name="name">account.move.form.dotacion.banner</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/widget[@name='web_ribbon'][last()]" position="after">
+                <field name="irg_dotado_morosidad" invisible="1"/>
+                <widget name="web_ribbon" title="Dotado por morosidad" bg_color="irg_bg_dotado"
+                        attrs="{'invisible': [('irg_dotado_morosidad', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
