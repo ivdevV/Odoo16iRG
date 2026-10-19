@@ -9,7 +9,7 @@ class OpStudent(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         students = super().create(vals_list)
-        students.partner_id._irg_recompute_moroso()
+        students.partner_id._irg_recompute_banners()
         return students
 
     def write(self, vals):
@@ -20,5 +20,5 @@ class OpStudent(models.Model):
         if 'partner_id' in vals:
             partners = self.partner_id
             partners |= self.env['res.partner'].browse(previous_partner_ids)
-            partners.exists()._irg_recompute_moroso()
+            partners.exists()._irg_recompute_banners()
         return result

@@ -12,6 +12,7 @@ class AccountMove(models.Model):
         'partner_id',
         'move_type',
         'irg_student_partner_id',
+        'irg_dotado_morosidad',
     })
 
     def _irg_moroso_partners(self):
@@ -20,7 +21,7 @@ class AccountMove(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         moves = super().create(vals_list)
-        moves._irg_moroso_partners()._irg_recompute_moroso()
+        moves._irg_moroso_partners()._irg_recompute_banners()
         return moves
 
     def write(self, vals):
@@ -34,13 +35,13 @@ class AccountMove(models.Model):
         if triggered:
             partners = self._irg_moroso_partners()
             partners |= self.env['res.partner'].browse(previous_partner_ids)
-            partners.exists()._irg_recompute_moroso()
+            partners.exists()._irg_recompute_banners()
         return result
 
     def unlink(self):
         partners = self._irg_moroso_partners()
         result = super().unlink()
-        partners.exists()._irg_recompute_moroso()
+        partners.exists()._irg_recompute_banners()
         return result
 
 
@@ -54,11 +55,11 @@ class AccountPartialReconcile(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
-        records._irg_moroso_partners()._irg_recompute_moroso()
+        records._irg_moroso_partners()._irg_recompute_banners()
         return records
 
     def unlink(self):
         partners = self._irg_moroso_partners()
         result = super().unlink()
-        partners.exists()._irg_recompute_moroso()
+        partners.exists()._irg_recompute_banners()
         return result

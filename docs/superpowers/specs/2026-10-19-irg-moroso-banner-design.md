@@ -21,7 +21,7 @@ Incluido:
 
 Fuera de alcance:
 
-- El asiento «Dotación por Morosidad». Irá en otro módulo, que podrá ampliar el método de decisión de este.
+- El asiento «Dotación por Morosidad» no decide por sí solo quién es moroso. La cinta roja que lo sustituye en el contacto y en el alumno está en `docs/superpowers/specs/2026-10-19-irg-moroso-banner-dotado-design.md`.
 - Cualquier cambio en `irg_student_payment_status`.
 - Columna de listado, filtros, botón manual, portal web, correo y actividades pendientes.
 - Agrupar facturas por entidad comercial (`commercial_partner_id`). La cuenta usa el `partner_id` exacto de la factura.

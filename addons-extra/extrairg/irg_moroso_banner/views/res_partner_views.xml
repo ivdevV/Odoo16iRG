@@ -7,8 +7,11 @@
         <field name="arch" type="xml">
             <xpath expr="//sheet/widget[@name='web_ribbon'][1]" position="after">
                 <field name="irg_is_moroso" invisible="1"/>
+                <field name="irg_is_dotado_morosidad" invisible="1"/>
                 <widget name="web_ribbon" title="Moroso" bg_color="irg_bg_moroso"
-                        attrs="{'invisible': [('irg_is_moroso', '=', False)]}"/>
+                        attrs="{'invisible': ['|', ('irg_is_moroso', '=', False), ('irg_is_dotado_morosidad', '=', True)]}"/>
+                <widget name="web_ribbon" title="Dotado por morosidad" bg_color="bg-danger"
+                        attrs="{'invisible': [('irg_is_dotado_morosidad', '=', False)]}"/>
             </xpath>
         </field>
     </record>

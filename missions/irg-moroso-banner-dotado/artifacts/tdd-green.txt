@@ -1,0 +1,305 @@
+ Container odoo16irg_local-odoo_local-run-369f08205d4f Creating 
+ Container odoo16irg_local-odoo_local-run-369f08205d4f Created 
+2026-10-19 14:01:12,731 1 INFO ? odoo: Odoo version 16.0-20250909 
+2026-10-19 14:01:12,731 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-10-19 14:01:12,731 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-10-19 14:01:12,731 1 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-10-19 14:01:12,785 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-10-19 14:01:12,834 1 INFO ? odoo.service.server: HTTP service (werkzeug) running on 94ec0e67bd3e:8069 
+2026-10-19 14:01:12,840 1 INFO test_irg_moroso_banner odoo.modules.loading: loading 1 modules... 
+2026-10-19 14:01:12,842 1 INFO test_irg_moroso_banner odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-10-19 14:01:12,848 1 INFO test_irg_moroso_banner odoo.modules.loading: updating modules list 
+2026-10-19 14:01:12,849 1 INFO test_irg_moroso_banner odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-10-19 14:01:12,886 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-10-19 14:01:12,912 1 WARNING test_irg_moroso_banner py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 14:01:12,913 1 WARNING test_irg_moroso_banner py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 14:01:12,914 1 WARNING test_irg_moroso_banner py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 14:01:12,994 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-10-19 14:01:13,005 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-10-19 14:01:13,027 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-10-19 14:01:13,028 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-10-19 14:01:13,028 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-10-19 14:01:13,049 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-10-19 14:01:13,105 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-10-19 14:01:13,136 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-10-19 14:01:13,138 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-10-19 14:01:13,156 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-10-19 14:01:13,205 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-10-19 14:01:13,225 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-10-19 14:01:13,225 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-10-19 14:01:13,226 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-10-19 14:01:13,227 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-10-19 14:01:13,255 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-10-19 14:01:13,262 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-10-19 14:01:13,263 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-10-19 14:01:13,267 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-10-19 14:01:13,270 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-10-19 14:01:13,280 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-10-19 14:01:13,282 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-10-19 14:01:13,285 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-10-19 14:01:13,286 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-10-19 14:01:13,287 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-10-19 14:01:13,288 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-10-19 14:01:13,289 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-10-19 14:01:13,293 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-10-19 14:01:13,295 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-10-19 14:01:13,300 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-10-19 14:01:13,303 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-10-19 14:01:13,305 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-10-19 14:01:13,308 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-10-19 14:01:13,309 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-10-19 14:01:13,313 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-10-19 14:01:13,638 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-10-19 14:01:13,691 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-10-19 14:01:13,699 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-10-19 14:01:13,847 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-10-19 14:01:13,869 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-10-19 14:01:14,012 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-10-19 14:01:14,013 1 WARNING test_irg_moroso_banner odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-10-19 14:01:14,098 1 INFO test_irg_moroso_banner odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['IRG Moroso Banner'] to user __system__ #1 via n/a 
+2026-10-19 14:01:14,098 1 INFO test_irg_moroso_banner odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['IRG Moroso Banner'] to user __system__ #1 via n/a 
+2026-10-19 14:01:14,587 1 INFO test_irg_moroso_banner odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a 
+2026-10-19 14:01:14,597 1 INFO test_irg_moroso_banner odoo.modules.loading: loading 123 modules... 
+2026-10-19 14:01:14,942 1 WARNING test_irg_moroso_banner py.warnings: /mnt/extra-addons/ent_addons/sale_account_accountant/models/account_reconcile_model.py:64: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/models/__init__.py", line 4, in <module>
+    from . import account_reconcile_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 14:01:14,963 1 INFO test_irg_moroso_banner odoo.modules.loading: Loading module irg_moroso_banner (123/123) 
+2026-10-19 14:01:15,007 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:15,007 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:15,007 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:15,054 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:15,054 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:15,054 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:15,067 1 INFO test_irg_moroso_banner odoo.modules.registry: module irg_moroso_banner: creating or updating database tables 
+2026-10-19 14:01:15,081 1 WARNING test_irg_moroso_banner odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.partner() have the same label: Active. [Modules: irg_sale_order_extended and base] 
+2026-10-19 14:01:15,081 1 WARNING test_irg_moroso_banner odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.partner() have the same label: Language. [Modules: irg_sale_order_extended and base] 
+2026-10-19 14:01:15,081 1 WARNING test_irg_moroso_banner odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.student() have the same label: Active. [Modules: None and openeducat_core] 
+2026-10-19 14:01:15,081 1 WARNING test_irg_moroso_banner odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.student() have the same label: Language. [Modules: None and None] 
+2026-10-19 14:01:15,081 1 WARNING test_irg_moroso_banner odoo.addons.base.models.ir_model: Two fields (is_active, active) of op.faculty() have the same label: Active. [Modules: None and openeducat_core] 
+2026-10-19 14:01:15,081 1 WARNING test_irg_moroso_banner odoo.addons.base.models.ir_model: Two fields (language_id, lang) of op.faculty() have the same label: Language. [Modules: None and None] 
+2026-10-19 14:01:15,081 1 WARNING test_irg_moroso_banner odoo.addons.base.models.ir_model: Two fields (is_active, active) of res.users() have the same label: Active. [Modules: None and base] 
+2026-10-19 14:01:15,081 1 WARNING test_irg_moroso_banner odoo.addons.base.models.ir_model: Two fields (language_id, lang) of res.users() have the same label: Language. [Modules: None and None] 
+2026-10-19 14:01:15,167 1 INFO test_irg_moroso_banner odoo.modules.loading: loading irg_moroso_banner/data/ir_cron.xml 
+2026-10-19 14:01:15,171 1 INFO test_irg_moroso_banner odoo.modules.loading: loading irg_moroso_banner/views/res_partner_views.xml 
+2026-10-19 14:01:15,186 1 INFO test_irg_moroso_banner odoo.modules.loading: loading irg_moroso_banner/views/op_student_views.xml 
+2026-10-19 14:01:15,192 1 INFO test_irg_moroso_banner odoo.modules.migration: module irg_moroso_banner: Running migration [16.0.1.1.0>] post-migrate 
+2026-10-19 14:01:15,236 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_clearing_dotado_invoice_removes_red_banner ... 
+2026-10-19 14:01:15,453 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_copied_partner_does_not_keep_dotado_flag ... 
+2026-10-19 14:01:15,498 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_copied_partner_does_not_keep_the_flag ... 
+2026-10-19 14:01:15,561 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_creating_student_applies_linked_invoice_domain ... 
+2026-10-19 14:01:15,630 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_draft_refund_and_in_payment_do_not_count ... 
+2026-10-19 14:01:15,741 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_forms_show_lilac_ribbon_only_as_widget ... 
+2026-10-19 14:01:15,758 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_forms_show_red_dotado_ribbon ... 
+2026-10-19 14:01:15,771 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_moroso_flag_stays_when_another_invoice_is_dotado ... 
+2026-10-19 14:01:15,883 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_non_student_partner_has_no_student_note ... 
+2026-10-19 14:01:15,939 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_one_unpaid_dotado_invoice_is_red_not_moroso ... 
+2026-10-19 14:01:15,977 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_paid_dotado_invoice_marks_partner_and_student ... 
+2026-10-19 14:01:16,048 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_partial_invoice_counts_as_unpaid ... 
+2026-10-19 14:01:16,136 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_partner_change_recomputes_both_sides ... 
+2026-10-19 14:01:16,229 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_payer_and_linked_student_follow_their_own_rule ... 
+2026-10-19 14:01:16,278 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_paying_down_to_one_clears_flag_and_notes_once ... 
+2026-10-19 14:01:16,380 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_repeated_recompute_and_cron_do_not_duplicate_notes ... 
+2026-10-19 14:01:16,441 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_silent_recompute_sets_dotado_without_note ... 
+2026-10-19 14:01:16,479 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_third_party_invoice_counts_for_student_and_payer ... 
+2026-10-19 14:01:16,547 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_two_children_mark_payer_only ... 
+2026-10-19 14:01:16,615 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_two_unpaid_invoices_mark_partner_and_student ... 
+2026-10-19 14:01:16,674 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_two_unpaid_invoices_stay_lilac_only ... 
+2026-10-19 14:01:16,734 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_unlink_recomputes_removed_invoice ... 
+2026-10-19 14:01:16,798 1 INFO test_irg_moroso_banner odoo.models.unlink: User #1 deleted account.move.line records with IDs: [509, 510] 
+2026-10-19 14:01:16,801 1 INFO test_irg_moroso_banner odoo.models.unlink: User #1 deleted mail.message records with IDs: [824] 
+2026-10-19 14:01:16,805 1 INFO test_irg_moroso_banner odoo.models.unlink: User #1 deleted account.move records with IDs: [255] 
+2026-10-19 14:01:16,806 1 INFO test_irg_moroso_banner odoo.models.unlink: User #1 deleted mail.followers records with IDs: [242] 
+2026-10-19 14:01:16,811 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_unreconcile_restores_moroso_flag ... 
+2026-10-19 14:01:16,913 1 INFO test_irg_moroso_banner odoo.models.unlink: User #1 deleted account.partial.reconcile records with IDs: [23] 
+2026-10-19 14:01:16,915 1 INFO test_irg_moroso_banner odoo.models.unlink: User #1 deleted account.full.reconcile records with IDs: [16] 
+2026-10-19 14:01:16,921 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_zero_or_one_invoice_stays_current_without_note ... 
+2026-10-19 14:01:16,988 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:16,988 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:16,988 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:17,002 1 INFO test_irg_moroso_banner odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-10-19 14:01:17,015 1 INFO test_irg_moroso_banner odoo.modules.loading: Module irg_moroso_banner loaded in 2.05s (incl. 1.80s test), 193 queries (+6636 test, +193 other) 
+2026-10-19 14:01:17,015 1 INFO test_irg_moroso_banner odoo.modules.loading: 123 modules loaded in 2.42s, 193 queries (+6829 extra) 
+2026-10-19 14:01:17,078 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:17,079 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:17,079 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:17,120 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:17,120 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:17,120 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 14:01:17,276 1 INFO test_irg_moroso_banner odoo.modules.loading: Modules loaded. 
+2026-10-19 14:01:17,282 1 INFO test_irg_moroso_banner odoo.modules.registry: Registry loaded in 4.448s 
+2026-10-19 14:01:17,282 1 INFO test_irg_moroso_banner odoo.service.server: Starting post tests 
+2026-10-19 14:01:17,282 1 INFO test_irg_moroso_banner odoo.service.server: 0 post-tests in 0.00s, 0 queries 
+2026-10-19 14:01:17,282 1 INFO test_irg_moroso_banner odoo.tests.stats: irg_moroso_banner: 26 tests 1.80s 6636 queries 
+2026-10-19 14:01:17,282 1 INFO test_irg_moroso_banner odoo.tests.result: 0 failed, 0 error(s) of 24 tests when loading database 'test_irg_moroso_banner' 
+2026-10-19 14:01:17,282 1 INFO test_irg_moroso_banner odoo.service.server: Initiating shutdown 
+2026-10-19 14:01:17,282 1 INFO test_irg_moroso_banner odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-10-19 14:01:17,402 1 INFO test_irg_moroso_banner odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 2 connections  

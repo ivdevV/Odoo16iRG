@@ -336,3 +336,128 @@ class TestMorosoBanner(TransactionCase):
         self.assertTrue(cron)
         self.assertEqual(cron.name, 'Recalcular morosos')
         self.assertTrue(cron.active)
+
+    def test_paid_dotado_invoice_marks_partner_and_student(self):
+        partner = self._partner('Pagada dotada')
+        student = self._student(partner)
+        invoice = self._create_invoice(partner)
+        self._pay(invoice)
+        invoice.write({'irg_dotado_morosidad': True})
+
+        self.assertEqual(invoice.payment_state, 'paid')
+        self.assertFalse(partner.irg_is_moroso)
+        self.assertTrue(partner.irg_is_dotado_morosidad)
+        self.assertTrue(student.irg_is_dotado_morosidad)
+        notes = self._notes(partner, 'Pasa a dotado por morosidad.')
+        self.assertEqual(len(notes), 1)
+        self.assertEqual(notes.subtype_id, self.env.ref('mail.mt_note'))
+        self.assertEqual(len(self._notes(student, 'Pasa a dotado por morosidad.')), 1)
+
+        partner._irg_recompute_dotado()
+        self.assertEqual(len(self._notes(partner, 'Pasa a dotado por morosidad.')), 1)
+
+    def test_one_unpaid_dotado_invoice_is_red_not_moroso(self):
+        partner = self._partner('Una dotada impagada')
+        invoice = self._create_invoice(partner)
+        invoice.write({'irg_dotado_morosidad': True})
+
+        self.assertFalse(partner.irg_is_moroso)
+        self.assertTrue(partner.irg_is_dotado_morosidad)
+        self.assertEqual(len(self._notes(partner, 'Pasa a dotado por morosidad.')), 1)
+
+    def test_two_unpaid_invoices_stay_lilac_only(self):
+        partner = self._partner('Solo lila')
+        self._student(partner)
+        self._create_invoice(partner)
+        self._create_invoice(partner)
+
+        self.assertTrue(partner.irg_is_moroso)
+        self.assertFalse(partner.irg_is_dotado_morosidad)
+        self.assertFalse(self._notes(partner, 'Pasa a dotado por morosidad.'))
+
+    def test_moroso_flag_stays_when_another_invoice_is_dotado(self):
+        partner = self._partner('Lila y roja')
+        self._create_invoice(partner)
+        self._create_invoice(partner)
+        paid = self._create_invoice(partner)
+        self._pay(paid)
+        self.assertTrue(partner.irg_is_moroso)
+
+        paid.write({'irg_dotado_morosidad': True})
+
+        self.assertTrue(partner.irg_is_moroso)
+        self.assertTrue(partner.irg_is_dotado_morosidad)
+
+    def test_clearing_dotado_invoice_removes_red_banner(self):
+        partner = self._partner('Quitar dotación')
+        self._create_invoice(partner)
+        self._create_invoice(partner)
+        paid = self._create_invoice(partner)
+        self._pay(paid)
+        paid.write({'irg_dotado_morosidad': True})
+        self.assertTrue(partner.irg_is_dotado_morosidad)
+
+        paid.write({'irg_dotado_morosidad': False})
+
+        self.assertFalse(partner.irg_is_dotado_morosidad)
+        self.assertTrue(partner.irg_is_moroso)
+        self.assertEqual(
+            len(self._notes(partner, 'Deja de estar dotado por morosidad.')),
+            1,
+        )
+
+    def test_payer_and_linked_student_follow_their_own_rule(self):
+        payer = self._partner('Pagador dotado')
+        student_partner = self._partner('Alumno dotado')
+        other = self._partner('Otro hijo')
+        student = self._student(student_partner)
+        self._student(other)
+        invoice = self._create_invoice(payer, student_partner=student_partner)
+        invoice.write({'irg_dotado_morosidad': True})
+
+        self.assertTrue(payer.irg_is_dotado_morosidad)
+        self.assertTrue(student_partner.irg_is_dotado_morosidad)
+        self.assertTrue(student.irg_is_dotado_morosidad)
+        self.assertFalse(other.irg_is_dotado_morosidad)
+
+    def test_copied_partner_does_not_keep_dotado_flag(self):
+        partner = self._partner('Original dotado')
+        invoice = self._create_invoice(partner)
+        invoice.write({'irg_dotado_morosidad': True})
+        self.assertTrue(partner.irg_is_dotado_morosidad)
+
+        copied = partner.copy()
+
+        self.assertFalse(copied.irg_is_dotado_morosidad)
+
+    def test_silent_recompute_sets_dotado_without_note(self):
+        partner = self._partner('Instalación')
+        invoice = self._create_invoice(partner)
+        invoice.write({'irg_dotado_morosidad': True})
+        self.env.cr.execute(
+            'UPDATE res_partner SET irg_is_dotado_morosidad = false WHERE id = %s',
+            [partner.id],
+        )
+        partner.invalidate_recordset(['irg_is_dotado_morosidad'])
+        before = len(partner.message_ids)
+
+        partner._irg_recompute_dotado(notify=False)
+
+        self.assertTrue(partner.irg_is_dotado_morosidad)
+        self.assertEqual(len(partner.message_ids), before)
+
+    def test_forms_show_red_dotado_ribbon(self):
+        partner_arch = self.env['res.partner'].get_view(view_type='form')['arch']
+        student_arch = self.env['op.student'].get_view(view_type='form')['arch']
+
+        for arch in (partner_arch, student_arch):
+            self.assertIn('title="Dotado por morosidad"', arch)
+            self.assertIn('bg-danger', arch)
+            self.assertIn(
+                '&quot;irg_is_dotado_morosidad&quot;, &quot;=&quot;, false',
+                arch,
+            )
+            self.assertIn(
+                '&quot;irg_is_dotado_morosidad&quot;, &quot;=&quot;, true',
+                arch,
+            )

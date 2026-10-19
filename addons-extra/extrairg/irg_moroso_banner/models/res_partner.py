@@ -14,6 +14,12 @@ class ResPartner(models.Model):
         copy=False,
         index=True,
     )
+    irg_is_dotado_morosidad = fields.Boolean(
+        string='Dotado por morosidad',
+        default=False,
+        copy=False,
+        index=True,
+    )
 
     def _irg_is_student_partner(self):
         self.ensure_one()
@@ -92,6 +98,75 @@ class ResPartner(models.Model):
             partner._irg_post_moroso_note(count, should)
         return True
 
+    def _irg_dotado_invoice_domain(self):
+        self.ensure_one()
+        domain = [
+            ('move_type', '=', 'out_invoice'),
+            ('irg_dotado_morosidad', '=', True),
+        ]
+        if self._irg_is_student_partner():
+            domain += [
+                '|',
+                ('partner_id', '=', self.id),
+                ('irg_student_partner_id', '=', self.id),
+            ]
+        else:
+            domain.append(('partner_id', '=', self.id))
+        return domain
+
+    def _irg_partner_should_be_dotado(self):
+        self.ensure_one()
+        return bool(self.env['account.move'].sudo().search_count(
+            self._irg_dotado_invoice_domain()
+        ))
+
+    def _irg_post_dotado_note(self, becoming_dotado):
+        self.ensure_one()
+        if becoming_dotado:
+            body = _('Pasa a dotado por morosidad.')
+        else:
+            body = _('Deja de estar dotado por morosidad.')
+        author = self._irg_moroso_note_author()
+        post_kwargs = {
+            'body': body,
+            'subtype_xmlid': 'mail.mt_note',
+            'author_id': author.partner_id.id,
+        }
+        self.sudo().message_post(**post_kwargs)
+        students = self.env['op.student'].sudo().with_context(
+            active_test=False
+        ).search([('partner_id', '=', self.id)])
+        for student in students:
+            student.sudo().message_post(**post_kwargs)
+
+    def _irg_recompute_dotado(self, notify=True):
+        for partner in self:
+            should = partner._irg_partner_should_be_dotado()
+            if partner.irg_is_dotado_morosidad == should:
+                continue
+            partner.sudo().write({'irg_is_dotado_morosidad': should})
+            if notify:
+                partner._irg_post_dotado_note(should)
+        return True
+
+    def _irg_recompute_banners(self):
+        self._irg_recompute_moroso()
+        self._irg_recompute_dotado()
+        return True
+
+    @api.model
+    def _irg_recompute_dotado_candidates(self, notify=True):
+        invoices = self.env['account.move'].sudo().search([
+            ('move_type', '=', 'out_invoice'),
+            ('irg_dotado_morosidad', '=', True),
+        ])
+        partners = self.sudo().with_context(active_test=False).search([
+            ('irg_is_dotado_morosidad', '=', True),
+        ])
+        partners |= invoices.partner_id
+        partners |= invoices.irg_student_partner_id
+        return partners._irg_recompute_dotado(notify=notify)
+
     @api.model
     def _cron_recompute_moroso(self):
         open_invoices = self.env['account.move'].sudo().search([
@@ -104,4 +179,7 @@ class ResPartner(models.Model):
         ])
         partners |= open_invoices.partner_id
         partners |= open_invoices.irg_student_partner_id
-        return partners._irg_recompute_moroso()
+        partners._irg_recompute_moroso()
+        return self._irg_recompute_dotado_candidates(
+            notify=not self.env.context.get('irg_dotado_silent')
+        )
