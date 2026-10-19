@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Practice Request Eligibility',
-    'version': '16.0.1.1.0',
+    'version': '16.0.1.2.0',
     'category': 'Education',
     'summary': 'Solicitud de prácticas desde el 60% de avance, sin diplomados',
     'description': """

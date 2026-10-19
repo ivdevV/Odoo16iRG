@@ -16,7 +16,10 @@ class IrgPracticeRequestEligibility(IrgPracticeRequestOnlineTypes):
     """Reject portal practice requests below 60% or for diplomado courses."""
 
     def _irg_create_portal_request(self, **kwargs):
-        error = self._irg_practice_eligibility_error(kwargs, env=request.env)
+        error = (
+            self._irg_practice_eligibility_error(kwargs, env=request.env)
+            or self._irg_practice_location_error(kwargs, env=request.env)
+        )
         if error:
             user_id = request.env.user.id
             student = request.env['op.student'].sudo().search(
@@ -88,6 +91,29 @@ class IrgPracticeRequestEligibility(IrgPracticeRequestOnlineTypes):
         ):
             return _('La matrícula no corresponde al curso seleccionado.')
         return False
+
+    def _irg_practice_location_error(self, kwargs, env=None):
+        env = env or request.env
+        country = self._irg_browse_existing(
+            env, 'res.country', kwargs.get('country_id')
+        )
+        state = self._irg_browse_existing(
+            env, 'res.country.state', kwargs.get('state_id')
+        )
+        if not country:
+            return _('Selecciona el país en donde realizaras las prácticas.')
+        if not state or state.country_id != country:
+            return _('Selecciona la ciudad en donde realizaras las prácticas.')
+        return False
+
+    def _irg_browse_existing(self, env, model, raw_id):
+        if not raw_id:
+            return env[model]
+        try:
+            record = env[model].sudo().browse(int(raw_id))
+        except (TypeError, ValueError):
+            return env[model]
+        return record if record.exists() else env[model]
 
 
 class IrgPracticeRequestEligibilityList(PracticeRequestListPortal):

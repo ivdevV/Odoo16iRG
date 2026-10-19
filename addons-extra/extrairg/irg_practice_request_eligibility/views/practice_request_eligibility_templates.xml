@@ -44,6 +44,18 @@
         <xpath expr="//select[@id='op_admission_id']/t[@t-as='admission']" position="attributes">
             <attribute name="t-if">admission.irg_can_request_practice()</attribute>
         </xpath>
+        <xpath expr="//label[@for='country_id']" position="replace">
+            <label for="country_id">País en donde realizaras las prácticas</label>
+        </xpath>
+        <xpath expr="//select[@id='country_id']" position="attributes">
+            <attribute name="required">required</attribute>
+        </xpath>
+        <xpath expr="//label[@for='state_id']" position="replace">
+            <label for="state_id">Ciudad en donde realizaras las prácticas</label>
+        </xpath>
+        <xpath expr="//select[@id='state_id']" position="attributes">
+            <attribute name="required">required</attribute>
+        </xpath>
     </template>
 
     <template id="practice_request_list_eligibility"

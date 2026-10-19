@@ -15,7 +15,9 @@ class PracticeRequest(models.Model):
 
     def write(self, vals):
         result = super().write(vals)
-        if any(key in vals for key in ('course_id', 'op_admission_id')):
+        if any(key in vals for key in (
+            'course_id', 'op_admission_id', 'country_id', 'state_id',
+        )):
             self._irg_check_portal_practice_eligibility()
         return result
 
@@ -66,3 +68,18 @@ class PracticeRequest(models.Model):
             raise ValidationError(_(
                 'La matrícula no corresponde al curso seleccionado.'
             ))
+        location_error = self._irg_practice_location_error()
+        if location_error:
+            raise ValidationError(location_error)
+
+    def _irg_practice_location_error(self):
+        self.ensure_one()
+        if not self.country_id:
+            return _(
+                'Selecciona el país en donde realizaras las prácticas.'
+            )
+        if not self.state_id or self.state_id.country_id != self.country_id:
+            return _(
+                'Selecciona la ciudad en donde realizaras las prácticas.'
+            )
+        return False

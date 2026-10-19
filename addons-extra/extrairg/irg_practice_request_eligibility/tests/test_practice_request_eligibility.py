@@ -155,18 +155,59 @@ class TestPracticeRequestEligibility(TransactionCase):
                 })
         self.assertIn('diplomado', str(caught.exception).lower())
 
-    def test_portal_user_can_create_at_fifty(self):
+    def _location(self):
+        country = self.env['res.country'].search([('code', '=', 'ES')], limit=1)
+        if not country:
+            country = self.env['res.country'].create({
+                'name': 'Pais ELG',
+                'code': 'Z9',
+            })
+        state = self.env['res.country.state'].search([
+            ('country_id', '=', country.id),
+        ], limit=1)
+        if not state:
+            state = self.env['res.country.state'].create({
+                'name': 'Ciudad ELG',
+                'code': 'ELG',
+                'country_id': country.id,
+            })
+        return country, state
+
+    def test_portal_user_can_create_at_sixty_with_location(self):
         student, enrollment = self._make_enrollment('PORTOK', 'MST-ELG-PORTOK')
         user = self._portal_user(student, 'elg.portal.ok@example.test')
         practice_type = self._practice_type()
+        country, state = self._location()
         with self._with_completion(enrollment, 60.0):
             request = self.env['practice.request'].with_user(user).sudo().create({
                 'name': student.name,
                 'email': user.login,
                 'course_id': enrollment.id,
                 'practice_center_type_id': practice_type.id,
+                'country_id': country.id,
+                'state_id': state.id,
             })
         self.assertEqual(request.course_id, enrollment)
+
+    def test_portal_user_cannot_create_without_country_or_city(self):
+        student, enrollment = self._make_enrollment('PORTLOC', 'MST-ELG-PORTLOC')
+        user = self._portal_user(student, 'elg.portal.loc@example.test')
+        country, _state = self._location()
+        controller = IrgPracticeRequestEligibility()
+        with self._with_completion(enrollment, 80.0):
+            with self.assertRaises(ValidationError) as caught:
+                self.env['practice.request'].with_user(user).sudo().create({
+                    'name': student.name,
+                    'email': user.login,
+                    'course_id': enrollment.id,
+                    'practice_center_type_id': self._practice_type().id,
+                    'country_id': country.id,
+                })
+        self.assertIn('ciudad', str(caught.exception).lower())
+        self.assertIn(
+            'país',
+            controller._irg_practice_location_error({}, env=self.env).lower(),
+        )
 
     def test_staff_can_create_without_eligibility(self):
         _student, enrollment = self._make_enrollment('STAFF', 'DI-ELG-STAFF')
@@ -230,6 +271,13 @@ class TestPracticeRequestEligibility(TransactionCase):
         self.assertFalse(tile_arch.xpath('.//a'))
         form_conditions = form_arch.xpath('//attribute[@name="t-if"]/text()')
         self.assertTrue(any('irg_can_request_practice' in text for text in form_conditions))
+        form_labels = form_arch.xpath('//label/text()')
+        self.assertIn('País en donde realizaras las prácticas', form_labels)
+        self.assertIn('Ciudad en donde realizaras las prácticas', form_labels)
+        self.assertEqual(
+            form_arch.xpath('//attribute[@name="required"]/text()').count('required'),
+            2,
+        )
         self.assertIn(
             'irg_can_request_practice',
             list_arch.xpath('//attribute[@name="t-if"]')[0].text,

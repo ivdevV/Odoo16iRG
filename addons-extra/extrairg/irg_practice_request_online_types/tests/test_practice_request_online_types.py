@@ -66,6 +66,24 @@ class TestPracticeRequestOnlineTypes(TransactionCase):
         })
         return student, enrollment
 
+    def _practice_location_vals(self):
+        country = self.env['res.country'].search([('code', '=', 'ES')], limit=1)
+        if not country:
+            country = self.env['res.country'].create({
+                'name': 'Pais OT',
+                'code': 'Z8',
+            })
+        state = self.env['res.country.state'].search([
+            ('country_id', '=', country.id),
+        ], limit=1)
+        if not state:
+            state = self.env['res.country.state'].create({
+                'name': 'Ciudad OT',
+                'code': 'OTC',
+                'country_id': country.id,
+            })
+        return {'country_id': country.id, 'state_id': state.id}
+
     def _with_practice_eligibility(self, enrollment):
         """Keep type checks independent if the 50% practice gate is installed."""
         if not hasattr(type(enrollment), '_irg_practice_completion_percentage'):
@@ -138,6 +156,7 @@ class TestPracticeRequestOnlineTypes(TransactionCase):
                 'email': user.login,
                 'course_id': enrollment.id,
                 'practice_center_type_id': tfm.id,
+                **self._practice_location_vals(),
             })
         self.assertEqual(request.practice_center_type_id, tfm)
 
@@ -160,6 +179,7 @@ class TestPracticeRequestOnlineTypes(TransactionCase):
                 'email': user.login,
                 'course_id': enrollment.id,
                 'practice_center_type_id': on_site.id,
+                **self._practice_location_vals(),
             })
         self.assertEqual(request.practice_center_type_id, on_site)
 
