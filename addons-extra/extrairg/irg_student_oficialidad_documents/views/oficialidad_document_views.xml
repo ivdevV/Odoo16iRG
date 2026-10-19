@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_irg_oficialidad_document_tree" model="ir.ui.view">
+        <field name="name">irg.oficialidad.document.tree</field>
+        <field name="model">irg.oficialidad.document</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="create_date"/>
+                <field name="partner_id"/>
+                <field name="document_type_id"/>
+                <field name="name"/>
+                <field name="filename"/>
+                <field name="file" filename="filename"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_oficialidad_document_form" model="ir.ui.view">
+        <field name="name">irg.oficialidad.document.form</field>
+        <field name="model">irg.oficialidad.document</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_mark_submitted" type="object" string="Marcar recibido"
+                            attrs="{'invisible': [('state', '=', 'submitted')]}"/>
+                    <button name="action_accept" type="object" string="Aceptar" class="btn-primary"
+                            attrs="{'invisible': [('state', '=', 'accepted')]}"/>
+                    <button name="action_observe" type="object" string="Observar"
+                            attrs="{'invisible': [('state', '=', 'observed')]}"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="document_type_id"/>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="file" filename="filename"/>
+                            <field name="filename"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_irg_oficialidad_document_search" model="ir.ui.view">
+        <field name="name">irg.oficialidad.document.search</field>
+        <field name="model">irg.oficialidad.document</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id"/>
+                <field name="document_type_id"/>
+                <field name="name"/>
+                <filter name="submitted" string="Recibidos" domain="[('state', '=', 'submitted')]"/>
+                <filter name="accepted" string="Aceptados" domain="[('state', '=', 'accepted')]"/>
+                <filter name="observed" string="Observados" domain="[('state', '=', 'observed')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_type" string="Tipo de documento" context="{'group_by': 'document_type_id'}"/>
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_irg_oficialidad_document" model="ir.actions.act_window">
+        <field name="name">Documentos de oficialidad</field>
+        <field name="res_model">irg.oficialidad.document</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_irg_oficialidad_document"
+              name="Documentos de oficialidad"
+              parent="base.menu_users"
+              action="action_irg_oficialidad_document"
+              groups="base.group_system"
+              sequence="90"/>
+
+</odoo>

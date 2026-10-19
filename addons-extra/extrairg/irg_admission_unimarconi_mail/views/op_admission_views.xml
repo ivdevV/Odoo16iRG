@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_admission_form_unimarconi_mail" model="ir.ui.view">
+        <field name="name">op.admission.form.unimarconi.mail</field>
+        <field name="model">op.admission</field>
+        <field name="inherit_id" ref="openeducat_admission.view_op_admission_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="irg_show_unimarconi_mail" invisible="1"/>
+                <button name="action_send_unimarconi_mail"
+                        type="object"
+                        string="Enviar matrícula Unimarconi"
+                        attrs="{'invisible': [('irg_show_unimarconi_mail', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

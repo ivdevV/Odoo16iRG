@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_op_student_form_activity" model="ir.ui.view">
+        <field name="name">op.student.form.activity</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="openeducat_core.view_op_student_form"/>
+        <field name="arch" type="xml">
+            <!-- Header buttons stay clickable in Odoo 16 readonly form mode;
+                 sheet/notebook buttons do not fire call_button until Edit. -->
+            <xpath expr="//header" position="inside">
+                <button name="action_export_activity_csv"
+                        type="object"
+                        string="Exportar CSV"
+                        class="btn-secondary"
+                        groups="openeducat_core.group_op_faculty"/>
+            </xpath>
+            <xpath expr="//page[@name='access']" position="after">
+                <page name="activity" string="Actividad" groups="openeducat_core.group_op_faculty">
+                    <div class="mb-2">
+                        <button name="action_export_activity_csv"
+                                type="object"
+                                string="Exportar CSV"
+                                class="btn-secondary"
+                                groups="openeducat_core.group_op_faculty"/>
+                    </div>
+                    <field name="activity_line_ids" readonly="1" nolabel="1">
+                        <tree create="0" delete="0" edit="0">
+                            <field name="event_datetime" string="Fecha"/>
+                            <field name="event_type" string="Tipo"/>
+                            <field name="channel_name" string="Curso / canal"/>
+                            <field name="element_name" string="Elemento"/>
+                            <field name="detail" string="Detalle"/>
+                            <field name="result" string="Resultado"/>
+                            <field name="batch_code" string="Lote"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,6 @@
+# Task 1 RED — tests only, no __manifest__.py
+# Command: docker compose -f docker-compose.local.yml run --rm --no-deps -T odoo_local odoo ...
+# Note: odoo_local service not running (8069 in use); compose run used per local workaround.
+
+2026-10-15 14:14:24,024 1 WARNING test_irg_student_activity odoo.modules.loading: invalid module names, ignored: irg_student_activity
+2026-10-15 14:14:24,143 1 WARNING test_irg_student_activity odoo.tests.result: 0 failed, 0 error(s) of 0 tests when loading database 'test_irg_student_activity'

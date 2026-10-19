@@ -1,0 +1,4 @@
+# Task 3 — Docker test run blocked in coder session
+# docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local ...
+# Error: Dockerfile apt-get install failed (404 Not Found on debian-security arm64 packages during image build).
+# Validator should re-run when local odoo_local image is available.

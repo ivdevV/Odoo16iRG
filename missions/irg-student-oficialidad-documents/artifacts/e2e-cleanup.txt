@@ -1,0 +1,36 @@
+== docker stop/rm e2e container
+e2e_odoo_oficialidad
+e2e_odoo_oficialidad
+== restore shared service
+odoo16irg_local
+http 303 on :8069
+odoo16irg_local	odoo16irg:16.0-local	0.0.0.0:8069->8069/tcp, [::]:8069->8069/tcp, 0.0.0.0:8072->8072/tcp, [::]:8072->8072/tcp	Up 12 seconds
+pgodoo16irg_local	postgres:16	5432/tcp	Up About an hour
+redisodoo16irg_local	redis:latest	6379/tcp	Up About an hour
+== drop disposable DB + fs volume
+DROP DATABASE
+e2e_irg_oficialidad_fs
+0
+0
+== remove generated TestSprite files from module dir
+ A addons-extra/extrairg/irg_student_oficialidad_documents/__init__.py
+ A addons-extra/extrairg/irg_student_oficialidad_documents/__manifest__.py
+ A addons-extra/extrairg/irg_student_oficialidad_documents/data/oficialidad_document_type_data.xml
+ A addons-extra/extrairg/irg_student_oficialidad_documents/models/__init__.py
+ A addons-extra/extrairg/irg_student_oficialidad_documents/models/oficialidad_document.py
+ A addons-extra/extrairg/irg_student_oficialidad_documents/models/oficialidad_document_type.py
+ A addons-extra/extrairg/irg_student_oficialidad_documents/models/res_partner.py
+ A addons-extra/extrairg/irg_student_oficialidad_documents/security/ir.model.access.csv
+ A addons-extra/extrairg/irg_student_oficialidad_documents/tests/__init__.py
+ A addons-extra/extrairg/irg_student_oficialidad_documents/tests/test_oficialidad_document_types.py
+ A addons-extra/extrairg/irg_student_oficialidad_documents/tests/test_oficialidad_summary.py
+ A addons-extra/extrairg/irg_student_oficialidad_documents/views/oficialidad_document_views.xml
+ A addons-extra/extrairg/irg_student_oficialidad_documents/views/op_student_views.xml
+== kill leftover node
+36365 npm exec @testsprite/testsprite-mcp@latest HOME=/Users/ivrogo LOGNAME=ivrogo PATH=/Applications/Cursor.app/Contents/Resources/app/resources/helpers:/Users/ivrogo/.antigravity-ide/antigravity-ide/bin:/Users/ivrogo/.antigravity/antigravity/bin:/Users/ivrogo/.bun/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/ivrogo/Library/pnpm:/Users/ivrogo/.local/bin:/Users/ivrogo/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Users/ivrogo/.orbstack/bin
+36385 node /Users/ivrogo/.npm/_npx/8ddf6bea01b2519d/node_modules/.bin/testsprite-mcp-plugin
+53461 npm exec @testsprite/testsprite-mcp@latest HOME=/Users/ivrogo LOGNAME=ivrogo PATH=/Users/ivrogo/Library/Application Support/Cursor/User/globalStorage/anysphere.cursor-agent-worker/agent-cli/.local/bin:/Users/ivrogo/.antigravity-ide/antigravity-ide/bin:/Users/ivrogo/.antigravity/antigravity/bin:/Users/ivrogo/.bun/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/ivrogo/Library/pnpm:/Users/ivrogo/.local/bin:/Users/ivrogo/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Users/ivrogo/.orbstack/bin
+53607 npm exec @testsprite/testsprite-mcp@latest HOME=/Users/ivrogo LOGNAME=ivrogo PATH=/Users/ivrogo/Library/Application Support/Cursor/User/globalStorage/anysphere.cursor-agent-worker/agent-cli/.local/bin:/Users/ivrogo/.antigravity-ide/antigravity-ide/bin:/Users/ivrogo/.antigravity/antigravity/bin:/Users/ivrogo/.bun/bin:/opt/anaconda3/bin:/opt/anaconda3/condabin:/Users/ivrogo/Library/pnpm:/Users/ivrogo/.local/bin:/Users/ivrogo/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Users/ivrogo/.orbstack/bin
+53644 node /Users/ivrogo/.npm/_npx/8ddf6bea01b2519d/node_modules/.bin/testsprite-mcp-plugin
+53668 node /Users/ivrogo/.npm/_npx/8ddf6bea01b2519d/node_modules/.bin/testsprite-mcp-plugin
+== cleanup done

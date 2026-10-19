@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!--
+        Bearer token for POST /irg/oficialidad/webhook/document.
+        Intentionally empty: the webhook fails closed (401
+        webhook_token_not_configured) until an operator sets a random value
+        (>= 32 bytes, e.g. secrets.token_urlsafe(32)) in
+        Settings > Technical > System Parameters. noupdate keeps the value
+        across module updates. Never commit a real token here.
+    -->
+    <record id="param_oficialidad_webhook_token" model="ir.config_parameter">
+        <field name="key">irg_student_oficialidad_webhook.token</field>
+        <field name="value"></field>
+    </record>
+</odoo>

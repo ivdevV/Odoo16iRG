@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_op_student_form_oficialidad_documents" model="ir.ui.view">
+        <field name="name">op.student.form.oficialidad.documents</field>
+        <field name="model">op.student</field>
+        <field name="inherit_id" ref="isep_control_escolar.op_student_form_inh"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='official_detail']" position="inside">
+                <group string="Solicitud de oficialidad" groups="base.group_user">
+                    <group>
+                        <field name="irg_oficialidad_student_type" readonly="1"/>
+                        <field name="irg_oficialidad_completeness" readonly="1"/>
+                        <field name="irg_oficialidad_last_received_at" readonly="1"/>
+                        <field name="irg_oficialidad_vat_hint" readonly="1"/>
+                        <field name="irg_oficialidad_type_mismatch" invisible="1"/>
+                    </group>
+                </group>
+                <div class="alert alert-warning" role="alert" groups="base.group_user"
+                     attrs="{'invisible': [('irg_oficialidad_type_mismatch', '=', False)]}">
+                    El identificador fiscal (VAT/DNI) sugiere un tipo de alumno distinto al
+                    indicado en la solicitud de oficialidad. Revisa el expediente.
+                </div>
+                <field name="irg_oficialidad_checklist_html" nolabel="1" readonly="1"
+                       groups="base.group_user"/>
+                <field name="irg_oficialidad_document_ids" mode="tree,form" groups="base.group_user"
+                       context="{'default_partner_id': partner_id}">
+                    <tree>
+                        <field name="create_date" readonly="1"/>
+                        <field name="document_type_id"/>
+                        <field name="name"/>
+                        <field name="filename"/>
+                        <field name="file" filename="filename"/>
+                        <field name="state"/>
+                        <field name="note"/>
+                    </tree>
+                </field>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

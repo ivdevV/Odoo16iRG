@@ -1,0 +1,362 @@
+[
+  {
+    "id": "TC001",
+    "title": "Faculty can view the student activity history",
+    "description": "A faculty user can open a student record, access the activity tab, and see the chronological activity table with the expected columns and campus content entries.",
+    "category": "Student Activity tab",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /web/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the Students list"
+      },
+      {
+        "type": "action",
+        "description": "Open the student record for Alumno E2E Activity"
+      },
+      {
+        "type": "action",
+        "description": "Open the activity tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the activity table is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the table shows the expected activity columns and a row containing content activity"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Faculty can export the student activity history as CSV",
+    "description": "A faculty user clicks Exportar CSV on the Actividad tab and an Odoo modal wizard opens showing a ready CSV filename (actividad_*.csv). Success is the visible wizard/filename, NOT a browser download event and NOT an input[type=file] upload control.",
+    "category": "Student Activity tab",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /web/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the Students list"
+      },
+      {
+        "type": "action",
+        "description": "Open the student record for Alumno E2E Activity"
+      },
+      {
+        "type": "action",
+        "description": "Open the activity tab named Actividad"
+      },
+      {
+        "type": "action",
+        "description": "Click the button labeled Exportar CSV once"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a modal/dialog appears with title or text Exportar actividad CSV, or alert text Archivo CSV listo para descargar"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the modal shows a filename containing actividad_ and ending with .csv (plain text or Binary download link). Do NOT look for input[type=file] or accept=text/csv."
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Faculty can review campus content and evaluation events together",
+    "description": "A faculty user can open the activity history and confirm it includes both campus content and evaluation events in chronological order.",
+    "category": "Student Activity tab",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /web/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the Students list"
+      },
+      {
+        "type": "action",
+        "description": "Open the student record for Alumno E2E Activity"
+      },
+      {
+        "type": "action",
+        "description": "Open the activity tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify campus content activity is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify evaluation activity is displayed in chronological order"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Faculty can use the activity export after reviewing the history",
+    "description": "A faculty user can review the activity history and then start a CSV export from the same student record without leaving the tab.",
+    "category": "Student Activity tab",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /web/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the Students list"
+      },
+      {
+        "type": "action",
+        "description": "Open the student record for Alumno E2E Activity"
+      },
+      {
+        "type": "action",
+        "description": "Open the activity tab"
+      },
+      {
+        "type": "action",
+        "description": "Export the activity history as CSV"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the CSV download starts"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the activity history remains visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Faculty sees the activity tab in the expected place on the student form",
+    "description": "A faculty user can open a student record and confirm the activity tab appears after the access tab in the form navigation.",
+    "category": "Student Activity tab",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /web/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the Students list"
+      },
+      {
+        "type": "action",
+        "description": "Open the student record for Alumno E2E Activity"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the activity tab is present on the student form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the activity tab appears after the access tab"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC006",
+    "title": "Faculty sees the activity table as read only",
+    "description": "A faculty user can open the activity history and confirm it is presented as a read-only table without inline editing actions.",
+    "category": "Student Activity tab",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /web/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the Students list"
+      },
+      {
+        "type": "action",
+        "description": "Open the student record for Alumno E2E Activity"
+      },
+      {
+        "type": "action",
+        "description": "Open the activity tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the activity table is read only"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify inline editing actions are not available"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC007",
+    "title": "Non-faculty users cannot access the activity tab",
+    "description": "A non-faculty Odoo user can open the student form but does not see the activity tab because access is restricted.",
+    "category": "Student Activity tab",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /web/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the Students list"
+      },
+      {
+        "type": "action",
+        "description": "Open the student record for Alumno E2E Activity"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the activity tab is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the student form remains accessible"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC008",
+    "title": "Faculty sees no activity history when the student has no entries",
+    "description": "A faculty user can open a student record with no activity entries and see an empty state instead of a populated history table.",
+    "category": "Student Activity tab",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /web/login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the Students list"
+      },
+      {
+        "type": "action",
+        "description": "Open a student record with no activity history"
+      },
+      {
+        "type": "action",
+        "description": "Open the activity tab"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an empty state message is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the activity table is not populated"
+      }
+    ],
+    "priority": "Low"
+  }
+]

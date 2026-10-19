@@ -1,0 +1,4 @@
+AssertionError: 0 != 1
+  File ".../test_student_activity.py", line 92, in test_campus_completed_appears_and_skips_not_started
+    self.assertEqual(len(rows), 1)
+1 failed, 0 error(s) of 3 tests when loading database 'test_irg_student_activity'
