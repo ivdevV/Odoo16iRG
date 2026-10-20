@@ -16,7 +16,16 @@ class AccountMove(models.Model):
     })
 
     def _irg_moroso_partners(self):
-        return (self.partner_id | self.irg_student_partner_id).exists()
+        schedules = self.schedule_id
+        if schedules:
+            schedules.mapped('payment_state')
+        orders = schedules.order_id
+        return (
+            self.partner_id
+            | self.irg_student_partner_id
+            | orders.partner_id
+            | orders.student_id
+        ).exists()
 
     @api.model_create_multi
     def create(self, vals_list):

@@ -6,8 +6,6 @@ from odoo import _, api, fields, models
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    _IRG_MOROSO_INVOICE_THRESHOLD = 2
-
     irg_is_moroso = fields.Boolean(
         string='Moroso',
         default=False,
@@ -27,35 +25,37 @@ class ResPartner(models.Model):
             active_test=False
         ).search_count([('partner_id', '=', self.id)]))
 
-    def _irg_unpaid_invoice_domain(self):
+    @api.model
+    def _irg_moroso_month_start(self):
+        today = fields.Date.context_today(self)
+        return today.replace(day=1)
+
+    def _irg_overdue_cuota_domain(self):
         self.ensure_one()
         domain = [
-            ('state', '=', 'posted'),
-            ('move_type', '=', 'out_invoice'),
             ('payment_state', 'in', ('not_paid', 'partial')),
+            ('date_due', '<', self._irg_moroso_month_start()),
+            ('order_id.state', 'in', ('sale', 'done')),
         ]
         if self._irg_is_student_partner():
             domain += [
                 '|',
-                ('partner_id', '=', self.id),
-                ('irg_student_partner_id', '=', self.id),
+                ('order_id.partner_id', '=', self.id),
+                ('order_id.student_id', '=', self.id),
             ]
         else:
-            domain.append(('partner_id', '=', self.id))
+            domain.append(('order_id.partner_id', '=', self.id))
         return domain
 
-    def _irg_unpaid_invoice_count(self):
+    def _irg_overdue_cuota_count(self):
         self.ensure_one()
-        return self.env['account.move'].sudo().search_count(
-            self._irg_unpaid_invoice_domain()
+        return self.env['sale.subscription.schedule'].sudo().search_count(
+            self._irg_overdue_cuota_domain()
         )
 
     def _irg_partner_should_be_moroso(self):
         self.ensure_one()
-        return (
-            self._irg_unpaid_invoice_count()
-            >= self._IRG_MOROSO_INVOICE_THRESHOLD
-        )
+        return self._irg_overdue_cuota_count() >= 1
 
     def _irg_moroso_note_author(self):
         user = self.env.user
@@ -67,12 +67,12 @@ class ResPartner(models.Model):
         self.ensure_one()
         if becoming_moroso:
             body = _(
-                'Pasa a moroso. Facturas sin pagar: %(count)s.',
+                'Pasa a moroso. Cuotas vencidas: %(count)s.',
                 count=count,
             )
         else:
             body = _(
-                'Deja de ser moroso. Facturas sin pagar: %(count)s.',
+                'Deja de ser moroso. Cuotas vencidas: %(count)s.',
                 count=count,
             )
         author = self._irg_moroso_note_author()
@@ -93,7 +93,7 @@ class ResPartner(models.Model):
             should = partner._irg_partner_should_be_moroso()
             if partner.irg_is_moroso == should:
                 continue
-            count = partner._irg_unpaid_invoice_count()
+            count = partner._irg_overdue_cuota_count()
             partner.sudo().write({'irg_is_moroso': should})
             partner._irg_post_moroso_note(count, should)
         return True
@@ -169,16 +169,16 @@ class ResPartner(models.Model):
 
     @api.model
     def _cron_recompute_moroso(self):
-        open_invoices = self.env['account.move'].sudo().search([
-            ('state', '=', 'posted'),
-            ('move_type', '=', 'out_invoice'),
+        schedules = self.env['sale.subscription.schedule'].sudo().search([
             ('payment_state', 'in', ('not_paid', 'partial')),
+            ('date_due', '<', self._irg_moroso_month_start()),
+            ('order_id.state', 'in', ('sale', 'done')),
         ])
         partners = self.sudo().with_context(active_test=False).search([
             ('irg_is_moroso', '=', True),
         ])
-        partners |= open_invoices.partner_id
-        partners |= open_invoices.irg_student_partner_id
+        partners |= schedules.order_id.partner_id
+        partners |= schedules.order_id.student_id
         partners._irg_recompute_moroso()
         return self._irg_recompute_dotado_candidates(
             notify=not self.env.context.get('irg_dotado_silent')
