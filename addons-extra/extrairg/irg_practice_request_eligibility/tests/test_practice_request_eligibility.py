@@ -57,15 +57,15 @@ class TestPracticeRequestEligibility(TransactionCase):
             return_value=percentage,
         )
 
-    def test_fifty_percent_non_diplomado_can_request(self):
-        _student, enrollment = self._make_enrollment('OK50', 'MST-ELG-50')
-        with self._with_completion(enrollment, 50.0):
+    def test_sixty_percent_non_diplomado_can_request(self):
+        _student, enrollment = self._make_enrollment('OK60', 'MST-ELG-60')
+        with self._with_completion(enrollment, 60.0):
             self.assertFalse(enrollment.irg_practice_request_block_reason())
             self.assertTrue(enrollment.irg_can_request_practice())
 
-    def test_below_fifty_percent_cannot_request(self):
+    def test_below_sixty_percent_cannot_request(self):
         _student, enrollment = self._make_enrollment('LOW', 'MST-ELG-LOW')
-        with self._with_completion(enrollment, 49.99):
+        with self._with_completion(enrollment, 59.99):
             self.assertEqual(
                 enrollment.irg_practice_request_block_reason(), 'completion'
             )
@@ -92,7 +92,7 @@ class TestPracticeRequestEligibility(TransactionCase):
         def percentage(enrollment, low_master):
             if enrollment.course_id.irg_excludes_practice_request():
                 return 100.0
-            return 40.0 if low_master else 50.0
+            return 40.0 if low_master else 60.0
 
         with patch.object(
             type(diplomado),
@@ -155,18 +155,59 @@ class TestPracticeRequestEligibility(TransactionCase):
                 })
         self.assertIn('diplomado', str(caught.exception).lower())
 
-    def test_portal_user_can_create_at_fifty(self):
+    def _location(self):
+        country = self.env['res.country'].search([('code', '=', 'ES')], limit=1)
+        if not country:
+            country = self.env['res.country'].create({
+                'name': 'Pais ELG',
+                'code': 'Z9',
+            })
+        state = self.env['res.country.state'].search([
+            ('country_id', '=', country.id),
+        ], limit=1)
+        if not state:
+            state = self.env['res.country.state'].create({
+                'name': 'Ciudad ELG',
+                'code': 'ELG',
+                'country_id': country.id,
+            })
+        return country, state
+
+    def test_portal_user_can_create_at_sixty_with_location(self):
         student, enrollment = self._make_enrollment('PORTOK', 'MST-ELG-PORTOK')
         user = self._portal_user(student, 'elg.portal.ok@example.test')
         practice_type = self._practice_type()
-        with self._with_completion(enrollment, 50.0):
+        country, state = self._location()
+        with self._with_completion(enrollment, 60.0):
             request = self.env['practice.request'].with_user(user).sudo().create({
                 'name': student.name,
                 'email': user.login,
                 'course_id': enrollment.id,
                 'practice_center_type_id': practice_type.id,
+                'country_id': country.id,
+                'state_id': state.id,
             })
         self.assertEqual(request.course_id, enrollment)
+
+    def test_portal_user_cannot_create_without_country_or_city(self):
+        student, enrollment = self._make_enrollment('PORTLOC', 'MST-ELG-PORTLOC')
+        user = self._portal_user(student, 'elg.portal.loc@example.test')
+        country, _state = self._location()
+        controller = IrgPracticeRequestEligibility()
+        with self._with_completion(enrollment, 80.0):
+            with self.assertRaises(ValidationError) as caught:
+                self.env['practice.request'].with_user(user).sudo().create({
+                    'name': student.name,
+                    'email': user.login,
+                    'course_id': enrollment.id,
+                    'practice_center_type_id': self._practice_type().id,
+                    'country_id': country.id,
+                })
+        self.assertIn('ciudad', str(caught.exception).lower())
+        self.assertIn(
+            'país',
+            controller._irg_practice_location_error({}, env=self.env).lower(),
+        )
 
     def test_staff_can_create_without_eligibility(self):
         _student, enrollment = self._make_enrollment('STAFF', 'DI-ELG-STAFF')
@@ -185,7 +226,7 @@ class TestPracticeRequestEligibility(TransactionCase):
         controller = IrgPracticeRequestEligibility()
         with self._with_completion(low, 10.0):
             self.assertIn(
-                '50%',
+                '60%',
                 controller._irg_practice_eligibility_error(
                     {'course_id': str(low.id)}, env=self.env
                 ),
@@ -219,12 +260,24 @@ class TestPracticeRequestEligibility(TransactionCase):
         form_arch = etree.fromstring(form.arch_db)
         list_arch = etree.fromstring(listing.arch_db)
         menu_arch = etree.fromstring(menu.arch_db)
+        tile_conditions = '\n'.join(tile_arch.xpath('//attribute[@name="t-if"]/text()'))
+        tile_text = '\n'.join(tile_arch.xpath('//p/text()'))
+        self.assertIn('irg_portal_practice_allowed_for_course', tile_conditions)
+        self.assertIn('irg_excludes_practice_request', tile_conditions)
         self.assertIn(
-            'irg_portal_practice_allowed_for_course',
-            tile_arch.xpath('//attribute[@name="t-if"]')[0].text,
+            'el 60% de los módulos correspondientes al programa formativo',
+            tile_text,
         )
+        self.assertFalse(tile_arch.xpath('.//a'))
         form_conditions = form_arch.xpath('//attribute[@name="t-if"]/text()')
         self.assertTrue(any('irg_can_request_practice' in text for text in form_conditions))
+        form_labels = form_arch.xpath('//label/text()')
+        self.assertIn('País en donde realizaras las prácticas', form_labels)
+        self.assertIn('Ciudad en donde realizaras las prácticas', form_labels)
+        self.assertEqual(
+            form_arch.xpath('//attribute[@name="required"]/text()').count('required'),
+            2,
+        )
         self.assertIn(
             'irg_can_request_practice',
             list_arch.xpath('//attribute[@name="t-if"]')[0].text,

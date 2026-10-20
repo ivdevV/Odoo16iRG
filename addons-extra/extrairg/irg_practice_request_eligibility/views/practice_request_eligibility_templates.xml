@@ -3,9 +3,20 @@
 
     <template id="course_tile_practice_eligibility"
               inherit_id="irg_course_portal_tiles.irg_user_profile_content_details_inherit"
-              name="IRG - Prácticas solo con 50% y sin diplomado">
+              name="IRG - Prácticas visibles y bloqueadas hasta el 60%">
         <xpath expr="//div[t[@t-if='practicas_link']]" position="attributes">
-            <attribute name="t-if">env['op.student.course'].sudo().irg_portal_practice_allowed_for_course(course_id, user.partner_id)</attribute>
+            <attribute name="t-if">course_id and not course_id.irg_excludes_practice_request() and env['op.student.course'].sudo().irg_portal_practice_allowed_for_course(course_id, user.partner_id)</attribute>
+        </xpath>
+        <xpath expr="//div[t[@t-if='practicas_link']]" position="after">
+            <div class="col-12 p-2"
+                 t-if="course_id and not course_id.irg_excludes_practice_request() and not env['op.student.course'].sudo().irg_portal_practice_allowed_for_course(course_id, user.partner_id)">
+                <div class="p-3" style="background-color: #f4f6f8; border: 1px solid #c5ced6; border-radius: 4px; color: #1f2a33;">
+                    <strong style="display: block; margin-bottom: 8px;">Prácticas</strong>
+                    <p style="margin-bottom: 8px;">Para poder acceder al formulario de prácticas, el alumnado deberá haber completado previamente, como mínimo, el 60% de los módulos correspondientes al programa formativo, porcentaje que equivale aproximadamente a 6 exámenes superados.</p>
+                    <p style="margin-bottom: 8px;">Hasta que no se alcance este requisito académico, el formulario de prácticas permanecerá inhabilitado.</p>
+                    <p style="margin-bottom: 0;">Una vez cumplido dicho porcentaje, el alumnado podrá acceder al formulario e iniciar el procedimiento de solicitud y gestión de las prácticas.</p>
+                </div>
+            </div>
         </xpath>
     </template>
 
@@ -21,15 +32,29 @@
               inherit_id="isep_practices_2.practice_request_form_template"
               name="IRG - Formulario de prácticas solo con matrículas elegibles">
         <xpath expr="//h2" position="after">
-            <p t-if="not courses.filtered(lambda c: c.irg_can_request_practice())" class="alert alert-info">
-                Puedes solicitar prácticas cuando el avance de un curso que no sea diplomado llegue al 50% de las asignaturas obligatorias.
-            </p>
+            <div t-if="not courses.filtered(lambda c: c.irg_can_request_practice())" class="alert alert-info">
+                <p>Para poder acceder al formulario de prácticas, el alumnado deberá haber completado previamente, como mínimo, el 60% de los módulos correspondientes al programa formativo, porcentaje que equivale aproximadamente a 6 exámenes superados.</p>
+                <p>Hasta que no se alcance este requisito académico, el formulario de prácticas permanecerá inhabilitado.</p>
+                <p class="mb-0">Una vez cumplido dicho porcentaje, el alumnado podrá acceder al formulario e iniciar el procedimiento de solicitud y gestión de las prácticas.</p>
+            </div>
         </xpath>
         <xpath expr="//select[@id='course_id']/t[@t-as='course']" position="attributes">
             <attribute name="t-if">course.irg_can_request_practice()</attribute>
         </xpath>
         <xpath expr="//select[@id='op_admission_id']/t[@t-as='admission']" position="attributes">
             <attribute name="t-if">admission.irg_can_request_practice()</attribute>
+        </xpath>
+        <xpath expr="//label[@for='country_id']" position="replace">
+            <label for="country_id">País en donde realizaras las prácticas</label>
+        </xpath>
+        <xpath expr="//select[@id='country_id']" position="attributes">
+            <attribute name="required">required</attribute>
+        </xpath>
+        <xpath expr="//label[@for='state_id']" position="replace">
+            <label for="state_id">Ciudad en donde realizaras las prácticas</label>
+        </xpath>
+        <xpath expr="//select[@id='state_id']" position="attributes">
+            <attribute name="required">required</attribute>
         </xpath>
     </template>
 

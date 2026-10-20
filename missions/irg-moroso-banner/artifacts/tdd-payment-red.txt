@@ -1,0 +1,164 @@
+ Container odoo16irg_local-odoo_local-run-ecf02ceed4a1 Creating 
+ Container odoo16irg_local-odoo_local-run-ecf02ceed4a1 Created 
+2026-10-19 10:32:09,022 1 INFO ? odoo: Odoo version 16.0-20250909 
+2026-10-19 10:32:09,022 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-10-19 10:32:09,022 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-10-19 10:32:09,022 1 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-10-19 10:32:09,073 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-10-19 10:32:09,125 1 INFO ? odoo.service.server: HTTP service (werkzeug) running on 3ce9c50a0863:8069 
+2026-10-19 10:32:09,133 1 INFO test_irg_moroso_banner odoo.modules.loading: loading 1 modules... 
+2026-10-19 10:32:09,154 1 INFO test_irg_moroso_banner odoo.modules.loading: 1 modules loaded in 0.02s, 0 queries (+0 extra) 
+2026-10-19 10:32:09,162 1 WARNING test_irg_moroso_banner py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 372, in load_marked_modules
+    graph.add_modules(cr, module_list, force)
+  File "/usr/lib/python3/dist-packages/odoo/modules/graph.py", line 61, in add_modules
+    info = odoo.modules.module.get_manifest(module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 10:32:09,187 1 WARNING test_irg_moroso_banner py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 372, in load_marked_modules
+    graph.add_modules(cr, module_list, force)
+  File "/usr/lib/python3/dist-packages/odoo/modules/graph.py", line 61, in add_modules
+    info = odoo.modules.module.get_manifest(module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 10:32:09,194 1 INFO test_irg_moroso_banner odoo.modules.loading: loading 122 modules... 
+2026-10-19 10:32:09,653 1 WARNING test_irg_moroso_banner py.warnings: /mnt/extra-addons/ent_addons/sale_account_accountant/models/account_reconcile_model.py:64: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/models/__init__.py", line 4, in <module>
+    from . import account_reconcile_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 10:32:09,759 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 10:32:09,759 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 10:32:09,759 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 10:32:09,821 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: Starting TestMorosoBanner.test_paying_down_to_one_clears_flag_and_notes_once ... 
+2026-10-19 10:32:09,956 1 INFO test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: ====================================================================== 
+2026-10-19 10:32:09,956 1 ERROR test_irg_moroso_banner odoo.addons.irg_moroso_banner.tests.test_moroso_banner: FAIL: TestMorosoBanner.test_paying_down_to_one_clears_flag_and_notes_once
+Traceback (most recent call last):
+  File "/mnt/extra-addons/extrairg/irg_moroso_banner/tests/test_moroso_banner.py", line 201, in test_paying_down_to_one_clears_flag_and_notes_once
+    self.assertFalse(partner.irg_is_moroso)
+AssertionError: True is not false
+ 
+2026-10-19 10:32:09,989 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 10:32:09,989 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 10:32:09,989 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 10:32:10,035 1 INFO test_irg_moroso_banner odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-10-19 10:32:10,035 1 ERROR test_irg_moroso_banner odoo.modules.loading: Module irg_moroso_banner: 1 failures, 0 errors of 1 tests 
+2026-10-19 10:32:10,035 1 INFO test_irg_moroso_banner odoo.modules.loading: 122 modules loaded in 0.84s, 2 queries (+435 extra) 
+2026-10-19 10:32:10,113 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 10:32:10,113 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 10:32:10,113 1 WARNING test_irg_moroso_banner odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 10:32:10,130 1 ERROR test_irg_moroso_banner odoo.modules.loading: At least one test failed when loading the modules. 
+2026-10-19 10:32:10,132 1 INFO test_irg_moroso_banner odoo.modules.registry: Registry loaded in 1.007s 
+2026-10-19 10:32:10,132 1 INFO test_irg_moroso_banner odoo.service.server: Starting post tests 
+2026-10-19 10:32:10,169 1 INFO test_irg_moroso_banner odoo.service.server: 0 post-tests in 0.04s, 0 queries 
+2026-10-19 10:32:10,170 1 INFO test_irg_moroso_banner odoo.tests.stats: irg_moroso_banner: 3 tests 0.26s 433 queries 
+2026-10-19 10:32:10,170 1 ERROR test_irg_moroso_banner odoo.tests.result: 1 failed, 0 error(s) of 1 tests when loading database 'test_irg_moroso_banner' 
+2026-10-19 10:32:10,170 1 INFO test_irg_moroso_banner odoo.service.server: Initiating shutdown 
+2026-10-19 10:32:10,170 1 INFO test_irg_moroso_banner odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-10-19 10:32:10,638 1 INFO test_irg_moroso_banner odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 2 connections  
+

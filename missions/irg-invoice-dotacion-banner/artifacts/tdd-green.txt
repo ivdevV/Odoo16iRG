@@ -1,0 +1,280 @@
+ Container odoo16irg_local-odoo_local-run-30582ed6d76b Creating 
+ Container odoo16irg_local-odoo_local-run-30582ed6d76b Created 
+2026-10-19 12:14:21,625 1 INFO ? odoo: Odoo version 16.0-20250909 
+2026-10-19 12:14:21,625 1 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-10-19 12:14:21,625 1 INFO ? odoo: addons paths: ['/usr/lib/python3/dist-packages/odoo/addons', '/var/lib/odoo/.local/share/Odoo/addons/16.0', '/mnt/extra-addons/account_financial_tools', '/mnt/extra-addons/account_related15', '/mnt/extra-addons/addons-co', '/mnt/extra-addons/addons-extend', '/mnt/extra-addons/addons-mx', '/mnt/extra-addons/addons_uisep', '/mnt/extra-addons/community-16', '/mnt/extra-addons/edi-framework', '/mnt/extra-addons/ent_addons', '/mnt/extra-addons/ent_old', '/mnt/extra-addons/enterprise-16', '/mnt/extra-addons/extrairg', '/mnt/extra-addons/localizacion_espanola', '/mnt/extra-addons/pos', '/mnt/extra-addons/reporting-engine', '/mnt/extra-addons/vztech'] 
+2026-10-19 12:14:21,626 1 INFO ? odoo: database: odoo@pgodoo_local:5432 
+2026-10-19 12:14:21,676 1 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-10-19 12:14:21,728 1 INFO ? odoo.service.server: HTTP service (werkzeug) running on 91d55fde36c4:8069 
+2026-10-19 12:14:21,734 1 INFO test_irg_invoice_dotacion odoo.modules.loading: loading 1 modules... 
+2026-10-19 12:14:21,736 1 INFO test_irg_invoice_dotacion odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-10-19 12:14:21,742 1 INFO test_irg_invoice_dotacion odoo.modules.loading: updating modules list 
+2026-10-19 12:14:21,743 1 INFO test_irg_invoice_dotacion odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-10-19 12:14:21,772 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'Automation_student_documents_email', defaulting to LGPL-3 
+2026-10-19 12:14:21,796 1 WARNING test_irg_invoice_dotacion py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 12:14:21,797 1 WARNING test_irg_invoice_dotacion py.warnings: <unknown>:9: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 12:14:21,798 1 WARNING test_irg_invoice_dotacion py.warnings: <unknown>:8: DeprecationWarning: invalid escape sequence \ 
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 452, in load_modules
+    Module.update_list()
+  File "<decorator-gen-87>", line 2, in update_list
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 74, in check_and_log
+    return method(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 770, in update_list
+    terp = self.get_module_info(mod_name)
+  File "/usr/lib/python3/dist-packages/odoo/addons/base/models/ir_module.py", line 189, in get_module_info
+    return modules.get_manifest(name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 446, in get_manifest
+    return copy.deepcopy(_get_manifest_cached(module, mod_path))
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 450, in _get_manifest_cached
+    return load_manifest(module, mod_path)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 400, in load_manifest
+    manifest.update(ast.literal_eval(f.read()))
+  File "/usr/lib/python3/dist-packages/odoo/tools/_monkeypatches.py", line 88, in literal_eval
+    return orig_literal_eval(expr)
+  File "/usr/lib/python3.9/ast.py", line 62, in literal_eval
+    node_or_string = parse(node_or_string, mode='eval')
+  File "/usr/lib/python3.9/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 12:14:21,877 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'connect_chatgpt', defaulting to LGPL-3 
+2026-10-19 12:14:21,889 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'dec_document', defaulting to LGPL-3 
+2026-10-19 12:14:21,911 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'dv_data_migration', defaulting to LGPL-3 
+2026-10-19 12:14:21,912 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'dv_migration_code', defaulting to LGPL-3 
+2026-10-19 12:14:21,913 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'dv_slide_channel_custom', defaulting to LGPL-3 
+2026-10-19 12:14:21,953 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'get_gradebook', defaulting to LGPL-3 
+2026-10-19 12:14:22,016 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'irg_admissions_by_student', defaulting to LGPL-3 
+2026-10-19 12:14:22,051 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_correo_bienvenida_selector', defaulting to LGPL-3 
+2026-10-19 12:14:22,053 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'irg_elearning_prerequisites', defaulting to LGPL-3 
+2026-10-19 12:14:22,073 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'irg_google_calendar_sync', defaulting to LGPL-3 
+2026-10-19 12:14:22,124 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'irg_openeducat_sale_lote_custom', defaulting to LGPL-3 
+2026-10-19 12:14:22,146 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_esp', defaulting to LGPL-3 
+2026-10-19 12:14:22,147 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'irg_sale_subscription_payment_terms', defaulting to LGPL-3 
+2026-10-19 12:14:22,148 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'irg_sign_position_fix', defaulting to LGPL-3 
+2026-10-19 12:14:22,148 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'irg_sign_reposition', defaulting to LGPL-3 
+2026-10-19 12:14:22,178 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_account_reports_custom', defaulting to LGPL-3 
+2026-10-19 12:14:22,185 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_control_escolar', defaulting to LGPL-3 
+2026-10-19 12:14:22,185 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_crm_asig', defaulting to LGPL-3 
+2026-10-19 12:14:22,190 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_documents_portal', defaulting to LGPL-3 
+2026-10-19 12:14:22,193 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_form_data', defaulting to LGPL-3 
+2026-10-19 12:14:22,202 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_payment_cron', defaulting to LGPL-3 
+2026-10-19 12:14:22,204 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_portal_certificate_mail', defaulting to LGPL-3 
+2026-10-19 12:14:22,206 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_public_content_slides', defaulting to LGPL-3 
+2026-10-19 12:14:22,207 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_record_request', defaulting to LGPL-3 
+2026-10-19 12:14:22,208 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_record_request_extended', defaulting to LGPL-3 
+2026-10-19 12:14:22,209 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_res_partner_custom', defaulting to LGPL-3 
+2026-10-19 12:14:22,210 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_restrict_portal_modules', defaulting to LGPL-3 
+2026-10-19 12:14:22,213 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_sale_subscription_extension', defaulting to LGPL-3 
+2026-10-19 12:14:22,215 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_sign_sale', defaulting to LGPL-3 
+2026-10-19 12:14:22,219 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_student_migration', defaulting to LGPL-3 
+2026-10-19 12:14:22,222 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_tag_custom', defaulting to LGPL-3 
+2026-10-19 12:14:22,223 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_titulation_custom', defaulting to LGPL-3 
+2026-10-19 12:14:22,226 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom', defaulting to LGPL-3 
+2026-10-19 12:14:22,227 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'isep_website_custom_inh', defaulting to LGPL-3 
+2026-10-19 12:14:22,230 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'knowledge_slides', defaulting to LGPL-3 
+2026-10-19 12:14:22,458 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'nomina_cfdi_extras_ee_fix', defaulting to LGPL-3 
+2026-10-19 12:14:22,507 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'payment_flywire_logs', defaulting to LGPL-3 
+2026-10-19 12:14:22,514 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'planning_extends', defaulting to LGPL-3 
+2026-10-19 12:14:22,607 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'report_certificate_others', defaulting to LGPL-3 
+2026-10-19 12:14:22,622 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'res_users_schedules', defaulting to LGPL-3 
+2026-10-19 12:14:22,732 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'uisep_payroll', defaulting to LGPL-3 
+2026-10-19 12:14:22,732 1 WARNING test_irg_invoice_dotacion odoo.modules.module: Missing `license` key in manifest for 'uisep_xml_sat', defaulting to LGPL-3 
+2026-10-19 12:14:22,794 1 INFO test_irg_invoice_dotacion odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['IRG Invoice Dotacion Banner'] to user __system__ #1 via n/a 
+2026-10-19 12:14:22,794 1 INFO test_irg_invoice_dotacion odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['IRG Invoice Dotacion Banner'] to user __system__ #1 via n/a 
+2026-10-19 12:14:23,224 1 INFO test_irg_invoice_dotacion odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a 
+2026-10-19 12:14:23,233 1 INFO test_irg_invoice_dotacion odoo.modules.loading: loading 123 modules... 
+2026-10-19 12:14:23,436 1 INFO test_irg_invoice_dotacion odoo.modules.loading: Loading module irg_invoice_dotacion_banner (71/123) 
+2026-10-19 12:14:23,540 1 INFO test_irg_invoice_dotacion odoo.modules.registry: module irg_invoice_dotacion_banner: creating or updating database tables 
+2026-10-19 12:14:23,583 1 INFO test_irg_invoice_dotacion odoo.modules.loading: loading irg_invoice_dotacion_banner/views/account_move_views.xml 
+2026-10-19 12:14:23,609 1 INFO test_irg_invoice_dotacion odoo.modules.loading: Module irg_invoice_dotacion_banner loaded in 0.17s, 128 queries (+128 other) 
+2026-10-19 12:14:23,733 1 WARNING test_irg_invoice_dotacion py.warnings: /mnt/extra-addons/ent_addons/sale_account_accountant/models/account_reconcile_model.py:64: DeprecationWarning: invalid escape sequence \s
+  File "/usr/bin/odoo", line 8, in <module>
+    odoo.cli.main()
+  File "/usr/lib/python3/dist-packages/odoo/cli/command.py", line 66, in main
+    o.run(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 187, in run
+    main(args)
+  File "/usr/lib/python3/dist-packages/odoo/cli/server.py", line 180, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1433, in start
+    rc = server.run(preload, stop)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 602, in run
+    rc = preload_registries(preload)
+  File "/usr/lib/python3/dist-packages/odoo/service/server.py", line 1333, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "<decorator-gen-16>", line 2, in new
+  File "/usr/lib/python3/dist-packages/odoo/tools/func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/odoo/modules/registry.py", line 87, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 489, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 374, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/usr/lib/python3/dist-packages/odoo/modules/loading.py", line 190, in load_module_graph
+    load_openerp_module(package.name)
+  File "/usr/lib/python3/dist-packages/odoo/modules/module.py", line 471, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/__init__.py", line 4, in <module>
+    from . import models
+  File "/mnt/extra-addons/ent_addons/sale_account_accountant/models/__init__.py", line 4, in <module>
+    from . import account_reconcile_model
+  File "/usr/lib/python3.9/warnings.py", line 109, in _showwarnmsg
+    sw(msg.message, msg.category, msg.filename, msg.lineno,
+  File "/usr/lib/python3/dist-packages/odoo/netsvc.py", line 323, in showwarning_with_traceback
+    for frame in traceback.extract_stack():
+ 
+2026-10-19 12:14:23,761 1 INFO test_irg_invoice_dotacion odoo.modules.loading: 123 modules loaded in 0.53s, 128 queries (+128 extra) 
+2026-10-19 12:14:23,799 1 WARNING test_irg_invoice_dotacion odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 12:14:23,799 1 WARNING test_irg_invoice_dotacion odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 12:14:23,799 1 WARNING test_irg_invoice_dotacion odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 12:14:23,877 1 WARNING test_irg_invoice_dotacion odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 12:14:23,877 1 WARNING test_irg_invoice_dotacion odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 12:14:23,877 1 WARNING test_irg_invoice_dotacion odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 12:14:23,943 1 INFO test_irg_invoice_dotacion odoo.modules.registry: verifying fields for every extended model 
+2026-10-19 12:14:24,072 1 INFO test_irg_invoice_dotacion odoo.modules.loading: Modules loaded. 
+2026-10-19 12:14:24,076 1 INFO test_irg_invoice_dotacion odoo.modules.registry: Registry loaded in 2.349s 
+2026-10-19 12:14:24,076 1 INFO test_irg_invoice_dotacion odoo.service.server: Starting post tests 
+2026-10-19 12:14:24,107 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_adding_label_after_reconcile_marks_invoice ... 
+2026-10-19 12:14:24,209 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_clearing_ref_and_label_clears_flag ... 
+2026-10-19 12:14:24,285 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_copy_does_not_keep_the_flag ... 
+2026-10-19 12:14:24,360 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_draft_counterpart_does_not_count ... 
+2026-10-19 12:14:24,420 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_form_shows_dotacion_ribbon ... 
+2026-10-19 12:14:24,436 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_install_recompute_sets_flag_without_note ... 
+2026-10-19 12:14:24,493 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_line_label_alone_marks_invoice ... 
+2026-10-19 12:14:24,547 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_one_entry_marks_each_invoice ... 
+2026-10-19 12:14:24,633 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_ordinary_payment_does_not_mark ... 
+2026-10-19 12:14:24,696 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_partial_reconcile_counts ... 
+2026-10-19 12:14:24,750 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_phrase_is_case_insensitive_and_accent_sensitive ... 
+2026-10-19 12:14:24,845 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_reconcile_on_ref_marks_invoice_once ... 
+2026-10-19 12:14:24,898 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_refund_and_vendor_bill_stay_clear ... 
+2026-10-19 12:14:24,994 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_reset_to_draft_clears_flag_once ... 
+2026-10-19 12:14:25,055 1 INFO test_irg_invoice_dotacion odoo.models.unlink: User #1 deleted account.partial.reconcile records with IDs: [44] 
+2026-10-19 12:14:25,057 1 INFO test_irg_invoice_dotacion odoo.models.unlink: User #1 deleted account.full.reconcile records with IDs: [37] 
+2026-10-19 12:14:25,067 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_several_lines_post_a_single_note ... 
+2026-10-19 12:14:25,120 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_unreconcile_clears_flag_and_notes_once ... 
+2026-10-19 12:14:25,180 1 INFO test_irg_invoice_dotacion odoo.models.unlink: User #1 deleted account.partial.reconcile records with IDs: [46] 
+2026-10-19 12:14:25,181 1 INFO test_irg_invoice_dotacion odoo.models.unlink: User #1 deleted account.full.reconcile records with IDs: [39] 
+2026-10-19 12:14:25,189 1 INFO test_irg_invoice_dotacion odoo.addons.irg_invoice_dotacion_banner.tests.test_invoice_dotacion_banner: Starting TestInvoiceDotacionBanner.test_unreconciled_invoice_stays_clear_without_note ... 
+2026-10-19 12:14:25,285 1 WARNING test_irg_invoice_dotacion odoo.fields: Field sale.order.initial_payment: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 12:14:25,285 1 WARNING test_irg_invoice_dotacion odoo.fields: Field sale.order.rest_postponed: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 12:14:25,285 1 WARNING test_irg_invoice_dotacion odoo.fields: Field sale.order.monthly_value: unknown parameter 'digits', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-10-19 12:14:25,300 1 INFO test_irg_invoice_dotacion odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-10-19 12:14:25,300 1 INFO test_irg_invoice_dotacion odoo.service.server: 17 post-tests in 1.22s, 4242 queries 
+2026-10-19 12:14:25,300 1 INFO test_irg_invoice_dotacion odoo.tests.stats: irg_invoice_dotacion_banner: 19 tests 1.22s 4242 queries 
+2026-10-19 12:14:25,300 1 INFO test_irg_invoice_dotacion odoo.tests.result: 0 failed, 0 error(s) of 17 tests when loading database 'test_irg_invoice_dotacion' 
+2026-10-19 12:14:25,300 1 INFO test_irg_invoice_dotacion odoo.service.server: Initiating shutdown 
+2026-10-19 12:14:25,300 1 INFO test_irg_invoice_dotacion odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-10-19 12:14:25,778 1 INFO test_irg_invoice_dotacion odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  

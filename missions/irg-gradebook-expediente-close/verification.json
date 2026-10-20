@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "task": "irg-gradebook-expediente-close",
+  "checks": [
+    {
+      "name": "py_compile",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_gradebook_expediente_close/__init__.py addons-extra/extrairg/irg_gradebook_expediente_close/__manifest__.py addons-extra/extrairg/irg_gradebook_expediente_close/models/__init__.py addons-extra/extrairg/irg_gradebook_expediente_close/models/app_gradebook_student.py addons-extra/extrairg/irg_gradebook_expediente_close/tests/__init__.py addons-extra/extrairg/irg_gradebook_expediente_close/tests/test_expediente_close.py",
+      "result": "pass",
+      "detail": "All 6 .py files compile without errors. Exit code 0.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_gradebook_expediente_close -u irg_gradebook_expediente_close --test-enable --test-tags=/irg_gradebook_expediente_close --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 7 tests when loading database 'test_irg_gradebook_expediente_close'. Exit code 0.",
+      "evidence": "artifacts/validation-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Diff is a new module under addons-extra/extrairg/irg_gradebook_expediente_close with Python, a mail template in data/mail_template.xml, and tests. It does not touch views/, templates/, report/, static/, portal, website, or HTTP controllers. E2E gate not triggered per plan declaration.",
+      "evidence": "artifacts/validation-tests.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_gradebook_expediente_close",
+    "base_commit": "33e5cf616"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-tests.txt"
+  ]
+}
