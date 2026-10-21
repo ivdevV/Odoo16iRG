@@ -169,12 +169,33 @@ class TestMorosoBanner(TransactionCase):
         self.assertTrue(student.irg_is_moroso)
         notes = self._notes(partner, 'Pasa a moroso. Cuotas vencidas: 1.')
         self.assertEqual(len(notes), 1)
+        self.assertIn(previous.strftime('%d/%m/%Y'), notes.body or '')
         self.assertEqual(notes.subtype_id, self.env.ref('mail.mt_note'))
         self.assertEqual(len(self._notes(student, 'Pasa a moroso. Cuotas vencidas: 1.')), 1)
 
         partner._irg_recompute_moroso()
         self.env['res.partner']._cron_recompute_moroso()
         self.assertEqual(len(self._notes(partner, 'Pasa a moroso. Cuotas vencidas: 1.')), 1)
+
+    def test_note_lists_each_pending_cuota_and_updates(self):
+        partner = self._partner('Lista cuotas')
+        _, previous = self._dates()
+        older = previous - relativedelta(months=1)
+        order = self._order(partner)
+        first = self._cuota(order, older)
+        self._cuota(order, previous)
+        latest = partner.message_ids.sorted('id')[-1:]
+        self.assertIn('Cuotas vencidas: 2.', latest.body or '')
+        self.assertIn(older.strftime('%d/%m/%Y'), latest.body or '')
+        self.assertIn(previous.strftime('%d/%m/%Y'), latest.body or '')
+
+        first.write({'payment_state': 'paid'})
+
+        self.assertTrue(partner.irg_is_moroso)
+        updated = partner.message_ids.sorted('id')[-1:]
+        self.assertIn('Cuotas vencidas: 1.', updated.body or '')
+        self.assertIn(previous.strftime('%d/%m/%Y'), updated.body or '')
+        self.assertNotIn(older.strftime('%d/%m/%Y'), updated.body or '')
 
     def test_partial_overdue_cuota_counts(self):
         partner = self._partner('Cuota parcial')

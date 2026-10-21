@@ -20,6 +20,12 @@ El cobro real de la factura vinculada a la cuota también quita la cinta. Lo cub
 - `payment_state` de la cuota es calculado y no llama a `write`. El gancho de la factura lee ese estado antes de buscar, para que el cobro actualice la cinta.
 - La migración `16.0.1.2.0` llama a `_cron_recompute_moroso()` con nota. La cinta roja no cambia.
 
+## Nota con la lista
+
+Al pagar una de dos cuotas vencidas la nota no se quedaba en el primer número. Ahora se vuelve a anotar cuando cambia el conjunto, con una línea por cuota: pedido, plazo, vencimiento e importe. Versión `16.0.1.3.0`. La migración llama a `_cron_recompute_moroso()`.
+
+Pruebas: `0 failed, 0 error(s) of 21 tests` el 2026-10-21 en `test_irg_moroso_banner`.
+
 ## Publicación
 
 No autorizada. No se ha instalado en la base que sirve el puerto 8069.

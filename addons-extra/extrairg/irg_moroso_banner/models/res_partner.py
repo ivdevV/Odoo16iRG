@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from markupsafe import Markup, escape
+
 from odoo import _, api, fields, models
+from odoo.tools import formatLang
 
 
 class ResPartner(models.Model):
@@ -11,6 +14,10 @@ class ResPartner(models.Model):
         default=False,
         copy=False,
         index=True,
+    )
+    irg_moroso_cuota_key = fields.Char(
+        string='Cuotas vencidas registradas',
+        copy=False,
     )
     irg_is_dotado_morosidad = fields.Boolean(
         string='Dotado por morosidad',
@@ -47,15 +54,37 @@ class ResPartner(models.Model):
             domain.append(('order_id.partner_id', '=', self.id))
         return domain
 
+    def _irg_overdue_cuotas(self):
+        self.ensure_one()
+        return self.env['sale.subscription.schedule'].sudo().search(
+            self._irg_overdue_cuota_domain(),
+            order='date_due, id',
+        )
+
     def _irg_overdue_cuota_count(self):
         self.ensure_one()
-        return self.env['sale.subscription.schedule'].sudo().search_count(
-            self._irg_overdue_cuota_domain()
-        )
+        return len(self._irg_overdue_cuotas())
 
     def _irg_partner_should_be_moroso(self):
         self.ensure_one()
-        return self._irg_overdue_cuota_count() >= 1
+        return bool(self._irg_overdue_cuotas())
+
+    def _irg_cuota_line(self, cuota):
+        due = cuota.date_due.strftime('%d/%m/%Y') if cuota.date_due else ''
+        amount = formatLang(
+            self.env,
+            cuota.amount_recurring_taxinc or 0.0,
+            currency_obj=cuota.currency_id,
+        )
+        parts = [
+            part for part in (
+                cuota.order_id.name,
+                cuota.term_label,
+                due,
+                amount,
+            ) if part
+        ]
+        return ' · '.join(parts)
 
     def _irg_moroso_note_author(self):
         user = self.env.user
@@ -63,18 +92,25 @@ class ResPartner(models.Model):
             return user
         return self.env.ref('base.user_root')
 
-    def _irg_post_moroso_note(self, count, becoming_moroso):
+    def _irg_post_moroso_note(self, cuotas, should, was_moroso):
         self.ensure_one()
-        if becoming_moroso:
-            body = _(
+        count = len(cuotas)
+        if should and not was_moroso:
+            intro = _(
                 'Pasa a moroso. Cuotas vencidas: %(count)s.',
                 count=count,
             )
+        elif should:
+            intro = _('Cuotas vencidas: %(count)s.', count=count)
         else:
-            body = _(
-                'Deja de ser moroso. Cuotas vencidas: %(count)s.',
-                count=count,
+            intro = _('Deja de ser moroso. Cuotas vencidas: 0.')
+        if should:
+            lines = Markup('<br/>').join(
+                escape(self._irg_cuota_line(cuota)) for cuota in cuotas
             )
+            body = Markup('%s<br/>%s') % (escape(intro), lines)
+        else:
+            body = intro
         author = self._irg_moroso_note_author()
         post_kwargs = {
             'body': body,
@@ -90,12 +126,20 @@ class ResPartner(models.Model):
 
     def _irg_recompute_moroso(self):
         for partner in self:
-            should = partner._irg_partner_should_be_moroso()
-            if partner.irg_is_moroso == should:
+            cuotas = partner._irg_overdue_cuotas()
+            should = bool(cuotas)
+            key = ','.join(str(cuota_id) for cuota_id in sorted(cuotas.ids))
+            if (
+                partner.irg_is_moroso == should
+                and (partner.irg_moroso_cuota_key or '') == key
+            ):
                 continue
-            count = partner._irg_overdue_cuota_count()
-            partner.sudo().write({'irg_is_moroso': should})
-            partner._irg_post_moroso_note(count, should)
+            was_moroso = partner.irg_is_moroso
+            partner.sudo().write({
+                'irg_is_moroso': should,
+                'irg_moroso_cuota_key': key,
+            })
+            partner._irg_post_moroso_note(cuotas, should, was_moroso)
         return True
 
     def _irg_dotado_invoice_domain(self):

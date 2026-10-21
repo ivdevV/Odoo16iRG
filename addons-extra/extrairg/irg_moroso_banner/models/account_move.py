@@ -17,6 +17,12 @@ class AccountMove(models.Model):
 
     def _irg_moroso_partners(self):
         schedules = self.schedule_id
+        Schedule = self.env['sale.subscription.schedule'].sudo()
+        line_ids = self.line_ids.ids
+        if line_ids and 'move_line_id' in Schedule._fields:
+            schedules |= Schedule.search([
+                ('move_line_id', 'in', line_ids),
+            ])
         if schedules:
             schedules.mapped('payment_state')
         orders = schedules.order_id

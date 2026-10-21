@@ -38,16 +38,17 @@ Si el contacto es alumno, el pedido pertenece cuando `student_id` o `partner_id`
 
 ## Nota
 
-Los textos nuevos, con N igual a la cuenta después del cambio, son:
+Los textos, con N igual a las cuotas pendientes de meses cerrados después del cambio, son:
 
-- «Pasa a moroso. Cuotas vencidas: N.»
-- «Deja de ser moroso. Cuotas vencidas: N.»
+- «Pasa a moroso. Cuotas vencidas: N.» al pasar a moroso, seguido de una línea por cuota: pedido, plazo, fecha de vencimiento e importe.
+- «Cuotas vencidas: N.» con esa misma lista cuando ya era moroso y cambia el conjunto de cuotas.
+- «Deja de ser moroso. Cuotas vencidas: 0.»
 
-Siguen siendo `mail.mt_note` en el contacto y en cada alumno de ese contacto. Solo se publican cuando `irg_is_moroso` cambia. Las notas antiguas que dicen «Facturas sin pagar» se quedan en el historial.
+Siguen siendo `mail.mt_note` en el contacto y en cada alumno de ese contacto. Se publican cuando cambia el conjunto de cuotas, no solo el sí o no. Las notas antiguas que dicen «Facturas sin pagar» se quedan en el historial.
 
 ## Cuándo se recalcula
 
-El mismo método de siempre compara la regla con el valor guardado. Si no cambia, no escribe y no anota.
+El mismo método compara el conjunto de cuotas vencidas con el último anotado. Si es el mismo, no escribe y no anota.
 
 Se llama para el cliente y el alumno del pedido cuando:
 

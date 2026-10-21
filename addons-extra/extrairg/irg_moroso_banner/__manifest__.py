@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Moroso Banner',
-    'version': '16.0.1.2.0',
+    'version': '16.0.1.3.0',
     'summary': 'Cinta de moroso en el contacto y en el alumno.',
     'category': 'Education',
     'author': 'iRG',
