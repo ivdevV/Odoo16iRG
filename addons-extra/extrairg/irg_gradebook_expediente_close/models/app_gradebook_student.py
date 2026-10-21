@@ -13,16 +13,20 @@ _ACADEMICA_EMAIL = "academica@institutoraimongaja.com"
 class AppGradebookStudent(models.Model):
     _inherit = "app.gradebook.student"
 
-    def _irg_try_auto_close(self):
-        candidates = self.filtered(
-            lambda gradebook: (
-                gradebook.state == "in_progress"
-                and gradebook.student_id
-                and not gradebook.student_id.sudo().file_closing_date
+    def write(self, vals):
+        candidates = self.browse()
+        if vals.get("state") == "done":
+            candidates = self.filtered(
+                lambda gradebook: (
+                    gradebook.state != "done"
+                    and gradebook.student_id
+                    and not gradebook.student_id.sudo().file_closing_date
+                )
             )
-        )
-        super()._irg_try_auto_close()
-        self._irg_stamp_expediente_close(candidates)
+        result = super().write(vals)
+        if candidates:
+            self._irg_stamp_expediente_close(candidates)
+        return result
 
     def _irg_stamp_expediente_close(self, candidates):
         template = self.env.ref(

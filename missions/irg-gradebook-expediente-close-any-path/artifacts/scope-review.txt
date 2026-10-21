@@ -1,0 +1,28 @@
+## E2E Scope Review — irg-gradebook-expediente-close-any-path
+## Date: 2026-10-21
+
+### e2e_testsprite: SKIPPED
+
+The diff for this mission is limited to:
+  - addons-extra/extrairg/irg_gradebook_expediente_close/models/app_gradebook_student.py
+    (write() override: _irg_stamp_expediente_close logic for any-path close)
+  - addons-extra/extrairg/irg_gradebook_expediente_close/tests/test_expediente_close.py
+    (new and updated unit tests)
+  - addons-extra/extrairg/irg_gradebook_expediente_close/__manifest__.py
+    (version bump)
+
+None of these files fall under the mandatory E2E trigger scope:
+  - views/         → not touched
+  - templates/     → not touched
+  - report/        → not touched
+  - static/        → not touched
+  - portal         → not touched
+  - website        → not touched
+  - HTTP controllers → not touched
+
+The change is entirely server-side Python (ORM write override) and does not
+affect any rendered web surface. Therefore e2e_testsprite is skipped per
+AGENTS.md policy: "En cualquier otro caso el check se registra skipped con
+la justificación del scope".
+
+Justification accepted: server-side ORM change only, no web surface affected.

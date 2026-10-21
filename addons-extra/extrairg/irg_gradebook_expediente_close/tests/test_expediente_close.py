@@ -197,7 +197,7 @@ class TestExpedienteClose(TransactionCase):
         )
         self.assertFalse(self._mails_for(gradebook))
 
-    def test_manual_done_does_not_stamp_or_notify(self):
+    def test_manual_done_stamps_and_notifies(self):
         partner, student = self._create_person(3)
         gradebook, result = self._create_open_gradebook(
             partner, student, "AD-EXP-003"
@@ -213,11 +213,49 @@ class TestExpedienteClose(TransactionCase):
         line.compute_point_average()
         self.assertTrue(gradebook._irg_is_ready_to_close())
 
-        gradebook.state_to_done()
+        with patch.object(
+            type(self.env["ir.mail_server"]),
+            "connect",
+            return_value=_FakeSMTP(),
+        ):
+            gradebook.state_to_done()
+
+        self._assert_notice(gradebook)
+
+    def test_api_write_done_stamps_and_notifies(self):
+        partner, student = self._create_person(9)
+        gradebook, _result = self._create_open_gradebook(
+            partner, student, "AD-EXP-009"
+        )
+
+        with patch.object(
+            type(self.env["ir.mail_server"]),
+            "connect",
+            return_value=_FakeSMTP(),
+        ):
+            gradebook.write({"state": "done"})
+
+        self._assert_notice(gradebook)
+
+    def test_reopen_and_close_again_sends_one_notice(self):
+        partner, student = self._create_person(10)
+        gradebook, _result = self._create_open_gradebook(
+            partner, student, "AD-EXP-010"
+        )
+        stamped = fields.Date.context_today(gradebook)
+
+        with patch.object(
+            type(self.env["ir.mail_server"]),
+            "connect",
+            return_value=_FakeSMTP(),
+        ):
+            gradebook.write({"state": "done"})
+            gradebook.state_to_in_progress()
+            gradebook.state_to_done()
 
         self.assertEqual(gradebook.state, "done")
-        self.assertFalse(student.file_closing_date)
-        self.assertFalse(self._mails_for(gradebook))
+        self.assertEqual(student.file_closing_date, stamped)
+        self.assertEqual(len(self._mails_for(gradebook)), 1)
 
     def test_mail_failure_keeps_close_and_date(self):
         partner, student = self._create_person(4)
