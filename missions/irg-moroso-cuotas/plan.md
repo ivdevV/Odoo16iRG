@@ -29,3 +29,7 @@ No autorizada.
 ## Pruebas
 
 Sustituir en `tests/test_moroso_banner.py` las que contaban facturas. RED en `test_irg_moroso_banner` antes del cambio de regla. GREEN con `-u irg_moroso_banner --test-tags /irg_moroso_banner`.
+
+## Corrección 16.0.1.4.0
+
+El cronograma real queda en un plazo «01 de 01» por el importe entero. La cuota es cada mes del plazo de pago del pedido, contado desde `start_date`, aunque ese mes no tenga línea en la factura. Lo cobrado en las facturas publicadas del pedido (`amount_total - amount_residual`) se reparte desde el primer mes. Un mes cerrado con resto pendiente cuenta, y la nota enseña ese resto. El mes en curso no cuenta. Si el pedido tiene plazo de pago, el cronograma no se suma. Sin plazo, se mantiene el cronograma. La cinta roja no cambia. Al actualizar, el cron vuelve a anotar.

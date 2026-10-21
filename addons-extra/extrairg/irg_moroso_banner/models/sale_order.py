@@ -10,6 +10,8 @@ class SaleOrder(models.Model):
         'partner_id',
         'student_id',
         'state',
+        'payment_term_id',
+        'start_date',
     })
 
     def _irg_moroso_partners(self):

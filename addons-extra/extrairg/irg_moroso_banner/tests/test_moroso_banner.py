@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 
 from odoo import fields
 from odoo.tests.common import TransactionCase
+from odoo.tools import formatLang
 
 
 class TestMorosoBanner(TransactionCase):
@@ -308,6 +309,124 @@ class TestMorosoBanner(TransactionCase):
 
         self.assertTrue(partner.irg_is_moroso)
         self.assertTrue(self._notes(partner, 'Pasa a moroso. Cuotas vencidas: 1.'))
+
+    def _payment_term(self, name, months):
+        lines = [
+            (0, 0, {
+                'value': 'fixed',
+                'value_amount': 100.0,
+                'months': month,
+            })
+            for month in range(months - 1)
+        ]
+        lines.append((0, 0, {'value': 'balance', 'months': months - 1}))
+        return self.env['account.payment.term'].create({
+            'name': name,
+            'line_ids': lines,
+        })
+
+    def _term_order(self, partner, start, months, total=None):
+        total = total if total is not None else months * 100.0
+        order = self.env['sale.order'].create({
+            'partner_id': partner.id,
+            'payment_term_id': self._payment_term(partner.name, months).id,
+            'order_line': [(0, 0, {
+                'product_id': self.product.id,
+                'name': self.product.name,
+                'product_uom_qty': 1.0,
+                'price_unit': total,
+                'tax_id': [(6, 0, [])],
+            })],
+        })
+        self.env.cr.execute(
+            "UPDATE sale_order SET state = 'sale', start_date = %s WHERE id = %s",
+            [start, order.id],
+        )
+        order.invalidate_recordset()
+        partner._irg_recompute_moroso()
+        return order
+
+    def _link_invoice(self, order, invoice):
+        self.env['sale.order.line'].flush_model()
+        self.env['account.move.line'].flush_model()
+        self.env.cr.execute(
+            """
+            INSERT INTO sale_order_line_invoice_rel (invoice_line_id, order_line_id)
+            VALUES (%s, %s)
+            """,
+            [invoice.invoice_line_ids[:1].id, order.order_line[:1].id],
+        )
+        if 'order_subscription_id' in invoice._fields:
+            self.env.cr.execute(
+                "UPDATE account_move SET order_subscription_id = %s WHERE id = %s",
+                [order.id, invoice.id],
+            )
+        order.invalidate_recordset()
+        invoice.invalidate_recordset()
+
+    def test_unbilled_payment_term_counts_each_closed_month(self):
+        partner = self._partner('Oficialidad sin factura')
+        month_start, _previous = self._dates()
+        start = (month_start - relativedelta(months=2)).replace(day=15)
+        self._term_order(partner, start, months=3)
+
+        cuotas = partner._irg_overdue_cuotas()
+        self.assertEqual(
+            [cuota.date_due for cuota in cuotas],
+            [start, start + relativedelta(months=1)],
+        )
+        self.assertEqual(
+            [cuota.amount_recurring_taxinc for cuota in cuotas],
+            [100.0, 100.0],
+        )
+        self.assertTrue(partner.irg_is_moroso)
+        note = partner.message_ids.sorted('id')[-1:]
+        self.assertIn('Pasa a moroso. Cuotas vencidas: 2.', note.body or '')
+        self.assertNotIn(
+            (start + relativedelta(months=2)).strftime('%d/%m/%Y'),
+            note.body or '',
+        )
+
+    def test_paid_amount_fills_months_and_ignores_collapsed_schedule(self):
+        partner = self._partner('Máster a plazos')
+        month_start, previous = self._dates()
+        start = (month_start - relativedelta(months=4)).replace(day=15)
+        order = self._term_order(partner, start, months=6, total=600.0)
+        self._cuota(order, previous)
+        self._cuota(order, previous).write({
+            'amount_recurring_taxinc': 9999.0,
+        })
+        invoice = self._create_invoice(partner, amount=600.0)
+        self._link_invoice(order, invoice)
+        self._pay(invoice, amount=240.0)
+
+        cuotas = partner._irg_overdue_cuotas()
+        self.assertEqual(
+            [cuota.date_due for cuota in cuotas],
+            [start + relativedelta(months=2), start + relativedelta(months=3)],
+        )
+        self.assertEqual(
+            [cuota.amount_recurring_taxinc for cuota in cuotas],
+            [60.0, 100.0],
+        )
+        note = partner.message_ids.sorted('id')[-1:]
+        body = note.body or ''
+        self.assertIn('Cuotas vencidas: 2.', body)
+        shown = formatLang(
+            self.env, 60.0, currency_obj=order.currency_id,
+        ).replace('\xa0', ' ')
+        plain = str(body).replace('&nbsp;', ' ').replace('\xa0', ' ')
+        self.assertIn(shown, plain)
+        self.assertNotIn(
+            (start + relativedelta(months=4)).strftime('%d/%m/%Y'),
+            body,
+        )
+        self.assertNotIn('9999', body)
+
+        self._pay(invoice, amount=160.0)
+
+        self.assertFalse(partner.irg_is_moroso)
+        self.assertTrue(self._notes(partner, 'Deja de ser moroso. Cuotas vencidas: 0.'))
 
     def test_forms_show_lilac_ribbon_only_as_widget(self):
         partner_arch = self.env['res.partner'].get_view(view_type='form')['arch']

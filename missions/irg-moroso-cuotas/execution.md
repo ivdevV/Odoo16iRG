@@ -29,3 +29,9 @@ Pruebas: `0 failed, 0 error(s) of 21 tests` el 2026-10-21 en `test_irg_moroso_ba
 ## Publicación
 
 No autorizada. No se ha instalado en la base que sirve el puerto 8069.
+
+## Plazo de pago, 16.0.1.4.0
+
+El cronograma «01 de 01» no es la lista de meses. RED el 2026-10-21: `2 failed, 0 error(s) of 23 tests`. Sin factura el plazo no contaba. Con cobro parcial seguían saliendo las fechas del cronograma.
+
+GREEN con el mismo comando: `0 failed, 0 error(s) of 23 tests`. La cuota es cada línea del plazo desde `start_date`. Lo cobrado se reparte desde el primer mes. El mes en curso queda fuera. Si hay plazo, el cronograma no se suma. La migración `16.0.1.4.0` vuelve a anotar. No se ha ejecutado `-u` en beta: esa migración escribe la nota nueva en los contactos.
