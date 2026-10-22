@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "task": "irg-gradebook-expediente-close-any-path",
+  "checks": [
+    {
+      "name": "py_compile",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_gradebook_expediente_close/__manifest__.py addons-extra/extrairg/irg_gradebook_expediente_close/models/app_gradebook_student.py addons-extra/extrairg/irg_gradebook_expediente_close/tests/test_expediente_close.py addons-extra/extrairg/irg_gradebook_expediente_close/__init__.py addons-extra/extrairg/irg_gradebook_expediente_close/models/__init__.py addons-extra/extrairg/irg_gradebook_expediente_close/tests/__init__.py",
+      "result": "pass",
+      "detail": "All 6 module files compiled without syntax errors. Exit code 0.",
+      "evidence": "missions/irg-gradebook-expediente-close-any-path/artifacts/validation-tests.txt"
+    },
+    {
+      "name": "module_tests",
+      "command": "docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_gradebook_expediente_close -u irg_gradebook_expediente_close --test-enable --test-tags=/irg_gradebook_expediente_close --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "0 failed, 0 error(s) of 9 tests when loading database 'test_irg_gradebook_expediente_close'. Exit code 0. The ERROR log line present in output is intentionally injected by test_database_error_while_sending_keeps_close_and_date to verify graceful degradation; the test itself passed.",
+      "evidence": "missions/irg-gradebook-expediente-close-any-path/artifacts/validation-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "Diff does not touch views/, templates/, report/, static/, portal, website, or HTTP controllers. The change is a server-side ORM write() override (app_gradebook_student.py) plus tests and manifest version bump. No web surface is affected. Per AGENTS.md E2E trigger policy, this check is skipped.",
+      "evidence": "missions/irg-gradebook-expediente-close-any-path/artifacts/scope-review.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_gradebook_expediente_close",
+    "base_commit": "8daf6790408a7e16fad2142c84e8f4e7334f7705"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "missions/irg-gradebook-expediente-close-any-path/artifacts/validation-tests.txt",
+    "missions/irg-gradebook-expediente-close-any-path/artifacts/scope-review.txt"
+  ]
+}

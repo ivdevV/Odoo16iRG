@@ -1,0 +1,5 @@
+2026-10-21 GREEN, after write() hook. Version 16.0.1.1.0.
+
+Same command as tdd-red.txt.
+
+Result: 0 failed, 0 error(s) of 9 tests.

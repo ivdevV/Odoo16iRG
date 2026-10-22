@@ -64,6 +64,12 @@ El efecto va dentro de `with self.env.cr.savepoint():`, y ese bloque dentro del
 savepoint. Al fallar, el savepoint se revierte, el log guarda el id de la libreta
 y la excepción no se relanza.
 
+El aviso de `irg_gradebook_expediente_close` no se engancha a
+`_irg_try_auto_close()`. Se engancha a `write()` cuando `state` pasa a `done`.
+`state_to_done()` asigna ese campo, así que el botón, la barra de estado, la
+API y el autocierre comparten el mismo efecto. Un `create` que nazca en `done`,
+o un `UPDATE` SQL, no lo disparan. No hay barrido de libretas ya finalizadas.
+
 ## Gotcha reproducido en Dev: el template de línea puede ampliar por error el principal
 
 La libreta `AD003762` mostraba en cabecera el template principal `Solo Examen`, pero

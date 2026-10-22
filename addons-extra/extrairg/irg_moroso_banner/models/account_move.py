@@ -13,10 +13,30 @@ class AccountMove(models.Model):
         'move_type',
         'irg_student_partner_id',
         'irg_dotado_morosidad',
+        'order_subscription_id',
     })
 
     def _irg_moroso_partners(self):
-        return (self.partner_id | self.irg_student_partner_id).exists()
+        schedules = self.schedule_id
+        Schedule = self.env['sale.subscription.schedule'].sudo()
+        line_ids = self.line_ids.ids
+        if line_ids and 'move_line_id' in Schedule._fields:
+            schedules |= Schedule.search([
+                ('move_line_id', 'in', line_ids),
+            ])
+        if schedules:
+            schedules.mapped('payment_state')
+        orders = schedules.order_id
+        if 'order_subscription_id' in self._fields:
+            orders |= self.order_subscription_id
+        if 'sale_line_ids' in self.env['account.move.line']._fields:
+            orders |= self.invoice_line_ids.sale_line_ids.order_id
+        return (
+            self.partner_id
+            | self.irg_student_partner_id
+            | orders.partner_id
+            | orders.student_id
+        ).exists()
 
     @api.model_create_multi
     def create(self, vals_list):

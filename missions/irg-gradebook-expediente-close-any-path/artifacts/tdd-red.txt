@@ -1,0 +1,11 @@
+2026-10-21 RED, before the write() hook.
+
+Command: docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_gradebook_expediente_close -u irg_gradebook_expediente_close --test-enable --test-tags=/irg_gradebook_expediente_close --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test
+
+Result: 3 failed, 0 error(s) of 9 tests.
+
+- test_api_write_done_stamps_and_notifies: file_closing_date False != 2026-10-21
+- test_manual_done_stamps_and_notifies: file_closing_date False != 2026-10-21
+- test_reopen_and_close_again_sends_one_notice: file_closing_date False != 2026-10-21
+
+The six previous tests stayed green, including auto-close.

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG Moroso Banner',
-    'version': '16.0.1.1.0',
+    'version': '16.0.1.4.0',
     'summary': 'Cinta de moroso en el contacto y en el alumno.',
     'category': 'Education',
     'author': 'iRG',
@@ -10,6 +10,8 @@
         'openeducat_core',
         'irg_student_invoice_payment_link',
         'irg_invoice_dotacion_banner',
+        'isep_sale_subscription_custom',
+        'irg_sale_order_extended',
     ],
     'data': [
         'data/ir_cron.xml',

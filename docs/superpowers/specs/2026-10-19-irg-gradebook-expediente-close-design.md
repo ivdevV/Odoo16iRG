@@ -1,8 +1,8 @@
-# Cierre de expediente al autocerrar la libreta
+# Cierre de expediente al cerrar la libreta
 
 ## Problema
 
-Cuando una libreta de calificaciones se cierra sola, académica no recibe aviso y la fecha de cierre de expediente del alumno sigue vacía. Ese campo, `op.student.file_closing_date`, ya existe y se muestra en la ficha del alumno. Ningún código lo escribe: el autocierre de `irg_gradebook_auto_close` solo pasa la libreta a `done` mediante `state_to_done()`.
+Cuando una libreta de calificaciones pasa a Finalizado, académica no recibía aviso y la fecha de cierre de expediente del alumno seguía vacía. Ese campo, `op.student.file_closing_date`, ya existe y se muestra en la ficha del alumno. La versión `16.0.1.0.0` solo actuaba en el autocierre. Desde `16.0.1.1.0` el mismo aviso cubre también el botón, la barra de estado y un `write` de la API o de MCP.
 
 ## Alcance
 
@@ -12,13 +12,14 @@ Dependencias: `irg_gradebook_auto_close`, `isep_student_filter`, `mail`.
 
 Incluido:
 
-- Al terminar un autocierre que deja la libreta en `done`, escribir la fecha de hoy en `op.student.file_closing_date` si ese campo está vacío.
+- Al pasar la libreta a `done` por el ORM, escribir la fecha de hoy en `op.student.file_closing_date` si ese campo está vacío.
 - En ese mismo caso, enviar un correo a `academica@institutoraimongaja.com` notificando el cierre de expediente, con alumno, curso, número de admisión, nombre de la libreta y la fecha guardada.
+- El paso a `done` incluye el autocierre, el botón Finalizar, la barra de estado y un `write({'state': 'done'})` de la API o de MCP.
 
 Fuera de alcance:
 
-- Cerrar la libreta a mano con Finalizar. Ese camino no escribe la fecha ni envía correo.
-- Rellenar fechas de libretas que ya estaban en `done` antes de instalar el módulo.
+- Rellenar fechas de libretas que ya estaban en `done` antes de este comportamiento. Actualizar el módulo no recorre el histórico.
+- Un `create` que nazca ya en `done`, y un `UPDATE` SQL del estado. Esos caminos no pasan por `write`.
 - Borrar o cambiar una fecha ya guardada, también si la libreta se reabre y el autocierre la vuelve a cerrar.
 - Generar diploma, certificado de notas o carta de disertación, y adjuntarlos al correo.
 - Corregir `isep_openeducat_reports`, que busca una libreta en estado `closed`. Los estados reales son `draft`, `in_progress` y `done`.
@@ -26,11 +27,11 @@ Fuera de alcance:
 
 ## Disparo
 
-El módulo hereda `_irg_try_auto_close()` en `app.gradebook.student`. No hereda `state_to_done()`.
+Desde la versión `16.0.1.1.0` el módulo hereda `write()` en `app.gradebook.student`. No hereda `state_to_done()`. El botón asigna `state = 'done'` y esa asignación entra en `write()`, igual que la barra de estado y la API.
 
 Antes de llamar a `super()`:
 
-- Se queda con las libretas del recordset que están en `in_progress`, tienen `student_id` y cuyo alumno tiene `file_closing_date` vacío.
+- Si `vals['state']` es `done`, se queda con las libretas que todavía no están en `done`, tienen `student_id` y cuyo alumno tiene `file_closing_date` vacío.
 
 Después de `super()`:
 
@@ -86,7 +87,7 @@ addons-extra/extrairg/irg_gradebook_expediente_close/
   tests/test_expediente_close.py
 ```
 
-Versión del manifiesto: `16.0.1.0.0`. Licencia `LGPL-3`. No hay modelo nuevo ni `ir.model.access.csv`.
+Versión del manifiesto: `16.0.1.1.0`. Licencia `LGPL-3`. No hay modelo nuevo ni `ir.model.access.csv`.
 
 ## Pruebas
 
@@ -94,8 +95,10 @@ Suite en el módulo, `TransactionCase`, etiqueta `post_install` y `-at_install`:
 
 - Libreta lista y alumno sin fecha: al completar la última nota, `_irg_try_auto_close()` deja la libreta en `done`, escribe la fecha de hoy y crea un `mail.mail` a `academica@institutoraimongaja.com` ligado a esa libreta, con alumno, correo, curso, número de admisión, libreta y fecha `dd/MM/yyyy`. Esa prueba intercepta la conexión SMTP: comprueba el mensaje creado y no necesita un buzón real.
 - Alumno que ya tiene fecha: el autocierre no cambia la fecha y no crea correo.
-- `state_to_done()` directo sobre una libreta lista: la libreta pasa a `done`, la fecha sigue vacía y no hay correo.
-- `send_mail` lanza una excepción: la libreta queda en `done`, la fecha queda escrita y la excepción no sale de `_irg_try_auto_close()`.
+- `state_to_done()` directo sobre una libreta lista: la libreta pasa a `done`, escribe la fecha y crea el mismo correo.
+- `write({'state': 'done'})` sobre una libreta en proceso: mismo efecto, aunque el botón habría rechazado el cierre por las validaciones de cantidades.
+- Reabrir y volver a finalizar: la fecha no cambia y no sale un segundo correo.
+- `send_mail` lanza una excepción: la libreta queda en `done`, la fecha queda escrita y la excepción no sale de `write()`.
 - Dos libretas del mismo alumno, ambas listas, en una sola llamada: una fecha y un solo correo, el de la primera del recordset que quedó en `done`.
 
 ## Validación prevista

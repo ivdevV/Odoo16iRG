@@ -1,0 +1,31 @@
+## Odoo Module Tests — irg_gradebook_expediente_close
+## Run: 2026-10-21 10:28 UTC+2
+## Command:
+##   docker compose -f docker-compose.local.yml run --rm --no-deps odoo_local \
+##     odoo -c /etc/odoo/odoo.conf -d test_irg_gradebook_expediente_close \
+##     -u irg_gradebook_expediente_close --test-enable \
+##     --test-tags=/irg_gradebook_expediente_close \
+##     --max-cron-threads=0 --stop-after-init --http-port=8099 --log-level=test
+
+--- TEST EXECUTION ---
+
+Starting TestExpedienteClose.test_api_write_done_stamps_and_notifies ... [PASS]
+Starting TestExpedienteClose.test_auto_close_stamps_empty_date_and_notifies ... [PASS]
+Starting TestExpedienteClose.test_database_error_while_sending_keeps_close_and_date ... [PASS]
+  (Note: intentional ERROR log from DB injection in this test is expected behavior)
+Starting TestExpedienteClose.test_existing_date_is_kept_and_no_mail_is_sent ... [PASS]
+Starting TestExpedienteClose.test_mail_failure_keeps_close_and_date ... [PASS]
+Starting TestExpedienteClose.test_manual_done_stamps_and_notifies ... [PASS]
+Starting TestExpedienteClose.test_reopen_and_close_again_sends_one_notice ... [PASS]
+Starting TestExpedienteClose.test_two_gradebooks_same_student_send_one_notice ... [PASS]
+Starting TestExpedienteClose.test_user_without_student_write_still_stamps ... [PASS]
+
+--- SUMMARY LINES (from Odoo log) ---
+
+2026-10-21 08:28:34,216 1 INFO test_irg_gradebook_expediente_close odoo.service.server: 9 post-tests in 0.40s, 1187 queries
+2026-10-21 08:28:34,216 1 INFO test_irg_gradebook_expediente_close odoo.tests.stats: irg_gradebook_expediente_close: 11 tests 0.40s 1187 queries
+2026-10-21 08:28:34,216 1 INFO test_irg_gradebook_expediente_close odoo.tests.result: 0 failed, 0 error(s) of 9 tests when loading database 'test_irg_gradebook_expediente_close'
+
+--- PROCESS EXIT CODE: 0 ---
+
+RESULT: PASS — 0 failed, 0 error(s) of 9 tests. Exit code 0.

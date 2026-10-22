@@ -28,7 +28,7 @@ Fuera de alcance:
 
 ## Regla
 
-El umbral es la constante `_IRG_MOROSO_INVOICE_THRESHOLD = 2`.
+La cuenta de facturas de esta spec queda sustituida por las cuotas de meses cerrados en `docs/superpowers/specs/2026-10-19-irg-moroso-cuotas-design.md`. Lo que sigue en esta sección es la regla anterior.
 
 Entran facturas de cliente publicadas (`account.move.state = posted`, `move_type = out_invoice`) con `payment_state` en `not_paid` o `partial`.
 
