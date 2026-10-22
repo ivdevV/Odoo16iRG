@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="survey_user_input_view_form_oral_case" model="ir.ui.view">
+        <field name="name">survey.user_input.form.oral.case</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Caso oral — sugerencia de la IA" groups="irg_oral_case.group_oral_case_teacher">
+                    <field name="score_ia" readonly="1"/>
+                    <field name="resumen_ia" readonly="1"/>
+                    <field name="error_ai" readonly="1"/>
+                    <button name="action_irg_oral_case_confirm_grade" type="object" string="Confirmar nota oficial" class="btn-primary" groups="openeducat_core.group_op_faculty"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

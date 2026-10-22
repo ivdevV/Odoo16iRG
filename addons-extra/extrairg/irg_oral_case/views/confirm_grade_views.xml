@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_oral_case_confirm_grade_form" model="ir.ui.view">
+        <field name="name">irg.oral.case.confirm.grade.form</field>
+        <field name="model">irg.oral.case.confirm.grade</field>
+        <field name="arch" type="xml">
+            <form string="Confirmar nota oficial">
+                <group>
+                    <field name="user_input_id" invisible="1"/>
+                    <field name="score_ia" readonly="1"/>
+                    <field name="resumen_ia" readonly="1"/>
+                    <field name="error_ai" readonly="1"/>
+                    <field name="official_score"/>
+                    <field name="survey_type"/>
+                    <field name="gradebook_subject_id"/>
+                    <field name="comment"/>
+                    <field name="confirm_official"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Confirmar nota oficial" class="btn-primary" groups="openeducat_core.group_op_faculty"/>
+                    <button string="Cancelar" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

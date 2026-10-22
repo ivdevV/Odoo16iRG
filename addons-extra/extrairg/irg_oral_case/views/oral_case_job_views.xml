@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_irg_oral_case_job_tree" model="ir.ui.view">
+        <field name="name">irg.oral.case.job.tree</field>
+        <field name="model">irg.oral.case.job</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="create_date"/>
+                <field name="partner_id"/>
+                <field name="case_code"/>
+                <field name="slide_id"/>
+                <field name="state"/>
+                <field name="n8n_status"/>
+                <field name="score_ia"/>
+                <field name="official_score"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_irg_oral_case_job_form" model="ir.ui.view">
+        <field name="name">irg.oral.case.job.form</field>
+        <field name="model">irg.oral.case.job</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_confirm_grade" type="object" string="Confirmar nota oficial" class="btn-primary" groups="openeducat_core.group_op_faculty"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,accepted,rejected,error"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Entrega">
+                            <field name="partner_id"/>
+                            <field name="slide_id"/>
+                            <field name="survey_id"/>
+                            <field name="user_input_id"/>
+                            <field name="case_code"/>
+                            <field name="consent_date"/>
+                            <field name="duration_seconds"/>
+                            <field name="n8n_job_id"/>
+                            <field name="n8n_status"/>
+                        </group>
+                        <group string="Sugerencia de la IA">
+                            <field name="score_ia" readonly="1"/>
+                            <field name="resumen_ia" readonly="1"/>
+                            <field name="error_ai" readonly="1"/>
+                            <field name="last_error" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Nota oficial">
+                        <field name="official_score" readonly="1"/>
+                        <field name="official_confirmed_by" readonly="1"/>
+                        <field name="official_confirmed_at" readonly="1"/>
+                        <field name="gradebook_result_id"/>
+                    </group>
+                    <group string="Vídeo">
+                        <field name="video_attachment_id"/>
+                        <field name="video_stored_at"/>
+                        <field name="video_purged"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_irg_oral_case_job" model="ir.actions.act_window">
+        <field name="name">Casos orales</field>
+        <field name="res_model">irg.oral.case.job</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem
+        id="menu_irg_oral_case_job"
+        name="Casos orales"
+        parent="website_slides.website_slides_menu_root"
+        action="action_irg_oral_case_job"
+        groups="irg_oral_case.group_oral_case_teacher"
+        sequence="80"/>
+</odoo>
