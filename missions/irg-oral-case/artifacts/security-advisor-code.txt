@@ -1,0 +1,7 @@
+SECURITY ADVISOR REVIEW — irg-oral-case (código implementado)
+Fecha: 2026-10-22
+Alcance: addons-extra/extrairg/irg_oral_case frente al diseño aprobado.
+
+El código mantiene auth=user y CSRF en el POST, ata el partner a la sesión, no vuelca la clave al cliente, no escribe la libreta fuera de action_confirm y no borra vídeo con la configuración por defecto. Los sudo están comentados y acotados a parámetro, matrícula del propio partner, participación propia, adjunto privado, proxy con dominio de partner y cron. La nota oficial no usa sudo.
+
+[YES] Reason: la implementación sigue el diseño aprobado y no abre un canal para que el alumno o la IA escriban la nota oficial.

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_oral_case_teacher" model="res.groups">
+        <field name="name">Docente de caso oral</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="openeducat_core.group_op_faculty" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_oral_case_teacher'))]"/>
+    </record>
+
+    <record id="irg_oral_case_job_rule_portal" model="ir.rule">
+        <field name="name">Caso oral: el alumno del portal ve sus entregas</field>
+        <field name="model_id" ref="model_irg_oral_case_job"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('partner_id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="irg_oral_case_job_rule_user" model="ir.rule">
+        <field name="name">Caso oral: el usuario interno ve sus entregas</field>
+        <field name="model_id" ref="model_irg_oral_case_job"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('partner_id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="irg_oral_case_job_rule_teacher" model="ir.rule">
+        <field name="name">Caso oral: el docente ve las entregas</field>
+        <field name="model_id" ref="model_irg_oral_case_job"/>
+        <field name="groups" eval="[(4, ref('group_oral_case_teacher'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="survey_user_input_oral_teacher_rule" model="ir.rule">
+        <field name="name">Caso oral: el docente lee las participaciones del caso</field>
+        <field name="model_id" ref="survey.model_survey_user_input"/>
+        <field name="groups" eval="[(4, ref('group_oral_case_teacher'))]"/>
+        <field name="domain_force">[('slide_id.oral_case_enabled', '=', True)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+</odoo>

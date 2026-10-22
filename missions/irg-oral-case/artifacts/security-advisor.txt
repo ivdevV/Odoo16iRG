@@ -1,0 +1,81 @@
+SECURITY ADVISOR REVIEW — irg-oral-case (diseño, antes de implementar)
+Fecha: 2026-10-22
+Alcance: missions/irg-oral-case/plan.md y doc/micro-specs/2026-10-22-irg_oral_case.md.
+No hay código de producto todavía.
+
+======================================================================
+1. ALCANCE
+======================================================================
+- Módulo nuevo. No toca core, PROD, beta ni módulos existentes.
+- Superficie nueva: POST de subida autenticado, GET de estado autenticado, GET bootstrap autenticado, wizard de nota, cron de borrado de vídeo.
+- El vídeo es dato personal. Por defecto no se guarda copia en Odoo y el cron no borra nada.
+- Veredicto de alcance: ACEPTABLE si la implementación cumple los requisitos de esta revisión.
+
+======================================================================
+2. AUTENTICACIÓN Y CSRF
+======================================================================
+2.1 Las tres rutas usan auth='user'. Un público no entra.
+2.2 El POST mantiene csrf=True. El token viaja como campo multipart csrf_token.
+    El bootstrap puede devolver el token de la sesión al propio usuario autenticado
+    para que el HTML del slide (pegado en la misma página o en un srcdoc same-origin)
+    haga fetch. No es un secreto de servidor. No se desactiva CSRF.
+2.3 El partner sale de request.env.user.partner_id. El create del job lo vuelve a
+    forzar para usuarios que no son superusuario. Un partner_id del formulario se ignora.
+2.4 El acceso al slide exige membresía slide.channel.partner de ESE partner, o el
+    grupo Faculty. sudo solo para contar esa fila, porque las reglas de registro
+    pueden ocultarla, y el dominio incluye el partner de la sesión.
+
+======================================================================
+3. SECRETO
+======================================================================
+3.1 La clave y las URL de n8n no tienen valor en el XML del repo (noupdate, vacío).
+3.2 La variable de entorno solo sustituye al parámetro si trae texto no vacío.
+3.3 La cabecera X-IRG-Key se pone en la llamada saliente y no se copia a la respuesta,
+    a las vistas, al bootstrap ni a los logs. Se redacta si n8n la devolviera en un error.
+3.4 requests con allow_redirects=False para no seguir la clave a otro host.
+3.5 No se registra el cuerpo del vídeo, la autoevaluación ni la clave. Los fallos
+    se registran con el tipo de excepción, no con el mensaje de requests.
+
+======================================================================
+4. SUDO
+======================================================================
+Permitido y comentado solo en:
+- lectura de ir.config_parameter (el portal no puede leerlos);
+- conteo de slide.channel.partner acotado al partner de sesión;
+- alta y reutilización de survey.user_input propio tras pasar el acceso;
+- adjunto privado si store_video_copy está activo;
+- búsqueda del job en el proxy con dominio partner_id = sesión;
+- cron de retención, que ya corre como superusuario y solo tras las guardas.
+
+Prohibido: sudo al crear o escribir app.gradebook.result. La ACL de Faculty
+es el control. action_confirm comprueba openeducat_core.group_op_faculty.
+
+======================================================================
+5. NOTA OFICIAL
+======================================================================
+5.1 score_ia / resumen_ia / error_ai son sugerencia. Un alumno no puede escribirlos.
+5.2 El envío y el proxy de estado no crean ni modifican app.gradebook.result.
+5.3 No se asigna survey.user_input.result_id, porque isep_gradebook.write copiaría
+    scoring_percentage encima de la nota oficial.
+5.4 La participación queda in_progress para no entrar en send_result, que exige state done.
+5.5 El wizard no toma el valor por defecto de official_score desde score_ia y exige
+    confirmación explícita del docente.
+
+======================================================================
+6. BORRADO
+======================================================================
+6.1 Doble guarda de configuración: retention_enabled falso y retention_days 0.
+    Hace falta las dos cosas en sentido afirmativo, además de la guarda de módulos
+    en to install / to upgrade / to remove.
+6.2 Techo duro de tamaño (200 MiB) y de duración (14400 s) por encima del parámetro,
+    para que un valor mal puesto no acepte un archivo arbitrario.
+6.3 El adjunto, si se guarda, es privado (public False) y ligado al job.
+
+======================================================================
+7. JENKINS Y ENTORNOS
+======================================================================
+El Jenkinsfile despliega beta solo en la rama Dev_iRG y producción solo en main.
+Esta misión abre PR y no mergea. No se escribe en beta ni en producción.
+No se copian credenciales de etc/ ni de docker-compose al módulo ni a la PR.
+
+[YES] Reason: el diseño autentica al alumno, ata el partner a la sesión, deja el secreto fuera del cliente, exige al docente para la nota oficial y no borra vídeo hasta una decisión explícita.

@@ -1,0 +1,54 @@
+{
+  "status": "passed",
+  "task": "irg-oral-case",
+  "checks": [
+    {
+      "name": "python_syntax",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_oral_case/**/*.py",
+      "result": "pass",
+      "detail": "Todos los .py del módulo compilaron con exit 0",
+      "evidence": "artifacts/syntax.txt"
+    },
+    {
+      "name": "xml_syntax",
+      "command": "python3 -c \"import xml.etree.ElementTree as ET\" sobre los 8 XML del módulo",
+      "result": "pass",
+      "detail": "8 XML parseados, exit 0",
+      "evidence": "artifacts/syntax.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "docker compose -f docker-compose.local.yml exec -T odoo_local odoo -c /etc/odoo/odoo.conf -d <bd_desechable> -i irg_oral_case --test-enable --test-tags=/irg_oral_case --stop-after-init --http-port=8099 --log-level=test",
+      "result": "skipped",
+      "detail": "No se pudo ejecutar. En esta VM no existe el comando docker (exit 127), no está docker-compose.local.yml y no hay binario de Odoo. Los tests TransactionCase y HttpCase están escritos y mockean n8n, pero no hay resultado de ejecución.",
+      "evidence": "artifacts/syntax.txt"
+    },
+    {
+      "name": "lint",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "PROJECT.md: este repositorio no tiene linter canónico. No se declara un pass.",
+      "evidence": "artifacts/syntax.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "testsprite no invocado",
+      "result": "skipped",
+      "detail": "El plan declara el disparo: el diff tiene XML en views/ y controladores HTTP. El MCP TestSprite no está en este runtime y no hay Odoo local en el puerto 8069. No se apuntó a beta ni a producción. El disparo no se rebaja; la ejecución no fue posible.",
+      "evidence": "artifacts/syntax.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "ausente: sin docker y sin docker-compose.local.yml",
+    "database": null,
+    "base_commit": "f2c29242f99a3db1493fd678ffd9eb6bb4c1d8f7"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/syntax.txt",
+    "artifacts/02-review.md",
+    "artifacts/security-advisor.txt",
+    "artifacts/security-advisor-code.txt"
+  ]
+}

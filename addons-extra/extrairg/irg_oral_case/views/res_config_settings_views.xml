@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_oral_case" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.oral.case</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Caso oral" string="Caso oral" data-key="irg_oral_case" groups="base.group_system">
+                    <h2>Caso oral</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="irg_oral_case_n8n_submit_url"/>
+                                <div class="text-muted">URL de entrega. En pruebas puede ser la ruta webhook-test.</div>
+                                <field name="irg_oral_case_n8n_submit_url"/>
+                                <label for="irg_oral_case_n8n_status_url"/>
+                                <field name="irg_oral_case_n8n_status_url"/>
+                                <label for="irg_oral_case_api_key"/>
+                                <div class="text-muted">Se envía como cabecera X-IRG-Key. No aparece en el slide.</div>
+                                <field name="irg_oral_case_api_key" password="True"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="irg_oral_case_max_video_bytes"/>
+                                <field name="irg_oral_case_max_video_bytes"/>
+                                <label for="irg_oral_case_max_duration_seconds"/>
+                                <field name="irg_oral_case_max_duration_seconds"/>
+                                <label for="irg_oral_case_store_video_copy"/>
+                                <field name="irg_oral_case_store_video_copy"/>
+                                <label for="irg_oral_case_retention_days"/>
+                                <field name="irg_oral_case_retention_days"/>
+                                <label for="irg_oral_case_retention_enabled"/>
+                                <div class="text-muted">Pendiente de decisión. Con el valor por defecto no se borra ningún vídeo.</div>
+                                <field name="irg_oral_case_retention_enabled"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

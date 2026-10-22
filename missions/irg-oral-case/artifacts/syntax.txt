@@ -1,0 +1,5 @@
+python3 -m py_compile sobre los .py de addons-extra/extrairg/irg_oral_case (módulo, controladores, wizard y tests): exit 0.
+xml.etree.ElementTree.parse sobre los 8 XML del módulo: exit 0.
+docker: comando ausente (exit 127). docker-compose.local.yml: no está en el repo.
+odoo: no hay binario en el PATH.
+Base de la rama: f2c29242f99a3db1493fd678ffd9eb6bb4c1d8f7 (Dev_iRG).

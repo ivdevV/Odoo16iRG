@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_slide_slide_form_oral_case" model="ir.ui.view">
+        <field name="name">slide.slide.form.oral.case</field>
+        <field name="model">slide.slide</field>
+        <field name="inherit_id" ref="website_slides.view_slide_slide_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Caso oral" name="irg_oral_case">
+                    <field name="oral_case_enabled"/>
+                    <field name="oral_case_code" attrs="{'invisible': [('oral_case_enabled', '=', False)], 'required': [('oral_case_enabled', '=', True)]}"/>
+                    <field name="oral_case_survey_id" attrs="{'invisible': [('oral_case_enabled', '=', False)], 'required': [('oral_case_enabled', '=', True)]}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
