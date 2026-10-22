@@ -11,6 +11,12 @@ cuestionario compacto de tres bloques:
 
 Cada bloque contiene varias preguntas. Nombre, correo y máster se completan con
 la matrícula del expediente, pero el alumno puede corregirlos antes de enviar.
+Antes de iniciar el esquema, el portal recomienda leer la guía de la
+asignatura en PDF. Ahí están las indicaciones para rellenarlo y para
+elaborar el TFM.
+El archivo va en el módulo:
+`static/src/pdf/guia-asignatura-tfm.pdf`.
+
 El alumno puede guardar un borrador, continuar después, revisar todas las
 respuestas y enviar varias versiones mientras no tenga convocatoria.
 
@@ -63,7 +69,7 @@ también entran. `ONL261` y los códigos mensuales antiguos, como `ONL2602` o
 2. En Odoo, activar modo desarrollador.
 3. Ir a **Aplicaciones**, pulsar **Actualizar lista de aplicaciones** y buscar
    `IRG TFM Convocatorias`.
-4. Pulsar **Actualizar**. La versión esperada es `16.0.1.5.0`.
+4. Pulsar **Actualizar**. La versión esperada es `16.0.1.6.0`.
 5. Confirmar que la aplicación **Encuestas** está instalada; es una dependencia
    declarada y Odoo debe instalarla automáticamente si falta.
 
@@ -99,7 +105,7 @@ Recorrido:
 
 1. Entrar como alumno en `/campus` y abrir el máster.
 2. Pulsar **Trabajo Final de Máster**.
-3. En **Esquema**, pulsar **Comenzar cuestionario**.
+3. En **Esquema**, leer la guía de la asignatura y pulsar **Comenzar cuestionario**. La guía vuelve a mostrarse al abrir el borrador.
 4. Confirmar que nombre, correo y máster aparecen rellenados y que pueden
    editarse.
 5. Cambiar uno de esos datos, responder el resto del primer bloque y pulsar
