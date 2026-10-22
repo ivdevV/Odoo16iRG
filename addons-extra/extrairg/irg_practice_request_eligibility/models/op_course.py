@@ -3,8 +3,16 @@
 from odoo import models
 
 
+IRG_NC_PRACTICE_COURSE_CODES = frozenset({'NC', 'MNC'})
+
+
 class OpCourse(models.Model):
     _inherit = 'op.course'
+
+    def irg_is_nc_practice_course(self):
+        """Two-year neuropsychology master, sold as NC and mapped as MNC."""
+        self.ensure_one()
+        return (self.code or '').strip().upper() in IRG_NC_PRACTICE_COURSE_CODES
 
     def irg_excludes_practice_request(self):
         """True when this course must not open a practice request.

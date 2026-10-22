@@ -55,7 +55,7 @@ class IrgPracticePreferredQuarter(IrgPracticeRequestStudentProfile):
                 req = request.env['practice.request'].sudo().search([
                     ('user_id', '=', user_id),
                     ('course_id', '=', course_id_int),
-                ], limit=1)
+                ], order='id desc', limit=1)
                 if req and req.irg_preferred_quarter != quarter:
                     req.write({'irg_preferred_quarter': quarter})
             except (ValueError, TypeError):

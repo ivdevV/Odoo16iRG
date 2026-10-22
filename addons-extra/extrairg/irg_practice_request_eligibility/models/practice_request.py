@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from odoo import _, api, models
+from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 
 class PracticeRequest(models.Model):
     _inherit = 'practice.request'
+
+    irg_practice_part = fields.Selection(
+        selection=[
+            ('1', 'Parte 1'),
+            ('2', 'Parte 2'),
+        ],
+        string='Parte de las prácticas',
+    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -17,6 +25,7 @@ class PracticeRequest(models.Model):
         result = super().write(vals)
         if any(key in vals for key in (
             'course_id', 'op_admission_id', 'country_id', 'state_id',
+            'irg_practice_part',
         )):
             self._irg_check_portal_practice_eligibility()
         return result
@@ -56,9 +65,10 @@ class PracticeRequest(models.Model):
                 'Los diplomados no incluyen solicitud de prácticas.'
             ))
         if reason:
-            raise ValidationError(
-                self.env['op.student.course'].irg_practice_locked_message()
-            )
+            raise ValidationError(enrollment.irg_practice_locked_message())
+        part_error = enrollment.irg_practice_part_error(self.irg_practice_part)
+        if part_error:
+            raise ValidationError(part_error)
         if (
             admission
             and admission.course_id
@@ -83,3 +93,20 @@ class PracticeRequest(models.Model):
                 'Selecciona la ciudad en donde realizaras las prácticas.'
             )
         return False
+
+    def irg_blocking_same_part(self, part):
+        """Requests that already occupy the part being submitted.
+
+        Other courses allow a single request. NC allows one request per part,
+        so part 1 does not block part 2.
+        """
+        if not self:
+            return self
+        course = self[:1].course_id.course_id
+        if not course or not course.irg_is_nc_practice_course():
+            return self[:1]
+        if str(part or '') not in ('1', '2'):
+            return self[:1]
+        return self.filtered(
+            lambda request: request.irg_practice_part == str(part)
+        )[:1]

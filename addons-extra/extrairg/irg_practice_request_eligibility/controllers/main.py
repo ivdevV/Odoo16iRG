@@ -83,7 +83,12 @@ class IrgPracticeRequestEligibility(IrgPracticeRequestOnlineTypes):
         ):
             return _('Los diplomados no incluyen solicitud de prácticas.')
         if reason:
-            return env['op.student.course'].irg_practice_locked_message()
+            return enrollment.irg_practice_locked_message()
+        part_error = enrollment.irg_practice_part_error(
+            kwargs.get('irg_practice_part')
+        )
+        if part_error:
+            return part_error
         if (
             admission
             and admission.course_id
@@ -114,6 +119,13 @@ class IrgPracticeRequestEligibility(IrgPracticeRequestOnlineTypes):
         except (TypeError, ValueError):
             return env[model]
         return record if record.exists() else env[model]
+
+    def _irg_blocking_practice_request(self, user_id, course_id, kwargs):
+        existing = request.env['practice.request'].sudo().search([
+            ('user_id', '=', user_id),
+            ('course_id', '=', int(course_id)),
+        ])
+        return existing.irg_blocking_same_part(kwargs.get('irg_practice_part'))
 
 
 class IrgPracticeRequestEligibilityList(PracticeRequestListPortal):

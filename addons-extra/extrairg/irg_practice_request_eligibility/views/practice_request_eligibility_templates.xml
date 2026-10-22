@@ -12,9 +12,16 @@
                  t-if="course_id and not course_id.irg_excludes_practice_request() and not env['op.student.course'].sudo().irg_portal_practice_allowed_for_course(course_id, user.partner_id)">
                 <div class="p-3" style="background-color: #f4f6f8; border: 1px solid #c5ced6; border-radius: 4px; color: #1f2a33;">
                     <strong style="display: block; margin-bottom: 8px;">Prácticas</strong>
-                    <p style="margin-bottom: 8px;">Para poder acceder al formulario de prácticas, el alumnado deberá haber completado previamente, como mínimo, el 60% de los módulos correspondientes al programa formativo, porcentaje que equivale aproximadamente a 6 exámenes superados.</p>
-                    <p style="margin-bottom: 8px;">Hasta que no se alcance este requisito académico, el formulario de prácticas permanecerá inhabilitado.</p>
-                    <p style="margin-bottom: 0;">Una vez cumplido dicho porcentaje, el alumnado podrá acceder al formulario e iniciar el procedimiento de solicitud y gestión de las prácticas.</p>
+                    <t t-if="course_id.irg_is_nc_practice_course()">
+                        <p style="margin-bottom: 8px;">Para poder solicitar las prácticas de la parte 1, el alumnado deberá haber completado previamente, como mínimo, el 25% de los módulos correspondientes al programa formativo.</p>
+                        <p style="margin-bottom: 8px;">Hasta que no se alcance este requisito académico, el formulario de prácticas permanecerá inhabilitado.</p>
+                        <p style="margin-bottom: 0;">Las prácticas de la parte 2 se habilitan al completar el 60% de los módulos. Una vez cumplido el porcentaje que corresponda, el alumnado podrá acceder al formulario e iniciar la solicitud.</p>
+                    </t>
+                    <t t-else="">
+                        <p style="margin-bottom: 8px;">Para poder acceder al formulario de prácticas, el alumnado deberá haber completado previamente, como mínimo, el 60% de los módulos correspondientes al programa formativo, porcentaje que equivale aproximadamente a 6 exámenes superados.</p>
+                        <p style="margin-bottom: 8px;">Hasta que no se alcance este requisito académico, el formulario de prácticas permanecerá inhabilitado.</p>
+                        <p style="margin-bottom: 0;">Una vez cumplido dicho porcentaje, el alumnado podrá acceder al formulario e iniciar el procedimiento de solicitud y gestión de las prácticas.</p>
+                    </t>
                 </div>
             </div>
         </xpath>
@@ -33,13 +40,69 @@
               name="IRG - Formulario de prácticas solo con matrículas elegibles">
         <xpath expr="//h2" position="after">
             <div t-if="not courses.filtered(lambda c: c.irg_can_request_practice())" class="alert alert-info">
-                <p>Para poder acceder al formulario de prácticas, el alumnado deberá haber completado previamente, como mínimo, el 60% de los módulos correspondientes al programa formativo, porcentaje que equivale aproximadamente a 6 exámenes superados.</p>
-                <p>Hasta que no se alcance este requisito académico, el formulario de prácticas permanecerá inhabilitado.</p>
-                <p class="mb-0">Una vez cumplido dicho porcentaje, el alumnado podrá acceder al formulario e iniciar el procedimiento de solicitud y gestión de las prácticas.</p>
+                <t t-if="courses.filtered(lambda c: c.course_id.irg_is_nc_practice_course()) and not courses.filtered(lambda c: c.course_id and not c.course_id.irg_excludes_practice_request() and not c.course_id.irg_is_nc_practice_course())">
+                    <p>Para poder solicitar las prácticas de la parte 1, el alumnado deberá haber completado previamente, como mínimo, el 25% de los módulos correspondientes al programa formativo.</p>
+                    <p>Hasta que no se alcance este requisito académico, el formulario de prácticas permanecerá inhabilitado.</p>
+                    <p class="mb-0">Las prácticas de la parte 2 se habilitan al completar el 60% de los módulos. Una vez cumplido el porcentaje que corresponda, el alumnado podrá acceder al formulario e iniciar la solicitud.</p>
+                </t>
+                <t t-else="">
+                    <p>Para poder acceder al formulario de prácticas, el alumnado deberá haber completado previamente, como mínimo, el 60% de los módulos correspondientes al programa formativo, porcentaje que equivale aproximadamente a 6 exámenes superados.</p>
+                    <p>Hasta que no se alcance este requisito académico, el formulario de prácticas permanecerá inhabilitado.</p>
+                    <p class="mb-0">Una vez cumplido dicho porcentaje, el alumnado podrá acceder al formulario e iniciar el procedimiento de solicitud y gestión de las prácticas.</p>
+                </t>
             </div>
         </xpath>
         <xpath expr="//select[@id='course_id']/t[@t-as='course']" position="attributes">
             <attribute name="t-if">course.irg_can_request_practice()</attribute>
+        </xpath>
+        <xpath expr="//select[@id='course_id']/t[@t-as='course']/option" position="attributes">
+            <attribute name="t-att-data-irg-nc">course.course_id.irg_is_nc_practice_course() and '1' or '0'</attribute>
+            <attribute name="t-att-data-irg-part2">course.irg_can_request_practice_part('2') and '1' or '0'</attribute>
+        </xpath>
+        <xpath expr="//select[@id='course_id']/parent::div" position="after">
+            <div class="form-group mt-3" id="irg_practice_part_group"
+                 t-att-hidden="not courses.filtered(lambda c: c.course_id.irg_is_nc_practice_course() and c.irg_can_request_practice()) and 'hidden' or False">
+                <label for="irg_practice_part">Parte de las prácticas</label>
+                <select name="irg_practice_part" id="irg_practice_part" class="form-control">
+                    <option value="">Seleccione la parte</option>
+                    <option value="1">Prácticas parte 1</option>
+                    <option value="2">Prácticas parte 2</option>
+                </select>
+                <p id="irg_practice_part2_hint" class="text-muted mt-2" hidden="hidden">Las prácticas parte 2 se habilitan al completar el 60% de los módulos.</p>
+            </div>
+            <script type="text/javascript">
+                document.addEventListener('DOMContentLoaded', function () {
+                    var courseSelect = document.getElementById('course_id');
+                    var partGroup = document.getElementById('irg_practice_part_group');
+                    var partSelect = document.getElementById('irg_practice_part');
+                    var partHint = document.getElementById('irg_practice_part2_hint');
+                    if (!courseSelect || !partGroup || !partSelect) {
+                        return;
+                    }
+                    function syncPracticePart() {
+                        var option = courseSelect.options[courseSelect.selectedIndex];
+                        var isNc = option &amp;&amp; option.getAttribute('data-irg-nc') === '1';
+                        var part2Ok = option &amp;&amp; option.getAttribute('data-irg-part2') === '1';
+                        partGroup.hidden = !isNc;
+                        partSelect.required = !!isNc;
+                        var part2Option = partSelect.querySelector('option[value="2"]');
+                        if (part2Option) {
+                            part2Option.disabled = isNc &amp;&amp; !part2Ok;
+                            if (part2Option.disabled &amp;&amp; partSelect.value === '2') {
+                                partSelect.value = '';
+                            }
+                        }
+                        if (!isNc) {
+                            partSelect.value = '';
+                        }
+                        if (partHint) {
+                            partHint.hidden = !isNc || part2Ok;
+                        }
+                    }
+                    courseSelect.addEventListener('change', syncPracticePart);
+                    syncPracticePart();
+                });
+            </script>
         </xpath>
         <xpath expr="//select[@id='op_admission_id']/t[@t-as='admission']" position="attributes">
             <attribute name="t-if">admission.irg_can_request_practice()</attribute>
@@ -65,5 +128,16 @@
             <attribute name="t-if">irg_can_request_practice</attribute>
         </xpath>
     </template>
+
+    <record id="view_practice_request_form_nc_part" model="ir.ui.view">
+        <field name="name">practice.request.form.nc.part</field>
+        <field name="model">practice.request</field>
+        <field name="inherit_id" ref="isep_practices_2.view_practice_request_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='practice_center_type_id']" position="before">
+                <field name="irg_practice_part"/>
+            </xpath>
+        </field>
+    </record>
 
 </odoo>

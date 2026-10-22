@@ -77,10 +77,9 @@ class IrgPracticeRequestStudentProfile(IrgPracticeRequestRestrict):
                 _get_form_values(error=_('Faltan datos obligatorios del formulario.')),
             )
 
-        existing = request.env['practice.request'].sudo().search([
-            ('user_id', '=', user_id),
-            ('course_id', '=', int(course_id)),
-        ], limit=1)
+        existing = self._irg_blocking_practice_request(
+            user_id, course_id, kwargs
+        )
 
         if existing:
             return request.render(
@@ -160,6 +159,16 @@ class IrgPracticeRequestStudentProfile(IrgPracticeRequestRestrict):
             'irg_topics_to_deepen': kwargs.get('irg_topics_to_deepen'),
             'irg_future_training_interest': kwargs.get('irg_future_training_interest'),
         }
+        if 'irg_practice_part' in request.env['practice.request']._fields:
+            part = kwargs.get('irg_practice_part')
+            if part in ('1', '2'):
+                values['irg_practice_part'] = part
 
         request.env['practice.request'].sudo().create(values)
         return request.redirect('/my/practice_requests2')
+
+    def _irg_blocking_practice_request(self, user_id, course_id, kwargs):
+        return request.env['practice.request'].sudo().search([
+            ('user_id', '=', user_id),
+            ('course_id', '=', int(course_id)),
+        ], limit=1)

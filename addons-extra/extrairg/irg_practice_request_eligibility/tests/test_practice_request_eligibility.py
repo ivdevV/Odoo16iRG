@@ -63,6 +63,35 @@ class TestPracticeRequestEligibility(TransactionCase):
             self.assertFalse(enrollment.irg_practice_request_block_reason())
             self.assertTrue(enrollment.irg_can_request_practice())
 
+    def test_nc_part_one_opens_at_twenty_five_and_part_two_stays_at_sixty(self):
+        _student, enrollment = self._make_enrollment('NC25', 'NC')
+        _student_mnc, mnc = self._make_enrollment('MNC25', 'MNC')
+        controller = IrgPracticeRequestEligibility()
+        with self._with_completion(enrollment, 24.99):
+            self.assertEqual(
+                enrollment.irg_practice_request_block_reason(), 'completion'
+            )
+            self.assertFalse(enrollment.irg_can_request_practice())
+        with self._with_completion(enrollment, 25.0):
+            self.assertTrue(enrollment.irg_can_request_practice())
+            self.assertTrue(enrollment.irg_can_request_practice_part('1'))
+            self.assertFalse(enrollment.irg_can_request_practice_part('2'))
+            self.assertIn('25%', enrollment.irg_practice_locked_message())
+            self.assertIn(
+                'parte 2',
+                enrollment.irg_practice_part_error('2').lower(),
+            )
+            self.assertIn(
+                'parte 1',
+                controller._irg_practice_eligibility_error(
+                    {'course_id': str(enrollment.id)}, env=self.env
+                ).lower(),
+            )
+        with self._with_completion(mnc, 60.0):
+            self.assertTrue(mnc.irg_can_request_practice_part('1'))
+            self.assertTrue(mnc.irg_can_request_practice_part('2'))
+            self.assertFalse(mnc.irg_practice_part_error('2'))
+
     def test_below_sixty_percent_cannot_request(self):
         _student, enrollment = self._make_enrollment('LOW', 'MST-ELG-LOW')
         with self._with_completion(enrollment, 59.99):
@@ -209,6 +238,35 @@ class TestPracticeRequestEligibility(TransactionCase):
             controller._irg_practice_location_error({}, env=self.env).lower(),
         )
 
+    def test_nc_portal_part_one_at_twenty_five_and_part_two_at_sixty(self):
+        student, enrollment = self._make_enrollment('NCPORT', 'NC')
+        user = self._portal_user(student, 'elg.portal.nc@example.test')
+        country, state = self._location()
+        practice_type = self._practice_type()
+
+        def _create(part):
+            return self.env['practice.request'].with_user(user).sudo().create({
+                'name': student.name,
+                'email': user.login,
+                'course_id': enrollment.id,
+                'practice_center_type_id': practice_type.id,
+                'country_id': country.id,
+                'state_id': state.id,
+                'irg_practice_part': part,
+            })
+
+        with self._with_completion(enrollment, 25.0):
+            with self.assertRaises(ValidationError) as caught:
+                _create('2')
+            self.assertIn('parte 2', str(caught.exception).lower())
+            part_one = _create('1')
+        self.assertEqual(part_one.irg_practice_part, '1')
+        self.assertFalse(part_one.irg_blocking_same_part('2'))
+        self.assertEqual(part_one.irg_blocking_same_part('1'), part_one)
+        with self._with_completion(enrollment, 60.0):
+            part_two = _create('2')
+        self.assertEqual(part_two.irg_practice_part, '2')
+
     def test_staff_can_create_without_eligibility(self):
         _student, enrollment = self._make_enrollment('STAFF', 'DI-ELG-STAFF')
         with self._with_completion(enrollment, 0.0):
@@ -268,12 +326,14 @@ class TestPracticeRequestEligibility(TransactionCase):
             'el 60% de los módulos correspondientes al programa formativo',
             tile_text,
         )
+        self.assertIn('el 25% de los módulos', tile_text)
         self.assertFalse(tile_arch.xpath('.//a'))
         form_conditions = form_arch.xpath('//attribute[@name="t-if"]/text()')
         self.assertTrue(any('irg_can_request_practice' in text for text in form_conditions))
         form_labels = form_arch.xpath('//label/text()')
         self.assertIn('País en donde realizaras las prácticas', form_labels)
         self.assertIn('Ciudad en donde realizaras las prácticas', form_labels)
+        self.assertIn('Parte de las prácticas', form_labels)
         self.assertEqual(
             form_arch.xpath('//attribute[@name="required"]/text()').count('required'),
             2,
