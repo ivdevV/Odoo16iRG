@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'IRG TFM Convocatorias',
-    'version': '16.0.1.6.0',
+    'version': '16.0.1.6.1',
     'summary': 'Activa y administra convocatorias de Trabajo Final de Máster',
     'category': 'Education',
     'author': 'IRG',

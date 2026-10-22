@@ -131,10 +131,14 @@ class OutlineGuideTest(unittest.TestCase):
         guide_template = template.index('id="tfm_outline_guide"')
         self.assertLess(guide_template, form)
         self.assertIn(guide, template[guide_template:form])
+        guide_block = template[guide_template:form]
         self.assertIn(
             'Antes de iniciar el esquema se recomienda leer la guía',
-            template[guide_template:form],
+            guide_block,
         )
+        self.assertIn('Abrir la guía', guide_block)
+        self.assertNotIn('<iframe', guide_block)
+        self.assertNotIn('en otra pestaña', guide_block)
         self.assertTrue((root / 'static' / 'src' / 'pdf' / guide).is_file())
 
 

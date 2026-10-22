@@ -143,15 +143,9 @@
                 asignatura. Contiene las indicaciones para rellenarlo y para
                 elaborar el TFM.
             </div>
-            <iframe src="/irg_tfm_convocatorias/static/src/pdf/guia-asignatura-tfm.pdf"
-                    title="Guía de la asignatura TFM"
-                    class="w-100 border rounded"
-                    style="height: 70vh;"/>
-            <a class="btn btn-outline-primary mt-2"
+            <a class="btn btn-outline-primary"
                href="/irg_tfm_convocatorias/static/src/pdf/guia-asignatura-tfm.pdf"
-               target="_blank">
-                Abrir la guía en otra pestaña
-            </a>
+               target="_blank">Abrir la guía</a>
         </div>
     </template>
 
