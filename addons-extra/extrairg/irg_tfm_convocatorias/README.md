@@ -69,7 +69,7 @@ también entran. `ONL261` y los códigos mensuales antiguos, como `ONL2602` o
 2. En Odoo, activar modo desarrollador.
 3. Ir a **Aplicaciones**, pulsar **Actualizar lista de aplicaciones** y buscar
    `IRG TFM Convocatorias`.
-4. Pulsar **Actualizar**. La versión esperada es `16.0.1.6.0`.
+4. Pulsar **Actualizar**. La versión esperada es `16.0.1.6.1`.
 5. Confirmar que la aplicación **Encuestas** está instalada; es una dependencia
    declarada y Odoo debe instalarla automáticamente si falta.
 
