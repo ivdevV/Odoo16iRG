@@ -21,4 +21,4 @@
 * Suite del módulo en una base local desechable: 0 fallos, 38 tests de post-instalación, repetida por un validador distinto del codificador.
 * Revisión de código independiente, aprobada tras cerrar dos bloqueantes de la nota y de `result_id`.
 * Revisión de seguridad del plan: sí, antes de implementar.
-* TestSprite contra el Odoo local: el acceso del docente pasó. El resto de escenarios no abrió el formulario de Casos orales. No valida la pantalla. El detalle está en la misión `missions/irg-oral-case-clips`.
+* TestSprite contra el Odoo local, tras preparar una base desechable con eLearning, assets en 200 y URLs directas: 9 de 9. La alumna llega al consentimiento y, sin cámara, al aviso de que no se puede continuar. El docente guarda 7.5 y la línea del cuaderno queda en 7.5. El detalle está en `missions/irg-oral-case-clips`.
