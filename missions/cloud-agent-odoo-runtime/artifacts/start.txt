@@ -1,0 +1,15 @@
+ * Starting Docker: docker
+   ...done.
+ Volume odoo16irg_local_odoo16irg_local_pgdata Creating 
+ Volume odoo16irg_local_odoo16irg_local_pgdata Creating 
+ Network odoo16irg_local_default Creating 
+ Network odoo16irg_local_default Creating 
+ Volume odoo16irg_local_odoo16irg_local_pgdata Created 
+ Volume odoo16irg_local_odoo16irg_local_pgdata Created 
+ Network odoo16irg_local_default Created 
+ Network odoo16irg_local_default Created 
+ Container pgodoo16irg_local Creating 
+ Container pgodoo16irg_local Created 
+ Container pgodoo16irg_local Starting 
+ Container pgodoo16irg_local Started 
+START_EXIT:0

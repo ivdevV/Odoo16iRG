@@ -1,0 +1,11 @@
+ * Starting Docker: docker
+   ...done.
+ Image redis:7 Pulling 
+ Image odoo:16.0 Pulling 
+ Image postgres:16 Pulling 
+ Image odoo:16.0 Pulled 
+ Image postgres:16 Pulled 
+ Image redis:7 Pulled 
+ * Stopping Docker: docker
+   ...done.
+INSTALL_EXIT:0

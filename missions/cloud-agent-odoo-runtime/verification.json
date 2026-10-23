@@ -1,0 +1,81 @@
+{
+  "status": "failed",
+  "task": "cloud-agent-odoo-runtime",
+  "checks": [
+    {
+      "name": "contract_tests",
+      "command": "python3 -m unittest missions.cloud-agent-odoo-runtime.tests.test_runtime_contract",
+      "result": "pass",
+      "detail": "Ran 8 tests in 0.014s. OK. Exit 0.",
+      "evidence": "artifacts/validator-commands.txt"
+    },
+    {
+      "name": "shell_syntax",
+      "command": "bash -n .cursor/install.sh && bash -n .cursor/start.sh && bash -n .cursor/materialize-compose.sh && bash -n .cursor/install-docker-packages.sh",
+      "result": "pass",
+      "detail": "bash -n exit 0 en install.sh, start.sh, materialize-compose.sh e install-docker-packages.sh.",
+      "evidence": "artifacts/validator-commands.txt"
+    },
+    {
+      "name": "environment_json",
+      "command": "python3 -c 'import json; json.load(open(\".cursor/environment.json\"))'",
+      "result": "pass",
+      "detail": "JSON válido. Claves de primer nivel: build, install, name, ports, start, user. No hay clave $schema ni snapshot, tampoco anidadas.",
+      "evidence": "artifacts/validator-commands.txt"
+    },
+    {
+      "name": "docker_daemon",
+      "command": "sudo docker info",
+      "result": "pass",
+      "detail": "Exit 0. Docker Engine - Community 28.5.2.",
+      "evidence": "artifacts/validator-commands.txt"
+    },
+    {
+      "name": "postgres_ready",
+      "command": "sudo docker inspect --format '{{.State.Health.Status}}' pgodoo16irg_local",
+      "result": "pass",
+      "detail": "Imprime healthy (exit 0). No hizo falta ejecutar bash .cursor/start.sh.",
+      "evidence": "artifacts/validator-commands.txt"
+    },
+    {
+      "name": "odoo_irg_oral_case_tests",
+      "command": "sudo docker compose --env-file .cursor/runtime/compose.env -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_oral_case_validator -i irg_oral_case --test-enable --test-tags=/irg_oral_case --stop-after-init --workers=0 --http-port=8099 --log-level=test",
+      "result": "fail",
+      "detail": "Exit 1. odoo.tests.result: 0 failed, 2 error(s) of 20 tests when loading database 'test_irg_oral_case_validator'. Tests: TestOralCaseGrade.test_student_cannot_write_the_suggestion_or_the_official_grade (TypeError: issubclass() arg 1 must be a class); TestOralCaseGrade.test_teacher_confirmation_is_required_and_does_not_copy_the_suggestion (AccessError al leer slide.slide).",
+      "evidence": "artifacts/validator-odoo-tests.txt"
+    },
+    {
+      "name": "cleanup_disposable_db",
+      "command": "sudo docker exec pgodoo16irg_local dropdb -U odoo --if-exists test_irg_oral_case_validator && sudo docker exec pgodoo16irg_local psql -U odoo -d postgres -c '\\l'",
+      "result": "pass",
+      "detail": "dropdb exit 0. \\l ya no lista test_irg_oral_case_validator; quedan postgres, template0 y template1.",
+      "evidence": "artifacts/validator-cleanup.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "el diff no toca vistas, static, portal, website ni controladores; el disparo de AGENTS.md no aplica.",
+      "evidence": "artifacts/validator-commands.txt"
+    },
+    {
+      "name": "e2e_demo",
+      "command": "not run",
+      "result": "skipped",
+      "detail": "no se gasta el crédito Free porque los tests del módulo no están en verde.",
+      "evidence": "artifacts/validator-commands.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml generado desde .cursor/runtime",
+    "database": "test_irg_oral_case_validator",
+    "base_commit": "acb64787a29778ec5688b6e730a9393dd783d62f"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validator-commands.txt",
+    "artifacts/validator-odoo-tests.txt",
+    "artifacts/validator-cleanup.txt"
+  ]
+}

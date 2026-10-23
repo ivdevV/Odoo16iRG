@@ -1,0 +1,13 @@
+test_compose_invocations_are_pinned (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest.test_compose_invocations_are_pinned) ... ok
+test_conf_has_no_interpolation_and_points_at_local_db (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest.test_conf_has_no_interpolation_and_points_at_local_db) ... ok
+test_environment_json_shape (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest.test_environment_json_shape) ... ok
+test_install_materializes_before_pull (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest.test_install_materializes_before_pull) ... ok
+test_materialize_respects_sentinel (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest.test_materialize_respects_sentinel) ... ok
+test_no_remote_hosts_or_deployment_names (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest.test_no_remote_hosts_or_deployment_names) ... ok
+test_scripts_do_not_interpolate_or_mount_repo_etc (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest.test_scripts_do_not_interpolate_or_mount_repo_etc) ... ok
+test_template_is_local_only (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest.test_template_is_local_only) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.014s
+
+OK

@@ -1,0 +1,13 @@
+{
+  "name": "Odoo16iRG local runtime",
+  "user": "ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "install": "if [ -f .cursor/install.sh ]; then bash .cursor/install.sh; else echo skip-install-script-absent; fi",
+  "start": "if [ -f .cursor/start.sh ]; then bash .cursor/start.sh; else sudo service docker start; fi",
+  "ports": [
+    {"name": "odoo", "port": 8069},
+    {"name": "odoo-longpolling", "port": 8072}
+  ]
+}
