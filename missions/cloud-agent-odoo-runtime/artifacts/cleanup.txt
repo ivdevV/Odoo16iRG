@@ -1,0 +1,15 @@
+# Limpieza 2026-10-23
+
+Comando:
+
+```
+docker exec pgodoo16irg_local dropdb -U odoo --if-exists test_irg_oral_case_9bea
+```
+
+Resultado: DROP_EXIT 0.
+
+`psql -U odoo -d postgres -c '\l'` después del drop solo lista `postgres`, `template0` y `template1`. No queda `test_irg_oral_case_9bea`.
+
+`docker ps` solo muestra `pgodoo16irg_local` (healthy). No hay contenedores `odoo_local-run`. Redis y Odoo no se dejaron residentes.
+
+El volumen `odoo16irg_local_odoo16irg_local_pgdata` sigue porque el Postgres local del runtime sigue en marcha. No contiene la base de la prueba.

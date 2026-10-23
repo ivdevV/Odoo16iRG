@@ -1,0 +1,550 @@
+Hit:1 https://dl.google.com/linux/chrome-stable/deb stable InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:3 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:5 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+ca-certificates is already the newest version (20260816ubuntu0.24.04.1).
+curl is already the newest version (8.5.0-2ubuntu10.16).
+gnupg is already the newest version (2.4.4-2ubuntu17.6).
+iptables is already the newest version (1.8.10-3ubuntu2).
+fuse-overlayfs is already the newest version (1.13-1).
+0 upgraded, 0 newly installed, 0 to remove and 3 not upgraded.
+Get:1 https://download.docker.com/linux/ubuntu noble InRelease [48.5 kB]
+Get:2 https://download.docker.com/linux/ubuntu noble/stable amd64 Packages [86.8 kB]
+Hit:3 https://dl.google.com/linux/chrome-stable/deb stable InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:5 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:7 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Fetched 135 kB in 0s (300 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  libnftables1 nftables
+Suggested packages:
+  cgroupfs-mount | cgroup-lite kmod docker-model-plugin firewalld
+Recommended packages:
+  apparmor docker-ce-rootless-extras pigz
+The following NEW packages will be installed:
+  containerd.io docker-buildx-plugin docker-ce docker-ce-cli
+  docker-compose-plugin libnftables1 nftables
+0 upgraded, 7 newly installed, 0 to remove and 3 not upgraded.
+Need to get 85.5 MB of archives.
+After this operation, 334 MB of additional disk space will be used.
+Get:1 https://download.docker.com/linux/ubuntu noble/stable amd64 containerd.io amd64 2.4.2-3~ubuntu.24.04~noble [23.3 MB]
+Get:2 https://download.docker.com/linux/ubuntu noble/stable amd64 docker-ce-cli amd64 5:28.5.2-1~ubuntu.24.04~noble [16.0 MB]
+Get:3 https://download.docker.com/linux/ubuntu noble/stable amd64 docker-ce amd64 5:28.5.2-1~ubuntu.24.04~noble [19.8 MB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libnftables1 amd64 1.0.9-1ubuntu0.1 [359 kB]
+Get:5 https://download.docker.com/linux/ubuntu noble/stable amd64 docker-buildx-plugin amd64 0.38.1-1~ubuntu.24.04~noble [17.8 MB]
+Get:6 https://download.docker.com/linux/ubuntu noble/stable amd64 docker-compose-plugin amd64 5.6.1-1~ubuntu.24.04~noble [8,083 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 nftables amd64 1.0.9-1ubuntu0.1 [69.8 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 85.5 MB in 1s (59.1 MB/s)
+Selecting previously unselected package containerd.io.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 93187 files and directories currently installed.)
+Preparing to unpack .../0-containerd.io_2.4.2-3~ubuntu.24.04~noble_amd64.deb ...
+Unpacking containerd.io (2.4.2-3~ubuntu.24.04~noble) ...
+Selecting previously unselected package docker-ce-cli.
+Preparing to unpack .../1-docker-ce-cli_5%3a28.5.2-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-ce-cli (5:28.5.2-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package libnftables1:amd64.
+Preparing to unpack .../2-libnftables1_1.0.9-1ubuntu0.1_amd64.deb ...
+Unpacking libnftables1:amd64 (1.0.9-1ubuntu0.1) ...
+Selecting previously unselected package nftables.
+Preparing to unpack .../3-nftables_1.0.9-1ubuntu0.1_amd64.deb ...
+Unpacking nftables (1.0.9-1ubuntu0.1) ...
+Selecting previously unselected package docker-ce.
+Preparing to unpack .../4-docker-ce_5%3a28.5.2-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-ce (5:28.5.2-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package docker-buildx-plugin.
+Preparing to unpack .../5-docker-buildx-plugin_0.38.1-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-buildx-plugin (0.38.1-1~ubuntu.24.04~noble) ...
+Selecting previously unselected package docker-compose-plugin.
+Preparing to unpack .../6-docker-compose-plugin_5.6.1-1~ubuntu.24.04~noble_amd64.deb ...
+Unpacking docker-compose-plugin (5.6.1-1~ubuntu.24.04~noble) ...
+Setting up libnftables1:amd64 (1.0.9-1ubuntu0.1) ...
+Setting up nftables (1.0.9-1ubuntu0.1) ...
+Setting up docker-buildx-plugin (0.38.1-1~ubuntu.24.04~noble) ...
+Setting up containerd.io (2.4.2-3~ubuntu.24.04~noble) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/containerd.service → /usr/lib/systemd/system/containerd.service.
+Setting up docker-compose-plugin (5.6.1-1~ubuntu.24.04~noble) ...
+Setting up docker-ce-cli (5:28.5.2-1~ubuntu.24.04~noble) ...
+Setting up docker-ce (5:28.5.2-1~ubuntu.24.04~noble) ...
+invoke-rc.d: could not determine current runlevel
+invoke-rc.d: policy-rc.d denied execution of start.
+Created symlink /etc/systemd/system/multi-user.target.wants/docker.service → /usr/lib/systemd/system/docker.service.
+Created symlink /etc/systemd/system/sockets.target.wants/docker.socket → /usr/lib/systemd/system/docker.socket.
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+update-alternatives: using /usr/sbin/iptables-legacy to provide /usr/sbin/iptables (iptables) in manual mode
+update-alternatives: using /usr/sbin/ip6tables-legacy to provide /usr/sbin/ip6tables (ip6tables) in manual mode
+ * Starting Docker: docker
+   ...done.
+ Image odoo:16.0 Pulling 
+ Image postgres:16 Pulling 
+ Image redis:7 Pulling 
+ f2be67225471 Pulling fs layer 0B
+ d9b4aee93490 Pulling fs layer 0B
+ 46109ed24d00 Pulling fs layer 0B
+ b1c4822f4553 Pulling fs layer 0B
+ 48eee0ea92d8 Pulling fs layer 0B
+ ef42abb17c7a Pulling fs layer 0B
+ c85ce0e29e80 Pulling fs layer 0B
+ 9fbbdc3bcbff Pulling fs layer 0B
+ c79a7210985e Pulling fs layer 0B
+ e9da7c9f979b Pulling fs layer 0B
+ 852f46917486 Pulling fs layer 0B
+ 393ce45a5829 Pulling fs layer 0B
+ 25140b6d6501 Pulling fs layer 0B
+ f2010d5c8971 Pulling fs layer 0B
+ c79a7210985e Waiting 0B
+ b1c4822f4553 Waiting 0B
+ 48eee0ea92d8 Waiting 0B
+ ef42abb17c7a Waiting 0B
+ c85ce0e29e80 Waiting 0B
+ 9fbbdc3bcbff Waiting 0B
+ e9da7c9f979b Waiting 0B
+ 25140b6d6501 Waiting 0B
+ 852f46917486 Waiting 0B
+ f2010d5c8971 Waiting 0B
+ 393ce45a5829 Waiting 0B
+ 11422d7ca1a4 Pulling fs layer 0B
+ 4b603876a035 Pulling fs layer 0B
+ 6b2f4b3ff830 Pulling fs layer 0B
+ 9d5d7c9fabc5 Pulling fs layer 0B
+ aa7891908097 Pulling fs layer 0B
+ 4f4fb700ef54 Pulling fs layer 0B
+ 33eae4cc1a36 Pulling fs layer 0B
+ 9d5d7c9fabc5 Waiting 0B
+ aa7891908097 Waiting 0B
+ 11422d7ca1a4 Waiting 0B
+ 4b603876a035 Waiting 0B
+ 4f4fb700ef54 Waiting 0B
+ 33eae4cc1a36 Waiting 0B
+ 6b2f4b3ff830 Waiting 0B
+ 456a3213e1b1 Pulling fs layer 0B
+ a59752bccf5a Pulling fs layer 0B
+ c2d0e51c2d18 Pulling fs layer 0B
+ 1868e5257880 Pulling fs layer 0B
+ 7584aa22f9f7 Pulling fs layer 0B
+ c19ed431de01 Pulling fs layer 0B
+ 18ab8b9bc7a9 Pulling fs layer 0B
+ 422b6a98c439 Pulling fs layer 0B
+ cd352db127f3 Pulling fs layer 0B
+ 456a3213e1b1 Waiting 0B
+ 422b6a98c439 Waiting 0B
+ cd352db127f3 Waiting 0B
+ a59752bccf5a Waiting 0B
+ c2d0e51c2d18 Waiting 0B
+ 1868e5257880 Waiting 0B
+ 7584aa22f9f7 Waiting 0B
+ 18ab8b9bc7a9 Waiting 0B
+ c19ed431de01 Waiting 0B
+ d9b4aee93490 Downloading 1.166kB
+ d9b4aee93490 Verifying Checksum 0B
+ d9b4aee93490 Download complete 0B
+ 46109ed24d00 Downloading 64.94kB
+ f2be67225471 Downloading 310.7kB
+ 46109ed24d00 Download complete 0B
+ f2be67225471 Verifying Checksum 0B
+ f2be67225471 Download complete 0B
+ f2be67225471 Extracting 327.7kB
+ b1c4822f4553 Downloading 15.79kB
+ f2be67225471 Extracting 4.915MB
+ b1c4822f4553 Verifying Checksum 0B
+ b1c4822f4553 Download complete 0B
+ 48eee0ea92d8 Downloading 97.71kB
+ 48eee0ea92d8 Verifying Checksum 0B
+ 48eee0ea92d8 Download complete 0B
+ f2be67225471 Extracting 9.503MB
+ ef42abb17c7a Downloading 15.79kB
+ ef42abb17c7a Verifying Checksum 0B
+ ef42abb17c7a Download complete 0B
+ f2be67225471 Extracting 13.76MB
+ c85ce0e29e80 Downloading 116B
+ c85ce0e29e80 Verifying Checksum 0B
+ c85ce0e29e80 Download complete 0B
+ f2be67225471 Extracting 18.68MB
+ 9fbbdc3bcbff Downloading 3.145kB
+ 9fbbdc3bcbff Download complete 0B
+ f2be67225471 Extracting 23.92MB
+ c79a7210985e Downloading 539.5kB
+ e9da7c9f979b Downloading 3.501kB
+ e9da7c9f979b Download complete 0B
+ f2be67225471 Extracting 26.21MB
+ c79a7210985e Downloading 33.99MB
+ 852f46917486 Downloading 128B
+ 852f46917486 Verifying Checksum 0B
+ 852f46917486 Download complete 0B
+ c79a7210985e Downloading 78.46MB
+ f2be67225471 Extracting 28.84MB
+ c79a7210985e Verifying Checksum 0B
+ c79a7210985e Download complete 0B
+ f2be67225471 Extracting 29.84MB
+ f2be67225471 Pull complete 0B
+ d9b4aee93490 Extracting 1.166kB
+ d9b4aee93490 Extracting 1.166kB
+ d9b4aee93490 Pull complete 0B
+ 46109ed24d00 Extracting 65.54kB
+ 393ce45a5829 Downloading 166B
+ 393ce45a5829 Verifying Checksum 0B
+ 393ce45a5829 Download complete 0B
+ 25140b6d6501 Downloading 3.502kB
+ 25140b6d6501 Downloading 6.111kB
+ 25140b6d6501 Verifying Checksum 0B
+ 25140b6d6501 Download complete 0B
+ 46109ed24d00 Extracting 5.112MB
+ 46109ed24d00 Extracting 6.443MB
+ 46109ed24d00 Pull complete 0B
+ b1c4822f4553 Extracting 32.77kB
+ b1c4822f4553 Extracting 1.257MB
+ b1c4822f4553 Pull complete 0B
+ 48eee0ea92d8 Extracting 98.3kB
+ f2010d5c8971 Downloading 184B
+ f2010d5c8971 Verifying Checksum 0B
+ f2010d5c8971 Download complete 0B
+ 11422d7ca1a4 Downloading 294.3kB
+ 48eee0ea92d8 Extracting 4.62MB
+ 4b603876a035 Downloading 1.1kB
+ 4b603876a035 Verifying Checksum 0B
+ 4b603876a035 Download complete 0B
+ 11422d7ca1a4 Verifying Checksum 0B
+ 11422d7ca1a4 Download complete 0B
+ 11422d7ca1a4 Extracting 294.9kB
+ 48eee0ea92d8 Extracting 7.766MB
+ 48eee0ea92d8 Extracting 8.204MB
+ 48eee0ea92d8 Pull complete 0B
+ ef42abb17c7a Extracting 32.77kB
+ 6b2f4b3ff830 Downloading 875B
+ 6b2f4b3ff830 Verifying Checksum 0B
+ 6b2f4b3ff830 Download complete 0B
+ ef42abb17c7a Extracting 1.312MB
+ ef42abb17c7a Pull complete 0B
+ c85ce0e29e80 Extracting 116B
+ c85ce0e29e80 Extracting 116B
+ c85ce0e29e80 Pull complete 0B
+ 9fbbdc3bcbff Extracting 3.145kB
+ 9fbbdc3bcbff Extracting 3.145kB
+ 9fbbdc3bcbff Pull complete 0B
+ 11422d7ca1a4 Extracting 4.719MB
+ c79a7210985e Extracting 557.1kB
+ 9d5d7c9fabc5 Downloading 163.2kB
+ aa7891908097 Downloading 96B
+ aa7891908097 Verifying Checksum 0B
+ aa7891908097 Download complete 0B
+ c79a7210985e Extracting 6.128MB
+ 11422d7ca1a4 Extracting 9.142MB
+ 9d5d7c9fabc5 Verifying Checksum 0B
+ 9d5d7c9fabc5 Download complete 0B
+ 4f4fb700ef54 Downloading 32B
+ 4f4fb700ef54 Verifying Checksum 0B
+ 4f4fb700ef54 Download complete 0B
+ 11422d7ca1a4 Extracting 12.98MB
+ c79a7210985e Extracting 10.03MB
+ 11422d7ca1a4 Extracting 18.28MB
+ c79a7210985e Extracting 15.04MB
+ 33eae4cc1a36 Downloading 602B
+ 33eae4cc1a36 Verifying Checksum 0B
+ 33eae4cc1a36 Download complete 0B
+ 11422d7ca1a4 Extracting 23MB
+ 456a3213e1b1 Downloading 310.7kB
+ c79a7210985e Extracting 20.05MB
+ a59752bccf5a Downloading 526.7kB
+ 456a3213e1b1 Verifying Checksum 0B
+ 456a3213e1b1 Download complete 0B
+ 456a3213e1b1 Extracting 327.7kB
+ 11422d7ca1a4 Extracting 23.89MB
+ c79a7210985e Extracting 23.95MB
+ a59752bccf5a Downloading 5.273MB
+ c2d0e51c2d18 Downloading 32.13kB
+ 456a3213e1b1 Extracting 3.277MB
+ 11422d7ca1a4 Extracting 26.54MB
+ c2d0e51c2d18 Verifying Checksum 0B
+ c2d0e51c2d18 Download complete 0B
+ c79a7210985e Extracting 28.41MB
+ a59752bccf5a Downloading 14.83MB
+ 456a3213e1b1 Extracting 6.554MB
+ 1868e5257880 Downloading 15.74kB
+ a59752bccf5a Downloading 39.94MB
+ c79a7210985e Extracting 32.87MB
+ 1868e5257880 Verifying Checksum 0B
+ 1868e5257880 Download complete 0B
+ 11422d7ca1a4 Extracting 27.13MB
+ 456a3213e1b1 Extracting 9.503MB
+ a59752bccf5a Downloading 69.86MB
+ c79a7210985e Extracting 37.32MB
+ 11422d7ca1a4 Extracting 27.72MB
+ 456a3213e1b1 Extracting 12.45MB
+ 7584aa22f9f7 Downloading 525.3kB
+ a59752bccf5a Downloading 106.7MB
+ c79a7210985e Extracting 41.22MB
+ 11422d7ca1a4 Extracting 28.25MB
+ 456a3213e1b1 Extracting 14.75MB
+ 11422d7ca1a4 Pull complete 0B
+ 4b603876a035 Extracting 1.1kB
+ 4b603876a035 Extracting 1.1kB
+ c19ed431de01 Downloading 702B
+ c19ed431de01 Verifying Checksum 0B
+ c19ed431de01 Download complete 0B
+ 4b603876a035 Pull complete 0B
+ 6b2f4b3ff830 Extracting 875B
+ 6b2f4b3ff830 Extracting 875B
+ 6b2f4b3ff830 Pull complete 0B
+ a59752bccf5a Downloading 145.1MB
+ 9d5d7c9fabc5 Extracting 163.8kB
+ 7584aa22f9f7 Downloading 7.897MB
+ c79a7210985e Extracting 45.68MB
+ 456a3213e1b1 Extracting 17.04MB
+ a59752bccf5a Downloading 183.5MB
+ 9d5d7c9fabc5 Extracting 3.768MB
+ 7584aa22f9f7 Downloading 19.61MB
+ c79a7210985e Extracting 49.58MB
+ a59752bccf5a Downloading 218.3MB
+ 456a3213e1b1 Extracting 19.66MB
+ a59752bccf5a Verifying Checksum 0B
+ a59752bccf5a Download complete 0B
+ 7584aa22f9f7 Downloading 46.79MB
+ 9d5d7c9fabc5 Extracting 6.717MB
+ c79a7210985e Extracting 52.92MB
+ 456a3213e1b1 Extracting 23.27MB
+ 18ab8b9bc7a9 Downloading 554B
+ 18ab8b9bc7a9 Verifying Checksum 0B
+ 18ab8b9bc7a9 Download complete 0B
+ 7584aa22f9f7 Downloading 85.13MB
+ 9d5d7c9fabc5 Extracting 9.83MB
+ c79a7210985e Extracting 54.59MB
+ 456a3213e1b1 Extracting 26.54MB
+ 7584aa22f9f7 Downloading 116.6MB
+ 9d5d7c9fabc5 Extracting 13.27MB
+ c79a7210985e Extracting 57.38MB
+ 9d5d7c9fabc5 Extracting 15.36MB
+ 9d5d7c9fabc5 Pull complete 0B
+ aa7891908097 Extracting 96B
+ aa7891908097 Extracting 96B
+ aa7891908097 Pull complete 0B
+ 4f4fb700ef54 Extracting 32B
+ 4f4fb700ef54 Extracting 32B
+ 4f4fb700ef54 Pull complete 0B
+ 33eae4cc1a36 Extracting 602B
+ 33eae4cc1a36 Extracting 602B
+ 33eae4cc1a36 Pull complete 0B
+ 7584aa22f9f7 Downloading 149.1MB
+ Image redis:7 Pulled 
+ 422b6a98c439 Downloading 590B
+ 422b6a98c439 Verifying Checksum 0B
+ 422b6a98c439 Download complete 0B
+ 456a3213e1b1 Extracting 27.53MB
+ c79a7210985e Extracting 60.72MB
+ cd352db127f3 Downloading 579B
+ cd352db127f3 Verifying Checksum 0B
+ cd352db127f3 Download complete 0B
+ 7584aa22f9f7 Downloading 184.3MB
+ 456a3213e1b1 Extracting 28.84MB
+ c79a7210985e Extracting 65.73MB
+ 7584aa22f9f7 Downloading 215.3MB
+ c79a7210985e Extracting 71.3MB
+ 7584aa22f9f7 Downloading 255.9MB
+ 456a3213e1b1 Extracting 29.16MB
+ c79a7210985e Extracting 75.76MB
+ 7584aa22f9f7 Downloading 295.4MB
+ 456a3213e1b1 Extracting 30.26MB
+ 456a3213e1b1 Pull complete 0B
+ a59752bccf5a Extracting 557.1kB
+ 7584aa22f9f7 Verifying Checksum 0B
+ 7584aa22f9f7 Download complete 0B
+ c79a7210985e Extracting 80.77MB
+ a59752bccf5a Extracting 6.128MB
+ c79a7210985e Extracting 86.34MB
+ c79a7210985e Extracting 91.91MB
+ a59752bccf5a Extracting 8.356MB
+ a59752bccf5a Extracting 10.58MB
+ c79a7210985e Extracting 96.37MB
+ a59752bccf5a Extracting 11.7MB
+ c79a7210985e Extracting 100.3MB
+ a59752bccf5a Extracting 15.04MB
+ c79a7210985e Extracting 104.2MB
+ a59752bccf5a Extracting 16.15MB
+ c79a7210985e Extracting 107.5MB
+ a59752bccf5a Extracting 17.83MB
+ c79a7210985e Extracting 109.7MB
+ a59752bccf5a Extracting 20.05MB
+ c79a7210985e Extracting 111.4MB
+ a59752bccf5a Extracting 21.73MB
+ c79a7210985e Extracting 113.2MB
+ c79a7210985e Pull complete 0B
+ e9da7c9f979b Extracting 10.11kB
+ e9da7c9f979b Extracting 10.11kB
+ e9da7c9f979b Pull complete 0B
+ 852f46917486 Extracting 128B
+ 852f46917486 Extracting 128B
+ 852f46917486 Pull complete 0B
+ 393ce45a5829 Extracting 166B
+ 393ce45a5829 Extracting 166B
+ 393ce45a5829 Pull complete 0B
+ 25140b6d6501 Extracting 6.111kB
+ 25140b6d6501 Extracting 6.111kB
+ 25140b6d6501 Pull complete 0B
+ f2010d5c8971 Extracting 184B
+ f2010d5c8971 Extracting 184B
+ f2010d5c8971 Pull complete 0B
+ Image postgres:16 Pulled 
+ a59752bccf5a Extracting 24.51MB
+ a59752bccf5a Extracting 28.97MB
+ a59752bccf5a Extracting 35.09MB
+ a59752bccf5a Extracting 40.67MB
+ a59752bccf5a Extracting 45.68MB
+ a59752bccf5a Extracting 51.25MB
+ a59752bccf5a Extracting 56.26MB
+ a59752bccf5a Extracting 60.72MB
+ a59752bccf5a Extracting 64.62MB
+ a59752bccf5a Extracting 69.07MB
+ a59752bccf5a Extracting 74.09MB
+ a59752bccf5a Extracting 80.22MB
+ a59752bccf5a Extracting 85.23MB
+ a59752bccf5a Extracting 90.24MB
+ a59752bccf5a Extracting 95.81MB
+ a59752bccf5a Extracting 100.8MB
+ a59752bccf5a Extracting 105.8MB
+ a59752bccf5a Extracting 111.4MB
+ a59752bccf5a Extracting 116.4MB
+ a59752bccf5a Extracting 119.2MB
+ a59752bccf5a Extracting 125.3MB
+ a59752bccf5a Extracting 134.8MB
+ a59752bccf5a Extracting 143.2MB
+ a59752bccf5a Extracting 151.5MB
+ a59752bccf5a Extracting 159.9MB
+ a59752bccf5a Extracting 168.8MB
+ a59752bccf5a Extracting 177.1MB
+ a59752bccf5a Extracting 185.5MB
+ a59752bccf5a Extracting 193.9MB
+ a59752bccf5a Extracting 201.7MB
+ a59752bccf5a Extracting 210MB
+ a59752bccf5a Extracting 211.1MB
+ a59752bccf5a Extracting 212.2MB
+ a59752bccf5a Extracting 215MB
+ a59752bccf5a Extracting 217.3MB
+ a59752bccf5a Extracting 219.5MB
+ a59752bccf5a Extracting 219.6MB
+ a59752bccf5a Pull complete 0B
+ c2d0e51c2d18 Extracting 32.77kB
+ c2d0e51c2d18 Extracting 2.632MB
+ c2d0e51c2d18 Pull complete 0B
+ 1868e5257880 Extracting 32.77kB
+ 1868e5257880 Extracting 480.2kB
+ 1868e5257880 Extracting 480.2kB
+ 1868e5257880 Pull complete 0B
+ 7584aa22f9f7 Extracting 557.1kB
+ 7584aa22f9f7 Extracting 3.342MB
+ 7584aa22f9f7 Extracting 6.685MB
+ 7584aa22f9f7 Extracting 10.03MB
+ 7584aa22f9f7 Extracting 13.37MB
+ 7584aa22f9f7 Extracting 15.6MB
+ 7584aa22f9f7 Extracting 16.15MB
+ 7584aa22f9f7 Extracting 17.27MB
+ 7584aa22f9f7 Extracting 21.17MB
+ 7584aa22f9f7 Extracting 25.07MB
+ 7584aa22f9f7 Extracting 28.97MB
+ 7584aa22f9f7 Extracting 32.87MB
+ 7584aa22f9f7 Extracting 36.77MB
+ 7584aa22f9f7 Extracting 37.88MB
+ 7584aa22f9f7 Extracting 39.55MB
+ 7584aa22f9f7 Extracting 42.34MB
+ 7584aa22f9f7 Extracting 45.12MB
+ 7584aa22f9f7 Extracting 47.91MB
+ 7584aa22f9f7 Extracting 50.14MB
+ 7584aa22f9f7 Extracting 52.36MB
+ 7584aa22f9f7 Extracting 54.59MB
+ 7584aa22f9f7 Extracting 56.26MB
+ 7584aa22f9f7 Extracting 57.38MB
+ 7584aa22f9f7 Extracting 59.05MB
+ 7584aa22f9f7 Extracting 61.28MB
+ 7584aa22f9f7 Extracting 62.39MB
+ 7584aa22f9f7 Extracting 63.5MB
+ 7584aa22f9f7 Extracting 64.62MB
+ 7584aa22f9f7 Extracting 66.85MB
+ 7584aa22f9f7 Extracting 69.63MB
+ 7584aa22f9f7 Extracting 72.42MB
+ 7584aa22f9f7 Extracting 72.97MB
+ 7584aa22f9f7 Extracting 74.65MB
+ 7584aa22f9f7 Extracting 77.99MB
+ 7584aa22f9f7 Extracting 80.22MB
+ 7584aa22f9f7 Extracting 83.56MB
+ 7584aa22f9f7 Extracting 85.23MB
+ 7584aa22f9f7 Extracting 86.34MB
+ 7584aa22f9f7 Extracting 89.69MB
+ 7584aa22f9f7 Extracting 90.8MB
+ 7584aa22f9f7 Extracting 91.91MB
+ 7584aa22f9f7 Extracting 94.14MB
+ 7584aa22f9f7 Extracting 96.37MB
+ 7584aa22f9f7 Extracting 98.6MB
+ 7584aa22f9f7 Extracting 100.8MB
+ 7584aa22f9f7 Extracting 103.6MB
+ 7584aa22f9f7 Extracting 104.7MB
+ 7584aa22f9f7 Extracting 105.8MB
+ 7584aa22f9f7 Extracting 107.5MB
+ 7584aa22f9f7 Extracting 109.2MB
+ 7584aa22f9f7 Extracting 112.5MB
+ 7584aa22f9f7 Extracting 115.3MB
+ 7584aa22f9f7 Extracting 119.2MB
+ 7584aa22f9f7 Extracting 120.9MB
+ 7584aa22f9f7 Extracting 129.8MB
+ 7584aa22f9f7 Extracting 140.9MB
+ 7584aa22f9f7 Extracting 153.2MB
+ 7584aa22f9f7 Extracting 162.1MB
+ 7584aa22f9f7 Extracting 173.8MB
+ 7584aa22f9f7 Extracting 184.9MB
+ 7584aa22f9f7 Extracting 197.2MB
+ 7584aa22f9f7 Extracting 207.8MB
+ 7584aa22f9f7 Extracting 222.8MB
+ 7584aa22f9f7 Extracting 234.5MB
+ 7584aa22f9f7 Extracting 238.4MB
+ 7584aa22f9f7 Extracting 243.4MB
+ 7584aa22f9f7 Extracting 246.8MB
+ 7584aa22f9f7 Extracting 250.1MB
+ 7584aa22f9f7 Extracting 251.8MB
+ 7584aa22f9f7 Extracting 254MB
+ 7584aa22f9f7 Extracting 256.8MB
+ 7584aa22f9f7 Extracting 261.8MB
+ 7584aa22f9f7 Extracting 269.1MB
+ 7584aa22f9f7 Extracting 272.4MB
+ 7584aa22f9f7 Extracting 275.7MB
+ 7584aa22f9f7 Extracting 276.9MB
+ 7584aa22f9f7 Extracting 278.5MB
+ 7584aa22f9f7 Extracting 281.3MB
+ 7584aa22f9f7 Extracting 281.9MB
+ 7584aa22f9f7 Extracting 288.6MB
+ 7584aa22f9f7 Extracting 290.8MB
+ 7584aa22f9f7 Extracting 296.4MB
+ 7584aa22f9f7 Extracting 299.1MB
+ 7584aa22f9f7 Extracting 301.4MB
+ 7584aa22f9f7 Extracting 303MB
+ 7584aa22f9f7 Extracting 307.5MB
+ 7584aa22f9f7 Extracting 312.5MB
+ 7584aa22f9f7 Extracting 318.6MB
+ 7584aa22f9f7 Extracting 324.8MB
+ 7584aa22f9f7 Extracting 328.7MB
+ 7584aa22f9f7 Extracting 330.9MB
+ 7584aa22f9f7 Extracting 332.3MB
+ 7584aa22f9f7 Pull complete 0B
+ c19ed431de01 Extracting 702B
+ c19ed431de01 Extracting 702B
+ c19ed431de01 Pull complete 0B
+ 18ab8b9bc7a9 Extracting 554B
+ 18ab8b9bc7a9 Extracting 554B
+ 18ab8b9bc7a9 Pull complete 0B
+ 422b6a98c439 Extracting 590B
+ 422b6a98c439 Extracting 590B
+ 422b6a98c439 Pull complete 0B
+ cd352db127f3 Extracting 579B
+ cd352db127f3 Extracting 579B
+ cd352db127f3 Pull complete 0B
+ Image odoo:16.0 Pulled 
+ * Stopping Docker: docker
+   ...done.
+EXIT:0

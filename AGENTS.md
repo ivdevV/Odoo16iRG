@@ -137,3 +137,11 @@ La ruta canónica de conocimiento reutilizable es `.agents/knowledge/odoo_develo
 Commit, push y PR son acciones y autorizaciones separadas: autorizar commit no autoriza push ni PR; autorizar push tampoco autoriza PR. La autorización debe identificar la acción y su alcance; completar los tests, crear un commit local o recibir una autorización anterior no amplía el permiso.
 
 Cada autorización de push es de un solo uso y queda ligada al remoto, rama y alcance concretos indicados. Después de usarla, o ante cualquier cambio material posterior, se requiere una autorización nueva o un OK nuevo. En particular, queda prohibido hacer push a `Dev_iRG` sin autorización explícita nueva del usuario en ese momento; no se hace push ni se abre PR por iniciativa del agente.
+
+## Cursor Cloud specific instructions
+
+El runtime local de Odoo para agentes en la nube está en `doc/cloud-agent-environment.md`.
+
+- Compose siempre con `docker compose --env-file .cursor/runtime/compose.env -f docker-compose.local.yml`. Sin `-f`, Compose puede abrir el compose de despliegue.
+- `bash .cursor/start.sh` deja el Postgres local sano. Odoo no queda residente. Los tests usan `run --rm --no-deps` y una base desechable, y al final se borra esa base.
+- TestSprite solo contra ese runtime local. `projectPath` es el directorio del módulo. Nunca beta ni producción.

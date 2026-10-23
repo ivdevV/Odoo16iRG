@@ -1,0 +1,14 @@
+setUpClass (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest) ... ERROR
+
+======================================================================
+ERROR: setUpClass (missions.cloud-agent-odoo-runtime.tests.test_runtime_contract.RuntimeContractTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/missions/cloud-agent-odoo-runtime/tests/test_runtime_contract.py", line 52, in setUpClass
+    raise AssertionError("faltan archivos de runtime: %s" % ", ".join(missing))
+AssertionError: faltan archivos de runtime: /workspace/.cursor/runtime/odoo-local-compose.yml, /workspace/.cursor/runtime/odoo.conf, /workspace/.cursor/runtime/compose.env, /workspace/.cursor/install.sh, /workspace/.cursor/start.sh, /workspace/.cursor/materialize-compose.sh, /workspace/.cursor/Dockerfile, /workspace/.cursor/environment.json
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.000s
+
+FAILED (errors=1)

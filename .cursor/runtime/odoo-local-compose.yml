@@ -1,0 +1,44 @@
+# cursor-cloud-runtime-generated: odoo16irg-local-v1
+# Disposable local runtime. Postgres is not published. Odoo binds to loopback.
+# The official odoo image rewrites db_host to "db"; the alias keeps that name
+# on this compose network and off the host environment.
+name: odoo16irg_local
+services:
+  pgodoo_local:
+    image: postgres:16
+    container_name: pgodoo16irg_local
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_USER: odoo
+    networks:
+      default:
+        aliases:
+          - db
+    volumes:
+      - odoo16irg_local_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: "no"
+  redisodoo_local:
+    image: redis:7
+    container_name: redisodoo16irg_local
+    restart: "no"
+  odoo_local:
+    image: odoo:16.0
+    container_name: odoo16irg_local
+    depends_on:
+      pgodoo_local:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8069:8069"
+      - "127.0.0.1:8072:8072"
+    volumes:
+      - ./addons-extra:/mnt/extra-addons:ro
+      - ./.cursor/runtime/odoo.conf:/etc/odoo/odoo.conf:ro
+    restart: "no"
+volumes:
+  odoo16irg_local_pgdata:

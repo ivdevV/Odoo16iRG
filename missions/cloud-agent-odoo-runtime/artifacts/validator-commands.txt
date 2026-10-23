@@ -1,0 +1,72 @@
+Validador independiente. Comandos ejecutados el 2026-10-23 desde /workspace.
+No se reutilizó artifacts/odoo-irg-oral-case-tests.txt.
+No se invocó TestSprite. No se ejecutó bash .cursor/start.sh: postgres ya estaba healthy.
+
+base_commit:
+$ git rev-parse HEAD
+acb64787a29778ec5688b6e730a9393dd783d62f
+
+1. contract_tests
+$ python3 -m unittest missions.cloud-agent-odoo-runtime.tests.test_runtime_contract
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.014s
+
+OK
+EXIT:0
+
+2. shell_syntax
+$ bash -n .cursor/install.sh
+EXIT:0
+$ bash -n .cursor/start.sh
+EXIT:0
+$ bash -n .cursor/materialize-compose.sh
+EXIT:0
+$ bash -n .cursor/install-docker-packages.sh
+EXIT:0
+
+3. environment_json
+$ python3 -c 'import json; json.load(open(".cursor/environment.json"))'
+EXIT:0
+Comprobación de claves (mismo JSON, recorrido recursivo):
+KEYS ['build', 'install', 'name', 'ports', 'start', 'user']
+HAS_SCHEMA False
+HAS_SNAPSHOT False
+NESTED_HITS none
+
+4. docker_daemon
+$ sudo docker info
+EXIT:0
+Client: Docker Engine - Community
+Version: 28.5.2
+(salida completa omitida; el exit 0 es el criterio)
+
+5. postgres_ready
+$ sudo docker inspect --format '{{.State.Health.Status}}' pgodoo16irg_local
+healthy
+INSPECT_EXIT:0
+start.sh no ejecutado: el primer inspect ya imprimió healthy.
+
+6. odoo_irg_oral_case_tests
+$ sudo docker compose --env-file .cursor/runtime/compose.env -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_oral_case_validator -i irg_oral_case --test-enable --test-tags=/irg_oral_case --stop-after-init --workers=0 --http-port=8099 --log-level=test
+START 2026-10-23T08:18:26Z
+END 2026-10-23T08:19:58Z
+EXIT:1
+stdout+stderr: artifacts/validator-odoo-tests.txt
+odoo.tests.result: 0 failed, 2 error(s) of 20 tests when loading database 'test_irg_oral_case_validator'
+ERROR TestOralCaseGrade.test_student_cannot_write_the_suggestion_or_the_official_grade
+ERROR TestOralCaseGrade.test_teacher_confirmation_is_required_and_does_not_copy_the_suggestion
+
+7. cleanup_disposable_db
+$ sudo docker exec pgodoo16irg_local dropdb -U odoo --if-exists test_irg_oral_case_validator
+$ sudo docker exec pgodoo16irg_local psql -U odoo -d postgres -c '\l'
+Salida: artifacts/validator-cleanup.txt
+DROPDB_EXIT:0
+PSQL_EXIT:0
+test_irg_oral_case_validator ausente del listado.
+
+8. e2e_testsprite
+No ejecutado. El diff no toca vistas, static, portal, website ni controladores.
+
+9. e2e_demo
+No ejecutado. El check odoo_irg_oral_case_tests es fail; no se gasta el crédito Free.
