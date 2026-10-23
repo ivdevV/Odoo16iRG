@@ -4,15 +4,17 @@
         <field name="name">irg.oral.case.job.tree</field>
         <field name="model">irg.oral.case.job</field>
         <field name="arch" type="xml">
-            <tree>
-                <field name="create_date"/>
-                <field name="partner_id"/>
-                <field name="case_code"/>
-                <field name="slide_id"/>
-                <field name="state"/>
-                <field name="n8n_status"/>
-                <field name="score_ia"/>
+            <tree editable="bottom">
+                <field name="create_date" readonly="1"/>
+                <field name="partner_id" readonly="1"/>
+                <field name="case_code" readonly="1"/>
+                <field name="slide_id" readonly="1"/>
+                <field name="state" readonly="1"/>
+                <field name="n8n_status" readonly="1"/>
+                <field name="score_ia" readonly="1"/>
                 <field name="official_score"/>
+                <field name="official_score_reason"/>
+                <field name="video_kept" readonly="1"/>
             </tree>
         </field>
     </record>
@@ -23,41 +25,65 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_open_confirm_grade" type="object" string="Confirmar nota oficial" class="btn-primary" groups="openeducat_core.group_op_faculty"/>
+                    <button name="action_open_confirm_grade" type="object" string="Confirmar nota final" class="btn-primary" groups="openeducat_core.group_op_faculty"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,accepted,rejected,error"/>
                 </header>
                 <sheet>
+                    <div class="alert alert-warning" role="alert" attrs="{'invisible': [('video_policy_keeps', '=', True)]}">
+                        Este caso no conserva el vídeo en Odoo. La decisión de si se guarda la grabación sigue pendiente.
+                    </div>
+                    <div class="alert alert-info" role="alert" attrs="{'invisible': ['|', ('video_policy_keeps', '=', False), ('video_kept', '=', True)]}">
+                        Este caso está marcado para conservar las grabaciones, pero esta entrega no tiene vídeo disponible.
+                    </div>
                     <group>
                         <group string="Entrega">
-                            <field name="partner_id"/>
-                            <field name="slide_id"/>
-                            <field name="survey_id"/>
-                            <field name="user_input_id"/>
-                            <field name="case_code"/>
-                            <field name="consent_date"/>
-                            <field name="duration_seconds"/>
-                            <field name="n8n_job_id"/>
-                            <field name="n8n_status"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="slide_id" readonly="1"/>
+                            <field name="survey_id" readonly="1"/>
+                            <field name="user_input_id" readonly="1"/>
+                            <field name="case_code" readonly="1"/>
+                            <field name="consent_date" readonly="1"/>
+                            <field name="duration_seconds" readonly="1"/>
+                            <field name="n8n_job_id" readonly="1"/>
+                            <field name="n8n_status" readonly="1"/>
                         </group>
-                        <group string="Sugerencia de la IA">
+                        <group string="Propuesta de la IA">
                             <field name="score_ia" readonly="1"/>
                             <field name="resumen_ia" readonly="1"/>
                             <field name="error_ai" readonly="1"/>
                             <field name="last_error" readonly="1"/>
                         </group>
                     </group>
-                    <group string="Nota oficial">
-                        <field name="official_score" readonly="1"/>
+                    <group string="Nota final (profesor)">
+                        <field name="official_score"/>
+                        <field name="official_score_reason"/>
                         <field name="official_confirmed_by" readonly="1"/>
                         <field name="official_confirmed_at" readonly="1"/>
-                        <field name="gradebook_result_id"/>
+                        <field name="gradebook_result_id" readonly="1"/>
                     </group>
-                    <group string="Vídeo">
-                        <field name="video_attachment_id"/>
-                        <field name="video_stored_at"/>
-                        <field name="video_purged"/>
+                    <group string="Grabaciones">
+                        <field name="video_policy_keeps" invisible="1"/>
+                        <field name="video_kept" readonly="1"/>
+                        <field name="video_review_html" readonly="1" attrs="{'invisible': [('video_kept', '=', False)]}"/>
                     </group>
+                    <notebook>
+                        <page string="Intervenciones" name="clips">
+                            <field name="clip_ids" readonly="1">
+                                <tree>
+                                    <field name="segment_index"/>
+                                    <field name="prompt_snapshot"/>
+                                    <field name="duration_seconds"/>
+                                    <field name="score_ia"/>
+                                    <field name="resumen_ia"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
             </form>
         </field>
     </record>

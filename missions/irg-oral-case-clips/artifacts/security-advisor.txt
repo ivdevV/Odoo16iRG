@@ -1,0 +1,7 @@
+Security Advisor, revisión de diseño, antes de implementar.
+
+Primera pasada: [NO] Reason: El create del portal puede plantar video_attachment_id y user_input_id, y la ruta de media y el cron confían en ese puntero: IDOR y borrado de adjuntos ajenos, más reasignación de la libreta.
+
+El plan se enmendó: create y write sin env.su rechazan los campos técnicos; el portal pierde perm_create del job; la ruta y el cron exigen res_model, res_id, public y MIME video/webm; la nota queda atada al partner y al slide del job; el bloqueo de partner_id, slide_id, survey_id y result_id en survey.user_input se limita a participaciones de caso oral.
+
+Segunda pasada: [YES] Reason: Create y write sin env.su no plantan adjuntos ni libretas; la ruta y el cron exigen res_model, res_id y MIME antes de leer o borrar; la nota queda atada al partner y al slide del job, y el bloqueo acotado a participaciones de caso oral no permite reasignarla.

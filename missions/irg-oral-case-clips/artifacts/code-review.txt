@@ -1,0 +1,10 @@
+Revisión de código. Revisor distinto del codificador. No editó el repositorio.
+
+Primera pasada: BLOQUEADO.
+1. confirm_official_grade escribía scoring_total y rated_by con el entorno sudo heredado de jobs.sudo().search.
+2. create/write de survey.user_input permitía plantar result_id en una participación de caso oral si quien escribía no era superusuario.
+
+Segunda pasada, sobre el código ya corregido: APROBADO.
+La nota de una línea existente se relee con el entorno del docente antes del write. El alta sigue en ese mismo entorno. El enlace del job sigue en sudo con un diccionario fijo. Sin env.su, no se puede crear una participación oral con result_id ni convertir en caso oral una participación que ya tiene result_id. Los tests cubren write_uid del docente y esos dos rechazos.
+
+Observaciones no bloqueantes que se dejan: el GET de estado no normaliza processing/accepted a queued; la ACL de group_system es más ancha que el método; el reproductor exige el nodo .o_irg_oral_case en el HTML; el tope de duración usa los segundos declarados por el cliente.

@@ -1,7 +1,13 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_irg_oral_case_job_portal,irg.oral.case.job.portal,model_irg_oral_case_job,base.group_portal,1,0,1,0
-access_irg_oral_case_job_user,irg.oral.case.job.user,model_irg_oral_case_job,base.group_user,1,0,1,0
+access_irg_oral_case_job_portal,irg.oral.case.job.portal,model_irg_oral_case_job,base.group_portal,1,0,0,0
+access_irg_oral_case_job_user,irg.oral.case.job.user,model_irg_oral_case_job,base.group_user,1,0,0,0
 access_irg_oral_case_job_teacher,irg.oral.case.job.teacher,model_irg_oral_case_job,group_oral_case_teacher,1,1,0,0
 access_irg_oral_case_job_system,irg.oral.case.job.system,model_irg_oral_case_job,base.group_system,1,1,1,1
 access_irg_oral_case_confirm_faculty,irg.oral.case.confirm.grade.faculty,model_irg_oral_case_confirm_grade,openeducat_core.group_op_faculty,1,1,1,1
 access_survey_user_input_oral_teacher,survey.user_input.oral.teacher,survey.model_survey_user_input,group_oral_case_teacher,1,1,0,0
+access_irg_oral_case_segment_officer,irg.oral.case.segment.officer,model_irg_oral_case_segment,website_slides.group_website_slides_officer,1,1,1,1
+access_irg_oral_case_segment_faculty,irg.oral.case.segment.faculty,model_irg_oral_case_segment,openeducat_core.group_op_faculty,1,1,1,1
+access_irg_oral_case_segment_teacher,irg.oral.case.segment.teacher,model_irg_oral_case_segment,group_oral_case_teacher,1,0,0,0
+access_irg_oral_case_segment_system,irg.oral.case.segment.system,model_irg_oral_case_segment,base.group_system,1,1,1,1
+access_irg_oral_case_clip_teacher,irg.oral.case.clip.teacher,model_irg_oral_case_clip,group_oral_case_teacher,1,1,0,0
+access_irg_oral_case_clip_system,irg.oral.case.clip.system,model_irg_oral_case_clip,base.group_system,1,1,1,1

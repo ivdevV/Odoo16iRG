@@ -1,6 +1,6 @@
 # irg_oral_case
 
-Entrega de un caso práctico oral grabado en un slide de eLearning. Odoo autentica al alumno, crea o reutiliza su `survey.user_input` y reenvía el webm a n8n. La IA solo sugiere. La nota oficial la confirma un docente en `app.gradebook.result`.
+Entrega de un caso práctico oral grabado en un slide de eLearning. Odoo autentica al alumno, crea o reutiliza su `survey.user_input` y reenvía el webm a n8n. La IA solo sugiere. La nota final la escribe el docente, como número de 0 a 10, y el módulo crea o actualiza la línea de `app.gradebook.result` de esa alumna y de esa participación.
 
 El slide sigue siendo un artículo. Este módulo no cambia `slide_category`, no toca `html_embed_code` y no sustituye el JavaScript de `isep_slide_article_custom`. En pantalla completa, si el slide es `article`, ese módulo sigue pegando el HTML en la página.
 
@@ -26,6 +26,17 @@ En el slide (backoffice, sin cambiar el tipo):
 - `oral_case_enabled`
 - `oral_case_code` (por ejemplo `DA-ORAL-001`)
 - `oral_case_survey_id`
+- `oral_case_mode`: `single` (un webm, el comportamiento de siempre) o `clips` (tramos ordenados)
+- `oral_case_keep_video`: si se conserva la grabación en Odoo. Por defecto no. El interruptor global `irg_oral_case.store_video_copy`, si alguien lo dejó activo, sigue forzando la copia.
+- En modo `clips`, la lista de tramos: URL https del clip, consigna, segundos máximos, si se puede repetir la toma y, si hace falta, un clip de escucha en bucle. Hay un clip de escucha opcional a nivel de caso, solo para el modo de un solo vídeo.
+
+El HTML del artículo basta con el contenedor. El reproductor es un asset de `web.assets_frontend` y arranca al ver ese nodo, también cuando el fullscreen pega el HTML con jQuery y no ejecuta etiquetas script:
+
+```html
+<div class="o_irg_oral_case" data-slide-id="SLIDE_ID"></div>
+```
+
+La configuración, los tramos y el texto de consentimiento salen de `GET /irg/oral_case/bootstrap`. El texto de consentimiento que sirve el servidor es provisional y está pendiente de revisión legal.
 
 El `case_id` que llega a n8n es el del slide. Un `case_id` o `partner_id` enviado por el navegador se ignora. El partner es `request.env.user.partner_id`.
 
@@ -80,7 +91,7 @@ Respuesta 202:
 
 `status_url` es el proxy de Odoo, no el de n8n.
 
-Odoo reenvía a n8n, en multipart, `video`, `case_id`, `slide_id`, `partner_id` (el de la sesión), `autoevaluacion_json`, `consent_date` y, si vino, `duracion_seg`.
+En modo `single` Odoo reenvía a n8n, en multipart, los mismos campos de siempre: `video`, `case_id`, `slide_id`, `partner_id` (el de la sesión), `autoevaluacion_json`, `consent_date` y, si vino, `duracion_seg`. No añade `mode` ni `clips_json`. En modo `clips` añade `mode=clips`, `case_title`, `clips_json` (índice, segmento, consigna y URL salen de la base, no del navegador) y los ficheros `clip_1`, `clip_2`, … El contrato con ejemplos está en `doc/n8n_contract.md`. Si n8n responde `queued`, `processing` o `accepted`, el submit público dice `queued`. El GET de estado devuelve el `status` remoto tal cual.
 
 Antes de llamar, crea o reutiliza el `survey.user_input` de ese alumno, ese survey y ese slide, en estado `in_progress`. n8n puede escribir ahí `score_ia`, `resumen_ia` y `error_ai`. Esos campos no son la nota oficial.
 
@@ -124,6 +135,11 @@ El cuerpo es `{"ok": false, "error": "<código>"}`. En `n8n_rejected` hay ademá
 | 400 | `invalid_video_type` | No es webm |
 | 400 | `invalid_duration` | `duracion_seg` no es un número ≥ 0 |
 | 400 | `duration_exceeded` | Supera el máximo (y el techo de 14400 s) |
+| 400 | `grade_already_confirmed` | Ya hay nota final confirmada para esa alumna y ese caso |
+| 400 | `clips_required` | El caso es por tramos y no llegan los clips |
+| 400 | `single_video_expected` | El caso es de un solo vídeo y llegan clips |
+| 400 | `clips_mismatch` | Número, orden o `segment_id` de los clips no coincide con el caso |
+| 400 | `invalid_case_config` | El caso por tramos no tiene segmentos o una URL no es https válida |
 | 400 | `invalid_job_id` | El id de estado no cumple el formato |
 | 404 | `job_not_found` | No existe o no es del alumno de la sesión |
 | 400 | `n8n_rejected` | n8n respondió 400, o 202 con `ok` falso |
@@ -162,15 +178,17 @@ No hace falta, ni se debe, poner la clave en ese script. El texto legal del cons
 
 ## Nota del docente
 
-En la participación o en Casos orales (menú eLearning) el docente ve `score_ia`, `resumen_ia` y `error_ai`. El botón **Confirmar nota oficial** abre un wizard. Solo `openeducat_core.group_op_faculty` puede ejecutarlo. La nota que escribe es `official_score`; no se copia sola desde `score_ia`. Hace falta marcar la confirmación.
+En Casos orales el docente ve la propuesta de la IA y edita **Nota final (profesor)**, un número de 0 a 10, y un motivo opcional. También puede usar el wizard **Confirmar nota final**. Solo `openeducat_core.group_op_faculty` puede guardar esa nota. La sugerencia de la IA no se copia sola.
 
-Eso crea o actualiza `app.gradebook.result` (`scoring_total`, `rated_by` el docente, `survey_type` examen o asignación). No se rellena `survey.user_input.result_id`, para que un write posterior de la sugerencia no machaque la nota oficial.
+Al guardar, el módulo crea o actualiza la línea de `app.gradebook.result` de esa participación y de esa alumna (`scoring_total` y `rated_by` con el usuario docente). Si la línea ya tiene asignatura, la asignatura tiene que ser de esa alumna. No se rellena `survey.user_input.result_id`, para que un write posterior de la sugerencia no machaque la nota. El chatter de la entrega anota el valor anterior, el nuevo, quién lo cambió y el motivo.
+
+La línea del cuaderno, el adjunto del vídeo, quién confirmó, cuándo y «Vídeo guardado el» los escribe solo el sistema (`env.su`). Un profesor o una alumna que los reasignen por RPC reciben `AccessError`, aunque el cliente mande un flag de contexto. En el formulario esos enlaces están en solo lectura o no se muestran. No hay un desplegable de líneas del cuaderno ni un selector de adjuntos. Si el caso conserva el vídeo se ve el reproductor de esa entrega. Si no, un aviso de que no se guarda.
 
 El usuario de Odoo con el que n8n escribe `score_ia`, `resumen_ia` y `error_ai` tiene que ser técnico (`base.group_system`) o docente. Un alumno no puede escribir esos campos. Ese usuario no debe confirmar la libreta: la confirmación es una acción del docente en Odoo.
 
 ## Vídeo y retención
 
-Por defecto no se guarda copia en Odoo y el cron no borra nada. El cron diario existe y sale sin tocar adjuntos si hay módulos en instalación o actualización, si `retention_enabled` no está activo o si `retention_days` es 0. Las tres cosas hay que decidirlas antes de activar el borrado. Queda pendiente.
+Por defecto no se guarda copia en Odoo y el cron no borra nada. El interruptor que ve el personal es `oral_case_keep_video` en el slide. El cron diario sale sin tocar adjuntos si hay módulos en instalación o actualización, si `retention_enabled` no está activo o si `retention_days` es 0. Antes de borrar comprueba que el adjunto es el webm de esa entrega (`res_model`, `res_id`, `video/webm`, no público). Un puntero a un fichero ajeno se limpia y el fichero se queda. Si se conserva el vídeo y hace falta verlo, las rutas `GET /irg/oral_case/media/job/<id>` y `.../clip/<id>` solo lo sirven a quien ya puede ver la entrega, con las mismas comprobaciones. La decisión de conservar o no las grabaciones sigue pendiente.
 
 ## Pruebas
 

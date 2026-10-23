@@ -1,0 +1,39 @@
+{
+  "status": "failed",
+  "task": "irg-oral-case-clips",
+  "checks": [
+    {
+      "name": "syntax_py_js",
+      "command": "python3 -m py_compile $(find /workspace/addons-extra/extrairg/irg_oral_case -name '*.py' | sort) && node --check /workspace/addons-extra/extrairg/irg_oral_case/static/src/js/oral_case_player.js",
+      "result": "pass",
+      "detail": "19 archivos .py compilados con py_compile (exit 0) y node --check sobre oral_case_player.js (exit 0).",
+      "evidence": "artifacts/validation-syntax.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "sudo docker compose --env-file .cursor/runtime/compose.env -f docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_oral_case_clips_8297 --test-enable --test-tags=/irg_oral_case --stop-after-init --workers=0 --http-port=8099 --log-level=test",
+      "result": "pass",
+      "detail": "El proceso terminó con exit 0. odoo.tests.result: 0 failed, 0 error(s) of 38 tests. odoo.tests.stats: irg_oral_case: 52 tests 58.47s 10917 queries. 38 post-tests en 59.90s.",
+      "evidence": "artifacts/odoo-module-tests.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "testsprite_generate_code_and_execute projectPath=/workspace/addons-extra/extrairg/irg_oral_case localPort=8069 type=frontend",
+      "result": "fail",
+      "detail": "Segunda ejecución: 15 escenarios, 1 pasado (login del docente). El resto no abrió el formulario de Casos orales. La primera ejecución dejó /web en blanco porque los assets respondían 500 por un filestore vacío en el contenedor. No valida la pantalla.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_oral_case_clips_8297",
+    "base_commit": "acb64787a"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-syntax.txt",
+    "artifacts/odoo-module-tests.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

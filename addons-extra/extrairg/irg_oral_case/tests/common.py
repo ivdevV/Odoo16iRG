@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import uuid
 
+from odoo.exceptions import AccessError, MissingError
+
 class OralCaseFixture(object):
     """Datos mínimos de un artículo con caso oral. El entorno de partida es superusuario."""
 
@@ -105,6 +107,16 @@ class OralCaseFixture(object):
 
     def _gradebook_domain(self):
         return [('channel_id', '=', self.channel.id)]
+
+    def _assert_access_blocked(self, func):
+        try:
+            func()
+        except (AccessError, MissingError):
+            return
+        except Exception as exc:
+            self.fail('Se esperaba AccessError o MissingError y llegó %s.' % type(exc).__name__)
+        else:
+            self.fail('Se esperaba AccessError o MissingError.')
 
 
 class _MemoryVideo(object):

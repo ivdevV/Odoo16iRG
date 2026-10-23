@@ -28,6 +28,7 @@
                                 <label for="irg_oral_case_max_duration_seconds"/>
                                 <field name="irg_oral_case_max_duration_seconds"/>
                                 <label for="irg_oral_case_store_video_copy"/>
+                                <div class="text-muted">Si está activo, se guarda copia en todos los casos. El interruptor que usa el personal académico está en el slide y, por defecto, no guarda nada. La política sigue pendiente.</div>
                                 <field name="irg_oral_case_store_video_copy"/>
                                 <label for="irg_oral_case_retention_days"/>
                                 <field name="irg_oral_case_retention_days"/>

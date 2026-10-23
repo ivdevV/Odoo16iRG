@@ -1,0 +1,25 @@
+=== py_compile 2026-10-23T10:16:15Z ===
+file_count:19
+/workspace/addons-extra/extrairg/irg_oral_case/controllers/__init__.py
+/workspace/addons-extra/extrairg/irg_oral_case/controllers/main.py
+/workspace/addons-extra/extrairg/irg_oral_case/__init__.py
+/workspace/addons-extra/extrairg/irg_oral_case/__manifest__.py
+/workspace/addons-extra/extrairg/irg_oral_case/models/__init__.py
+/workspace/addons-extra/extrairg/irg_oral_case/models/oral_case_clip.py
+/workspace/addons-extra/extrairg/irg_oral_case/models/oral_case_job.py
+/workspace/addons-extra/extrairg/irg_oral_case/models/oral_case_segment.py
+/workspace/addons-extra/extrairg/irg_oral_case/models/res_config_settings.py
+/workspace/addons-extra/extrairg/irg_oral_case/models/service.py
+/workspace/addons-extra/extrairg/irg_oral_case/models/slide_slide.py
+/workspace/addons-extra/extrairg/irg_oral_case/models/survey_user_input.py
+/workspace/addons-extra/extrairg/irg_oral_case/tests/common.py
+/workspace/addons-extra/extrairg/irg_oral_case/tests/__init__.py
+/workspace/addons-extra/extrairg/irg_oral_case/tests/test_oral_case_clips.py
+/workspace/addons-extra/extrairg/irg_oral_case/tests/test_oral_case_http.py
+/workspace/addons-extra/extrairg/irg_oral_case/tests/test_oral_case.py
+/workspace/addons-extra/extrairg/irg_oral_case/wizard/confirm_grade.py
+/workspace/addons-extra/extrairg/irg_oral_case/wizard/__init__.py
+py_compile_exit:0
+=== node --check 2026-10-23T10:16:15Z ===
+node_check_exit:0
+=== combined_exit:0 ===

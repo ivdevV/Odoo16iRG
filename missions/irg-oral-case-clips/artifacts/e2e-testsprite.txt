@@ -1,0 +1,13 @@
+E2E TestSprite contra http://127.0.0.1:8069, base test_irg_oral_case_clips_8297, projectPath el directorio del módulo. Usuario docente creado en esa base. No se usó beta ni producción.
+
+Primera ejecución: los bundles /web/assets respondían 500 porque el filestore del contenedor nuevo no tenía los ficheros que la base ya referenciaba. La pantalla de /web quedaba en blanco. 0 de 15 pasaron.
+
+Se regeneraron los bundles en el contenedor que sirve el puerto y se comprobó que CSS y JS del backend responden 200. Segunda ejecución: 15 escenarios, 1 pasado.
+
+Pasó TC002, el docente entra al backend.
+
+El resto no abrió Casos orales. El lanzador muestra Courses y otras aplicaciones, no una aplicación llamada eLearning. Courses abre un panel vacío. Algunas rutas de libreta tropiezan con un AccessError de op.admission porque esa cuenta no es de admisiones. GET /irg/oral_case/bootstrap sin slide_id responde missing_slide, que es el contrato del módulo. No se llegó al campo Nota final (profesor) ni se pudo comprobar la ausencia del selector de adjuntos.
+
+No se reintentó una tercera vez: la segunda ya llegaba al backend y volvía a fallar al no encontrar el formulario.
+
+E2E FAIL
