@@ -139,7 +139,7 @@ def _stream_case_video(attachment, res_model, res_id):
     if not raw:
         return _not_found()
     return request.make_response(raw, [
-        ('Content-Type', 'video/webm'),
+        ('Content-Type', attachment.mimetype or 'video/webm'),
         ('X-Content-Type-Options', 'nosniff'),
         ('Content-Disposition', 'inline'),
         ('Cache-Control', 'private, no-store'),

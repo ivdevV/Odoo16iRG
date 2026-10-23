@@ -1,0 +1,57 @@
+command: git diff --name-only HEAD
+addons-extra/extrairg/irg_oral_case/__manifest__.py
+addons-extra/extrairg/irg_oral_case/controllers/main.py
+addons-extra/extrairg/irg_oral_case/data/ir_cron.xml
+addons-extra/extrairg/irg_oral_case/doc/n8n_contract.md
+addons-extra/extrairg/irg_oral_case/models/oral_case_clip.py
+addons-extra/extrairg/irg_oral_case/models/oral_case_job.py
+addons-extra/extrairg/irg_oral_case/models/oral_case_segment.py
+addons-extra/extrairg/irg_oral_case/models/service.py
+addons-extra/extrairg/irg_oral_case/static/src/css/oral_case_player.css
+addons-extra/extrairg/irg_oral_case/static/src/js/oral_case_player.js
+addons-extra/extrairg/irg_oral_case/tests/test_oral_case_clips.py
+addons-extra/extrairg/irg_oral_case/views/oral_case_job_views.xml
+addons-extra/extrairg/irg_oral_case/views/slide_slide_views.xml
+
+command: git status --porcelain
+ M addons-extra/extrairg/irg_oral_case/__manifest__.py
+ M addons-extra/extrairg/irg_oral_case/controllers/main.py
+ M addons-extra/extrairg/irg_oral_case/data/ir_cron.xml
+ M addons-extra/extrairg/irg_oral_case/doc/n8n_contract.md
+ M addons-extra/extrairg/irg_oral_case/models/oral_case_clip.py
+ M addons-extra/extrairg/irg_oral_case/models/oral_case_job.py
+ M addons-extra/extrairg/irg_oral_case/models/oral_case_segment.py
+ M addons-extra/extrairg/irg_oral_case/models/service.py
+ M addons-extra/extrairg/irg_oral_case/static/src/css/oral_case_player.css
+ M addons-extra/extrairg/irg_oral_case/static/src/js/oral_case_player.js
+ M addons-extra/extrairg/irg_oral_case/tests/test_oral_case_clips.py
+ M addons-extra/extrairg/irg_oral_case/views/oral_case_job_views.xml
+ M addons-extra/extrairg/irg_oral_case/views/slide_slide_views.xml
+?? .cursor/
+?? addons-extra/extrairg/irg_oral_case/migrations/
+?? addons-extra/extrairg/irg_oral_case/static/src/js/oral_case_logic.js
+?? addons-extra/extrairg/irg_oral_case/tests/oral_case_logic.test.js
+?? missions/irg-oral-case-widget/
+
+command: git ls-files --others --exclude-standard -- addons-extra/extrairg/irg_oral_case missions/irg-oral-case-widget
+addons-extra/extrairg/irg_oral_case/migrations/16.0.2.1.0/post-migrate.py
+addons-extra/extrairg/irg_oral_case/static/src/js/oral_case_logic.js
+addons-extra/extrairg/irg_oral_case/tests/oral_case_logic.test.js
+missions/irg-oral-case-widget/artifacts/node-tests-validation.txt
+missions/irg-oral-case-widget/artifacts/node-tests.txt
+missions/irg-oral-case-widget/artifacts/odoo-tests-validation.txt
+missions/irg-oral-case-widget/artifacts/odoo-tests.txt
+missions/irg-oral-case-widget/artifacts/py-compile.txt
+missions/irg-oral-case-widget/artifacts/scope.txt
+missions/irg-oral-case-widget/execution.md
+missions/irg-oral-case-widget/plan.md
+missions/irg-oral-case-widget/verification.json
+
+docker-compose.local.yml in git diff HEAD: 0 paths
+.cursor in git diff HEAD: 0 paths
+
+classification:
+excluded_untracked_not_in_git_diff: .cursor/
+RESULT: pass
+diff_paths: 13
+untracked_entries: 5

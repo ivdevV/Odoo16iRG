@@ -45,7 +45,7 @@ def attachment_is_case_video(attachment, res_model, res_id):
         and attachment.exists()
         and attachment.res_model == res_model
         and attachment.res_id == res_id
-        and attachment.mimetype == 'video/webm'
+        and attachment.mimetype in ('video/webm', 'video/mp4')
         and not attachment.public
     )
 
@@ -85,6 +85,7 @@ class IrgOralCaseJob(models.Model):
         [
             ('draft', 'Borrador'),
             ('accepted', 'Aceptado por n8n'),
+            ('done', 'Propuesta lista'),
             ('rejected', 'Rechazado por n8n'),
             ('error', 'Error de envío'),
         ],
@@ -415,11 +416,15 @@ class IrgOralCaseJob(models.Model):
         ]))
 
     @api.model
+    def _cron_refresh_n8n_status(self):
+        """Actualiza state y n8n_status de entregas aún en curso. No pone la nota."""
+        return self.env['irg.oral.case.service']._refresh_pending_jobs()
+
     def _cron_apply_video_retention(self):
         """Borra copias locales solo si el usuario activó la política.
 
-        Un puntero que no es el webm de esta entrega se limpia y el fichero
-        ajeno se queda.
+        Un puntero que no es el vídeo webm o mp4 de esta entrega se limpia y
+        el fichero ajeno se queda.
         """
         if self._irg_module_operation_in_progress():
             return False

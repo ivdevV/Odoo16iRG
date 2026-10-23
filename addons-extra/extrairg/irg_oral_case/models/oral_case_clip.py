@@ -25,7 +25,8 @@ class IrgOralCaseClip(models.Model):
         ondelete='restrict',
     )
     segment_index = fields.Integer(string='Índice del tramo', required=True)
-    prompt_snapshot = fields.Text(string='Consigna')
+    prompt_snapshot = fields.Text(string='Consigna para la IA')
+    student_text_snapshot = fields.Text(string='Texto que vio la alumna')
     clip_url_snapshot = fields.Char(string='Clip de la paciente')
     duration_seconds = fields.Float(string='Duración (segundos)')
     video_attachment_id = fields.Many2one(

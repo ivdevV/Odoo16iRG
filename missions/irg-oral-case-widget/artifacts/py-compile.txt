@@ -1,0 +1,19 @@
+command: python3 -m py_compile <every .py under models, controllers, tests, migrations>
+file_count: 16
+addons-extra/extrairg/irg_oral_case/controllers/__init__.py
+addons-extra/extrairg/irg_oral_case/controllers/main.py
+addons-extra/extrairg/irg_oral_case/migrations/16.0.2.1.0/post-migrate.py
+addons-extra/extrairg/irg_oral_case/models/__init__.py
+addons-extra/extrairg/irg_oral_case/models/oral_case_clip.py
+addons-extra/extrairg/irg_oral_case/models/oral_case_job.py
+addons-extra/extrairg/irg_oral_case/models/oral_case_segment.py
+addons-extra/extrairg/irg_oral_case/models/res_config_settings.py
+addons-extra/extrairg/irg_oral_case/models/service.py
+addons-extra/extrairg/irg_oral_case/models/slide_slide.py
+addons-extra/extrairg/irg_oral_case/models/survey_user_input.py
+addons-extra/extrairg/irg_oral_case/tests/common.py
+addons-extra/extrairg/irg_oral_case/tests/__init__.py
+addons-extra/extrairg/irg_oral_case/tests/test_oral_case_clips.py
+addons-extra/extrairg/irg_oral_case/tests/test_oral_case_http.py
+addons-extra/extrairg/irg_oral_case/tests/test_oral_case.py
+exit_code: 0

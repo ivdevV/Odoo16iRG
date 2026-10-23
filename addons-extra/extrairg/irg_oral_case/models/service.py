@@ -24,6 +24,11 @@ MAX_CLIPS_JSON_CHARS = 50000
 JOB_ID_RE = re.compile(r'^[A-Za-z0-9_.:-]{1,128}$')
 N8N_TIMEOUT = 30
 PUBLIC_QUEUED_STATUSES = {'queued', 'processing', 'accepted'}
+REMOTE_DONE_STATUSES = {'done', 'completed', 'scored'}
+REMOTE_ERROR_STATUSES = {'error', 'failed', 'failure'}
+VIDEO_WEBM = 'video/webm'
+VIDEO_MP4 = 'video/mp4'
+ALLOWED_VIDEO_TYPES = {'', 'application/octet-stream', VIDEO_WEBM, VIDEO_MP4}
 
 PARAM_SUBMIT_URL = 'irg_oral_case.n8n_submit_url'
 PARAM_STATUS_URL = 'irg_oral_case.n8n_status_url'
@@ -89,7 +94,7 @@ class IrgOralCaseService(models.AbstractModel):
         max_duration = self._duration_ceiling()
         if duration is not None and duration > max_duration:
             return self._fail(400, 'duration_exceeded')
-        raw, filename, error = self._read_webm(video)
+        raw, filename, mimetype, error = self._read_video(video, 'oral-case.webm')
         if error:
             return self._fail(400, error)
 
@@ -100,12 +105,14 @@ class IrgOralCaseService(models.AbstractModel):
 
         user_input = self._get_or_create_user_input(partner, slide)
         job = self._create_job(partner, slide, user_input, consent, duration or 0.0, raw_json)
-        self._store_video_copy(job, raw, filename, 'irg.oral.case.job', job.id, 'video_attachment_id')
+        self._store_video_copy(
+            job, raw, filename, mimetype, 'irg.oral.case.job', job.id, 'video_attachment_id',
+        )
 
         data = self._base_payload(partner, slide, raw_json, consent)
         if duration is not None:
             data['duracion_seg'] = str(duration)
-        files = {'video': (filename, raw, 'video/webm')}
+        files = {'video': (filename, raw, mimetype)}
         return self._post_n8n(job, config, data, files)
 
     def _submit_clips(self, partner, slide, form, clip_files, video, consent, raw_json):
@@ -138,8 +145,7 @@ class IrgOralCaseService(models.AbstractModel):
         if not isinstance(parsed, list) or len(parsed) != len(segments):
             return self._fail(400, 'clips_mismatch')
 
-        prepared = []
-        total = 0
+        prepared_meta = []
         expected_keys = set()
         for index, segment in enumerate(segments, start=1):
             item = parsed[index - 1]
@@ -154,21 +160,34 @@ class IrgOralCaseService(models.AbstractModel):
                 return self._fail(400, 'duration_exceeded')
             key = 'clip_%d' % index
             expected_keys.add(key)
-            raw, filename, error = self._read_webm(clip_files.get(key), fallback='clip-%d.webm' % index)
+            prepared_meta.append({
+                'index': index,
+                'segment': segment,
+                'duration': duration,
+                'key': key,
+            })
+        if set(clip_files) - expected_keys:
+            return self._fail(400, 'clips_mismatch')
+
+        prepared = []
+        total = 0
+        for item in prepared_meta:
+            raw, filename, mimetype, error = self._read_video(
+                clip_files.get(item['key']), 'clip-%d.webm' % item['index'],
+            )
             if error:
                 return self._fail(400, error)
             total += len(raw)
             if total > HARD_MAX_VIDEO_BYTES:
                 return self._fail(400, 'video_too_large')
             prepared.append({
-                'index': index,
-                'segment': segment,
-                'duration': duration,
+                'index': item['index'],
+                'segment': item['segment'],
+                'duration': item['duration'],
                 'raw': raw,
-                'filename': 'clip-%d.webm' % index,
+                'filename': filename,
+                'mimetype': mimetype,
             })
-        if set(clip_files) - expected_keys:
-            return self._fail(400, 'clips_mismatch')
 
         config = self._n8n_config()
         if not config['submit_url'] or not config['api_key']:
@@ -187,11 +206,13 @@ class IrgOralCaseService(models.AbstractModel):
                 'segment_id': segment.id,
                 'segment_index': item['index'],
                 'prompt_snapshot': segment.prompt,
+                'student_text_snapshot': segment.student_text or segment.prompt,
                 'clip_url_snapshot': segment.clip_url,
                 'duration_seconds': item['duration'],
             })
             self._store_video_copy(
-                job, item['raw'], item['filename'], 'irg.oral.case.clip', clip.id, None, clip=clip,
+                job, item['raw'], item['filename'], item['mimetype'],
+                'irg.oral.case.clip', clip.id, None, clip=clip,
             )
             clips_meta.append({
                 'index': item['index'],
@@ -202,7 +223,7 @@ class IrgOralCaseService(models.AbstractModel):
                 'max_seconds': self._segment_limit(segment),
                 'duration_seconds': item['duration'],
             })
-            files['clip_%d' % item['index']] = (item['filename'], item['raw'], 'video/webm')
+            files['clip_%d' % item['index']] = (item['filename'], item['raw'], item['mimetype'])
         data = self._base_payload(partner, slide, raw_json, consent)
         data['mode'] = 'clips'
         data['case_title'] = slide.name or ''
@@ -288,12 +309,59 @@ class IrgOralCaseService(models.AbstractModel):
             _logger.error('irg_oral_case status unexpected status %s', response.status_code)
             return self._fail(502, 'n8n_unavailable')
         remote = _response_json(response)
-        payload = _status_payload(remote, job, config['api_key'])
-        remote_status = payload.get('status')
-        if isinstance(remote_status, str):
-            self._dispatch(job, {'n8n_status': _clip(remote_status, 64)})
-        self._persist_suggestion(job, remote)
+        payload = self._apply_remote_status(job, remote, config['api_key'])
         return {'http_status': 200, 'payload': payload}
+
+    def _refresh_pending_jobs(self):
+        """Consulta n8n para entregas aún aceptadas. No toca la nota oficial."""
+        job_model = self.env['irg.oral.case.job']
+        if job_model._irg_module_operation_in_progress():
+            return False
+        config = self._n8n_config()
+        if not config['status_url'] or not config['api_key']:
+            _logger.error('irg_oral_case status refresh skipped: n8n is not configured')
+            return False
+        from datetime import timedelta
+        horizon = fields.Datetime.now() - timedelta(days=7)
+        jobs = job_model.sudo().search([
+            ('state', '=', 'accepted'),
+            ('n8n_job_id', '!=', False),
+            ('create_date', '>=', horizon),
+        ], limit=20, order='write_date asc, id asc')
+        for job in jobs:
+            self._refresh_job(job, config)
+        return True
+
+    def _refresh_job(self, job, config):
+        try:
+            response = requests.get(
+                config['status_url'],
+                params={'job_id': job.n8n_job_id},
+                headers={'X-IRG-Key': config['api_key']},
+                timeout=N8N_TIMEOUT,
+                allow_redirects=False,
+            )
+        except requests.RequestException:
+            _logger.error('irg_oral_case status refresh transport error for job %s', job.id)
+            return
+        if response.status_code != 200:
+            _logger.error(
+                'irg_oral_case status refresh unexpected status %s', response.status_code,
+            )
+            return
+        self._apply_remote_status(job, _response_json(response), config['api_key'])
+
+    def _apply_remote_status(self, job, remote, secret):
+        payload = _status_payload(remote, job, secret)
+        vals = _remote_job_vals(
+            payload.get('status'),
+            remote.get('error') if isinstance(remote.get('error'), str) else None,
+            secret,
+        )
+        if vals:
+            self._dispatch(job, vals)
+        self._persist_suggestion(job, remote)
+        return payload
 
     def bootstrap_meta(self, partner, slide_id):
         slide, error = self._load_accessible_slide(partner, slide_id)
@@ -323,7 +391,9 @@ class IrgOralCaseService(models.AbstractModel):
                     'sequence': segment.sequence,
                     'name': segment.name,
                     'clip_url': clip_url,
-                    'prompt': segment.prompt,
+                    'student_text': segment.student_text or segment.prompt or '',
+                    'student_quote': segment.student_quote or '',
+                    'transcript': segment.transcript or '',
                     'max_seconds': self._segment_limit(segment),
                     'allow_retry': bool(segment.allow_retry),
                     'listen_clip_url': listen or '',
@@ -336,6 +406,8 @@ class IrgOralCaseService(models.AbstractModel):
                 'ok': True,
                 'slide_id': slide.id,
                 'case_id': slide.oral_case_code,
+                'case_title': slide.name or '',
+                'keep_video': self._keep_video(slide),
                 'mode': mode,
                 'consent_text': CONSENT_TEXT,
                 'consent_legal_status': CONSENT_LEGAL_STATUS,
@@ -439,7 +511,7 @@ class IrgOralCaseService(models.AbstractModel):
             'state': 'draft',
         })
 
-    def _store_video_copy(self, job, raw, filename, res_model, res_id, job_field, clip=None):
+    def _store_video_copy(self, job, raw, filename, mimetype, res_model, res_id, job_field, clip=None):
         if not self._keep_video(job.slide_id):
             return
         attachment = self.env['ir.attachment'].sudo().create({
@@ -448,7 +520,7 @@ class IrgOralCaseService(models.AbstractModel):
             'res_model': res_model,
             'res_id': res_id,
             'type': 'binary',
-            'mimetype': 'video/webm',
+            'mimetype': mimetype,
             'public': False,
         })
         if clip is not None:
@@ -502,24 +574,29 @@ class IrgOralCaseService(models.AbstractModel):
             return None, json_error
         return json.dumps(parsed_json, ensure_ascii=False, separators=(',', ':')), None
 
-    def _read_webm(self, video, fallback='oral-case.webm'):
+    def _read_video(self, video, fallback='oral-case.webm'):
         if video is None:
-            return b'', fallback, 'missing_video'
+            return b'', fallback, VIDEO_WEBM, 'missing_video'
         content_type = _video_content_type(video)
-        if content_type and content_type not in ('application/octet-stream', 'video/webm'):
-            return b'', fallback, 'invalid_video_type'
+        if content_type not in ALLOWED_VIDEO_TYPES:
+            return b'', fallback, VIDEO_WEBM, 'invalid_video_type'
         filename = _safe_filename(getattr(video, 'filename', '') or fallback)
-        if content_type != 'video/webm' and not filename.endswith('.webm'):
-            return b'', fallback, 'invalid_video_type'
+        expected = _expected_container(content_type, filename)
+        if not expected:
+            return b'', fallback, VIDEO_WEBM, 'invalid_video_type'
         max_bytes = self._int_param(
             'irg_oral_case.max_video_bytes', 52428800, HARD_MAX_VIDEO_BYTES,
         )
         raw, too_big = _read_limited(video, max_bytes)
         if too_big:
-            return b'', fallback, 'video_too_large'
+            return b'', fallback, VIDEO_WEBM, 'video_too_large'
         if not raw:
-            return b'', fallback, 'empty_video'
-        return raw, filename, None
+            return b'', fallback, VIDEO_WEBM, 'empty_video'
+        sniffed = _sniff_container(raw)
+        if sniffed != expected:
+            return b'', fallback, VIDEO_WEBM, 'invalid_video_type'
+        mimetype = VIDEO_MP4 if sniffed == 'mp4' else VIDEO_WEBM
+        return raw, _server_filename(fallback, sniffed), mimetype, None
 
     def _dispatch(self, job, vals):
         job.sudo().write(vals)
@@ -628,6 +705,52 @@ def _parse_self_assessment(raw):
     if not isinstance(parsed, (dict, list)):
         return None, 'invalid_self_assessment'
     return parsed, None
+
+
+def _remote_job_vals(remote_status, remote_error, secret):
+    if not isinstance(remote_status, str) or not remote_status:
+        return {}
+    vals = {'n8n_status': _clip(remote_status, 64)}
+    if remote_status in REMOTE_DONE_STATUSES:
+        vals['state'] = 'done'
+        vals['last_error'] = False
+    elif remote_status in REMOTE_ERROR_STATUSES:
+        vals['state'] = 'error'
+        text = remote_error if isinstance(remote_error, str) and remote_error else remote_status
+        vals['last_error'] = _clip(_redact(text, secret))
+    elif remote_status in PUBLIC_QUEUED_STATUSES:
+        vals['state'] = 'accepted'
+    return vals
+
+
+def _expected_container(content_type, filename):
+    name = (filename or '').lower()
+    if content_type == VIDEO_WEBM:
+        return 'webm' if name.endswith('.webm') else None
+    if content_type == VIDEO_MP4:
+        return 'mp4' if name.endswith('.mp4') else None
+    if content_type in ('', 'application/octet-stream'):
+        if name.endswith('.webm'):
+            return 'webm'
+        if name.endswith('.mp4'):
+            return 'mp4'
+    return None
+
+
+def _sniff_container(raw):
+    if raw.startswith(b'\x1a\x45\xdf\xa3'):
+        return 'webm'
+    if len(raw) >= 8 and raw[4:8] == b'ftyp':
+        return 'mp4'
+    return None
+
+
+def _server_filename(fallback, container):
+    base = os.path.splitext(_safe_filename(fallback))[0]
+    if not base or base in ('.', '..'):
+        base = 'oral-case'
+    ext = 'mp4' if container == 'mp4' else 'webm'
+    return '%s.%s' % (base, ext)
 
 
 def _video_content_type(video):

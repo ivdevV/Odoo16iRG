@@ -14,15 +14,27 @@
                     <field name="oral_case_keep_video" attrs="{'invisible': [('oral_case_enabled', '=', False)]}"/>
                     <field name="oral_case_listen_clip_url" attrs="{'invisible': [('oral_case_enabled', '=', False)]}"/>
                     <field name="oral_case_segment_ids" attrs="{'invisible': ['|', ('oral_case_enabled', '=', False), ('oral_case_mode', '!=', 'clips')]}">
-                        <tree editable="bottom">
+                        <tree>
                             <field name="sequence" widget="handle"/>
                             <field name="name"/>
                             <field name="clip_url"/>
-                            <field name="prompt"/>
                             <field name="max_seconds"/>
                             <field name="allow_retry"/>
-                            <field name="listen_clip_url"/>
                         </tree>
+                        <form>
+                            <group>
+                                <field name="name"/>
+                                <field name="sequence"/>
+                                <field name="clip_url"/>
+                                <field name="listen_clip_url"/>
+                                <field name="max_seconds"/>
+                                <field name="allow_retry"/>
+                                <field name="student_quote"/>
+                                <field name="student_text"/>
+                                <field name="transcript"/>
+                                <field name="prompt"/>
+                            </group>
+                        </form>
                     </field>
                 </group>
             </xpath>

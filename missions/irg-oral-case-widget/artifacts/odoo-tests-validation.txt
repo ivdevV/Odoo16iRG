@@ -1,0 +1,8 @@
+command: sudo docker compose --env-file /workspace/.cursor/runtime/compose.env -f /workspace/docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_oral_case_val_729d -i irg_oral_case --test-enable --test-tags=/irg_oral_case --stop-after-init --workers=0 --http-port=8098 --log-level=test
+cwd: /workspace
+database: test_irg_oral_case_val_729d
+exit_code: 0
+
+odoo.tests.stats and odoo.tests.result:
+2026-10-23 13:43:19,544 1 INFO test_irg_oral_case_val_729d odoo.tests.stats: irg_oral_case: 59 tests 65.44s 12880 queries 
+2026-10-23 13:43:19,544 1 INFO test_irg_oral_case_val_729d odoo.tests.result: 0 failed, 0 error(s) of 45 tests when loading database 'test_irg_oral_case_val_729d' 

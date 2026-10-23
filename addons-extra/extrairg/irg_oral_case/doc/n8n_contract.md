@@ -10,7 +10,7 @@ El modo de un solo vídeo no cambia de forma. El modo por tramos añade campos. 
 
 | Campo | Origen |
 | --- | --- |
-| `video` | Fichero `video/webm` |
+| `video` | Fichero `video/webm` o `video/mp4` |
 | `case_id` | Código del slide |
 | `slide_id` | Id del slide |
 | `partner_id` | Partner de la sesión |
@@ -28,7 +28,7 @@ Los mismos campos de identidad, más:
 | `case_title` | Nombre del slide |
 | `duracion_seg` | Suma de las duraciones de los tramos |
 | `clips_json` | Lista construida en el servidor |
-| `clip_1`, `clip_2`, … | Ficheros `clip-N.webm`, tipo `video/webm` |
+| `clip_1`, `clip_2`, … | Ficheros `clip-N.webm` (`video/webm`) o `clip-N.mp4` (`video/mp4`). El nombre y el tipo los fija Odoo tras comprobar la firma del contenedor. |
 
 Ejemplo de `clips_json`:
 
@@ -48,6 +48,10 @@ Ejemplo de `clips_json`:
 
 `prompt` y `clip_url` son los del segmento en Odoo. Un prompt enviado por el navegador no se reenvía.
 
+`prompt` sigue siendo la consigna que usa la IA. El texto que ve la alumna (`student_text`) no entra en este JSON. En los tramos que ya existían, la migración copia `prompt` a `student_text` y no cambia el `prompt` que se envía aquí. `duration_seconds` es la duración de la respuesta de la alumna, no la del vídeo de la paciente.
+
+El fichero puede ser WebM (firma EBML) o MP4 (caja `ftyp`). No se añaden campos al multipart por ese cambio. Safari y el iPad suelen grabar MP4.
+
 ## Respuesta del submit
 
 HTTP 202:
@@ -61,6 +65,8 @@ HTTP 202:
 ```
 
 Odoo publica `queued` si ese `status` es `queued`, `processing` o `accepted`. Guarda el valor crudo en `n8n_status`.
+
+Al consultar el estado, Odoo vuelve a guardar `n8n_status` y alinea `state`: `queued`, `processing` o `accepted` dejan la entrega en `accepted`; `done`, `completed` o `scored` la pasan a `done`; `error`, `failed` o `failure` la pasan a `error`. Un cron hace esa misma consulta para entregas `accepted` de los últimos 7 días. Ni la consulta ni el cron escriben la nota final.
 
 ## Respuesta de estado
 
