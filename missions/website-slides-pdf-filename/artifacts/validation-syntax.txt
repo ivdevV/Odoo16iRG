@@ -1,0 +1,5 @@
+=== command: node --check addons-extra/addons_uisep/website_slides_customizations/static/src/frontend/download.js ===
+EXIT_CODE_download_js=0
+
+=== command: node --check addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js ===
+EXIT_CODE_unit_test=0

@@ -1,0 +1,70 @@
+{
+  "status": "pending",
+  "task": "website-slides-pdf-filename",
+  "checks": [
+    {
+      "name": "unit_node_test",
+      "command": "node --test addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js",
+      "result": "pass",
+      "detail": "9 passed, 0 failed, exit code 0",
+      "evidence": "artifacts/validation-node-test.txt"
+    },
+    {
+      "name": "syntax_download_js",
+      "command": "node --check addons-extra/addons_uisep/website_slides_customizations/static/src/frontend/download.js",
+      "result": "pass",
+      "detail": "node --check exit code 0; sin errores de sintaxis",
+      "evidence": "artifacts/validation-syntax.txt"
+    },
+    {
+      "name": "syntax_unit_test",
+      "command": "node --check addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js",
+      "result": "pass",
+      "detail": "node --check exit code 0; sin errores de sintaxis",
+      "evidence": "artifacts/validation-syntax.txt"
+    },
+    {
+      "name": "scope_diff",
+      "command": "git status --short && git diff --stat",
+      "result": "pass",
+      "detail": "El único archivo de producto modificado es addons-extra/addons_uisep/website_slides_customizations/static/src/frontend/download.js (13 inserciones, 2 borrados). El test nuevo static/tests/ensure_pdf_name.test.js está sin seguimiento. No hay cambios en __manifest__.py, views/, controladores, rutas ni permisos. La carpeta de misión missions/website-slides-pdf-filename/ también está sin seguimiento y no es producto.",
+      "evidence": "artifacts/validation-scope.txt"
+    },
+    {
+      "name": "manifest_version",
+      "command": "python3 - <<'PY' (ast.parse de addons-extra/addons_uisep/website_slides_customizations/__manifest__.py; git diff --name-only y git status --short sobre ese archivo)",
+      "result": "pass",
+      "detail": "La clave version sigue siendo 0.1 (version_is_0.1=True). git diff --name-only y git status --short sobre __manifest__.py devuelven salida vacía y exit code 0; el manifest no está en el diff. EXIT_CODE=0.",
+      "evidence": "artifacts/validation-manifest.txt"
+    },
+    {
+      "name": "runtime_odoo",
+      "command": "command -v docker; docker --version; test -f docker-compose.local.yml; python3 scan /proc/net/tcp and /proc/net/tcp6 for LISTEN on port 8069",
+      "result": "skipped",
+      "detail": "No hay runtime local y no se arrancó ningún servicio. command -v docker exit 1; docker --version: command not found (exit 127); docker-compose.local.yml ausente (test -f exit 1); /proc/net/tcp y /proc/net/tcp6: NO_LISTENER_ON_8069 (exit 0). No es un fallo de producto.",
+      "evidence": "artifacts/validation-runtime.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "which docker (exit 1); ls /workspace/docker-compose.local.yml (exit 2 — no existe); ss -tlnp | grep ':8069' (sin salida — nada escucha)",
+      "result": "skipped",
+      "detail": "No hay runtime local: docker no instalado (which docker exit 1), docker-compose.local.yml ausente (ls exit 2), ningún listener en el puerto 8069 (ss sin resultados). TestSprite no fue invocado para no tunelarlo sin destino ni apuntar a beta/producción. El diff toca static/src/frontend/download.js (superficie web), lo que dispara la capa E2E, pero la ejecución requiere Odoo activo en localhost:8069. No es un fallo de producto; no reabre Implementación.",
+      "evidence": "artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "none",
+    "database": "none",
+    "base_commit": "c93611b84afa5b9d144abbab1f2d07b4e177d727"
+  },
+  "model_tier_used": "standard",
+  "escalations": 0,
+  "evidence": [
+    "artifacts/validation-node-test.txt",
+    "artifacts/validation-syntax.txt",
+    "artifacts/validation-scope.txt",
+    "artifacts/validation-manifest.txt",
+    "artifacts/validation-runtime.txt",
+    "artifacts/e2e-testsprite.txt"
+  ]
+}

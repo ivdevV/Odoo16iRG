@@ -1,0 +1,359 @@
+TAP version 13
+# Subtest: título con punto intermedio conserva el punto y acaba en .pdf
+not ok 1 - título con punto intermedio conserva el punto y acaba en .pdf
+  ---
+  duration_ms: 1.057767
+  type: 'test'
+  location: '/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:20:1'
+  failureType: 'testCodeFailure'
+  error: 'ensurePdfName is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:22:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: título sin punto recibe .pdf
+not ok 2 - título sin punto recibe .pdf
+  ---
+  duration_ms: 0.113905
+  type: 'test'
+  location: '/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:25:1'
+  failureType: 'testCodeFailure'
+  error: 'ensurePdfName is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:26:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: título acabado en .pptx añade .pdf sin sustituir la cola
+not ok 3 - título acabado en .pptx añade .pdf sin sustituir la cola
+  ---
+  duration_ms: 0.073813
+  type: 'test'
+  location: '/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:29:1'
+  failureType: 'testCodeFailure'
+  error: 'ensurePdfName is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:31:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: otras extensiones de ofimática también acaban en .pdf
+not ok 4 - otras extensiones de ofimática también acaban en .pdf
+  ---
+  duration_ms: 0.0719
+  type: 'test'
+  location: '/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:36:1'
+  failureType: 'testCodeFailure'
+  error: 'ensurePdfName is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:37:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: título que ya acaba en .PDF se conserva sin duplicar la extensión
+not ok 5 - título que ya acaba en .PDF se conserva sin duplicar la extensión
+  ---
+  duration_ms: 0.126953
+  type: 'test'
+  location: '/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:43:1'
+  failureType: 'testCodeFailure'
+  error: 'ensurePdfName is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:44:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: vacío, espacios o solo caracteres prohibidos usan documento.pdf
+not ok 6 - vacío, espacios o solo caracteres prohibidos usan documento.pdf
+  ---
+  duration_ms: 0.06013
+  type: 'test'
+  location: '/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:48:1'
+  failureType: 'testCodeFailure'
+  error: 'ensurePdfName is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:49:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: caracteres prohibidos en nombres de archivo se sustituyen
+not ok 7 - caracteres prohibidos en nombres de archivo se sustituyen
+  ---
+  duration_ms: 0.060967
+  type: 'test'
+  location: '/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:56:1'
+  failureType: 'testCodeFailure'
+  error: 'ensurePdfName is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:57:20)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Act. en clase y 13.Fluencia no pierden el punto intermedio
+not ok 8 - Act. en clase y 13.Fluencia no pierden el punto intermedio
+  ---
+  duration_ms: 0.060727
+  type: 'test'
+  location: '/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:62:1'
+  failureType: 'testCodeFailure'
+  error: 'ensurePdfName is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:63:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: los dos puntos de descarga usan ensurePdfName
+not ok 9 - los dos puntos de descarga usan ensurePdfName
+  ---
+  duration_ms: 1.018679
+  type: 'test'
+  location: '/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:67:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /downloadPDF\(url\.href,\s*ensurePdfName\(name\)\)/. Input:
+    
+    'function download_as_pdf(e){\n' +
+      "    const element = $('#custom_download_button')\n" +
+      "    const name = element.data('slideName')\n" +
+      "    const category = element.data('slideType')\n" +
+      '    let url = new URL(document.URL);\n' +
+      "    if(category == 'document'){\n" +
+      '        url.pathname = url.pathname + "/pdf_content";\n' +
+      '        downloadPDF(url.href, name)\n' +
+      '        return\n' +
+      '    }\n' +
+      "    $('#custom_download_icon').hide();\n" +
+      `    $('#custom_download_text').text("Descargando...");\n` +
+      "    $('#custom_loading_spinner').show();\n" +
+      '\n' +
+      '    const resetButton = function () {\n' +
+      "        $('#custom_loading_spinner').hide();\n" +
+      `        $('#custom_download_text').text("Descargar");\n` +
+      "        $('#custom_download_icon').show();\n" +
+      '    };\n' +
+      '\n' +
+      '    let item = undefined;\n' +
+      "    if(url.searchParams.get('fullscreen') === '1'){\n" +
+      "        item = $('.o_wslides_fs_content').get(0);\n" +
+      '    }else {\n' +
+      "        const content = $('.o_wslides_lesson_content')\n" +
+      '        item = document.createElement("div");\n' +
+      "        let headers = content.children('.oe_structure')[0]\n" +
+      "        let slides = $('.o_wslides_lesson_content_type > div > div > div')[0]\n" +
+      '\n' +
+      '        if (headers) {\n' +
+      '          for (const node of headers.childNodes) {\n' +
+      '            item.appendChild(node.cloneNode(true))\n' +
+      '          }\n' +
+      '        }\n' +
+      '\n' +
+      '         if (slides) {\n' +
+      '          for (const node of slides.childNodes) {\n' +
+      '            item.appendChild(node.cloneNode(true))\n' +
+      '          }\n' +
+      '        }\n' +
+      '    }\n' +
+      '\n' +
+      '    if (!item) {\n' +
+      '        resetButton();\n' +
+      '        alert("No se encontró el contenido de la diapositiva para descargar.");\n' +
+      '        return;\n' +
+      '    }\n' +
+      '\n' +
+      '    var opt = {\n' +
+      "        pagebreak: { mode: 'avoid-all' },\n" +
+      '        margin:       [12,12,12,12],\n' +
+      '        filename:     name,\n' +
+      "        image:        { type: 'jpeg', quality: 0.98 },\n" +
+      '        html2canvas:  { scale: 1 },\n' +
+      "        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait',\n" +
+      '                        width : 200.9, windowWidth : 720,\n' +
+      "                        autoPaging: 'text',\n" +
+      '                        margin: [72,72,72,72],\n' +
+      '        }\n' +
+      '    };\n' +
+      '\n' +
+      '    // New Promise-based usage:\n' +
+      '    html2pdf().set(opt).from(item).save().then(() => {\n' +
+      '        resetButton();\n' +
+      '    }).catch((error) => {\n' +
+      "        console.error('Error al generar el PDF:', error);\n" +
+      '        resetButton();\n' +
+      '        alert("Ocurrió un error al generar el PDF. Inténtelo de nuevo.");\n' +
+      '    });\n' +
+      '}\n' +
+      '\n' +
+      'async function downloadPDF(url, filename) {\n' +
+      '  try {\n' +
+      '    const response = await fetch(url);\n' +
+      '    const blob = await response.blob();\n' +
+      "    const link = document.createElement('a');\n" +
+      '    link.href = URL.createObjectURL(blob);\n' +
+      '    link.download = filename;\n' +
+      '    document.body.appendChild(link);\n' +
+      '    link.click();\n' +
+      '    document.body.removeChild(link);\n' +
+      '  } catch (error) {\n' +
+      "    console.error('Error:', error);\n" +
+      '    alert("Ocurrió un error al descargar el documento. Inténtelo de nuevo.");\n' +
+      '  }\n' +
+      '}\n'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    function download_as_pdf(e){
+        const element = $('#custom_download_button')
+        const name = element.data('slideName')
+        const category = element.data('slideType')
+        let url = new URL(document.URL);
+        if(category == 'document'){
+            url.pathname = url.pathname + "/pdf_content";
+            downloadPDF(url.href, name)
+            return
+        }
+        $('#custom_download_icon').hide();
+        $('#custom_download_text').text("Descargando...");
+        $('#custom_loading_spinner').show();
+    
+        const resetButton = function () {
+            $('#custom_loading_spinner').hide();
+            $('#custom_download_text').text("Descargar");
+            $('#custom_download_icon').show();
+        };
+    
+        let item = undefined;
+        if(url.searchParams.get('fullscreen') === '1'){
+            item = $('.o_wslides_fs_content').get(0);
+        }else {
+            const content = $('.o_wslides_lesson_content')
+            item = document.createElement("div");
+            let headers = content.children('.oe_structure')[0]
+            let slides = $('.o_wslides_lesson_content_type > div > div > div')[0]
+    
+            if (headers) {
+              for (const node of headers.childNodes) {
+                item.appendChild(node.cloneNode(true))
+              }
+            }
+    
+             if (slides) {
+              for (const node of slides.childNodes) {
+                item.appendChild(node.cloneNode(true))
+              }
+            }
+        }
+    
+        if (!item) {
+            resetButton();
+            alert("No se encontró el contenido de la diapositiva para descargar.");
+            return;
+        }
+    
+        var opt = {
+            pagebreak: { mode: 'avoid-all' },
+            margin:       [12,12,12,12],
+            filename:     name,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 1 },
+            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait',
+                            width : 200.9, windowWidth : 720,
+                            autoPaging: 'text',
+                            margin: [72,72,72,72],
+            }
+        };
+    
+        // New Promise-based usage:
+        html2pdf().set(opt).from(item).save().then(() => {
+            resetButton();
+        }).catch((error) => {
+            console.error('Error al generar el PDF:', error);
+            resetButton();
+            alert("Ocurrió un error al generar el PDF. Inténtelo de nuevo.");
+        });
+    }
+    
+    async function downloadPDF(url, filename) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Error:', error);
+        alert("Ocurrió un error al descargar el documento. Inténtelo de nuevo.");
+      }
+    }
+    
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (/workspace/addons-extra/addons_uisep/website_slides_customizations/static/tests/ensure_pdf_name.test.js:69:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 0
+# fail 9
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 64.774453
+EXIT:1

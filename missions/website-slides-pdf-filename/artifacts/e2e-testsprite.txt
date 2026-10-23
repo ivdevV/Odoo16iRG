@@ -1,0 +1,56 @@
+GATE E2E — website-slides-pdf-filename
+Fecha: 2026-10-23T18:43 UTC
+Agente: e2e-tester
+
+========================================================
+1. VERIFICACIÓN DE RUNTIME LOCAL
+========================================================
+
+-- Comprobación de docker --
+Comando: which docker
+Resultado: (salida vacía)
+Exit code: 1
+→ docker no existe en este entorno.
+
+-- Comprobación de docker-compose.local.yml --
+Comando: ls /workspace/docker-compose.local.yml
+Resultado: ls: cannot access '/workspace/docker-compose.local.yml': No such file or directory
+Exit code: 2
+→ Archivo no presente.
+
+-- Comprobación de listener en puerto 8069 --
+Comando: ss -tlnp | grep ':8069'
+Resultado: (sin salida — NADA en 8069)
+Comando: nc -z 127.0.0.1 8069
+Resultado: nc: command not found (exit 127)
+→ Ningún proceso escucha en 8069.
+
+========================================================
+2. CAUSA DEL SKIP
+========================================================
+
+El diff toca static/src/frontend/download.js (superficie web/assets estáticos),
+lo que dispara obligatoriamente la capa E2E según AGENTS.md.
+
+Sin embargo, no es posible ejecutar TestSprite porque:
+  a) Docker no está instalado → no se puede levantar docker-compose.local.yml.
+  b) docker-compose.local.yml no existe en el workspace.
+  c) El puerto 8069 no tiene ningún listener activo.
+
+Las reglas del rol e2e-tester prohíben expresamente:
+  - Invocar TestSprite sin runtime local (tunelarlo apuntaría a nada).
+  - Apuntar a beta (odoobetairg.laramieuniversity.com) o producción
+    (app.institutoraimongaja.com).
+  - Usar la raíz del repo, etc/, docker/ o docker-compose* como projectPath.
+  - Inventar un resultado E2E PASS sin ejecución real.
+
+Por tanto, ninguna de las herramientas TestSprite fue invocada.
+El check se registra como skipped por imposibilidad de runtime. El scope
+sí dispara la capa, porque el diff toca static/. No es un fallo de producto
+y no reabre Implementación. Tampoco cuenta como E2E validada.
+
+========================================================
+3. VEREDICTO
+========================================================
+
+E2E SKIPPED

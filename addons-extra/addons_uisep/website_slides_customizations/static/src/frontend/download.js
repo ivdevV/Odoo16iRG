@@ -1,3 +1,14 @@
+function ensurePdfName(name) {
+    var cleaned = (name == null ? '' : String(name))
+        .trim()
+        .replace(/[\\/:*?"<>|]+/g, ' ')
+        .trim();
+    if (!cleaned) {
+        cleaned = 'documento';
+    }
+    return /\.pdf$/i.test(cleaned) ? cleaned : cleaned + '.pdf';
+}
+
 function download_as_pdf(e){
     const element = $('#custom_download_button')
     const name = element.data('slideName')
@@ -5,7 +16,7 @@ function download_as_pdf(e){
     let url = new URL(document.URL);
     if(category == 'document'){
         url.pathname = url.pathname + "/pdf_content";
-        downloadPDF(url.href, name)
+        downloadPDF(url.href, ensurePdfName(name))
         return
     }
     $('#custom_download_icon').hide();
@@ -49,7 +60,7 @@ function download_as_pdf(e){
     var opt = {
         pagebreak: { mode: 'avoid-all' },
         margin:       [12,12,12,12],
-        filename:     name,
+        filename:     ensurePdfName(name),
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 1 },
         jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait',

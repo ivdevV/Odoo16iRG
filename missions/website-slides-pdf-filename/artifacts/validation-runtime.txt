@@ -1,0 +1,17 @@
+=== command: command -v docker ===
+EXIT_CODE_command_v_docker=1
+
+=== command: docker --version ===
+--: line 8: docker: command not found
+EXIT_CODE_docker_version=127
+
+=== command: test -f docker-compose.local.yml ===
+ABSENT
+EXIT_CODE_compose_file=1
+
+=== command: python3 scan /proc/net/tcp{,6} for LISTEN on port 8069 ===
+file=/proc/net/tcp exists=True
+file=/proc/net/tcp6 exists=True
+NO_LISTENER_ON_8069
+EXIT_CODE_port_scan=0
+EXIT_CODE_runtime_probe=0

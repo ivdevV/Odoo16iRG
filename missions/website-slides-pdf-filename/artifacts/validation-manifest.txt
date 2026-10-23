@@ -1,0 +1,10 @@
+manifest=addons-extra/addons_uisep/website_slides_customizations/__manifest__.py
+version='0.1'
+version_is_0.1=True
+git_diff_name_only_exit=0
+git_diff_name_only_stdout=''
+git_status_short_exit=0
+git_status_short_stdout=''
+manifest_in_diff=False
+RESULT=pass
+EXIT_CODE=0

@@ -1,0 +1,7 @@
+=== command: git status --short && git diff --stat ===
+ M addons-extra/addons_uisep/website_slides_customizations/static/src/frontend/download.js
+?? addons-extra/addons_uisep/website_slides_customizations/static/tests/
+?? missions/website-slides-pdf-filename/
+ .../static/src/frontend/download.js                       | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+EXIT_CODE=0
