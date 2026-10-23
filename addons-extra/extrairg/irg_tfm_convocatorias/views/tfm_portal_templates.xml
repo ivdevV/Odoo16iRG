@@ -65,6 +65,7 @@
                 <section class="card mb-4">
                     <div class="card-body">
                         <h3>Esquema</h3>
+                        <t t-call="irg_tfm_convocatorias.tfm_outline_guide"/>
                         <p t-if="not outline_versions and not outline_draft and not legacy_outline_deliveries"
                            class="text-muted">No hay versiones todavía.</p>
                         <div t-foreach="outline_versions" t-as="outline"
@@ -134,6 +135,20 @@
         </t>
     </template>
 
+    <template id="tfm_outline_guide" name="Guía de la asignatura TFM">
+        <div class="mb-4">
+            <h4 class="h5">Guía de la asignatura</h4>
+            <div class="alert alert-info" role="status">
+                Antes de iniciar el esquema se recomienda leer la guía de la
+                asignatura. Contiene las indicaciones para rellenarlo y para
+                elaborar el TFM.
+            </div>
+            <a class="btn btn-outline-primary"
+               href="/irg_tfm_convocatorias/static/src/pdf/guia-asignatura-tfm.pdf"
+               target="_blank">Abrir la guía</a>
+        </div>
+    </template>
+
     <template id="tfm_outline_form" name="Cuestionario de Esquema TFM">
         <t t-call="website.layout">
             <div class="container mt-4 mb-5">
@@ -146,6 +161,9 @@
                 <div t-if="error" class="alert alert-danger" role="alert">
                     <t t-esc="error"/>
                 </div>
+
+                <t t-if="outline.state == 'draft' and not review"
+                   t-call="irg_tfm_convocatorias.tfm_outline_guide"/>
 
                 <div class="card mb-4">
                     <div class="card-body">

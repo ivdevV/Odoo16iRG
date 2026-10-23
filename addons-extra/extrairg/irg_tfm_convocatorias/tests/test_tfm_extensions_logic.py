@@ -116,5 +116,31 @@ class OutlineTextTest(unittest.TestCase):
         )
 
 
+class OutlineGuideTest(unittest.TestCase):
+    def test_student_sees_the_guide_before_answering(self):
+        root = pathlib.Path(__file__).resolve().parents[1]
+        template = (root / 'views' / 'tfm_portal_templates.xml').read_text(encoding='utf-8')
+        guide = 'guia-asignatura-tfm.pdf'
+        guide_call = 'irg_tfm_convocatorias.tfm_outline_guide'
+        esquema = template.index('<h3>Esquema</h3>')
+        start = template.index('tfm/outline/start', esquema)
+        self.assertIn(guide_call, template[esquema:start])
+        form = template.index('id="tfm_outline_form"')
+        questions = template.index('tfm/outline/#{outline.id}/save', form)
+        self.assertIn(guide_call, template[form:questions])
+        guide_template = template.index('id="tfm_outline_guide"')
+        self.assertLess(guide_template, form)
+        self.assertIn(guide, template[guide_template:form])
+        guide_block = template[guide_template:form]
+        self.assertIn(
+            'Antes de iniciar el esquema se recomienda leer la guía',
+            guide_block,
+        )
+        self.assertIn('Abrir la guía', guide_block)
+        self.assertNotIn('<iframe', guide_block)
+        self.assertNotIn('en otra pestaña', guide_block)
+        self.assertTrue((root / 'static' / 'src' / 'pdf' / guide).is_file())
+
+
 if __name__ == '__main__':
     unittest.main()
