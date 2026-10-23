@@ -1,0 +1,12 @@
+Primera ejecución, con el código ya escrito. EXIT 1.
+odoo.tests.result: 3 failed, 4 error(s) of 37 tests.
+Fallos: frase de consentimiento en el JS, nota del chatter sin un decimal, ValueError de singleton en el cálculo heredado de isep_survey, y 403 al servir el webm propio.
+
+Cuarta ejecución, tras las correcciones. EXIT 0.
+odoo.tests.result: 0 failed, 0 error(s) of 38 tests.
+
+Validación independiente, misma base desechable, proceso nuevo. EXIT 0.
+odoo.tests.result: 0 failed, 0 error(s) of 38 tests.
+odoo.tests.stats: irg_oral_case: 52 tests.
+
+Base: test_irg_oral_case_clips_8297. Runtime: docker-compose.local.yml. La base se borró al cerrar.

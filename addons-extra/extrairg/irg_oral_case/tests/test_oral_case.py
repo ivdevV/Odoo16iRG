@@ -44,10 +44,20 @@ class TestOralCaseService(OralCaseFixture, TransactionCase):
         if 'html_embed_code' in self.slide._fields:
             self.assertEqual(self.slide.html_embed_code, self.embed_before)
 
-    def test_manifest_does_not_replace_fullscreen_assets(self):
-        manifest = Path(__file__).resolve().parents[1].joinpath('__manifest__.py').read_text()
-        self.assertNotIn("'assets'", manifest)
+    def test_manifest_ships_the_player_without_replacing_fullscreen(self):
+        root = Path(__file__).resolve().parents[1]
+        manifest = root.joinpath('__manifest__.py').read_text()
+        player = root.joinpath('static', 'src', 'js', 'oral_case_player.js').read_text()
         self.assertNotIn('isep_slide_article_custom', manifest)
+        self.assertNotIn('slides_course_fullscreen_player', manifest)
+        self.assertNotIn('slides_course_fullscreen_player', player)
+        self.assertIn('irg_oral_case/static/src/js/oral_case_player.js', manifest)
+        self.assertNotIn('innerHTML', player)
+        self.assertIn('textContent', player)
+        self.assertIn('MediaRecorder', player)
+        self.assertIn('MutationObserver', player)
+        self.assertIn('pending_legal_review', player)
+        self.assertIn('pendiente de validación legal', player)
 
     def test_packaged_parameters_do_not_embed_a_key_or_enable_deletion(self):
         root = ElementTree.parse(
@@ -87,6 +97,9 @@ class TestOralCaseService(OralCaseFixture, TransactionCase):
         self.assertEqual(captured['data']['partner_id'], str(self.student.partner_id.id))
         self.assertNotEqual(captured['data']['partner_id'], str(self.other_student.partner_id.id))
         self.assertEqual(captured['data']['case_id'], 'DA-ORAL-001')
+        self.assertNotIn('mode', captured['data'])
+        self.assertNotIn('clips_json', captured['data'])
+        self.assertEqual(result['payload']['status'], 'queued')
         self.assertEqual(captured['headers']['X-IRG-Key'], self.api_key)
         self.assertFalse(captured['allow_redirects'])
         self.assertNotIn('https://n8n.test/internal-status', json.dumps(result['payload']))
@@ -111,19 +124,27 @@ class TestOralCaseService(OralCaseFixture, TransactionCase):
             ('survey_id', '=', self.survey.id),
         ]), 1)
 
-    def test_orm_create_forces_the_session_partner(self):
-        self.env['slide.channel.partner'].sudo().create({
-            'channel_id': self.channel.id,
-            'partner_id': self.internal_user.partner_id.id,
+    def test_portal_cannot_create_a_job_for_someone_else(self):
+        before = self.env['irg.oral.case.job'].sudo().search_count([])
+        attachment = self.env['ir.attachment'].sudo().create({
+            'name': 'sitemap.xml',
+            'datas': base64.b64encode(b'<xml/>'),
+            'mimetype': 'application/xml',
+            'public': True,
         })
-        job = self.env['irg.oral.case.job'].with_user(self.internal_user).create({
-            'partner_id': self.other_student.partner_id.id,
-            'slide_id': self.slide.id,
-            'case_code': 'DA-ORAL-001',
-            'consent_date': '2026-10-22 00:00:00',
-            'survey_id': self.survey.id,
-        })
-        self.assertEqual(job.partner_id, self.internal_user.partner_id)
+        with self.assertRaises(AccessError):
+            self.env['irg.oral.case.job'].with_user(self.internal_user).with_context(
+                irg_oral_case_dispatch=True,
+            ).create({
+                'partner_id': self.other_student.partner_id.id,
+                'slide_id': self.slide.id,
+                'case_code': 'DA-ORAL-001',
+                'consent_date': '2026-10-22 00:00:00',
+                'survey_id': self.survey.id,
+                'video_attachment_id': attachment.id,
+            })
+        self.assertEqual(self.env['irg.oral.case.job'].sudo().search_count([]), before)
+        self.assertTrue(attachment.exists())
 
     def test_outsider_cannot_submit(self):
         with patch('odoo.addons.irg_oral_case.models.service.requests.post') as mocked:
@@ -296,8 +317,9 @@ class TestOralCaseGrade(OralCaseFixture, TransactionCase):
         })
 
     def test_student_cannot_write_the_suggestion_or_the_official_grade(self):
-        with self.assertRaises((AccessError, MissingError)):
-            self.participation.with_user(self.student).write({'score_ia': 10})
+        self._assert_access_blocked(
+            lambda: self.participation.with_user(self.student).write({'score_ia': 10})
+        )
         with self.assertRaises(AccessError):
             self.env['irg.oral.case.confirm.grade'].with_user(self.student).create({
                 'user_input_id': self.participation.id,
@@ -324,6 +346,8 @@ class TestOralCaseGrade(OralCaseFixture, TransactionCase):
         self.assertFalse(self.env['app.gradebook.result'].search(self._gradebook_domain()))
 
     def test_teacher_confirmation_is_required_and_does_not_copy_the_suggestion(self):
+        if 'is_published' in self.channel._fields:
+            self.channel.write({'is_published': False})
         pending = self.env['irg.oral.case.confirm.grade'].with_user(self.teacher).create({
             'user_input_id': self.participation.id,
             'official_score': 6,
@@ -349,7 +373,7 @@ class TestOralCaseGrade(OralCaseFixture, TransactionCase):
         self.assertEqual(result.survey_user_input_id, self.participation)
         self.assertFalse(self.participation.result_id)
         self.participation.with_user(self.teacher).write({'score_ia': 1.0})
-        result.invalidate_cache(fnames=['scoring_total'], ids=result.ids)
+        result.invalidate_recordset(['scoring_total'])
         self.assertEqual(result.scoring_total, 6.0)
 
 
@@ -396,6 +420,33 @@ class TestOralCaseRetention(OralCaseFixture, TransactionCase):
 
         self.assertTrue(self.env['irg.oral.case.job']._cron_apply_video_retention())
         self.assertFalse(attachment.exists())
-        job.invalidate_cache()
+        job.invalidate_recordset()
         self.assertTrue(job.video_purged)
         self.assertFalse(job.video_attachment_id)
+
+    def test_cron_does_not_delete_a_foreign_attachment(self):
+        foreign = self.env['ir.attachment'].sudo().create({
+            'name': 'sitemap.xml',
+            'datas': base64.b64encode(b'<xml/>'),
+            'res_model': 'ir.ui.view',
+            'res_id': 1,
+            'mimetype': 'application/xml',
+            'public': True,
+        })
+        job = self.env['irg.oral.case.job'].create({
+            'partner_id': self.student.partner_id.id,
+            'slide_id': self.slide.id,
+            'survey_id': self.survey.id,
+            'case_code': 'DA-ORAL-001',
+            'consent_date': '2020-01-01 00:00:00',
+            'video_attachment_id': foreign.id,
+            'video_stored_at': '2020-01-01 00:00:00',
+        })
+        params = self.env['ir.config_parameter'].sudo()
+        params.set_param('irg_oral_case.retention_enabled', 'True')
+        params.set_param('irg_oral_case.retention_days', '30')
+        self.assertTrue(self.env['irg.oral.case.job']._cron_apply_video_retention())
+        self.assertTrue(foreign.exists())
+        job.invalidate_recordset()
+        self.assertFalse(job.video_attachment_id)
+        self.assertTrue(job.video_purged)

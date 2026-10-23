@@ -10,6 +10,20 @@
                     <field name="oral_case_enabled"/>
                     <field name="oral_case_code" attrs="{'invisible': [('oral_case_enabled', '=', False)], 'required': [('oral_case_enabled', '=', True)]}"/>
                     <field name="oral_case_survey_id" attrs="{'invisible': [('oral_case_enabled', '=', False)], 'required': [('oral_case_enabled', '=', True)]}"/>
+                    <field name="oral_case_mode" attrs="{'invisible': [('oral_case_enabled', '=', False)]}"/>
+                    <field name="oral_case_keep_video" attrs="{'invisible': [('oral_case_enabled', '=', False)]}"/>
+                    <field name="oral_case_listen_clip_url" attrs="{'invisible': [('oral_case_enabled', '=', False)]}"/>
+                    <field name="oral_case_segment_ids" attrs="{'invisible': ['|', ('oral_case_enabled', '=', False), ('oral_case_mode', '!=', 'clips')]}">
+                        <tree editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="clip_url"/>
+                            <field name="prompt"/>
+                            <field name="max_seconds"/>
+                            <field name="allow_retry"/>
+                            <field name="listen_clip_url"/>
+                        </tree>
+                    </field>
                 </group>
             </xpath>
         </field>

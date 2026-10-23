@@ -1,0 +1,17 @@
+E2E TestSprite, tercera pasada y única autorizada tras preparar el entorno. http://127.0.0.1:8069, base test_irg_oral_case_e2e_8297, projectPath el directorio del módulo. No se usó beta ni producción.
+
+Preparación, comprobada antes de lanzar TestSprite:
+- website_slides e irg_oral_case instalados en esa base.
+- El mismo volumen de filestore sirvió la instalación y el proceso de 8069. Login, CSS y JS de backend y de frontend respondieron 200.
+- El docente de prueba está en openeducat_core.group_op_faculty y en website_slides.group_website_slides_officer. load_menus incluye eLearning y Casos orales.
+- Curso publicado, slide article 3 en modo clips, tres tramos https, alumna portal inscrita, entrega 3 con score_ia 8.2 y tres clips (7, 8 y 9). El caso no conserva el vídeo.
+- URLs directas: /slides/slide/3 para la alumna y /web#id=3&cids=1&menu_id=346&action=473&model=irg.oral.case.job&view_type=form para el docente.
+- Chrome local, antes de TestSprite: la alumna ve el texto pendiente de validación legal y el botón Aceptar y activar la cámara. El docente ve Nota propuesta por IA 8.20, las intervenciones, el aviso de que el caso no conserva el vídeo, y no aparece Copia del vídeo.
+
+TestSprite: 9 escenarios, 9 pasados. Entraron por esas URLs, no por el lanzador.
+
+Alumna: TC003 ve el consentimiento. TC001 marca la casilla, pulsa Aceptar y activar la cámara y el navegador de TestSprite muestra "No se ha podido usar la cámara. Sin ese permiso no se puede continuar." El clip 1 y la consigna quedan detrás de getUserMedia y no se alcanzaron. Ese es el límite aceptado de esta pasada.
+
+Docente: abre el formulario por la URL directa. Ve los tramos 1 y 2 en el listado (el script exportado no deja una aserción aparte del tramo 3; los tres clips están en la base, con notas 7, 8 y 9). Escribe 7.5 y guarda. En la base, irg_oral_case_job.official_score es 7.5, official_confirmed_by es el docente (uid 10), app.gradebook.result id 1 tiene scoring_total 7.5 y write_uid 10. El chatter dice "sin nota → 7.5". Las pasadas siguientes del mismo valor dejan "7.5 → 7.5". La línea del cuaderno se ve como enlace de solo lectura "[ N/A ] N/A", porque esta fixture no tiene asignatura de admisión. No hay selector editable de líneas ni de adjuntos. TC009 comprueba el aviso de que el caso no conserva el vídeo. El script exportado de TC008 solo afirma que la página tiene URL; la ausencia de Copia del vídeo queda en el render local y en la vista, que no incluye video_attachment_id.
+
+E2E PASS

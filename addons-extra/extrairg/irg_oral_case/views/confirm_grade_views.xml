@@ -4,7 +4,7 @@
         <field name="name">irg.oral.case.confirm.grade.form</field>
         <field name="model">irg.oral.case.confirm.grade</field>
         <field name="arch" type="xml">
-            <form string="Confirmar nota oficial">
+            <form string="Confirmar nota final">
                 <group>
                     <field name="user_input_id" invisible="1"/>
                     <field name="score_ia" readonly="1"/>
@@ -17,7 +17,7 @@
                     <field name="confirm_official"/>
                 </group>
                 <footer>
-                    <button name="action_confirm" type="object" string="Confirmar nota oficial" class="btn-primary" groups="openeducat_core.group_op_faculty"/>
+                    <button name="action_confirm" type="object" string="Confirmar nota final" class="btn-primary" groups="openeducat_core.group_op_faculty"/>
                     <button string="Cancelar" special="cancel"/>
                 </footer>
             </form>
