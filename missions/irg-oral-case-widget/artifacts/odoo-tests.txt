@@ -1,0 +1,3 @@
+2026-10-23 13:13:23,868 1 INFO test_irg_oral_case_widget_729d odoo.tests.stats: irg_oral_case: 59 tests 65.29s 12879 queries 
+2026-10-23 13:13:23,868 1 INFO test_irg_oral_case_widget_729d odoo.tests.result: 0 failed, 0 error(s) of 45 tests when loading database 'test_irg_oral_case_widget_729d' 
+EXIT:0

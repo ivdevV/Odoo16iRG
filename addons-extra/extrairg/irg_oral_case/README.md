@@ -1,6 +1,6 @@
 # irg_oral_case
 
-Entrega de un caso práctico oral grabado en un slide de eLearning. Odoo autentica al alumno, crea o reutiliza su `survey.user_input` y reenvía el webm a n8n. La IA solo sugiere. La nota final la escribe el docente, como número de 0 a 10, y el módulo crea o actualiza la línea de `app.gradebook.result` de esa alumna y de esa participación.
+Entrega de un caso práctico oral grabado en un slide de eLearning. Odoo autentica a la alumna, crea o reutiliza su `survey.user_input` y reenvía el vídeo (WebM o MP4) a n8n. La IA solo sugiere. La nota final la escribe el docente, como número de 0 a 10, y el módulo crea o actualiza la línea de `app.gradebook.result` de esa alumna y de esa participación.
 
 El slide sigue siendo un artículo. Este módulo no cambia `slide_category`, no toca `html_embed_code` y no sustituye el JavaScript de `isep_slide_article_custom`. En pantalla completa, si el slide es `article`, ese módulo sigue pegando el HTML en la página.
 
@@ -28,9 +28,9 @@ En el slide (backoffice, sin cambiar el tipo):
 - `oral_case_survey_id`
 - `oral_case_mode`: `single` (un webm, el comportamiento de siempre) o `clips` (tramos ordenados)
 - `oral_case_keep_video`: si se conserva la grabación en Odoo. Por defecto no. El interruptor global `irg_oral_case.store_video_copy`, si alguien lo dejó activo, sigue forzando la copia.
-- En modo `clips`, la lista de tramos: URL https del clip, consigna, segundos máximos, si se puede repetir la toma y, si hace falta, un clip de escucha en bucle. Hay un clip de escucha opcional a nivel de caso, solo para el modo de un solo vídeo.
+- En modo `clips`, cada tramo tiene URL https del clip, consigna para la IA (`prompt`), texto que ve la alumna (`student_text`), cita y transcripción opcionales, segundos máximos y si se puede repetir la toma. Si `student_text` está vacío, la alumna ve el `prompt`. La migración `16.0.2.1.0` copia el `prompt` a `student_text` solo cuando ese campo está vacío. Hay un clip de escucha opcional a nivel de caso, solo para el modo de un solo vídeo.
 
-El HTML del artículo basta con el contenedor. El reproductor es un asset de `web.assets_frontend` y arranca al ver ese nodo, también cuando el fullscreen pega el HTML con jQuery y no ejecuta etiquetas script:
+El HTML del artículo basta con el contenedor. El reproductor es un asset de `web.assets_frontend`. En pantalla completa el HTML se pega en la página. En la vista normal, `isep_content_interactive` mete el HTML en un iframe `srcdoc` same-origin: el asset del padre entra en ese documento, enlaza la hoja de estilos del módulo y arranca el nodo. Los temporizadores se crean y se cancelan en la ventana de ese documento.
 
 ```html
 <div class="o_irg_oral_case" data-slide-id="SLIDE_ID"></div>
@@ -57,11 +57,15 @@ Respuesta 200:
   "max_video_bytes": 52428800,
   "max_duration_seconds": 600,
   "submit_url": "/irg/oral_case/submit",
-  "status_url": "/irg/oral_case/status"
+  "status_url": "/irg/oral_case/status",
+  "case_title": "Primera entrevista con Marta",
+  "keep_video": false,
+  "mode": "clips",
+  "segments": []
 }
 ```
 
-No incluye la clave ni la URL de n8n.
+En modo `clips`, `segments` trae `student_text`, `student_quote`, `transcript`, `clip_url` y `max_seconds`. No trae la clave `prompt`. No incluye la clave de n8n ni su URL. El reproductor no muestra `score_ia`.
 
 ### `POST /irg/oral_case/submit`
 
@@ -71,7 +75,7 @@ No incluye la clave ni la URL de n8n.
 | --- | --- | --- |
 | `csrf_token` | sí | El de `bootstrap` |
 | `slide_id` | sí | Entero |
-| `video` | sí | Fichero `video/webm` (o `application/octet-stream` con nombre `.webm`) |
+| `video` | sí en modo `single` | `video/webm` o `video/mp4`. Si el tipo viene vacío u `application/octet-stream`, el nombre tiene que ser `.webm` o `.mp4` y la firma del contenedor tiene que coincidir |
 | `consent_date` | sí | `YYYY-MM-DD` o ISO `YYYY-MM-DDTHH:MM:SS` |
 | `autoevaluacion_json` | sí | String JSON: objeto o lista, máximo 20000 caracteres |
 | `duracion_seg` | no | Número ≥ 0. Si viene, no puede pasar del máximo |
@@ -91,7 +95,7 @@ Respuesta 202:
 
 `status_url` es el proxy de Odoo, no el de n8n.
 
-En modo `single` Odoo reenvía a n8n, en multipart, los mismos campos de siempre: `video`, `case_id`, `slide_id`, `partner_id` (el de la sesión), `autoevaluacion_json`, `consent_date` y, si vino, `duracion_seg`. No añade `mode` ni `clips_json`. En modo `clips` añade `mode=clips`, `case_title`, `clips_json` (índice, segmento, consigna y URL salen de la base, no del navegador) y los ficheros `clip_1`, `clip_2`, … El contrato con ejemplos está en `doc/n8n_contract.md`. Si n8n responde `queued`, `processing` o `accepted`, el submit público dice `queued`. El GET de estado devuelve el `status` remoto tal cual.
+En modo `single` Odoo reenvía a n8n, en multipart, los mismos campos de siempre: `video`, `case_id`, `slide_id`, `partner_id` (el de la sesión), `autoevaluacion_json`, `consent_date` y, si vino, `duracion_seg`. No añade `mode` ni `clips_json`. En modo `clips` añade `mode=clips`, `case_title`, `clips_json` (índice, segmento, consigna y URL salen de la base, no del navegador) y los ficheros `clip_1`, `clip_2`, … El contrato con ejemplos está en `doc/n8n_contract.md`. Si n8n responde `queued`, `processing` o `accepted`, el submit público dice `queued` y la entrega queda en `accepted`. Un `done`, `completed` o `scored` pasa la entrega a `done`. Un `error`, `failed` o `failure` la pasa a `error`. `n8n_status` guarda el valor remoto. Ni el GET ni el cron de cada 5 minutos (entregas `accepted` con `job_id`, de los últimos 7 días, como máximo 20) escriben la nota oficial. Un fallo de transporte no cambia el estado.
 
 Antes de llamar, crea o reutiliza el `survey.user_input` de ese alumno, ese survey y ese slide, en estado `in_progress`. n8n puede escribir ahí `score_ia`, `resumen_ia` y `error_ai`. Esos campos no son la nota oficial.
 
@@ -132,7 +136,7 @@ El cuerpo es `{"ok": false, "error": "<código>"}`. En `n8n_rejected` hay ademá
 | 400 | `missing_video` | Sin fichero |
 | 400 | `empty_video` | Fichero vacío |
 | 400 | `video_too_large` | Supera el máximo (y el techo de 200 MiB) |
-| 400 | `invalid_video_type` | No es webm |
+| 400 | `invalid_video_type` | No es WebM (EBML) ni MP4 (`ftyp`), o el tipo declarado no coincide con la firma |
 | 400 | `invalid_duration` | `duracion_seg` no es un número ≥ 0 |
 | 400 | `duration_exceeded` | Supera el máximo (y el techo de 14400 s) |
 | 400 | `grade_already_confirmed` | Ya hay nota final confirmada para esa alumna y ese caso |
@@ -188,7 +192,7 @@ El usuario de Odoo con el que n8n escribe `score_ia`, `resumen_ia` y `error_ai` 
 
 ## Vídeo y retención
 
-Por defecto no se guarda copia en Odoo y el cron no borra nada. El interruptor que ve el personal es `oral_case_keep_video` en el slide. El cron diario sale sin tocar adjuntos si hay módulos en instalación o actualización, si `retention_enabled` no está activo o si `retention_days` es 0. Antes de borrar comprueba que el adjunto es el webm de esa entrega (`res_model`, `res_id`, `video/webm`, no público). Un puntero a un fichero ajeno se limpia y el fichero se queda. Si se conserva el vídeo y hace falta verlo, las rutas `GET /irg/oral_case/media/job/<id>` y `.../clip/<id>` solo lo sirven a quien ya puede ver la entrega, con las mismas comprobaciones. La decisión de conservar o no las grabaciones sigue pendiente.
+Por defecto no se guarda copia en Odoo y el cron no borra nada. El interruptor que ve el personal es `oral_case_keep_video` en el slide. El cron diario sale sin tocar adjuntos si hay módulos en instalación o actualización, si `retention_enabled` no está activo o si `retention_days` es 0. Antes de borrar comprueba que el adjunto es el vídeo de esa entrega (`res_model`, `res_id`, `video/webm` o `video/mp4`, no público). Un puntero a un fichero ajeno se limpia y el fichero se queda. Si se conserva el vídeo y hace falta verlo, las rutas `GET /irg/oral_case/media/job/<id>` y `.../clip/<id>` solo lo sirven a quien ya puede ver la entrega, con las mismas comprobaciones. La decisión de conservar o no las grabaciones sigue pendiente.
 
 ## Pruebas
 
@@ -200,3 +204,11 @@ docker compose -f docker-compose.local.yml exec -T odoo_local odoo \
 ```
 
 n8n se mockea. No hace falta la clave real.
+
+La lógica de pantallas del reproductor (botones, Vimeo, MP4, textos) se prueba sin Odoo:
+
+```bash
+node --test addons-extra/extrairg/irg_oral_case/tests/oral_case_logic.test.js
+```
+
+El reproductor pide reproducir el clip en 16:9, ofrece «Responder ya» si el vídeo falla o no termina, y al repetir una toma vuelve a la consigna. La duración del clip de la paciente solo se muestra si el player la reporta. El límite de la respuesta se etiqueta como tiempo máximo.

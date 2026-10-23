@@ -3,6 +3,8 @@ import base64
 import json
 from unittest.mock import patch
 
+import requests
+
 from odoo.exceptions import AccessError, ValidationError
 from odoo.tests.common import HttpCase, TransactionCase, tagged
 
@@ -75,8 +77,8 @@ class TestOralCaseClips(OralCaseFixture, TransactionCase):
                 form,
                 None,
                 {
-                    'clip_1': self._video(b'clip-uno', filename='uno.webm'),
-                    'clip_2': self._video(b'clip-dos', filename='dos.webm'),
+                    'clip_1': self._video(b'\x1a\x45\xdf\xa3clip-uno', filename='uno.webm'),
+                    'clip_2': self._video(b'\x1a\x45\xdf\xa3clip-dos', filename='dos.webm'),
                 },
             )
         self.assertEqual(result['http_status'], 202)
@@ -93,6 +95,187 @@ class TestOralCaseClips(OralCaseFixture, TransactionCase):
         job = self.env['irg.oral.case.job'].search([('n8n_job_id', '=', 'job-clips-1')])
         self.assertEqual(len(job.clip_ids), 2)
         self.assertEqual(job.clip_ids.sorted('segment_index')[0].prompt_snapshot, meta[0]['prompt'])
+
+    def test_student_text_does_not_replace_the_n8n_prompt(self):
+        self.first.write({
+            'student_text': 'Responde en breve.',
+            'student_quote': '¿Y entonces qué me ha pasado?',
+            'transcript': 'Estaba en la cola del supermercado.',
+            'prompt': 'Indicadores que solo lee la IA.',
+        })
+        captured = {}
+
+        def fake_post(url, data=None, files=None, headers=None, timeout=None, allow_redirects=None):
+            captured['data'] = data
+            return _accepted('job-texto-1')
+
+        form = self._form(clips_json=json.dumps([
+            {'index': 1, 'segment_id': self.first.id, 'duration_seconds': 10},
+            {'index': 2, 'segment_id': self.second.id, 'duration_seconds': 8},
+        ]))
+        with patch('odoo.addons.irg_oral_case.models.service.requests.post', side_effect=fake_post):
+            result = self._service(self.student).submit_recording(
+                self.student.partner_id,
+                form,
+                None,
+                {
+                    'clip_1': self._video(b'\x1a\x45\xdf\xa3uno', filename='uno.webm'),
+                    'clip_2': self._video(b'\x1a\x45\xdf\xa3dos', filename='dos.webm'),
+                },
+            )
+        self.assertEqual(result['http_status'], 202)
+        meta = json.loads(captured['data']['clips_json'])
+        self.assertEqual(meta[0]['prompt'], 'Indicadores que solo lee la IA.')
+        self.assertNotIn('student_text', meta[0])
+        boot = self._service(self.student).bootstrap_meta(self.student.partner_id, str(self.slide.id))
+        segment = boot['payload']['segments'][0]
+        self.assertEqual(segment['student_text'], 'Responde en breve.')
+        self.assertEqual(segment['student_quote'], '¿Y entonces qué me ha pasado?')
+        self.assertNotIn('prompt', segment)
+        self.assertNotIn('Indicadores que solo lee la IA.', json.dumps(segment))
+        job = self.env['irg.oral.case.job'].search([('n8n_job_id', '=', 'job-texto-1')])
+        self.assertEqual(job.clip_ids.sorted('segment_index')[0].student_text_snapshot, 'Responde en breve.')
+
+    def test_mp4_is_accepted_and_a_mislabeled_container_is_not(self):
+        mp4 = b'\x00\x00\x00\x18ftypisom' + b'aaaa'
+        captured = {}
+
+        def fake_post(url, data=None, files=None, headers=None, timeout=None, allow_redirects=None):
+            captured['files'] = files
+            return _accepted('job-mp4-1')
+
+        form = self._form(clips_json=json.dumps([
+            {'index': 1, 'segment_id': self.first.id, 'duration_seconds': 10},
+            {'index': 2, 'segment_id': self.second.id, 'duration_seconds': 8},
+        ]))
+        with patch('odoo.addons.irg_oral_case.models.service.requests.post', side_effect=fake_post):
+            accepted = self._service(self.student).submit_recording(
+                self.student.partner_id,
+                form,
+                None,
+                {
+                    'clip_1': self._video(mp4, filename='uno.mp4', content_type='video/mp4'),
+                    'clip_2': self._video(mp4, filename='dos.mp4', content_type='video/mp4'),
+                },
+            )
+            mismatched = self._service(self.student).submit_recording(
+                self.student.partner_id,
+                form,
+                None,
+                {
+                    'clip_1': self._video(b'\x1a\x45\xdf\xa3webm', filename='uno.mp4', content_type='video/mp4'),
+                    'clip_2': self._video(mp4, filename='dos.mp4', content_type='video/mp4'),
+                },
+            )
+        self.assertEqual(accepted['http_status'], 202)
+        self.assertEqual(captured['files']['clip_1'][2], 'video/mp4')
+        self.assertTrue(captured['files']['clip_1'][0].endswith('.mp4'))
+        self.assertEqual(mismatched['payload']['error'], 'invalid_video_type')
+
+    def test_empty_student_text_still_shows_the_legacy_prompt(self):
+        boot = self._service(self.student).bootstrap_meta(self.student.partner_id, str(self.slide.id))
+        self.assertEqual(boot['payload']['segments'][0]['student_text'], self.first.prompt)
+        self.assertNotIn('prompt', boot['payload']['segments'][0])
+        self.assertIn('case_title', boot['payload'])
+        self.assertIn('keep_video', boot['payload'])
+        self.assertFalse(boot['payload']['keep_video'])
+
+    def test_status_done_moves_the_job_without_grading(self):
+        participation = self.env['survey.user_input'].sudo().create({
+            'survey_id': self.survey.id,
+            'partner_id': self.student.partner_id.id,
+            'slide_id': self.slide.id,
+            'state': 'in_progress',
+        })
+        job = self.env['irg.oral.case.job'].create({
+            'partner_id': self.student.partner_id.id,
+            'slide_id': self.slide.id,
+            'survey_id': self.survey.id,
+            'user_input_id': participation.id,
+            'case_code': 'DA-ORAL-001',
+            'consent_date': '2026-10-22 00:00:00',
+            'n8n_job_id': 'job-estado-1',
+            'state': 'accepted',
+            'n8n_status': 'processing',
+        })
+
+        def fake_get(url, params=None, headers=None, timeout=None, allow_redirects=None):
+            return FakeResponse(200, {
+                'status': 'done',
+                'score_ia': 6,
+                'official_score': 10,
+            })
+
+        with patch('odoo.addons.irg_oral_case.models.service.requests.get', side_effect=fake_get):
+            result = self._service(self.student).fetch_status(self.student.partner_id, job.n8n_job_id)
+        job.invalidate_recordset()
+        self.assertEqual(result['payload']['status'], 'done')
+        self.assertEqual(job.state, 'done')
+        self.assertEqual(job.n8n_status, 'done')
+        self.assertEqual(job.official_score, 0)
+        self.assertFalse(job.gradebook_result_id)
+
+    def test_cron_refreshes_accepted_jobs_and_ignores_transport_errors(self):
+        participation = self.env['survey.user_input'].sudo().create({
+            'survey_id': self.survey.id,
+            'partner_id': self.student.partner_id.id,
+            'slide_id': self.slide.id,
+            'state': 'in_progress',
+        })
+        job = self.env['irg.oral.case.job'].create({
+            'partner_id': self.student.partner_id.id,
+            'slide_id': self.slide.id,
+            'survey_id': self.survey.id,
+            'user_input_id': participation.id,
+            'case_code': 'DA-ORAL-001',
+            'consent_date': '2026-10-22 00:00:00',
+            'n8n_job_id': 'job-cron-1',
+            'state': 'accepted',
+        })
+
+        def fake_get(url, params=None, headers=None, timeout=None, allow_redirects=None):
+            if params and params.get('job_id') == 'job-cron-1':
+                return FakeResponse(200, {'status': 'error', 'error': 'fallo de transcripcion', 'official_score': 9})
+            raise AssertionError(params)
+
+        with patch('odoo.addons.irg_oral_case.models.service.requests.get', side_effect=fake_get):
+            self.env['irg.oral.case.job']._cron_refresh_n8n_status()
+        job.invalidate_recordset()
+        self.assertEqual(job.state, 'error')
+        self.assertEqual(job.n8n_status, 'error')
+        self.assertEqual(job.official_score, 0)
+        self.assertFalse(self.env['app.gradebook.result'].search(self._gradebook_domain()))
+
+        job.sudo().write({'state': 'accepted', 'n8n_status': 'processing', 'last_error': False})
+        with patch(
+            'odoo.addons.irg_oral_case.models.service.requests.get',
+            side_effect=requests.RequestException('caido'),
+        ):
+            self.env['irg.oral.case.job']._cron_refresh_n8n_status()
+        job.invalidate_recordset()
+        self.assertEqual(job.state, 'accepted')
+        self.assertEqual(job.n8n_status, 'processing')
+
+    def test_migration_copies_prompt_only_when_student_text_is_empty(self):
+        import importlib.util
+        from pathlib import Path
+        path = Path(__file__).resolve().parents[1].joinpath(
+            'migrations', '16.0.2.1.0', 'post-migrate.py',
+        )
+        spec = importlib.util.spec_from_file_location('irg_oral_case_post_migrate_210', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.first.write({'student_text': False})
+        self.env.flush_all()
+        module.migrate(self.env.cr, '16.0.2.0.0')
+        self.first.invalidate_recordset()
+        self.assertEqual(self.first.student_text, self.first.prompt)
+        self.first.write({'student_text': 'Breve', 'prompt': 'Otra consigna de IA'})
+        self.env.flush_all()
+        module.migrate(self.env.cr, '16.0.2.0.0')
+        self.first.invalidate_recordset()
+        self.assertEqual(self.first.student_text, 'Breve')
+        self.assertEqual(self.first.prompt, 'Otra consigna de IA')
 
     def test_wrong_clip_order_does_not_call_n8n(self):
         form = self._form(clips_json=json.dumps([
@@ -165,7 +348,10 @@ class TestOralCaseClips(OralCaseFixture, TransactionCase):
                     {'index': 2, 'segment_id': self.second.id, 'duration_seconds': 5},
                 ])),
                 None,
-                {'clip_1': self._video(b'aaaa'), 'clip_2': self._video(b'bbbb')},
+                {
+                    'clip_1': self._video(b'\x1a\x45\xdf\xa3aaaa'),
+                    'clip_2': self._video(b'\x1a\x45\xdf\xa3bbbb'),
+                },
             )
         job = self.env['irg.oral.case.job'].search([('n8n_job_id', '=', 'job-keep-1')])
         stored = job.clip_ids.mapped('video_attachment_id')
@@ -504,3 +690,34 @@ class TestOralCaseMedia(OralCaseFixture, HttpCase):
         blocked = self.url_open('/irg/oral_case/media/job/%s' % job.id, allow_redirects=False)
         self.assertEqual(blocked.status_code, 404)
         self.assertTrue(foreign.exists())
+
+    def test_media_route_serves_mp4(self):
+        participation = self.env['survey.user_input'].sudo().create({
+            'survey_id': self.survey.id,
+            'partner_id': self.student.partner_id.id,
+            'slide_id': self.slide.id,
+            'state': 'in_progress',
+        })
+        job = self.env['irg.oral.case.job'].create({
+            'partner_id': self.student.partner_id.id,
+            'slide_id': self.slide.id,
+            'survey_id': self.survey.id,
+            'user_input_id': participation.id,
+            'case_code': 'DA-ORAL-001',
+            'consent_date': '2026-10-22 00:00:00',
+        })
+        payload = b'\x00\x00\x00\x18ftypisom-propio'
+        attachment = self.env['ir.attachment'].sudo().create({
+            'name': 'caso.mp4',
+            'datas': base64.b64encode(payload),
+            'res_model': 'irg.oral.case.job',
+            'res_id': job.id,
+            'mimetype': 'video/mp4',
+            'public': False,
+        })
+        job.write({'video_attachment_id': attachment.id})
+        self.authenticate(self.student_login, self.student_login)
+        own = self.url_open('/irg/oral_case/media/job/%s' % job.id)
+        self.assertEqual(own.status_code, 200)
+        self.assertEqual(own.headers.get('Content-Type'), 'video/mp4')
+        self.assertEqual(own.content, payload)

@@ -24,6 +24,14 @@ Un flag de contexto no autoriza a escribir la línea del cuaderno ni el adjunto:
 
 ## Reproductor en un artículo
 
-El fullscreen de artículo pega el HTML y no ejecuta scripts. El reproductor es un asset de `web.assets_frontend` que detecta el nodo con `MutationObserver` y un `WeakSet`. Un atributo de “ya arrancado” se copiaría con el HTML y el clon no arrancaría. El iframe de un clip solo se usa si el host es exactamente `vimeo.com` o `player.vimeo.com`.
+El fullscreen de artículo pega el HTML y no ejecuta scripts. El reproductor es un asset de `web.assets_frontend` que detecta el nodo con `MutationObserver` y un `WeakSet`. Un atributo de “ya arrancado” se copiaría con el HTML y el clon no arrancaría. El iframe de un clip solo se usa si el host es `vimeo.com`, `www.vimeo.com` o `player.vimeo.com`. Una URL `vimeo.com/ID/hash` se traduce a `player.vimeo.com/video/ID?h=hash`.
+
+## Vista normal y texto de la alumna
+
+En la vista normal del slide, `isep_content_interactive` envuelve `html_embed_code` en un iframe `srcdoc` con `allow-same-origin`. El asset del padre no aplica dentro de ese documento. El reproductor, al ver el iframe, lee `contentDocument`, enlaza `/irg_oral_case/static/src/css/oral_case_player.css` y arranca `.o_irg_oral_case`. Hay que enganchar también el iframe cuando el nodo añadido es el propio iframe: tiene `querySelectorAll` y no es el documento. `setInterval` y `setTimeout` de esa ventana se cancelan con `clearInterval` y `clearTimeout` de la misma ventana. Los de la página padre no paran los del iframe.
+
+`irg.oral.case.segment.prompt` es la consigna que viaja a n8n en `clips_json`. `student_text` es lo que ve la alumna. El bootstrap no envía la clave `prompt`. Si `student_text` está vacío, el valor visible es el `prompt`. La migración `16.0.2.1.0` copia `prompt` a `student_text` solo en filas vacías.
+
+El servidor acepta WebM (EBML) y MP4 (`ftyp`) y pone él el nombre y el tipo. El multipart de n8n no gana campos nuevos. `state` de la entrega sigue a `n8n_status` (`done` / `error`) sin tocar la nota oficial. Un cron de 5 minutos consulta las entregas `accepted`.
 
 `isep_survey.compute_slide_channel_partner` no admite varias participaciones en la misma llamada. Guardar la nota hace flush. El módulo lo ejecuta de una en una, con la misma búsqueda, para que dos participaciones pendientes no aborten el guardado.

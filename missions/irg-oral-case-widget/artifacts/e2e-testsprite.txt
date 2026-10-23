@@ -1,0 +1,12 @@
+E2E no ejecutada.
+
+Runtime local: docker-compose.local.yml, Odoo en 127.0.0.1:8069, base desechable test_irg_oral_case_val_729d.
+La página /web/login respondió 200. Una alumna de portal creada en esa base (login oral-e2e-729d@example.test, contraseña solo de esta base) abrió /slides/slide/primera-entrevista-con-marta-86 con HTTP 200. El HTML contiene el iframe srcdoc con .o_irg_oral_case. El bundle web.assets_frontend_lazy.min.js respondió 200 y contiene irg_oral_case.player, «Responder ya» y this.win.clearInterval.
+
+TestSprite MCP: namespace ready. testsprite_check_account_info respondió (plan Free, créditos disponibles).
+testsprite_bootstrap (localPort 8069, type frontend, testScope codebase, projectPath addons-extra/extrairg/irg_oral_case, pathname /slides/slide/primera-entrevista-con-marta-86) devolvió MCP error -32001 Request timed out.
+El segundo intento, misma llamada, devolvió otra vez MCP error -32001.
+No se hizo un tercer intento.
+
+No hay escenarios ni informe de TestSprite. La capa E2E no está validada.
+E2E FAIL

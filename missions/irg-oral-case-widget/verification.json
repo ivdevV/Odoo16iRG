@@ -1,0 +1,56 @@
+{
+  "status": "failed",
+  "task": "irg-oral-case-widget",
+  "checks": [
+    {
+      "name": "node_logic",
+      "command": "node --test addons-extra/extrairg/irg_oral_case/tests/oral_case_logic.test.js",
+      "result": "pass",
+      "detail": "9 passed, 0 failed, 0 skipped, exit 0",
+      "evidence": "missions/irg-oral-case-widget/artifacts/node-tests-validation.txt"
+    },
+    {
+      "name": "odoo_module_tests",
+      "command": "sudo docker compose --env-file /workspace/.cursor/runtime/compose.env -f /workspace/docker-compose.local.yml run --rm --no-deps odoo_local odoo -c /etc/odoo/odoo.conf -d test_irg_oral_case_val_729d -i irg_oral_case --test-enable --test-tags=/irg_oral_case --stop-after-init --workers=0 --http-port=8098 --log-level=test",
+      "result": "pass",
+      "detail": "exit 0; odoo.tests.stats: irg_oral_case: 59 tests 65.44s 12880 queries; odoo.tests.result: 0 failed, 0 error(s) of 45 tests when loading database 'test_irg_oral_case_val_729d'",
+      "evidence": "missions/irg-oral-case-widget/artifacts/odoo-tests-validation.txt"
+    },
+    {
+      "name": "python_syntax",
+      "command": "python3 -m py_compile addons-extra/extrairg/irg_oral_case/controllers/__init__.py addons-extra/extrairg/irg_oral_case/controllers/main.py addons-extra/extrairg/irg_oral_case/migrations/16.0.2.1.0/post-migrate.py addons-extra/extrairg/irg_oral_case/models/__init__.py addons-extra/extrairg/irg_oral_case/models/oral_case_clip.py addons-extra/extrairg/irg_oral_case/models/oral_case_job.py addons-extra/extrairg/irg_oral_case/models/oral_case_segment.py addons-extra/extrairg/irg_oral_case/models/res_config_settings.py addons-extra/extrairg/irg_oral_case/models/service.py addons-extra/extrairg/irg_oral_case/models/slide_slide.py addons-extra/extrairg/irg_oral_case/models/survey_user_input.py addons-extra/extrairg/irg_oral_case/tests/common.py addons-extra/extrairg/irg_oral_case/tests/__init__.py addons-extra/extrairg/irg_oral_case/tests/test_oral_case_clips.py addons-extra/extrairg/irg_oral_case/tests/test_oral_case_http.py addons-extra/extrairg/irg_oral_case/tests/test_oral_case.py",
+      "result": "pass",
+      "detail": "16 .py files under models, controllers, tests and migrations compiled, exit 0",
+      "evidence": "missions/irg-oral-case-widget/artifacts/py-compile.txt"
+    },
+    {
+      "name": "scope_other_modules",
+      "command": "git diff --name-only HEAD && git status --porcelain",
+      "result": "pass",
+      "detail": "13 paths in git diff HEAD, all under addons-extra/extrairg/irg_oral_case. Untracked product files are under that module and missions/irg-oral-case-widget. .cursor/ is untracked and is not in the git diff. docker-compose.local.yml is not in the diff.",
+      "evidence": "missions/irg-oral-case-widget/artifacts/scope.txt"
+    },
+    {
+      "name": "e2e_testsprite",
+      "command": "testsprite_bootstrap localPort=8069 type=frontend testScope=codebase projectPath=addons-extra/extrairg/irg_oral_case pathname=/slides/slide/primera-entrevista-con-marta-86",
+      "result": "fail",
+      "detail": "No se ejecutaron escenarios. testsprite_bootstrap devolvió MCP -32001 (timeout) dos veces consecutivas, con Odoo local respondiendo en 8069 y la slide de la alumna desechable en HTTP 200. No se reintenta una tercera vez. La capa E2E no está validada.",
+      "evidence": "missions/irg-oral-case-widget/artifacts/e2e-testsprite.txt"
+    }
+  ],
+  "environment": {
+    "runtime": "docker-compose.local.yml",
+    "database": "test_irg_oral_case_val_729d",
+    "base_commit": "d7756f3b8"
+  },
+  "model_tier_used": "complex",
+  "escalations": 0,
+  "evidence": [
+    "missions/irg-oral-case-widget/artifacts/node-tests-validation.txt",
+    "missions/irg-oral-case-widget/artifacts/odoo-tests-validation.txt",
+    "missions/irg-oral-case-widget/artifacts/py-compile.txt",
+    "missions/irg-oral-case-widget/artifacts/scope.txt",
+    "missions/irg-oral-case-widget/artifacts/e2e-testsprite.txt",
+    "missions/irg-oral-case-widget/artifacts/cleanup.txt"
+  ]
+}

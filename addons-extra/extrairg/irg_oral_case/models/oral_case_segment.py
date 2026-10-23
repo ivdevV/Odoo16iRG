@@ -44,7 +44,23 @@ class IrgOralCaseSegment(models.Model):
         required=True,
         help='Vídeo de la paciente: MP4 por https o URL de Vimeo.',
     )
-    prompt = fields.Text(string='Consigna', required=True)
+    student_quote = fields.Char(
+        string='Frase del tramo',
+        help='Opcional. La alumna la ve como cita. Si está vacía, el widget no inventa una frase.',
+    )
+    student_text = fields.Text(
+        string='Texto para la alumna',
+        help='Consigna que ve la alumna. Si está vacío, ve la consigna para la IA.',
+    )
+    transcript = fields.Text(
+        string='Transcripción',
+        help='Opcional. La alumna puede leerla si no oye el vídeo. No se envía a n8n.',
+    )
+    prompt = fields.Text(
+        string='Consigna para la IA',
+        required=True,
+        help='Es el campo prompt del contrato con n8n. No se muestra a la alumna si hay texto para la alumna.',
+    )
     max_seconds = fields.Integer(
         string='Tiempo máximo (segundos)',
         required=True,

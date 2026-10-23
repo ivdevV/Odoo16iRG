@@ -2,7 +2,7 @@
 {
     'name': 'IRG Caso oral',
     'summary': 'Entrega de un caso oral de eLearning a n8n y confirmación docente de la nota',
-    'version': '16.0.2.0.0',
+    'version': '16.0.2.1.0',
     'category': 'Education',
     'author': 'Instituto Raimon Gaja',
     'license': 'LGPL-3',
@@ -27,6 +27,7 @@
     'assets': {
         'web.assets_frontend': [
             'irg_oral_case/static/src/css/oral_case_player.css',
+            'irg_oral_case/static/src/js/oral_case_logic.js',
             'irg_oral_case/static/src/js/oral_case_player.js',
         ],
     },

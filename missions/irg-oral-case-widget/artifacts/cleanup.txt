@@ -1,0 +1,3 @@
+Bases desechables eliminadas: test_irg_oral_case_widget_729d y test_irg_oral_case_val_729d.
+Contenedor odoo_local de la E2E parado. Postgres del runtime local sigue en marcha, sin esas bases.
+No se ha apuntado el compose a un worktree.

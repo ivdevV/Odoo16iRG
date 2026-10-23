@@ -26,7 +26,7 @@
             <form>
                 <header>
                     <button name="action_open_confirm_grade" type="object" string="Confirmar nota final" class="btn-primary" groups="openeducat_core.group_op_faculty"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,accepted,rejected,error"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,accepted,done,rejected,error"/>
                 </header>
                 <sheet>
                     <div class="alert alert-warning" role="alert" attrs="{'invisible': [('video_policy_keeps', '=', True)]}">
@@ -72,6 +72,7 @@
                                 <tree>
                                     <field name="segment_index"/>
                                     <field name="prompt_snapshot"/>
+                                    <field name="student_text_snapshot"/>
                                     <field name="duration_seconds"/>
                                     <field name="score_ia"/>
                                     <field name="resumen_ia"/>

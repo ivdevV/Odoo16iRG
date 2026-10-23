@@ -1,0 +1,65 @@
+TAP version 13
+# Subtest: logic module exports the widget decisions
+ok 1 - logic module exports the widget decisions
+  ---
+  duration_ms: 1.453372
+  type: 'test'
+  ...
+# Subtest: recorder prefers webm and falls back to mp4
+ok 2 - recorder prefers webm and falls back to mp4
+  ---
+  duration_ms: 1.010728
+  type: 'test'
+  ...
+# Subtest: review screen does not keep record or stop, and retry does not restart the clip
+ok 3 - review screen does not keep record or stop, and retry does not restart the clip
+  ---
+  duration_ms: 1.598255
+  type: 'test'
+  ...
+# Subtest: clip duration is shown only when the player reports it
+ok 4 - clip duration is shown only when the player reports it
+  ---
+  duration_ms: 0.646015
+  type: 'test'
+  ...
+# Subtest: countdown is announced at the start, at 15 seconds and at the end
+ok 5 - countdown is announced at the start, at 15 seconds and at the end
+  ---
+  duration_ms: 0.647154
+  type: 'test'
+  ...
+# Subtest: skip control waits for an error or for playback to run past the clip
+ok 6 - skip control waits for an error or for playback to run past the clip
+  ---
+  duration_ms: 0.60067
+  type: 'test'
+  ...
+# Subtest: student text hides the AI prompt, and API errors stay in Spanish
+ok 7 - student text hides the AI prompt, and API errors stay in Spanish
+  ---
+  duration_ms: 0.744849
+  type: 'test'
+  ...
+# Subtest: vimeo urls keep the privacy hash and reject other hosts
+ok 8 - vimeo urls keep the privacy hash and reject other hosts
+  ---
+  duration_ms: 1.112672
+  type: 'test'
+  ...
+# Subtest: player source boots inside a same-origin iframe and does not build HTML strings
+ok 9 - player source boots inside a same-origin iframe and does not build HTML strings
+  ---
+  duration_ms: 0.745728
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 68.973633
+NODE_EXIT:0
